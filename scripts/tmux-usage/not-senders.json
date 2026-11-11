@@ -5377,6 +5377,37 @@
           ]
         }
       ]
+    },
+    {
+      "port": "java",
+      "except": [
+        "a0ecbc16da00140e2520462d478a2af470878272",
+        "5f88402151ff08fc0390dd438b90963692ec3fe4"
+      ],
+      "owner": "Server",
+      "names": [
+        "start"
+      ],
+      "commands": [
+        "start-server"
+      ],
+      "kind": "other-command",
+      "why": "Server.start runs the tmux server process itself with -D and never sends tmux's start-server command.",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/PrivateDaemon.java",
+          "has": [
+            "command.add(2, \"-D\");"
+          ],
+          "within": "daemonCommand"
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/PrivateDaemon.java",
+          "has": [
+            "new ProcessBuilder(daemonCommand(config))"
+          ]
+        }
+      ]
     }
   ]
 }

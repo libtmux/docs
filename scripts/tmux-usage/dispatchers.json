@@ -6263,6 +6263,355 @@
             }
           ]
         }
+      ],
+      "revision": "a0ecbc16da00140e2520462d478a2af470878272"
+    },
+    {
+      "port": "java",
+      "name": "cmd",
+      "except": [
+        "a0ecbc16da00140e2520462d478a2af470878272"
+      ],
+      "why": "Sends the argument list it is given to the server.",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Environment.java",
+          "has": [
+            "cmd(List<String>"
+          ],
+          "reaches": [
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Environment.java",
+              "has": [
+                "server.cmd(argv)"
+              ],
+              "calls": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+              "has": [
+                "cmd(argv, config.defaultTimeout())"
+              ],
+              "calls": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+              "has": [
+                "cmd(argv, timeout, \"\")"
+              ],
+              "calls": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+              "has": [
+                "execute(request(List.of(argv), timeout, input))"
+              ],
+              "calls": "execute",
+              "within": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+              "has": [
+                "Versions.execute(transport, request, false)"
+              ],
+              "calls": "execute",
+              "on": "Versions",
+              "within": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "execute(transport, request, waiting, TmuxFeatures.Intent.literal(request.commands()))"
+              ],
+              "calls": "execute",
+              "within": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "checkVersion(transport, request, waiting, started, intent)"
+              ],
+              "calls": "checkVersion",
+              "within": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "dispatchChecked(transport, request, version, started, waiting, intent)"
+              ],
+              "calls": "dispatchChecked",
+              "within": "checkVersion"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "dispatch(transport, live, guarded(request.commands(), version), remaining(request, started), waiting)"
+              ],
+              "calls": "dispatch",
+              "within": "dispatchChecked"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "transport.execute(guarded)"
+              ],
+              "calls": "execute",
+              "on": "ProcessTransport",
+              "within": "dispatch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "execute(request, false)"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "dispatch(asked, waiting, span)"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "launch(request, deadline)"
+              ],
+              "calls": "launch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "starter.start("
+              ],
+              "within": "launch"
+            }
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Options.java",
+          "has": [
+            "cmd(List<String>"
+          ],
+          "reaches": [
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Options.java",
+              "has": [
+                "server.cmd(argv)"
+              ],
+              "calls": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+              "has": [
+                "cmd(argv, config.defaultTimeout())"
+              ],
+              "calls": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+              "has": [
+                "cmd(argv, timeout, \"\")"
+              ],
+              "calls": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+              "has": [
+                "execute(request(List.of(argv), timeout, input))"
+              ],
+              "calls": "execute",
+              "within": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+              "has": [
+                "Versions.execute(transport, request, false)"
+              ],
+              "calls": "execute",
+              "on": "Versions",
+              "within": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "execute(transport, request, waiting, TmuxFeatures.Intent.literal(request.commands()))"
+              ],
+              "calls": "execute",
+              "within": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "checkVersion(transport, request, waiting, started, intent)"
+              ],
+              "calls": "checkVersion",
+              "within": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "dispatchChecked(transport, request, version, started, waiting, intent)"
+              ],
+              "calls": "dispatchChecked",
+              "within": "checkVersion"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "dispatch(transport, live, guarded(request.commands(), version), remaining(request, started), waiting)"
+              ],
+              "calls": "dispatch",
+              "within": "dispatchChecked"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "transport.execute(guarded)"
+              ],
+              "calls": "execute",
+              "on": "ProcessTransport",
+              "within": "dispatch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "execute(request, false)"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "dispatch(asked, waiting, span)"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "launch(request, deadline)"
+              ],
+              "calls": "launch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "starter.start("
+              ],
+              "within": "launch"
+            }
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+          "has": [
+            "cmd(String..."
+          ],
+          "reaches": [
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+              "has": [
+                "cmd(List.of(argv)"
+              ],
+              "calls": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+              "has": [
+                "cmd(argv, timeout, \"\")"
+              ],
+              "calls": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+              "has": [
+                "execute(request(List.of(argv), timeout, input))"
+              ],
+              "calls": "execute",
+              "within": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+              "has": [
+                "Versions.execute(transport, request, false)"
+              ],
+              "calls": "execute",
+              "on": "Versions",
+              "within": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "execute(transport, request, waiting, TmuxFeatures.Intent.literal(request.commands()))"
+              ],
+              "calls": "execute",
+              "within": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "checkVersion(transport, request, waiting, started, intent)"
+              ],
+              "calls": "checkVersion",
+              "within": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "dispatchChecked(transport, request, version, started, waiting, intent)"
+              ],
+              "calls": "dispatchChecked",
+              "within": "checkVersion"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "dispatch(transport, live, guarded(request.commands(), version), remaining(request, started), waiting)"
+              ],
+              "calls": "dispatch",
+              "within": "dispatchChecked"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "transport.execute(guarded)"
+              ],
+              "calls": "execute",
+              "on": "ProcessTransport",
+              "within": "dispatch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "execute(request, false)"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "dispatch(asked, waiting, span)"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "launch(request, deadline)"
+              ],
+              "calls": "launch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "starter.start("
+              ],
+              "within": "launch"
+            }
+          ]
+        }
       ]
     },
     {
@@ -6389,6 +6738,134 @@
             }
           ]
         }
+      ],
+      "revision": "a0ecbc16da00140e2520462d478a2af470878272"
+    },
+    {
+      "port": "java",
+      "name": "runTogether",
+      "except": [
+        "a0ecbc16da00140e2520462d478a2af470878272"
+      ],
+      "why": "Sends the argument list it is given to the server.",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+          "has": [
+            "CommandResult runTogether(ServerSnapshot snapshot, List<List<String>> commands) {"
+          ],
+          "reaches": [
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+              "has": [
+                "runTogether(snapshot, \"\", commands)"
+              ],
+              "calls": "runTogether"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+              "has": [
+                "runTogether(snapshot, input, commands, false)"
+              ],
+              "calls": "runTogether",
+              "within": "runTogether"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+              "has": [
+                "fence.guarded("
+              ],
+              "calls": "guarded",
+              "on": "IncarnationFence",
+              "within": "runTogether"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java",
+              "has": [
+                "guarded(pid, incarnation("
+              ],
+              "calls": "guarded"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java",
+              "has": [
+                "server.cmd("
+              ],
+              "calls": "cmd",
+              "within": "guarded"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+              "has": [
+                "Versions.execute(transport, request(List.of(argv), timeout, input), false, intent)"
+              ],
+              "calls": "execute",
+              "on": "Versions",
+              "within": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "checkVersion(transport, request, waiting, started, intent)"
+              ],
+              "calls": "checkVersion",
+              "within": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "dispatchChecked(transport, request, version, started, waiting, intent)"
+              ],
+              "calls": "dispatchChecked",
+              "within": "checkVersion"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "dispatch(transport, live, guarded(request.commands(), version), remaining(request, started), waiting)"
+              ],
+              "calls": "dispatch",
+              "within": "dispatchChecked"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "transport.execute(guarded)"
+              ],
+              "calls": "execute",
+              "on": "ProcessTransport",
+              "within": "dispatch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "execute(request, false)"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "dispatch(asked, waiting, span)"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "launch(request, deadline)"
+              ],
+              "calls": "launch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "starter.start("
+              ],
+              "within": "launch"
+            }
+          ]
+        }
       ]
     },
     {
@@ -6410,6 +6887,111 @@
               "calls": "execute",
               "on": "ProcessTransport",
               "within": "withoutStartingServer"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "execute(request, false)"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "dispatch(asked, waiting, span)"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "launch(request, deadline)"
+              ],
+              "calls": "launch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "starter.start("
+              ],
+              "within": "launch"
+            }
+          ]
+        }
+      ],
+      "revision": "a0ecbc16da00140e2520462d478a2af470878272"
+    },
+    {
+      "port": "java",
+      "name": "withoutStartingServer",
+      "except": [
+        "a0ecbc16da00140e2520462d478a2af470878272"
+      ],
+      "why": "Sends the argument list it is given to the server.",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+          "has": [
+            "withoutStartingServer"
+          ],
+          "reaches": [
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+              "has": [
+                "execute(new CommandRequest(argv, List.of(command), config.defaultTimeout(), \"\"))"
+              ],
+              "calls": "execute",
+              "within": "withoutStartingServer"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+              "has": [
+                "Versions.execute(transport, request, false)"
+              ],
+              "calls": "execute",
+              "on": "Versions",
+              "within": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "execute(transport, request, waiting, TmuxFeatures.Intent.literal(request.commands()))"
+              ],
+              "calls": "execute",
+              "within": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "checkVersion(transport, request, waiting, started, intent)"
+              ],
+              "calls": "checkVersion",
+              "within": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "dispatchChecked(transport, request, version, started, waiting, intent)"
+              ],
+              "calls": "dispatchChecked",
+              "within": "checkVersion"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "dispatch(transport, live, guarded(request.commands(), version), remaining(request, started), waiting)"
+              ],
+              "calls": "dispatch",
+              "within": "dispatchChecked"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "transport.execute(guarded)"
+              ],
+              "calls": "execute",
+              "on": "ProcessTransport",
+              "within": "dispatch"
             },
             {
               "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
@@ -6533,6 +7115,136 @@
           ],
           "within": "withVersion"
         }
+      ],
+      "revision": "a0ecbc16da00140e2520462d478a2af470878272"
+    },
+    {
+      "port": "java",
+      "name": "withVersion",
+      "except": [
+        "a0ecbc16da00140e2520462d478a2af470878272"
+      ],
+      "why": "Sends the argument list it is given to the server.",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Options.java",
+          "has": [
+            "withVersion"
+          ],
+          "reaches": [
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Options.java",
+              "has": [
+                "batch.run()"
+              ],
+              "calls": "run",
+              "within": "withVersion"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/batch/Batch.java",
+              "has": [
+                "dispatch.apply("
+              ],
+              "leads": "batch",
+              "why": "a Batch runs the function the Server gave it when it made the batch, and Server.batch made it from a lambda that calls the fence"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+              "has": [
+                "fence.guarded(snapshot, CommandStrings.group(commands), \"\", TmuxFeatures.Intent.literal(commands))"
+              ],
+              "calls": "guarded",
+              "on": "IncarnationFence",
+              "within": "batch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java",
+              "has": [
+                "guarded(pid, incarnation("
+              ],
+              "calls": "guarded"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java",
+              "has": [
+                "server.cmd("
+              ],
+              "calls": "cmd",
+              "within": "guarded"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+              "has": [
+                "Versions.execute(transport, request(List.of(argv), timeout, input), false, intent)"
+              ],
+              "calls": "execute",
+              "on": "Versions",
+              "within": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "checkVersion(transport, request, waiting, started, intent)"
+              ],
+              "calls": "checkVersion",
+              "within": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "dispatchChecked(transport, request, version, started, waiting, intent)"
+              ],
+              "calls": "dispatchChecked",
+              "within": "checkVersion"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "dispatch(transport, live, guarded(request.commands(), version), remaining(request, started), waiting)"
+              ],
+              "calls": "dispatch",
+              "within": "dispatchChecked"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "transport.execute(guarded)"
+              ],
+              "calls": "execute",
+              "on": "ProcessTransport",
+              "within": "dispatch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "execute(request, false)"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "dispatch(asked, waiting, span)"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "launch(request, deadline)"
+              ],
+              "calls": "launch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "starter.start("
+              ],
+              "within": "launch"
+            }
+          ],
+          "within": "withVersion"
+        }
       ]
     },
     {
@@ -6600,6 +7312,143 @@
               "calls": "execute",
               "on": "ProcessTransport",
               "within": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "execute(request, false)"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "dispatch(asked, waiting, span)"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "launch(request, deadline)"
+              ],
+              "calls": "launch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "starter.start("
+              ],
+              "within": "launch"
+            }
+          ],
+          "within": "captured"
+        }
+      ],
+      "revision": "a0ecbc16da00140e2520462d478a2af470878272"
+    },
+    {
+      "port": "java",
+      "name": "captured",
+      "except": [
+        "a0ecbc16da00140e2520462d478a2af470878272"
+      ],
+      "why": "Sends the argument list it is given to the server.",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+          "has": [
+            "captured"
+          ],
+          "reaches": [
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+              "has": [
+                "capture.sessionsWhere("
+              ],
+              "calls": "sessionsWhere",
+              "on": "SnapshotCapture"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java",
+              "has": [
+                "hydrate(process, holding"
+              ],
+              "calls": "hydrate"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java",
+              "has": [
+                "batch.run()"
+              ],
+              "calls": "run"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/batch/Batch.java",
+              "has": [
+                "dispatch.apply("
+              ],
+              "leads": "batch",
+              "why": "a Batch runs the function the Server gave it when it made the batch, and Server.batch made it from a lambda that calls the fence"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+              "has": [
+                "return new Batch(commands -> fence.guarded("
+              ],
+              "calls": "guarded",
+              "on": "IncarnationFence",
+              "within": "batch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java",
+              "has": [
+                "server.cmd("
+              ],
+              "calls": "cmd",
+              "within": "guarded"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+              "has": [
+                "Versions.execute(transport, request(List.of(argv), timeout, input), false, intent)"
+              ],
+              "calls": "execute",
+              "on": "Versions",
+              "within": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "checkVersion(transport, request, waiting, started, intent)"
+              ],
+              "calls": "checkVersion",
+              "within": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "dispatchChecked(transport, request, version, started, waiting, intent)"
+              ],
+              "calls": "dispatchChecked",
+              "within": "checkVersion"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "dispatch(transport, live, guarded(request.commands(), version), remaining(request, started), waiting)"
+              ],
+              "calls": "dispatch",
+              "within": "dispatchChecked"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "transport.execute(guarded)"
+              ],
+              "calls": "execute",
+              "on": "ProcessTransport",
+              "within": "dispatch"
             },
             {
               "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
@@ -6952,6 +7801,335 @@
               "calls": "execute",
               "on": "ProcessTransport",
               "within": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "execute(request, false)"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "dispatch(asked, waiting, span)"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "launch(request, deadline)"
+              ],
+              "calls": "launch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "starter.start("
+              ],
+              "within": "launch"
+            }
+          ]
+        }
+      ],
+      "revision": "a0ecbc16da00140e2520462d478a2af470878272"
+    },
+    {
+      "port": "java",
+      "name": "run",
+      "except": [
+        "a0ecbc16da00140e2520462d478a2af470878272"
+      ],
+      "why": "Sends the argument list it is given to the server, and fails on a nonzero exit.",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+          "has": [
+            "run(List<String>"
+          ],
+          "reaches": [
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+              "has": [
+                "cmd(argv)"
+              ],
+              "calls": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+              "has": [
+                "cmd(argv, config.defaultTimeout())"
+              ],
+              "calls": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+              "has": [
+                "cmd(argv, timeout, \"\")"
+              ],
+              "calls": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+              "has": [
+                "execute(request(List.of(argv), timeout, input))"
+              ],
+              "calls": "execute",
+              "within": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+              "has": [
+                "Versions.execute(transport, request, false)"
+              ],
+              "calls": "execute",
+              "on": "Versions",
+              "within": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "execute(transport, request, waiting, TmuxFeatures.Intent.literal(request.commands()))"
+              ],
+              "calls": "execute",
+              "within": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "checkVersion(transport, request, waiting, started, intent)"
+              ],
+              "calls": "checkVersion",
+              "within": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "dispatchChecked(transport, request, version, started, waiting, intent)"
+              ],
+              "calls": "dispatchChecked",
+              "within": "checkVersion"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "dispatch(transport, live, guarded(request.commands(), version), remaining(request, started), waiting)"
+              ],
+              "calls": "dispatch",
+              "within": "dispatchChecked"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "transport.execute(guarded)"
+              ],
+              "calls": "execute",
+              "on": "ProcessTransport",
+              "within": "dispatch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "execute(request, false)"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "dispatch(asked, waiting, span)"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "launch(request, deadline)"
+              ],
+              "calls": "launch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "starter.start("
+              ],
+              "within": "launch"
+            }
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+          "has": [
+            "CommandResult run(ServerSnapshot snapshot, List<String> argv) {"
+          ],
+          "reaches": [
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+              "has": [
+                "cmd(snapshot, argv)"
+              ],
+              "calls": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+              "has": [
+                "fence.guarded(snapshot, CommandStrings.stringify(argv), \"\", TmuxFeatures.Intent.literal(List.of(argv)))"
+              ],
+              "calls": "guarded",
+              "on": "IncarnationFence",
+              "within": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java",
+              "has": [
+                "guarded(pid, incarnation("
+              ],
+              "calls": "guarded"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java",
+              "has": [
+                "server.cmd("
+              ],
+              "calls": "cmd",
+              "within": "guarded"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+              "has": [
+                "Versions.execute(transport, request(List.of(argv), timeout, input), false, intent)"
+              ],
+              "calls": "execute",
+              "on": "Versions",
+              "within": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "checkVersion(transport, request, waiting, started, intent)"
+              ],
+              "calls": "checkVersion",
+              "within": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "dispatchChecked(transport, request, version, started, waiting, intent)"
+              ],
+              "calls": "dispatchChecked",
+              "within": "checkVersion"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "dispatch(transport, live, guarded(request.commands(), version), remaining(request, started), waiting)"
+              ],
+              "calls": "dispatch",
+              "within": "dispatchChecked"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "transport.execute(guarded)"
+              ],
+              "calls": "execute",
+              "on": "ProcessTransport",
+              "within": "dispatch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "execute(request, false)"
+              ],
+              "calls": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "dispatch(asked, waiting, span)"
+              ],
+              "calls": "dispatch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "launch(request, deadline)"
+              ],
+              "calls": "launch"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",
+              "has": [
+                "starter.start("
+              ],
+              "within": "launch"
+            }
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+          "has": [
+            "CommandResult run(ServerSnapshot snapshot, WindowContext expected, List<String> argv) {"
+          ],
+          "reaches": [
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+              "has": [
+                "fence.run(snapshot, expected, argv)"
+              ],
+              "calls": "run",
+              "on": "IncarnationFence"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java",
+              "has": [
+                "server.cmd("
+              ],
+              "calls": "cmd",
+              "within": "run"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+              "has": [
+                "Versions.execute(transport, request(List.of(argv), timeout, input), false, intent)"
+              ],
+              "calls": "execute",
+              "on": "Versions",
+              "within": "cmd"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "checkVersion(transport, request, waiting, started, intent)"
+              ],
+              "calls": "checkVersion",
+              "within": "execute"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "dispatchChecked(transport, request, version, started, waiting, intent)"
+              ],
+              "calls": "dispatchChecked",
+              "within": "checkVersion"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "dispatch(transport, live, guarded(request.commands(), version), remaining(request, started), waiting)"
+              ],
+              "calls": "dispatch",
+              "within": "dispatchChecked"
+            },
+            {
+              "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+              "has": [
+                "transport.execute(guarded)"
+              ],
+              "calls": "execute",
+              "on": "ProcessTransport",
+              "within": "dispatch"
             },
             {
               "at": "libtmux/src/main/java/io/github/libtmux/transport/ProcessTransport.java",

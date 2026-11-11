@@ -11117,6 +11117,53 @@
     },
     {
       "port": "java",
+      "except": [
+        "a0ecbc16da00140e2520462d478a2af470878272"
+      ],
+      "symbol": "io.github.libtmux.control.ControlClient.ControlClient.attach",
+      "command": "run-shell",
+      "scope": null,
+      "forwardable": true,
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/internal/ControlAcquisition.java",
+          "has": [
+            "new CommandRequest(endpoint, List.of(List.of(\"run-shell\", \"-C\", marker + FORMAT))"
+          ],
+          "within": "read"
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/internal/ControlAcquisition.java",
+          "has": [
+            "ProcessTransport.executeThroughCarrier("
+          ],
+          "within": "read"
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/internal/ControlAcquisition.java",
+          "has": [
+            "read(carrier, command, remaining(true))"
+          ],
+          "within": "recheck"
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/control/ControlClient.java",
+          "has": [
+            "acquisition.recheck(carrier)"
+          ],
+          "within": "connect"
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/control/ControlClient.java",
+          "has": [
+            "connect(carrier"
+          ],
+          "in": "io.github.libtmux.control.ControlClient.ControlClient.attach"
+        }
+      ]
+    },
+    {
+      "port": "java",
       "symbol": "io.github.libtmux.Options.Options.all",
       "command": "display-message",
       "scope": null,
@@ -13740,7 +13787,8 @@
           "at": "libtmux/src/main/java/io/github/libtmux/Pane.java",
           "has": [
             "\"display-message\""
-          ]
+          ],
+          "within": "expand"
         },
         {
           "at": "libtmux/src/main/java/io/github/libtmux/Pane.java",
@@ -13776,7 +13824,8 @@
           "at": "libtmux/src/main/java/io/github/libtmux/Pane.java",
           "has": [
             "\"display-message\""
-          ]
+          ],
+          "within": "expand"
         },
         {
           "at": "libtmux/src/main/java/io/github/libtmux/Pane.java",
@@ -13796,6 +13845,47 @@
     },
     {
       "port": "java",
+      "except": [
+        "a0ecbc16da00140e2520462d478a2af470878272"
+      ],
+      "symbol": "io.github.libtmux.Pane.Pane.breakOut",
+      "command": "break-pane",
+      "scope": null,
+      "forwardable": true,
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java",
+          "has": [
+            "new ArrayList<>(List.of(\"break-pane\", \"-d\"))"
+          ],
+          "within": "breakNamed"
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java",
+          "has": [
+            "server.runBreak(snapshot, commands, running, wanted.isPresent())"
+          ],
+          "within": "breakNamed"
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+          "has": [
+            "pid, condition, CommandStrings.group(commands), \"\", new TmuxFeatures.Intent(commands, named, false)"
+          ],
+          "within": "runBreak"
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java",
+          "has": [
+            "breakNamed(Optional.of(windowName))"
+          ],
+          "in": "io.github.libtmux.Pane.Pane.breakOut"
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "revision": "a0ecbc16da00140e2520462d478a2af470878272",
       "symbol": "io.github.libtmux.mcp.Main.Main.main",
       "command": "start-server",
       "scope": null,
@@ -13824,6 +13914,7 @@
     },
     {
       "port": "java",
+      "revision": "a0ecbc16da00140e2520462d478a2af470878272",
       "symbol": "io.github.libtmux.mcp.Main.Main.main",
       "command": "display-message",
       "scope": null,
@@ -13845,6 +13936,38 @@
           "at": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Main.java",
           "has": [
             "launch.profile(server)"
+          ],
+          "in": "io.github.libtmux.mcp.Main.Main.main"
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "except": [
+        "a0ecbc16da00140e2520462d478a2af470878272"
+      ],
+      "symbol": "io.github.libtmux.mcp.Main.Main.main",
+      "command": "display-message",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/LaunchConfiguration.java",
+          "has": [
+            "server.cmd(\"display-message\""
+          ],
+          "within": "profile"
+        },
+        {
+          "at": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Main.java",
+          "has": [
+            "launch.profile(server)"
+          ],
+          "within": "run"
+        },
+        {
+          "at": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Main.java",
+          "has": [
+            "System.exit(run(args, System.getenv(), System.in, System.err))"
           ],
           "in": "io.github.libtmux.mcp.Main.Main.main"
         }

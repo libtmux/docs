@@ -431,6 +431,7 @@
     },
     {
       "port": "java",
+      "revision": "a0ecbc16da00140e2520462d478a2af470878272",
       "symbol": "io.github.libtmux.Shell.Shell.capturing",
       "command": "run-shell",
       "scope": null,
@@ -474,6 +475,49 @@
     },
     {
       "port": "java",
+      "except": [
+        "a0ecbc16da00140e2520462d478a2af470878272"
+      ],
+      "symbol": "io.github.libtmux.Shell.Shell.capturing",
+      "command": "run-shell",
+      "scope": null,
+      "when": "except on tmux 3.3a and 3.4",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Shell.java",
+          "has": [
+            "Capabilities.RUN_SHELL_OUTPUT_IN_COPY_MODE.affects(running)"
+          ],
+          "within": "capturing"
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Shell.java",
+          "has": [
+            "throw new UnsupportedFeatureException("
+          ],
+          "within": "capturing"
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Capabilities.java",
+          "has": [
+            "RUN_SHELL_OUTPUT_IN_COPY_MODE = new Workaround(",
+            "new TmuxVersion(3, 3, \"a\")",
+            "new TmuxVersion(3, 5, \"\")"
+          ],
+          "span": 9
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Shell.java",
+          "has": [
+            "\"run-shell\""
+          ],
+          "within": "capturing"
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "revision": "a0ecbc16da00140e2520462d478a2af470878272",
       "symbol": "io.github.libtmux.Pane.Pane.paste",
       "command": "load-buffer",
       "scope": null,
@@ -520,6 +564,53 @@
     },
     {
       "port": "java",
+      "except": [
+        "a0ecbc16da00140e2520462d478a2af470878272"
+      ],
+      "symbol": "io.github.libtmux.Pane.Pane.paste",
+      "command": "load-buffer",
+      "scope": null,
+      "when": "except before tmux 3.4",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java",
+          "has": [
+            "server.runTogether(",
+            "// -d removes the buffer as it pastes"
+          ],
+          "span": 6
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java",
+          "has": [
+            "server.runTogether(snapshot, text, List.of(List.of(\"load-buffer\", \"-b\", buffer, \"-\")), true);"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+          "has": [
+            "new TmuxFeatures.Intent(commands, false, namedBufferCleanup)"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/internal/TmuxFeatures.java",
+          "has": [
+            "intent.namedBufferCleanup() && !Capabilities.BUFFER_DELETE_NAMED.availableOn(version)"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Capabilities.java",
+          "has": [
+            "BUFFER_DELETE_NAMED = new Capability(",
+            "new TmuxVersion(3, 4, \"\")"
+          ],
+          "span": 6
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "revision": "a0ecbc16da00140e2520462d478a2af470878272",
       "symbol": "io.github.libtmux.Pane.Pane.paste",
       "command": "paste-buffer",
       "scope": null,
@@ -566,6 +657,53 @@
     },
     {
       "port": "java",
+      "except": [
+        "a0ecbc16da00140e2520462d478a2af470878272"
+      ],
+      "symbol": "io.github.libtmux.Pane.Pane.paste",
+      "command": "paste-buffer",
+      "scope": null,
+      "when": "except before tmux 3.4",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java",
+          "has": [
+            "server.runTogether(",
+            "// -d removes the buffer as it pastes"
+          ],
+          "span": 6
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java",
+          "has": [
+            "server.runTogether(snapshot, text, List.of(List.of(\"load-buffer\", \"-b\", buffer, \"-\")), true);"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+          "has": [
+            "new TmuxFeatures.Intent(commands, false, namedBufferCleanup)"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/internal/TmuxFeatures.java",
+          "has": [
+            "intent.namedBufferCleanup() && !Capabilities.BUFFER_DELETE_NAMED.availableOn(version)"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Capabilities.java",
+          "has": [
+            "BUFFER_DELETE_NAMED = new Capability(",
+            "new TmuxVersion(3, 4, \"\")"
+          ],
+          "span": 6
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "revision": "a0ecbc16da00140e2520462d478a2af470878272",
       "symbol": "io.github.libtmux.Buffers.Buffers.delete",
       "command": "delete-buffer",
       "scope": null,
@@ -595,6 +733,47 @@
           "has": [
             "server.cmd(List.of(\"delete-buffer\","
           ]
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "except": [
+        "a0ecbc16da00140e2520462d478a2af470878272"
+      ],
+      "symbol": "io.github.libtmux.Buffers.Buffers.delete",
+      "command": "delete-buffer",
+      "scope": null,
+      "when": "except before tmux 3.4",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Buffers.java",
+          "has": [
+            "server.cmd(List.of(\"delete-buffer\", \"-b\", name))"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/internal/TmuxFeatures.java",
+          "has": [
+            "matches(verb, \"delete-buffer\", \"deleteb\", 3)",
+            "!Capabilities.BUFFER_DELETE_NAMED.availableOn(version)"
+          ],
+          "span": 3
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Capabilities.java",
+          "has": [
+            "BUFFER_DELETE_NAMED = new Capability(",
+            "new TmuxVersion(3, 4, \"\")"
+          ],
+          "span": 6
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/internal/support/Versions.java",
+          "has": [
+            "TmuxFeatures.require(TmuxVersion.parse(version), intent)"
+          ],
+          "within": "dispatchChecked"
         }
       ]
     },

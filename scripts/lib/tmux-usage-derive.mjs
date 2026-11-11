@@ -33,9 +33,10 @@ export function classify(spec, flags) {
  * Whether a claim, an exclusion or a review is read against the source at `revision`. One without a `revision` holds
  * for the revision its port's model was extracted at; one with a `revision` holds for the revision it starts with,
  * which is how a wrapper that shares a repository with its core library reads the core where the wrapper is pinned.
+ * One with `except` and no `revision` holds at every revision but those, which is how the rule for newer code follows a port's head.
  */
 export const ruleHolds = (rule, revision, pinned) => !rule.except?.some((prefix) => revision.startsWith(prefix))
-  && (rule.revision ? revision.startsWith(rule.revision) : revision === pinned)
+  && (rule.revision ? revision.startsWith(rule.revision) : rule.except ? true : revision === pinned)
 
 const SELF_RECEIVERS = new Set(['this', 'self', 'base', 'super', 'cls', 'me'])
 
@@ -430,9 +431,12 @@ export function applyConditions({ conditions, found, readSource, lenient = false
     if (!item.evidence?.length) { problems.push(`${label} cites no lines`); continue }
     for (const line of item.evidence) {
       const cut = line.at.lastIndexOf(':')
-      const text = readSource(line.at.slice(0, cut))?.split('\n')[Number(line.at.slice(cut + 1)) - 1]
+      const lines = readSource(line.at.slice(0, cut))?.split('\n')
+      const text = lines?.[Number(line.at.slice(cut + 1)) - 1]
       if (text === undefined) { problems.push(`${label} ${line.at} is not a line of the pinned source`); continue }
-      for (const needle of line.has ?? []) if (!text.includes(needle)) problems.push(`${label} ${line.at} does not contain ${JSON.stringify(needle)}`)
+      // The first text is on the cited line and the rest within its `span`, as a claim's is.
+      const statement = lines.slice(Number(line.at.slice(cut + 1)) - 1, Number(line.at.slice(cut + 1)) - 1 + (line.span ?? 1)).join('\n')
+      for (const [position, needle] of (line.has ?? []).entries()) if (!(position === 0 ? text : statement).includes(needle)) problems.push(`${label} ${line.at} does not contain ${JSON.stringify(needle)}`)
     }
     const entry = found.get(`${item.symbol}\0${item.command}\0${item.scope}`)
     if (!entry) { if (!lenient) problems.push(`${label} qualifies no entry`) }

@@ -249,6 +249,7 @@
     },
     {
       "port": "java",
+      "revision": "a0ecbc16da00140e2520462d478a2af470878272",
       "owner": "Pane",
       "names": [
         "breakOut"
@@ -262,6 +263,35 @@
           "at": "libtmux/src/main/java/io/github/libtmux/Pane.java",
           "has": [
             "BREAK_PANE_NAMING_BROKEN"
+          ],
+          "within": "breakNamed"
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java",
+          "has": [
+            "\"rename-window\""
+          ]
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "except": [
+        "a0ecbc16da00140e2520462d478a2af470878272"
+      ],
+      "owner": "Pane",
+      "names": [
+        "breakOut"
+      ],
+      "commands": [
+        "rename-window"
+      ],
+      "why": "breakOut renames the window afterwards only on the tmux release that ignores the name.",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java",
+          "has": [
+            "if (Capabilities.BREAK_PANE_MISNAMES_WINDOWS.affects(running)) {"
           ],
           "within": "breakNamed"
         },

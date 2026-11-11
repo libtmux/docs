@@ -116,6 +116,7 @@
     },
     {
       "port": "java",
+      "revision": "a0ecbc16da00140e2520462d478a2af470878272",
       "name": "guarded",
       "owner": "IncarnationFence",
       "purpose": "refuses a command when the tmux server is not the one the handle was made against",
@@ -124,6 +125,36 @@
           "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java",
           "has": [
             "CommandResult guarded(long pid"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java",
+          "has": [
+            "\"if-shell\", \"-F\", condition, command, stale"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+          "has": [
+            "fence.guarded(snapshot"
+          ],
+          "within": "cmd"
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "except": [
+        "a0ecbc16da00140e2520462d478a2af470878272"
+      ],
+      "name": "guarded",
+      "owner": "IncarnationFence",
+      "purpose": "refuses a command when the tmux server is not the one the handle was made against",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java",
+          "has": [
+            "CommandResult guarded(long pid, String condition, String command, String input, TmuxFeatures.Intent intent)"
           ]
         },
         {

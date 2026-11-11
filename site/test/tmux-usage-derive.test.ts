@@ -468,6 +468,13 @@ describe('reviewed claims', () => {
     expect(ruleHolds({ revision: 'bbb' }, 'aaa', 'aaa')).toBe(false)
   })
 
+  it('holds a rule that excepts a revision at every other revision, so the rule for newer code follows a head', () => {
+    expect(ruleHolds({ except: ['aaa'] }, 'ccc', 'aaa')).toBe(true)
+    expect(ruleHolds({ except: ['aaa'] }, 'ccc', 'bbb')).toBe(true)
+    expect(ruleHolds({ except: ['aaa'] }, 'aaa111', 'aaa111')).toBe(false)
+    expect(ruleHolds({ except: ['aaa'], revision: 'ccc' }, 'ccc1', 'aaa')).toBe(true)
+  })
+
   it.each([
     ['a line that no longer holds the text', { evidence: [{ at: 'server.rs:6', has: ['.arg("-s")'] }, { at: 'server.rs:3', in: 'server.Server.panes' }] }, /does not contain/],
     ['a line past the end of the file', { evidence: [{ at: 'server.rs:99' }, { at: 'server.rs:3', in: 'server.Server.panes' }] }, /not a line of the pinned source/],
@@ -515,6 +522,13 @@ describe('the condition of a send', () => {
       const entries = found()
       expect(applyConditions({ conditions: [condition()], found: entries, readSource: lines })).toEqual([])
       expect(entries.get('S.panes\0list-panes\0server')).toMatchObject({ when: 'the pane is synchronized' })
+    })
+
+    it('reads the rest of the text within the span of the cited line, as a claim does', () => {
+      const wrapped = (path: string) => (path === 'lib.py' ? 'if (\n    synchronized\n):\n' : undefined)
+      const spanned = (over: Record<string, unknown>) => applyConditions({ conditions: [condition({ evidence: [{ at: 'lib.py:1', ...over }] })], found: found(), readSource: wrapped })
+      expect(spanned({ has: ['if (', 'synchronized'], span: 2 })).toEqual([])
+      expect(spanned({ has: ['if (', 'synchronized'] }).join('\n')).toMatch(/does not contain "synchronized"/)
     })
 
     it.each([
