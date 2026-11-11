@@ -129,6 +129,31 @@ describe('native export groups', () => {
     expect(model).toEqual(before)
   })
 
+  it('places a reexport-only module without inventing direct members or groups', () => {
+    const model = fixture()
+    model.symbols.unshift({ ...symbol('Root', 'module'), apiScope: 'exported',
+      references: [{ target: 'Module.Z', kind: 'reference' }, { target: 'Module.A', kind: 'reference' }] })
+    const actual = navSidecar('haskell', model)!
+    expect(actual.buckets.map((bucket) => bucket.label)).toEqual(['Root', 'Module.Z', 'Module.A'])
+    const root = actual.buckets[0]
+    expect(root.children).toEqual([])
+    expect(actual.assignments[root.id].map((entry) => entry.id)).toEqual(['Root'])
+    expect(actual.placement.Root).toBe(root.id)
+    expect(actual.diagnostics).toEqual({ unmatched: [], deadBuckets: [], ambiguous: [], staleUnsettled: [] })
+    expect(model.exportGroups).toHaveLength(3)
+  })
+
+  it('rejects empty modules with no distinct public module relation', () => {
+    const relationships: NonNullable<ApiSymbol['references']>[] = [[],
+      [{ target: 'Root', kind: 'reference' }], [{ target: 'private.module', kind: 'reference' }]]
+    for (const references of relationships) {
+      const model = fixture()
+      model.symbols.unshift({ ...symbol('Root', 'module'), apiScope: 'exported', references })
+      model.symbols.push(symbol('private.module', 'module'))
+      expect(() => navSidecar('haskell', model)).toThrow(/module has no groups/)
+    }
+  })
+
   it('excludes nonpublic declarations that are absent from the native export groups', () => {
     const model = fixture()
     model.symbols.push(symbol('private', 'function', 'Module.Z'), symbol('private.module', 'module'))

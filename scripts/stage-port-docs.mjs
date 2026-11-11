@@ -55,8 +55,8 @@ function external(value) {
   return /^(?:[a-z][a-z0-9+.-]*:|#|\/)/i.test(value)
 }
 
-export function rewriteLinks(content, sourcePath, route, routes, repo, revision, nativeReferenceFiles = new Set()) {
-  const targetUrl = (destination, image = false) => {
+export function rewriteLinks(content, sourcePath, route, routes, repo, revision, nativeReferenceFiles = new Set(), nativeDeclarations = new Map()) {
+  const targetUrl = (destination, image = false, label) => {
     const owned = !image && /^https?:\/\/libtmux\.org\/en\/([^/]+)\//.exec(destination)
     if (owned) {
       const port = owned[1] === 'dotnet' ? 'csharp' : owned[1]
@@ -74,9 +74,10 @@ export function rewriteLinks(content, sourcePath, route, routes, repo, revision,
     const [target, fragment = ''] = destination.split('#', 2)
     const normalized = posix.normalize(posix.join(posix.dirname(sourcePath), target))
     const memberRoute = fragment && routes[`${normalized}#${fragment}`]
+    const declaration = !fragment && label && nativeDeclarations.get(`${normalized}\0${label}`)
     // Unknown native-help sections keep their source destination rather than
     // acquiring a fragment that the shared reference does not render.
-    const staged = memberRoute || (fragment && nativeReferenceFiles.has(normalized) ? undefined : routes[normalized])
+    const staged = memberRoute || declaration || (fragment && nativeReferenceFiles.has(normalized) ? undefined : routes[normalized])
     if (staged) {
       let href = posix.relative(route, staged[0]) || '.'
       if (!href.startsWith('.')) href = `./${href}`
@@ -91,7 +92,9 @@ export function rewriteLinks(content, sourcePath, route, routes, repo, revision,
   const editsFor = (node) => {
     const children = (node.children ?? []).flatMap(editsFor)
     if (!['link', 'image', 'definition'].includes(node.type)) return children
-    const url = targetUrl(node.url, node.type === 'image')
+    const label = node.type === 'link' && node.children.every((child) => ['text', 'inlineCode'].includes(child.type))
+      ? node.children.map((child) => child.value).join('') : undefined
+    const url = targetUrl(node.url, node.type === 'image', label)
     if (url === node.url) return children
     node.url = url
     return [{ start: node.position.start.offset, end: node.position.end.offset,
@@ -164,6 +167,7 @@ export function stagedPortGuides(port, artifact) {
   const routes = ROUTES[port]
   const linkRoutes = Object.fromEntries(Object.entries(routes).map(([sourcePath, guide]) => [sourcePath, [guide.route]]))
   const nativeReferenceFiles = new Set()
+  const nativeDeclarations = new Map()
   for (const redirect of sourceGuideRedirectsFor(port)) linkRoutes[redirect.sourcePath] = [redirect.target]
   if (port === 'haskell') {
     const model = JSON.parse(readFileSync(join(root, 'site/src/data/api/haskell.json'), 'utf8'))
@@ -172,6 +176,16 @@ export function stagedPortGuides(port, artifact) {
       if (symbol.source?.file) {
         linkRoutes[symbol.source.file] = [`reference/${symbol.slug}`]
         nativeReferenceFiles.add(symbol.source.file)
+        const names = Map.groupBy(model.symbols.filter((entry) => entry.kind !== 'module'
+          && (entry.namespace === symbol.id || entry.parent === symbol.id)
+          && entry.apiScope !== 'internal' && (entry.product ?? 'core') === 'core'), (entry) => entry.name)
+        for (const [name, declarations] of names) {
+          // A shared type/constructor spelling selects the data head.
+          // Repeated record labels stay at the module.
+          const heads = declarations.filter((entry) => entry.kind === 'typealias')
+          const selected = heads.length === 1 ? heads[0] : declarations.length === 1 ? declarations[0] : undefined
+          if (selected?.slug) nativeDeclarations.set(`${symbol.source.file}\0${name}`, [`reference/${selected.slug}`])
+        }
       }
     }
   }
@@ -229,7 +243,7 @@ export function stagedPortGuides(port, artifact) {
     const nativeLinked = port === 'julia' ? linkDocumenter(linked, artifact.source) : linked
     const { content: badged, files: badgeFiles } = localizeBadges(nativeLinked, port)
     for (const [name, svg] of badgeFiles) files.set(name, svg)
-    const rewritten = rewriteLinks(badged, sourcePath, route, linkRoutes, artifact.source.repository, artifact.source.revision, nativeReferenceFiles)
+    const rewritten = rewriteLinks(badged, sourcePath, route, linkRoutes, artifact.source.repository, artifact.source.revision, nativeReferenceFiles, nativeDeclarations)
     const data = {
       title,
       description: guide.description ?? `${title}: ${identity.packageName} documentation.`,

@@ -322,12 +322,13 @@
     }
   },
   "haskell": {
-    "title": "Typed tmux values for Haskell",
-    "lead": "Parse tmux entity IDs, validate dimensions and indices, and check stable tmux releases with pure Haskell functions",
+    "title": "tmux client library for Haskell",
+    "lead": "Capture tmux state, query detached snapshots, rename sessions and windows, and set pane titles",
     "modules": [
-      "LibTmux.Id",
-      "LibTmux.Value",
-      "LibTmux.Version"
+      "LibTmux.Server",
+      "LibTmux.Snapshot",
+      "LibTmux.Query",
+      "LibTmux.Snapshot.Fixture"
     ],
     "capabilities": {}
   },

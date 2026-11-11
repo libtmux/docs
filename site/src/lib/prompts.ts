@@ -442,7 +442,7 @@ export function portParts(args: {
   ctx: PromptContext
 }): PortParts {
   const { port, released, install, wording, ctx } = args
-  const pureValues = port.slug === 'haskell'
+  const observationApi = port.slug === 'haskell'
 
   const reading: (readonly [string, string])[] = [
     [portUrl(ctx, port, 'llms.txt'), `every page for ${port.name}, as a list`],
@@ -452,12 +452,12 @@ export function portParts(args: {
   if (port.ecosystemHost) {
     reading.push([port.ecosystemHost.url, `${port.name} reference on ${port.ecosystemHost.name}`])
   }
-  if (pureValues) reading.push([portUrl(ctx, port, 'core/'), 'the complete public values example and Cabal files'])
+  if (observationApi) reading.push([portUrl(ctx, port, 'core/'), 'the complete capture/mutation example and Cabal files'])
 
   const setup = [
-    ...(pureValues ? [
-      'The public Haskell package provides pure typed IDs, checked scalar values',
-      'and tmux-version parsing. Documentation for every language',
+    ...(observationApi ? [
+      'The Haskell package captures detached tmux graphs, queries their entities,',
+      'renames sessions and windows, and sets pane titles. Documentation',
     ] : [
       'libtmux drives a real tmux server from code. It gives you objects for the',
       'server, its sessions, windows and panes. Documentation for every language',
@@ -474,9 +474,9 @@ export function portParts(args: {
     'and examples instead, or ask me to paste those pages in.',
     '',
     'Set up first:',
-    ...(pureValues ? [
-      '1. Select GHC 9.14.1 and Cabal 3.18.2.0. Report both tool versions.',
-      '   The public values example does not require a tmux installation.',
+    ...(observationApi ? [
+      '1. Report `tmux -V`, `ghc --numeric-version` and `cabal --numeric-version`.',
+      '   Choose GHC and Cabal versions that satisfy the package manifest.',
     ] : [
       '1. Report the tmux version with `tmux -V`. libtmux drives a real tmux, so',
       '   nothing below works without one. Stop and tell me if it is missing.',
@@ -489,10 +489,11 @@ export function portParts(args: {
         ]),
     '   Skip this in a project that already exists, and match what is here.',
     installStep(port, released, install, wording),
-    ...(pureValues ? [
-      '4. Run the complete values example linked above. Use parseWindowId and',
-      '   renderWindowId to check the ID round trip, handle parse errors, and',
-      '   verify the expected output. Show the output and the files you added.',
+    ...(observationApi ? [
+      '4. Run the complete capture/mutation example with its displayed setup.',
+      '   Use its private demo server. Check renameSession, renameWindow and',
+      '   setPaneTitle, verify the expected output and cleanup, and show',
+      '   the output and the files you added.',
     ] : [
       '4. Write the smallest program that proves the install works: connect to a',
       '   tmux server, create a session, confirm it is there, then kill it. Give',
@@ -536,9 +537,9 @@ export function portParts(args: {
 
   return {
     setup, notes, unavailable,
-    ...(pureValues ? {
-      opening: 'Set up libtmux in this repository and verify its pure values API.',
-      unavailableTask: 'Client, command, streaming and workspace APIs are not exposed by the public Haskell package. Report this missing API boundary and stop; do not invent operations or use internal modules.',
+    ...(observationApi ? {
+      opening: 'Set up libtmux in this repository and verify its capture, query and mutation API.',
+      unavailableTask: 'Haskell provides capture, detached graph traversal, typed queries, renameSession, renameWindow and setPaneTitle. Creation, session selection, input, event streaming and workspace APIs are not public. Report this boundary and stop; do not invent operations or use internal modules.',
     } : {}),
   }
 }

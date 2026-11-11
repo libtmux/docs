@@ -3,7 +3,7 @@
     {
       "label": "Cabal package descriptions",
       "url": "https://cabal.readthedocs.io/en/3.18/cabal-package-description-file.html",
-      "heading": "1. Package Description \u2014 <package>.cabal File \uf0c1"
+      "heading": "1. Package Description — <package>.cabal File "
     },
     {
       "label": "core.async",
@@ -489,6 +489,16 @@
       "label": "GHC field selectors",
       "url": "https://downloads.haskell.org/ghc/9.14.1/docs/users_guide/exts/field_selectors.html",
       "heading": "6.5.6. Field selectors"
+    },
+    {
+      "label": "`OverloadedRecordDot`",
+      "url": "https://downloads.haskell.org/ghc/9.14.1/docs/users_guide/exts/overloaded_record_dot.html",
+      "heading": "6.5.10. Overloaded record dot"
+    },
+    {
+      "label": "OverloadedStrings",
+      "url": "https://downloads.haskell.org/ghc/latest/docs/users_guide/exts/overloaded_strings.html",
+      "heading": "6.9.7. Overloaded string literals"
     },
     {
       "label": "C++ abstract classes",

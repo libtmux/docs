@@ -1,7 +1,8 @@
 import { newCheckContext } from './browser-context.mjs'
 import assert from 'node:assert/strict'
-import { PORTS } from '../src/lib/ports.ts'
-import HOME_EXAMPLES from '../src/data/home-examples.json' with { type: 'json' }
+import { installCommand, isReleaseSeries, PORTS, releaseMaturity, releaseWording } from '../src/lib/ports.ts'
+import { portParts } from '../src/lib/prompts.ts'
+import REGISTRY from '../src/data/registry.json' with { type: 'json' }
 
 /** Real pointer events, with the clock advanced instead of sleeping per option. */
 export async function checkHomeHover(browser, base) {
@@ -29,7 +30,8 @@ export async function checkHomeHover(browser, base) {
     await page.clock.pauseAt(new Date(now.getTime() + 1000))
     const url = page.url()
     await language.locator('summary').click()
-    for (const { slug } of PORTS) {
+    for (const port of PORTS) {
+      const { slug } = port
       await language.locator(`a[data-port="${slug}"]`).hover()
       await page.clock.fastForward(1100)
       assert.equal((await read()).port, 'py', `${slug}: a brief hover does not preview`)
@@ -43,9 +45,14 @@ export async function checkHomeHover(browser, base) {
       assert(await page.locator(`.home-examples > [data-home-language="${slug}"]`).isVisible())
       assert.equal(await page.locator('.lm-agent-prompt [data-select="topic"]').inputValue(), 'session-switcher')
       const promptText = await page.locator(`.lm-agent-prompt__panel[data-port="${slug}"] [data-prompt-text]`).innerText()
-      if (HOME_EXAMPLES[slug].execution === 'pure-values') {
+      const entry = REGISTRY.ports[slug]
+      const parts = portParts({ port, released: isReleaseSeries(releaseMaturity(entry)),
+        install: installCommand(port, entry), wording: releaseWording(port, entry),
+        ctx: { docsBase: base, version: 'latest' } })
+      const unavailable = parts.unavailable['session-switcher'] ?? parts.unavailableTask
+      if (unavailable) {
         assert.match(promptText, /Availability/)
-        assert.match(promptText, /Report this missing API boundary and stop/)
+        assert(promptText.replace(/\s+/g, ' ').includes(unavailable.replace(/\s+/g, ' ')), 'The preview keeps this port’s task boundary')
         assert.doesNotMatch(promptText, /Then build a tmux session switcher/)
       } else assert.match(promptText, /Then build a tmux session switcher/)
       await leave()

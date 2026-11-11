@@ -1,12 +1,21 @@
 ---
 port: haskell
 route: core
-title: "Typed tmux values for Haskell"
-description: "Typed tmux values for Haskell. Parse tmux entity IDs, validate dimensions and indices, and check stable tmux releases with pure Haskell functions"
+title: "tmux client library for Haskell"
+description: "tmux client library for Haskell. Capture tmux state, query detached snapshots, rename sessions and windows, and set pane titles"
 cards:
   - label: Getting started
     href: ../guides/getting-started/
-    body: Install the source package and run the complete values example.
+    body: Install the source package and capture a running tmux server.
+  - label: Capture and traverse
+    href: ../guides/capture/
+    body: Follow physical panes and linked-window context in one snapshot.
+  - label: Query snapshots
+    href: ../guides/query/
+    body: Filter typed fields, follow relationships and check selection cardinality.
+  - label: Rename and set titles
+    href: ../guides/mutations/
+    body: Select explicit targets, apply checked changes and capture fresh observations.
   - label: Typed values
     href: ../guides/typed-values/
     body: Understand entity IDs, indices, dimensions and version admission.
@@ -18,8 +27,11 @@ cards:
     body: Check public capabilities, compatibility evidence and package boundaries.
 ---
 
-Client, capture and mutation APIs are under development. The workspace
-library and CLI are planned as a separate package using the core. MCP is
-excluded from this port. Read the
+Capture through a scoped Server handle, then inspect ordinary Haskell records
+after it closes. Window links retain each session's index and pane appearances.
+Rename sessions and physical windows, or set a pane title through an explicit
+reference. Capture again to observe the change; existing snapshots retain their
+values. Creation, input, event streams and workspace tooling remain in development.
+MCP is excluded. Read the
 [implementation status](../guides/status/)
 before choosing the package for automation.

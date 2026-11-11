@@ -29635,6 +29635,1387 @@
           "in": "tmux_server:start_owned/1"
         }
       ]
+    },
+    {
+      "port": "haskell",
+      "revision": "00b47e6d94b181b5fd94e585be1e9ecefbf93acb",
+      "symbol": "LibTmux.Server#v:capture",
+      "command": "display-message",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "cbits/process.c:125",
+          "has": [
+            "rc = calls.spawn(&pidfd, file, &actions, &attributes, argv, env);"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process/Native.hs:30",
+          "has": [
+            "foreign import ccall safe \"libtmux_process_spawn\" cSpawn"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process/Native.hs:100",
+          "has": [
+            "launch = launchWith cSpawn"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:92",
+          "has": [
+            "defaultHooks = Hooks"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:92",
+          "has": [
+            "N.launch N.waitChild"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:192",
+          "has": [
+            "native <- ticket.hooks.launchNative spec"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:719",
+          "has": [
+            "created <- try @SomeException (P.submitInputRegistered register resourceClass hooks pool spec input)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:636",
+          "has": [
+            "N.spec executable ([executable, \"-u\", \"-N\", \"-S\", pinPath (serverPin client)]"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:680",
+          "has": [
+            "compileNative nonce (Observe command) = Right (ObservationResult command, commandArguments nonce command, P.BytesInput \"\")"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:593",
+          "has": [
+            "ReadSnapshot generation -> Record.snapshotCommands generation nonce"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:576",
+          "has": [
+            "startRead (ReadSnapshot (pinGeneration (serverPin client)))"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Capture.hs:86",
+          "has": [
+            "owned runtime receipt (R.readSnapshotWith hooks left runtime client executable)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Capture.hs:79",
+          "has": [
+            "captureSnapshot = captureSnapshotWith P.defaultHooks"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Server.hs:171",
+          "has": [
+            "(started, finished, decoded) <- C.captureSnapshot runtime handle executable duration"
+          ],
+          "in": "LibTmux.Server#v:capture"
+        },
+        {
+          "at": "internal/LibTmux/Internal/Record.hs:106",
+          "has": [
+            "[ \"display-message\", \"-p\", \"-F\", marker"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "haskell",
+      "revision": "00b47e6d94b181b5fd94e585be1e9ecefbf93acb",
+      "symbol": "LibTmux.Server#v:capture",
+      "command": "if-shell",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "cbits/process.c:125",
+          "has": [
+            "rc = calls.spawn(&pidfd, file, &actions, &attributes, argv, env);"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process/Native.hs:30",
+          "has": [
+            "foreign import ccall safe \"libtmux_process_spawn\" cSpawn"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process/Native.hs:100",
+          "has": [
+            "launch = launchWith cSpawn"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:92",
+          "has": [
+            "defaultHooks = Hooks"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:92",
+          "has": [
+            "N.launch N.waitChild"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:192",
+          "has": [
+            "native <- ticket.hooks.launchNative spec"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:719",
+          "has": [
+            "created <- try @SomeException (P.submitInputRegistered register resourceClass hooks pool spec input)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:636",
+          "has": [
+            "N.spec executable ([executable, \"-u\", \"-N\", \"-S\", pinPath (serverPin client)]"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:680",
+          "has": [
+            "compileNative nonce (Observe command) = Right (ObservationResult command, commandArguments nonce command, P.BytesInput \"\")"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:593",
+          "has": [
+            "ReadSnapshot generation -> Record.snapshotCommands generation nonce"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:576",
+          "has": [
+            "startRead (ReadSnapshot (pinGeneration (serverPin client)))"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Capture.hs:86",
+          "has": [
+            "owned runtime receipt (R.readSnapshotWith hooks left runtime client executable)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Capture.hs:79",
+          "has": [
+            "captureSnapshot = captureSnapshotWith P.defaultHooks"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Server.hs:171",
+          "has": [
+            "(started, finished, decoded) <- C.captureSnapshot runtime handle executable duration"
+          ],
+          "in": "LibTmux.Server#v:capture"
+        },
+        {
+          "at": "internal/LibTmux/Internal/Record.hs:108",
+          "has": [
+            ", \";\", \"if-shell\", \"-F\", \"#{S:1}\", listing"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "haskell",
+      "revision": "00b47e6d94b181b5fd94e585be1e9ecefbf93acb",
+      "symbol": "LibTmux.Server#v:capture",
+      "command": "list-clients",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "cbits/process.c:125",
+          "has": [
+            "rc = calls.spawn(&pidfd, file, &actions, &attributes, argv, env);"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process/Native.hs:30",
+          "has": [
+            "foreign import ccall safe \"libtmux_process_spawn\" cSpawn"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process/Native.hs:100",
+          "has": [
+            "launch = launchWith cSpawn"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:92",
+          "has": [
+            "defaultHooks = Hooks"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:92",
+          "has": [
+            "N.launch N.waitChild"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:192",
+          "has": [
+            "native <- ticket.hooks.launchNative spec"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:719",
+          "has": [
+            "created <- try @SomeException (P.submitInputRegistered register resourceClass hooks pool spec input)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:636",
+          "has": [
+            "N.spec executable ([executable, \"-u\", \"-N\", \"-S\", pinPath (serverPin client)]"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:680",
+          "has": [
+            "compileNative nonce (Observe command) = Right (ObservationResult command, commandArguments nonce command, P.BytesInput \"\")"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:593",
+          "has": [
+            "ReadSnapshot generation -> Record.snapshotCommands generation nonce"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:576",
+          "has": [
+            "startRead (ReadSnapshot (pinGeneration (serverPin client)))"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Capture.hs:86",
+          "has": [
+            "owned runtime receipt (R.readSnapshotWith hooks left runtime client executable)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Capture.hs:79",
+          "has": [
+            "captureSnapshot = captureSnapshotWith P.defaultHooks"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Server.hs:171",
+          "has": [
+            "(started, finished, decoded) <- C.captureSnapshot runtime handle executable duration"
+          ],
+          "in": "LibTmux.Server#v:capture"
+        },
+        {
+          "at": "internal/LibTmux/Internal/Record.hs:116",
+          "has": [
+            "listing = \"list-clients -F"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Record.hs:108",
+          "has": [
+            ", \";\", \"if-shell\", \"-F\", \"#{S:1}\", listing"
+          ]
+        }
+      ],
+      "conditional": true,
+      "when": "when the server has sessions"
+    },
+    {
+      "port": "haskell",
+      "revision": "00b47e6d94b181b5fd94e585be1e9ecefbf93acb",
+      "symbol": "LibTmux.Query#v:fetch",
+      "command": "display-message",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "cbits/process.c:125",
+          "has": [
+            "rc = calls.spawn(&pidfd, file, &actions, &attributes, argv, env);"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process/Native.hs:30",
+          "has": [
+            "foreign import ccall safe \"libtmux_process_spawn\" cSpawn"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process/Native.hs:100",
+          "has": [
+            "launch = launchWith cSpawn"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:92",
+          "has": [
+            "defaultHooks = Hooks"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:92",
+          "has": [
+            "N.launch N.waitChild"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:192",
+          "has": [
+            "native <- ticket.hooks.launchNative spec"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:719",
+          "has": [
+            "created <- try @SomeException (P.submitInputRegistered register resourceClass hooks pool spec input)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:636",
+          "has": [
+            "N.spec executable ([executable, \"-u\", \"-N\", \"-S\", pinPath (serverPin client)]"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:680",
+          "has": [
+            "compileNative nonce (Observe command) = Right (ObservationResult command, commandArguments nonce command, P.BytesInput \"\")"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:593",
+          "has": [
+            "ReadSnapshot generation -> Record.snapshotCommands generation nonce"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:576",
+          "has": [
+            "startRead (ReadSnapshot (pinGeneration (serverPin client)))"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Capture.hs:86",
+          "has": [
+            "owned runtime receipt (R.readSnapshotWith hooks left runtime client executable)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Capture.hs:79",
+          "has": [
+            "captureSnapshot = captureSnapshotWith P.defaultHooks"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Server.hs:171",
+          "has": [
+            "(started, finished, decoded) <- C.captureSnapshot runtime handle executable duration"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Record.hs:106",
+          "has": [
+            "[ \"display-message\", \"-p\", \"-F\", marker"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Query.hs:82",
+          "has": [
+            "fetch server query = case Q.prepare Q.nativeProfile query of"
+          ],
+          "in": "LibTmux.Query#v:fetch"
+        },
+        {
+          "at": "src/LibTmux/Query.hs:84",
+          "has": [
+            "Right () -> (`runQuery` query) <$> Server.capture server"
+          ],
+          "in": "LibTmux.Query#v:fetch"
+        }
+      ]
+    },
+    {
+      "port": "haskell",
+      "revision": "00b47e6d94b181b5fd94e585be1e9ecefbf93acb",
+      "symbol": "LibTmux.Query#v:fetch",
+      "command": "if-shell",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "cbits/process.c:125",
+          "has": [
+            "rc = calls.spawn(&pidfd, file, &actions, &attributes, argv, env);"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process/Native.hs:30",
+          "has": [
+            "foreign import ccall safe \"libtmux_process_spawn\" cSpawn"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process/Native.hs:100",
+          "has": [
+            "launch = launchWith cSpawn"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:92",
+          "has": [
+            "defaultHooks = Hooks"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:92",
+          "has": [
+            "N.launch N.waitChild"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:192",
+          "has": [
+            "native <- ticket.hooks.launchNative spec"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:719",
+          "has": [
+            "created <- try @SomeException (P.submitInputRegistered register resourceClass hooks pool spec input)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:636",
+          "has": [
+            "N.spec executable ([executable, \"-u\", \"-N\", \"-S\", pinPath (serverPin client)]"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:680",
+          "has": [
+            "compileNative nonce (Observe command) = Right (ObservationResult command, commandArguments nonce command, P.BytesInput \"\")"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:593",
+          "has": [
+            "ReadSnapshot generation -> Record.snapshotCommands generation nonce"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:576",
+          "has": [
+            "startRead (ReadSnapshot (pinGeneration (serverPin client)))"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Capture.hs:86",
+          "has": [
+            "owned runtime receipt (R.readSnapshotWith hooks left runtime client executable)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Capture.hs:79",
+          "has": [
+            "captureSnapshot = captureSnapshotWith P.defaultHooks"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Server.hs:171",
+          "has": [
+            "(started, finished, decoded) <- C.captureSnapshot runtime handle executable duration"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Record.hs:108",
+          "has": [
+            ", \";\", \"if-shell\", \"-F\", \"#{S:1}\", listing"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Query.hs:82",
+          "has": [
+            "fetch server query = case Q.prepare Q.nativeProfile query of"
+          ],
+          "in": "LibTmux.Query#v:fetch"
+        },
+        {
+          "at": "src/LibTmux/Query.hs:84",
+          "has": [
+            "Right () -> (`runQuery` query) <$> Server.capture server"
+          ],
+          "in": "LibTmux.Query#v:fetch"
+        }
+      ]
+    },
+    {
+      "port": "haskell",
+      "revision": "00b47e6d94b181b5fd94e585be1e9ecefbf93acb",
+      "symbol": "LibTmux.Query#v:fetch",
+      "command": "list-clients",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "cbits/process.c:125",
+          "has": [
+            "rc = calls.spawn(&pidfd, file, &actions, &attributes, argv, env);"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process/Native.hs:30",
+          "has": [
+            "foreign import ccall safe \"libtmux_process_spawn\" cSpawn"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process/Native.hs:100",
+          "has": [
+            "launch = launchWith cSpawn"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:92",
+          "has": [
+            "defaultHooks = Hooks"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:92",
+          "has": [
+            "N.launch N.waitChild"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:192",
+          "has": [
+            "native <- ticket.hooks.launchNative spec"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:719",
+          "has": [
+            "created <- try @SomeException (P.submitInputRegistered register resourceClass hooks pool spec input)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:636",
+          "has": [
+            "N.spec executable ([executable, \"-u\", \"-N\", \"-S\", pinPath (serverPin client)]"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:680",
+          "has": [
+            "compileNative nonce (Observe command) = Right (ObservationResult command, commandArguments nonce command, P.BytesInput \"\")"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:593",
+          "has": [
+            "ReadSnapshot generation -> Record.snapshotCommands generation nonce"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:576",
+          "has": [
+            "startRead (ReadSnapshot (pinGeneration (serverPin client)))"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Capture.hs:86",
+          "has": [
+            "owned runtime receipt (R.readSnapshotWith hooks left runtime client executable)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Capture.hs:79",
+          "has": [
+            "captureSnapshot = captureSnapshotWith P.defaultHooks"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Server.hs:171",
+          "has": [
+            "(started, finished, decoded) <- C.captureSnapshot runtime handle executable duration"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Record.hs:116",
+          "has": [
+            "listing = \"list-clients -F"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Record.hs:108",
+          "has": [
+            ", \";\", \"if-shell\", \"-F\", \"#{S:1}\", listing"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Query.hs:82",
+          "has": [
+            "fetch server query = case Q.prepare Q.nativeProfile query of"
+          ],
+          "in": "LibTmux.Query#v:fetch"
+        },
+        {
+          "at": "src/LibTmux/Query.hs:84",
+          "has": [
+            "Right () -> (`runQuery` query) <$> Server.capture server"
+          ],
+          "in": "LibTmux.Query#v:fetch"
+        }
+      ],
+      "conditional": true,
+      "when": "when the server has sessions"
+    },
+    {
+      "port": "haskell",
+      "revision": "00b47e6d94b181b5fd94e585be1e9ecefbf93acb",
+      "symbol": "LibTmux.Server#v:renameSession",
+      "command": "rename-session",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.hs:195",
+          "has": [
+            "renameSession = renameSessionWith defaultMutationOptions"
+          ],
+          "in": "LibTmux.Server#v:renameSession"
+        },
+        {
+          "at": "src/LibTmux/Server.hs:202",
+          "has": [
+            "mutate options server generation (Command.RenameSession ident label)"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Server.hs:239",
+          "has": [
+            "M.performMutation P.defaultHooks duration runtime handle executable command"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Mutation.hs:69",
+          "has": [
+            "request <- catchNoPropagate (R.mutateWith hooks left runtime server executable mutation)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:547",
+          "has": [
+            "startNative (Mutate mutation) hooks duration runtime client executable ScalarRead"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:681",
+          "has": [
+            "compileNative _ (Mutate mutation) = do"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:682",
+          "has": [
+            "arguments <- Command.compileMutation mutation"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:105",
+          "has": [
+            "compileMutation mutation = do"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:109",
+          "has": [
+            "(prefix, value, key) = mutationParts mutation"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:116",
+          "has": [
+            "RenameSession ident"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:117",
+          "has": [
+            "[\"rename-session\""
+          ]
+        },
+        {
+          "at": "cbits/process.c:125",
+          "has": [
+            "rc = calls.spawn(&pidfd, file, &actions, &attributes, argv, env);"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process/Native.hs:30",
+          "has": [
+            "foreign import ccall safe \"libtmux_process_spawn\" cSpawn"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process/Native.hs:100",
+          "has": [
+            "launch = launchWith cSpawn"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:92",
+          "has": [
+            "defaultHooks = Hooks"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:92",
+          "has": [
+            "N.launch N.waitChild"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:192",
+          "has": [
+            "native <- ticket.hooks.launchNative spec"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:719",
+          "has": [
+            "created <- try @SomeException (P.submitInputRegistered register resourceClass hooks pool spec input)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:636",
+          "has": [
+            "N.spec executable ([executable, \"-u\", \"-N\", \"-S\", pinPath (serverPin client)]"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "haskell",
+      "revision": "00b47e6d94b181b5fd94e585be1e9ecefbf93acb",
+      "symbol": "LibTmux.Server#v:renameSessionWith",
+      "command": "rename-session",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.hs:202",
+          "has": [
+            "mutate options server generation (Command.RenameSession ident label)"
+          ],
+          "in": "LibTmux.Server#v:renameSessionWith"
+        },
+        {
+          "at": "src/LibTmux/Server.hs:239",
+          "has": [
+            "M.performMutation P.defaultHooks duration runtime handle executable command"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Mutation.hs:69",
+          "has": [
+            "request <- catchNoPropagate (R.mutateWith hooks left runtime server executable mutation)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:547",
+          "has": [
+            "startNative (Mutate mutation) hooks duration runtime client executable ScalarRead"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:681",
+          "has": [
+            "compileNative _ (Mutate mutation) = do"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:682",
+          "has": [
+            "arguments <- Command.compileMutation mutation"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:105",
+          "has": [
+            "compileMutation mutation = do"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:109",
+          "has": [
+            "(prefix, value, key) = mutationParts mutation"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:116",
+          "has": [
+            "RenameSession ident"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:117",
+          "has": [
+            "[\"rename-session\""
+          ]
+        },
+        {
+          "at": "cbits/process.c:125",
+          "has": [
+            "rc = calls.spawn(&pidfd, file, &actions, &attributes, argv, env);"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process/Native.hs:30",
+          "has": [
+            "foreign import ccall safe \"libtmux_process_spawn\" cSpawn"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process/Native.hs:100",
+          "has": [
+            "launch = launchWith cSpawn"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:92",
+          "has": [
+            "defaultHooks = Hooks"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:92",
+          "has": [
+            "N.launch N.waitChild"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:192",
+          "has": [
+            "native <- ticket.hooks.launchNative spec"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:719",
+          "has": [
+            "created <- try @SomeException (P.submitInputRegistered register resourceClass hooks pool spec input)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:636",
+          "has": [
+            "N.spec executable ([executable, \"-u\", \"-N\", \"-S\", pinPath (serverPin client)]"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "haskell",
+      "revision": "00b47e6d94b181b5fd94e585be1e9ecefbf93acb",
+      "symbol": "LibTmux.Server#v:renameWindow",
+      "command": "rename-window",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.hs:208",
+          "has": [
+            "renameWindow = renameWindowWith defaultMutationOptions"
+          ],
+          "in": "LibTmux.Server#v:renameWindow"
+        },
+        {
+          "at": "src/LibTmux/Server.hs:215",
+          "has": [
+            "mutate options server generation (Command.RenameWindow ident label)"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Server.hs:239",
+          "has": [
+            "M.performMutation P.defaultHooks duration runtime handle executable command"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Mutation.hs:69",
+          "has": [
+            "request <- catchNoPropagate (R.mutateWith hooks left runtime server executable mutation)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:547",
+          "has": [
+            "startNative (Mutate mutation) hooks duration runtime client executable ScalarRead"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:681",
+          "has": [
+            "compileNative _ (Mutate mutation) = do"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:682",
+          "has": [
+            "arguments <- Command.compileMutation mutation"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:105",
+          "has": [
+            "compileMutation mutation = do"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:109",
+          "has": [
+            "(prefix, value, key) = mutationParts mutation"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:119",
+          "has": [
+            "RenameWindow ident"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:120",
+          "has": [
+            "[\"rename-window\""
+          ]
+        },
+        {
+          "at": "cbits/process.c:125",
+          "has": [
+            "rc = calls.spawn(&pidfd, file, &actions, &attributes, argv, env);"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process/Native.hs:30",
+          "has": [
+            "foreign import ccall safe \"libtmux_process_spawn\" cSpawn"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process/Native.hs:100",
+          "has": [
+            "launch = launchWith cSpawn"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:92",
+          "has": [
+            "defaultHooks = Hooks"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:92",
+          "has": [
+            "N.launch N.waitChild"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:192",
+          "has": [
+            "native <- ticket.hooks.launchNative spec"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:719",
+          "has": [
+            "created <- try @SomeException (P.submitInputRegistered register resourceClass hooks pool spec input)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:636",
+          "has": [
+            "N.spec executable ([executable, \"-u\", \"-N\", \"-S\", pinPath (serverPin client)]"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "haskell",
+      "revision": "00b47e6d94b181b5fd94e585be1e9ecefbf93acb",
+      "symbol": "LibTmux.Server#v:renameWindowWith",
+      "command": "rename-window",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.hs:215",
+          "has": [
+            "mutate options server generation (Command.RenameWindow ident label)"
+          ],
+          "in": "LibTmux.Server#v:renameWindowWith"
+        },
+        {
+          "at": "src/LibTmux/Server.hs:239",
+          "has": [
+            "M.performMutation P.defaultHooks duration runtime handle executable command"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Mutation.hs:69",
+          "has": [
+            "request <- catchNoPropagate (R.mutateWith hooks left runtime server executable mutation)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:547",
+          "has": [
+            "startNative (Mutate mutation) hooks duration runtime client executable ScalarRead"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:681",
+          "has": [
+            "compileNative _ (Mutate mutation) = do"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:682",
+          "has": [
+            "arguments <- Command.compileMutation mutation"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:105",
+          "has": [
+            "compileMutation mutation = do"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:109",
+          "has": [
+            "(prefix, value, key) = mutationParts mutation"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:119",
+          "has": [
+            "RenameWindow ident"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:120",
+          "has": [
+            "[\"rename-window\""
+          ]
+        },
+        {
+          "at": "cbits/process.c:125",
+          "has": [
+            "rc = calls.spawn(&pidfd, file, &actions, &attributes, argv, env);"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process/Native.hs:30",
+          "has": [
+            "foreign import ccall safe \"libtmux_process_spawn\" cSpawn"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process/Native.hs:100",
+          "has": [
+            "launch = launchWith cSpawn"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:92",
+          "has": [
+            "defaultHooks = Hooks"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:92",
+          "has": [
+            "N.launch N.waitChild"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:192",
+          "has": [
+            "native <- ticket.hooks.launchNative spec"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:719",
+          "has": [
+            "created <- try @SomeException (P.submitInputRegistered register resourceClass hooks pool spec input)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:636",
+          "has": [
+            "N.spec executable ([executable, \"-u\", \"-N\", \"-S\", pinPath (serverPin client)]"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "haskell",
+      "revision": "00b47e6d94b181b5fd94e585be1e9ecefbf93acb",
+      "symbol": "LibTmux.Server#v:setPaneTitle",
+      "command": "select-pane",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.hs:220",
+          "has": [
+            "setPaneTitle = setPaneTitleWith defaultMutationOptions"
+          ],
+          "in": "LibTmux.Server#v:setPaneTitle"
+        },
+        {
+          "at": "src/LibTmux/Server.hs:227",
+          "has": [
+            "mutate options server generation (Command.SetPaneTitle ident label)"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Server.hs:239",
+          "has": [
+            "M.performMutation P.defaultHooks duration runtime handle executable command"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Mutation.hs:69",
+          "has": [
+            "request <- catchNoPropagate (R.mutateWith hooks left runtime server executable mutation)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:547",
+          "has": [
+            "startNative (Mutate mutation) hooks duration runtime client executable ScalarRead"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:681",
+          "has": [
+            "compileNative _ (Mutate mutation) = do"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:682",
+          "has": [
+            "arguments <- Command.compileMutation mutation"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:105",
+          "has": [
+            "compileMutation mutation = do"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:109",
+          "has": [
+            "(prefix, value, key) = mutationParts mutation"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:122",
+          "has": [
+            "SetPaneTitle ident"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:123",
+          "has": [
+            "[\"select-pane\""
+          ]
+        },
+        {
+          "at": "cbits/process.c:125",
+          "has": [
+            "rc = calls.spawn(&pidfd, file, &actions, &attributes, argv, env);"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process/Native.hs:30",
+          "has": [
+            "foreign import ccall safe \"libtmux_process_spawn\" cSpawn"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process/Native.hs:100",
+          "has": [
+            "launch = launchWith cSpawn"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:92",
+          "has": [
+            "defaultHooks = Hooks"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:92",
+          "has": [
+            "N.launch N.waitChild"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:192",
+          "has": [
+            "native <- ticket.hooks.launchNative spec"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:719",
+          "has": [
+            "created <- try @SomeException (P.submitInputRegistered register resourceClass hooks pool spec input)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:636",
+          "has": [
+            "N.spec executable ([executable, \"-u\", \"-N\", \"-S\", pinPath (serverPin client)]"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "haskell",
+      "revision": "00b47e6d94b181b5fd94e585be1e9ecefbf93acb",
+      "symbol": "LibTmux.Server#v:setPaneTitleWith",
+      "command": "select-pane",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.hs:227",
+          "has": [
+            "mutate options server generation (Command.SetPaneTitle ident label)"
+          ],
+          "in": "LibTmux.Server#v:setPaneTitleWith"
+        },
+        {
+          "at": "src/LibTmux/Server.hs:239",
+          "has": [
+            "M.performMutation P.defaultHooks duration runtime handle executable command"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Mutation.hs:69",
+          "has": [
+            "request <- catchNoPropagate (R.mutateWith hooks left runtime server executable mutation)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:547",
+          "has": [
+            "startNative (Mutate mutation) hooks duration runtime client executable ScalarRead"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:681",
+          "has": [
+            "compileNative _ (Mutate mutation) = do"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:682",
+          "has": [
+            "arguments <- Command.compileMutation mutation"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:105",
+          "has": [
+            "compileMutation mutation = do"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:109",
+          "has": [
+            "(prefix, value, key) = mutationParts mutation"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:122",
+          "has": [
+            "SetPaneTitle ident"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:123",
+          "has": [
+            "[\"select-pane\""
+          ]
+        },
+        {
+          "at": "cbits/process.c:125",
+          "has": [
+            "rc = calls.spawn(&pidfd, file, &actions, &attributes, argv, env);"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process/Native.hs:30",
+          "has": [
+            "foreign import ccall safe \"libtmux_process_spawn\" cSpawn"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process/Native.hs:100",
+          "has": [
+            "launch = launchWith cSpawn"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:92",
+          "has": [
+            "defaultHooks = Hooks"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:92",
+          "has": [
+            "N.launch N.waitChild"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:192",
+          "has": [
+            "native <- ticket.hooks.launchNative spec"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:719",
+          "has": [
+            "created <- try @SomeException (P.submitInputRegistered register resourceClass hooks pool spec input)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:636",
+          "has": [
+            "N.spec executable ([executable, \"-u\", \"-N\", \"-S\", pinPath (serverPin client)]"
+          ]
+        }
+      ]
     }
   ]
 }

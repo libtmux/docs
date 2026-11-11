@@ -67,13 +67,22 @@ export function exportGroupsNav(model: ApiModelBase): NavConfig {
   }
   for (const symbol of model.symbols) {
     if (symbol.kind === 'module' && publicSymbol(symbol) && !owners.has(symbol.publicId ?? symbol.id)) {
-      fail(`module has no groups: ${symbol.id}`)
+      const referencesModule = Array.isArray(symbol.references) && symbol.references.some((reference) => {
+        const target = reference && byId.get(reference.target)
+        return reference?.kind === 'reference' && target && target.id !== symbol.id && modules.has(target.id)
+      })
+      if (!referencesModule || model.symbols.some((member) => member.parent === symbol.id && publicSymbol(member))) {
+        fail(`module has no groups: ${symbol.id}`)
+      }
+      const id = symbol.publicId ?? symbol.id
+      owners.set(id, { id: `exports:${encodeURIComponent(id)}`, label: symbol.name,
+        match: { kind: 'id', is: id }, order: [id], children: [] })
     }
     if (symbol.parent && modules.has(symbol.parent) && publicSymbol(symbol) && !members.has(symbol.publicId ?? symbol.id)) {
       fail(`direct export has no group: ${symbol.id}`)
     }
   }
-  return { buckets: [...owners.values()] }
+  return { buckets: [...modules.values()].map((module) => owners.get(module.publicId ?? module.id)!) }
 }
 
 /**

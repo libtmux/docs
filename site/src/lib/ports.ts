@@ -754,11 +754,11 @@ const CORE_PORTS: readonly Port[] = [
     generator: 'Configured Haddock public interfaces',
     publishesOwnTree: true,
     productAvailability: { workspace: 'unpublished', mcp: 'excluded' },
-    packages: [{ id: 'core', name: 'libtmux-haskell', source: { path: 'src', ref: 'master' }, require: 'LibTmux.Id' }],
+    packages: [{ id: 'core', name: 'libtmux-haskell', source: { path: 'src', ref: 'master' }, require: 'LibTmux' }],
     installs: [{
       label: 'Cabal', lang: 'text', filename: 'cabal.project',
       code: 'packages: .\n\nsource-repository-package\n  type: git\n  location: https://github.com/libtmux/libtmux-haskell\n  tag: {revision}',
-      note: 'Save as cabal.project and add libtmux-haskell ^>=0.1.0.0 to your component\'s build-depends. Requires Linux x86_64, GHC 9.14.1 and Cabal 3.18.2.0. The core package is available from source; it is not published on Hackage.',
+      note: 'Save as cabal.project and add libtmux-haskell ^>=0.1.0.0 to your component\'s build-depends. Requires Linux x86_64 with glibc 2.39+ and pidfd support. Choose GHC and Cabal versions that satisfy the package manifest. The core package is available from source; it is not published on Hackage.',
     }],
     initProject: { lang: 'console', code: 'cabal init --non-interactive --exe --language=GHC2024 --dependency="base >=4.22 && <4.23, libtmux-haskell ^>=0.1.0.0"' },
     installForms: {
@@ -766,7 +766,7 @@ const CORE_PORTS: readonly Port[] = [
       prerelease: { lang: 'text', code: 'build-depends: libtmux-haskell =={version}' },
       git: { lang: 'text', code: 'packages: .\n\nsource-repository-package\n  type: git\n  location: https://github.com/libtmux/libtmux-haskell\n  tag: master' },
     },
-    installNote: 'The public API currently provides pure typed IDs, checked values and tmux-version admission. Server, capture and command APIs are under development. Workspace is planned; MCP is excluded.',
+    installNote: 'The source provides scoped Server handles, detached snapshots, typed queries, checked renames and pane titles, and validated offline fixtures. Creation, events and workspace tooling remain in development; MCP is excluded.',
   },
   {
     slug: 'lisp',
