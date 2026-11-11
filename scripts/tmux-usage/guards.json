@@ -7,21 +7,22 @@
       "purpose": "refuses a window link that was removed or replaced since the handle was read",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/operations.rb:110",
+          "at": "gems/libtmux/lib/libtmux/operations.rb",
           "has": [
             "def execute_link("
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/operations.rb:113",
+          "at": "gems/libtmux/lib/libtmux/operations.rb",
           "has": [
             "builtin_spellings(\"if-shell\""
-          ]
+          ],
+          "within": "execute_link"
         },
         {
-          "at": "gems/libtmux/lib/libtmux/operations.rb:119",
+          "at": "gems/libtmux/lib/libtmux/operations.rb",
           "has": [
-            "names.fetch(\"if-shell\")"
+            "tmux_command([names.fetch(\"if-shell\"),"
           ]
         }
       ]
@@ -34,7 +35,7 @@
       "when": "the operation is given a window link",
       "evidence": [
         {
-          "at": "lua/libtmux/_internal/topology.lua:147",
+          "at": "lua/libtmux/_internal/topology.lua",
           "has": [
             "local function guard(ref, argv, pane_id)"
           ]
@@ -46,7 +47,7 @@
           ]
         },
         {
-          "at": "lua/libtmux/_internal/topology.lua:307",
+          "at": "lua/libtmux/_internal/topology.lua",
           "has": [
             "guard(destination, argv)"
           ]
@@ -61,19 +62,19 @@
       "when": "the command carries a tmux id the runtime has seen a daemon for",
       "evidence": [
         {
-          "at": "packages/libtmux/src/_internal/transport/daemon_guard.ts:31",
+          "at": "packages/libtmux/src/_internal/transport/daemon_guard.ts",
           "has": [
             "function guardedChain("
           ]
         },
         {
-          "at": "packages/libtmux/src/_internal/transport/daemon_guard.ts:36",
+          "at": "packages/libtmux/src/_internal/transport/daemon_guard.ts",
           "has": [
             "\"if-shell\", \"-F\", daemonCondition(daemon), chain"
           ]
         },
         {
-          "at": "packages/libtmux/src/_internal/operations/command.ts:56",
+          "at": "packages/libtmux/src/_internal/operations/command.ts",
           "has": [
             "lastObservedDaemon(runtime)"
           ]
@@ -88,25 +89,25 @@
       "when": "the Server carries a daemon identity or startup version",
       "evidence": [
         {
-          "at": "tmux/identity.go:133",
+          "at": "tmux/identity.go",
           "has": [
             "func (s Server) guardCommand("
           ]
         },
         {
-          "at": "tmux/identity.go:137",
+          "at": "tmux/identity.go",
           "has": [
             "(s.daemon == nil && s.startupVersion == nil) || s.boundToInstance()"
           ]
         },
         {
-          "at": "tmux/identity.go:161",
+          "at": "tmux/identity.go",
           "has": [
             "\"if-shell\", \"-F\", condition, \"\", guard.failure"
           ]
         },
         {
-          "at": "tmux/control_startup.go:102",
+          "at": "tmux/control_startup.go",
           "has": [
             "s.guardCommand(attach, false)"
           ]
@@ -115,27 +116,59 @@
     },
     {
       "port": "java",
+      "revision": "a0ecbc16da00140e2520462d478a2af470878272",
       "name": "guarded",
       "owner": "IncarnationFence",
       "purpose": "refuses a command when the tmux server is not the one the handle was made against",
       "evidence": [
         {
-          "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java:74",
+          "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java",
           "has": [
             "CommandResult guarded(long pid"
           ]
         },
         {
-          "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java:77",
+          "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java",
           "has": [
             "\"if-shell\", \"-F\", condition, command, stale"
           ]
         },
         {
-          "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1230",
+          "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
           "has": [
             "fence.guarded(snapshot"
+          ],
+          "within": "cmd"
+        }
+      ]
+    },
+    {
+      "port": "java",
+      "except": [
+        "a0ecbc16da00140e2520462d478a2af470878272"
+      ],
+      "name": "guarded",
+      "owner": "IncarnationFence",
+      "purpose": "refuses a command when the tmux server is not the one the handle was made against",
+      "evidence": [
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java",
+          "has": [
+            "CommandResult guarded(long pid, String condition, String command, String input, TmuxFeatures.Intent intent)"
           ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java",
+          "has": [
+            "\"if-shell\", \"-F\", condition, command, stale"
+          ]
+        },
+        {
+          "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
+          "has": [
+            "fence.guarded(snapshot"
+          ],
+          "within": "cmd"
         }
       ]
     },
@@ -146,19 +179,19 @@
       "purpose": "refuses a command once the window it was made for has gone",
       "evidence": [
         {
-          "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java:87",
+          "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java",
           "has": [
             "CommandResult run(ServerSnapshot snapshot, WindowContext expected"
           ]
         },
         {
-          "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java:95",
+          "at": "libtmux/src/main/java/io/github/libtmux/IncarnationFence.java",
           "has": [
             "\"if-shell\", \"-F\", \"-t\", target, condition"
           ]
         },
         {
-          "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1281",
+          "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
           "has": [
             "fence.run(snapshot, expected, argv)"
           ]
@@ -171,13 +204,13 @@
       "purpose": "refuses to kill a tmux process that replaced the one the fixture started",
       "evidence": [
         {
-          "at": "libtmux-junit5/src/main/java/io/github/libtmux/junit5/NamedServerFixture.java:147",
+          "at": "libtmux-junit5/src/main/java/io/github/libtmux/junit5/NamedServerFixture.java",
           "has": [
             "private void killOwnedServer()"
           ]
         },
         {
-          "at": "libtmux-junit5/src/main/java/io/github/libtmux/junit5/NamedServerFixture.java:150",
+          "at": "libtmux-junit5/src/main/java/io/github/libtmux/junit5/NamedServerFixture.java",
           "has": [
             "\"if-shell\", \"-F\"",
             "\"kill-server\""
@@ -193,13 +226,13 @@
       "when": "the handle carries a server generation",
       "evidence": [
         {
-          "at": "src/LibTmux/Internal/TmuxGenerationGuard.cs:114",
+          "at": "src/LibTmux/Internal/TmuxGenerationGuard.cs",
           "has": [
             "internal static IReadOnlyList<string> Conditional("
           ]
         },
         {
-          "at": "src/LibTmux/Internal/TmuxGenerationGuard.cs:117",
+          "at": "src/LibTmux/Internal/TmuxGenerationGuard.cs",
           "has": [
             "\"if-shell\", \"-F\""
           ]
@@ -215,16 +248,17 @@
       "when": "the handle carries its window placement",
       "evidence": [
         {
-          "at": "src/LibTmux/Internal/TmuxWindowPlacementGuard.cs:34",
+          "at": "src/LibTmux/Internal/TmuxWindowPlacementGuard.cs",
           "has": [
             "CreateArguments(WindowEntityKey placement"
           ]
         },
         {
-          "at": "src/LibTmux/Internal/TmuxWindowPlacementGuard.cs:47",
+          "at": "src/LibTmux/Internal/TmuxWindowPlacementGuard.cs",
           "has": [
             "\"if-shell\", \"-F\", \"-t\""
-          ]
+          ],
+          "within": "CreateArguments"
         }
       ]
     },
@@ -237,13 +271,13 @@
       "when": "the command targets a pane of a known window",
       "evidence": [
         {
-          "at": "src/LibTmux/Internal/TmuxWindowPlacementGuard.cs:16",
+          "at": "src/LibTmux/Internal/TmuxWindowPlacementGuard.cs",
           "has": [
             "CreateTargetWindowArguments(string target"
           ]
         },
         {
-          "at": "src/LibTmux/Internal/TmuxWindowPlacementGuard.cs:18",
+          "at": "src/LibTmux/Internal/TmuxWindowPlacementGuard.cs",
           "has": [
             "\"if-shell\", \"-F\", \"-t\", target"
           ]
@@ -258,13 +292,13 @@
       "when": "the daemon version is known",
       "evidence": [
         {
-          "at": "src/LibTmux/Support/Versions.cs:183",
+          "at": "src/LibTmux/Support/Versions.cs",
           "has": [
             "Fence(TmuxVersion version"
           ]
         },
         {
-          "at": "src/LibTmux/Support/Versions.cs:184",
+          "at": "src/LibTmux/Support/Versions.cs",
           "has": [
             "\"if-shell\", \"-F\""
           ]
@@ -277,19 +311,20 @@
       "purpose": "runs the command together with a marker that shows it ran, inside the guards that refuse a stale target",
       "evidence": [
         {
-          "at": "Sources/LibTmux/GuardedRequest.swift:174",
+          "at": "Sources/LibTmux/GuardedRequest.swift",
           "has": [
             "private static func guardedAction("
           ]
         },
         {
-          "at": "Sources/LibTmux/GuardedRequest.swift:179",
+          "at": "Sources/LibTmux/GuardedRequest.swift",
           "has": [
             "\"if-shell\""
-          ]
+          ],
+          "within": "guardedAction"
         },
         {
-          "at": "Sources/LibTmux/GuardedRequest.swift:25",
+          "at": "Sources/LibTmux/GuardedRequest.swift",
           "has": [
             "GuardedRequest("
           ]
@@ -302,13 +337,13 @@
       "purpose": "refuses the command when the server restarted or the target no longer matches what the value was read from",
       "evidence": [
         {
-          "at": "Sources/LibTmux/GuardedRequest.swift:187",
+          "at": "Sources/LibTmux/GuardedRequest.swift",
           "has": [
             "private static func commandGuard("
           ]
         },
         {
-          "at": "Sources/LibTmux/GuardedRequest.swift:200",
+          "at": "Sources/LibTmux/GuardedRequest.swift",
           "has": [
             "TmuxCommand(\"if-shell\", arguments)"
           ]

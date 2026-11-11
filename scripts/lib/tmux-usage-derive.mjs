@@ -1,3 +1,5 @@
+import { locate, rangesOf, splitCitation } from './tmux-usage-locate.mjs'
+
 /**
  * Decide which public symbols send a tmux command, and at which scope.
  *
@@ -32,7 +34,8 @@ export function classify(spec, flags) {
  * for the revision its port's model was extracted at; one with a `revision` holds for the revision it starts with,
  * which is how a wrapper that shares a repository with its core library reads the core where the wrapper is pinned.
  */
-export const ruleHolds = (rule, revision, pinned) => (rule.revision ? revision.startsWith(rule.revision) : revision === pinned)
+export const ruleHolds = (rule, revision, pinned) => !rule.except?.some((prefix) => revision.startsWith(prefix))
+  && (rule.revision ? revision.startsWith(rule.revision) : revision === pinned)
 
 const SELF_RECEIVERS = new Set(['this', 'self', 'base', 'super', 'cls', 'me'])
 
@@ -340,13 +343,14 @@ export function deriveUsage({ command, spec, functions, symbols, definitionOptio
  *   readSource: (path: string) => string | undefined,
  *   sends?: (port: string, symbol: string, command: string, scope: string | null) => { evidence: string[], revision: string, reviewed?: boolean } | undefined,
  * }} input
- * @returns {{ entries: UsageEntry[], problems: string[] }}
+ * @returns {{ entries: UsageEntry[], problems: string[], resolved: Claim[] }} `resolved` is each claim that held, with the lines its text was found on
  */
 export function verifyClaims({ claims, spec, functions, types, symbols, readSource, definitionOptions, sends = () => undefined }) {
   const definitions = definitionsOf(functions, symbols, definitionOptions)
   const bySymbol = new Map(symbols.map((symbol) => [symbol.id, symbol]))
   const entries = []
   const problems = []
+  const resolved = []
   for (const claim of claims) {
     const label = `${claim.port}: ${claim.symbol} ${claim.command} ${claim.scope}`
     const fail = (message) => problems.push(`${label}: ${message}`)
@@ -361,25 +365,20 @@ export function verifyClaims({ claims, spec, functions, types, symbols, readSour
     if (wrong) { fail(wrong); continue }
     let anchored = false
     let broken = false
+    const located = []
+    // The lines `in` names the symbol's body of, in a file: the functions it is defined by, else the type that holds it.
+    const bodyOf = (file) => {
+      const own = [...definitions].filter(([fn, owned]) => owned.includes(symbol) && fn.file === file).map(([fn]) => fn)
+      if (own.length || [...definitions.values()].some((owned) => owned.includes(symbol))) return own
+      return types.filter((type) => type.file === file && symbol.file === file && symbol.line >= type.start && symbol.line <= type.end)
+    }
     for (const item of claim.evidence) {
-      const [file, line] = [item.at.slice(0, item.at.lastIndexOf(':')), Number(item.at.slice(item.at.lastIndexOf(':') + 1))]
-      const lines = readSource(file)?.split('\n')
-      const sourceLine = lines?.[line - 1]
-      if (sourceLine === undefined) { fail(`${item.at} is not a line of the pinned source`); broken = true; continue }
-      // A call that spans lines names its command a few lines below the call: the first text is on the cited
-      // line, which is the one that sends, and the rest are in the next `span` lines of the same statement.
-      const statement = lines.slice(line - 1, line - 1 + (item.span ?? 1)).join('\n')
-      for (const [position, needle] of (item.has ?? []).entries()) {
-        if (!(position === 0 ? sourceLine : statement).includes(needle)) { fail(`${item.at} does not contain ${JSON.stringify(needle)}`); broken = true }
-      }
-      if (item.in !== undefined) {
-        if (item.in !== claim.symbol) { fail(`${item.at} anchors to ${item.in}, not the claimed symbol`); broken = true; continue }
-        const inside = [...definitions].some(([fn, owned]) => owned.includes(symbol) && fn.file === file && line >= fn.start && line <= fn.end)
-          || (![...definitions.values()].some((owned) => owned.includes(symbol))
-            && types.some((type) => type.file === file && symbol.file === file && symbol.line >= type.start && symbol.line <= type.end && line >= type.start && line <= type.end))
-        if (inside) anchored = true
-        else { fail(`${item.at} is outside the body of ${claim.symbol}`); broken = true }
-      }
+      if (item.in !== undefined && item.in !== claim.symbol) { fail(`${item.at} anchors to ${item.in}, not the claimed symbol`); broken = true; continue }
+      const file = splitCitation(item.at).file
+      const result = locate(item, readSource(file), rangesOf(item, functions, item.in === undefined ? undefined : bodyOf(file)), item.within ?? claim.symbol)
+      if ('problem' in result) { fail(result.problem); broken = true; continue }
+      if (item.in !== undefined) anchored = true
+      located.push({ ...item, at: result.at })
     }
     if (!broken && !anchored) { fail('no evidence line is anchored in the symbol with "in"'); broken = true }
     const core = claim.via && sends(claim.via.port, claim.via.symbol, claim.command, claim.scope)
@@ -388,14 +387,15 @@ export function verifyClaims({ claims, spec, functions, types, symbols, readSour
       broken = true
     }
     if (!broken) {
+      resolved.push({ ...claim, evidence: located })
       entries.push({
-        symbol: claim.symbol, command: claim.command, scope: claim.scope, evidence: claim.evidence.map((item) => item.at),
+        symbol: claim.symbol, command: claim.command, scope: claim.scope, evidence: located.map((item) => item.at),
         hops: claim.evidence.length - 1, reviewed: true, ...(claim.forwardable ? { forwardable: true } : {}), ...(claim.incidental ? { incidental: true } : {}), ...(claim.when ? { when: claim.when } : {}),
         ...(core ? { via: { port: claim.via.port, symbol: claim.via.symbol, revision: core.revision, evidence: core.evidence, ...(core.reviewed ? { reviewed: true } : {}) } } : {}),
       })
     }
   }
-  return { entries, problems }
+  return { entries, problems, resolved }
 }
 
 /** The longest qualifier a table can carry beside a method: it is one line, and a sentence belongs on a page. */
@@ -430,9 +430,12 @@ export function applyConditions({ conditions, found, readSource, lenient = false
     if (!item.evidence?.length) { problems.push(`${label} cites no lines`); continue }
     for (const line of item.evidence) {
       const cut = line.at.lastIndexOf(':')
-      const text = readSource(line.at.slice(0, cut))?.split('\n')[Number(line.at.slice(cut + 1)) - 1]
+      const lines = readSource(line.at.slice(0, cut))?.split('\n')
+      const text = lines?.[Number(line.at.slice(cut + 1)) - 1]
       if (text === undefined) { problems.push(`${label} ${line.at} is not a line of the pinned source`); continue }
-      for (const needle of line.has ?? []) if (!text.includes(needle)) problems.push(`${label} ${line.at} does not contain ${JSON.stringify(needle)}`)
+      // The first text is on the cited line and the rest within its `span`, as a claim's is.
+      const statement = lines.slice(Number(line.at.slice(cut + 1)) - 1, Number(line.at.slice(cut + 1)) - 1 + (line.span ?? 1)).join('\n')
+      for (const [position, needle] of (line.has ?? []).entries()) if (!(position === 0 ? text : statement).includes(needle)) problems.push(`${label} ${line.at} does not contain ${JSON.stringify(needle)}`)
     }
     const entry = found.get(`${item.symbol}\0${item.command}\0${item.scope}`)
     if (!entry) { if (!lenient) problems.push(`${label} qualifies no entry`) }

@@ -439,9 +439,24 @@ revision. A wrapper in another repository, such as the PowerShell cmdlets,
 stands on the release it depends on. Every `via` names the revision of the core
 lines it cites.
 
-A claim's evidence names the line that sends, `has` its text, and `span` the
-following lines of the same statement that may hold the rest when a call spans
-lines: the first text must be on the cited line itself.
+A review, guard, condition or preflight with a `revision` is read only for a model
+extracted at that revision, so code that changed between two pins keeps one rule
+for each. The rule for the newer code lists the older revision in `except`, so it
+is read for the model of a newer build and not for the pin it does not fit.
+
+A claim's evidence names the file and `has` the text of the line that sends,
+and `span` the following lines of the same statement that may hold the rest when
+a call spans lines: the first text must be on the cited line itself. The line
+is looked up in the source being built, so a port change that moves it does not
+break the claim, and the generated data records the line found. The text must
+be on exactly one line of the file; `in` (a claim's symbol) or `within` (a
+function name) limits the search to that body, and a citation that still
+matches several lines keeps a `file:line` whose line chooses among them. It
+fails, naming the rule, when the text is on no line, on several with no stored
+line that is one of them, or only outside the named body. Every reviewed rule
+(`claims`, `exclusions`, `not-senders`, `dispatchers`, `guards`, `conditions`,
+`preflights`, forwarders) cites this way. A condition's `through` is a line and
+moves with its `at` only while the function keeps its length.
 
 `--check --source` also reads back every line each entry cites, at the revision
 it names, and refuses the entry when the line does not say what the entry

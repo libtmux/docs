@@ -7,34 +7,35 @@
       "why": "A Server with no daemon identity probes the daemon with run-shell -C before every ordinary command and remembers the answer, so the check is the library's own and not a send of the method that triggers it. No method is credited with it for that reason; a method that probes as a step of its own (a lookup or a snapshot) carries an incidental claim that says when.",
       "evidence": [
         {
-          "at": "tmux/transport.go:71",
+          "at": "tmux/transport.go",
           "has": [
             "s.checkForDispatch("
           ]
         },
         {
-          "at": "tmux/transport.go:106",
+          "at": "tmux/transport.go",
           "has": [
             "s.checkCore("
           ]
         },
         {
-          "at": "tmux/version_check.go:96",
+          "at": "tmux/version_check.go",
           "has": [
             "s.checkCoreVersion("
           ]
         },
         {
-          "at": "tmux/version_check.go:147",
+          "at": "tmux/version_check.go",
           "has": [
             "s.probeServerIdentity("
           ]
         },
         {
-          "at": "tmux/identity.go:339",
+          "at": "tmux/identity.go",
           "has": [
             "\"run-shell\""
-          ]
+          ],
+          "within": "identityProbeArguments"
         }
       ]
     }
