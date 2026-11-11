@@ -813,7 +813,11 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
           .find((text) => /concept example/i.test(text))
         expect(status, `${page.path} concept scope`).toBeDefined()
         const article = document.querySelector('article')!.textContent
-        if (port.workspaceCliAvailability === 'local') expect(article, `${page.path} source installation`).toContain('from the source revision in the installation guide')
+        if (port.workspaceCliAvailability === 'local') {
+          expect(article, `${page.path} source installation`).toContain(port.workspaceCliRun
+            ? 'from a source checkout; the installation guide lists the setup'
+            : 'from the source revision in the installation guide')
+        }
         expect(article, `${page.path} native CLI`).toContain(port.workspaceCli.split(/\s+/)[0])
         expect(article.match(/concept example/gi), `${page.path} states scope once`).toHaveLength(1)
         const links = [...document.querySelectorAll('article a[href]')]
