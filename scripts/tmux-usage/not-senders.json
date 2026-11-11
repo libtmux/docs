@@ -8,10 +8,11 @@
       "why": "CapturePanePosition is a position inside a CapturePaneRequest; it carries no command.",
       "evidence": [
         {
-          "at": "src/LibTmux/Requests/CapturePaneRequest.cs:14",
+          "at": "src/LibTmux/Requests/CapturePaneRequest.cs",
           "has": [
             "CapturePanePosition"
-          ]
+          ],
+          "within": "CapturePanePosition"
         }
       ]
     },
@@ -28,7 +29,7 @@
       "why": "RefreshAsync reads this client again with GetAsync; it does not send refresh-client.",
       "evidence": [
         {
-          "at": "src/LibTmux/Client.Administration.cs:94",
+          "at": "src/LibTmux/Client.Administration.cs",
           "has": [
             "GetAsync(Server, Name"
           ]
@@ -48,7 +49,7 @@
       "why": "ClearAsync types reset into the pane with send-keys, and sends no clear-history.",
       "evidence": [
         {
-          "at": "src/LibTmux/Pane.Input.cs:157",
+          "at": "src/LibTmux/Pane.Input.cs",
           "has": [
             "SendKeysAsync(new SendKeysRequest { Text = \"reset\" }"
           ]
@@ -68,10 +69,11 @@
       "why": "ClearHistoryAsync sends clear-history; clear-prompt-history is a different command, sent by Server.ClearPromptHistoryAsync.",
       "evidence": [
         {
-          "at": "src/LibTmux/Pane.Input.cs:192",
+          "at": "src/LibTmux/Pane.Input.cs",
           "has": [
             "\"clear-history\""
-          ]
+          ],
+          "within": "ClearHistoryAsync"
         }
       ]
     },
@@ -89,7 +91,7 @@
       "why": "FindWindowAsync sends find-window, which has its own entry; it does not list panes or windows.",
       "evidence": [
         {
-          "at": "src/LibTmux/Pane.Display.cs:135",
+          "at": "src/LibTmux/Pane.Display.cs",
           "has": [
             "\"find-window\""
           ]
@@ -109,16 +111,18 @@
       "why": "WaitForTextAsync waits on pane activity through PaneTextWaiter; it does not send tmux's wait-for.",
       "evidence": [
         {
-          "at": "src/LibTmux/Pane.Waiting.cs:76",
+          "at": "src/LibTmux/Pane.Waiting.cs",
           "has": [
             "PaneTextWaiter.WaitAsync("
-          ]
+          ],
+          "within": "WaitForTextAsync"
         },
         {
-          "at": "src/LibTmux/Pane.Waiting.cs:77",
+          "at": "src/LibTmux/Pane.Waiting.cs",
           "has": [
             "PaneActivityHub.Shared"
-          ]
+          ],
+          "within": "WaitForTextAsync"
         }
       ]
     },
@@ -129,7 +133,7 @@
       "why": "PsmuxPane wraps the psmux multiplexer on Windows, which is not tmux; its capture goes to psmux.",
       "evidence": [
         {
-          "at": "src/LibTmux/Psmux/PsmuxPane.cs:11",
+          "at": "src/LibTmux/Psmux/PsmuxPane.cs",
           "has": [
             "public sealed class PsmuxPane"
           ]
@@ -143,7 +147,7 @@
       "why": "The Psmux types wrap the psmux multiplexer on Windows, which is not tmux; their reads go to psmux.",
       "evidence": [
         {
-          "at": "src/LibTmux/Psmux/PsmuxPane.cs:11",
+          "at": "src/LibTmux/Psmux/PsmuxPane.cs",
           "has": [
             "public sealed class PsmuxPane"
           ]
@@ -157,7 +161,7 @@
       "why": "The Psmux types wrap the psmux multiplexer on Windows, which is not tmux; their reads go to psmux.",
       "evidence": [
         {
-          "at": "src/LibTmux/Psmux/PsmuxPane.cs:11",
+          "at": "src/LibTmux/Psmux/PsmuxPane.cs",
           "has": [
             "public sealed class PsmuxPane"
           ]
@@ -171,7 +175,7 @@
       "why": "The Psmux types wrap the psmux multiplexer on Windows, which is not tmux; their reads go to psmux.",
       "evidence": [
         {
-          "at": "src/LibTmux/Psmux/PsmuxPane.cs:11",
+          "at": "src/LibTmux/Psmux/PsmuxPane.cs",
           "has": [
             "public sealed class PsmuxPane"
           ]
@@ -185,13 +189,13 @@
       "why": "A request describes the arguments of one command and turns itself into a command value; the library sends it from the method that takes it.",
       "evidence": [
         {
-          "at": "src/LibTmux/Chaining/ITmuxRequest.cs:30",
+          "at": "src/LibTmux/Chaining/ITmuxRequest.cs",
           "has": [
             "Returns this request as one tmux command"
           ]
         },
         {
-          "at": "src/LibTmux/Chaining/ITmuxRequest.cs:34",
+          "at": "src/LibTmux/Chaining/ITmuxRequest.cs",
           "has": [
             "TmuxCommand ToCommand("
           ]
@@ -211,7 +215,7 @@
       "why": "ClearPromptHistoryAsync sends clear-prompt-history, and not clear-history.",
       "evidence": [
         {
-          "at": "src/LibTmux/Server.Interaction.cs:70",
+          "at": "src/LibTmux/Server.Interaction.cs",
           "has": [
             "\"clear-prompt-history\""
           ]
@@ -231,15 +235,15 @@
       "why": "FindWindowAsync reads one window by id with display-message -p -t; it does not send find-window.",
       "evidence": [
         {
-          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:125",
+          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs",
           "has": [
             "\"display-message\""
           ]
         },
         {
-          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:107",
+          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs",
           "has": [
-            "ReadAsync("
+            "return await ReadAsync("
           ]
         }
       ]
@@ -257,10 +261,11 @@
       "why": "StartTime is the start time of the tmux server a generation names; it does not start one.",
       "evidence": [
         {
-          "at": "src/LibTmux/Connection/ServerGeneration.cs:27",
+          "at": "src/LibTmux/Connection/ServerGeneration.cs",
           "has": [
             "StartTime"
-          ]
+          ],
+          "within": "StartTime"
         }
       ]
     },
@@ -277,7 +282,7 @@
       "why": "WaitForNewerAsync waits for the mirror's next published epoch; it does not send wait-for.",
       "evidence": [
         {
-          "at": "src/LibTmux/Snapshots/ServerMirror.cs:175",
+          "at": "src/LibTmux/Snapshots/ServerMirror.cs",
           "has": [
             "WaitForNewerAsync(long epoch"
           ]
@@ -325,19 +330,19 @@
       "why": "These send next-window, previous-window and last-window, which have their own entries, and not select-window.",
       "evidence": [
         {
-          "at": "src/LibTmux/Session.Lifecycle.cs:169",
+          "at": "src/LibTmux/Session.Lifecycle.cs",
           "has": [
             "\"next-window\""
           ]
         },
         {
-          "at": "src/LibTmux/Session.Lifecycle.cs:182",
+          "at": "src/LibTmux/Session.Lifecycle.cs",
           "has": [
             "\"previous-window\""
           ]
         },
         {
-          "at": "src/LibTmux/Session.WindowNavigation.cs:16",
+          "at": "src/LibTmux/Session.WindowNavigation.cs",
           "has": [
             "\"last-window\""
           ]
@@ -360,16 +365,17 @@
       "why": "GetAsync reads one buffer with show-buffer and GetAllAsync lists them with list-buffers; each sends its own, and not the other's.",
       "evidence": [
         {
-          "at": "src/LibTmux/Server.Buffers.cs:59",
+          "at": "src/LibTmux/Server.Buffers.cs",
           "has": [
             "show-buffer"
           ]
         },
         {
-          "at": "src/LibTmux/Server.Buffers.cs:89",
+          "at": "src/LibTmux/Server.Buffers.cs",
           "has": [
             "list-buffers"
-          ]
+          ],
+          "within": "GetBuffersAsync"
         }
       ]
     },
@@ -387,16 +393,18 @@
       "why": "FindPaneAsync reads the window's panes with list-panes through GetPanesAsync; it does not send find-window or list-windows.",
       "evidence": [
         {
-          "at": "src/LibTmux/Window.Panes.cs:112",
+          "at": "src/LibTmux/Window.Panes.cs",
           "has": [
             "GetPanesAsync("
-          ]
+          ],
+          "within": "FindPaneAsync"
         },
         {
-          "at": "src/LibTmux/Window.Relations.cs:123",
+          "at": "src/LibTmux/Window.Relations.cs",
           "has": [
             "list-panes"
-          ]
+          ],
+          "within": "GetPanesAsync"
         }
       ]
     },
@@ -417,19 +425,19 @@
       "why": "These send next-layout and previous-layout, and last-pane, and not select-layout or select-window.",
       "evidence": [
         {
-          "at": "src/LibTmux/Window.Layout.cs:126",
+          "at": "src/LibTmux/Window.Layout.cs",
           "has": [
             "\"next-layout\""
           ]
         },
         {
-          "at": "src/LibTmux/Window.Layout.cs:139",
+          "at": "src/LibTmux/Window.Layout.cs",
           "has": [
             "\"previous-layout\""
           ]
         },
         {
-          "at": "src/LibTmux/Window.Panes.cs:40",
+          "at": "src/LibTmux/Window.Panes.cs",
           "has": [
             "\"last-pane\""
           ]
@@ -449,13 +457,13 @@
       "why": "These wait on a future, a deadline or the control connection's notifications; none sends tmux's wait-for.",
       "evidence": [
         {
-          "at": "include/libtmux/async.hpp:162",
+          "at": "include/libtmux/async.hpp",
           "has": [
             "wait_for(std::chrono::milliseconds timeout) const"
           ]
         },
         {
-          "at": "include/libtmux/control.hpp:296",
+          "at": "include/libtmux/control.hpp",
           "has": [
             "wait_for_notifications(std::chrono::steady_clock::time_point deadline)"
           ]
@@ -475,7 +483,7 @@
       "why": "wait_ready_for waits on the runtime's own readiness; it sends no wait-for.",
       "evidence": [
         {
-          "at": "include/libtmux/async.hpp:110",
+          "at": "include/libtmux/async.hpp",
           "has": [
             "wait_ready_for(std::chrono::milliseconds timeout)"
           ]
@@ -495,13 +503,13 @@
       "why": "wait_for_notifications blocks for the next control-mode notification; it sends no wait-for.",
       "evidence": [
         {
-          "at": "include/libtmux/control.hpp:296",
+          "at": "include/libtmux/control.hpp",
           "has": [
             "wait_for_notifications(std::chrono::steady_clock::time_point deadline)"
           ]
         },
         {
-          "at": "include/libtmux/notification.hpp:143",
+          "at": "include/libtmux/notification.hpp",
           "has": [
             "wait_for_notifications(std::chrono::steady_clock::time_point deadline)"
           ]
@@ -521,7 +529,7 @@
       "why": "wait_for_notifications blocks for the next control-mode notification; it sends no wait-for.",
       "evidence": [
         {
-          "at": "include/libtmux/notification.hpp:143",
+          "at": "include/libtmux/notification.hpp",
           "has": [
             "wait_for_notifications(std::chrono::steady_clock::time_point deadline)"
           ]
@@ -541,9 +549,9 @@
       "why": "clear_history sends clear-history; clear-prompt-history is a different command.",
       "evidence": [
         {
-          "at": "src/entities.cpp:1549",
+          "at": "src/entities.cpp",
           "has": [
-            "clear-history"
+            "clear-history\","
           ]
         }
       ]
@@ -561,9 +569,9 @@
       "why": "show_message shows its text with display-message, which has its own entry; it does not send show-messages.",
       "evidence": [
         {
-          "at": "src/entities.cpp:1565",
+          "at": "src/entities.cpp",
           "has": [
-            "display-message"
+            "std::vector<std::string> command{\"display-message\", \"-t\", pane_target(*this)};"
           ]
         }
       ]
@@ -581,7 +589,7 @@
       "why": "wait_for_text polls the pane's captured text until it matches or a deadline passes; it does not send tmux's wait-for.",
       "evidence": [
         {
-          "at": "src/wait.cpp:131",
+          "at": "src/wait.cpp",
           "has": [
             "\"capture-pane\""
           ]
@@ -601,10 +609,11 @@
       "why": "remove_environment unsets a variable with set-environment, and sends no kill-server.",
       "evidence": [
         {
-          "at": "src/server.cpp:1356",
+          "at": "src/server.cpp",
           "has": [
             "set-environment"
-          ]
+          ],
+          "within": "remove_environment"
         }
       ]
     },
@@ -621,10 +630,11 @@
       "why": "show_message shows its text with display-message, which has its own entry; it does not send show-messages.",
       "evidence": [
         {
-          "at": "src/server.cpp:1100",
+          "at": "src/server.cpp",
           "has": [
             "display-message"
-          ]
+          ],
+          "within": "show_message"
         }
       ]
     },
@@ -641,7 +651,7 @@
       "why": "wait_for_text polls the pane's captured text until it matches or a deadline passes; it does not send tmux's wait-for.",
       "evidence": [
         {
-          "at": "src/wait.cpp:131",
+          "at": "src/wait.cpp",
           "has": [
             "\"capture-pane\""
           ]
@@ -661,7 +671,7 @@
       "why": "attach_command returns the attach command for the caller to run in a terminal; it sends nothing.",
       "evidence": [
         {
-          "at": "include/libtmux/entities.hpp:474",
+          "at": "include/libtmux/entities.hpp",
           "has": [
             "expected<AttachCommand, CommandFailure> attach_command() const"
           ]
@@ -683,19 +693,19 @@
       "why": "These send next-window, previous-window and last-window, which have their own entries, and not select-window.",
       "evidence": [
         {
-          "at": "src/entities.cpp:303",
+          "at": "src/entities.cpp",
           "has": [
             "next-window"
           ]
         },
         {
-          "at": "src/entities.cpp:311",
+          "at": "src/entities.cpp",
           "has": [
             "previous-window"
           ]
         },
         {
-          "at": "src/entities.cpp:319",
+          "at": "src/entities.cpp",
           "has": [
             "last-window"
           ]
@@ -715,9 +725,9 @@
       "why": "show_message shows its text with display-message, which has its own entry; it does not send show-messages.",
       "evidence": [
         {
-          "at": "src/entities.cpp:444",
+          "at": "src/entities.cpp",
           "has": [
-            "display-message"
+            "std::vector<std::string> command{\"display-message\", \"-t\", session_target(*this)};"
           ]
         }
       ]
@@ -736,10 +746,11 @@
       "why": "select_last_pane sends select-pane -l, which has its own entry; there is no last-pane or last-window in it.",
       "evidence": [
         {
-          "at": "src/entities.cpp:743",
+          "at": "src/entities.cpp",
           "has": [
             "select-pane"
-          ]
+          ],
+          "within": "select_last_pane"
         }
       ]
     },
@@ -776,13 +787,14 @@
       "why": "Chain.newWindow adds a new-window command to a chain; the chain sends it when it is executed.",
       "evidence": [
         {
-          "at": "src/LibTmux.FSharp/Hierarchy.fs:226",
+          "at": "src/LibTmux.FSharp/Hierarchy.fs",
           "has": [
             "chain.Then("
-          ]
+          ],
+          "within": "newWindow"
         },
         {
-          "at": "src/LibTmux.FSharp/Hierarchy.fs:228",
+          "at": "src/LibTmux.FSharp/Hierarchy.fs",
           "has": [
             "\"new-window\""
           ]
@@ -802,15 +814,15 @@
       "why": "findOnScreen asks tmux to search the pane's screen with display-message, through Pane.FindOnScreenAsync; it lists no panes.",
       "evidence": [
         {
-          "at": "src/LibTmux.FSharp/Hierarchy.fs:168",
+          "at": "src/LibTmux.FSharp/Hierarchy.fs",
           "has": [
             "pane.FindOnScreenAsync("
           ]
         },
         {
-          "at": "src/LibTmux/Pane.Display.cs:307",
+          "at": "src/LibTmux/Pane.Display.cs",
           "has": [
-            "DisplayMessageAsync("
+            "await DisplayMessageAsync("
           ]
         }
       ]
@@ -830,19 +842,21 @@
       "why": "These wait for pane text through Pane.WaitForTextAsync and SendKeysAsync, which poll the pane; they do not send tmux's wait-for.",
       "evidence": [
         {
-          "at": "src/LibTmux.FSharp/Hierarchy.fs:173",
+          "at": "src/LibTmux.FSharp/Hierarchy.fs",
           "has": [
             "pane.WaitForTextAsync("
-          ]
+          ],
+          "within": "waitForText"
         },
         {
-          "at": "src/LibTmux.FSharp/Hierarchy.fs:176",
+          "at": "src/LibTmux.FSharp/Hierarchy.fs",
           "has": [
             "pane.WaitForTextAsync("
-          ]
+          ],
+          "within": "waitFor"
         },
         {
-          "at": "src/LibTmux.FSharp/Hierarchy.fs:193",
+          "at": "src/LibTmux.FSharp/Hierarchy.fs",
           "has": [
             "pane.SendKeysAndWaitAsync("
           ]
@@ -862,7 +876,7 @@
       "why": "tryFindWindow reads one window with Server.FindWindowAsync, which lists windows; it does not send find-window.",
       "evidence": [
         {
-          "at": "src/LibTmux.FSharp/Hierarchy.fs:126",
+          "at": "src/LibTmux.FSharp/Hierarchy.fs",
           "has": [
             "server.FindWindowAsync("
           ]
@@ -882,7 +896,7 @@
       "why": "Splits is a field of a window spec, the splits the window should have; it sends nothing.",
       "evidence": [
         {
-          "at": "src/LibTmux.FSharp/Spec.fsi:37",
+          "at": "src/LibTmux.FSharp/Spec.fsi",
           "has": [
             "Splits"
           ]
@@ -902,7 +916,7 @@
       "why": "Refresh reads the client again with Server.Client; it does not send refresh-client.",
       "evidence": [
         {
-          "at": "tmux/lookup.go:128",
+          "at": "tmux/lookup.go",
           "has": [
             "c.server.Client(ctx, c.clientName)"
           ]
@@ -934,9 +948,9 @@
       "why": "The typed setters of GlobalSessionScope write one option with set-option through setTypedOption and changeOption; they send no command that shares the option's name.",
       "evidence": [
         {
-          "at": "tmux/option_generated.go:5060",
+          "at": "tmux/option_generated.go",
           "has": [
-            "func ("
+            "func (s GlobalSessionScope) SetDestroyUnattached(ctx context.Context, value DestroyUnattached) error {"
           ]
         },
         {
@@ -946,16 +960,17 @@
           ]
         },
         {
-          "at": "tmux/option_runtime.go:65",
+          "at": "tmux/option_runtime.go",
           "has": [
             "return changeOption("
           ]
         },
         {
-          "at": "tmux/option_mutation.go:406",
+          "at": "tmux/option_mutation.go",
           "has": [
             "append(arguments, \"set-option\")"
-          ]
+          ],
+          "within": "changeOption"
         }
       ]
     },
@@ -993,9 +1008,9 @@
       "why": "The typed setters of GlobalWindowScope write one option with set-option through setTypedOption and changeOption; they send no command that shares the option's name.",
       "evidence": [
         {
-          "at": "tmux/option_generated.go:4474",
+          "at": "tmux/option_generated.go",
           "has": [
-            "func ("
+            "func (s GlobalWindowScope) SetAggressiveResize(ctx context.Context, value bool) error {"
           ]
         },
         {
@@ -1005,16 +1020,17 @@
           ]
         },
         {
-          "at": "tmux/option_runtime.go:65",
+          "at": "tmux/option_runtime.go",
           "has": [
             "return changeOption("
           ]
         },
         {
-          "at": "tmux/option_mutation.go:406",
+          "at": "tmux/option_mutation.go",
           "has": [
             "append(arguments, \"set-option\")"
-          ]
+          ],
+          "within": "changeOption"
         }
       ]
     },
@@ -1031,7 +1047,7 @@
       "why": "OptionValue holds one option the way a reply reported it; Get returns it.",
       "evidence": [
         {
-          "at": "tmux/option_value.go:31",
+          "at": "tmux/option_value.go",
           "has": [
             "type OptionValue[T any] struct"
           ]
@@ -1051,13 +1067,13 @@
       "why": "Clear types reset into the pane through SendKeys; it sends no clear-history.",
       "evidence": [
         {
-          "at": "tmux/pane_input.go:459",
+          "at": "tmux/pane_input.go",
           "has": [
             "command := \"reset\""
           ]
         },
         {
-          "at": "tmux/pane_input.go:460",
+          "at": "tmux/pane_input.go",
           "has": [
             "p.SendKeys(ctx, SendKeysRequest{Command: &command})"
           ]
@@ -1077,9 +1093,9 @@
       "why": "ClearHistory sends clear-history; clear-prompt-history is a different command.",
       "evidence": [
         {
-          "at": "tmux/pane_input.go:436",
+          "at": "tmux/pane_input.go",
           "has": [
-            "clear-history"
+            "targetedArguments(\"clear-history\","
           ]
         }
       ]
@@ -1098,9 +1114,9 @@
       "why": "FindWindow sends find-window, which has its own entry; it lists no panes or windows.",
       "evidence": [
         {
-          "at": "tmux/pane_modes.go:256",
+          "at": "tmux/pane_modes.go",
           "has": [
-            "find-window"
+            "find-window\")"
           ]
         }
       ]
@@ -1124,13 +1140,14 @@
       "why": "These accessors of Pane read a field of the projection the handle holds; they send no command.",
       "evidence": [
         {
-          "at": "tmux/format_generated.go:1232",
+          "at": "tmux/format_generated.go",
           "has": [
             "func ("
-          ]
+          ],
+          "within": "Last"
         },
         {
-          "at": "tmux/format.go:97",
+          "at": "tmux/format.go",
           "has": [
             "type FormatValues struct"
           ]
@@ -1152,28 +1169,29 @@
       "why": "The typed setters of Pane write one option with set-option through setTypedOption and changeOption; they send no command that shares the option's name.",
       "evidence": [
         {
-          "at": "tmux/option_generated.go:4878",
+          "at": "tmux/option_generated.go",
           "has": [
-            "func ("
+            "func (p Pane) SetCopyModePositionFormat(ctx context.Context, value string) error {"
           ]
         },
         {
-          "at": "tmux/option_generated.go:4883",
+          "at": "tmux/option_generated.go",
           "has": [
-            "setTypedOption"
+            "return setTypedOption(ctx, server, scope, generatedOptionScopePane, \"copy-mode-position-format\", value, false)"
           ]
         },
         {
-          "at": "tmux/option_runtime.go:65",
+          "at": "tmux/option_runtime.go",
           "has": [
             "return changeOption("
           ]
         },
         {
-          "at": "tmux/option_mutation.go:406",
+          "at": "tmux/option_mutation.go",
           "has": [
             "append(arguments, \"set-option\")"
-          ]
+          ],
+          "within": "changeOption"
         }
       ]
     },
@@ -1191,13 +1209,13 @@
       "why": "Close and CloseContext close the control client the observation reads from; neither sends kill-pane.",
       "evidence": [
         {
-          "at": "tmux/control_observation.go:275",
+          "at": "tmux/control_observation.go",
           "has": [
             "o.client.Close()"
           ]
         },
         {
-          "at": "tmux/control_observation.go:283",
+          "at": "tmux/control_observation.go",
           "has": [
             "o.client.CloseContext(ctx)"
           ]
@@ -1217,13 +1235,13 @@
       "why": "WaitFor reads pane output notifications from the control client until match is satisfied; it does not send tmux's wait-for.",
       "evidence": [
         {
-          "at": "tmux/pane_wait.go:51",
+          "at": "tmux/pane_wait.go",
           "has": [
             "o.state.acquireReadToken(ctx)"
           ]
         },
         {
-          "at": "tmux/pane_wait.go:74",
+          "at": "tmux/pane_wait.go",
           "has": [
             "o.read(ctx, block)"
           ]
@@ -1243,9 +1261,9 @@
       "why": "ClearPromptHistory sends clear-prompt-history, and not clear-history.",
       "evidence": [
         {
-          "at": "tmux/prompt_history.go:58",
+          "at": "tmux/prompt_history.go",
           "has": [
-            "clear-prompt-history"
+            "promptHistoryType(\"clear-prompt-history\","
           ]
         }
       ]
@@ -1263,9 +1281,9 @@
       "why": "DeleteBuffer sends delete-buffer, and not kill-server.",
       "evidence": [
         {
-          "at": "tmux/server_buffers.go:161",
+          "at": "tmux/server_buffers.go",
           "has": [
-            "delete-buffer"
+            "delete-buffer\"}"
           ]
         }
       ]
@@ -1283,10 +1301,11 @@
       "why": "RemoveEnvironment unsets a variable with set-environment, and sends no kill-server.",
       "evidence": [
         {
-          "at": "tmux/environment.go:234",
+          "at": "tmux/environment.go",
           "has": [
             "set-environment"
-          ]
+          ],
+          "within": "changeEnvironmentState"
         }
       ]
     },
@@ -1304,28 +1323,31 @@
       "why": "The typed setters of Server write one option with set-option through setTypedOption and changeOption; they send no command that shares the option's name.",
       "evidence": [
         {
-          "at": "tmux/option_generated.go:4700",
+          "at": "tmux/option_generated.go",
           "has": [
             "func ("
-          ]
+          ],
+          "within": "SetBufferLimit"
         },
         {
-          "at": "tmux/option_generated.go:4703",
+          "at": "tmux/option_generated.go",
           "has": [
             "setTypedOption"
-          ]
+          ],
+          "within": "SetBufferLimit"
         },
         {
-          "at": "tmux/option_runtime.go:65",
+          "at": "tmux/option_runtime.go",
           "has": [
             "return changeOption("
           ]
         },
         {
-          "at": "tmux/option_mutation.go:406",
+          "at": "tmux/option_mutation.go",
           "has": [
             "append(arguments, \"set-option\")"
-          ]
+          ],
+          "within": "changeOption"
         }
       ]
     },
@@ -1342,9 +1364,9 @@
       "why": "ShowMessages sends show-messages; display-message is a different command.",
       "evidence": [
         {
-          "at": "tmux/server_keys.go:237",
+          "at": "tmux/server_keys.go",
           "has": [
-            "show-messages"
+            "show-messages\"}"
           ]
         }
       ]
@@ -1366,13 +1388,14 @@
       "why": "These accessors of Session read a field of the projection the handle holds; they send no command.",
       "evidence": [
         {
-          "at": "tmux/format_generated.go:910",
+          "at": "tmux/format_generated.go",
           "has": [
             "func ("
-          ]
+          ],
+          "within": "AttachedList"
         },
         {
-          "at": "tmux/format.go:97",
+          "at": "tmux/format.go",
           "has": [
             "type FormatValues struct"
           ]
@@ -1392,10 +1415,11 @@
       "why": "GetEnvironment reads a variable with show-environment; it lists no sessions.",
       "evidence": [
         {
-          "at": "tmux/environment.go:279",
+          "at": "tmux/environment.go",
           "has": [
             "show-environment"
-          ]
+          ],
+          "within": "getEnvironment"
         }
       ]
     },
@@ -1412,10 +1436,11 @@
       "why": "RemoveEnvironment unsets a variable with set-environment, and sends no kill-session.",
       "evidence": [
         {
-          "at": "tmux/environment.go:234",
+          "at": "tmux/environment.go",
           "has": [
             "set-environment"
-          ]
+          ],
+          "within": "changeEnvironmentState"
         }
       ]
     },
@@ -1444,9 +1469,9 @@
       "why": "The typed setters of Session write one option with set-option through setTypedOption and changeOption; they send no command that shares the option's name.",
       "evidence": [
         {
-          "at": "tmux/option_generated.go:5050",
+          "at": "tmux/option_generated.go",
           "has": [
-            "func ("
+            "func (s Session) SetDestroyUnattached(ctx context.Context, value DestroyUnattached) error {"
           ]
         },
         {
@@ -1456,16 +1481,17 @@
           ]
         },
         {
-          "at": "tmux/option_runtime.go:65",
+          "at": "tmux/option_runtime.go",
           "has": [
             "return changeOption("
           ]
         },
         {
-          "at": "tmux/option_mutation.go:406",
+          "at": "tmux/option_mutation.go",
           "has": [
             "append(arguments, \"set-option\")"
-          ]
+          ],
+          "within": "changeOption"
         }
       ]
     },
@@ -1476,19 +1502,19 @@
       "why": "A Values type is the struct one show-options or format reply decodes into; its members are fields, not commands.",
       "evidence": [
         {
-          "at": "tmux/option_generated.go:1814",
+          "at": "tmux/option_generated.go",
           "has": [
             "type ServerOptionValues struct"
           ]
         },
         {
-          "at": "tmux/option_generated.go:3201",
+          "at": "tmux/option_generated.go",
           "has": [
             "type ServerHookValues struct"
           ]
         },
         {
-          "at": "tmux/format.go:97",
+          "at": "tmux/format.go",
           "has": [
             "type FormatValues struct"
           ]
@@ -1514,13 +1540,14 @@
       "why": "These accessors of Window read a field of the projection the handle holds; they send no command.",
       "evidence": [
         {
-          "at": "tmux/format_generated.go:977",
+          "at": "tmux/format_generated.go",
           "has": [
             "func ("
-          ]
+          ],
+          "within": "ActiveClientsList"
         },
         {
-          "at": "tmux/format.go:97",
+          "at": "tmux/format.go",
           "has": [
             "type FormatValues struct"
           ]
@@ -1561,9 +1588,9 @@
       "why": "The typed setters of Window write one option with set-option through setTypedOption and changeOption; they send no command that shares the option's name.",
       "evidence": [
         {
-          "at": "tmux/option_generated.go:4464",
+          "at": "tmux/option_generated.go",
           "has": [
-            "func ("
+            "func (w Window) SetAggressiveResize(ctx context.Context, value bool) error {"
           ]
         },
         {
@@ -1573,16 +1600,17 @@
           ]
         },
         {
-          "at": "tmux/option_runtime.go:65",
+          "at": "tmux/option_runtime.go",
           "has": [
             "return changeOption("
           ]
         },
         {
-          "at": "tmux/option_mutation.go:406",
+          "at": "tmux/option_mutation.go",
           "has": [
             "append(arguments, \"set-option\")"
-          ]
+          ],
+          "within": "changeOption"
         }
       ]
     },
@@ -1600,13 +1628,13 @@
       "why": "These accessors return the start time of the tmux process a capture came from; they do not start a server.",
       "evidence": [
         {
-          "at": "libtmux/src/main/java/io/github/libtmux/snapshot/ServerSnapshot.java:248",
+          "at": "libtmux/src/main/java/io/github/libtmux/snapshot/ServerSnapshot.java",
           "has": [
             "public OptionalLong serverStartTime()"
           ]
         },
         {
-          "at": "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java:455",
+          "at": "libtmux/src/main/java/io/github/libtmux/SnapshotCapture.java",
           "has": [
             "long startTime"
           ]
@@ -1626,13 +1654,13 @@
       "why": "Client.refresh re-reads this client from a fresh listing; redraw is the method that sends refresh-client.",
       "evidence": [
         {
-          "at": "libtmux/src/main/java/io/github/libtmux/Client.java:137",
+          "at": "libtmux/src/main/java/io/github/libtmux/Client.java",
           "has": [
             "server.refresh(snapshot)"
           ]
         },
         {
-          "at": "libtmux/src/main/java/io/github/libtmux/Client.java:80",
+          "at": "libtmux/src/main/java/io/github/libtmux/Client.java",
           "has": [
             "\"refresh-client\""
           ]
@@ -1652,7 +1680,7 @@
       "why": "clearHistory sends clear-history, which has its own entry; clear-prompt-history is a different command.",
       "evidence": [
         {
-          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:1052",
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java",
           "has": [
             "\"clear-history\""
           ]
@@ -1672,13 +1700,13 @@
       "why": "close releases the transport this server owns; it does not send kill-server.",
       "evidence": [
         {
-          "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1302",
+          "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
           "has": [
             "public void close()"
           ]
         },
         {
-          "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1307",
+          "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
           "has": [
             "transport.close()"
           ]
@@ -1698,13 +1726,13 @@
       "why": "close stops the mirror's listener and detaches its control client; it does not kill the server.",
       "evidence": [
         {
-          "at": "libtmux/src/main/java/io/github/libtmux/snapshot/ServerMirror.java:218",
+          "at": "libtmux/src/main/java/io/github/libtmux/snapshot/ServerMirror.java",
           "has": [
             "public void close()"
           ]
         },
         {
-          "at": "libtmux/src/main/java/io/github/libtmux/snapshot/ServerMirror.java:220",
+          "at": "libtmux/src/main/java/io/github/libtmux/snapshot/ServerMirror.java",
           "has": [
             "listener.interrupt()"
           ]
@@ -1723,16 +1751,17 @@
       "why": "get_hook reads a hook's command array with show-options -H, and sends no show-hooks.",
       "evidence": [
         {
-          "at": "src/configuration.jl:159",
+          "at": "src/configuration.jl",
           "has": [
             "[\"show-options\", \"-A\", \"-H\""
           ]
         },
         {
-          "at": "src/configuration.jl:439",
+          "at": "src/configuration.jl",
           "has": [
             "_configuration_hook_rows("
-          ]
+          ],
+          "within": "get_hook"
         }
       ]
     },
@@ -1749,13 +1778,13 @@
       "why": "refresh re-reads the client from a fresh listing; redraw sends refresh-client.",
       "evidence": [
         {
-          "at": "libtmux/src/main/java/io/github/libtmux/Client.java:137",
+          "at": "libtmux/src/main/java/io/github/libtmux/Client.java",
           "has": [
             "server.refresh(snapshot)"
           ]
         },
         {
-          "at": "libtmux/src/main/java/io/github/libtmux/Client.java:80",
+          "at": "libtmux/src/main/java/io/github/libtmux/Client.java",
           "has": [
             "\"refresh-client\""
           ]
@@ -1769,7 +1798,7 @@
       "why": "A CommandChain method records a step on the Java chain; the chain sends them when it is run.",
       "evidence": [
         {
-          "at": "libtmux/src/main/java/io/github/libtmux/CommandChain.java:83",
+          "at": "libtmux/src/main/java/io/github/libtmux/CommandChain.java",
           "has": [
             "public CommandChain then(String... argv)"
           ]
@@ -1795,7 +1824,7 @@
       "why": "clearHistory sends clear-history; clear-prompt-history is a different command.",
       "evidence": [
         {
-          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:1052",
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java",
           "has": [
             "\"clear-history\""
           ]
@@ -1815,13 +1844,13 @@
       "why": "close releases the Java server's transport, as Server.close does; it does not send kill-server.",
       "evidence": [
         {
-          "at": "libtmux-kotlin/src/main/kotlin/io/github/libtmux/kotlin/Server.kt:164",
+          "at": "libtmux-kotlin/src/main/kotlin/io/github/libtmux/kotlin/Server.kt",
           "has": [
             "java.close()"
           ]
         },
         {
-          "at": "libtmux/src/main/java/io/github/libtmux/Server.java:1307",
+          "at": "libtmux/src/main/java/io/github/libtmux/Server.java",
           "has": [
             "transport.close()"
           ]
@@ -1841,13 +1870,13 @@
       "why": "WindowBuilder.split records a split on the window spec being built, which sends nothing until the window is created.",
       "evidence": [
         {
-          "at": "libtmux-kotlin/src/main/kotlin/io/github/libtmux/kotlin/Dsl.kt:124",
+          "at": "libtmux-kotlin/src/main/kotlin/io/github/libtmux/kotlin/Dsl.kt",
           "has": [
             "public fun split("
           ]
         },
         {
-          "at": "libtmux-kotlin/src/main/kotlin/io/github/libtmux/kotlin/Dsl.kt:125",
+          "at": "libtmux-kotlin/src/main/kotlin/io/github/libtmux/kotlin/Dsl.kt",
           "has": [
             "splits += configure"
           ]
@@ -1861,7 +1890,7 @@
       "why": "Configurable declares the shared option and hook methods as fields of a type; the handles that implement them are the symbols that send.",
       "evidence": [
         {
-          "at": "lua/libtmux/_internal/entity.lua:390",
+          "at": "lua/libtmux/_internal/entity.lua",
           "has": [
             "---@class libtmux.Configurable<T>"
           ]
@@ -1881,7 +1910,7 @@
       "why": "clear_history sends clear-history; clear-prompt-history is a different command.",
       "evidence": [
         {
-          "at": "lua/libtmux/_internal/pane.lua:12",
+          "at": "lua/libtmux/_internal/pane.lua",
           "has": [
             "clear-history"
           ]
@@ -1901,9 +1930,9 @@
       "why": "copy_command sends send-keys -X to the pane's copy mode; it does not send copy-mode.",
       "evidence": [
         {
-          "at": "lua/libtmux/_internal/pane.lua:16",
+          "at": "lua/libtmux/_internal/pane.lua",
           "has": [
-            "send-keys"
+            "copy_command = \"send-keys\","
           ]
         }
       ]
@@ -1922,9 +1951,9 @@
       "why": "get_hook reads hooks and options with show-options, which has its own entry, and sends neither show-hooks nor a pane, session or window listing.",
       "evidence": [
         {
-          "at": "lua/libtmux/_internal/settings.lua:177",
+          "at": "lua/libtmux/_internal/settings.lua",
           "has": [
-            "show-options"
+            "commands[1] = argv(\"show-options\", resolved, name,"
           ]
         }
       ]
@@ -1944,9 +1973,9 @@
       "why": "These read options and hooks with show-options, which has its own entry; they send no list-panes.",
       "evidence": [
         {
-          "at": "lua/libtmux/_internal/settings.lua:177",
+          "at": "lua/libtmux/_internal/settings.lua",
           "has": [
-            "show-options"
+            "commands[1] = argv(\"show-options\", resolved, name,"
           ]
         }
       ]
@@ -1964,10 +1993,11 @@
       "why": "move_to moves a pane with join-pane, which has its own entry; it does not send move-pane.",
       "evidence": [
         {
-          "at": "lua/libtmux/_internal/topology.lua:395",
+          "at": "lua/libtmux/_internal/topology.lua",
           "has": [
             "join-pane"
-          ]
+          ],
+          "within": "prepare"
         }
       ]
     },
@@ -1984,13 +2014,13 @@
       "why": "close releases the connections the server handle owns; the tmux daemon keeps running and no kill-server is sent.",
       "evidence": [
         {
-          "at": "lua/libtmux/_internal/server.lua:510",
+          "at": "lua/libtmux/_internal/server.lua",
           "has": [
             "function Server:close()"
           ]
         },
         {
-          "at": "lua/libtmux/_internal/server.lua:513",
+          "at": "lua/libtmux/_internal/server.lua",
           "has": [
             "state.bound:close()"
           ]
@@ -2010,7 +2040,7 @@
       "why": "delete_buffer sends delete-buffer, and not kill-server.",
       "evidence": [
         {
-          "at": "lua/libtmux/_internal/buffer.lua:9",
+          "at": "lua/libtmux/_internal/buffer.lua",
           "has": [
             "delete-buffer"
           ]
@@ -2030,9 +2060,9 @@
       "why": "get_hook reads hooks and options with show-options, which has its own entry, and sends neither show-hooks nor a pane, session or window listing.",
       "evidence": [
         {
-          "at": "lua/libtmux/_internal/settings.lua:177",
+          "at": "lua/libtmux/_internal/settings.lua",
           "has": [
-            "show-options"
+            "commands[1] = argv(\"show-options\", resolved, name,"
           ]
         }
       ]
@@ -2050,7 +2080,7 @@
       "why": "remove_environment unsets a variable with set-environment, and not kill-server or kill-session.",
       "evidence": [
         {
-          "at": "lua/libtmux/_internal/environment.lua:31",
+          "at": "lua/libtmux/_internal/environment.lua",
           "has": [
             "set-environment"
           ]
@@ -2070,7 +2100,7 @@
       "why": "set_buffer stores text with load-buffer, which has its own entry; it does not send set-buffer.",
       "evidence": [
         {
-          "at": "lua/libtmux/_internal/buffer.lua:9",
+          "at": "lua/libtmux/_internal/buffer.lua",
           "has": [
             "load-buffer"
           ]
@@ -2090,16 +2120,17 @@
       "why": "attach is refused: interactive attachment is not supported, and the operation is recorded as not sent.",
       "evidence": [
         {
-          "at": "lua/libtmux/_internal/client.lua:246",
+          "at": "lua/libtmux/_internal/client.lua",
           "has": [
             "interactive attachment requires a Session"
           ]
         },
         {
-          "at": "lua/libtmux/_internal/client.lua:254",
+          "at": "lua/libtmux/_internal/client.lua",
           "has": [
             "effect = \"not_sent\""
-          ]
+          ],
+          "within": "attach"
         }
       ]
     },
@@ -2117,7 +2148,7 @@
       "why": "get_environment and list_environment read with show-environment, which has its own entry; they send no list-sessions.",
       "evidence": [
         {
-          "at": "lua/libtmux/_internal/environment.lua:31",
+          "at": "lua/libtmux/_internal/environment.lua",
           "has": [
             "show-environment"
           ]
@@ -2138,9 +2169,9 @@
       "why": "get_hook reads hooks and options with show-options, which has its own entry, and sends neither show-hooks nor a pane, session or window listing.",
       "evidence": [
         {
-          "at": "lua/libtmux/_internal/settings.lua:177",
+          "at": "lua/libtmux/_internal/settings.lua",
           "has": [
-            "show-options"
+            "commands[1] = argv(\"show-options\", resolved, name,"
           ]
         }
       ]
@@ -2160,9 +2191,9 @@
       "why": "These read options and hooks with show-options, which has its own entry; they send no list-sessions.",
       "evidence": [
         {
-          "at": "lua/libtmux/_internal/settings.lua:177",
+          "at": "lua/libtmux/_internal/settings.lua",
           "has": [
-            "show-options"
+            "commands[1] = argv(\"show-options\", resolved, name,"
           ]
         }
       ]
@@ -2180,7 +2211,7 @@
       "why": "remove_environment unsets a variable with set-environment, and not kill-server or kill-session.",
       "evidence": [
         {
-          "at": "lua/libtmux/_internal/environment.lua:31",
+          "at": "lua/libtmux/_internal/environment.lua",
           "has": [
             "set-environment"
           ]
@@ -2201,9 +2232,9 @@
       "why": "get_hook reads hooks and options with show-options, which has its own entry, and sends neither show-hooks nor a pane, session or window listing.",
       "evidence": [
         {
-          "at": "lua/libtmux/_internal/settings.lua:177",
+          "at": "lua/libtmux/_internal/settings.lua",
           "has": [
-            "show-options"
+            "commands[1] = argv(\"show-options\", resolved, name,"
           ]
         }
       ]
@@ -2223,9 +2254,9 @@
       "why": "These read options and hooks with show-options, which has its own entry; they send no list-windows.",
       "evidence": [
         {
-          "at": "lua/libtmux/_internal/settings.lua:177",
+          "at": "lua/libtmux/_internal/settings.lua",
           "has": [
-            "show-options"
+            "commands[1] = argv(\"show-options\", resolved, name,"
           ]
         }
       ]
@@ -2243,7 +2274,7 @@
       "why": "Get-TmuxPaneContent captures the pane's text with capture-pane through Pane.CaptureAsync; it lists no panes.",
       "evidence": [
         {
-          "at": "src/LibTmux.PowerShell/GetTmuxPaneContentCommand.cs:119",
+          "at": "src/LibTmux.PowerShell/GetTmuxPaneContentCommand.cs",
           "has": [
             "Pane.CaptureAsync("
           ]
@@ -2263,7 +2294,7 @@
       "why": "New-TmuxWindowLink links an existing window into another session with link-window; it creates no window.",
       "evidence": [
         {
-          "at": "src/LibTmux.PowerShell/NewTmuxWindowLinkCommand.cs:65",
+          "at": "src/LibTmux.PowerShell/NewTmuxWindowLinkCommand.cs",
           "has": [
             "Window.LinkAsync("
           ]
@@ -2284,7 +2315,7 @@
       "why": "Remove-TmuxWindowLink removes a window's placement with unlink-window; it does not kill the window or link one.",
       "evidence": [
         {
-          "at": "src/LibTmux.PowerShell/RemoveTmuxWindowLinkCommand.cs:28",
+          "at": "src/LibTmux.PowerShell/RemoveTmuxWindowLinkCommand.cs",
           "has": [
             "Window.UnlinkAsync("
           ]
@@ -2306,19 +2337,19 @@
       "why": "Select-TmuxPane and Select-TmuxWindow pick objects from the pipeline with a query, as Select-Object does; they send no select-pane or select-window.",
       "evidence": [
         {
-          "at": "src/LibTmux.PowerShell/SelectTmuxPaneCommand.cs:12",
+          "at": "src/LibTmux.PowerShell/SelectTmuxPaneCommand.cs",
           "has": [
             "QuerySelection<Pane>"
           ]
         },
         {
-          "at": "src/LibTmux.PowerShell/SelectTmuxPaneCommand.cs:42",
+          "at": "src/LibTmux.PowerShell/SelectTmuxPaneCommand.cs",
           "has": [
             "selection.Process("
           ]
         },
         {
-          "at": "src/LibTmux.PowerShell/SelectTmuxWindowCommand.cs:12",
+          "at": "src/LibTmux.PowerShell/SelectTmuxWindowCommand.cs",
           "has": [
             "QuerySelection<Window>"
           ]
@@ -2339,10 +2370,11 @@
       "why": "refresh reads the client again with list-clients; it does not send refresh-client.",
       "evidence": [
         {
-          "at": "src/libtmux/client.py:119",
+          "at": "src/libtmux/client.py",
           "has": [
             "list_cmd=\"list-clients\""
-          ]
+          ],
+          "within": "refresh"
         }
       ]
     },
@@ -2368,16 +2400,18 @@
       "why": "The Pane option and hook readers are the mixins' methods, which send show-options and show-hooks; none sends display-panes.",
       "evidence": [
         {
-          "at": "src/libtmux/options.py:886",
+          "at": "src/libtmux/options.py",
           "has": [
             "\"show-options\""
-          ]
+          ],
+          "within": "_show_options_raw"
         },
         {
-          "at": "src/libtmux/hooks.py:364",
+          "at": "src/libtmux/hooks.py",
           "has": [
             "\"show-hooks\""
-          ]
+          ],
+          "within": "_show_hook"
         }
       ]
     },
@@ -2394,7 +2428,7 @@
       "why": "clear types reset into the pane with send_keys; it sends no clear-history.",
       "evidence": [
         {
-          "at": "src/libtmux/pane.py:2613",
+          "at": "src/libtmux/pane.py",
           "has": [
             "self.send_keys(\"reset\")"
           ]
@@ -2414,9 +2448,9 @@
       "why": "clear_history sends clear-history; clear-prompt-history is a different command.",
       "evidence": [
         {
-          "at": "src/libtmux/pane.py:2607",
+          "at": "src/libtmux/pane.py",
           "has": [
-            "clear-history"
+            "self.cmd(\"clear-history\","
           ]
         }
       ]
@@ -2435,9 +2469,9 @@
       "why": "find_window sends find-window, which has its own entry; it lists no panes or windows.",
       "evidence": [
         {
-          "at": "src/libtmux/pane.py:2233",
+          "at": "src/libtmux/pane.py",
           "has": [
-            "find-window"
+            "find-window\","
           ]
         }
       ]
@@ -2462,28 +2496,32 @@
       "why": "These methods are deprecated stubs that raise DeprecatedError and name their replacement; they send nothing.",
       "evidence": [
         {
-          "at": "src/libtmux/pane.py:1206",
+          "at": "src/libtmux/pane.py",
           "has": [
             "raise exc.DeprecatedError("
-          ]
+          ],
+          "within": "select_pane"
         },
         {
-          "at": "src/libtmux/pane.py:2800",
+          "at": "src/libtmux/pane.py",
           "has": [
             "raise exc.DeprecatedError("
-          ]
+          ],
+          "within": "split_window"
         },
         {
-          "at": "src/libtmux/pane.py:2815",
+          "at": "src/libtmux/pane.py",
           "has": [
             "raise exc.DeprecatedError("
-          ]
+          ],
+          "within": "get"
         },
         {
-          "at": "src/libtmux/pane.py:2857",
+          "at": "src/libtmux/pane.py",
           "has": [
             "raise exc.DeprecatedError("
-          ]
+          ],
+          "within": "resize_pane"
         }
       ]
     },
@@ -2508,34 +2546,39 @@
       "why": "These methods are deprecated stubs that raise DeprecatedError and name their replacement; they send nothing.",
       "evidence": [
         {
-          "at": "src/libtmux/server.py:2717",
+          "at": "src/libtmux/server.py",
           "has": [
             "raise exc.DeprecatedError("
-          ]
+          ],
+          "within": "kill_server"
         },
         {
-          "at": "src/libtmux/server.py:2736",
+          "at": "src/libtmux/server.py",
           "has": [
             "raise exc.DeprecatedError("
-          ]
+          ],
+          "within": "_list_panes"
         },
         {
-          "at": "src/libtmux/server.py:2814",
+          "at": "src/libtmux/server.py",
           "has": [
             "raise exc.DeprecatedError("
-          ]
+          ],
+          "within": "_list_windows"
         },
         {
-          "at": "src/libtmux/server.py:2856",
+          "at": "src/libtmux/server.py",
           "has": [
             "raise exc.DeprecatedError("
-          ]
+          ],
+          "within": "_list_sessions"
         },
         {
-          "at": "src/libtmux/server.py:2873",
+          "at": "src/libtmux/server.py",
           "has": [
             "raise exc.DeprecatedError("
-          ]
+          ],
+          "within": "list_sessions"
         }
       ]
     },
@@ -2552,9 +2595,9 @@
       "why": "clear_prompt_history sends clear-prompt-history, and not clear-history.",
       "evidence": [
         {
-          "at": "src/libtmux/server.py:1811",
+          "at": "src/libtmux/server.py",
           "has": [
-            "clear-prompt-history"
+            "clear-prompt-history\","
           ]
         }
       ]
@@ -2572,9 +2615,9 @@
       "why": "delete_buffer sends delete-buffer, and not kill-server.",
       "evidence": [
         {
-          "at": "src/libtmux/server.py:1902",
+          "at": "src/libtmux/server.py",
           "has": [
-            "delete-buffer"
+            "delete-buffer\","
           ]
         }
       ]
@@ -2612,9 +2655,9 @@
       "why": "show_messages sends show-messages; display-message is a different command.",
       "evidence": [
         {
-          "at": "src/libtmux/server.py:1559",
+          "at": "src/libtmux/server.py",
           "has": [
-            "show-messages"
+            "show-messages\","
           ]
         }
       ]
@@ -2642,46 +2685,53 @@
       "why": "These methods are deprecated stubs that raise DeprecatedError and name their replacement; they send nothing.",
       "evidence": [
         {
-          "at": "src/libtmux/session.py:1088",
+          "at": "src/libtmux/session.py",
           "has": [
             "raise exc.DeprecatedError("
-          ]
+          ],
+          "within": "attach_session"
         },
         {
-          "at": "src/libtmux/session.py:1103",
+          "at": "src/libtmux/session.py",
           "has": [
             "raise exc.DeprecatedError("
-          ]
+          ],
+          "within": "kill_session"
         },
         {
-          "at": "src/libtmux/session.py:1118",
+          "at": "src/libtmux/session.py",
           "has": [
             "raise exc.DeprecatedError("
-          ]
+          ],
+          "within": "get"
         },
         {
-          "at": "src/libtmux/session.py:1147",
+          "at": "src/libtmux/session.py",
           "has": [
             "raise exc.DeprecatedError("
-          ]
+          ],
+          "within": "get_by_id"
         },
         {
-          "at": "src/libtmux/session.py:1175",
+          "at": "src/libtmux/session.py",
           "has": [
             "raise exc.DeprecatedError("
-          ]
+          ],
+          "within": "find_where"
         },
         {
-          "at": "src/libtmux/session.py:1189",
+          "at": "src/libtmux/session.py",
           "has": [
             "raise exc.DeprecatedError("
-          ]
+          ],
+          "within": "_list_windows"
         },
         {
-          "at": "src/libtmux/session.py:1218",
+          "at": "src/libtmux/session.py",
           "has": [
             "raise exc.DeprecatedError("
-          ]
+          ],
+          "within": "list_windows"
         }
       ]
     },
@@ -2731,52 +2781,60 @@
       "why": "These methods are deprecated stubs that raise DeprecatedError and name their replacement; they send nothing.",
       "evidence": [
         {
-          "at": "src/libtmux/window.py:1764",
+          "at": "src/libtmux/window.py",
           "has": [
             "raise exc.DeprecatedError("
-          ]
+          ],
+          "within": "split_window"
         },
         {
-          "at": "src/libtmux/window.py:1795",
+          "at": "src/libtmux/window.py",
           "has": [
             "raise exc.DeprecatedError("
-          ]
+          ],
+          "within": "select_window"
         },
         {
-          "at": "src/libtmux/window.py:1810",
+          "at": "src/libtmux/window.py",
           "has": [
             "raise exc.DeprecatedError("
-          ]
+          ],
+          "within": "kill_window"
         },
         {
-          "at": "src/libtmux/window.py:1886",
+          "at": "src/libtmux/window.py",
           "has": [
             "raise exc.DeprecatedError("
-          ]
+          ],
+          "within": "get"
         },
         {
-          "at": "src/libtmux/window.py:1915",
+          "at": "src/libtmux/window.py",
           "has": [
             "raise exc.DeprecatedError("
-          ]
+          ],
+          "within": "get_by_id"
         },
         {
-          "at": "src/libtmux/window.py:1943",
+          "at": "src/libtmux/window.py",
           "has": [
             "raise exc.DeprecatedError("
-          ]
+          ],
+          "within": "find_where"
         },
         {
-          "at": "src/libtmux/window.py:1957",
+          "at": "src/libtmux/window.py",
           "has": [
             "raise exc.DeprecatedError("
-          ]
+          ],
+          "within": "_list_panes"
         },
         {
-          "at": "src/libtmux/window.py:1986",
+          "at": "src/libtmux/window.py",
           "has": [
             "raise exc.DeprecatedError("
-          ]
+          ],
+          "within": "list_panes"
         }
       ]
     },
@@ -2796,25 +2854,25 @@
       "why": "get reads a field of the projection the handle already holds; it sends nothing.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/client.rs:537",
+          "at": "crates/libtmux/src/client.rs",
           "has": [
             "pub fn get<F: ReadField<Self>>"
           ]
         },
         {
-          "at": "crates/libtmux/src/pane.rs:1308",
+          "at": "crates/libtmux/src/pane.rs",
           "has": [
             "pub fn get<F: ReadField<Self>>"
           ]
         },
         {
-          "at": "crates/libtmux/src/session.rs:1055",
+          "at": "crates/libtmux/src/session.rs",
           "has": [
             "pub fn get<F: ReadField<Self>>"
           ]
         },
         {
-          "at": "crates/libtmux/src/window.rs:1367",
+          "at": "crates/libtmux/src/window.rs",
           "has": [
             "pub fn get<F: ReadField<Self>>"
           ]
@@ -2854,7 +2912,7 @@
       "why": "refresh reads the client again from list-clients; it does not send refresh-client.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/client.rs:165",
+          "at": "crates/libtmux/src/client.rs",
           "has": [
             "listing::clients(&self.core, None)"
           ]
@@ -2914,7 +2972,7 @@
       "why": "NewSession::new builds a planned step; a plan sends its steps when it is run, and this sends nothing.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/ops/sessions.rs:66",
+          "at": "crates/libtmux/src/plan/ops/sessions.rs",
           "has": [
             "pub fn new("
           ]
@@ -2934,7 +2992,7 @@
       "why": "NewSessionOptions::new and NewWindowOptions::new build the options of a creation, and select sets one; they send nothing.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/server.rs:2373",
+          "at": "crates/libtmux/src/server.rs",
           "has": [
             "pub fn new(name: impl Into<TmuxArg>)"
           ]
@@ -2954,9 +3012,9 @@
       "why": "NewWindow::new builds a planned step; a plan sends its steps when it is run, and this sends nothing.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/ops/windows.rs:76",
+          "at": "crates/libtmux/src/plan/ops/windows.rs",
           "has": [
-            "pub fn new("
+            "pub fn new(target: impl Into<SessionTarget>) -> Self {"
           ]
         }
       ]
@@ -2976,13 +3034,13 @@
       "why": "NewSessionOptions::new and NewWindowOptions::new build the options of a creation, and select sets one; they send nothing.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/session.rs:1217",
+          "at": "crates/libtmux/src/session.rs",
           "has": [
             "pub fn new(name: impl Into<TmuxArg>)"
           ]
         },
         {
-          "at": "crates/libtmux/src/session.rs:1276",
+          "at": "crates/libtmux/src/session.rs",
           "has": [
             "pub const fn select(mut self) -> Self"
           ]
@@ -3002,9 +3060,9 @@
       "why": "clear_history sends clear-history; clear-prompt-history is a different command.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/pane.rs:924",
+          "at": "crates/libtmux/src/pane.rs",
           "has": [
-            "clear-history"
+            "clear-history\","
           ]
         }
       ]
@@ -3043,10 +3101,11 @@
       "why": "wait_for_text and wait_for_quiet poll the pane's captured text until a condition holds; they do not send tmux's wait-for.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/pane/observe.rs:315",
+          "at": "crates/libtmux/src/pane/observe.rs",
           "has": [
             "self.look_until(within"
-          ]
+          ],
+          "within": "wait_for_text"
         }
       ]
     },
@@ -3063,9 +3122,9 @@
       "why": "RenameWindow::new builds a planned step; a plan sends its steps when it is run, and this sends nothing.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/ops/windows.rs:262",
+          "at": "crates/libtmux/src/plan/ops/windows.rs",
           "has": [
-            "pub fn new("
+            "pub fn new(target: impl Into<WindowTarget>, name: impl Into<OsString>) -> Self {"
           ]
         }
       ]
@@ -3123,9 +3182,9 @@
       "why": "clear_prompt_history sends clear-prompt-history, and not clear-history.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/server.rs:1533",
+          "at": "crates/libtmux/src/server.rs",
           "has": [
-            "clear-prompt-history"
+            "clear-prompt-history\","
           ]
         }
       ]
@@ -3143,9 +3202,9 @@
       "why": "delete_buffer sends delete-buffer, and not kill-server.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/server.rs:1314",
+          "at": "crates/libtmux/src/server.rs",
           "has": [
-            "delete-buffer"
+            "delete-buffer\","
           ]
         }
       ]
@@ -3163,9 +3222,9 @@
       "why": "find_window sends find-window; it lists no windows.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/server/interactive.rs:164",
+          "at": "crates/libtmux/src/server/interactive.rs",
           "has": [
-            "find-window"
+            "find-window\");"
           ]
         }
       ]
@@ -3184,13 +3243,13 @@
       "why": "lock_channel and with_channel_lock take a channel lock with wait-for -L, and unlock_channel releases it with -U; they send no lock-server.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/internal/wait_for.rs:259",
+          "at": "crates/libtmux/src/internal/wait_for.rs",
           "has": [
             "channel_command(Some(\"-L\"), channel)"
           ]
         },
         {
-          "at": "crates/libtmux/src/internal/wait_for.rs:338",
+          "at": "crates/libtmux/src/internal/wait_for.rs",
           "has": [
             "channel_command(Some(\"-U\"), channel)"
           ]
@@ -3210,7 +3269,7 @@
       "why": "start_time is the start time of the tmux server a generation names; it does not start one.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/target.rs:303",
+          "at": "crates/libtmux/src/target.rs",
           "has": [
             "pub fn start_time(self) -> SystemTime"
           ]
@@ -3230,7 +3289,7 @@
       "why": "SessionName::new checks and wraps a session name; it sends nothing.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/target.rs:708",
+          "at": "crates/libtmux/src/target.rs",
           "has": [
             "pub fn new(name: impl Into<String>)"
           ]
@@ -3250,9 +3309,9 @@
       "why": "SplitWindow::new builds a planned step; a plan sends its steps when it is run, and this sends nothing.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/plan/ops/panes.rs:152",
+          "at": "crates/libtmux/src/plan/ops/panes.rs",
           "has": [
-            "pub fn new("
+            "pub fn new(target: impl Into<WindowTarget>) -> Self {"
           ]
         }
       ]
@@ -3270,13 +3329,13 @@
       "why": "TestServerBuilder starts a tmux process with -D for a test, as a process; it sends no start-server command.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/test.rs:492",
+          "at": "crates/libtmux/src/test.rs",
           "has": [
             "ProcessCommand::new(&self.executable)"
           ]
         },
         {
-          "at": "crates/libtmux/src/test.rs:494",
+          "at": "crates/libtmux/src/test.rs",
           "has": [
             ".arg(\"-D\")"
           ]
@@ -3296,7 +3355,7 @@
       "why": "last_activity is the time tmux last saw activity in the window, read from the projection the handle holds.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/window.rs:468",
+          "at": "crates/libtmux/src/window.rs",
           "has": [
             "pub fn last_activity(&self) -> SystemTime"
           ]
@@ -3320,16 +3379,17 @@
       "why": "next_layout and previous_layout send select-layout with -n and -p, which has its own entry; they send neither next-layout, next-window nor previous-window.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/window.rs:772",
+          "at": "crates/libtmux/src/window.rs",
           "has": [
             "self.step_layout(\"-n\")"
           ]
         },
         {
-          "at": "crates/libtmux/src/window.rs:789",
+          "at": "crates/libtmux/src/window.rs",
           "has": [
             "Command::new(\"select-layout\")"
-          ]
+          ],
+          "within": "step_layout"
         }
       ]
     },
@@ -3346,7 +3406,7 @@
       "why": "copy_command sends send-keys -X to the pane's copy mode; it does not send copy-mode.",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/operations.rb:420",
+          "at": "gems/libtmux/lib/libtmux/operations.rb",
           "has": [
             "\"send-keys\", \"-X\""
           ]
@@ -3366,16 +3426,17 @@
       "why": "display formats text with display-message, through Server#display; it sends no display-panes.",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/operations.rb:248",
+          "at": "gems/libtmux/lib/libtmux/operations.rb",
           "has": [
             "server.display(format, target: ref"
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/operations.rb:21",
+          "at": "gems/libtmux/lib/libtmux/operations.rb",
           "has": [
             "\"display-message\""
-          ]
+          ],
+          "within": "display"
         }
       ]
     },
@@ -3392,13 +3453,13 @@
       "why": "A captured record answers from the capture it holds, and the capture id and window links are values of it; it sends nothing.",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/snapshot.rb:15",
+          "at": "gems/libtmux/lib/libtmux/snapshot.rb",
           "has": [
             "@capture_id = graph.capture_id"
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/snapshot.rb:219",
+          "at": "gems/libtmux/lib/libtmux/snapshot.rb",
           "has": [
             "def window_links"
           ]
@@ -3418,13 +3479,13 @@
       "why": "close shuts the server handle's requests and controls, and in an Async scope closes the scope; it does not send kill-server.",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/server.rb:240",
+          "at": "gems/libtmux/lib/libtmux/server.rb",
           "has": [
             "def close"
           ]
         },
         {
-          "at": "gems/libtmux-async/lib/libtmux/async/server.rb:19",
+          "at": "gems/libtmux-async/lib/libtmux/async/server.rb",
           "has": [
             "@scope.close"
           ]
@@ -3444,7 +3505,7 @@
       "why": "delete_buffer sends delete-buffer, and not kill-server.",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/operations.rb:63",
+          "at": "gems/libtmux/lib/libtmux/operations.rb",
           "has": [
             "\"delete-buffer\""
           ]
@@ -3464,7 +3525,7 @@
       "why": "list_window_links lists windows with list-windows and reads their links; it does not send link-window.",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/operations.rb:207",
+          "at": "gems/libtmux/lib/libtmux/operations.rb",
           "has": [
             "\"list-windows\""
           ]
@@ -3484,7 +3545,7 @@
       "why": "read_buffer reads a buffer with save-buffer to standard output; it sends no show-buffer.",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/operations.rb:59",
+          "at": "gems/libtmux/lib/libtmux/operations.rb",
           "has": [
             "\"save-buffer\""
           ]
@@ -3504,13 +3565,13 @@
       "why": "Server.start spawns an owned tmux daemon as a process with -D; it sends no start-server command.",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/owned.rb:61",
+          "at": "gems/libtmux/lib/libtmux/owned.rb",
           "has": [
             "Process.spawn("
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/owned.rb:62",
+          "at": "gems/libtmux/lib/libtmux/owned.rb",
           "has": [
             "\"-u\", \"-D\""
           ]
@@ -3530,7 +3591,7 @@
       "why": "window_link resolves a window-link reference to a handle; it sends nothing.",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/operations.rb:78",
+          "at": "gems/libtmux/lib/libtmux/operations.rb",
           "has": [
             "resolve(ref, :window_link)"
           ]
@@ -3551,13 +3612,13 @@
       "why": "list_window_links lists a session's windows with list-windows -t and reads their links; it lists no sessions and sends no link-window.",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/operations.rb:207",
+          "at": "gems/libtmux/lib/libtmux/operations.rb",
           "has": [
             "\"list-windows\""
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/operations.rb:265",
+          "at": "gems/libtmux/lib/libtmux/operations.rb",
           "has": [
             ":acquire_links, [\"-t\", target]"
           ]
@@ -3577,13 +3638,13 @@
       "why": "window_links reads the window links of a capture from the capture; it sends nothing.",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/snapshot.rb:219",
+          "at": "gems/libtmux/lib/libtmux/snapshot.rb",
           "has": [
             "def window_links"
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/snapshot.rb:220",
+          "at": "gems/libtmux/lib/libtmux/snapshot.rb",
           "has": [
             "collection(:window_link)"
           ]
@@ -3603,13 +3664,13 @@
       "why": "window_links reads the window links of a capture from the capture; it sends nothing.",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/snapshot.rb:219",
+          "at": "gems/libtmux/lib/libtmux/snapshot.rb",
           "has": [
             "def window_links"
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/snapshot.rb:220",
+          "at": "gems/libtmux/lib/libtmux/snapshot.rb",
           "has": [
             "collection(:window_link)"
           ]
@@ -3629,13 +3690,13 @@
       "why": "window_links reads the window links of a capture from the capture; it sends nothing.",
       "evidence": [
         {
-          "at": "gems/libtmux/lib/libtmux/snapshot.rb:219",
+          "at": "gems/libtmux/lib/libtmux/snapshot.rb",
           "has": [
             "def window_links"
           ]
         },
         {
-          "at": "gems/libtmux/lib/libtmux/snapshot.rb:220",
+          "at": "gems/libtmux/lib/libtmux/snapshot.rb",
           "has": [
             "collection(:window_link)"
           ]
@@ -3655,13 +3716,13 @@
       "why": "refresh re-reads the client from a fresh listing; redraw sends refresh-client.",
       "evidence": [
         {
-          "at": "libtmux/src/main/java/io/github/libtmux/Client.java:137",
+          "at": "libtmux/src/main/java/io/github/libtmux/Client.java",
           "has": [
             "server.refresh(snapshot)"
           ]
         },
         {
-          "at": "libtmux/src/main/java/io/github/libtmux/Client.java:80",
+          "at": "libtmux/src/main/java/io/github/libtmux/Client.java",
           "has": [
             "\"refresh-client\""
           ]
@@ -3675,13 +3736,13 @@
       "why": "A CommandChain method adds a step to the chain, which runs them when run is called.",
       "evidence": [
         {
-          "at": "libtmux-scala-cats/src/main/scala/io/github/libtmux/scaladsl/cats/CommandChain.scala:17",
+          "at": "libtmux-scala-cats/src/main/scala/io/github/libtmux/scaladsl/cats/CommandChain.scala",
           "has": [
             "private def append("
           ]
         },
         {
-          "at": "libtmux-scala-cats/src/main/scala/io/github/libtmux/scaladsl/cats/CommandChain.scala:19",
+          "at": "libtmux-scala-cats/src/main/scala/io/github/libtmux/scaladsl/cats/CommandChain.scala",
           "has": [
             "steps :+ step"
           ]
@@ -3701,7 +3762,7 @@
       "why": "clearHistory sends clear-history; clear-prompt-history is a different command.",
       "evidence": [
         {
-          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java:1052",
+          "at": "libtmux/src/main/java/io/github/libtmux/Pane.java",
           "has": [
             "\"clear-history\""
           ]
@@ -3721,7 +3782,7 @@
       "why": "clearHistory sends clear-history; clear-prompt-history is a different command.",
       "evidence": [
         {
-          "at": "Sources/LibTmux/Navigation.swift:213",
+          "at": "Sources/LibTmux/Navigation.swift",
           "has": [
             "\"clear-history\""
           ]
@@ -3741,7 +3802,7 @@
       "why": "deleteBuffer sends delete-buffer, and not kill-server.",
       "evidence": [
         {
-          "at": "Sources/LibTmux/Buffers.swift:61",
+          "at": "Sources/LibTmux/Buffers.swift",
           "has": [
             "\"delete-buffer\""
           ]
@@ -3761,19 +3822,19 @@
       "why": "kill removes a session, window or pane with kill-session, kill-window and kill-pane; killServer is the one that sends kill-server.",
       "evidence": [
         {
-          "at": "Sources/LibTmux/Mutations.swift:109",
+          "at": "Sources/LibTmux/Mutations.swift",
           "has": [
             "\"kill-session\""
           ]
         },
         {
-          "at": "Sources/LibTmux/Mutations.swift:116",
+          "at": "Sources/LibTmux/Mutations.swift",
           "has": [
             "\"kill-window\""
           ]
         },
         {
-          "at": "Sources/LibTmux/Mutations.swift:123",
+          "at": "Sources/LibTmux/Mutations.swift",
           "has": [
             "\"kill-pane\""
           ]
@@ -3793,10 +3854,11 @@
       "why": "removeEnvironment unsets a variable with set-environment -r, and sends no kill-server.",
       "evidence": [
         {
-          "at": "Sources/LibTmux/Environment.swift:135",
+          "at": "Sources/LibTmux/Environment.swift",
           "has": [
             "\"set-environment\""
-          ]
+          ],
+          "within": "removeEnvironment"
         }
       ]
     },
@@ -3813,7 +3875,7 @@
       "why": "selectLastPane sends last-pane, and not select-pane.",
       "evidence": [
         {
-          "at": "Sources/LibTmux/Navigation.swift:55",
+          "at": "Sources/LibTmux/Navigation.swift",
           "has": [
             "\"last-pane\""
           ]
@@ -3835,19 +3897,19 @@
       "why": "These send next-window, previous-window and last-window, which have their own entries, and not select-window.",
       "evidence": [
         {
-          "at": "Sources/LibTmux/Navigation.swift:28",
+          "at": "Sources/LibTmux/Navigation.swift",
           "has": [
             "\"next-window\""
           ]
         },
         {
-          "at": "Sources/LibTmux/Navigation.swift:35",
+          "at": "Sources/LibTmux/Navigation.swift",
           "has": [
             "\"previous-window\""
           ]
         },
         {
-          "at": "Sources/LibTmux/Navigation.swift:43",
+          "at": "Sources/LibTmux/Navigation.swift",
           "has": [
             "\"last-window\""
           ]
@@ -3867,7 +3929,7 @@
       "why": "waitForOutput polls the pane's captured output in an OutputWaitSession; it does not send tmux's wait-for.",
       "evidence": [
         {
-          "at": "Sources/LibTmux/WaitForOutput.swift:157",
+          "at": "Sources/LibTmux/WaitForOutput.swift",
           "has": [
             "OutputWaitSession("
           ]
@@ -3887,7 +3949,7 @@
       "why": "windowLinks lists the windows with list-windows -a and reads their links; it does not send link-window.",
       "evidence": [
         {
-          "at": "Sources/LibTmux/Server.swift:274",
+          "at": "Sources/LibTmux/Server.swift",
           "has": [
             "\"list-windows\""
           ]
@@ -3908,16 +3970,17 @@
       "why": "A Snapshot holds the window links of one capture and answers from them; it sends nothing.",
       "evidence": [
         {
-          "at": "Sources/LibTmux/Snapshot.swift:60",
+          "at": "Sources/LibTmux/Snapshot.swift",
           "has": [
             "public func windowLinks(of session: Session)"
           ]
         },
         {
-          "at": "Sources/LibTmux/Snapshot.swift:62",
+          "at": "Sources/LibTmux/Snapshot.swift",
           "has": [
             "fromIncarnation(windowLinks)"
-          ]
+          ],
+          "within": "windowLinks"
         }
       ]
     },
@@ -3934,7 +3997,7 @@
       "why": "link is the window link one list-windows row describes; it is a value, not a command.",
       "evidence": [
         {
-          "at": "Sources/LibTmux/Window.swift:63",
+          "at": "Sources/LibTmux/Window.swift",
           "has": [
             "public let link: WindowLink"
           ]
@@ -3956,7 +4019,7 @@
       "why": "ConnectedServer is the interface of a server with a live control connection; its close ends the connection and its waitFor waits on the observed state, and neither sends kill-server or wait-for.",
       "evidence": [
         {
-          "at": "packages/libtmux/src/types.ts:1224",
+          "at": "packages/libtmux/src/types.ts",
           "has": [
             "export interface ConnectedServer extends Server"
           ]
@@ -3988,7 +4051,7 @@
       "why": "clearHistory sends clear-history; clear-prompt-history is a different command.",
       "evidence": [
         {
-          "at": "packages/libtmux/src/_internal/operations/pane_io.ts:65",
+          "at": "packages/libtmux/src/_internal/operations/pane_io.ts",
           "has": [
             "clear-history"
           ]
@@ -4009,9 +4072,9 @@
       "why": "findWindow sends find-window, which has its own entry; it lists no panes or windows.",
       "evidence": [
         {
-          "at": "packages/libtmux/src/_internal/operations/interactive.ts:94",
+          "at": "packages/libtmux/src/_internal/operations/interactive.ts",
           "has": [
-            "find-window"
+            "find-window\","
           ]
         }
       ]
@@ -4029,7 +4092,7 @@
       "why": "killIfWindowUnshared kills a pane with kill-pane, only while its window is not linked elsewhere; it does not kill a window.",
       "evidence": [
         {
-          "at": "packages/libtmux/src/_internal/operations/plans.ts:195",
+          "at": "packages/libtmux/src/_internal/operations/plans.ts",
           "has": [
             "[\"kill-pane\", \"-t\", target]"
           ]
@@ -4049,7 +4112,7 @@
       "why": "showHooks reads hooks with show-hooks; it does not send display-panes.",
       "evidence": [
         {
-          "at": "packages/libtmux/src/_internal/operations/hooks.ts:31",
+          "at": "packages/libtmux/src/_internal/operations/hooks.ts",
           "has": [
             "show-hooks"
           ]
@@ -4070,16 +4133,18 @@
       "why": "showOptions and showResolvedOptions read options with show-options; they do not send display-panes.",
       "evidence": [
         {
-          "at": "packages/libtmux/src/_internal/operations/options.ts:114",
+          "at": "packages/libtmux/src/_internal/operations/options.ts",
           "has": [
             "\"show-options\""
-          ]
+          ],
+          "within": "showOptions"
         },
         {
-          "at": "packages/libtmux/src/_internal/operations/options.ts:150",
+          "at": "packages/libtmux/src/_internal/operations/options.ts",
           "has": [
             "\"show-options\""
-          ]
+          ],
+          "within": "showResolvedOptions"
         }
       ]
     },
@@ -4090,13 +4155,13 @@
       "why": "The plan getters return planned operations for Server.batch to run; they send nothing themselves.",
       "evidence": [
         {
-          "at": "packages/libtmux/src/pane.ts:277",
+          "at": "packages/libtmux/src/pane.ts",
           "has": [
             "get plan(): PanePlans"
           ]
         },
         {
-          "at": "packages/libtmux/src/_internal/operations/plans.ts:162",
+          "at": "packages/libtmux/src/_internal/operations/plans.ts",
           "has": [
             "export function planKill("
           ]
@@ -4110,13 +4175,13 @@
       "why": "A Where type names the fields a selection may test; its members are field names, not commands.",
       "evidence": [
         {
-          "at": "packages/libtmux/src/selection.ts:252",
+          "at": "packages/libtmux/src/selection.ts",
           "has": [
             "export interface PaneWhere"
           ]
         },
         {
-          "at": "packages/libtmux/src/selection.ts:318",
+          "at": "packages/libtmux/src/selection.ts",
           "has": [
             "readonly searchString?: ScalarCriteria"
           ]
@@ -4133,7 +4198,7 @@
       "why": "append is a flag in an options object, not a command.",
       "evidence": [
         {
-          "at": "packages/libtmux/src/types.ts:409",
+          "at": "packages/libtmux/src/types.ts",
           "has": [
             "export interface SaveBufferOptions"
           ]
@@ -4159,7 +4224,7 @@
       "why": "deleteBuffer sends delete-buffer, and not kill-server.",
       "evidence": [
         {
-          "at": "packages/libtmux/src/_internal/operations/server_utils.ts:116",
+          "at": "packages/libtmux/src/_internal/operations/server_utils.ts",
           "has": [
             "delete-buffer"
           ]
@@ -4179,10 +4244,11 @@
       "why": "removeEnvironment unsets a variable with set-environment, and sends no kill-server.",
       "evidence": [
         {
-          "at": "packages/libtmux/src/_internal/operations/environment.ts:147",
+          "at": "packages/libtmux/src/_internal/operations/environment.ts",
           "has": [
             "set-environment"
-          ]
+          ],
+          "within": "removeEnvironment"
         }
       ]
     },
@@ -4207,10 +4273,11 @@
           ]
         },
         {
-          "at": "packages/libtmux/src/_internal/operations/environment.ts:147",
+          "at": "packages/libtmux/src/_internal/operations/environment.ts",
           "has": [
             "set-environment"
-          ]
+          ],
+          "within": "removeEnvironment"
         }
       ]
     },
@@ -4221,13 +4288,13 @@
       "why": "The plan getters return planned operations for Server.batch to run; they send nothing themselves.",
       "evidence": [
         {
-          "at": "packages/libtmux/src/session.ts:384",
+          "at": "packages/libtmux/src/session.ts",
           "has": [
             "get plan(): SessionPlans"
           ]
         },
         {
-          "at": "packages/libtmux/src/_internal/operations/plans.ts:162",
+          "at": "packages/libtmux/src/_internal/operations/plans.ts",
           "has": [
             "export function planKill("
           ]
@@ -4241,13 +4308,13 @@
       "why": "A Where type names the fields a selection may test; its members are field names, not commands.",
       "evidence": [
         {
-          "at": "packages/libtmux/src/selection.ts:154",
+          "at": "packages/libtmux/src/selection.ts",
           "has": [
             "export interface SessionWhere"
           ]
         },
         {
-          "at": "packages/libtmux/src/selection.ts:165",
+          "at": "packages/libtmux/src/selection.ts",
           "has": [
             "readonly attachedList?: ScalarCriteria"
           ]
@@ -4264,7 +4331,7 @@
       "why": "append is a flag in an options object, not a command.",
       "evidence": [
         {
-          "at": "packages/libtmux/src/types.ts:415",
+          "at": "packages/libtmux/src/types.ts",
           "has": [
             "export interface SetHookOptions"
           ]
@@ -4287,7 +4354,7 @@
       "why": "append is a flag in an options object, not a command.",
       "evidence": [
         {
-          "at": "packages/libtmux/src/types.ts:366",
+          "at": "packages/libtmux/src/types.ts",
           "has": [
             "export interface SetOptionOptions"
           ]
@@ -4313,13 +4380,13 @@
       "why": "removePlacement removes one link of a window with unlink-window -k, and does not kill the window.",
       "evidence": [
         {
-          "at": "packages/libtmux/src/_internal/operations/plans.ts:208",
+          "at": "packages/libtmux/src/_internal/operations/plans.ts",
           "has": [
             "[\"unlink-window\", \"-k\", \"-t\", target]"
           ]
         },
         {
-          "at": "packages/libtmux/src/_internal/operations/topology.ts:80",
+          "at": "packages/libtmux/src/_internal/operations/topology.ts",
           "has": [
             "planRemoveWindowPlacement("
           ]
@@ -4333,13 +4400,13 @@
       "why": "The plan getters return planned operations for Server.batch to run; they send nothing themselves.",
       "evidence": [
         {
-          "at": "packages/libtmux/src/window.ts:299",
+          "at": "packages/libtmux/src/window.ts",
           "has": [
             "get plan(): WindowPlans"
           ]
         },
         {
-          "at": "packages/libtmux/src/_internal/operations/plans.ts:162",
+          "at": "packages/libtmux/src/_internal/operations/plans.ts",
           "has": [
             "export function planKill("
           ]
@@ -4353,13 +4420,13 @@
       "why": "A Where type names the fields a selection may test; its members are field names, not commands.",
       "evidence": [
         {
-          "at": "packages/libtmux/src/selection.ts:200",
+          "at": "packages/libtmux/src/selection.ts",
           "has": [
             "export interface WindowWhere"
           ]
         },
         {
-          "at": "packages/libtmux/src/selection.ts:221",
+          "at": "packages/libtmux/src/selection.ts",
           "has": [
             "readonly lastFlag?"
           ]
@@ -4383,43 +4450,43 @@
       "why": "The lookups call FindSessionAsync, FindWindowAsync and FindPaneAsync, which list with -a below tmux 3.3 and send display-message from 3.3. This revision supports 3.2a, so neither command holds on every supported release.",
       "evidence": [
         {
-          "at": "src/LibTmux.FSharp/Hierarchy.fs:120",
+          "at": "src/LibTmux.FSharp/Hierarchy.fs",
           "has": [
             "server.FindSessionAsync("
           ]
         },
         {
-          "at": "src/LibTmux.FSharp/Hierarchy.fs:126",
+          "at": "src/LibTmux.FSharp/Hierarchy.fs",
           "has": [
             "server.FindWindowAsync("
           ]
         },
         {
-          "at": "src/LibTmux.FSharp/Hierarchy.fs:132",
+          "at": "src/LibTmux.FSharp/Hierarchy.fs",
           "has": [
             "server.FindPaneAsync("
           ]
         },
         {
-          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:77",
+          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs",
           "has": [
             "!TmuxCapabilities.IsSupported("
           ]
         },
         {
-          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:81",
+          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs",
           "has": [
-            "ReadFromListingAsync("
+            "await ReadFromListingAsync("
           ]
         },
         {
-          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:179",
+          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs",
           "has": [
             "\"display-message\""
           ]
         },
         {
-          "at": "src/LibTmux/Constants/TmuxConstants.cs:6",
+          "at": "src/LibTmux/Constants/TmuxConstants.cs",
           "has": [
             "Parse(\"3.2a\")"
           ]
@@ -4434,13 +4501,13 @@
       "why": "A Plan records each step; Plan.Run is what sends them.",
       "evidence": [
         {
-          "at": "tmux/plan.go:158",
+          "at": "tmux/plan.go",
           "has": [
             "func (p *Plan) add(op Op) Ref"
           ]
         },
         {
-          "at": "tmux/plan.go:159",
+          "at": "tmux/plan.go",
           "has": [
             "p.ops = append(p.ops, op)"
           ]
@@ -4455,13 +4522,13 @@
       "why": "A Chain adds each command to a batch that a later call sends.",
       "evidence": [
         {
-          "at": "include/libtmux/chain.hpp:89",
+          "at": "include/libtmux/chain.hpp",
           "has": [
             "Chain& add(std::vector<std::string> command)"
           ]
         },
         {
-          "at": "include/libtmux/chain.hpp:90",
+          "at": "include/libtmux/chain.hpp",
           "has": [
             "batch_.add("
           ]
@@ -4475,7 +4542,7 @@
       "why": "A CommandChain queues each step on its batch; run() is what sends them.",
       "evidence": [
         {
-          "at": "libtmux/src/main/java/io/github/libtmux/CommandChain.java:83",
+          "at": "libtmux/src/main/java/io/github/libtmux/CommandChain.java",
           "has": [
             "public CommandChain then(String... argv)"
           ]
@@ -4499,19 +4566,19 @@
       "why": "A request turns itself into a command value for a chain to run; it sends nothing.",
       "evidence": [
         {
-          "at": "src/LibTmux/Chaining/ITmuxRequest.cs:30",
+          "at": "src/LibTmux/Chaining/ITmuxRequest.cs",
           "has": [
             "Returns this request as one tmux command"
           ]
         },
         {
-          "at": "src/LibTmux/Chaining/ITmuxRequest.cs:34",
+          "at": "src/LibTmux/Chaining/ITmuxRequest.cs",
           "has": [
             "TmuxCommand ToCommand("
           ]
         },
         {
-          "at": "src/LibTmux/Chaining/TmuxChaining.Hooks.cs:77",
+          "at": "src/LibTmux/Chaining/TmuxChaining.Hooks.cs",
           "has": [
             "IReadOnlyList<TmuxCommand> ToCommands("
           ]
@@ -4539,19 +4606,20 @@
       "why": "A lookup by id passes the name of a list command only to pick the format of the row it reads; it sends display-message -p -t, and the fallback that listed with -a below tmux 3.3 is gone with the 3.3a floor.",
       "evidence": [
         {
-          "at": "src/LibTmux/Server.Identity.cs:231",
+          "at": "src/LibTmux/Server.Identity.cs",
           "has": [
             "\"list-sessions\""
           ]
         },
         {
-          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:124",
+          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs",
           "has": [
             "CreateProjection(listCommand)"
-          ]
+          ],
+          "within": "ReadAsync"
         },
         {
-          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs:125",
+          "at": "src/LibTmux/Materialization/TmuxMaterializationQuery.cs",
           "has": [
             "\"display-message\""
           ]
@@ -4600,19 +4668,19 @@
       "why": "These core functions construct typed command descriptions. Only a backend client executes them.",
       "evidence": [
         {
-          "at": "lib/libtmux.mli:1071",
+          "at": "lib/libtmux.mli",
           "has": [
-            "Construction performs no I/O"
+            "generation. Construction performs no I/O;"
           ]
         },
         {
-          "at": "lib/commands.ml:247",
+          "at": "lib/commands.ml",
           "has": [
             "Command.Rename_window"
           ]
         },
         {
-          "at": "lib/commands.ml:320",
+          "at": "lib/commands.ml",
           "has": [
             "Command.Mutate (Kill_session"
           ]
@@ -4629,10 +4697,11 @@
       "why": "Reads window links from the captured arena without issuing link-window.",
       "evidence": [
         {
-          "at": "lib/graph.ml:212",
+          "at": "lib/graph.ml",
           "has": [
             "value.arena.session_links"
-          ]
+          ],
+          "within": "window_links"
         }
       ]
     },
@@ -4649,25 +4718,25 @@
       "why": "Searches the immutable captured graph and returns existing rows without tmux I/O.",
       "evidence": [
         {
-          "at": "lib/graph.ml:396",
+          "at": "lib/graph.ml",
           "has": [
             "value.link_rows"
           ]
         },
         {
-          "at": "lib/graph.ml:405",
+          "at": "lib/graph.ml",
           "has": [
             "value.session_index"
           ]
         },
         {
-          "at": "lib/graph.ml:409",
+          "at": "lib/graph.ml",
           "has": [
             "value.window_index"
           ]
         },
         {
-          "at": "lib/graph.ml:413",
+          "at": "lib/graph.ml",
           "has": [
             "value.pane_index"
           ]
@@ -4684,7 +4753,7 @@
       "why": "Reads links of the captured window without issuing link-window.",
       "evidence": [
         {
-          "at": "lib/graph.ml:268",
+          "at": "lib/graph.ml",
           "has": [
             "value.arena.window_links"
           ]
@@ -4704,13 +4773,13 @@
       "why": "Clears the target pane history with clear-history. It does not clear command-prompt history.",
       "evidence": [
         {
-          "at": "lib/commands.ml:364",
+          "at": "lib/commands.ml",
           "has": [
             "Command.Mutate (Clear_history"
           ]
         },
         {
-          "at": "unix/command_encoding.ml:285",
+          "at": "unix/command_encoding.ml",
           "has": [
             "\"clear-history\""
           ]
@@ -4730,10 +4799,11 @@
       "why": "Reads a single hook through show-options, including named user hooks, rather than listing hooks with show-hooks.",
       "evidence": [
         {
-          "at": "unix/engine.ml:307",
+          "at": "unix/engine.ml",
           "has": [
             "Read_hook"
-          ]
+          ],
+          "within": "execute"
         },
         {
           "at": "unix/engine.ml:309",
@@ -4742,10 +4812,11 @@
           ]
         },
         {
-          "at": "unix/options_io.ml:223",
+          "at": "unix/options_io.ml",
           "has": [
             "\"show-options\""
-          ]
+          ],
+          "within": "read"
         }
       ]
     },
@@ -4762,19 +4833,19 @@
       "why": "Observes rendered text and stream notifications. It does not use a tmux wait-for channel.",
       "evidence": [
         {
-          "at": "unix/libtmux_unix.ml:123",
+          "at": "unix/libtmux_unix.ml",
           "has": [
             "Observation_wait.rendered"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:386",
+          "at": "eio/libtmux_eio.ml",
           "has": [
             "Observation_wait.rendered"
           ]
         },
         {
-          "at": "unix/observation_wait.ml:49",
+          "at": "unix/observation_wait.ml",
           "has": [
             "capture_text !current"
           ]
@@ -4794,13 +4865,13 @@
       "why": "Matches a byte pattern against streamed output. It does not use a tmux wait-for channel.",
       "evidence": [
         {
-          "at": "unix/libtmux_unix.ml:49",
+          "at": "unix/libtmux_unix.ml",
           "has": [
             "Streaming.wait_for_bytes"
           ]
         },
         {
-          "at": "eio/libtmux_eio.ml:122",
+          "at": "eio/libtmux_eio.ml",
           "has": [
             "Streaming.wait_for_bytes"
           ]
@@ -4817,16 +4888,17 @@
       "why": "Concrete Selection constructors bless and validate native array membership. They create no session, window, pane, process, or transport.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Selection.pm:8",
+          "at": "packages/core/lib/LibTmux/Selection.pm",
           "has": [
             "my $self = bless \\@items, $class;"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Selection.pm:9",
+          "at": "packages/core/lib/LibTmux/Selection.pm",
           "has": [
             "$self->_validate;"
-          ]
+          ],
+          "within": "new"
         }
       ]
     },
@@ -4844,13 +4916,13 @@
       "why": "Async close cancels pending operations and closes its owned transport. It never requests daemon destruction.",
       "evidence": [
         {
-          "at": "packages/async/lib/LibTmux/Async/Server.pm:57",
+          "at": "packages/async/lib/LibTmux/Async/Server.pm",
           "has": [
             "$_->cancel for values $self->{operations}->%*;"
           ]
         },
         {
-          "at": "packages/async/lib/LibTmux/Async/Server.pm:58",
+          "at": "packages/async/lib/LibTmux/Async/Server.pm",
           "has": [
             "return $self->{transport}->close;"
           ]
@@ -4870,13 +4942,13 @@
       "why": "The selected operation deletes one named buffer; it does not send kill-server.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:767",
+          "at": "packages/core/lib/LibTmux/Server.pm",
           "has": [
             ": 'delete-buffer',"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:1121",
+          "at": "packages/core/lib/LibTmux/Server.pm",
           "has": [
             "$self->_run($self->operation('delete_buffer', %args));"
           ]
@@ -4896,13 +4968,13 @@
       "why": "set_buffer uses load-buffer with stdin bytes. It does not use the distinct native set-buffer argument interface.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:765",
+          "at": "packages/core/lib/LibTmux/Server.pm",
           "has": [
             "$name eq 'set_buffer'  ? 'load-buffer'"
           ]
         },
         {
-          "at": "packages/core/lib/LibTmux/Server.pm:772",
+          "at": "packages/core/lib/LibTmux/Server.pm",
           "has": [
             "$name eq 'set_buffer' ? (stdin => $args{data}) : ())->then("
           ]
@@ -4922,7 +4994,7 @@
       "why": "This accessor reads captured graph membership locally; link_window on Server performs the separate tmux mutation.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Session.pm:10",
+          "at": "packages/core/lib/LibTmux/Session.pm",
           "has": [
             "sub window_links ($self) { $self->_read('window_links') }"
           ]
@@ -4942,7 +5014,7 @@
       "why": "This accessor reads captured graph membership locally; link_window on Server performs the separate tmux mutation.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Snapshot.pm:207",
+          "at": "packages/core/lib/LibTmux/Snapshot.pm",
           "has": [
             "sub window_links  ($self)      { $self->_selection('window_link') }"
           ]
@@ -4962,7 +5034,7 @@
       "why": "This accessor reads captured graph membership locally; link_window on Server performs the separate tmux mutation.",
       "evidence": [
         {
-          "at": "packages/core/lib/LibTmux/Window.pm:9",
+          "at": "packages/core/lib/LibTmux/Window.pm",
           "has": [
             "sub links       ($self) { $self->_read('links') }"
           ]
@@ -4982,7 +5054,7 @@
       "why": "Returns a validated command value; execution requires an explicit endpoint operation.",
       "evidence": [
         {
-          "at": "apps/libtmux_erlang/src/tmux_command.erl:179",
+          "at": "apps/libtmux_erlang/src/tmux_command.erl",
           "has": [
             "raw(<<\"source-file\">>"
           ]
@@ -5002,7 +5074,7 @@
       "why": "Returns a validated command value; execution requires an explicit endpoint operation.",
       "evidence": [
         {
-          "at": "apps/libtmux_erlang/src/tmux_command.erl:144",
+          "at": "apps/libtmux_erlang/src/tmux_command.erl",
           "has": [
             "raw(<<\"wait-for\">>"
           ]
@@ -5022,7 +5094,7 @@
       "why": "Returns a validated command value; execution requires an explicit endpoint operation.",
       "evidence": [
         {
-          "at": "apps/libtmux_erlang/src/tmux_session.erl:97",
+          "at": "apps/libtmux_erlang/src/tmux_session.erl",
           "has": [
             "tmux_command:generated(session_rename,"
           ]
@@ -5042,7 +5114,7 @@
       "why": "Returns a validated command value; execution requires an explicit endpoint operation.",
       "evidence": [
         {
-          "at": "apps/libtmux_erlang/src/tmux_pane.erl:341",
+          "at": "apps/libtmux_erlang/src/tmux_pane.erl",
           "has": [
             "tmux_command:generated(pane_resize,"
           ]
@@ -5062,7 +5134,7 @@
       "why": "Constructs a detached membership record without tmux I/O.",
       "evidence": [
         {
-          "at": "apps/libtmux_erlang/src/tmux_model.erl:208",
+          "at": "apps/libtmux_erlang/src/tmux_model.erl",
           "has": [
             "window_link(Fields) -> new(window_link, Fields)."
           ]
@@ -5082,7 +5154,7 @@
       "why": "Reads already captured membership values without tmux I/O.",
       "evidence": [
         {
-          "at": "apps/libtmux_erlang/src/tmux_snapshot.erl:105",
+          "at": "apps/libtmux_erlang/src/tmux_snapshot.erl",
           "has": [
             "window_links(Snapshot) -> rows(window_link, Snapshot)."
           ]
@@ -5102,7 +5174,7 @@
       "why": "Selects already captured membership values without tmux I/O.",
       "evidence": [
         {
-          "at": "apps/libtmux_erlang/src/tmux_select.erl:76",
+          "at": "apps/libtmux_erlang/src/tmux_select.erl",
           "has": [
             "window_links(Snapshot) -> from_snapshot(window_link, Snapshot)."
           ]
@@ -5122,7 +5194,7 @@
       "why": "Builds a future observation; fetching reads memberships and never links a window.",
       "evidence": [
         {
-          "at": "apps/libtmux_erlang/src/tmux_query.erl:139",
+          "at": "apps/libtmux_erlang/src/tmux_query.erl",
           "has": [
             "window_links(Server) -> #query{server = Server, entity = window_link}."
           ]
@@ -5142,19 +5214,19 @@
       "why": "Observes fields of one explicit stable ID with display-message rather than listing the collection.",
       "evidence": [
         {
-          "at": "apps/libtmux_erlang/src/tmux_pane.erl:127",
+          "at": "apps/libtmux_erlang/src/tmux_pane.erl",
           "has": [
             "get(Server, Id) -> tmux_observe:get(Server, pane, Id)."
           ]
         },
         {
-          "at": "apps/libtmux_erlang/src/tmux_observe.erl:13",
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl",
           "has": [
             "?= read_row(Entity, Id, Target, State)"
           ]
         },
         {
-          "at": "apps/libtmux_erlang/src/tmux_observe.erl:243",
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl",
           "has": [
             "?= command(<<\"display-message\">>"
           ]
@@ -5174,19 +5246,19 @@
       "why": "Observes fields of one explicit stable ID with display-message rather than listing the collection.",
       "evidence": [
         {
-          "at": "apps/libtmux_erlang/src/tmux_session.erl:64",
+          "at": "apps/libtmux_erlang/src/tmux_session.erl",
           "has": [
             "get(Server, Id) -> tmux_observe:get(Server, session, Id)."
           ]
         },
         {
-          "at": "apps/libtmux_erlang/src/tmux_observe.erl:13",
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl",
           "has": [
             "?= read_row(Entity, Id, Target, State)"
           ]
         },
         {
-          "at": "apps/libtmux_erlang/src/tmux_observe.erl:243",
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl",
           "has": [
             "?= command(<<\"display-message\">>"
           ]
@@ -5206,19 +5278,19 @@
       "why": "Observes fields of one explicit stable ID with display-message rather than listing the collection.",
       "evidence": [
         {
-          "at": "apps/libtmux_erlang/src/tmux_window.erl:56",
+          "at": "apps/libtmux_erlang/src/tmux_window.erl",
           "has": [
             "get(Server, Id) -> tmux_observe:get(Server, window, Id)."
           ]
         },
         {
-          "at": "apps/libtmux_erlang/src/tmux_observe.erl:13",
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl",
           "has": [
             "?= read_row(Entity, Id, Target, State)"
           ]
         },
         {
-          "at": "apps/libtmux_erlang/src/tmux_observe.erl:243",
+          "at": "apps/libtmux_erlang/src/tmux_observe.erl",
           "has": [
             "?= command(<<\"display-message\">>"
           ]
@@ -5238,13 +5310,13 @@
       "why": "Reads typed hook values with show-options -H, preserving indexed metadata.",
       "evidence": [
         {
-          "at": "apps/libtmux_erlang/src/tmux_hook.erl:72",
+          "at": "apps/libtmux_erlang/src/tmux_hook.erl",
           "has": [
             "?= tmux_target:run(Server, <<\"show-options\">>"
           ]
         },
         {
-          "at": "apps/libtmux_erlang/src/tmux_hook.erl:73",
+          "at": "apps/libtmux_erlang/src/tmux_hook.erl",
           "has": [
             "ScopeArgs ++ Flags ++ [<<\"-H\">>"
           ]
@@ -5264,13 +5336,13 @@
       "why": "Closes the library endpoint and its operations while preserving the daemon; owned shutdown requires the ownership token.",
       "evidence": [
         {
-          "at": "apps/libtmux_erlang/src/tmux_server.erl:267",
+          "at": "apps/libtmux_erlang/src/tmux_server.erl",
           "has": [
             "close(Server) -> server_request(Server, close, 1000)."
           ]
         },
         {
-          "at": "apps/libtmux_erlang/src/tmux_server.erl:132",
+          "at": "apps/libtmux_erlang/src/tmux_server.erl",
           "has": [
             "`close/1` only closes the endpoint and preserves the daemon."
           ]
