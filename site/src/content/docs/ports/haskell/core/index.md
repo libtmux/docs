@@ -16,9 +16,6 @@ cards:
   - label: Rename and set titles
     href: ../guides/mutations/
     body: Select explicit targets, apply checked changes and capture fresh observations.
-  - label: Typed values
-    href: ../guides/typed-values/
-    body: Understand entity IDs, indices, dimensions and version admission.
   - label: API reference
     href: ../reference/
     body: Public modules, types, constructors and functions from Haddock.
@@ -27,12 +24,7 @@ cards:
     body: Check public capabilities, compatibility evidence and package boundaries.
 ---
 
-Capture through a scoped Server handle, then inspect ordinary Haskell records
-after it closes. Window links retain each session's index and pane appearances.
-Rename sessions and physical windows, or set a pane title through an explicit
-reference. Capture again to observe the change; existing snapshots retain their
-values. Creation, input, event streams and workspace tooling remain in development.
-This port ships no MCP server; the [Python MCP server](/py/latest/mcp/) lets an assistant
-control tmux through the Python library. Read the
-[implementation status](../guides/status/)
-before choosing the package for automation.
+Open a `Server`, capture it, and work with sessions, windows and panes as
+ordinary Haskell records. Rename sessions and windows or set pane titles, then
+capture again to see the change. Creating sessions and sending input are in
+development.
