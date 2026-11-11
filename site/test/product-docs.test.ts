@@ -200,7 +200,7 @@ it('advertises workspace loaders with their declared command and development sta
     if (port.workspaceCliAvailability === 'local') {
       expect(productDescription(port, 'workspace')).toContain(port.productDescriptions?.workspace ?? 'Build the CLI from source')
     }
-    if (['local', 'published'].includes(port.workspaceCliAvailability!)) expect(workspaceOverviewNotice(port)?.body).toContain(`\`${port.workspaceCli!.split(/\s+/)[0]}\``)
+    if (['local', 'published'].includes(port.workspaceCliAvailability!)) expect(workspaceOverviewNotice(port)?.body).toContain(`\`${port.workspaceCliRun ?? port.workspaceCli!.split(/\s+/)[0]}\``)
     if (port.workspaceCliAvailability === 'published') {
       expect(productDescription(port, 'workspace')).toContain('published')
       expect(workspaceOverviewNotice(port)?.body).not.toMatch(/unreleased|local/)
@@ -1158,5 +1158,15 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       expect(new URL(entry.url).pathname, entry.url).not.toMatch(localizedPortTree)
       expect(resolves(entry.url), entry.url).toBe(true)
     }
+  })
+})
+
+describe('Lisp workspace notice', () => {
+  // `mise` only launches the checkout's script; it is not something to build.
+  it('names the command a checkout runs, not its launcher', () => {
+    const lisp = PORTS.find((port) => port.slug === 'lisp')!
+    const body = workspaceOverviewNotice(lisp)!.body
+    expect(body).toContain('Run `bin/libtmux-workspace` from a source checkout')
+    expect(body).not.toMatch(/Build|`mise`/)
   })
 })
