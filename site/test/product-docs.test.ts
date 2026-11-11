@@ -726,7 +726,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         developmentStatus(document, page.path, productIsConcept(port, page.product))
       const picker = document.querySelector('[data-surface-picker]')
       if (!productAvailable(port, page.product)) {
-        expect(document.querySelector('article')!.textContent, `${page.path} availability`).toMatch(/not published|no published/i)
+        expect(document.querySelector('article')!.textContent, `${page.path} availability`).toMatch(/not\s+published|no\s+published/i)
         expect(picker?.querySelector('.surface-current .surface-label')?.textContent, `${page.path} available app`).toBe('Core Library')
         expect(picker?.querySelector('.surface-current small')?.textContent, `${page.path} available section`).toBe('Home')
         const current = picker?.querySelectorAll('[aria-current="location"]')
