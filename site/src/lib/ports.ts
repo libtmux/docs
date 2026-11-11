@@ -249,6 +249,8 @@ export interface Port {
   versionedDocs: boolean
   /** Command that loads a workspace file. */
   workspaceCli?: string
+  /** The command a source checkout runs when `workspaceCli` starts a launcher such as `mise`, which is not the program. */
+  workspaceCliRun?: string
   /** Whether companion products exist for this language port. */
   productAvailability?: Partial<Record<DocProduct, ProductAvailability>>
   /** Native product descriptions where the generic CLI wording does not apply. */
@@ -787,6 +789,7 @@ const CORE_PORTS: readonly Port[] = [
     publishesOwnTree: true,
     generator: 'SBCL package introspection, docstrings and CLOS metadata',
     workspaceCli: 'mise exec -- tools/lisp.sh tools/workspace-cli.lisp',
+    workspaceCliRun: 'bin/libtmux-workspace',
     workspaceCliAvailability: 'local',
     productAvailability: { workspace: 'available', mcp: 'excluded' },
     productDescriptions: {
@@ -1701,7 +1704,7 @@ export function workspaceOverviewNotice(port: Port): { title: string; body: stri
   if (!port.workspaceCli) return concept
   const title = concept?.title ?? `Workspace Manager for ${port.name} is in development.`
   const scope = concept ? `${concept.body} ` : ''
-  const command = port.workspaceCli.split(/\s+/)[0]
+  const command = port.workspaceCliRun ?? port.workspaceCli.split(/\s+/)[0]
   if (port.workspaceCliAvailability === 'published') {
     return {
       title,
@@ -1710,10 +1713,12 @@ export function workspaceOverviewNotice(port: Port): { title: string; body: stri
     }
   }
   if (port.workspaceCliAvailability !== 'local') return concept
-  const cliPackage = port.packages?.find((pkg) => pkg.executable === command)
+  const cliPackage = port.packages?.find((pkg) => pkg.executable === command || pkg.executable === port.workspaceCli)
   return {
     title,
-    body: scope + `Build \`${command}\` from the source revision in the installation guide. `
+    body: scope + (port.workspaceCliRun
+      ? `Run \`${command}\` from a source checkout; the installation guide lists the setup. `
+      : `Build \`${command}\` from the source revision in the installation guide. `)
       + (cliPackage ? `The \`${cliPackage.name}\` package supplies this command. ` : '')
       + 'Follow the workspace guide for its configuration format.',
   }

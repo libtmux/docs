@@ -435,3 +435,15 @@ describe('prose Markdown links', () => {
     expect(output).toContain('[ref]: <https://libtmux.org/reference/member(_:_:)>')
   })
 })
+
+describe('Clojure identifiers that spell a tmux command', () => {
+  // `new-session!` is the library function; the tmux command is `new-session`.
+  it('links a bang name to the Clojure reference, and a bare command to the tmux manual', () => {
+    const output = linkProseMarkdown('Call `new-session!` or `send-keys!`, not `tmux new-session`.', 'clojure', undefined, { portSaid: true })
+    expect(urls(output)).toEqual([
+      '/clojure/latest/reference/libtmux-core-new-session/',
+      '/clojure/latest/reference/libtmux-core-send-keys/',
+      '/tmux/latest/manual/new-session/',
+    ])
+  })
+})

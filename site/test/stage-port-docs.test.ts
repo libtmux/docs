@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { execFileSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
-import { LISP_REFERENCE_FILES, artifactFromRevision, lispReferenceRoutes, expandDocumenter, linkSnapshotDepths, rewriteLinks, stagedPortGuides, stagedRoutesFor } from '../../scripts/stage-port-docs.mjs'
+import { LISP_REFERENCE_FILES, artifactFromRevision, leadSentence, lispReferenceRoutes, expandDocumenter, linkSnapshotDepths, rewriteLinks, stagedPortGuides, stagedRoutesFor } from '../../scripts/stage-port-docs.mjs'
 import { PORTS } from '../src/lib/ports'
 import { SOURCE_GUIDE_PORTS, sourceGuidesFor } from '../src/lib/port-documentation'
 import scalaGuides from '../src/data/port-guides/scala.json'
@@ -13,6 +13,7 @@ import powershellGuides from '../src/data/port-guides/powershell.json'
 import juliaGuides from '../src/data/port-guides/julia.json'
 import perlGuides from '../src/data/port-guides/perl.json'
 import haskellModel from '../src/data/api/haskell.json'
+import haskellGuides from '../src/data/port-guides/haskell.json'
 import clojureGuides from '../src/data/port-guides/clojure.json'
 import lispGuides from '../src/data/port-guides/lisp.json'
 import lispModel from '../src/data/api/lisp.json'
@@ -106,6 +107,28 @@ describe('staged port guide links', () => {
     expect(() => stagedPortGuides('haskell', {
       source: { repository: 'libtmux/libtmux-haskell', revision: 'd'.repeat(40) }, guides,
     })).toThrow('guide source differs from the Haskell API model')
+  })
+  it('describes a guide with its own first sentence instead of its title', () => {
+    expect(leadSentence('# T\n\n<!-- c -->\n\n![badge](x.svg)\n\nUse [`withServer`](a.md) to adopt a server.  Then more.\n')).toBe('Use withServer to adopt a server.')
+    expect(leadSentence('```sh\nmake\n```\n\nLater prose.')).toBe('')
+    const pages = stagedPortGuides('haskell', haskellGuides)
+    for (const [path, page] of pages) {
+      const description = /^description: (.*)$/m.exec(page)![1]
+      expect(description, path).not.toMatch(/documentation\.\"$|^"Guides for /)
+      expect(description, path).not.toMatch(/^"Read about/)
+    }
+    const index = pages.get('haskell/guides/index.md')!
+    expect(index).not.toContain('Read about')
+  })
+  it('labels a link to a staged guide with its title, not the file name in code', () => {
+    const page = stagedPortGuides('clojure', clojureGuides).get('clojure/guides/captures-and-effects/index.md')!
+    expect(page).toContain('[Captured values](../captured-values/) lists every captured key')
+    expect(page).not.toContain('`clojure-reference.md`')
+    const titles = new Map([['guides/captured-values', 'Captured values']])
+    const routes = { 'docs/reference.md': ['guides/captured-values'], 'docs/other.md': ['reference/x'] }
+    const link = (name: string) => rewriteLinks(`[\`${name}.md\`](${name}.md)`, 'docs/guide.md', 'guides/guide', routes as never, 'o/r', 'rev', new Set(), new Map(), titles)
+    expect(link('reference')).toBe('[Captured values](../captured-values/)')
+    expect(link('other')).toContain('`other.md`')
   })
   it('lists every tested Perl program on the examples index, each linking its source', () => {
     const page = stagedPortGuides('perl', perlGuides).get('perl/examples/programs/index.md')!

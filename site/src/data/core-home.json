@@ -412,7 +412,7 @@
       "objects": "libtmux.data",
       "errors": "libtmux.core/error-summary",
       "traversal": "libtmux.data/panes",
-      "servers": "libtmux.core/open!",
+      "connect": "libtmux.core/open!",
       "send-keys": "libtmux.core/send-keys!",
       "control-mode": "libtmux.control/subscribe!",
       "capture": "libtmux.core/capture!",

@@ -32,6 +32,7 @@ after it closes. Window links retain each session's index and pane appearances.
 Rename sessions and physical windows, or set a pane title through an explicit
 reference. Capture again to observe the change; existing snapshots retain their
 values. Creation, input, event streams and workspace tooling remain in development.
-MCP is excluded. Read the
+This port ships no MCP server; the [Python MCP server](/py/latest/mcp/) lets an assistant
+control tmux through the Python library. Read the
 [implementation status](../guides/status/)
 before choosing the package for automation.

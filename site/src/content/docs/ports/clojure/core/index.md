@@ -2,7 +2,7 @@
 port: clojure
 route: core
 title: "tmux client library for Clojure"
-description: "tmux client library for Clojure. Control tmux, connect to and create servers, navigate sessions, windows, and panes, send keys, watch for changes via control mode, capture pane contents"
+description: "tmux client library for Clojure. Control tmux, connect to servers, navigate sessions, windows, and panes, send keys, watch for changes via control mode, capture pane contents"
 cards:
   - label: Guides
     href: ../guides/
@@ -17,3 +17,5 @@ cards:
 
 The Clojure packages have not been published. Follow the source installation
 steps in [Getting started](../guides/getting-started/).
+
+This port ships no MCP server. The [Python MCP server](/py/latest/mcp/) lets an assistant control tmux through the Python library.

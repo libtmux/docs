@@ -51,11 +51,33 @@ function titleAndBody(content, sourcePath) {
   }
 }
 
+/**
+ * The first sentence of a guide's opening prose as plain text, or an empty
+ * string when the guide opens with code, a table or a list, or its first
+ * sentence is longer than `limit`. Staged pages use it where the catalog
+ * gives no description.
+ */
+export function leadSentence(body, limit = 240) {
+  const text = (node) => node.type === 'text' || node.type === 'inlineCode' ? node.value
+    : node.type === 'image' || node.type === 'html' ? '' : (node.children ?? []).map(text).join('')
+  for (const node of fromMarkdown(body).children) {
+    if (node.type === 'heading' || node.type === 'html') continue
+    if (node.type !== 'paragraph') return ''
+    const plain = text(node).replace(/\s+/g, ' ').trim()
+    if (!plain) continue
+    const sentence = /^(.+?[.!?])(?:\s|$)/.exec(plain)?.[1] ?? plain
+    return sentence.length <= limit && !sentence.endsWith(':') ? sentence : ''
+  }
+  return ''
+}
+
 function external(value) {
   return /^(?:[a-z][a-z0-9+.-]*:|#|\/)/i.test(value)
 }
 
-export function rewriteLinks(content, sourcePath, route, routes, repo, revision, nativeReferenceFiles = new Set(), nativeDeclarations = new Map()) {
+export function rewriteLinks(content, sourcePath, route, routes, repo, revision, nativeReferenceFiles = new Set(), nativeDeclarations = new Map(), titles = new Map()) {
+  // The staged route of the last destination `targetUrl` resolved onto a page of this site.
+  let stagedRoute
   const targetUrl = (destination, image = false, label) => {
     const owned = !image && /^https?:\/\/libtmux\.org\/en\/([^/]+)\//.exec(destination)
     if (owned) {
@@ -79,6 +101,7 @@ export function rewriteLinks(content, sourcePath, route, routes, repo, revision,
     // acquiring a fragment that the shared reference does not render.
     const staged = memberRoute || declaration || (fragment && nativeReferenceFiles.has(normalized) ? undefined : routes[normalized])
     if (staged) {
+      stagedRoute = staged.length === 1 && !fragment ? staged[0] : undefined
       let href = posix.relative(route, staged[0]) || '.'
       if (!href.startsWith('.')) href = `./${href}`
       const anchor = staged[1] || (!memberRoute ? fragment : '')
@@ -94,9 +117,16 @@ export function rewriteLinks(content, sourcePath, route, routes, repo, revision,
     if (!['link', 'image', 'definition'].includes(node.type)) return children
     const label = node.type === 'link' && node.children.every((child) => ['text', 'inlineCode'].includes(child.type))
       ? node.children.map((child) => child.value).join('') : undefined
+    stagedRoute = undefined
     const url = targetUrl(node.url, node.type === 'image', label)
     if (url === node.url) return children
     node.url = url
+    // A file name is a repository reader's label; a page of this site has a title.
+    const title = titles.get(stagedRoute)
+    const [only] = node.children ?? []
+    if (node.type === 'link' && title && node.children.length === 1 && only.type === 'inlineCode' && only.value.endsWith('.md')) {
+      node.children = [{ type: 'text', value: title }]
+    }
     return [{ start: node.position.start.offset, end: node.position.end.offset,
       text: toMarkdown(node).trimEnd() }]
   }
@@ -232,6 +262,8 @@ export function stagedPortGuides(port, artifact) {
   }
   const guides = new Map((artifact.guides ?? []).map((guide) => [guide.path, guide.content]))
   const files = new Map()
+  const descriptions = new Map()
+  const titles = new Map(Object.entries(routes).map(([path, entry]) => [entry.route, entry.title ?? titleAndBody(guides.get(path) ?? '', path).title]))
   for (const [sourcePath, guide] of Object.entries(routes)) {
     const { route, product, package: packageId, domain, aliases, equivalence, sidebar } = guide
     const content = guides.get(sourcePath)
@@ -243,10 +275,10 @@ export function stagedPortGuides(port, artifact) {
     const nativeLinked = port === 'julia' ? linkDocumenter(linked, artifact.source) : linked
     const { content: badged, files: badgeFiles } = localizeBadges(nativeLinked, port)
     for (const [name, svg] of badgeFiles) files.set(name, svg)
-    const rewritten = rewriteLinks(badged, sourcePath, route, linkRoutes, artifact.source.repository, artifact.source.revision, nativeReferenceFiles, nativeDeclarations)
+    const rewritten = rewriteLinks(badged, sourcePath, route, linkRoutes, artifact.source.repository, artifact.source.revision, nativeReferenceFiles, nativeDeclarations, titles)
     const data = {
       title,
-      description: guide.description ?? `${title}: ${identity.packageName} documentation.`,
+      description: guide.description ?? (leadSentence(rewritten) || `${title} guide for ${identity.packageName}.`),
       port,
       ...(product ? { product } : {}),
       ...(packageId ? { package: packageId } : {}),
@@ -258,13 +290,14 @@ export function stagedPortGuides(port, artifact) {
       sidebar: sidebar ?? { group: product ? (product === 'mcp' ? 'MCP' : 'Workspace Manager')
         : route === 'reference' ? 'API reference' : route.split('/')[0].replace(/^./, (letter) => letter.toUpperCase()) },
     }
+    descriptions.set(sourcePath, data.description)
     const frontmatter = Object.entries(data).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join('\n')
     files.set(`${port}/${route}/index.md`, `---\n${frontmatter}\n---\n\n${rewritten.trim()}\n`)
   }
   {
     const source = { repo: artifact.source.repository, path: Object.keys(routes)[0], ref: artifact.source.revision }
     const writeIndex = (route, title, body, cards = []) => {
-      const data = { title, description: `${title} for ${identity.packageName}.`, port, route, source, cards,
+      const data = { title, description: leadSentence(body) || `${title} for ${identity.packageName}.`, port, route, source, cards,
         sidebar: { group: route === 'reference' ? 'API reference' : route[0].toUpperCase() + route.slice(1), label: 'Overview', order: 1 } }
       const frontmatter = Object.entries(data).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join('\n')
       files.set(`${port}/${route}/index.md`, `---\n${frontmatter}\n---\n\n${body}\n`)
@@ -274,7 +307,7 @@ export function stagedPortGuides(port, artifact) {
       if (existsSync(join(root, `site/src/content/docs/ports/${port}/${section}/index.md`))) continue
       const selected = Object.entries(routes).filter(([, entry]) => entry.domain === 'core' && entry.route.startsWith(`${section}/`))
       const cards = selected.map(([path, entry]) => ({ label: entry.title ?? titleAndBody(guides.get(path), path).title,
-        href: `../${entry.route}/`, body: entry.description ?? `Read about ${titleAndBody(guides.get(path), path).title.toLowerCase()}.`,
+        href: `../${entry.route}/`, body: descriptions.get(path),
         order: entry.sidebar?.order ?? Number.MAX_SAFE_INTEGER }))
         .sort((a, b) => a.order - b.order || a.label.localeCompare(b.label))
         .map(({ order: _order, ...card }) => card)
