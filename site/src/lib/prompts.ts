@@ -526,8 +526,8 @@ export function portParts(args: {
     unavailable['session-supervisor'] = 'Elixir has no published workspace product or reconciliation API. Document the missing product and stop; do not advertise scaffold packages as usable.'
   }
   if (port.slug === 'erlang') {
-    unavailable['session-freezer'] = 'Erlang workspace support validates JSON desired state through tmux_workspace:load/1 and tmux_workspace:to_map/1. It has no freeze, restore or apply API. Report that boundary and stop; do not invent a workspace execution command.'
-    unavailable['session-supervisor'] = 'Erlang workspace support validates JSON desired state. Plan/apply, reconciliation and the workspace CLI are unfinished. Report that boundary and stop; do not present the loader as a supervisor.'
+    unavailable['session-freezer'] = 'Erlang workspace support loads, plans and applies JSON desired state through the tmux_workspace modules and the libtmux-workspace escript. It has no freeze or restore API. Report that boundary and stop; do not invent a way to capture a live session as a workspace.'
+    unavailable['session-supervisor'] = 'Erlang workspace apply executes a saved plan once and stops on observed drift or an uncertain result. It does not supervise a session or converge it continuously. Report that boundary and stop; do not present apply as a supervisor.'
   }
   if (port.slug === 'lua') {
     unavailable['session-freezer'] = 'Lua has no published workspace package or loader. Document the missing product and stop; do not call the scaffold or invent freeze and restore APIs.'

@@ -11,6 +11,7 @@ import fsharpGuides from '../src/data/port-guides/fsharp.json'
 import csharpModel from '../src/data/api/csharp.json'
 import powershellGuides from '../src/data/port-guides/powershell.json'
 import juliaGuides from '../src/data/port-guides/julia.json'
+import perlGuides from '../src/data/port-guides/perl.json'
 import haskellModel from '../src/data/api/haskell.json'
 import clojureGuides from '../src/data/port-guides/clojure.json'
 import lispGuides from '../src/data/port-guides/lisp.json'
@@ -98,15 +99,28 @@ describe('staged port guide links', () => {
       source: { repository: 'libtmux/libtmux-haskell', revision: 'd'.repeat(40) }, guides,
     })).toThrow('guide source differs from the Haskell API model')
   })
+  it('lists every tested Perl program on the examples index, each linking its source', () => {
+    const page = stagedPortGuides('perl', perlGuides).get('perl/examples/programs/index.md')!
+    const { revision } = perlGuides.source
+    const programs = ['quickstart', 'selection', 'workspace', 'async', 'await', 'async-lifecycle']
+    for (const name of programs) {
+      expect(page).toContain(`[${name}.pl](https://github.com/libtmux/libtmux-perl/blob/${revision}/examples/${name}.pl)`)
+    }
+  })
   it('resolves native Lisp API anchors into core and workspace declaration pages', () => {
     const pages = stagedPortGuides('lisp', lispGuides)
     const operations = pages.get('lisp/guides/operations/index.md')!
-    const workspace = pages.get('lisp/workspace/source-guide/index.md')!
+    const owned = pages.get('lisp/workspace/source-guide/index.md')!
+    const legacy = pages.get('lisp/workspace/legacy-guide/index.md')!
     expect(operations).toContain('../../reference/libtmux-kill-pane/')
     expect(operations).not.toContain('../../reference/#kill-pane-function')
-    expect(workspace).toContain('../reference/libtmux-workspace-read-workspace/')
-    expect(workspace).toContain('../../reference/libtmux-command-outcome/')
-    expect(workspace).not.toMatch(/reference\/#(?:read-workspace-function|command-outcome-type)/)
+    expect(owned).toContain('../reference/libtmux-workspace-fetch-workspace-state/')
+    expect(owned).toContain('../../reference/libtmux-wait-for/')
+    expect(legacy).toContain('../reference/libtmux-workspace-read-workspace/')
+    expect(legacy).toContain('../../reference/libtmux-command-outcome/')
+    for (const workspace of [owned, legacy]) {
+      expect(workspace).not.toMatch(/reference\/#(?:read-workspace-function|command-outcome-type)/)
+    }
   })
   it('fails staging on a Lisp package the reference table lacks (negative control)', () => {
     const known = lispModel.symbols.find((entry: { kind: string }) => entry.kind !== 'module')!

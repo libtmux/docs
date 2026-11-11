@@ -1916,18 +1916,18 @@
       "port": "erlang",
       "page": "home",
       "sourceRepository": "libtmux/libtmux-erlang",
-      "sourceRevision": "9a1ca749f7bf6f082c910c99f961bb586781ab0b",
-      "sourceTree": "84dce57239c93b84bfd9aa383e13100a746d0188",
+      "sourceRevision": "e858027b2b204c3e621b1f74e9419c9b71e3f2f5",
+      "sourceTree": "0e5cf4b98920e44500a7ae8f3be5d8a88fae443f",
       "files": [
         {
           "name": "src/readme_demo.erl",
-          "sha256": "27d252a8a7c9eec73f07283ce37d451b320a941fd5cc650d1f87d8eca1644484",
-          "clipboardSha256": "789c44cf3770601d9d9e687345b2476d30d0a24b41c6917008d10bf31a403c36"
+          "sha256": "1ff24e66b6ac576c63eb2fc481aeeb17ab641608ec4ac56c09f9266e34fcf850",
+          "clipboardSha256": "d4ab3b8b2e95bc65ef69eac865a5d198fe79d7ad168a9e649ba234fed5573541"
         },
         {
           "name": "rebar.config",
-          "sha256": "7b9e3ce5a40312a0405047dd6790c85cbc4e77d03cb36c01f908a7360107305f",
-          "clipboardSha256": "b4914622185528463805e6082936a3c4bdb6d72dced532bc5b8d78b0586f1d90"
+          "sha256": "bf5c066734476ae773ef8472e8db6cab88cff06a67ea8f748ed3e42095344540",
+          "clipboardSha256": "99c327669ed758d04d0801dcc672ee528f4dfaaed236fbe6c46a271f5e4ccba0"
         },
         {
           "name": "src/tmux_example.app.src",
@@ -1935,7 +1935,7 @@
           "clipboardSha256": "eb2b210947622f55da3f3c6a39b1e36340c714066c5aca8107f4e04caaffc507"
         }
       ],
-      "excerptSha256": "789c44cf3770601d9d9e687345b2476d30d0a24b41c6917008d10bf31a403c36",
+      "excerptSha256": "d4ab3b8b2e95bc65ef69eac865a5d198fe79d7ad168a9e649ba234fed5573541",
       "shellRecipe": [
         "rebar3 compile",
         "env \\\n    -u TMUX \\\n    -u TMUX_PANE \\\n    erl \\\n    -noshell \\\n    -pa _build/default/lib/tmux_example/ebin \\\n    -pa _build/default/lib/libtmux_erlang/apps/libtmux_erlang/ebin \\\n    -eval '\n        {ok, _} = application:ensure_all_started(libtmux_erlang),\n        Tmux = unicode:characters_to_binary(os:find_executable(\"tmux\")),\n        Stats = readme_demo:run(Tmux),\n        io:format(\"~B session, ~B windows, ~B panes; ~B matches~n\", [\n            maps:get(sessions, Stats), maps:get(windows, Stats),\n            maps:get(panes, Stats), maps:get(matched_panes, Stats)]),\n        halt().'"
@@ -1955,13 +1955,13 @@
           "files": [
             {
               "name": "src/readme_demo.erl",
-              "sha256": "f67944e219577f5c03d93629758ff5c97f72190d4c2e9359a8608cbf09076563",
-              "clipboardSha256": "d517f301c4f3fd78227d6867588e601ef6b928ead5c095dbd1db069876e84b84"
+              "sha256": "1ff24e66b6ac576c63eb2fc481aeeb17ab641608ec4ac56c09f9266e34fcf850",
+              "clipboardSha256": "d4ab3b8b2e95bc65ef69eac865a5d198fe79d7ad168a9e649ba234fed5573541"
             },
             {
               "name": "rebar.config",
-              "sha256": "7b9e3ce5a40312a0405047dd6790c85cbc4e77d03cb36c01f908a7360107305f",
-              "clipboardSha256": "b4914622185528463805e6082936a3c4bdb6d72dced532bc5b8d78b0586f1d90"
+              "sha256": "bf5c066734476ae773ef8472e8db6cab88cff06a67ea8f748ed3e42095344540",
+              "clipboardSha256": "99c327669ed758d04d0801dcc672ee528f4dfaaed236fbe6c46a271f5e4ccba0"
             },
             {
               "name": "src/tmux_example.app.src",
@@ -1969,19 +1969,19 @@
               "clipboardSha256": "eb2b210947622f55da3f3c6a39b1e36340c714066c5aca8107f4e04caaffc507"
             }
           ],
-          "excerptSha256": "d517f301c4f3fd78227d6867588e601ef6b928ead5c095dbd1db069876e84b84"
+          "excerptSha256": "d4ab3b8b2e95bc65ef69eac865a5d198fe79d7ad168a9e649ba234fed5573541"
         },
         "errors": {
           "files": [
             {
               "name": "src/readme_demo.erl",
-              "sha256": "f67944e219577f5c03d93629758ff5c97f72190d4c2e9359a8608cbf09076563",
-              "clipboardSha256": "d517f301c4f3fd78227d6867588e601ef6b928ead5c095dbd1db069876e84b84"
+              "sha256": "1ff24e66b6ac576c63eb2fc481aeeb17ab641608ec4ac56c09f9266e34fcf850",
+              "clipboardSha256": "d4ab3b8b2e95bc65ef69eac865a5d198fe79d7ad168a9e649ba234fed5573541"
             },
             {
               "name": "rebar.config",
-              "sha256": "7b9e3ce5a40312a0405047dd6790c85cbc4e77d03cb36c01f908a7360107305f",
-              "clipboardSha256": "b4914622185528463805e6082936a3c4bdb6d72dced532bc5b8d78b0586f1d90"
+              "sha256": "bf5c066734476ae773ef8472e8db6cab88cff06a67ea8f748ed3e42095344540",
+              "clipboardSha256": "99c327669ed758d04d0801dcc672ee528f4dfaaed236fbe6c46a271f5e4ccba0"
             },
             {
               "name": "src/tmux_example.app.src",
@@ -1989,19 +1989,19 @@
               "clipboardSha256": "eb2b210947622f55da3f3c6a39b1e36340c714066c5aca8107f4e04caaffc507"
             }
           ],
-          "excerptSha256": "d517f301c4f3fd78227d6867588e601ef6b928ead5c095dbd1db069876e84b84"
+          "excerptSha256": "d4ab3b8b2e95bc65ef69eac865a5d198fe79d7ad168a9e649ba234fed5573541"
         },
         "cleanup": {
           "files": [
             {
               "name": "src/readme_demo.erl",
-              "sha256": "27d252a8a7c9eec73f07283ce37d451b320a941fd5cc650d1f87d8eca1644484",
-              "clipboardSha256": "789c44cf3770601d9d9e687345b2476d30d0a24b41c6917008d10bf31a403c36"
+              "sha256": "1ff24e66b6ac576c63eb2fc481aeeb17ab641608ec4ac56c09f9266e34fcf850",
+              "clipboardSha256": "d4ab3b8b2e95bc65ef69eac865a5d198fe79d7ad168a9e649ba234fed5573541"
             },
             {
               "name": "rebar.config",
-              "sha256": "7b9e3ce5a40312a0405047dd6790c85cbc4e77d03cb36c01f908a7360107305f",
-              "clipboardSha256": "b4914622185528463805e6082936a3c4bdb6d72dced532bc5b8d78b0586f1d90"
+              "sha256": "bf5c066734476ae773ef8472e8db6cab88cff06a67ea8f748ed3e42095344540",
+              "clipboardSha256": "99c327669ed758d04d0801dcc672ee528f4dfaaed236fbe6c46a271f5e4ccba0"
             },
             {
               "name": "src/tmux_example.app.src",
@@ -2009,7 +2009,7 @@
               "clipboardSha256": "eb2b210947622f55da3f3c6a39b1e36340c714066c5aca8107f4e04caaffc507"
             }
           ],
-          "excerptSha256": "789c44cf3770601d9d9e687345b2476d30d0a24b41c6917008d10bf31a403c36"
+          "excerptSha256": "d4ab3b8b2e95bc65ef69eac865a5d198fe79d7ad168a9e649ba234fed5573541"
         }
       }
     }

@@ -357,7 +357,7 @@ describe('port inventory', () => {
     }
     expect(all.filter(({ entry }) => entry.file).map(({ port, entry }) => `${port}:${entry.id}`).sort())
       .toEqual(['julia:LibTmux.Filters', 'julia:LibTmuxJSONExt', 'julia:LibTmuxTablesExt',
-        'lisp:libtmux/json', 'lisp:libtmux/query', 'lisp:libtmux/regex', 'lisp:libtmux/workspace',
+        'lisp:libtmux/control', 'lisp:libtmux/json', 'lisp:libtmux/query', 'lisp:libtmux/regex', 'lisp:libtmux/workspace',
         'lisp:libtmux/workspace/cli', 'lisp:workspace-command', 'perl:libtmux-workspace', 'py:pytest-plugin'])
   })
 })

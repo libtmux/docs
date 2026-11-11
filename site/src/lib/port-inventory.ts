@@ -384,7 +384,7 @@ export const INVENTORY: Readonly<Record<string, readonly InventoryEntry[]>> = {
       aliases: ['Erlang/OTP', 'Rebar3'], note: 'Installs from Git with Rebar3 git_subdir; no Hex release.' }),
     erlang({ id: 'repository', kind: 'source', product: 'core', label: 'libtmux-erlang', coordinate: 'libtmux/libtmux-erlang' }),
     erlang({ id: 'libtmux_erlang_workspace', kind: 'companion', product: 'workspace', label: 'libtmux_erlang_workspace', path: 'apps/libtmux_erlang_workspace',
-      note: 'Source application for validated JSON desired state. Plan/apply and its CLI are unfinished.' }),
+      note: 'Source application that plans and applies JSON workspaces, with a standalone escript built from source; no Hex release.' }),
   ],
   elixir: [
     elixir({ id: 'libtmux', kind: 'library', product: 'core', label: 'libtmux', ...hexPackage('libtmux'), path: 'lib', aliases: ['LibTmux'] }),
@@ -416,6 +416,8 @@ export const INVENTORY: Readonly<Record<string, readonly InventoryEntry[]>> = {
       label: 'libtmux/regex', path: 'libtmux.asd', file: true, aliases: ['libtmux.regex'] }),
     lisp({ id: 'libtmux/json', kind: 'companion', product: 'core', unit: 'ASDF system', within: 'libtmux',
       label: 'libtmux/json', path: 'libtmux.asd', file: true, aliases: ['libtmux.json'] }),
+    lisp({ id: 'libtmux/control', kind: 'companion', product: 'core', unit: 'ASDF system', within: 'libtmux',
+      label: 'libtmux/control', path: 'libtmux.asd', file: true, aliases: ['libtmux.control'] }),
     lisp({ id: 'libtmux/workspace', kind: 'companion', product: 'workspace', unit: 'ASDF system', within: 'libtmux',
       label: 'libtmux/workspace', path: 'src/workspace.lisp', file: true,
       aliases: ['libtmux.workspace', '(asdf:load-system "libtmux/workspace")'] }),

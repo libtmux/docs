@@ -119,6 +119,7 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
       guide('README.md', 'guides/getting-started', 'core', { title: 'Getting started', sidebar: { group: 'Guides', order: 1 } }),
       guide('docs/installation.md', 'guides/installation', 'core', { title: 'Installation', sidebar: { group: 'Guides', order: 2 } }),
       guide('docs/filtering.md', 'guides/filtering', 'core', { title: 'Filtering' }),
+      guide('examples/README.md', 'examples/programs', 'core', { title: 'Runnable programs', description: 'Run the tested Perl programs and compare each with its expected result.', aliases: [] }),
       guide('docs/orchestration.md', 'examples/orchestration', 'core', { title: 'Create sessions, windows, and panes', aliases: ['guides/orchestration'] }),
       guide('docs/graph.md', 'concepts/graph', 'core', { title: 'Snapshot graph and identity', aliases: ['guides/graph'] }),
       guide('docs/fields.md', 'concepts/fields', 'core', { title: 'Entity fields', aliases: ['guides/fields'] }),
@@ -133,7 +134,7 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
     domains: [
       libraryDomain('Native CLOS observations, ordinary sequences and explicit tmux operations.'),
       { id: 'workspace', label: 'Workspace Manager', kind: 'product', navGroup: 'Apps', route: 'workspace', package: 'workspace', product: 'workspace',
-        description: 'Validate, plan and explicitly apply bounded JSON workspaces through the native Lisp engine.' },
+        description: 'Validate, plan, apply and inspect owned JSON workspaces through the native Lisp engine.' },
     ],
     sourceGuides: [
       guide('README.md', 'guides/getting-started', 'core', { title: 'Getting started', aliases: [], sidebar: { group: 'Guides', order: 1 } }),
@@ -146,7 +147,8 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
       guide('docs/capabilities.md', 'guides/capabilities', 'core', { title: 'Capabilities and limits', aliases: [], sidebar: { group: 'Guides', order: 5 } }),
       guide('docs/testing.md', 'guides/testing', 'core', { title: 'Testing', aliases: [], sidebar: { group: 'Guides', order: 6 } }),
       guide('verification.md', 'guides/verification', 'core', { title: 'Verification evidence', aliases: [], sidebar: { group: 'Guides', order: 7 } }),
-      guide('docs/workspaces.md', 'workspace/source-guide', 'workspace', { title: 'Workspace guide', product: 'workspace', package: 'workspace', aliases: [], sidebar: { group: 'Guides', order: 2 } }),
+      guide('docs/workspace-owned.md', 'workspace/source-guide', 'workspace', { title: 'Workspace guide', product: 'workspace', package: 'workspace', aliases: [], sidebar: { group: 'Guides', order: 2 } }),
+      guide('docs/workspaces.md', 'workspace/legacy-guide', 'workspace', { title: 'Legacy workspace topology guide', product: 'workspace', package: 'workspace', aliases: [], sidebar: { group: 'Guides', order: 3 } }),
     ],
     redirects: [
       { sourcePath: 'docs/api.md', path: 'guides/api', target: 'reference' },
@@ -327,7 +329,7 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
     domains: [
       libraryDomain('Install the OTP application from Git and use native records, captured graphs and explicit tmux operations.'),
       { id: 'workspace', label: 'Workspace Manager', kind: 'unavailable', navGroup: 'Availability', route: 'workspace', product: 'workspace',
-        description: 'The source application validates JSON desired state. Its plan/apply workflow and CLI are unfinished.' },
+        description: 'Plan and apply JSON workspaces with a standalone escript built from source. No package is published.' },
     ],
     sourceGuides: [
       guide('README.md', 'guides/getting-started', 'core', { title: 'Getting started', aliases: [], sidebar: { group: 'Guides', order: 1 } }),

@@ -66,6 +66,14 @@ d('resolver', () => {
     expect(notASymbol('Server:new_session')).toBeUndefined()
   })
 
+  it('turns away Perl program names and CPAN modules, but not LibTmux modules', () => {
+    for (const text of ['await.pl', 'async-lifecycle.pl']) expect(notASymbol(text, 'perl'), text).toBe('a filename')
+    for (const text of ['Future::AsyncAwait', 'IO::Async']) expect(notASymbol(text, 'perl'), text).toBe('a module outside the LibTmux namespace')
+    for (const text of ['LibTmux::Server', 'LibTmux::Async::Server']) expect(notASymbol(text, 'perl'), text).toBeUndefined()
+    expect(notASymbol('Future::AsyncAwait', 'lisp')).toBeUndefined()
+    expect(notASymbol('await.pl')).toBeUndefined()
+  })
+
   it('normalises call syntax to a path', () => {
     expect(toPath('await server.sessions()')).toEqual(['server', 'sessions'])
     expect(toPath('server->sessions()')).toEqual(['server', 'sessions'])

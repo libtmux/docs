@@ -22,3 +22,7 @@ Each guide includes its complete program, setup command and expected result.
 The core checks run these programs against private tmux servers and repeat
 them as installed consumers. Follow the guide's cleanup contract when adapting
 a program to an existing server.
+
+The [workspace manager](../workspace/) page covers the complete apply example,
+which plans a workspace, applies it on its own server and checks that planning
+again produces no steps.

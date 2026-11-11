@@ -838,8 +838,10 @@ const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
     snapshots: ['libtmux:active-p', 'libtmux:entity', 'libtmux:entity-data', 'libtmux:entity-model',
       'libtmux:id', 'libtmux:index', 'libtmux:name', 'libtmux:provenance', 'libtmux:refresh',
       'libtmux:same-entity-p', 'libtmux:snapshot', 'libtmux:title'],
+    errors: ['libtmux:configuration-partial-records', 'libtmux:configuration-read-outcomes'],
     workspace: ['libtmux.workspace:workspace', 'libtmux.workspace:workspace-plan',
       'libtmux.workspace:workspace-result', 'libtmux.workspace:workspace-step',
+      'libtmux.workspace:workspace-state', 'libtmux.workspace:workspace-inspection',
       'libtmux.workspace.cli:main'],
   },
   java: {
