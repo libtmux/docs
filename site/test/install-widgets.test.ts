@@ -475,7 +475,11 @@ describeIfGoMcp('MCP install picker, Go', () => {
 // page went away: Python's MCP page is built from its own Sphinx tree. Render the picker.
 describe('MCP install picker, Python', () => {
   it('still offers uvx and its cooldown control', async () => {
-    const picker = await loadAstroTemplate('components/widgets/McpInstall.astro')
+    // The picker renders 126 panels, each through Shiki. This test reads tabs and
+    // controls, not highlighted markup, so highlight nothing.
+    const picker = await loadAstroTemplate('components/widgets/McpInstall.astro', {
+      modules: { '../../lib/highlight': { highlightWithCooldownSlots: async (code: string) => code } },
+    })
     const window = new Window()
     const document = window.document as unknown as Document
     document.body.innerHTML = await renderAstroTemplate(picker, { props: { port: 'py' } })
