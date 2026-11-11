@@ -154,6 +154,38 @@ describe('port docs identity', () => {
   })
 })
 
+describe('a scheduled port-head build', () => {
+  const scheduled = (inputs: Record<string, string>) => identity({
+    EVENT: 'schedule', INPUT_SOURCE_REF: 'a'.repeat(40), INPUT_VERSION: 'latest', INPUT_KIND: 'trunk', INPUT_PUBLISH: 'false', ...inputs,
+  })
+
+  it('builds the head it names and publishes nothing', () => {
+    const result = scheduled({})
+    expect(result.outputs.source_ref).toBe('a'.repeat(40))
+    expect(versions(result.entries)).toEqual([['latest', 'trunk', false, '']])
+    expect(result.outputs.should_publish).toBe('false')
+  })
+
+  it('refuses to publish, and still refuses an event it does not know (negative control)', () => {
+    expect(scheduled({ INPUT_PUBLISH: 'true' }).stderr).toContain('a scheduled build cannot publish')
+    expect(identity({ EVENT: 'issues' }).stderr).toContain('unsupported event')
+  })
+
+  it('is what port-heads.yml calls, with no deploy job', () => {
+    const heads = readFileSync(new URL('../../.github/workflows/port-heads.yml', import.meta.url), 'utf8')
+    expect(heads).toContain('uses: ./.github/workflows/port-docs.yml')
+    expect(heads).toMatch(/publish: false/)
+    expect(heads).not.toMatch(/uses: .*reusable-deploy/)
+  })
+
+  it('adds one optional input and keeps the checkout default (contract)', () => {
+    const input = workflow.match(/source-repository:\n(?:\s+.*\n)+?\s+default: ''/)
+    expect(input?.[0]).toContain('required: false')
+    expect(input?.[0]).toContain('type: string')
+    expect(workflow.match(/repository: \$\{\{ inputs\.source-repository \|\| github\.repository \}\}/g)).toHaveLength(2)
+  })
+})
+
 describe('port docs workflow', () => {
   it('builds wrapper versions under their parent repository ownership', () => {
     const entries = tag('v0.0.1-alpha.17').entries

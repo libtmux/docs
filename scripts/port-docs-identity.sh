@@ -18,6 +18,8 @@
 #   TAG_PREFIX is stripped first, so libtmux-rs's `libtmux@v0.1.0` publishes
 #   `v0.1.0`.
 # - A dispatch publishes exactly what its inputs name, at any ref.
+# - A schedule builds exactly what its inputs name and never publishes: the
+#   docs repository's port-heads.yml builds each port's head this way.
 #
 # Reads the event from the environment and writes source_ref, matrix and
 # should_publish to $GITHUB_OUTPUT.
@@ -91,7 +93,11 @@ case "$EVENT" in
       exit 1
     fi
     ;;
-  workflow_dispatch)
+  workflow_dispatch | schedule)
+    [[ "$EVENT" == workflow_dispatch || "${INPUT_PUBLISH:-false}" != true ]] || {
+      echo 'a scheduled build cannot publish' >&2
+      exit 1
+    }
     source_ref="$INPUT_SOURCE_REF"
     [[ -n "$source_ref" ]] || {
       echo 'a dispatch requires source-ref' >&2

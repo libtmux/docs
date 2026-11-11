@@ -29,6 +29,7 @@ import { homedir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PORTS } from '../site/src/lib/ports.ts'
+import { resolveCheckout } from './lib/port-checkout.mjs'
 import { readPort, repositoryAt } from './lib/manifest-packages.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -60,7 +61,7 @@ const ports = {}
 for (const port of PORTS) {
   if (opts.port && port.slug !== opts.port) continue
   const model = JSON.parse(readFileSync(join(root, 'site', 'src', 'data', 'api', `${port.slug}.json`), 'utf8'))
-  const checkout = expand(process.env[`LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`] ?? port.checkout)
+  const checkout = resolveCheckout(port, { order: ['checkout'] })
   const open = (path, revision) => {
     const repo = repositoryAt(path, revision)
     return repo.exists() ? repo : undefined

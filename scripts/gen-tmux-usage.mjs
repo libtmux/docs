@@ -33,6 +33,7 @@ import { homedir, tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { GRAMMARS, isLibrarySource, scanSource } from './lib/tmux-usage-scan.mjs'
+import { resolveCheckout } from './lib/port-checkout.mjs'
 import { reachableHaskellSources } from './lib/tmux-usage-haskell.mjs'
 import { applyConditions, applyExclusions, conditionProblem, deriveUsage, partialProblems, ruleHolds, verifyClaims } from './lib/tmux-usage-derive.mjs'
 import { locateRules } from './lib/tmux-usage-locate.mjs'
@@ -347,8 +348,7 @@ export async function portsWithModels() {
 }
 
 export function checkoutFor(port) {
-  const override = process.env[`LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`]
-  return expand(override || port.checkout)
+  return resolveCheckout(port, { order: ['checkout'] })
 }
 
 /**

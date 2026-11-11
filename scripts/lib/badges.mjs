@@ -152,3 +152,19 @@ export function badgesStale(files, directory) {
     return !existsSync(path) || readFileSync(path, 'utf8') !== svg
   })
 }
+
+/**
+ * Every badge in `content` that `badgeSpec` cannot render, one problem each,
+ * naming the port and the URL. `localizeBadges` stops at the first such badge;
+ * a check over many files wants all of them.
+ */
+export function badgeProblems(content, port, registry) {
+  return findOffOriginBadges(content).flatMap((url) => {
+    try {
+      badgeSpec(url, { port, registry })
+      return []
+    } catch (error) {
+      return [{ port, url, reason: error.message.replace(`${port}: `, '') }]
+    }
+  })
+}

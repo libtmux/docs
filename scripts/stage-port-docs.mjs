@@ -2,7 +2,6 @@
 /** Stage source-owned port guides from the same native artifact as the API. */
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
-import { homedir } from 'node:os'
 import { dirname, join, posix, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { fromMarkdown } from 'mdast-util-from-markdown'
@@ -12,6 +11,7 @@ import { defaultVersionFor, linkedVersionFor } from '../site/src/lib/versions.ts
 import { sourceGuidesFor, sourceGuideRedirectsFor, stagedSectionsFor, stagedSectionDescription, SOURCE_GUIDE_PORTS } from '../site/src/lib/port-documentation.ts'
 import { SymbolIndex, parameterId } from '../packages/api-model/src/link.ts'
 import { BADGE_DIRECTORY, badgesStale, localizeBadges } from './lib/badges.mjs'
+import { resolveCheckout } from './lib/port-checkout.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const output = join(root, 'site/src/content/docs/_staged')
@@ -33,7 +33,6 @@ export function stagedRoutesFor(port) {
 
 const ROUTES = Object.fromEntries(SOURCE_GUIDE_PORTS.map((slug) => [slug, stagedRoutesFor(slug)]))
 
-const expand = (value) => value.startsWith('~/') ? join(homedir(), value.slice(2)) : value
 
 function titleAndBody(content, sourcePath) {
   // The shared catalog supplies page metadata; source frontmatter is not article prose.
@@ -144,6 +143,22 @@ export const LISP_REFERENCE_FILES = {
   'libtmux.workspace.cli': 'docs/workspace-api.md',
 }
 
+/**
+ * Source-guide link routes for Common Lisp declarations. A declaration whose
+ * package has no entry in LISP_REFERENCE_FILES throws: the port's own build
+ * regenerates the model at its head, which can name a package added since.
+ */
+export function lispReferenceRoutes(symbols) {
+  const routes = {}
+  for (const symbol of symbols.filter((entry) => entry.kind !== 'module')) {
+    const file = LISP_REFERENCE_FILES[symbol.namespace]
+    if (!file) throw new Error(`Common Lisp declaration has no native reference: ${symbol.id}`)
+    const anchor = `${symbol.name}-${symbol.kind === 'function' ? 'function' : 'type'}`
+    routes[`${file}#${anchor}`] = [`${symbol.product === 'workspace' ? 'workspace/' : ''}reference/${symbol.slug}`]
+  }
+  return routes
+}
+
 export function stagedPortGuides(port, artifact) {
   const identity = PORTS.find((entry) => entry.slug === port)
   const routes = ROUTES[port]
@@ -172,15 +187,8 @@ export function stagedPortGuides(port, artifact) {
   }
   if (port === 'lisp') {
     const { symbols } = JSON.parse(readFileSync(join(root, 'site/src/data/api/lisp.json'), 'utf8'))
-    for (const symbol of symbols.filter((entry) => entry.kind !== 'module')) {
-      const file = LISP_REFERENCE_FILES[symbol.namespace]
-      if (!file) throw new Error(`Common Lisp declaration has no native reference: ${symbol.id}`)
-      const anchor = `${symbol.name}-${symbol.kind === 'function' ? 'function' : 'type'}`
-      linkRoutes[`${file}#${anchor}`] = [
-        `${symbol.product === 'workspace' ? 'workspace/' : ''}reference/${symbol.slug}`,
-      ]
-      nativeReferenceFiles.add(file)
-    }
+    Object.assign(linkRoutes, lispReferenceRoutes(symbols))
+    for (const symbol of symbols.filter((entry) => entry.kind !== 'module')) nativeReferenceFiles.add(LISP_REFERENCE_FILES[symbol.namespace])
   }
   if (port === 'powershell') {
     const model = JSON.parse(readFileSync(join(root, 'site/src/data/api/powershell.json'), 'utf8'))
@@ -377,7 +385,7 @@ export function run() {
     && (!wrappersOnly || entry.parentLibrary) && !(cached && entry.slug === publicationPort))
   if (refreshCache && !selectedPort) throw new Error('--refresh-cache requires one --port')
   for (const port of selected) {
-    const checkout = expand(process.env[`LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`] || (integrated ? port.checkout : port.worktree))
+    const checkout = resolveCheckout(port, { order: [integrated ? 'checkout' : 'worktree'] })
     const artifactPath = join(checkout, 'docs/_build/api.json')
     const selectedSource = process.env.LIBTMUX_DOCS_PORT === port.slug && process.env.LIBTMUX_DOCS_SOURCE_SHA
     const cachePath = join(cacheRoot, `${port.slug}.json`)

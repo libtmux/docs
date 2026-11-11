@@ -13,6 +13,7 @@ import {
 /** Static import keeps source bytes available in bundled HTML and Markdown exports. */
 import CACHE from '../data/example-sources.json' with { type: 'json' }
 import { visit } from 'unist-util-visit'
+import { checkoutOverride } from '../../../scripts/lib/port-checkout.mjs'
 
 /**
  * Fence language to port slug. A language absent here — console, json, yaml,
@@ -97,8 +98,7 @@ const PRODUCT_CHECKOUTS = {
 export function checkoutFor(owner, product) {
   const own = product ? PRODUCT_CHECKOUTS[`${owner}/${product}`] : undefined
   if (own) return expand(process.env[own.variable] || own.fallback)
-  const override = process.env[`LIBTMUX_DOCS_CHECKOUT_${owner.toUpperCase()}`]
-  return expand(override || CHECKOUTS[owner] || '')
+  return checkoutOverride(owner) ?? expand(CHECKOUTS[owner] || '')
 }
 
 /**

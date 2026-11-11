@@ -27,6 +27,7 @@ import { createRequire } from 'node:module'
 import { basename, dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PORT_BY_SLUG } from '../site/src/lib/ports.ts'
+import { checkoutOverride } from './lib/port-checkout.mjs'
 import { SOURCES, SUPPORT, TMUXP_EXAMPLES, TOPICS, TOPIC_EXAMPLES, VIA } from './lib/workspace-showcase-sources.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -171,7 +172,7 @@ function workspaceSource(port) {
 /** A checkout that has the revision's objects: the docs worktree is absent on most machines, the plain checkout shares its objects. */
 function findCheckout(port, revision) {
   const candidates = [
-    process.env[`LIBTMUX_DOCS_CHECKOUT_${port.toUpperCase()}`], SOURCES[port].checkout, checkoutFor(port),
+    checkoutOverride(port), SOURCES[port].checkout, checkoutFor(port),
     PORT_BY_SLUG[port].worktree, PORT_BY_SLUG[port].checkout,
   ].filter(Boolean).map(expand)
   return candidates.find((candidate) => hasRevision({ checkout: candidate, revision }))

@@ -38,6 +38,14 @@ on:
         required: false
         type: boolean
         default: false
+      source-repository:
+        description: >
+          The port repository to build, `owner/name`. Empty builds the calling
+          repository, which is what every port caller wants. libtmux/docs sets
+          it to build a port's head without deploying (port-heads.yml).
+        required: false
+        type: string
+        default: ''
       tag-prefix:
         description: >
           Stripped from a release tag to give its version slug, e.g.
@@ -128,7 +136,7 @@ jobs:
           PUBLISH_PREVIEWS: ${{ inputs.publish-previews }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           SAME_REPOSITORY_PR: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
-          REPOSITORY_URL: ${{ github.server_url }}/${{ github.repository }}
+          REPOSITORY_URL: ${{ github.server_url }}/${{ inputs.source-repository || github.repository }}
         run: |
           set -euo pipefail
           TAGS=$(git ls-remote --tags --refs "$REPOSITORY_URL" | sed 's#.*refs/tags/##')
@@ -138,7 +146,7 @@ jobs:
         env:
           IDENTITY_MATRIX: ${{ steps.identity.outputs.matrix }}
           PORT: ${{ inputs.port }}
-          CALLER_REPOSITORY: ${{ github.repository }}
+          CALLER_REPOSITORY: ${{ inputs.source-repository || github.repository }}
           INCLUDE_WRAPPERS: ${{ inputs.include-wrappers }}
         run: node scripts/port-docs-matrix.mjs
 
@@ -162,6 +170,7 @@ jobs:
           }
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          repository: ${{ inputs.source-repository || github.repository }}
           ref: ${{ needs.identity.outputs.source-ref }}
           fetch-depth: 0
           path: port
@@ -196,7 +205,11 @@ jobs:
         if: matrix.port == 'powershell' || matrix.port == 'julia'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.sha }}
+          # A port caller's generator is its own tooling at the caller's commit.
+          # A docs-repo caller (source-repository set) uses the selected port
+          # source, which carries that tooling.
+          repository: ${{ inputs.source-repository || github.repository }}
+          ref: ${{ inputs.source-repository && needs.identity.outputs.source-ref || github.sha }}
           path: docs-generator
           persist-credentials: false
 

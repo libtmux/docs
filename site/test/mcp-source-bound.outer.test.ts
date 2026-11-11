@@ -7,7 +7,7 @@ import { expect, it } from 'vitest'
 
 const root = new URL('../../', import.meta.url).pathname
 const files = [
-  'scripts/gen-mcp-protocol.mjs', 'scripts/gen-mcp-tools.mjs', 'scripts/lib/mcp-protocol.mjs',
+  'scripts/gen-mcp-protocol.mjs', 'scripts/gen-mcp-tools.mjs', 'scripts/lib/mcp-protocol.mjs', 'scripts/lib/port-checkout.mjs',
   'packages/api-model/src/source-lines.ts', 'site/src/lib/ports.ts',
   'site/src/lib/site-root.ts', 'site/src/lib/cooldown.ts', 'site/src/lib/versions.ts',
 ]

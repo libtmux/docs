@@ -21,7 +21,7 @@
 
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { homedir } from 'node:os'
+import { checkoutCandidates, checkoutOverride } from './lib/port-checkout.mjs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -43,10 +43,6 @@ function parseArgs(argv) {
     else throw new Error(`unrecognised argument: ${arg}`)
   }
   return opts
-}
-
-function expandHome(p) {
-  return p.startsWith('~') ? join(homedir(), p.slice(1)) : p
 }
 
 function git(cwd, args) {
@@ -71,9 +67,8 @@ function seedEntries() {
 
 function deriveEntries(port) {
   const { checkout, tagGrammar } = port
-  const worktree = expandHome(port.worktree)
-  const override = process.env[`LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`]
-  const dir = override ? expandHome(override) : existsSync(worktree) ? worktree : expandHome(checkout)
+  const candidates = checkoutCandidates(port)
+  const dir = checkoutOverride(port) ?? candidates.find((path) => existsSync(path)) ?? candidates[0]
   if (!existsSync(dir)) {
     return { entries: seedEntries(), defaultVersion: 'latest', note: `checkout not found at ${checkout}` }
   }
