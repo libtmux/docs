@@ -19,13 +19,13 @@ describe.skipIf(!available)('Erlang application manifests', () => {
   it('reads source-installed umbrella apps without inventing a package for assets', () => {
     const files = {
       'apps/libtmux_erlang/src/libtmux_erlang.app.src': '% {vsn,"wrong"}\n{application, libtmux_erlang, [{description,"{vsn, wrong}"}, {vsn,"0.0.0+development"}]}.',
-      'apps/libtmux_erlang_workspace/src/libtmux_erlang_workspace.app.src': '{application, libtmux_erlang_workspace, [{vsn,"0.0.0+development"}]}.',
+      'apps/libtmux_erlang_fixture/src/libtmux_erlang_fixture.app.src': '{application, libtmux_erlang_fixture, [{vsn,"0.0.0+development"}]}.',
       'apps/libtmux_erlang_mcp/README.md': 'Artwork only.',
       '_build/default/lib/old/src/old.app.src': '{application, old, [{vsn,"9"}]}.',
     }
     expect(readPort('erlang', repo(files))).toEqual({ distributions: [
       { name: 'libtmux_erlang', version: '0.0.0+development', manifest: 'apps/libtmux_erlang/src/libtmux_erlang.app.src' },
-      { name: 'libtmux_erlang_workspace', version: '0.0.0+development', manifest: 'apps/libtmux_erlang_workspace/src/libtmux_erlang_workspace.app.src' },
+      { name: 'libtmux_erlang_fixture', version: '0.0.0+development', manifest: 'apps/libtmux_erlang_fixture/src/libtmux_erlang_fixture.app.src' },
     ], units: [] })
   })
 
