@@ -112,7 +112,8 @@ export function redirectDestination(base: string, target: string): string {
 export function sourceGuideRedirects(buildPort?: string, defaults: Record<string, string> = {}): DocsRedirect[] {
   return (buildPort ? [buildPort] : SOURCE_GUIDE_PORTS).flatMap((port) =>
     sourceGuideRedirectsFor(port).map(({ path, target }) => {
-      const project = (route: string) => docsRoutePath({ id: route, data: { port, route } }, buildPort, defaults)
+      // A language home has no route of its own, so the root build's projection ends in the version slash.
+      const project = (route: string) => docsRoutePath({ id: route, data: { port, route } }, buildPort, defaults).replace(/\/$/, '')
       return { path: project(path), target: project(target) }
     }))
 }

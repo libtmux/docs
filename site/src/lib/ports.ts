@@ -60,7 +60,12 @@ export interface PortPackage {
   installs?: readonly InstallCommand[]
 }
 
-/** An `unpublished` product has pages that are not released yet; an `excluded` one has no pages at all. */
+/**
+ * `excluded` marks a product the port's repository does not ship: the site
+ * builds no page for it, lists it nowhere and links to none. `unpublished`
+ * marks one that ships from source, so its overview page exists, but that no
+ * registry carries.
+ */
 export type ProductAvailability = 'available' | 'unpublished' | 'excluded'
 
 /**
@@ -526,7 +531,7 @@ const CORE_PORTS: readonly Port[] = [
     name: 'Lua',
     language: 'Lua',
     packageName: 'libtmux',
-    productAvailability: { workspace: 'unpublished', mcp: 'unpublished' },
+    productAvailability: { workspace: 'excluded', mcp: 'excluded' },
     repo: 'libtmux/libtmux-lua',
     docsDispatch: { workflow: 'docs.yml' },
     checkout: '~/work/libtmux/libtmux-lua',
@@ -588,7 +593,7 @@ const CORE_PORTS: readonly Port[] = [
     renderer: 'astro',
     publishesOwnTree: true,
     generator: 'PowerShell command metadata, manifests, PlatyPS and C# source',
-    productAvailability: { mcp: 'unpublished' },
+    productAvailability: { mcp: 'excluded' },
     productDescriptions: { workspace: 'Read, validate, plan and load workspace files with the LibTmux.Workspace cmdlets.' },
     packages: [{
       id: 'workspace', name: 'LibTmux.Workspace',
@@ -697,7 +702,7 @@ const CORE_PORTS: readonly Port[] = [
     name: 'Elixir',
     language: 'Elixir',
     packageName: 'libtmux',
-    productAvailability: { workspace: 'unpublished', mcp: 'unpublished' },
+    productAvailability: { workspace: 'excluded', mcp: 'excluded' },
     repo: 'libtmux/libtmux-elixir',
     docsDispatch: { workflow: 'docs.yml' },
     checkout: '~/work/libtmux/libtmux-elixir',
@@ -755,7 +760,7 @@ const CORE_PORTS: readonly Port[] = [
     renderer: 'astro',
     generator: 'Configured Haddock public interfaces',
     publishesOwnTree: true,
-    productAvailability: { workspace: 'unpublished', mcp: 'excluded' },
+    productAvailability: { workspace: 'excluded', mcp: 'excluded' },
     packages: [{ id: 'core', name: 'libtmux-haskell', source: { path: 'src', ref: 'master' }, require: 'LibTmux' }],
     installs: [{
       label: 'Cabal', lang: 'text', filename: 'cabal.project',
@@ -1655,7 +1660,7 @@ export const PICKER_GROUP_SUMMARY: Readonly<Record<PickerGroup, string>> = {
   core: 'API reference and guides', mcp: 'Tools for connected assistants', workspace: 'Repeatable development environments',
 }
 
-/** Whether a port includes a product, including its unpublished overview. */
+/** Whether a port ships a product, so it has pages: an unpublished product still has its overview. */
 export function productIncluded(port: Port, product: DocProduct): boolean {
   return !port.parentLibrary && port.productAvailability?.[product] !== 'excluded'
 }
@@ -1665,7 +1670,7 @@ export function productAvailable(port: Port, product: DocProduct): boolean {
   return !port.parentLibrary && port.productAvailability?.[product] !== 'unpublished' && !productExcluded(port, product)
 }
 
-/** Whether a port has no page for a companion product, as opposed to one that is only unpublished. */
+/** Whether a port ships no such companion product, so it has no page for it, as opposed to one that is only unpublished. */
 export function productExcluded(port: Port, product: DocProduct): boolean {
   return port.productAvailability?.[product] === 'excluded'
 }

@@ -75,9 +75,10 @@ describe('product document URLs', () => {
     expect(docsRoutePath({ id: 'meta/third-party-notices', data: {} })).toBe('meta/third-party-notices')
   })
 
-  it('retires duplicate source overviews in root and selected-version builds', () => {
+  it('retires duplicate source overviews and absent product roots in root and selected-version builds', () => {
     expect(sourceGuideRedirects(undefined, { fsharp: 'v0.46.2' })).toEqual([
       { path: 'ocaml/latest/guides/api', target: 'ocaml/latest/reference' },
+      { path: 'haskell/latest/workspace', target: 'haskell/latest' },
       { path: 'lisp/latest/guides/api', target: 'lisp/latest/reference' },
       { path: 'lisp/latest/guides/query-api', target: 'lisp/latest/reference' },
       { path: 'lisp/latest/guides/json-api', target: 'lisp/latest/reference' },
@@ -87,6 +88,10 @@ describe('product document URLs', () => {
       { path: 'clojure/latest/guides/adapter-api', target: 'clojure/latest/reference/libtmux-core-async' },
       { path: 'fsharp/v0.46.2/guides/api-overview', target: 'fsharp/v0.46.2/reference' },
       { path: 'erlang/latest/guides/overview', target: 'erlang/latest/guides' },
+      { path: 'elixir/latest/mcp', target: 'elixir/latest' },
+      { path: 'elixir/latest/workspace', target: 'elixir/latest' },
+      { path: 'lua/latest/mcp', target: 'lua/latest' },
+      { path: 'lua/latest/workspace', target: 'lua/latest' },
     ])
     expect(sourceGuideRedirects('julia')).toEqual([
       { path: 'guides/api-overview', target: 'reference' },
@@ -106,6 +111,9 @@ describe('product document URLs', () => {
       { path: 'guides/json-api', target: 'reference' },
       { path: 'workspace/api', target: 'workspace/reference' },
     ])
+    // A product root the port stopped claiming leads to the language home, which is the build's base.
+    expect(sourceGuideRedirects('lua')).toEqual([{ path: 'mcp', target: '' }, { path: 'workspace', target: '' }])
+    expect(sourceGuideRedirects('haskell')).toEqual([{ path: 'workspace', target: '' }])
     expect(sourceGuideRedirects('py')).toEqual([])
   })
   it('uses the same path in root and per-port builds', () => {

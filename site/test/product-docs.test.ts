@@ -15,7 +15,7 @@ import { mentionBadge, mentionBadgeHtml } from '../src/lib/mention-badge'
 import { headingTitle } from '../src/lib/branding'
 import { docsPath, type DocsPage } from '../src/lib/docs-paths'
 import { docsEntriesAvailable } from '../src/lib/page-port-links'
-import { documentationAreas, SOURCE_GUIDE_PORTS, sourceGuidesFor } from '../src/lib/port-documentation'
+import { documentationAreas, SOURCE_GUIDE_PORTS, sourceGuideRedirectsFor, sourceGuidesFor } from '../src/lib/port-documentation'
 import { KNOWN_PORTS, resolvePortData } from '../src/lib/workspace-shared-slots'
 import { DEFAULT_LOCALE, isLocale } from '../src/i18n/locales'
 import type { ApiTreeJson } from '../src/lib/api-search'
@@ -247,15 +247,11 @@ it('keeps declared product entry pages in the source-derived checks', () => {
     const sections = sectionsFor(port.slug, product)
     if (port.productAvailability?.[product] === 'excluded') expect(sections).toEqual([])
     else if (!productAvailable(port, product)) {
+      // An unpublished product, which ships from source, builds its overview and nothing more.
       const source = productSource(port.slug, product, '')
-      if (source) {
-        expect(sections).toEqual([''])
-        expect(source.title, `${port.slug} ${product} overview`).toBeTruthy()
-      } else {
-        expect(sections).toEqual([])
-        expect(SOURCE_GUIDE_PORTS.includes(port.slug) && sourceGuidesFor(port.slug).some((guide) => guide.aliases.includes(product)),
-          `${port.slug} ${product} has a documented replacement`).toBe(true)
-      }
+      expect(source, `${port.slug} ${product} overview source`).toBeDefined()
+      expect(sections).toEqual([''])
+      expect(source!.title, `${port.slug} ${product} overview`).toBeTruthy()
     } else expect(sections, `${port.slug} ${product} entry pages`).toEqual(expect.arrayContaining(['', 'reference']))
   }
 })
@@ -480,6 +476,10 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     await redirectsTo('lua/latest/guides/source/overview', 'lua/latest/guides/overview/')
     await redirectsTo('lua/latest/guides/source/runtime', 'lua/latest/guides/runtime/')
     await redirectsTo('powershell/latest/mcp/', 'powershell/latest/guides/mcp/')
+    // Public product roots that these ports no longer claim lead to the language home.
+    for (const path of ['lua/latest/mcp/', 'lua/latest/workspace/', 'elixir/latest/mcp/', 'elixir/latest/workspace/', 'haskell/latest/workspace/']) {
+      await redirectsTo(path, `${path.split('/')[0]}/latest/`)
+    }
     await inspect('powershell/latest/mcp/', (document) => {
       expect(document.querySelector('meta[name="robots"]')?.getAttribute('content')).toContain('noindex')
       expect(document.querySelector('a[href]')?.getAttribute('href')).toBe(urlFor('powershell/latest/guides/mcp/').pathname)
@@ -653,25 +653,14 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       // Whatever the product's other pages would be called, none is built or listed.
       const directory = sitePath(`${port.slug}/${version}/${product}`)
       const built = existsSync(directory) ? readdirSync(directory, { recursive: true }).map(String) : []
-      const availability = port.productAvailability?.[product] ?? 'available'
-      const overview = availability === 'unpublished'
-      expect(built.filter((file) => file.endsWith('.html') && (!overview || file !== 'index.html')),
+      expect(built.filter((file) => file.endsWith('.html') && file !== 'index.html'),
         `${port.slug} ${product} pages built outside its availability`).toEqual([])
-      if (!overview) expect(docs.pages.some((entry) => new URL(entry.url).pathname
-        === urlFor(`${port.slug}/${version}/${product}/`).pathname), `${port.slug} ${product} excluded overview`).toBe(false)
       expect(pagesBeyondOverview(docs.pages, urlFor(`${port.slug}/${version}/${product}/`).pathname),
         `${port.slug} ${product} pages listed beyond the overview`).toEqual([])
       const advertised = docs.ports.find((entry) => entry.slug === port.slug)!.products.find((entry) => entry.slug === product)!
       expect(advertised.reference, `${port.slug} ${product} reference`).toBeNull()
-      if (port.productAvailability?.[product] === 'excluded') {
-        expect(built, `${port.slug} ${product} has no pages`).toEqual([])
-        expect(advertised.availability).toBe('excluded')
-        expect(advertised.url).toBeNull()
-        expect(docs.pages.some((entry) => new URL(entry.url).pathname.replace(/\/$/, '') === urlFor(`${port.slug}/${version}/${product}`).pathname)).toBe(false)
-      } else {
-        expect(built, `${port.slug} ${product} overview exists`).toContain('index.html')
-        expect(advertised.availability, `${port.slug} ${product}`).toBe('unpublished')
-      }
+      expect(built, `${port.slug} ${product} overview exists`).toContain('index.html')
+      expect(advertised.availability, `${port.slug} ${product}`).toBe('unpublished')
     }
   })
 
@@ -1103,7 +1092,11 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
             expect(advertised.documentation.map((area) => area.id), `${root}${port.slug} ${product} excluded navigation`).not.toContain(product)
             const path = `${port.slug}/${rootVersion || defaults[port.slug]}/${product}/`
             const prefix = urlFor(path).pathname
-            expect(existsSync(sitePath(path)), `${root}${port.slug} ${product} excluded tree`).toBe(false)
+            // A product root that was public answers with a noindex redirect to the language home; nothing else is built.
+            const retired = sourceGuideRedirectsFor(port.slug).some((entry) => entry.path === product)
+            const tree = existsSync(sitePath(path)) ? readdirSync(sitePath(path), { recursive: true }).map(String) : []
+            expect(tree, `${root}${port.slug} ${product} excluded tree`).toEqual(retired ? ['index.html'] : [])
+            if (tree.length) expect(read(`${path}index.html`), `${root}${port.slug} ${product} retired redirect`).toMatch(/name="robots" content="noindex"/)
             expect(exported.pages.filter((entry) => {
               const pathname = new URL(entry.url).pathname
               return pathname === prefix.slice(0, -1) || pathname.startsWith(prefix)
@@ -1136,11 +1129,13 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         expect.objectContaining({ id: 'async', kind: 'companion-package', availability: 'available', package: 'libtmux-async' }),
       ]))
       const lua = exported.ports.find((entry) => entry.slug === 'lua')
-      if (lua) expect(lua.documentation).toEqual(expect.arrayContaining([
-        expect.objectContaining({ id: 'runtime', kind: 'runtime', availability: 'available' }),
-        expect.objectContaining({ id: 'mcp', kind: 'unavailable', availability: 'unpublished' }),
-        expect.objectContaining({ id: 'workspace', kind: 'unavailable', availability: 'unpublished' }),
-      ]))
+      if (lua) {
+        expect(lua.documentation).toEqual(expect.arrayContaining([
+          expect.objectContaining({ id: 'runtime', kind: 'runtime', availability: 'available' }),
+        ]))
+        expect(lua.documentation.map((area) => area.id)).not.toContain('mcp')
+        expect(lua.documentation.map((area) => area.id)).not.toContain('workspace')
+      }
       for (const area of exported.ports.flatMap((port) => port.documentation)) {
         expect(resolves(area.url, urlFor(root).href), `${root}${area.url} documentation area`).toBe(true)
       }

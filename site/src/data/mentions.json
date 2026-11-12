@@ -10971,13 +10971,6 @@
   },
   {
    "port": "lua",
-   "symbol": "libtmux.LiveQueryResult.plan",
-   "page": "/lua/latest/workspace/",
-   "title": "tmux workspace manager, forged in Lua, is not published",
-   "section": "ports"
-  },
-  {
-   "port": "lua",
    "symbol": "libtmux.LiveQueryResult.rows",
    "page": "/lua/latest/guides/query/",
    "title": "Query captured data",

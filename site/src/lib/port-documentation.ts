@@ -48,7 +48,12 @@ interface PortDocumentation {
   stagedSections?: readonly string[]
   /** Source directory relative to which native API comments write guide links. */
   apiDocRoot?: string
-  redirects?: readonly { sourcePath: string; path: string; target: string }[]
+  /**
+   * Retired public paths below the port root and where each now leads. A
+   * `sourcePath` names the source page whose links follow; a product root the
+   * port stopped claiming has none, and an empty `target` is the language home.
+   */
+  redirects?: readonly { sourcePath?: string; path: string; target: string }[]
   /** Section overviews to stage and offer when the shared operational sections do not apply. */
   sections?: Readonly<Record<string, string>>
 }
@@ -96,10 +101,6 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
   haskell: {
     domains: [
       libraryDomain('Capture tmux state, query detached observations and rename selected targets.'),
-      { id: 'workspace', label: 'Workspace Manager', kind: 'unavailable', navGroup: 'Availability', route: 'workspace', product: 'workspace',
-        description: 'The workspace library and CLI are planned as a separate Cabal package using the core.' },
-      { id: 'mcp', label: 'MCP', kind: 'unavailable', navGroup: 'Availability', route: 'mcp', product: 'mcp',
-        description: 'MCP is excluded from this port.' },
     ],
     sections: { guides: 'Install the source package, capture and navigate a server, and test with offline observations.' },
     sourceGuides: [
@@ -115,6 +116,7 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
       guide('docs/api.md', 'guides/api-documentation', 'core', { title: 'API documentation', description: 'Find the public modules and what each one is for.', sidebar: { group: 'Guides', order: 10 } }),
       guide('docs/status.md', 'guides/status', 'core', { title: 'Implementation status', sidebar: { group: 'Guides', order: 11 } }),
     ],
+    redirects: [{ path: 'workspace', target: '' }],
   },
   perl: {
     domains: [
@@ -367,14 +369,6 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
         id: 'core', label: 'Core library', kind: 'core', navGroup: 'Library', route: 'core', package: 'core',
         description: 'Install libtmux from Hex and observe tmux as immutable snapshots.',
       },
-      {
-        id: 'mcp', label: 'MCP', kind: 'unavailable', navGroup: 'Availability', route: 'mcp', product: 'mcp',
-        description: 'No published MCP server is available for the Elixir port.',
-      },
-      {
-        id: 'workspace', label: 'Workspace Manager', kind: 'unavailable', navGroup: 'Availability', route: 'workspace', product: 'workspace',
-        description: 'No published workspace manager is available for the Elixir port.',
-      },
     ],
     sourceGuides: [
       guide('README.md', 'guides/overview', 'core', {
@@ -410,6 +404,7 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
         aliases: [], sidebar: { group: 'Topics', order: 4 },
       }),
     ],
+    redirects: [{ path: 'mcp', target: '' }, { path: 'workspace', target: '' }],
   },
   lua: {
     domains: [
@@ -420,14 +415,6 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
       {
         id: 'runtime', label: 'luv and Neovim', kind: 'runtime', navGroup: 'Runtime adapters', route: 'guides/runtime',
         description: 'Use the documented libuv and Neovim runtime integrations.',
-      },
-      {
-        id: 'mcp', label: 'MCP', kind: 'unavailable', navGroup: 'Availability', route: 'mcp', product: 'mcp',
-        description: 'No published MCP server is available for the Lua port.',
-      },
-      {
-        id: 'workspace', label: 'Workspace Manager', kind: 'unavailable', navGroup: 'Availability', route: 'workspace', product: 'workspace',
-        description: 'No published workspace manager is available for the Lua port.',
       },
     ],
     sourceGuides: [
@@ -457,6 +444,7 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
       guide('docs/options-reference.md', 'guides/options', 'core'),
       guide('docs/compatibility.md', 'guides/compatibility', 'core'),
     ],
+    redirects: [{ path: 'mcp', target: '' }, { path: 'workspace', target: '' }],
   },
 }
 
@@ -483,6 +471,7 @@ function validate(portSlug: string, config: PortDocumentation): void {
   const domainById = new Map(config.domains.map((domain) => [domain.id, domain]))
   for (const domain of config.domains) {
     if (domain.route.startsWith('/') || domain.route.includes('..')) throw new Error(`port-documentation: invalid route ${domain.route}`)
+    if (domain.product && !productIncluded(port, domain.product)) throw new Error(`port-documentation: ${domain.id} names the excluded product ${domain.product}`)
     if (domain.kind === 'runtime' && (domain.package || domain.product)) throw new Error(`port-documentation: runtime ${domain.id} cannot be a package or product`)
     if (domain.kind === 'unavailable') {
       if (!domain.product || productAvailable(port, domain.product) || domain.package) throw new Error(`port-documentation: unavailable ${domain.id} must be an unavailable product without a package`)
@@ -495,6 +484,7 @@ function validate(portSlug: string, config: PortDocumentation): void {
   assertDistinct(`${portSlug} source guide route or alias`, guidePaths)
   for (const entry of config.sourceGuides) {
     if (!domainById.has(entry.domain)) throw new Error(`port-documentation: ${entry.sourcePath} names unknown domain ${entry.domain}`)
+    if (entry.product && !productIncluded(port, entry.product)) throw new Error(`port-documentation: ${entry.sourcePath} names the excluded product ${entry.product}`)
     if (entry.route.startsWith('/') || entry.route.includes('..')) throw new Error(`port-documentation: invalid source guide route ${entry.route}`)
   }
 }

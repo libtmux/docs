@@ -17,12 +17,12 @@ it('keeps explicitly excluded products out of installation and concept navigatio
 })
 
 describe('Haskell port metadata', () => {
-  it('offers the actual core source and distinguishes planned workspace from excluded MCP', () => {
+  it('offers the actual core source and excludes the products it does not ship', () => {
     const haskell = PORT_BY_SLUG.haskell!
     expect(haskell).toMatchObject({
       slug: 'haskell', repo: 'libtmux/libtmux-haskell', packageName: 'libtmux-haskell',
       tagGrammar: 'cabal', renderer: 'astro', source: { path: 'src', ref: 'master' },
-      productAvailability: { workspace: 'unpublished', mcp: 'excluded' },
+      productAvailability: { workspace: 'excluded', mcp: 'excluded' },
     })
     expect(haskell.registry).toBeUndefined()
     expect(haskell.ecosystemHost).toBeUndefined()
@@ -92,7 +92,7 @@ describe('TypeScript port metadata', () => {
 })
 
 describe('Lua port metadata', () => {
-  it('marks unimplemented companion products as unpublished', () => {
+  it('excludes companion products that are scaffolds without a server or loader', () => {
     const lua = PORT_BY_SLUG.lua as (typeof PORT_BY_SLUG)[string] & {
       productAvailability?: Record<string, string>
     }
@@ -102,7 +102,7 @@ describe('Lua port metadata', () => {
       repo: 'libtmux/libtmux-lua',
       tagGrammar: 'luarocks',
       registry: { name: 'LuaRocks', icon: 'luarocks' },
-      productAvailability: { mcp: 'unpublished', workspace: 'unpublished' },
+      productAvailability: { mcp: 'excluded', workspace: 'excluded' },
     })
     expect(registry.ports.lua).toMatchObject({
       status: 'release',

@@ -31,7 +31,7 @@ it('titles a page in the manifest as its Markdown twin titles it', async () => {
   expect(checked.map((entry) => entry.title)).toEqual(['Rust-based tmux workspace manager', 'tmux MCP, built in Rust'])
 })
 
-it('omits excluded products while preserving unpublished overviews in agent manifests', async () => {
+it('lists no product or documentation area for a product a port does not ship', async () => {
   entries.splice(0, entries.length)
   vi.stubEnv('LIBTMUX_DOCS_VERSION', 'latest')
   for (const scope of ['', 'lisp', 'lua']) {
@@ -46,10 +46,10 @@ it('omits excluded products while preserving unpublished overviews in agent mani
     }
     if (scope !== 'lisp') {
       const lua = json.ports.find((port: { slug: string }) => port.slug === 'lua')
-      expect(lua.products.find((product: { slug: string }) => product.slug === 'mcp')).toMatchObject({
-        availability: 'unpublished', reference: null, protocol: null,
-        url: expect.stringMatching(/\/lua\/latest\/mcp\/$/),
-      })
+      expect(lua.products).toEqual([])
+      const areas = lua.documentation.map((area: { id: string }) => area.id)
+      expect(areas).not.toContain('mcp')
+      expect(areas).not.toContain('workspace')
     }
   }
 })

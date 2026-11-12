@@ -198,7 +198,7 @@ export function stagedPortGuides(port, artifact) {
   const linkRoutes = Object.fromEntries(Object.entries(routes).map(([sourcePath, guide]) => [sourcePath, [guide.route]]))
   const nativeReferenceFiles = new Set()
   const nativeDeclarations = new Map()
-  for (const redirect of sourceGuideRedirectsFor(port)) linkRoutes[redirect.sourcePath] = [redirect.target]
+  for (const redirect of sourceGuideRedirectsFor(port)) if (redirect.sourcePath) linkRoutes[redirect.sourcePath] = [redirect.target]
   if (port === 'haskell') {
     const model = JSON.parse(readFileSync(join(root, 'site/src/data/api/haskell.json'), 'utf8'))
     if (model.revision !== artifact.source.revision) throw new Error('haskell: guide source differs from the Haskell API model')

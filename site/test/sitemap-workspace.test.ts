@@ -71,6 +71,11 @@ describe('canonical workspace sitemap routes', () => {
     ['julia/latest/guides/api-overview/', 'julia/latest/reference/'],
     ['ruby/latest/guides/source/core/', 'ruby/latest/guides/core/'],
     ['lua/latest/guides/source/overview/', 'lua/latest/guides/overview/'],
+    ['lua/latest/mcp/', 'lua/latest/'],
+    ['lua/latest/workspace/', 'lua/latest/'],
+    ['elixir/latest/mcp/', 'elixir/latest/'],
+    ['elixir/latest/workspace/', 'elixir/latest/'],
+    ['haskell/latest/workspace/', 'haskell/latest/'],
   ])('excludes the source-guide alias %s while retaining %s', (alias, canonical) => {
     expect(sitemapOptions.filter!(`https://libtmux.org/en/${alias}`)).toBe(false)
     expect(sitemapOptions.filter!(`https://libtmux.org/en/${canonical}`)).toBe(true)
