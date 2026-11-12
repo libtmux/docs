@@ -21,7 +21,7 @@ import { checkHomeExampleOptions } from './check-home-example-options.mjs'
 import { checkDevSample, checkRowPermalinks } from './check-dev-sample.mjs'
 import { checkDeclarationControlAlignment, checkDeclarationControlsLevel, checkMemberBodyInsets, checkNativeSignatureGeometry, checkNativeSignatureLinks } from './check-native-layout.mjs'
 import { checkBadgeCentring, checkChipGrowth, checkMentionDensity, checkUsageChips } from './check-badge-centring.mjs'
-import { checkBlockLinksUndecorated, checkKindBadgeLinks, checkKindBadgeLinksFail, checkRequiredAppearance, checkTmuxReferencePreviews, checkTmuxReferencePreviewsFail, checkWebAnalytics, checkWebAnalyticsTransitions } from './check-page-readiness.mjs'
+import { checkBlockLinksUndecorated, checkKindBadgeLinks, checkKindBadgeLinksFail, checkExternalLinkFirstPaint, checkRequiredAppearance, checkTmuxReferencePreviews, checkTmuxReferencePreviewsFail, checkWebAnalytics, checkWebAnalyticsTransitions } from './check-page-readiness.mjs'
 import { checkTypeParameters } from './check-type-parameters.mjs'
 import { checkTmuxKeys, TMUX_KEY_PAGES } from './check-tmux-keys.mjs'
 import { checkSidebarDemo } from './check-sidebar-demo.mjs'
@@ -906,8 +906,10 @@ try {
     await retryReload(() => checkTypeParameters(browser, base))
   } else if (requiredAppearanceOnly) {
     await retryReload(() => checkRequiredAppearance(browser, base))
+    await retryReload(() => checkExternalLinkFirstPaint(browser, base))
   } else {
     await retryReload(() => checkRequiredAppearance(browser, base))
+    await retryReload(() => checkExternalLinkFirstPaint(browser, base))
     await retryReload(() => checkTmuxKeys(browser, base))
     await checkWebAnalytics(browser, base)
     await checkWebAnalyticsTransitions(browser, base)
