@@ -2,7 +2,7 @@ import { execFileSync, spawnSync } from 'node:child_process'
 import { copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
-import { expect, it } from 'vitest'
+import { expect, it, vi } from 'vitest'
 import { stagedRoutesFor } from '../../scripts/stage-port-docs.mjs'
 import { PORTS } from '../src/lib/ports.ts'
 import { SOURCE_GUIDE_PORTS } from '../src/lib/port-documentation.ts'
@@ -13,6 +13,9 @@ const files = ['scripts/stage-port-docs.mjs', 'scripts/lib/badges.mjs', 'scripts
   'site/src/lib/site-root.ts', 'site/src/lib/cooldown.ts', 'site/src/lib/port-documentation.ts',
   'site/src/lib/versions.ts']
 const stagedPorts = SOURCE_GUIDE_PORTS
+
+// Each case starts the generator in six new node processes, which a loaded host stretches past the default.
+vi.setConfig({ testTimeout: 30_000 })
 
 function fixture(slug: 'ruby' | 'lua' | 'kotlin' | 'ocaml' | 'haskell', run: (fixture: {
   directory: string; checkout: string; revision: string;
