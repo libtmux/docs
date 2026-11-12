@@ -197,6 +197,7 @@ describe('where a page puts the bar', () => {
     expect(source('components/ProductNotice.astro')).not.toMatch(/Aside|role="note"/)
     expect(source('layouts/DocsLayout.astro')).not.toContain('<ProductNotice port={port} product={product} overview')
     expect(source('components/mcp/ProtocolReference.astro')).not.toMatch(/<ProductNotice/)
+    expect(source('components/mcp/Tools.astro')).not.toMatch(/<Aside/)
   })
 })
 
