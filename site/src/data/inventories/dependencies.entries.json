@@ -50,7 +50,7 @@
     "project": "FastMCP",
     "version": "4.0.5",
     "langs": ["py"],
-    "baseUrl": "https://gofastmcp.com/python-sdk/",
+    "baseUrl": "https://gofastmcp.com/docs/python-sdk/",
     "e": [
       ["FastMCP", "fastmcp-server-server#fastmcp"],
       ["Context", "fastmcp-server-context#context"],

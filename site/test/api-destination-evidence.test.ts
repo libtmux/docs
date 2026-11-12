@@ -88,6 +88,7 @@ describe('what the verifier reads from a page', () => {
     expect(path('https://docs.python.org/3/library/warnings.html#warnings.warn')).toEqual(['warnings', 'warn'])
     expect(path('https://docs.julialang.org/en/v1/base/base/#Core.String-Tuple%7BAbstractString%7D')).toEqual(['Core', 'String'])
     expect(path('https://elixir.hexdocs.pm/Enum.html#member?/2')).toEqual(['Enum', 'member?'])
+    expect(path('https://gofastmcp.com/docs/python-sdk/fastmcp-server-server#fastmcp')).toEqual(['fastmcp', 'server', 'server', 'fastmcp'])
     expect(addressOf('https://elixir.hexdocs.pm/Enum.html#member?/2')?.arity).toBe('2')
     expect(path('https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/Flow.Subscription.html#request(long)')?.slice(-8)).toEqual(['java', 'base', 'java', 'util', 'concurrent', 'Flow', 'Subscription', 'request'])
     expect(path('https://www.scala-lang.org/api/3.x/scala/util/Using$.html#resource-fffffb81')).toEqual(['api', '3', 'x', 'scala', 'util', 'Using', 'resource'])
