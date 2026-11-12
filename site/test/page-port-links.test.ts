@@ -7,6 +7,8 @@ vi.stubEnv('LIBTMUX_DOCS_LOCALES_ROOT', '/pr-42')
 const { docsEntryAvailable, docsEntriesAvailable, pagePortLinks } = await import('../src/lib/page-port-links')
 const { PORTS, PORT_BY_SLUG, productAvailable, productExcluded } = await import('../src/lib/ports')
 const { localePageHref, localeSourcePath } = await import('../src/i18n/locales')
+const { API_MODELS } = await import('../src/lib/api-models')
+const { CONCEPTS } = await import('@libtmux/api-model/reference')
 
 const docs = [
   { id: 'concepts/model', data: {} },
@@ -53,6 +55,44 @@ describe('prose route ownership', () => {
       expect(() => docsEntriesAvailable(entries, 'ruby')).toThrow(/Duplicate documentation route concepts/)
     }
     expect(() => docsEntriesAvailable([ruby, { ...ruby, id: 'other-ruby-concepts' }], 'ruby')).toThrow(/_staged\/ruby\/concepts and other-ruby-concepts/)
+  })
+})
+
+describe('reference page exits for the four tmux objects', () => {
+  const slugOf = (port: string, id: string) =>
+    API_MODELS[port].symbols.find((symbol) => (symbol.publicId ?? symbol.id) === id)!.slug!
+  const exits = (port: string, role: string) => pagePortLinks({
+    ...options, portSlug: port, pagePath: `reference/${slugOf(port, CONCEPTS[role].symbols[port])}`,
+  })
+
+  it('links Swift\'s Server to Haskell\'s Server module and Common Lisp\'s client, and each of them back', () => {
+    const hrefs = (port: string, from: string, role: string) =>
+      exits(from, role).find((entry) => entry.port === port)?.links.map((link) => link.href)
+    expect(hrefs('haskell', 'swift', 'server')).toEqual(['/pr-42/en/haskell/latest/reference/libtmux-server/'])
+    expect(hrefs('lisp', 'swift', 'server')).toEqual(['/pr-42/en/lisp/latest/reference/libtmux-client/'])
+    for (const port of ['haskell', 'lisp']) expect(hrefs('swift', port, 'server')).toEqual(['/pr-42/en/swift/latest/reference/server/'])
+  })
+
+  it.each(['server', 'session', 'window', 'pane'])('links every port that has a %s page to every other one', (role) => {
+    const bound = Object.keys(CONCEPTS[role].symbols).filter((port) => API_MODELS[port])
+    expect(bound).toEqual(expect.arrayContaining(['haskell', 'lisp', 'swift']))
+    for (const port of bound) {
+      const entries = exits(port, role)
+      for (const other of bound) {
+        const version = other === port ? options.version : options.defaults[other as keyof typeof options.defaults] ?? 'latest'
+        // A cmdlet or function can serve several concepts, so the page may offer more than one exit.
+        expect(entries.find((entry) => entry.port === other)?.links.map((link) => link.href), `${port} to ${other}`)
+          .toContain(`/pr-42/en/${other}/${version}/reference/${slugOf(other, CONCEPTS[role].symbols[other])}/`)
+      }
+    }
+  })
+
+  it('offers the handle type page the same exits as the module page', () => {
+    const exitsOf = (pagePath: string) => pagePortLinks({ ...options, portSlug: 'haskell', pagePath })
+      .filter((entry) => entry.port !== 'haskell')
+    const type = exitsOf('reference/libtmux-server-t-server')
+    expect(type.find((entry) => entry.port === 'swift')?.links).toEqual([{ href: '/pr-42/en/swift/latest/reference/server/' }])
+    expect(type).toEqual(exitsOf('reference/libtmux-server'))
   })
 })
 
