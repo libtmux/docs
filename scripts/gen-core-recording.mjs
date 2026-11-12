@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url'
 import { PORTS } from '../site/src/lib/ports.ts'
 import { recordingProblems, sha256 } from '../site/src/lib/core-recording.ts'
 import { recordSettled } from './lib/mcp-session.mjs'
-import { readTmuxState, recordedState, stopSandboxServers } from './lib/mcp-tmux-state.mjs'
+import { readTmuxState, recordedState, settledState, stopSandboxServers } from './lib/mcp-tmux-state.mjs'
 import { hostLeaks, sanitize, UnsettledPaneError } from './lib/mcp-transcript-checks.mjs'
 import { describeInvocation, readTrace, shimScript, splitCommandLine, splitInvocation } from './lib/core-trace.mjs'
 import { matchMarks, withoutMarks } from './lib/core-recipes/common.mjs'
@@ -23,7 +23,8 @@ import { matchMarks, withoutMarks } from './lib/core-recipes/common.mjs'
  * records, and run twice in a sandbox with a tmux and a home of its own:
  *
  * 1. As displayed. This run shows that the program works and prints what the
- *    page says it prints, and gives the commands it sends.
+ *    page says it prints, and gives the commands it sends. A recipe with a
+ *    `setup` first starts the server that the page's own setup commands start.
  * 2. With a marker line after each call of the step map
  *    (`lib/core-recipes/<port>.mjs`). The marker runs `docs-mark`, which stores the
  *    value the call returned and the settled state of tmux; a `tmux` shim
@@ -96,17 +97,20 @@ function prepare() {
 }
 
 /** A run of one built program: its own trace, its own server, nothing of the reader's environment. */
-function run(dir) {
+async function run(dir) {
   resetServers()
   const trace = join(sandbox, `${dir}.trace`)
   writeFileSync(trace, '')
-  const before = recordedState(read())
   const env = {
     PATH: `${join(sandbox, 'bin')}${delimiter}${process.env.PATH}`, TMUX_TMPDIR: sandbox, HOME: join(sandbox, 'home'), SHELL: '/bin/sh', ENV: '/dev/null', BASH_ENV: '/dev/null',
     XDG_CONFIG_HOME: join(sandbox, 'config'), XDG_CONFIG_DIRS: join(sandbox, 'config'), LANG: 'C.UTF-8', TERM: 'xterm-256color',
     LIBTMUX_DOCS_TRACE: trace, LIBTMUX_DOCS_REAL_TMUX: realTmux, LIBTMUX_DOCS_SANDBOX: sandboxReal, LIBTMUX_DOCS_MARK: join(sandbox, 'bin/docs-mark'),
     LIBTMUX_DOCS_PANE_COMMANDS: recipe.paneCommands.join(','), LIBTMUX_DOCS_PORT: only,
   }
+  // A program whose displayed setup starts the server it connects to: the setup is not a call of the program, so it runs
+  // before tmux is read for the state before the first call, and without the shim, so that no step is credited with it.
+  if (recipe.setup) recipe.setup({ dir: join(sandbox, dir), env })
+  const before = recipe.setup ? await settledState({ read, commands: recipe.paneCommands, port: only })() : recordedState(read())
   const [command, ...commandArgs] = recipe.command(join(sandbox, dir))
   const finished = spawnSync(command, commandArgs, { cwd: join(sandbox, dir), env, encoding: 'utf8', timeout: 120000 })
   const entries = readTrace(trace)
@@ -233,7 +237,7 @@ try {
   const pinned = await recordSettled({
     attempts: ATTEMPTS,
     record: async () => {
-      const exact = run('exact')
+      const exact = await run('exact')
       if (normalized(exact.stdout) !== program.expectedOutput) throw new Error(`${only}: the displayed program printed ${JSON.stringify(exact.stdout)}, the page says ${JSON.stringify(program.expectedOutput)}`)
       const marked = await run('marked')
       if (normalized(marked.stdout) !== normalized(exact.stdout)) throw new Error(`${only}: the marked program printed ${JSON.stringify(marked.stdout)}, the displayed one ${JSON.stringify(exact.stdout)}`)
@@ -261,7 +265,7 @@ try {
     tmuxBefore: pinned.marked.before,
     steps: pinned.steps,
   }, marks)
-  const problems = recordingProblems({ capabilities: { [recipe.capability]: capability } }, { programs: { [recipe.capability]: program.code } })
+  const problems = recordingProblems({ port: only, capabilities: { [recipe.capability]: capability } }, { programs: { [recipe.capability]: program.code } })
   if (problems.length && flag('--debug')) writeFileSync(args[args.indexOf('--debug') + 1], `${JSON.stringify(capability, null, 2)}\n`)
   if (problems.length) throw new Error(`${only}: the recording is not sound:\n${problems.join('\n')}`)
   recording = {

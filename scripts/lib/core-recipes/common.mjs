@@ -15,6 +15,10 @@ import { resolveCheckout } from '../port-checkout.mjs'
  *   and the marked copy under `sandbox/exact` and `sandbox/marked`;
  * - `command(dir)` is the argv that runs one built copy, and `normalizeOutput`,
  *   when given, reads what it printed the way the port's own test does;
+ * - `setup({ dir, env })`, when given, does what the page's setup commands do
+ *   before the program runs (start the server it connects to). It runs without
+ *   the tmux shim, so no step is credited with it, and tmux is read after it
+ *   for the state before the first call;
  * - `toolchain()` names the compiler for the recording's provenance;
  * - `instrument(code, steps)` is the marked copy;
  * - `steps` is the hand-written step map, in the order the calls run. A step

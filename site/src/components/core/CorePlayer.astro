@@ -54,6 +54,8 @@ const frames = coreFrames(capability)
 const views = Object.fromEntries(shownViews.map((view) => [view, viewSteps(capability, homeProgram(example, view).replace(/\n$/, ''), port)]))
 const before = (index: number) => (index === 0 ? capability.tmuxBefore : steps[index - 1]!.tmux)
 const beforeText = capability.tmuxBefore.sessions.length === 0 ? 'No tmux server is running yet.' : 'tmux is running.'
+// A program that connects to a server its setup commands started has one before its first call.
+const beforeNote = capability.tmuxBefore.sessions.length === 0 ? 'tmux before the first call: no server is running.' : 'tmux before the first call: the server the setup commands started is running.'
 // A call's name and its returned type link to the API reference: this build's version on the port's own site, its default version elsewhere.
 const links = { version: process.env.LIBTMUX_DOCS_PORT === port ? buildTarget(process.env).version : undefined, code: shownViews.map((view) => homeProgram(example, view)).join('\n') }
 const callLinks = new Map(steps.map((step) => [step.label, callHref(port, step.label, links)]))
@@ -73,7 +75,7 @@ const tips = steps.map((step, index) => ({ call: step.label, text: noteParts(ind
       {frames.map((frame) => (
         <div class="mcp-frame" data-frame={frame.done} data-off={frame.done === 0 ? undefined : ''}>
           <TmuxScreen frame={frame} client marks={frame.done === 0 ? undefined : stepChanges(steps[frame.done - 1]!, before(frame.done - 1)).marks} idPrefix={`cp-${port}-${capabilityId}`} hadSessions={frames.some((earlier) => earlier.done < frame.done && earlier.sessions.length > 0)} />
-          <p class="mcp-frame__note">{frame.done === 0 ? 'tmux before the first call: no server is running.' : (() => {
+          <p class="mcp-frame__note">{frame.done === 0 ? beforeNote : (() => {
             const note = noteParts(frame.done - 1)
             return <>{note.label && <>tmux after {note.href ? <a href={note.href}><code>{note.label}</code></a> : <code>{note.label}</code>}</>}{note.rest}</>
           })()}</p>
