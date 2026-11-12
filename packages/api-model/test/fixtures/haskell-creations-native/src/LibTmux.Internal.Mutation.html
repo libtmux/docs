@@ -1,0 +1,477 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-comment">-- | One synchronous mutation and its retained ownership. A deadline bounds</span><span>
+</span><span id="line-2"></span><span class="hs-comment">-- submission as well as waiting; recovery never dispatches the command again.</span><span>
+</span><span id="line-3"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="LibTmux.Internal.Mutation.html"><span class="hs-identifier">LibTmux.Internal.Mutation</span></a></span><span>
+</span><span id="line-4"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="LibTmux.Internal.Mutation.html#performMutation"><span class="hs-identifier">performMutation</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Mutation.html#performRequest"><span class="hs-identifier">performRequest</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Mutation.html#MutationRecovery"><span class="hs-identifier">MutationRecovery</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Mutation.html#recoveryReceipt"><span class="hs-identifier">recoveryReceipt</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Mutation.html#inspectRecovery"><span class="hs-identifier">inspectRecovery</span></a></span><span>
+</span><span id="line-5"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Mutation.html#resumeRecovery"><span class="hs-identifier">resumeRecovery</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Mutation.html#awaitRecovery"><span class="hs-identifier">awaitRecovery</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Mutation.html#detachRecovery"><span class="hs-identifier">detachRecovery</span></a></span><span>
+</span><span id="line-6"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Applicative</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-operator">(&lt;|&gt;)</span></span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Concurrent.STM</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">STM</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">atomically</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">check</span></span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Exception</span></span><span>
+</span><span id="line-11"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">ExceptionWithContext</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">SomeException</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">catchNoPropagate</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">fromException</span></span><span>
+</span><span id="line-12"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">mask</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">onException</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">rethrowIO</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">throwIO</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">toException</span></span><span>
+</span><span id="line-13"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Exception.Annotation</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">ExceptionAnnotation</span></span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Exception.Context</span></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Context</span></span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">when</span></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.ByteString</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">ByteString</span></span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.IORef</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">newIORef</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">readIORef</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">writeIORef</span></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Maybe</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">listToMaybe</span></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Word</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Word64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.Clock</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">getMonotonicTimeNSec</span></span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="LibTmux.Internal.Command.html"><span class="hs-identifier">LibTmux.Internal.Command</span></a></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">C</span></span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="LibTmux.Internal.Process.html"><span class="hs-identifier">LibTmux.Internal.Process</span></a></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">P</span></span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="LibTmux.Internal.Runtime.html"><span class="hs-identifier">LibTmux.Internal.Runtime</span></a></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">R</span></span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html"><span class="hs-identifier">LibTmux.Internal.Scope</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scope.html#TmuxException"><span class="hs-identifier">TmuxException</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">System.Timeout</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">timeout</span></span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span><span>
+</span><span id="line-28"></span><span class="hs-comment">-- | Reachable ownership for one failed or cancelled mutation. The receipt</span><span>
+</span><span id="line-29"></span><span class="hs-comment">-- retains metadata only; the Runtime retains outstanding native and logical</span><span>
+</span><span id="line-30"></span><span class="hs-comment">-- owners. Recovery never repeats the command. See &quot;LibTmux.Server&quot;.</span><span>
+</span><span id="line-31"></span><span class="hs-keyword">data</span><span> </span><span id="MutationRecovery"><span class="annot"><a href="LibTmux.Internal.Mutation.html#MutationRecovery"><span class="hs-identifier hs-var">MutationRecovery</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="MutationRecovery"><span class="annot"><a href="LibTmux.Internal.Mutation.html#MutationRecovery"><span class="hs-identifier hs-var">MutationRecovery</span></a></span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="LibTmux.Internal.Runtime.html#Runtime"><span class="hs-identifier hs-type">R.Runtime</span></a></span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="LibTmux.Internal.Runtime.html#ServerHandle"><span class="hs-identifier hs-type">R.ServerHandle</span></a></span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="LibTmux.Internal.Runtime.html#ReadReceipt"><span class="hs-identifier hs-type">R.ReadReceipt</span></a></span><span>
+</span><span id="line-32"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679157737"><span id="local-6989586621679157741"><span class="annot"><span class="hs-identifier hs-type">Show</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Mutation.html#MutationRecovery"><span class="hs-identifier hs-type">MutationRecovery</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-33"></span><span>  </span><span id="local-6989586621679157749"><span class="annot"><span class="annottext">showsPrec :: Int -&gt; MutationRecovery -&gt; ShowS
+</span><a href="#local-6989586621679157749"><span class="hs-identifier hs-var hs-var hs-var">showsPrec</span></a></span></span><span> </span><span id="local-6989586621679157751"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679157751"><span class="hs-identifier hs-var">precedence</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Mutation.html#MutationRecovery"><span class="hs-identifier hs-type">MutationRecovery</span></a></span><span> </span><span class="annot"><span class="annottext">Runtime
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">ServerHandle
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679157752"><span class="annot"><span class="annottext">ReadReceipt
+</span><a href="#local-6989586621679157752"><span class="hs-identifier hs-var">receipt</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-34"></span><span>    </span><span class="annot"><span class="annottext">Bool -&gt; ShowS -&gt; ShowS
+</span><span class="hs-identifier hs-var">showParen</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679157751"><span class="hs-identifier hs-var">precedence</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">10</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; ShowS
+</span><span class="hs-identifier hs-var">showString</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;MutationRecovery &quot;</span></span><span> </span><span class="annot"><span class="annottext">ShowS -&gt; ShowS -&gt; ShowS
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">ReadReceipt -&gt; ShowS
+forall a. Show a =&gt; a -&gt; ShowS
+</span><span class="hs-identifier hs-var">shows</span></span><span> </span><span class="annot"><span class="annottext">ReadReceipt
+</span><a href="#local-6989586621679157752"><span class="hs-identifier hs-var">receipt</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-35"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679157761"><span class="annot"><span class="hs-identifier hs-type">ExceptionAnnotation</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Mutation.html#MutationRecovery"><span class="hs-identifier hs-type">MutationRecovery</span></a></span></span><span>
+</span><span id="line-36"></span><span>
+</span><span id="line-37"></span><span class="annot"><a href="LibTmux.Internal.Mutation.html#recoveryReceipt"><span class="hs-identifier hs-type">recoveryReceipt</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Mutation.html#MutationRecovery"><span class="hs-identifier hs-type">MutationRecovery</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Runtime.html#ReadReceipt"><span class="hs-identifier hs-type">R.ReadReceipt</span></a></span><span>
+</span><span id="line-38"></span><span id="recoveryReceipt"><span class="annot"><span class="annottext">recoveryReceipt :: MutationRecovery -&gt; ReadReceipt
+</span><a href="LibTmux.Internal.Mutation.html#recoveryReceipt"><span class="hs-identifier hs-var hs-var">recoveryReceipt</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Mutation.html#MutationRecovery"><span class="hs-identifier hs-type">MutationRecovery</span></a></span><span> </span><span class="annot"><span class="annottext">Runtime
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">ServerHandle
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679157766"><span class="annot"><span class="annottext">ReadReceipt
+</span><a href="#local-6989586621679157766"><span class="hs-identifier hs-var">receipt</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ReadReceipt
+</span><a href="#local-6989586621679157766"><span class="hs-identifier hs-var">receipt</span></a></span><span>
+</span><span id="line-39"></span><span>
+</span><span id="line-40"></span><span class="annot"><a href="LibTmux.Internal.Mutation.html#inspectRecovery"><span class="hs-identifier hs-type">inspectRecovery</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Mutation.html#MutationRecovery"><span class="hs-identifier hs-type">MutationRecovery</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">STM</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Runtime.html#ReadRecovery"><span class="hs-identifier hs-type">R.ReadRecovery</span></a></span><span>
+</span><span id="line-41"></span><span id="inspectRecovery"><span class="annot"><span class="annottext">inspectRecovery :: MutationRecovery -&gt; STM ReadRecovery
+</span><a href="LibTmux.Internal.Mutation.html#inspectRecovery"><span class="hs-identifier hs-var hs-var">inspectRecovery</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Mutation.html#MutationRecovery"><span class="hs-identifier hs-type">MutationRecovery</span></a></span><span> </span><span id="local-6989586621679157767"><span class="annot"><span class="annottext">Runtime
+</span><a href="#local-6989586621679157767"><span class="hs-identifier hs-var">runtime</span></a></span></span><span> </span><span id="local-6989586621679157768"><span class="annot"><span class="annottext">ServerHandle
+</span><a href="#local-6989586621679157768"><span class="hs-identifier hs-var">server</span></a></span></span><span> </span><span id="local-6989586621679157769"><span class="annot"><span class="annottext">ReadReceipt
+</span><a href="#local-6989586621679157769"><span class="hs-identifier hs-var">receipt</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Runtime -&gt; ServerHandle -&gt; ReadReceipt -&gt; STM ReadRecovery
+</span><a href="LibTmux.Internal.Runtime.html#inspectReceipt"><span class="hs-identifier hs-var">R.inspectReceipt</span></a></span><span> </span><span class="annot"><span class="annottext">Runtime
+</span><a href="#local-6989586621679157767"><span class="hs-identifier hs-var">runtime</span></a></span><span> </span><span class="annot"><span class="annottext">ServerHandle
+</span><a href="#local-6989586621679157768"><span class="hs-identifier hs-var">server</span></a></span><span> </span><span class="annot"><span class="annottext">ReadReceipt
+</span><a href="#local-6989586621679157769"><span class="hs-identifier hs-var">receipt</span></a></span><span>
+</span><span id="line-42"></span><span>
+</span><span id="line-43"></span><span class="annot"><a href="LibTmux.Internal.Mutation.html#resumeRecovery"><span class="hs-identifier hs-type">resumeRecovery</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Mutation.html#MutationRecovery"><span class="hs-identifier hs-type">MutationRecovery</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-44"></span><span id="resumeRecovery"><span class="annot"><span class="annottext">resumeRecovery :: MutationRecovery -&gt; IO ()
+</span><a href="LibTmux.Internal.Mutation.html#resumeRecovery"><span class="hs-identifier hs-var hs-var">resumeRecovery</span></a></span></span><span> </span><span id="local-6989586621679157771"><span class="annot"><span class="annottext">recovery :: MutationRecovery
+</span><a href="#local-6989586621679157771"><span class="hs-identifier hs-var">recovery</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Mutation.html#MutationRecovery"><span class="hs-identifier hs-type">MutationRecovery</span></a></span><span> </span><span id="local-6989586621679157772"><span class="annot"><span class="annottext">Runtime
+</span><a href="#local-6989586621679157772"><span class="hs-identifier hs-var">runtime</span></a></span></span><span> </span><span id="local-6989586621679157773"><span class="annot"><span class="annottext">ServerHandle
+</span><a href="#local-6989586621679157773"><span class="hs-identifier hs-var">server</span></a></span></span><span> </span><span id="local-6989586621679157774"><span class="annot"><span class="annottext">ReadReceipt
+</span><a href="#local-6989586621679157774"><span class="hs-identifier hs-var">receipt</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-45"></span><span>  </span><span class="annot"><span class="annottext">MutationRecovery -&gt; IO () -&gt; IO ()
+forall a. MutationRecovery -&gt; IO a -&gt; IO a
+</span><a href="LibTmux.Internal.Mutation.html#recovering"><span class="hs-identifier hs-var">recovering</span></a></span><span> </span><span class="annot"><span class="annottext">MutationRecovery
+</span><a href="#local-6989586621679157771"><span class="hs-identifier hs-var">recovery</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Runtime -&gt; ServerHandle -&gt; ReadReceipt -&gt; IO ()
+</span><a href="LibTmux.Internal.Runtime.html#resumeReceipt"><span class="hs-identifier hs-var">R.resumeReceipt</span></a></span><span> </span><span class="annot"><span class="annottext">Runtime
+</span><a href="#local-6989586621679157772"><span class="hs-identifier hs-var">runtime</span></a></span><span> </span><span class="annot"><span class="annottext">ServerHandle
+</span><a href="#local-6989586621679157773"><span class="hs-identifier hs-var">server</span></a></span><span> </span><span class="annot"><span class="annottext">ReadReceipt
+</span><a href="#local-6989586621679157774"><span class="hs-identifier hs-var">receipt</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-46"></span><span>
+</span><span id="line-47"></span><span class="annot"><a href="LibTmux.Internal.Mutation.html#awaitRecovery"><span class="hs-identifier hs-type">awaitRecovery</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Mutation.html#MutationRecovery"><span class="hs-identifier hs-type">MutationRecovery</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Runtime.html#ReadRecovery"><span class="hs-identifier hs-type">R.ReadRecovery</span></a></span><span>
+</span><span id="line-48"></span><span id="awaitRecovery"><span class="annot"><span class="annottext">awaitRecovery :: MutationRecovery -&gt; IO ReadRecovery
+</span><a href="LibTmux.Internal.Mutation.html#awaitRecovery"><span class="hs-identifier hs-var hs-var">awaitRecovery</span></a></span></span><span> </span><span id="local-6989586621679157777"><span class="annot"><span class="annottext">MutationRecovery
+</span><a href="#local-6989586621679157777"><span class="hs-identifier hs-var">recovery</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">MutationRecovery -&gt; IO ReadRecovery -&gt; IO ReadRecovery
+forall a. MutationRecovery -&gt; IO a -&gt; IO a
+</span><a href="LibTmux.Internal.Mutation.html#recovering"><span class="hs-identifier hs-var">recovering</span></a></span><span> </span><span class="annot"><span class="annottext">MutationRecovery
+</span><a href="#local-6989586621679157777"><span class="hs-identifier hs-var">recovery</span></a></span><span> </span><span class="annot"><span class="annottext">(IO ReadRecovery -&gt; IO ReadRecovery)
+-&gt; IO ReadRecovery -&gt; IO ReadRecovery
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">STM ReadRecovery -&gt; IO ReadRecovery
+forall a. STM a -&gt; IO a
+</span><span class="hs-identifier hs-var">atomically</span></span><span> </span><span class="annot"><span class="annottext">(STM ReadRecovery -&gt; IO ReadRecovery)
+-&gt; STM ReadRecovery -&gt; IO ReadRecovery
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-49"></span><span>  </span><span id="local-6989586621679157778"><span class="annot"><a href="#local-6989586621679157778"><span class="hs-identifier hs-var">observed</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">MutationRecovery -&gt; STM ReadRecovery
+</span><a href="LibTmux.Internal.Mutation.html#inspectRecovery"><span class="hs-identifier hs-var">inspectRecovery</span></a></span><span> </span><span class="annot"><span class="annottext">MutationRecovery
+</span><a href="#local-6989586621679157777"><span class="hs-identifier hs-var">recovery</span></a></span><span>
+</span><span id="line-50"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">check</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">not</span></span><span> </span><span class="annot"><span class="hs-identifier">observed</span></span><span class="hs-operator">.</span><span class="hs-identifier">workerOwned</span><span> </span><span class="annot"><span class="hs-operator hs-type">&amp;&amp;</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">not</span></span><span> </span><span class="annot"><span class="hs-identifier">observed</span></span><span class="hs-operator">.</span><span class="hs-identifier">nativeOwned</span><span class="hs-special">)</span><span>
+</span><span id="line-51"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">pure</span></span><span> </span><span class="annot"><a href="#local-6989586621679157778"><span class="hs-identifier hs-type">observed</span></a></span><span>
+</span><span id="line-52"></span><span>
+</span><span id="line-53"></span><span class="annot"><a href="LibTmux.Internal.Mutation.html#detachRecovery"><span class="hs-identifier hs-type">detachRecovery</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Mutation.html#MutationRecovery"><span class="hs-identifier hs-type">MutationRecovery</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">STM</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-54"></span><span id="detachRecovery"><span class="annot"><span class="annottext">detachRecovery :: MutationRecovery -&gt; STM Bool
+</span><a href="LibTmux.Internal.Mutation.html#detachRecovery"><span class="hs-identifier hs-var hs-var">detachRecovery</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Mutation.html#MutationRecovery"><span class="hs-identifier hs-type">MutationRecovery</span></a></span><span> </span><span id="local-6989586621679157781"><span class="annot"><span class="annottext">Runtime
+</span><a href="#local-6989586621679157781"><span class="hs-identifier hs-var">runtime</span></a></span></span><span> </span><span id="local-6989586621679157782"><span class="annot"><span class="annottext">ServerHandle
+</span><a href="#local-6989586621679157782"><span class="hs-identifier hs-var">server</span></a></span></span><span> </span><span id="local-6989586621679157783"><span class="annot"><span class="annottext">ReadReceipt
+</span><a href="#local-6989586621679157783"><span class="hs-identifier hs-var">receipt</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Runtime -&gt; ServerHandle -&gt; ReadReceipt -&gt; STM Bool
+</span><a href="LibTmux.Internal.Runtime.html#detachReceipt"><span class="hs-identifier hs-var">R.detachReceipt</span></a></span><span> </span><span class="annot"><span class="annottext">Runtime
+</span><a href="#local-6989586621679157781"><span class="hs-identifier hs-var">runtime</span></a></span><span> </span><span class="annot"><span class="annottext">ServerHandle
+</span><a href="#local-6989586621679157782"><span class="hs-identifier hs-var">server</span></a></span><span> </span><span class="annot"><span class="annottext">ReadReceipt
+</span><a href="#local-6989586621679157783"><span class="hs-identifier hs-var">receipt</span></a></span><span>
+</span><span id="line-55"></span><span>
+</span><span id="line-56"></span><span class="annot"><a href="LibTmux.Internal.Mutation.html#performMutation"><span class="hs-identifier hs-type">performMutation</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Process.html#Hooks"><span class="hs-identifier hs-type">P.Hooks</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Runtime.html#Runtime"><span class="hs-identifier hs-type">R.Runtime</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Runtime.html#ServerHandle"><span class="hs-identifier hs-type">R.ServerHandle</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ByteString</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Command.html#Mutation"><span class="hs-identifier hs-type">C.Mutation</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-57"></span><span id="performMutation"><span class="annot"><span class="annottext">performMutation :: Hooks
+-&gt; Int
+-&gt; Runtime
+-&gt; ServerHandle
+-&gt; ByteString
+-&gt; Mutation
+-&gt; IO ()
+</span><a href="LibTmux.Internal.Mutation.html#performMutation"><span class="hs-identifier hs-var hs-var">performMutation</span></a></span></span><span> </span><span id="local-6989586621679157785"><span class="annot"><span class="annottext">Hooks
+</span><a href="#local-6989586621679157785"><span class="hs-identifier hs-var">hooks</span></a></span></span><span> </span><span id="local-6989586621679157786"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679157786"><span class="hs-identifier hs-var">duration</span></a></span></span><span> </span><span id="local-6989586621679157787"><span class="annot"><span class="annottext">Runtime
+</span><a href="#local-6989586621679157787"><span class="hs-identifier hs-var">runtime</span></a></span></span><span> </span><span id="local-6989586621679157788"><span class="annot"><span class="annottext">ServerHandle
+</span><a href="#local-6989586621679157788"><span class="hs-identifier hs-var">server</span></a></span></span><span> </span><span id="local-6989586621679157789"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679157789"><span class="hs-identifier hs-var">executable</span></a></span></span><span> </span><span id="local-6989586621679157790"><span class="annot"><span class="annottext">Mutation
+</span><a href="#local-6989586621679157790"><span class="hs-identifier hs-var">mutation</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-58"></span><span>  </span><span class="annot"><span class="annottext">Int
+-&gt; Runtime
+-&gt; ServerHandle
+-&gt; (IO Int -&gt; IO (Request MutationReply))
+-&gt; (MutationReply -&gt; IO ())
+-&gt; IO ()
+forall value result.
+Int
+-&gt; Runtime
+-&gt; ServerHandle
+-&gt; (IO Int -&gt; IO (Request value))
+-&gt; (value -&gt; IO result)
+-&gt; IO result
+</span><a href="LibTmux.Internal.Mutation.html#performRequest"><span class="hs-identifier hs-var">performRequest</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679157786"><span class="hs-identifier hs-var">duration</span></a></span><span> </span><span class="annot"><span class="annottext">Runtime
+</span><a href="#local-6989586621679157787"><span class="hs-identifier hs-var">runtime</span></a></span><span> </span><span class="annot"><span class="annottext">ServerHandle
+</span><a href="#local-6989586621679157788"><span class="hs-identifier hs-var">server</span></a></span><span>
+</span><span id="line-59"></span><span>    </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679157791"><span class="annot"><span class="annottext">IO Int
+</span><a href="#local-6989586621679157791"><span class="hs-identifier hs-var">remainingTime</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">IO Int
+</span><a href="#local-6989586621679157791"><span class="hs-identifier hs-var">remainingTime</span></a></span><span> </span><span class="annot"><span class="annottext">IO Int
+-&gt; (Int -&gt; IO (Request MutationReply))
+-&gt; IO (Request MutationReply)
+forall a b. IO a -&gt; (a -&gt; IO b) -&gt; IO b
+forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; (a -&gt; m b) -&gt; m b
+</span><span class="hs-operator hs-var">&gt;&gt;=</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679157792"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679157792"><span class="hs-identifier hs-var">left</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Hooks
+-&gt; Int
+-&gt; Runtime
+-&gt; ServerHandle
+-&gt; ByteString
+-&gt; Mutation
+-&gt; IO (Request MutationReply)
+</span><a href="LibTmux.Internal.Runtime.html#mutateWith"><span class="hs-identifier hs-var">R.mutateWith</span></a></span><span> </span><span class="annot"><span class="annottext">Hooks
+</span><a href="#local-6989586621679157785"><span class="hs-identifier hs-var">hooks</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679157792"><span class="hs-identifier hs-var">left</span></a></span><span> </span><span class="annot"><span class="annottext">Runtime
+</span><a href="#local-6989586621679157787"><span class="hs-identifier hs-var">runtime</span></a></span><span> </span><span class="annot"><span class="annottext">ServerHandle
+</span><a href="#local-6989586621679157788"><span class="hs-identifier hs-var">server</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679157789"><span class="hs-identifier hs-var">executable</span></a></span><span> </span><span class="annot"><span class="annottext">Mutation
+</span><a href="#local-6989586621679157790"><span class="hs-identifier hs-var">mutation</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">((MutationReply -&gt; IO ()) -&gt; IO ())
+-&gt; (MutationReply -&gt; IO ()) -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span class="hs-glyph">case</span><span>
+</span><span id="line-60"></span><span>      </span><span class="annot"><span class="annottext">MutationReply
+</span><a href="LibTmux.Internal.Command.html#Applied"><span class="hs-identifier hs-var">C.Applied</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">() -&gt; IO ()
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-61"></span><span>      </span><span class="annot"><a href="LibTmux.Internal.Command.html#Rejected"><span class="hs-identifier hs-type">C.Rejected</span></a></span><span> </span><span id="local-6989586621679157796"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679157796"><span class="hs-identifier hs-var">diagnostic</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">TmuxException -&gt; IO ()
+forall e a. (HasCallStack, Exception e) =&gt; e -&gt; IO a
+</span><span class="hs-identifier hs-var">throwIO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ByteString -&gt; TmuxException
+</span><a href="LibTmux.Internal.Scope.html#MutationRejected"><span class="hs-identifier hs-var">MutationRejected</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679157796"><span class="hs-identifier hs-var">diagnostic</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-62"></span><span>      </span><span class="annot"><a href="LibTmux.Internal.Command.html#AppliedWithErrors"><span class="hs-identifier hs-type">C.AppliedWithErrors</span></a></span><span> </span><span id="local-6989586621679157799"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679157799"><span class="hs-identifier hs-var">diagnostic</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">TmuxException -&gt; IO ()
+forall e a. (HasCallStack, Exception e) =&gt; e -&gt; IO a
+</span><span class="hs-identifier hs-var">throwIO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ByteString -&gt; TmuxException
+</span><a href="LibTmux.Internal.Scope.html#MutationAppliedWithErrors"><span class="hs-identifier hs-var">MutationAppliedWithErrors</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621679157799"><span class="hs-identifier hs-var">diagnostic</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-63"></span><span>
+</span><span id="line-64"></span><span class="hs-comment">-- | Share one absolute deadline and correlated owner across typed mutations.</span><span>
+</span><span id="line-65"></span><span class="hs-comment">-- Submission obtains remaining time after its own context acquisition; the</span><span>
+</span><span id="line-66"></span><span class="hs-comment">-- decoder runs within the same deadline. Recovery never resubmits the action.</span><span>
+</span><span id="line-67"></span><span id="local-6989586621679157620"><span id="local-6989586621679157621"><span class="annot"><a href="LibTmux.Internal.Mutation.html#performRequest"><span class="hs-identifier hs-type">performRequest</span></a></span><span>
+</span><span id="line-68"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Runtime.html#Runtime"><span class="hs-identifier hs-type">R.Runtime</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Runtime.html#ServerHandle"><span class="hs-identifier hs-type">R.ServerHandle</span></a></span><span>
+</span><span id="line-69"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Runtime.html#Request"><span class="hs-identifier hs-type">R.Request</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679157620"><span class="hs-identifier hs-type">value</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679157620"><span class="hs-identifier hs-type">value</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621679157621"><span class="hs-identifier hs-type">result</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621679157621"><span class="hs-identifier hs-type">result</span></a></span></span></span><span>
+</span><span id="line-70"></span><span id="performRequest"><span class="annot"><span class="annottext">performRequest :: forall value result.
+Int
+-&gt; Runtime
+-&gt; ServerHandle
+-&gt; (IO Int -&gt; IO (Request value))
+-&gt; (value -&gt; IO result)
+-&gt; IO result
+</span><a href="LibTmux.Internal.Mutation.html#performRequest"><span class="hs-identifier hs-var hs-var">performRequest</span></a></span></span><span> </span><span id="local-6989586621679157866"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679157866"><span class="hs-identifier hs-var">duration</span></a></span></span><span> </span><span id="local-6989586621679157867"><span class="annot"><span class="annottext">Runtime
+</span><a href="#local-6989586621679157867"><span class="hs-identifier hs-var">runtime</span></a></span></span><span> </span><span id="local-6989586621679157868"><span class="annot"><span class="annottext">ServerHandle
+</span><a href="#local-6989586621679157868"><span class="hs-identifier hs-var">server</span></a></span></span><span> </span><span id="local-6989586621679157869"><span class="annot"><span class="annottext">IO Int -&gt; IO (Request value)
+</span><a href="#local-6989586621679157869"><span class="hs-identifier hs-var">submit</span></a></span></span><span> </span><span id="local-6989586621679157870"><span class="annot"><span class="annottext">value -&gt; IO result
+</span><a href="#local-6989586621679157870"><span class="hs-identifier hs-var">decode</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">((forall a. IO a -&gt; IO a) -&gt; IO result) -&gt; IO result
+forall b. ((forall a. IO a -&gt; IO a) -&gt; IO b) -&gt; IO b
+</span><span class="hs-identifier hs-var">mask</span></span><span> </span><span class="annot"><span class="annottext">(((forall a. IO a -&gt; IO a) -&gt; IO result) -&gt; IO result)
+-&gt; ((forall a. IO a -&gt; IO a) -&gt; IO result) -&gt; IO result
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679157871"><span class="annot"><span class="annottext">forall a. IO a -&gt; IO a
+</span><a href="#local-6989586621679157871"><span class="hs-identifier hs-var">restore</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-71"></span><span>  </span><span class="annot"><span class="annottext">Bool -&gt; IO () -&gt; IO ()
+forall (f :: * -&gt; *). Applicative f =&gt; Bool -&gt; f () -&gt; f ()
+</span><span class="hs-identifier hs-var">when</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679157866"><span class="hs-identifier hs-var">duration</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">||</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679157866"><span class="hs-identifier hs-var">duration</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">10000000</span></span><span class="hs-special">)</span><span>
+</span><span id="line-72"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TmuxException -&gt; IO ()
+forall e a. (HasCallStack, Exception e) =&gt; e -&gt; IO a
+</span><span class="hs-identifier hs-var">throwIO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; TmuxException
+</span><a href="LibTmux.Internal.Scope.html#InvalidConfiguration"><span class="hs-identifier hs-var">InvalidConfiguration</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;mutation timeout must be positive and at most ten seconds&quot;</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-73"></span><span>  </span><span id="local-6989586621679157875"><span class="annot"><a href="#local-6989586621679157875"><span class="hs-identifier hs-var">receipt</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Maybe ReadReceipt -&gt; IO (IORef (Maybe ReadReceipt))
+forall a. a -&gt; IO (IORef a)
+</span><span class="hs-identifier hs-var">newIORef</span></span><span> </span><span class="annot"><span class="annottext">Maybe ReadReceipt
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-74"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679157876"><span class="annot"><a href="#local-6989586621679157876"><span class="hs-identifier hs-var hs-var">annotate</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ExceptionWithContext</span></span><span> </span><span id="local-6989586621679157878"><span class="annot"><span class="annottext">ExceptionContext
+</span><a href="#local-6989586621679157878"><span class="hs-identifier hs-var">context</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679157879"><span class="annot"><span class="annottext">SomeException
+</span><a href="#local-6989586621679157879"><span class="hs-identifier hs-var">problem</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">SomeException</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-75"></span><span>        </span><span id="local-6989586621679157880"><span class="annot"><a href="#local-6989586621679157880"><span class="hs-identifier hs-var">current</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IORef (Maybe ReadReceipt) -&gt; IO (Maybe ReadReceipt)
+forall a. IORef a -&gt; IO a
+</span><span class="hs-identifier hs-var">readIORef</span></span><span> </span><span class="annot"><span class="annottext">IORef (Maybe ReadReceipt)
+</span><a href="#local-6989586621679157875"><span class="hs-identifier hs-var">receipt</span></a></span><span>
+</span><span id="line-76"></span><span>        </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679157881"><span class="annot"><a href="#local-6989586621679157881"><span class="hs-identifier hs-var hs-var">selected</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe ReadReceipt
+</span><a href="#local-6989586621679157880"><span class="hs-identifier hs-var">current</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe ReadReceipt -&gt; Maybe ReadReceipt -&gt; Maybe ReadReceipt
+forall a. Maybe a -&gt; Maybe a -&gt; Maybe a
+forall (f :: * -&gt; *) a. Alternative f =&gt; f a -&gt; f a -&gt; f a
+</span><span class="hs-operator hs-var">&lt;|&gt;</span></span><span> </span><span class="annot"><span class="annottext">[ReadReceipt] -&gt; Maybe ReadReceipt
+forall a. [a] -&gt; Maybe a
+</span><span class="hs-identifier hs-var">listToMaybe</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">forall a. ExceptionAnnotation a =&gt; ExceptionContext -&gt; [a]
+</span><span class="hs-identifier hs-var">Context.getExceptionAnnotations</span></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="LibTmux.Internal.Runtime.html#ReadReceipt"><span class="hs-identifier hs-type">R.ReadReceipt</span></a></span><span> </span><span class="annot"><span class="annottext">ExceptionContext
+</span><a href="#local-6989586621679157878"><span class="hs-identifier hs-var">context</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-77"></span><span>        </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="#local-6989586621679157881"><span class="hs-identifier hs-type">selected</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-78"></span><span>          </span><span class="annot"><span class="annottext">Maybe ReadReceipt
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ExceptionWithContext SomeException -&gt; IO result
+forall e a. Exception e =&gt; ExceptionWithContext e -&gt; IO a
+</span><span class="hs-identifier hs-var">rethrowIO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ExceptionContext
+-&gt; SomeException -&gt; ExceptionWithContext SomeException
+forall a. ExceptionContext -&gt; a -&gt; ExceptionWithContext a
+</span><span class="hs-identifier hs-var">ExceptionWithContext</span></span><span> </span><span class="annot"><span class="annottext">ExceptionContext
+</span><a href="#local-6989586621679157878"><span class="hs-identifier hs-var">context</span></a></span><span> </span><span class="annot"><span class="annottext">SomeException
+</span><a href="#local-6989586621679157879"><span class="hs-identifier hs-var">problem</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-79"></span><span>          </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679157883"><span class="annot"><span class="annottext">ReadReceipt
+</span><a href="#local-6989586621679157883"><span class="hs-identifier hs-var">value</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">MutationRecovery -&gt; IO result -&gt; IO result
+forall a. MutationRecovery -&gt; IO a -&gt; IO a
+</span><a href="LibTmux.Internal.Mutation.html#recovering"><span class="hs-identifier hs-var">recovering</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Runtime -&gt; ServerHandle -&gt; ReadReceipt -&gt; MutationRecovery
+</span><a href="LibTmux.Internal.Mutation.html#MutationRecovery"><span class="hs-identifier hs-var">MutationRecovery</span></a></span><span> </span><span class="annot"><span class="annottext">Runtime
+</span><a href="#local-6989586621679157867"><span class="hs-identifier hs-var">runtime</span></a></span><span> </span><span class="annot"><span class="annottext">ServerHandle
+</span><a href="#local-6989586621679157868"><span class="hs-identifier hs-var">server</span></a></span><span> </span><span class="annot"><span class="annottext">ReadReceipt
+</span><a href="#local-6989586621679157883"><span class="hs-identifier hs-var">value</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-80"></span><span>            </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ExceptionWithContext SomeException -&gt; IO result
+forall e a. Exception e =&gt; ExceptionWithContext e -&gt; IO a
+</span><span class="hs-identifier hs-var">rethrowIO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ExceptionContext
+-&gt; SomeException -&gt; ExceptionWithContext SomeException
+forall a. ExceptionContext -&gt; a -&gt; ExceptionWithContext a
+</span><span class="hs-identifier hs-var">ExceptionWithContext</span></span><span> </span><span class="annot"><span class="annottext">ExceptionContext
+</span><a href="#local-6989586621679157878"><span class="hs-identifier hs-var">context</span></a></span><span> </span><span class="annot"><span class="annottext">SomeException
+</span><a href="#local-6989586621679157879"><span class="hs-identifier hs-var">problem</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-81"></span><span>      </span><span id="local-6989586621679157884"><span class="annot"><a href="#local-6989586621679157884"><span class="hs-identifier hs-var hs-var">owned</span></a></span></span><span> </span><span id="local-6989586621679157885"><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679157885"><span class="hs-identifier hs-var">deadline</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">((forall a. IO a -&gt; IO a) -&gt; IO result) -&gt; IO result
+forall b. ((forall a. IO a -&gt; IO a) -&gt; IO b) -&gt; IO b
+</span><span class="hs-identifier hs-var">mask</span></span><span> </span><span class="annot"><span class="annottext">(((forall a. IO a -&gt; IO a) -&gt; IO result) -&gt; IO result)
+-&gt; ((forall a. IO a -&gt; IO a) -&gt; IO result) -&gt; IO result
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679157886"><span class="annot"><span class="annottext">forall a. IO a -&gt; IO a
+</span><a href="#local-6989586621679157886"><span class="hs-identifier hs-var">unmask</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-82"></span><span>        </span><span id="local-6989586621679157887"><span class="annot"><a href="#local-6989586621679157887"><span class="hs-identifier hs-var">request</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO (Request value)
+-&gt; (ExceptionWithContext SomeException -&gt; IO (Request value))
+-&gt; IO (Request value)
+forall e a.
+Exception e =&gt;
+IO a -&gt; (ExceptionWithContext e -&gt; IO a) -&gt; IO a
+</span><span class="hs-identifier hs-var">catchNoPropagate</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">IO Int -&gt; IO (Request value)
+</span><a href="#local-6989586621679157869"><span class="hs-identifier hs-var">submit</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word64 -&gt; IO Int
+</span><a href="LibTmux.Internal.Mutation.html#remaining"><span class="hs-identifier hs-var">remaining</span></a></span><span> </span><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679157885"><span class="hs-identifier hs-var">deadline</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">((ExceptionWithContext SomeException -&gt; IO (Request value))
+ -&gt; IO (Request value))
+-&gt; (ExceptionWithContext SomeException -&gt; IO (Request value))
+-&gt; IO (Request value)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span>
+</span><span id="line-83"></span><span>          </span><span class="hs-glyph">\</span><span id="local-6989586621679157889"><span class="annot"><span class="annottext">failure :: ExceptionWithContext SomeException
+</span><a href="#local-6989586621679157889"><span class="hs-identifier hs-var">failure</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ExceptionWithContext</span></span><span> </span><span id="local-6989586621679157890"><span class="annot"><span class="annottext">ExceptionContext
+</span><a href="#local-6989586621679157890"><span class="hs-identifier hs-var">context</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679157891"><span class="annot"><span class="annottext">SomeException
+</span><a href="#local-6989586621679157891"><span class="hs-identifier hs-var">problem</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">SomeException</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-84"></span><span>            </span><span class="hs-comment">-- Timeout consumes its exception; retain correlation before conversion.</span><span>
+</span><span id="line-85"></span><span>            </span><span class="annot"><span class="annottext">IORef (Maybe ReadReceipt) -&gt; Maybe ReadReceipt -&gt; IO ()
+forall a. IORef a -&gt; a -&gt; IO ()
+</span><span class="hs-identifier hs-var">writeIORef</span></span><span> </span><span class="annot"><span class="annottext">IORef (Maybe ReadReceipt)
+</span><a href="#local-6989586621679157875"><span class="hs-identifier hs-var">receipt</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[ReadReceipt] -&gt; Maybe ReadReceipt
+forall a. [a] -&gt; Maybe a
+</span><span class="hs-identifier hs-var">listToMaybe</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">forall a. ExceptionAnnotation a =&gt; ExceptionContext -&gt; [a]
+</span><span class="hs-identifier hs-var">Context.getExceptionAnnotations</span></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="LibTmux.Internal.Runtime.html#ReadReceipt"><span class="hs-identifier hs-type">R.ReadReceipt</span></a></span><span> </span><span class="annot"><span class="annottext">ExceptionContext
+</span><a href="#local-6989586621679157890"><span class="hs-identifier hs-var">context</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-86"></span><span>            </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">forall e. Exception e =&gt; SomeException -&gt; Maybe e
+</span><span class="hs-identifier hs-var">fromException</span></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="LibTmux.Internal.Runtime.html#ReadError"><span class="hs-identifier hs-type">R.ReadError</span></a></span><span> </span><span class="annot"><span class="annottext">SomeException
+</span><a href="#local-6989586621679157891"><span class="hs-identifier hs-var">problem</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-87"></span><span>              </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Runtime.html#InvalidCommandOperands"><span class="hs-identifier hs-type">R.InvalidCommandOperands</span></a></span><span> </span><span id="local-6989586621679157893"><span class="annot"><span class="annottext">ArgumentError
+</span><a href="#local-6989586621679157893"><span class="hs-identifier hs-var">invalid</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ExceptionWithContext SomeException -&gt; IO (Request value)
+forall e a. Exception e =&gt; ExceptionWithContext e -&gt; IO a
+</span><span class="hs-identifier hs-var">rethrowIO</span></span><span>
+</span><span id="line-88"></span><span>                </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ExceptionContext
+-&gt; SomeException -&gt; ExceptionWithContext SomeException
+forall a. ExceptionContext -&gt; a -&gt; ExceptionWithContext a
+</span><span class="hs-identifier hs-var">ExceptionWithContext</span></span><span> </span><span class="annot"><span class="annottext">ExceptionContext
+</span><a href="#local-6989586621679157890"><span class="hs-identifier hs-var">context</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TmuxException -&gt; SomeException
+forall e. Exception e =&gt; e -&gt; SomeException
+</span><span class="hs-identifier hs-var">toException</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; TmuxException
+</span><a href="LibTmux.Internal.Scope.html#InvalidMutationArgument"><span class="hs-identifier hs-var">InvalidMutationArgument</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ArgumentError -&gt; Text
+</span><a href="#local-6989586621679157895"><span class="hs-identifier hs-var">argumentError</span></a></span><span> </span><span class="annot"><span class="annottext">ArgumentError
+</span><a href="#local-6989586621679157893"><span class="hs-identifier hs-var">invalid</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-89"></span><span>              </span><span class="annot"><span class="annottext">Maybe ReadError
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ExceptionWithContext SomeException -&gt; IO (Request value)
+forall e a. Exception e =&gt; ExceptionWithContext e -&gt; IO a
+</span><span class="hs-identifier hs-var">rethrowIO</span></span><span> </span><span class="annot"><span class="annottext">ExceptionWithContext SomeException
+</span><a href="#local-6989586621679157889"><span class="hs-identifier hs-var">failure</span></a></span><span>
+</span><span id="line-90"></span><span>        </span><span class="hs-keyword">let</span><span> </span><span class="hs-glyph">!</span><span id="local-6989586621679157896"><span class="annot"><a href="#local-6989586621679157896"><span class="hs-identifier hs-var hs-var">current</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Request value -&gt; ReadReceipt
+forall value. Request value -&gt; ReadReceipt
+</span><a href="LibTmux.Internal.Runtime.html#readReceipt"><span class="hs-identifier hs-var">R.readReceipt</span></a></span><span> </span><span class="annot"><span class="annottext">Request value
+</span><a href="#local-6989586621679157887"><span class="hs-identifier hs-var">request</span></a></span><span>
+</span><span id="line-91"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">writeIORef</span></span><span> </span><span class="annot"><a href="#local-6989586621679157875"><span class="hs-identifier hs-type">receipt</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="annot"><a href="#local-6989586621679157896"><span class="hs-identifier hs-type">current</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-92"></span><span>        </span><span id="local-6989586621679157898"><span class="annot"><a href="#local-6989586621679157898"><span class="hs-identifier hs-var">response</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><a href="#local-6989586621679157886"><span class="hs-identifier hs-type">unmask</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Runtime.html#awaitRead"><span class="hs-identifier hs-type">R.awaitRead</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679157887"><span class="hs-identifier hs-type">request</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="hs-operator hs-type">`onException`</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Runtime.html#cancelRead"><span class="hs-identifier hs-type">R.cancelRead</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679157867"><span class="hs-identifier hs-type">runtime</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679157887"><span class="hs-identifier hs-type">request</span></a></span><span>
+</span><span id="line-93"></span><span>        </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="#local-6989586621679157898"><span class="hs-identifier hs-type">response</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-94"></span><span>          </span><span class="annot"><a href="LibTmux.Internal.Runtime.html#ReadValue"><span class="hs-identifier hs-type">R.ReadValue</span></a></span><span> </span><span id="local-6989586621679157902"><span class="annot"><span class="annottext">value
+</span><a href="#local-6989586621679157902"><span class="hs-identifier hs-var">value</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">value -&gt; IO result
+</span><a href="#local-6989586621679157870"><span class="hs-identifier hs-var">decode</span></a></span><span> </span><span class="annot"><span class="annottext">value
+</span><a href="#local-6989586621679157902"><span class="hs-identifier hs-var">value</span></a></span><span>
+</span><span id="line-95"></span><span>          </span><span class="annot"><a href="LibTmux.Internal.Runtime.html#ReadUnavailable"><span class="hs-identifier hs-type">R.ReadUnavailable</span></a></span><span> </span><span class="annot"><span class="annottext">Outcome
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679157904"><span class="annot"><span class="annottext">SomeException
+</span><a href="#local-6989586621679157904"><span class="hs-identifier hs-var">problem</span></a></span></span><span class="hs-special">)</span><span>
+</span><span id="line-96"></span><span>            </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="annot"><span class="annottext">ReadError
+</span><a href="LibTmux.Internal.Runtime.html#ReadExpired"><span class="hs-identifier hs-var">R.ReadExpired</span></a></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">SomeException -&gt; Maybe ReadError
+forall e. Exception e =&gt; SomeException -&gt; Maybe e
+</span><span class="hs-identifier hs-var">fromException</span></span><span> </span><span class="annot"><span class="annottext">SomeException
+</span><a href="#local-6989586621679157904"><span class="hs-identifier hs-var">problem</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">TmuxException -&gt; IO result
+forall e a. (HasCallStack, Exception e) =&gt; e -&gt; IO a
+</span><span class="hs-identifier hs-var">throwIO</span></span><span> </span><span class="annot"><span class="annottext">TmuxException
+</span><a href="LibTmux.Internal.Scope.html#MutationTimedOut"><span class="hs-identifier hs-var">MutationTimedOut</span></a></span><span>
+</span><span id="line-97"></span><span>            </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">SomeException -&gt; IO result
+forall e a. (HasCallStack, Exception e) =&gt; e -&gt; IO a
+</span><span class="hs-identifier hs-var">throwIO</span></span><span> </span><span class="annot"><span class="annottext">SomeException
+</span><a href="#local-6989586621679157904"><span class="hs-identifier hs-var">problem</span></a></span><span>
+</span><span id="line-98"></span><span>          </span><span class="annot"><a href="LibTmux.Internal.Runtime.html#ReadUnavailable"><span class="hs-identifier hs-type">R.ReadUnavailable</span></a></span><span> </span><span class="annot"><span class="annottext">Outcome
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Maybe SomeException
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">TmuxException -&gt; IO result
+forall e a. (HasCallStack, Exception e) =&gt; e -&gt; IO a
+</span><span class="hs-identifier hs-var">throwIO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SomeException -&gt; TmuxException
+</span><a href="LibTmux.Internal.Scope.html#OperationFailed"><span class="hs-identifier hs-var">OperationFailed</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ReadError -&gt; SomeException
+forall e. Exception e =&gt; e -&gt; SomeException
+</span><span class="hs-identifier hs-var">toException</span></span><span> </span><span class="annot"><span class="annottext">ReadError
+</span><a href="LibTmux.Internal.Runtime.html#ReadCancelled"><span class="hs-identifier hs-var">R.ReadCancelled</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-99"></span><span>      </span><span id="local-6989586621679157909"><span class="annot"><a href="#local-6989586621679157909"><span class="hs-identifier hs-var hs-var">timed</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-100"></span><span>        </span><span id="local-6989586621679157910"><span class="annot"><a href="#local-6989586621679157910"><span class="hs-identifier hs-var">started</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO Word64
+</span><span class="hs-identifier hs-var">getMonotonicTimeNSec</span></span><span>
+</span><span id="line-101"></span><span>        </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679157911"><span class="annot"><a href="#local-6989586621679157911"><span class="hs-identifier hs-var hs-var">delta</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Word64
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679157866"><span class="hs-identifier hs-var">duration</span></a></span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; Word64 -&gt; Word64
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">Word64
+</span><span class="hs-number">1000</span></span><span>
+</span><span id="line-102"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">when</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679157910"><span class="hs-identifier hs-type">started</span></a></span><span> </span><span class="annot"><span class="hs-operator hs-type">&gt;</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">maxBound</span></span><span> </span><span class="annot"><span class="hs-glyph hs-type">-</span></span><span> </span><span class="annot"><a href="#local-6989586621679157911"><span class="hs-identifier hs-type">delta</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">throwIO</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Runtime.html#ReadClockOverflow"><span class="hs-identifier hs-type">R.ReadClockOverflow</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-103"></span><span>        </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679157915"><span class="annot"><a href="#local-6989586621679157915"><span class="hs-identifier hs-var hs-var">deadline</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679157910"><span class="hs-identifier hs-var">started</span></a></span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; Word64 -&gt; Word64
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679157911"><span class="hs-identifier hs-var">delta</span></a></span><span>
+</span><span id="line-104"></span><span>        </span><span id="local-6989586621679157917"><span class="annot"><a href="#local-6989586621679157917"><span class="hs-identifier hs-var">completed</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="hs-identifier hs-type">timeout</span></span><span> </span><span class="annot"><a href="#local-6989586621679157866"><span class="hs-identifier hs-type">duration</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679157884"><span class="hs-identifier hs-type">owned</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679157915"><span class="hs-identifier hs-type">deadline</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-105"></span><span>        </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="#local-6989586621679157917"><span class="hs-identifier hs-type">completed</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-106"></span><span>          </span><span class="annot"><span class="annottext">Maybe result
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">TmuxException -&gt; IO result
+forall e a. (HasCallStack, Exception e) =&gt; e -&gt; IO a
+</span><span class="hs-identifier hs-var">throwIO</span></span><span> </span><span class="annot"><span class="annottext">TmuxException
+</span><a href="LibTmux.Internal.Scope.html#MutationTimedOut"><span class="hs-identifier hs-var">MutationTimedOut</span></a></span><span>
+</span><span id="line-107"></span><span>          </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679157918"><span class="annot"><span class="annottext">result
+</span><a href="#local-6989586621679157918"><span class="hs-identifier hs-var">value</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; IO Int
+</span><a href="LibTmux.Internal.Mutation.html#remaining"><span class="hs-identifier hs-var">remaining</span></a></span><span> </span><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679157915"><span class="hs-identifier hs-var">deadline</span></a></span><span> </span><span class="annot"><span class="annottext">IO Int -&gt; IO result -&gt; IO result
+forall a b. IO a -&gt; IO b -&gt; IO b
+forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; m b -&gt; m b
+</span><span class="hs-operator hs-var">&gt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">result -&gt; IO result
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">result
+</span><a href="#local-6989586621679157918"><span class="hs-identifier hs-var">value</span></a></span><span>
+</span><span id="line-108"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">catchNoPropagate</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679157871"><span class="hs-identifier hs-type">restore</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679157909"><span class="hs-identifier hs-type">timed</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679157876"><span class="hs-identifier hs-type">annotate</span></a></span><span>
+</span><span id="line-109"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-110"></span><span>    </span><span id="local-6989586621679157895"><span class="annot"><span class="annottext">argumentError :: ArgumentError -&gt; Text
+</span><a href="#local-6989586621679157895"><span class="hs-identifier hs-var hs-var">argumentError</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Command.html#NulOperand"><span class="hs-identifier hs-type">C.NulOperand</span></a></span><span> </span><span id="local-6989586621679157928"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679157928"><span class="hs-identifier hs-var">field</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679157928"><span class="hs-identifier hs-var">field</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot; contains NUL&quot;</span></span><span>
+</span><span id="line-111"></span><span>    </span><span class="annot"><a href="#local-6989586621679157895"><span class="hs-identifier hs-var">argumentError</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Command.html#EncodedCommandTooLarge"><span class="hs-identifier hs-type">C.EncodedCommandTooLarge</span></a></span><span> </span><span id="local-6989586621679157930"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679157930"><span class="hs-identifier hs-var">field</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679157930"><span class="hs-identifier hs-var">field</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot; exceeds the command size limit&quot;</span></span><span>
+</span><span id="line-112"></span><span>    </span><span class="annot"><a href="#local-6989586621679157895"><span class="hs-identifier hs-var">argumentError</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Command.html#InvalidOperand"><span class="hs-identifier hs-type">C.InvalidOperand</span></a></span><span> </span><span id="local-6989586621679157932"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679157932"><span class="hs-identifier hs-var">field</span></a></span></span><span> </span><span id="local-6989586621679157933"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679157933"><span class="hs-identifier hs-var">reason</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679157932"><span class="hs-identifier hs-var">field</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;: &quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679157933"><span class="hs-identifier hs-var">reason</span></a></span><span>
+</span><span id="line-113"></span><span>
+</span><span id="line-114"></span><span class="annot"><a href="LibTmux.Internal.Mutation.html#remaining"><span class="hs-identifier hs-type">remaining</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-115"></span><span id="remaining"><span class="annot"><span class="annottext">remaining :: Word64 -&gt; IO Int
+</span><a href="LibTmux.Internal.Mutation.html#remaining"><span class="hs-identifier hs-var hs-var">remaining</span></a></span></span><span> </span><span id="local-6989586621679157934"><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679157934"><span class="hs-identifier hs-var">deadline</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-116"></span><span>  </span><span id="local-6989586621679157935"><span class="annot"><a href="#local-6989586621679157935"><span class="hs-identifier hs-var">now</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO Word64
+</span><span class="hs-identifier hs-var">getMonotonicTimeNSec</span></span><span>
+</span><span id="line-117"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">when</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679157935"><span class="hs-identifier hs-type">now</span></a></span><span> </span><span class="annot"><span class="hs-operator hs-type">&gt;=</span></span><span> </span><span class="annot"><a href="#local-6989586621679157934"><span class="hs-identifier hs-type">deadline</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">throwIO</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html#MutationTimedOut"><span class="hs-identifier hs-type">MutationTimedOut</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-118"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">pure</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">fromIntegral</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679157934"><span class="hs-identifier hs-type">deadline</span></a></span><span> </span><span class="annot"><span class="hs-glyph hs-type">-</span></span><span> </span><span class="annot"><a href="#local-6989586621679157935"><span class="hs-identifier hs-type">now</span></a></span><span> </span><span class="annot"><span class="hs-operator hs-type">+</span></span><span> </span><span class="annot"><span class="hs-number">999</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="hs-operator hs-type">`div`</span></span><span> </span><span class="annot"><span class="hs-number">1000</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-119"></span><span>
+</span><span id="line-120"></span><span id="local-6989586621679157607"><span class="annot"><a href="LibTmux.Internal.Mutation.html#recovering"><span class="hs-identifier hs-type">recovering</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Mutation.html#MutationRecovery"><span class="hs-identifier hs-type">MutationRecovery</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621679157607"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621679157607"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-121"></span><span id="recovering"><span class="annot"><span class="annottext">recovering :: forall a. MutationRecovery -&gt; IO a -&gt; IO a
+</span><a href="LibTmux.Internal.Mutation.html#recovering"><span class="hs-identifier hs-var hs-var">recovering</span></a></span></span><span> </span><span id="local-6989586621679157940"><span class="annot"><span class="annottext">MutationRecovery
+</span><a href="#local-6989586621679157940"><span class="hs-identifier hs-var">recovery</span></a></span></span><span> </span><span id="local-6989586621679157941"><span class="annot"><span class="annottext">IO a
+</span><a href="#local-6989586621679157941"><span class="hs-identifier hs-var">action</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IO a -&gt; (ExceptionWithContext SomeException -&gt; IO a) -&gt; IO a
+forall e a.
+Exception e =&gt;
+IO a -&gt; (ExceptionWithContext e -&gt; IO a) -&gt; IO a
+</span><span class="hs-identifier hs-var">catchNoPropagate</span></span><span> </span><span class="annot"><span class="annottext">IO a
+</span><a href="#local-6989586621679157941"><span class="hs-identifier hs-var">action</span></a></span><span> </span><span class="annot"><span class="annottext">((ExceptionWithContext SomeException -&gt; IO a) -&gt; IO a)
+-&gt; (ExceptionWithContext SomeException -&gt; IO a) -&gt; IO a
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span>
+</span><span id="line-122"></span><span>  </span><span class="hs-glyph">\</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ExceptionWithContext</span></span><span> </span><span id="local-6989586621679157942"><span class="annot"><span class="annottext">ExceptionContext
+</span><a href="#local-6989586621679157942"><span class="hs-identifier hs-var">context</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679157943"><span class="annot"><span class="annottext">SomeException
+</span><a href="#local-6989586621679157943"><span class="hs-identifier hs-var">problem</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">SomeException</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-123"></span><span>    </span><span class="annot"><span class="annottext">ExceptionWithContext SomeException -&gt; IO a
+forall e a. Exception e =&gt; ExceptionWithContext e -&gt; IO a
+</span><span class="hs-identifier hs-var">rethrowIO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ExceptionContext
+-&gt; SomeException -&gt; ExceptionWithContext SomeException
+forall a. ExceptionContext -&gt; a -&gt; ExceptionWithContext a
+</span><span class="hs-identifier hs-var">ExceptionWithContext</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">MutationRecovery -&gt; ExceptionContext -&gt; ExceptionContext
+forall a.
+ExceptionAnnotation a =&gt;
+a -&gt; ExceptionContext -&gt; ExceptionContext
+</span><span class="hs-identifier hs-var">Context.addExceptionAnnotation</span></span><span> </span><span class="annot"><span class="annottext">MutationRecovery
+</span><a href="#local-6989586621679157940"><span class="hs-identifier hs-var">recovery</span></a></span><span> </span><span class="annot"><span class="annottext">ExceptionContext
+</span><a href="#local-6989586621679157942"><span class="hs-identifier hs-var">context</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">SomeException
+</span><a href="#local-6989586621679157943"><span class="hs-identifier hs-var">problem</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-124"></span></pre></body></html>

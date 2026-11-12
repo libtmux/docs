@@ -1,0 +1,473 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-comment">-- | Distinct session, physical-window and physical-pane IDs.</span><span>
+</span><span id="line-2"></span><span class="hs-comment">--</span><span>
+</span><span id="line-3"></span><span class="hs-comment">-- Parsing and rendering are pure. An ID carries no endpoint, server lifetime</span><span>
+</span><span id="line-4"></span><span class="hs-comment">-- or liveness evidence. Render an ID for external text; use its numeric</span><span>
+</span><span id="line-5"></span><span class="hs-comment">-- accessor when an application needs the mathematical value.</span><span>
+</span><span id="line-6"></span><span class="hs-comment">--</span><span>
+</span><span id="line-7"></span><span class="hs-comment">-- Start with 'parseSessionId', 'parseWindowId' or 'parsePaneId'. Each type's</span><span>
+</span><span id="line-8"></span><span class="hs-comment">-- documentation links its parser and renderer. Contextual numeric indices</span><span>
+</span><span id="line-9"></span><span class="hs-comment">-- belong to &quot;LibTmux.Value&quot;.</span><span>
+</span><span id="line-10"></span><span class="hs-comment">--</span><span>
+</span><span id="line-11"></span><span class="hs-comment">-- &gt;&gt;&gt; :set -XOverloadedStrings</span><span>
+</span><span id="line-12"></span><span class="hs-comment">-- &gt;&gt;&gt; fmap renderWindowId (parseWindowId &quot;@17&quot;)</span><span>
+</span><span id="line-13"></span><span class="hs-comment">-- Right &quot;@17&quot;</span><span>
+</span><span id="line-14"></span><span class="hs-comment">-- &gt;&gt;&gt; either (const &quot;rejected&quot;) renderPaneId (parsePaneId &quot;@17&quot;)</span><span>
+</span><span id="line-15"></span><span class="hs-comment">-- &quot;rejected&quot;</span><span>
+</span><span id="line-16"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="LibTmux.Id.html"><span class="hs-identifier">LibTmux.Id</span></a></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-comment">-- * Entity identities</span></span><span>
+</span><span id="line-18"></span><span>    </span><span class="annot"><a href="LibTmux.Id.html#SessionId"><span class="hs-identifier">SessionId</span></a></span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Id.html#WindowId"><span class="hs-identifier">WindowId</span></a></span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Id.html#PaneId"><span class="hs-identifier">PaneId</span></a></span><span>
+</span><span id="line-21"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Parse external values</span></span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Id.html#IdError"><span class="hs-identifier">IdError</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Id.html#parseSessionId"><span class="hs-identifier">parseSessionId</span></a></span><span>
+</span><span id="line-24"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Id.html#parseWindowId"><span class="hs-identifier">parseWindowId</span></a></span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Id.html#parsePaneId"><span class="hs-identifier">parsePaneId</span></a></span><span>
+</span><span id="line-26"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Render target text</span></span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Id.html#renderSessionId"><span class="hs-identifier">renderSessionId</span></a></span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Id.html#renderWindowId"><span class="hs-identifier">renderWindowId</span></a></span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Id.html#renderPaneId"><span class="hs-identifier">renderPaneId</span></a></span><span>
+</span><span id="line-30"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Read numeric values</span></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Id.html#sessionIdValue"><span class="hs-identifier">sessionIdValue</span></a></span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Id.html#windowIdValue"><span class="hs-identifier">windowIdValue</span></a></span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Id.html#paneIdValue"><span class="hs-identifier">paneIdValue</span></a></span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-35"></span><span>
+</span><span id="line-36"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.DeepSeq</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">NFData</span></span><span class="hs-special">)</span><span>
+</span><span id="line-37"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">guard</span></span><span class="hs-special">)</span><span>
+</span><span id="line-38"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Char</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">ord</span></span><span class="hs-special">)</span><span>
+</span><span id="line-39"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-40"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Text</span></span><span>
+</span><span id="line-41"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Word</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Word32</span></span><span class="hs-special">)</span><span>
+</span><span id="line-42"></span><span>
+</span><span id="line-43"></span><span class="hs-comment">-- | A session's unsigned 32-bit tmux identifier, written with a @$@ prefix.</span><span>
+</span><span id="line-44"></span><span class="hs-comment">-- Parse with 'parseSessionId'; render with 'renderSessionId'.</span><span>
+</span><span id="line-45"></span><span class="hs-keyword">newtype</span><span> </span><span id="SessionId"><span class="annot"><a href="LibTmux.Id.html#SessionId"><span class="hs-identifier hs-var">SessionId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="SessionId"><span class="annot"><a href="LibTmux.Id.html#SessionId"><span class="hs-identifier hs-var">SessionId</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word32</span></span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679143386"><span id="local-6989586621679143390"><span class="annot"><span class="annottext">SessionId -&gt; SessionId -&gt; Bool
+(SessionId -&gt; SessionId -&gt; Bool)
+-&gt; (SessionId -&gt; SessionId -&gt; Bool) -&gt; Eq SessionId
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: SessionId -&gt; SessionId -&gt; Bool
+== :: SessionId -&gt; SessionId -&gt; Bool
+$c/= :: SessionId -&gt; SessionId -&gt; Bool
+/= :: SessionId -&gt; SessionId -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679143397"><span id="local-6989586621679143401"><span id="local-6989586621679143404"><span id="local-6989586621679143408"><span id="local-6989586621679143411"><span id="local-6989586621679143414"><span id="local-6989586621679143417"><span class="annot"><span class="annottext">Eq SessionId
+Eq SessionId =&gt;
+(SessionId -&gt; SessionId -&gt; Ordering)
+-&gt; (SessionId -&gt; SessionId -&gt; Bool)
+-&gt; (SessionId -&gt; SessionId -&gt; Bool)
+-&gt; (SessionId -&gt; SessionId -&gt; Bool)
+-&gt; (SessionId -&gt; SessionId -&gt; Bool)
+-&gt; (SessionId -&gt; SessionId -&gt; SessionId)
+-&gt; (SessionId -&gt; SessionId -&gt; SessionId)
+-&gt; Ord SessionId
+SessionId -&gt; SessionId -&gt; Bool
+SessionId -&gt; SessionId -&gt; Ordering
+SessionId -&gt; SessionId -&gt; SessionId
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: SessionId -&gt; SessionId -&gt; Ordering
+compare :: SessionId -&gt; SessionId -&gt; Ordering
+$c&lt; :: SessionId -&gt; SessionId -&gt; Bool
+&lt; :: SessionId -&gt; SessionId -&gt; Bool
+$c&lt;= :: SessionId -&gt; SessionId -&gt; Bool
+&lt;= :: SessionId -&gt; SessionId -&gt; Bool
+$c&gt; :: SessionId -&gt; SessionId -&gt; Bool
+&gt; :: SessionId -&gt; SessionId -&gt; Bool
+$c&gt;= :: SessionId -&gt; SessionId -&gt; Bool
+&gt;= :: SessionId -&gt; SessionId -&gt; Bool
+$cmax :: SessionId -&gt; SessionId -&gt; SessionId
+max :: SessionId -&gt; SessionId -&gt; SessionId
+$cmin :: SessionId -&gt; SessionId -&gt; SessionId
+min :: SessionId -&gt; SessionId -&gt; SessionId
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679143425"><span id="local-6989586621679143429"><span id="local-6989586621679143433"><span class="annot"><span class="annottext">Int -&gt; SessionId -&gt; ShowS
+[SessionId] -&gt; ShowS
+SessionId -&gt; String
+(Int -&gt; SessionId -&gt; ShowS)
+-&gt; (SessionId -&gt; String)
+-&gt; ([SessionId] -&gt; ShowS)
+-&gt; Show SessionId
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; SessionId -&gt; ShowS
+showsPrec :: Int -&gt; SessionId -&gt; ShowS
+$cshow :: SessionId -&gt; String
+show :: SessionId -&gt; String
+$cshowList :: [SessionId] -&gt; ShowS
+showList :: [SessionId] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-47"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">newtype</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679143438"><span class="annot"><span class="annottext">SessionId -&gt; ()
+(SessionId -&gt; ()) -&gt; NFData SessionId
+forall a. (a -&gt; ()) -&gt; NFData a
+$crnf :: SessionId -&gt; ()
+rnf :: SessionId -&gt; ()
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">NFData</span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-48"></span><span>
+</span><span id="line-49"></span><span class="hs-comment">-- | A physical window's identifier, independent of its session links.</span><span>
+</span><span id="line-50"></span><span class="hs-comment">-- Parse with 'parseWindowId'; render with 'renderWindowId'.</span><span>
+</span><span id="line-51"></span><span class="hs-keyword">newtype</span><span> </span><span id="WindowId"><span class="annot"><a href="LibTmux.Id.html#WindowId"><span class="hs-identifier hs-var">WindowId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="WindowId"><span class="annot"><a href="LibTmux.Id.html#WindowId"><span class="hs-identifier hs-var">WindowId</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word32</span></span><span>
+</span><span id="line-52"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679143447"><span id="local-6989586621679143450"><span class="annot"><span class="annottext">WindowId -&gt; WindowId -&gt; Bool
+(WindowId -&gt; WindowId -&gt; Bool)
+-&gt; (WindowId -&gt; WindowId -&gt; Bool) -&gt; Eq WindowId
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: WindowId -&gt; WindowId -&gt; Bool
+== :: WindowId -&gt; WindowId -&gt; Bool
+$c/= :: WindowId -&gt; WindowId -&gt; Bool
+/= :: WindowId -&gt; WindowId -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679143456"><span id="local-6989586621679143459"><span id="local-6989586621679143462"><span id="local-6989586621679143466"><span id="local-6989586621679143469"><span id="local-6989586621679143472"><span id="local-6989586621679143475"><span class="annot"><span class="annottext">Eq WindowId
+Eq WindowId =&gt;
+(WindowId -&gt; WindowId -&gt; Ordering)
+-&gt; (WindowId -&gt; WindowId -&gt; Bool)
+-&gt; (WindowId -&gt; WindowId -&gt; Bool)
+-&gt; (WindowId -&gt; WindowId -&gt; Bool)
+-&gt; (WindowId -&gt; WindowId -&gt; Bool)
+-&gt; (WindowId -&gt; WindowId -&gt; WindowId)
+-&gt; (WindowId -&gt; WindowId -&gt; WindowId)
+-&gt; Ord WindowId
+WindowId -&gt; WindowId -&gt; Bool
+WindowId -&gt; WindowId -&gt; Ordering
+WindowId -&gt; WindowId -&gt; WindowId
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: WindowId -&gt; WindowId -&gt; Ordering
+compare :: WindowId -&gt; WindowId -&gt; Ordering
+$c&lt; :: WindowId -&gt; WindowId -&gt; Bool
+&lt; :: WindowId -&gt; WindowId -&gt; Bool
+$c&lt;= :: WindowId -&gt; WindowId -&gt; Bool
+&lt;= :: WindowId -&gt; WindowId -&gt; Bool
+$c&gt; :: WindowId -&gt; WindowId -&gt; Bool
+&gt; :: WindowId -&gt; WindowId -&gt; Bool
+$c&gt;= :: WindowId -&gt; WindowId -&gt; Bool
+&gt;= :: WindowId -&gt; WindowId -&gt; Bool
+$cmax :: WindowId -&gt; WindowId -&gt; WindowId
+max :: WindowId -&gt; WindowId -&gt; WindowId
+$cmin :: WindowId -&gt; WindowId -&gt; WindowId
+min :: WindowId -&gt; WindowId -&gt; WindowId
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679143478"><span id="local-6989586621679143482"><span id="local-6989586621679143486"><span class="annot"><span class="annottext">Int -&gt; WindowId -&gt; ShowS
+[WindowId] -&gt; ShowS
+WindowId -&gt; String
+(Int -&gt; WindowId -&gt; ShowS)
+-&gt; (WindowId -&gt; String) -&gt; ([WindowId] -&gt; ShowS) -&gt; Show WindowId
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; WindowId -&gt; ShowS
+showsPrec :: Int -&gt; WindowId -&gt; ShowS
+$cshow :: WindowId -&gt; String
+show :: WindowId -&gt; String
+$cshowList :: [WindowId] -&gt; ShowS
+showList :: [WindowId] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-53"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">newtype</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679143489"><span class="annot"><span class="annottext">WindowId -&gt; ()
+(WindowId -&gt; ()) -&gt; NFData WindowId
+forall a. (a -&gt; ()) -&gt; NFData a
+$crnf :: WindowId -&gt; ()
+rnf :: WindowId -&gt; ()
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">NFData</span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-54"></span><span>
+</span><span id="line-55"></span><span class="hs-comment">-- | A physical pane's identifier, written with a @%@ prefix.</span><span>
+</span><span id="line-56"></span><span class="hs-comment">-- Parse with 'parsePaneId'; render with 'renderPaneId'.</span><span>
+</span><span id="line-57"></span><span class="hs-keyword">newtype</span><span> </span><span id="PaneId"><span class="annot"><a href="LibTmux.Id.html#PaneId"><span class="hs-identifier hs-var">PaneId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="PaneId"><span class="annot"><a href="LibTmux.Id.html#PaneId"><span class="hs-identifier hs-var">PaneId</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word32</span></span><span>
+</span><span id="line-58"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679143495"><span id="local-6989586621679143498"><span class="annot"><span class="annottext">PaneId -&gt; PaneId -&gt; Bool
+(PaneId -&gt; PaneId -&gt; Bool)
+-&gt; (PaneId -&gt; PaneId -&gt; Bool) -&gt; Eq PaneId
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: PaneId -&gt; PaneId -&gt; Bool
+== :: PaneId -&gt; PaneId -&gt; Bool
+$c/= :: PaneId -&gt; PaneId -&gt; Bool
+/= :: PaneId -&gt; PaneId -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679143504"><span id="local-6989586621679143507"><span id="local-6989586621679143510"><span id="local-6989586621679143514"><span id="local-6989586621679143517"><span id="local-6989586621679143520"><span id="local-6989586621679143523"><span class="annot"><span class="annottext">Eq PaneId
+Eq PaneId =&gt;
+(PaneId -&gt; PaneId -&gt; Ordering)
+-&gt; (PaneId -&gt; PaneId -&gt; Bool)
+-&gt; (PaneId -&gt; PaneId -&gt; Bool)
+-&gt; (PaneId -&gt; PaneId -&gt; Bool)
+-&gt; (PaneId -&gt; PaneId -&gt; Bool)
+-&gt; (PaneId -&gt; PaneId -&gt; PaneId)
+-&gt; (PaneId -&gt; PaneId -&gt; PaneId)
+-&gt; Ord PaneId
+PaneId -&gt; PaneId -&gt; Bool
+PaneId -&gt; PaneId -&gt; Ordering
+PaneId -&gt; PaneId -&gt; PaneId
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: PaneId -&gt; PaneId -&gt; Ordering
+compare :: PaneId -&gt; PaneId -&gt; Ordering
+$c&lt; :: PaneId -&gt; PaneId -&gt; Bool
+&lt; :: PaneId -&gt; PaneId -&gt; Bool
+$c&lt;= :: PaneId -&gt; PaneId -&gt; Bool
+&lt;= :: PaneId -&gt; PaneId -&gt; Bool
+$c&gt; :: PaneId -&gt; PaneId -&gt; Bool
+&gt; :: PaneId -&gt; PaneId -&gt; Bool
+$c&gt;= :: PaneId -&gt; PaneId -&gt; Bool
+&gt;= :: PaneId -&gt; PaneId -&gt; Bool
+$cmax :: PaneId -&gt; PaneId -&gt; PaneId
+max :: PaneId -&gt; PaneId -&gt; PaneId
+$cmin :: PaneId -&gt; PaneId -&gt; PaneId
+min :: PaneId -&gt; PaneId -&gt; PaneId
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679143526"><span id="local-6989586621679143530"><span id="local-6989586621679143534"><span class="annot"><span class="annottext">Int -&gt; PaneId -&gt; ShowS
+[PaneId] -&gt; ShowS
+PaneId -&gt; String
+(Int -&gt; PaneId -&gt; ShowS)
+-&gt; (PaneId -&gt; String) -&gt; ([PaneId] -&gt; ShowS) -&gt; Show PaneId
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; PaneId -&gt; ShowS
+showsPrec :: Int -&gt; PaneId -&gt; ShowS
+$cshow :: PaneId -&gt; String
+show :: PaneId -&gt; String
+$cshowList :: [PaneId] -&gt; ShowS
+showList :: [PaneId] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-59"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">newtype</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679143537"><span class="annot"><span class="annottext">PaneId -&gt; ()
+(PaneId -&gt; ()) -&gt; NFData PaneId
+forall a. (a -&gt; ()) -&gt; NFData a
+$crnf :: PaneId -&gt; ()
+rnf :: PaneId -&gt; ()
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">NFData</span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-60"></span><span>
+</span><span id="line-61"></span><span class="hs-comment">-- | Invalid canonical syntax, entity prefix or native unsigned range.</span><span>
+</span><span id="line-62"></span><span class="hs-comment">-- Diagnostics retain at most 64 characters of input.</span><span>
+</span><span id="line-63"></span><span class="hs-keyword">data</span><span> </span><span id="IdError"><span class="annot"><a href="LibTmux.Id.html#IdError"><span class="hs-identifier hs-var">IdError</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="InvalidId"><span class="annot"><a href="LibTmux.Id.html#InvalidId"><span class="hs-identifier hs-var">InvalidId</span></a></span></span><span>
+</span><span id="line-64"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="expectedPrefix"><span class="annot"><span class="annottext">IdError -&gt; Char
+</span><a href="LibTmux.Id.html#expectedPrefix"><span class="hs-identifier hs-var hs-var">expectedPrefix</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Char</span></span><span> </span><span class="annot"><span class="hs-comment">-- ^ Required entity prefix.</span></span><span>
+</span><span id="line-65"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="input"><span class="annot"><span class="annottext">IdError -&gt; Text
+</span><a href="LibTmux.Id.html#input"><span class="hs-identifier hs-var hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><span class="hs-comment">-- ^ Bounded copy of the invalid input.</span></span><span>
+</span><span id="line-66"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-67"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679143545"><span id="local-6989586621679143550"><span class="annot"><span class="annottext">IdError -&gt; IdError -&gt; Bool
+(IdError -&gt; IdError -&gt; Bool)
+-&gt; (IdError -&gt; IdError -&gt; Bool) -&gt; Eq IdError
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: IdError -&gt; IdError -&gt; Bool
+== :: IdError -&gt; IdError -&gt; Bool
+$c/= :: IdError -&gt; IdError -&gt; Bool
+/= :: IdError -&gt; IdError -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679143554"><span id="local-6989586621679143561"><span id="local-6989586621679143565"><span class="annot"><span class="annottext">Int -&gt; IdError -&gt; ShowS
+[IdError] -&gt; ShowS
+IdError -&gt; String
+(Int -&gt; IdError -&gt; ShowS)
+-&gt; (IdError -&gt; String) -&gt; ([IdError] -&gt; ShowS) -&gt; Show IdError
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; IdError -&gt; ShowS
+showsPrec :: Int -&gt; IdError -&gt; ShowS
+$cshow :: IdError -&gt; String
+show :: IdError -&gt; String
+$cshowList :: [IdError] -&gt; ShowS
+showList :: [IdError] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-68"></span><span>
+</span><span id="line-69"></span><span class="annot"><span class="hs-comment">-- | Parse @$0@ through @$4294967295@. No whitespace or leading zeroes.</span></span><span>
+</span><span id="line-70"></span><span class="annot"><a href="LibTmux.Id.html#parseSessionId"><span class="hs-identifier hs-type">parseSessionId</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><a href="LibTmux.Id.html#IdError"><span class="hs-identifier hs-type">IdError</span></a></span><span> </span><span class="annot"><a href="LibTmux.Id.html#SessionId"><span class="hs-identifier hs-type">SessionId</span></a></span><span>
+</span><span id="line-71"></span><span id="parseSessionId"><span class="annot"><span class="annottext">parseSessionId :: Text -&gt; Either IdError SessionId
+</span><a href="LibTmux.Id.html#parseSessionId"><span class="hs-identifier hs-var hs-var">parseSessionId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Word32 -&gt; SessionId)
+-&gt; Either IdError Word32 -&gt; Either IdError SessionId
+forall a b. (a -&gt; b) -&gt; Either IdError a -&gt; Either IdError b
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-identifier hs-var">fmap</span></span><span> </span><span class="annot"><span class="annottext">Word32 -&gt; SessionId
+</span><a href="LibTmux.Id.html#SessionId"><span class="hs-identifier hs-var">SessionId</span></a></span><span> </span><span class="annot"><span class="annottext">(Either IdError Word32 -&gt; Either IdError SessionId)
+-&gt; (Text -&gt; Either IdError Word32)
+-&gt; Text
+-&gt; Either IdError SessionId
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Text -&gt; Either IdError Word32
+</span><a href="LibTmux.Id.html#parseId"><span class="hs-identifier hs-var">parseId</span></a></span><span> </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'$'</span></span><span>
+</span><span id="line-72"></span><span>
+</span><span id="line-73"></span><span class="annot"><span class="hs-comment">-- | Parse a canonical @\@number@ identifying a physical window.</span></span><span>
+</span><span id="line-74"></span><span class="annot"><a href="LibTmux.Id.html#parseWindowId"><span class="hs-identifier hs-type">parseWindowId</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><a href="LibTmux.Id.html#IdError"><span class="hs-identifier hs-type">IdError</span></a></span><span> </span><span class="annot"><a href="LibTmux.Id.html#WindowId"><span class="hs-identifier hs-type">WindowId</span></a></span><span>
+</span><span id="line-75"></span><span id="parseWindowId"><span class="annot"><span class="annottext">parseWindowId :: Text -&gt; Either IdError WindowId
+</span><a href="LibTmux.Id.html#parseWindowId"><span class="hs-identifier hs-var hs-var">parseWindowId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Word32 -&gt; WindowId)
+-&gt; Either IdError Word32 -&gt; Either IdError WindowId
+forall a b. (a -&gt; b) -&gt; Either IdError a -&gt; Either IdError b
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-identifier hs-var">fmap</span></span><span> </span><span class="annot"><span class="annottext">Word32 -&gt; WindowId
+</span><a href="LibTmux.Id.html#WindowId"><span class="hs-identifier hs-var">WindowId</span></a></span><span> </span><span class="annot"><span class="annottext">(Either IdError Word32 -&gt; Either IdError WindowId)
+-&gt; (Text -&gt; Either IdError Word32)
+-&gt; Text
+-&gt; Either IdError WindowId
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Text -&gt; Either IdError Word32
+</span><a href="LibTmux.Id.html#parseId"><span class="hs-identifier hs-var">parseId</span></a></span><span> </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'@'</span></span><span>
+</span><span id="line-76"></span><span>
+</span><span id="line-77"></span><span class="annot"><span class="hs-comment">-- | Parse a canonical @%number@ identifying a physical pane.</span></span><span>
+</span><span id="line-78"></span><span class="annot"><a href="LibTmux.Id.html#parsePaneId"><span class="hs-identifier hs-type">parsePaneId</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><a href="LibTmux.Id.html#IdError"><span class="hs-identifier hs-type">IdError</span></a></span><span> </span><span class="annot"><a href="LibTmux.Id.html#PaneId"><span class="hs-identifier hs-type">PaneId</span></a></span><span>
+</span><span id="line-79"></span><span id="parsePaneId"><span class="annot"><span class="annottext">parsePaneId :: Text -&gt; Either IdError PaneId
+</span><a href="LibTmux.Id.html#parsePaneId"><span class="hs-identifier hs-var hs-var">parsePaneId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Word32 -&gt; PaneId)
+-&gt; Either IdError Word32 -&gt; Either IdError PaneId
+forall a b. (a -&gt; b) -&gt; Either IdError a -&gt; Either IdError b
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-identifier hs-var">fmap</span></span><span> </span><span class="annot"><span class="annottext">Word32 -&gt; PaneId
+</span><a href="LibTmux.Id.html#PaneId"><span class="hs-identifier hs-var">PaneId</span></a></span><span> </span><span class="annot"><span class="annottext">(Either IdError Word32 -&gt; Either IdError PaneId)
+-&gt; (Text -&gt; Either IdError Word32) -&gt; Text -&gt; Either IdError PaneId
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Text -&gt; Either IdError Word32
+</span><a href="LibTmux.Id.html#parseId"><span class="hs-identifier hs-var">parseId</span></a></span><span> </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'%'</span></span><span>
+</span><span id="line-80"></span><span>
+</span><span id="line-81"></span><span class="annot"><span class="hs-comment">-- | Render the session prefix and decimal ID.</span></span><span>
+</span><span id="line-82"></span><span class="annot"><a href="LibTmux.Id.html#renderSessionId"><span class="hs-identifier hs-type">renderSessionId</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Id.html#SessionId"><span class="hs-identifier hs-type">SessionId</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-83"></span><span id="renderSessionId"><span class="annot"><span class="annottext">renderSessionId :: SessionId -&gt; Text
+</span><a href="LibTmux.Id.html#renderSessionId"><span class="hs-identifier hs-var hs-var">renderSessionId</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Id.html#SessionId"><span class="hs-identifier hs-type">SessionId</span></a></span><span> </span><span id="local-6989586621679143569"><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679143569"><span class="hs-identifier hs-var">value</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;$&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
+</span><span class="hs-identifier hs-var">Text.pack</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word32 -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679143569"><span class="hs-identifier hs-var">value</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-84"></span><span>
+</span><span id="line-85"></span><span class="annot"><span class="hs-comment">-- | Render the physical window prefix and decimal ID.</span></span><span>
+</span><span id="line-86"></span><span class="annot"><a href="LibTmux.Id.html#renderWindowId"><span class="hs-identifier hs-type">renderWindowId</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Id.html#WindowId"><span class="hs-identifier hs-type">WindowId</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-87"></span><span id="renderWindowId"><span class="annot"><span class="annottext">renderWindowId :: WindowId -&gt; Text
+</span><a href="LibTmux.Id.html#renderWindowId"><span class="hs-identifier hs-var hs-var">renderWindowId</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Id.html#WindowId"><span class="hs-identifier hs-type">WindowId</span></a></span><span> </span><span id="local-6989586621679143572"><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679143572"><span class="hs-identifier hs-var">value</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;@&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
+</span><span class="hs-identifier hs-var">Text.pack</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word32 -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679143572"><span class="hs-identifier hs-var">value</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-88"></span><span>
+</span><span id="line-89"></span><span class="annot"><span class="hs-comment">-- | Render the physical pane prefix and decimal ID.</span></span><span>
+</span><span id="line-90"></span><span class="annot"><a href="LibTmux.Id.html#renderPaneId"><span class="hs-identifier hs-type">renderPaneId</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Id.html#PaneId"><span class="hs-identifier hs-type">PaneId</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-91"></span><span id="renderPaneId"><span class="annot"><span class="annottext">renderPaneId :: PaneId -&gt; Text
+</span><a href="LibTmux.Id.html#renderPaneId"><span class="hs-identifier hs-var hs-var">renderPaneId</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Id.html#PaneId"><span class="hs-identifier hs-type">PaneId</span></a></span><span> </span><span id="local-6989586621679143573"><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679143573"><span class="hs-identifier hs-var">value</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;%&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
+</span><span class="hs-identifier hs-var">Text.pack</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word32 -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679143573"><span class="hs-identifier hs-var">value</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-92"></span><span>
+</span><span id="line-93"></span><span class="annot"><span class="hs-comment">-- | Read the numeric session ID without narrowing conversion.</span></span><span>
+</span><span id="line-94"></span><span class="annot"><a href="LibTmux.Id.html#sessionIdValue"><span class="hs-identifier hs-type">sessionIdValue</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Id.html#SessionId"><span class="hs-identifier hs-type">SessionId</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span>
+</span><span id="line-95"></span><span id="sessionIdValue"><span class="annot"><span class="annottext">sessionIdValue :: SessionId -&gt; Integer
+</span><a href="LibTmux.Id.html#sessionIdValue"><span class="hs-identifier hs-var hs-var">sessionIdValue</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Id.html#SessionId"><span class="hs-identifier hs-type">SessionId</span></a></span><span> </span><span id="local-6989586621679143574"><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679143574"><span class="hs-identifier hs-var">value</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word32 -&gt; Integer
+forall a. Integral a =&gt; a -&gt; Integer
+</span><span class="hs-identifier hs-var">toInteger</span></span><span> </span><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679143574"><span class="hs-identifier hs-var">value</span></a></span><span>
+</span><span id="line-96"></span><span>
+</span><span id="line-97"></span><span class="annot"><span class="hs-comment">-- | Read the numeric physical window ID.</span></span><span>
+</span><span id="line-98"></span><span class="annot"><a href="LibTmux.Id.html#windowIdValue"><span class="hs-identifier hs-type">windowIdValue</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Id.html#WindowId"><span class="hs-identifier hs-type">WindowId</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span>
+</span><span id="line-99"></span><span id="windowIdValue"><span class="annot"><span class="annottext">windowIdValue :: WindowId -&gt; Integer
+</span><a href="LibTmux.Id.html#windowIdValue"><span class="hs-identifier hs-var hs-var">windowIdValue</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Id.html#WindowId"><span class="hs-identifier hs-type">WindowId</span></a></span><span> </span><span id="local-6989586621679143575"><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679143575"><span class="hs-identifier hs-var">value</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word32 -&gt; Integer
+forall a. Integral a =&gt; a -&gt; Integer
+</span><span class="hs-identifier hs-var">toInteger</span></span><span> </span><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679143575"><span class="hs-identifier hs-var">value</span></a></span><span>
+</span><span id="line-100"></span><span>
+</span><span id="line-101"></span><span class="annot"><span class="hs-comment">-- | Read the numeric physical pane ID.</span></span><span>
+</span><span id="line-102"></span><span class="annot"><a href="LibTmux.Id.html#paneIdValue"><span class="hs-identifier hs-type">paneIdValue</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Id.html#PaneId"><span class="hs-identifier hs-type">PaneId</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span>
+</span><span id="line-103"></span><span id="paneIdValue"><span class="annot"><span class="annottext">paneIdValue :: PaneId -&gt; Integer
+</span><a href="LibTmux.Id.html#paneIdValue"><span class="hs-identifier hs-var hs-var">paneIdValue</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Id.html#PaneId"><span class="hs-identifier hs-type">PaneId</span></a></span><span> </span><span id="local-6989586621679143576"><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679143576"><span class="hs-identifier hs-var">value</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Word32 -&gt; Integer
+forall a. Integral a =&gt; a -&gt; Integer
+</span><span class="hs-identifier hs-var">toInteger</span></span><span> </span><span class="annot"><span class="annottext">Word32
+</span><a href="#local-6989586621679143576"><span class="hs-identifier hs-var">value</span></a></span><span>
+</span><span id="line-104"></span><span>
+</span><span id="line-105"></span><span class="annot"><a href="LibTmux.Id.html#parseId"><span class="hs-identifier hs-type">parseId</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Char</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><a href="LibTmux.Id.html#IdError"><span class="hs-identifier hs-type">IdError</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word32</span></span><span>
+</span><span id="line-106"></span><span id="parseId"><span class="annot"><span class="annottext">parseId :: Char -&gt; Text -&gt; Either IdError Word32
+</span><a href="LibTmux.Id.html#parseId"><span class="hs-identifier hs-var hs-var">parseId</span></a></span></span><span> </span><span id="local-6989586621679143577"><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621679143577"><span class="hs-identifier hs-var">prefix</span></a></span></span><span> </span><span id="local-6989586621679143578"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679143578"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Either IdError Word32
+-&gt; (Word32 -&gt; Either IdError Word32)
+-&gt; Maybe Word32
+-&gt; Either IdError Word32
+forall b a. b -&gt; (a -&gt; b) -&gt; Maybe a -&gt; b
+</span><span class="hs-identifier hs-var">maybe</span></span><span> </span><span class="annot"><span class="annottext">Either IdError Word32
+</span><a href="#local-6989586621679143580"><span class="hs-identifier hs-var">invalid</span></a></span><span> </span><span class="annot"><span class="annottext">Word32 -&gt; Either IdError Word32
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">Maybe Word32
+</span><a href="#local-6989586621679143581"><span class="hs-identifier hs-var">parsed</span></a></span><span>
+</span><span id="line-107"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-108"></span><span>    </span><span id="local-6989586621679143580"><span class="annot"><span class="annottext">invalid :: Either IdError Word32
+</span><a href="#local-6989586621679143580"><span class="hs-identifier hs-var hs-var">invalid</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IdError -&gt; Either IdError Word32
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char -&gt; Text -&gt; IdError
+</span><a href="LibTmux.Id.html#InvalidId"><span class="hs-identifier hs-var">InvalidId</span></a></span><span> </span><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621679143577"><span class="hs-identifier hs-var">prefix</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Text
+</span><span class="hs-identifier hs-var">Text.copy</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; Text -&gt; Text
+</span><span class="hs-identifier hs-var">Text.take</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">64</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679143578"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-109"></span><span>    </span><span id="local-6989586621679143581"><span class="annot"><span class="annottext">parsed :: Maybe Word32
+</span><a href="#local-6989586621679143581"><span class="hs-identifier hs-var hs-var">parsed</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-110"></span><span>      </span><span class="annot"><span class="annottext">Bool -&gt; Maybe ()
+forall (f :: * -&gt; *). Alternative f =&gt; Bool -&gt; f ()
+</span><span class="hs-identifier hs-var">guard</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Int
+</span><span class="hs-identifier hs-var">Text.length</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679143578"><span class="hs-identifier hs-var">input</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;=</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">11</span></span><span class="hs-special">)</span><span>
+</span><span id="line-111"></span><span>      </span><span class="hs-special">(</span><span id="local-6989586621679143585"><span class="annot"><a href="#local-6989586621679143585"><span class="hs-identifier hs-var">actual</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679143586"><span class="annot"><a href="#local-6989586621679143586"><span class="hs-identifier hs-var">digits</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Maybe (Char, Text)
+</span><span class="hs-identifier hs-var">Text.uncons</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679143578"><span class="hs-identifier hs-var">input</span></a></span><span>
+</span><span id="line-112"></span><span>      </span><span class="annot"><span class="hs-identifier hs-type">guard</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679143585"><span class="hs-identifier hs-type">actual</span></a></span><span> </span><span class="annot"><span class="hs-operator hs-type">==</span></span><span> </span><span class="annot"><a href="#local-6989586621679143577"><span class="hs-identifier hs-type">prefix</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-113"></span><span>      </span><span class="hs-special">(</span><span id="local-6989586621679143588"><span class="annot"><a href="#local-6989586621679143588"><span class="hs-identifier hs-var">first</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679143589"><span class="annot"><a href="#local-6989586621679143589"><span class="hs-identifier hs-var">rest</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text.uncons</span></span><span> </span><span class="annot"><a href="#local-6989586621679143586"><span class="hs-identifier hs-type">digits</span></a></span><span>
+</span><span id="line-114"></span><span>      </span><span class="annot"><span class="hs-identifier hs-type">guard</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679143588"><span class="hs-identifier hs-type">first</span></a></span><span> </span><span class="annot"><span class="hs-operator hs-type">/=</span></span><span> </span><span class="annot"><span class="hs-char">'0'</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">||</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text.null</span></span><span> </span><span class="annot"><a href="#local-6989586621679143589"><span class="hs-identifier hs-type">rest</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-115"></span><span>      </span><span class="annot"><span class="hs-identifier hs-type">guard</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Text.all</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679143594"><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621679143594"><span class="hs-identifier hs-var">c</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621679143594"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;=</span></span><span> </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'0'</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span> </span><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621679143594"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;=</span></span><span> </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'9'</span></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621679143586"><span class="hs-identifier hs-type">digits</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-116"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679143596"><span class="annot"><a href="#local-6989586621679143596"><span class="hs-identifier hs-var hs-var">value</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Integer -&gt; Char -&gt; Integer) -&gt; Integer -&gt; Text -&gt; Integer
+forall a. (a -&gt; Char -&gt; a) -&gt; a -&gt; Text -&gt; a
+</span><span class="hs-identifier hs-var">Text.foldl'</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679143598"><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621679143598"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span id="local-6989586621679143599"><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621679143599"><span class="hs-identifier hs-var">c</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621679143598"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Integer -&gt; Integer
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">10</span></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Integer -&gt; Integer
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Integer
+forall a. Integral a =&gt; a -&gt; Integer
+</span><span class="hs-identifier hs-var">toInteger</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char -&gt; Int
+</span><span class="hs-identifier hs-var">ord</span></span><span> </span><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621679143599"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Int
+</span><span class="hs-identifier hs-var">ord</span></span><span> </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'0'</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679143586"><span class="hs-identifier hs-var">digits</span></a></span><span>
+</span><span id="line-117"></span><span>      </span><span class="annot"><span class="hs-identifier hs-type">guard</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679143596"><span class="hs-identifier hs-type">value</span></a></span><span> </span><span class="annot"><span class="hs-operator hs-type">&lt;=</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">toInteger</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">maxBound</span></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-identifier hs-type">Word32</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-118"></span><span>      </span><span class="annot"><span class="hs-identifier hs-type">pure</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">fromInteger</span></span><span> </span><span class="annot"><a href="#local-6989586621679143596"><span class="hs-identifier hs-type">value</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-119"></span></pre></body></html>

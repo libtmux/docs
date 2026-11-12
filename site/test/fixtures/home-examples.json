@@ -1571,9 +1571,9 @@
       "port": "haskell",
       "page": "home",
       "sourceRepository": "libtmux/libtmux-haskell",
-      "sourceRevision": "00b47e6d94b181b5fd94e585be1e9ecefbf93acb",
-      "sourceTree": "5dcd6665d30d498fc3aaee81b93067dd22eadde7",
-      "libraryRevision": "00b47e6d94b181b5fd94e585be1e9ecefbf93acb",
+      "sourceRevision": "7b5e4b2705bd5eae17711ab6559dd24c2c380f96",
+      "sourceTree": "287e876aa93873d1d8d81d12bfed53184275bd1f",
+      "libraryRevision": "7b5e4b2705bd5eae17711ab6559dd24c2c380f96",
       "execution": "owned-tmux",
       "files": [
         {
@@ -1588,8 +1588,8 @@
         },
         {
           "name": "cabal.project",
-          "sha256": "a48392102312ec4c850a8780daf3a599adf9e06d6fa77f0ab2737397cbbb1d94",
-          "clipboardSha256": "9f521a56b6c6f9588951834c118218eaad1fee5d79956a0a9e3dcfc68c3c71ce"
+          "sha256": "a6c0cdbe75406ab6dd181ec7aeec9eb89f4bc2e4c524c3565dc2811066c54455",
+          "clipboardSha256": "37968052ec2d2612cf5041a6ea7ecc7736ac829a2696682eb5b4ca6842ec5554"
         }
       ],
       "shellRecipe": [
@@ -1623,8 +1623,8 @@
             },
             {
               "name": "cabal.project",
-              "sha256": "a48392102312ec4c850a8780daf3a599adf9e06d6fa77f0ab2737397cbbb1d94",
-              "clipboardSha256": "9f521a56b6c6f9588951834c118218eaad1fee5d79956a0a9e3dcfc68c3c71ce"
+              "sha256": "a6c0cdbe75406ab6dd181ec7aeec9eb89f4bc2e4c524c3565dc2811066c54455",
+              "clipboardSha256": "37968052ec2d2612cf5041a6ea7ecc7736ac829a2696682eb5b4ca6842ec5554"
             }
           ],
           "excerptSha256": "ee14854094d5129c5554be0925659dd95086cf9fc7db49ab16ea6ab6daacea71",
@@ -1644,8 +1644,8 @@
             },
             {
               "name": "cabal.project",
-              "sha256": "a48392102312ec4c850a8780daf3a599adf9e06d6fa77f0ab2737397cbbb1d94",
-              "clipboardSha256": "9f521a56b6c6f9588951834c118218eaad1fee5d79956a0a9e3dcfc68c3c71ce"
+              "sha256": "a6c0cdbe75406ab6dd181ec7aeec9eb89f4bc2e4c524c3565dc2811066c54455",
+              "clipboardSha256": "37968052ec2d2612cf5041a6ea7ecc7736ac829a2696682eb5b4ca6842ec5554"
             }
           ],
           "excerptSha256": "ee14854094d5129c5554be0925659dd95086cf9fc7db49ab16ea6ab6daacea71",
@@ -1665,8 +1665,8 @@
             },
             {
               "name": "cabal.project",
-              "sha256": "a48392102312ec4c850a8780daf3a599adf9e06d6fa77f0ab2737397cbbb1d94",
-              "clipboardSha256": "9f521a56b6c6f9588951834c118218eaad1fee5d79956a0a9e3dcfc68c3c71ce"
+              "sha256": "a6c0cdbe75406ab6dd181ec7aeec9eb89f4bc2e4c524c3565dc2811066c54455",
+              "clipboardSha256": "37968052ec2d2612cf5041a6ea7ecc7736ac829a2696682eb5b4ca6842ec5554"
             }
           ],
           "excerptSha256": "ee14854094d5129c5554be0925659dd95086cf9fc7db49ab16ea6ab6daacea71",

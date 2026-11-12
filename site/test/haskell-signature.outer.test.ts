@@ -8,6 +8,7 @@ import { apiSignatureLayouts, signatureSpans } from '../src/lib/code-layout'
 import { parseApiProse } from '@libtmux/api-model/reference'
 import { symbolMarkdownWithLayout } from '../src/lib/symbol-markdown'
 import { displayedSignature, renderSignatures } from './signature-fragment'
+import native from '../../packages/api-model/test/fixtures/haskell-creations-native/artifact.json'
 
 const model = JSON.parse(readFileSync(new URL('../src/data/api/haskell.json', import.meta.url), 'utf8')) as ApiModel
 const index = new SymbolIndex(model.symbols, (symbol) => `/en/haskell/latest/reference/${symbol.slug}/`, 'haskell')
@@ -17,7 +18,7 @@ const tokens = (text: string) => text.replace(/\s+/g, ' ').trim()
 describe('native Haddock signatures', () => {
   it('keeps signatureless module declarations on the ordinary named-header path', async () => {
     const modules = model.symbols.filter((symbol) => symbol.kind === 'module')
-    expect(modules).toHaveLength(16)
+    expect(modules.map((symbol) => symbol.id)).toEqual(native.package.exposedModules)
     for (const symbol of modules) {
       expect(symbol.signatures).toEqual([])
       expect(usesNativeSignatures(symbol, 'haskell')).toBe(false)
@@ -28,7 +29,8 @@ describe('native Haddock signatures', () => {
   })
 
   it('uses the native text and explicit destinations for every public header and Markdown twin', async () => {
-    expect(declarations).toHaveLength(355)
+    expect(new Set(declarations.map((symbol) => symbol.id))).toEqual(new Set(
+      native.symbols.filter((symbol) => symbol.signatures.length).map((symbol) => symbol.id)))
     let links = 0
     for (const symbol of declarations) {
       expect(usesNativeSignatures(symbol, 'haskell'), symbol.id).toBe(true)
@@ -50,7 +52,8 @@ describe('native Haddock signatures', () => {
       for (const [, href] of expected) expect(markdown).toContain(`](${href})`)
       expect(markdown).not.toContain('## Methods')
     }
-    expect(links).toBe(618)
+    expect(links).toBe(native.symbols.reduce((total, symbol) => total + symbol.signatures.reduce(
+      (count, signature) => count + signature.nativeSpans.filter((span) => 'href' in span && span.href).length, 0), 0))
   })
 
   it('renders each real production header with native links and its own declaration anchor', async () => {
@@ -75,7 +78,9 @@ describe('native Haddock signatures', () => {
 
   it('keeps data constructors out of dispatch-method sections', () => {
     const constructors = declarations.filter((symbol) => symbol.signatures[0]?.methodKind === 'constructor')
-    expect(constructors).toHaveLength(58)
+    expect(new Set(constructors.map((symbol) => symbol.id))).toEqual(new Set(
+      native.symbols.filter((symbol) => symbol.signatures.some((signature) =>
+        'methodKind' in signature && signature.methodKind === 'constructor')).map((symbol) => symbol.id)))
     for (const symbol of constructors) {
       expect(apiMethodDetails(symbol, 'haskell')).toEqual([])
       expect(apiEntrySections(symbol, 'haskell').map((section) => section.label)).not.toContain('Methods')

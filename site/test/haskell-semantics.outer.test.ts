@@ -12,6 +12,7 @@ import { nativeQualifiedName, nativeShortName } from '../src/lib/native-name'
 import { writtenForm } from '../src/lib/symbol-form'
 import { symbolMarkdownWithLayout } from '../src/lib/symbol-markdown'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
+import native from '../../packages/api-model/test/fixtures/haskell-creations-native/artifact.json'
 
 vi.mock('astro:content', () => ({ getCollection: async () => [] }))
 
@@ -25,8 +26,12 @@ const named = (name: string) => model.symbols.find((symbol) => symbol.name === n
 describe('Haskell reference semantics', () => {
   it('preserves distinct kinds in previews and the searchable tree without changing source identities', () => {
     const kinds = model.symbols.map((symbol) => symbolPreview(model, symbol, 'latest').kind)
+    const nativeKinds = native.symbols.map((symbol) => symbol.kind === 'module' ? 'module'
+      : symbol.kind === 'typealias' ? 'data-type' : symbol.kind === 'property' ? 'record-field'
+        : symbol.signatures.some((signature) => 'methodKind' in signature && signature.methodKind === 'constructor')
+          ? 'data-constructor' : 'function')
     expect(Object.fromEntries([...Map.groupBy(kinds, (kind) => kind)].map(([kind, values]) => [kind, values.length])))
-      .toEqual({ module: 16, 'data-type': 55, 'data-constructor': 58, 'record-field': 75, function: 167 })
+      .toEqual(Object.fromEntries([...Map.groupBy(nativeKinds, (kind) => kind)].map(([kind, values]) => [kind, values.length])))
     const records = searchApi(referenceTree('haskell'), '')
     expect(new Set(records.map((entry) => entry.id))).toEqual(new Set(model.symbols.map((symbol) => symbol.id)))
     for (const entry of records) {

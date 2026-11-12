@@ -1,0 +1,1013 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-comment">-- | Bounded logical admission, separate from physical process ownership.</span><span>
+</span><span id="line-2"></span><span class="hs-comment">--</span><span>
+</span><span id="line-3"></span><span class="hs-comment">-- Create a t'Scheduler' with 'newScheduler', 'admit' an operation, then</span><span>
+</span><span id="line-4"></span><span class="hs-comment">-- dispatch with 'claim'. 'status' separates observed progress, the first</span><span>
+</span><span id="line-5"></span><span class="hs-comment">-- caller outcome and retained responsibility. Cancellation of 'await' does</span><span>
+</span><span id="line-6"></span><span class="hs-comment">-- not release admission. 'connectionRetired' also retains uncertain work.</span><span>
+</span><span id="line-7"></span><span class="hs-comment">--</span><span>
+</span><span id="line-8"></span><span class="hs-comment">-- This component performs no tmux IO and proves no external completion.</span><span>
+</span><span id="line-9"></span><span class="hs-comment">-- The Runtime must supply evidence to 'finish' or 'refuseBeforeBirth', and</span><span>
+</span><span id="line-10"></span><span class="hs-comment">-- protect physical-child and byte capacity for inspection too. The logical</span><span>
+</span><span id="line-11"></span><span class="hs-comment">-- reserve here does not reserve those resources.</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html"><span class="hs-identifier">LibTmux.Internal.Scheduler</span></a></span><span>
+</span><span id="line-13"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-comment">-- * Context and admission</span></span><span>
+</span><span id="line-14"></span><span>    </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Scheduler"><span class="hs-identifier">Scheduler</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier">Operation</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Lane"><span class="hs-identifier">Lane</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#newScheduler"><span class="hs-identifier">newScheduler</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#admit"><span class="hs-identifier">admit</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#claim"><span class="hs-identifier">claim</span></a></span><span>
+</span><span id="line-15"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Ownership groups</span></span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Group"><span class="hs-identifier">Group</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#newGroup"><span class="hs-identifier">newGroup</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#admitIn"><span class="hs-identifier">admitIn</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#outstandingIn"><span class="hs-identifier">outstandingIn</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#memberOf"><span class="hs-identifier">memberOf</span></a></span><span>
+</span><span id="line-17"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Detached observations</span></span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Stage"><span class="hs-identifier">Stage</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Outcome"><span class="hs-identifier">Outcome</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Status"><span class="hs-identifier">Status</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#status"><span class="hs-identifier">status</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#await"><span class="hs-identifier">await</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#outstanding"><span class="hs-identifier">outstanding</span></a></span><span>
+</span><span id="line-19"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Evidence and uncertainty</span></span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Completion"><span class="hs-identifier">Completion</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#markDispatched"><span class="hs-identifier">markDispatched</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#markResponseClosed"><span class="hs-identifier">markResponseClosed</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#finish"><span class="hs-identifier">finish</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#markUnknown"><span class="hs-identifier">markUnknown</span></a></span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#cancelQueued"><span class="hs-identifier">cancelQueued</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#refuseBeforeBirth"><span class="hs-identifier">refuseBeforeBirth</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#connectionRetired"><span class="hs-identifier">connectionRetired</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#detachResponsibility"><span class="hs-identifier">detachResponsibility</span></a></span><span>
+</span><span id="line-22"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Shutdown and errors</span></span><span>
+</span><span id="line-23"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#closeAdmission"><span class="hs-identifier">closeAdmission</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#AdmissionError"><span class="hs-identifier">AdmissionError</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-25"></span><span>
+</span><span id="line-26"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Concurrent.STM</span></span><span>
+</span><span id="line-27"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Exception</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Exception</span></span><span class="hs-special">)</span><span>
+</span><span id="line-28"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">filterM</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">unless</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">when</span></span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Map.Strict</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Map</span></span><span class="hs-special">)</span><span>
+</span><span id="line-30"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Map.Strict</span></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Map</span></span><span>
+</span><span id="line-31"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Unique</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Unique</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">newUnique</span></span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Word</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Word64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-33"></span><span>
+</span><span id="line-34"></span><span class="annot"><span class="hs-comment">-- | One bounded context. Detached t'Operation' handles do not retain it.</span></span><span>
+</span><span id="line-35"></span><span class="hs-keyword">data</span><span> </span><span id="Scheduler"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Scheduler"><span class="hs-identifier hs-var">Scheduler</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Scheduler"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Scheduler"><span class="hs-identifier hs-var">Scheduler</span></a></span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Unique</span></span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">TVar</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#State"><span class="hs-identifier hs-type">State</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span class="hs-keyword">data</span><span> </span><span id="State"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#State"><span class="hs-identifier hs-var">State</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="State"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#State"><span class="hs-identifier hs-var">State</span></a></span></span><span>
+</span><span id="line-37"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="accepting"><span class="annot"><span class="annottext">State -&gt; Bool
+</span><a href="LibTmux.Internal.Scheduler.html#accepting"><span class="hs-identifier hs-var hs-var">accepting</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-38"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="nextKey"><span class="annot"><span class="annottext">State -&gt; Maybe Word64
+</span><a href="LibTmux.Internal.Scheduler.html#nextKey"><span class="hs-identifier hs-var hs-var">nextKey</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-39"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="operations"><span class="annot"><span class="annottext">State -&gt; Map Word64 Operation
+</span><a href="LibTmux.Internal.Scheduler.html#operations"><span class="hs-identifier hs-var hs-var">operations</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Map</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Word64</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">Operation</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-41"></span><span>
+</span><span id="line-42"></span><span class="hs-comment">-- | Metadata-only operation identity, readable after responsibility retires.</span><span>
+</span><span id="line-43"></span><span class="hs-comment">-- Its owning scope controls advancement and explicit detachment.</span><span>
+</span><span id="line-44"></span><span class="hs-keyword">data</span><span> </span><span id="Operation"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-var">Operation</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Operation"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-var">Operation</span></a></span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Unique</span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Word64</span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Lane"><span class="hs-identifier hs-type">Lane</span></a></span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">TVar</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Status"><span class="hs-identifier hs-type">Status</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Group"><span class="hs-identifier hs-type">Group</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-45"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679145522"><span id="local-6989586621679145531"><span class="annot"><span class="annottext">Operation -&gt; Operation -&gt; Bool
+(Operation -&gt; Operation -&gt; Bool)
+-&gt; (Operation -&gt; Operation -&gt; Bool) -&gt; Eq Operation
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Operation -&gt; Operation -&gt; Bool
+== :: Operation -&gt; Operation -&gt; Bool
+$c/= :: Operation -&gt; Operation -&gt; Bool
+/= :: Operation -&gt; Operation -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-46"></span><span>
+</span><span id="line-47"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679145537"><span id="local-6989586621679145541"><span class="annot"><span class="hs-identifier hs-type">Show</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">Operation</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-48"></span><span>  </span><span id="local-6989586621679145548"><span class="annot"><span class="annottext">showsPrec :: Int -&gt; Operation -&gt; ShowS
+</span><a href="#local-6989586621679145548"><span class="hs-identifier hs-var hs-var hs-var">showsPrec</span></a></span></span><span> </span><span id="local-6989586621679145550"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679145550"><span class="hs-identifier hs-var">precedence</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">Operation</span></a></span><span> </span><span class="annot"><span class="annottext">Unique
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679145551"><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679145551"><span class="hs-identifier hs-var">key</span></a></span></span><span> </span><span class="annot"><span class="annottext">Lane
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">TVar Status
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Maybe Group
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-49"></span><span>    </span><span class="annot"><span class="annottext">Bool -&gt; ShowS -&gt; ShowS
+</span><span class="hs-identifier hs-var">showParen</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679145550"><span class="hs-identifier hs-var">precedence</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">10</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; ShowS
+</span><span class="hs-identifier hs-var">showString</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Operation &quot;</span></span><span> </span><span class="annot"><span class="annottext">ShowS -&gt; ShowS -&gt; ShowS
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; ShowS
+forall a. Show a =&gt; a -&gt; ShowS
+</span><span class="hs-identifier hs-var">shows</span></span><span> </span><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679145551"><span class="hs-identifier hs-var">key</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-50"></span><span>
+</span><span id="line-51"></span><span class="hs-comment">-- | Opaque metadata identifying one owner's operations. This retains no</span><span>
+</span><span id="line-52"></span><span class="hs-comment">-- Runtime, endpoint, resource or scheduler. Groups share admission limits.</span><span>
+</span><span id="line-53"></span><span class="hs-keyword">newtype</span><span> </span><span id="Group"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Group"><span class="hs-identifier hs-var">Group</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Group"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Group"><span class="hs-identifier hs-var">Group</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Unique</span></span><span>
+</span><span id="line-54"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679145559"><span id="local-6989586621679145562"><span class="annot"><span class="annottext">Group -&gt; Group -&gt; Bool
+(Group -&gt; Group -&gt; Bool) -&gt; (Group -&gt; Group -&gt; Bool) -&gt; Eq Group
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Group -&gt; Group -&gt; Bool
+== :: Group -&gt; Group -&gt; Bool
+$c/= :: Group -&gt; Group -&gt; Bool
+/= :: Group -&gt; Group -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-55"></span><span>
+</span><span id="line-56"></span><span class="annot"><span class="hs-comment">-- | Allocate a fresh group without reserving admission or resources.</span></span><span>
+</span><span id="line-57"></span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#newGroup"><span class="hs-identifier hs-type">newGroup</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Group"><span class="hs-identifier hs-type">Group</span></a></span><span>
+</span><span id="line-58"></span><span id="newGroup"><span class="annot"><span class="annottext">newGroup :: IO Group
+</span><a href="LibTmux.Internal.Scheduler.html#newGroup"><span class="hs-identifier hs-var hs-var">newGroup</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Unique -&gt; Group
+</span><a href="LibTmux.Internal.Scheduler.html#Group"><span class="hs-identifier hs-var">Group</span></a></span><span> </span><span class="annot"><span class="annottext">(Unique -&gt; Group) -&gt; IO Unique -&gt; IO Group
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">IO Unique
+</span><span class="hs-identifier hs-var">newUnique</span></span><span>
+</span><span id="line-59"></span><span>
+</span><span id="line-60"></span><span class="hs-comment">-- | Internal classification. Unknown raw commands belong to 'Waiting'.</span><span>
+</span><span id="line-61"></span><span class="hs-comment">-- Mutations serialize until proof or explicit 'detachResponsibility'.</span><span>
+</span><span id="line-62"></span><span class="hs-keyword">data</span><span> </span><span id="Lane"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Lane"><span class="hs-identifier hs-var">Lane</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Inspection"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Inspection"><span class="hs-identifier hs-var">Inspection</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="ScalarRead"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#ScalarRead"><span class="hs-identifier hs-var">ScalarRead</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="Mutation"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Mutation"><span class="hs-identifier hs-var">Mutation</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="Waiting"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Waiting"><span class="hs-identifier hs-var">Waiting</span></a></span></span><span>
+</span><span id="line-63"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679145570"><span id="local-6989586621679145575"><span class="annot"><span class="annottext">Lane -&gt; Lane -&gt; Bool
+(Lane -&gt; Lane -&gt; Bool) -&gt; (Lane -&gt; Lane -&gt; Bool) -&gt; Eq Lane
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Lane -&gt; Lane -&gt; Bool
+== :: Lane -&gt; Lane -&gt; Bool
+$c/= :: Lane -&gt; Lane -&gt; Bool
+/= :: Lane -&gt; Lane -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679145578"><span id="local-6989586621679145580"><span id="local-6989586621679145584"><span class="annot"><span class="annottext">Int -&gt; Lane -&gt; ShowS
+[Lane] -&gt; ShowS
+Lane -&gt; String
+(Int -&gt; Lane -&gt; ShowS)
+-&gt; (Lane -&gt; String) -&gt; ([Lane] -&gt; ShowS) -&gt; Show Lane
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Lane -&gt; ShowS
+showsPrec :: Int -&gt; Lane -&gt; ShowS
+$cshow :: Lane -&gt; String
+show :: Lane -&gt; String
+$cshowList :: [Lane] -&gt; ShowS
+showList :: [Lane] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-64"></span><span>
+</span><span id="line-65"></span><span class="hs-comment">-- | Last observed progress. Publishing an uncertain 'Outcome' does not</span><span>
+</span><span id="line-66"></span><span class="hs-comment">-- advance this stage or establish 'OperationComplete'.</span><span>
+</span><span id="line-67"></span><span class="hs-keyword">data</span><span> </span><span id="Stage"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Stage"><span class="hs-identifier hs-var">Stage</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Queued"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Queued"><span class="hs-identifier hs-var">Queued</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="Dispatching"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Dispatching"><span class="hs-identifier hs-var">Dispatching</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="Dispatched"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Dispatched"><span class="hs-identifier hs-var">Dispatched</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="ResponseClosed"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#ResponseClosed"><span class="hs-identifier hs-var">ResponseClosed</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="OperationComplete"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#OperationComplete"><span class="hs-identifier hs-var">OperationComplete</span></a></span></span><span>
+</span><span id="line-68"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679145592"><span id="local-6989586621679145596"><span class="annot"><span class="annottext">Stage -&gt; Stage -&gt; Bool
+(Stage -&gt; Stage -&gt; Bool) -&gt; (Stage -&gt; Stage -&gt; Bool) -&gt; Eq Stage
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Stage -&gt; Stage -&gt; Bool
+== :: Stage -&gt; Stage -&gt; Bool
+$c/= :: Stage -&gt; Stage -&gt; Bool
+/= :: Stage -&gt; Stage -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679145599"><span id="local-6989586621679145601"><span id="local-6989586621679145605"><span class="annot"><span class="annottext">Int -&gt; Stage -&gt; ShowS
+[Stage] -&gt; ShowS
+Stage -&gt; String
+(Int -&gt; Stage -&gt; ShowS)
+-&gt; (Stage -&gt; String) -&gt; ([Stage] -&gt; ShowS) -&gt; Show Stage
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Stage -&gt; ShowS
+showsPrec :: Int -&gt; Stage -&gt; ShowS
+$cshow :: Stage -&gt; String
+show :: Stage -&gt; String
+$cshowList :: [Stage] -&gt; ShowS
+showList :: [Stage] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-69"></span><span>
+</span><span id="line-70"></span><span class="hs-comment">-- | First caller result. Later evidence can retire responsibility without</span><span>
+</span><span id="line-71"></span><span class="hs-comment">-- rewriting 'OutcomeUnknown' or 'ConnectionRetired'.</span><span>
+</span><span id="line-72"></span><span class="hs-keyword">data</span><span> </span><span id="Outcome"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Outcome"><span class="hs-identifier hs-var">Outcome</span></a></span></span><span>
+</span><span id="line-73"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="Succeeded"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Succeeded"><span class="hs-identifier hs-var">Succeeded</span></a></span></span><span> </span><span class="annot"><span class="hs-comment">-- ^ Validated successful response and completion proof.</span></span><span>
+</span><span id="line-74"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Failed"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Failed"><span class="hs-identifier hs-var">Failed</span></a></span></span><span> </span><span class="annot"><span class="hs-comment">-- ^ Validated command failure.</span></span><span>
+</span><span id="line-75"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="NotDispatched"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#NotDispatched"><span class="hs-identifier hs-var">NotDispatched</span></a></span></span><span> </span><span class="annot"><span class="hs-comment">-- ^ Proof that the operation was never dispatched.</span></span><span>
+</span><span id="line-76"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="OutcomeUnknown"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#OutcomeUnknown"><span class="hs-identifier hs-var">OutcomeUnknown</span></a></span></span><span> </span><span class="annot"><span class="hs-comment">-- ^ Dispatch may have happened; completion remains uncertain.</span></span><span>
+</span><span id="line-77"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="ConnectionRetired"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#ConnectionRetired"><span class="hs-identifier hs-var">ConnectionRetired</span></a></span></span><span> </span><span class="annot"><span class="hs-comment">-- ^ The connection retired while responsibility remained.</span></span><span>
+</span><span id="line-78"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679145613"><span id="local-6989586621679145617"><span class="annot"><span class="annottext">Outcome -&gt; Outcome -&gt; Bool
+(Outcome -&gt; Outcome -&gt; Bool)
+-&gt; (Outcome -&gt; Outcome -&gt; Bool) -&gt; Eq Outcome
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Outcome -&gt; Outcome -&gt; Bool
+== :: Outcome -&gt; Outcome -&gt; Bool
+$c/= :: Outcome -&gt; Outcome -&gt; Bool
+/= :: Outcome -&gt; Outcome -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679145620"><span id="local-6989586621679145622"><span id="local-6989586621679145626"><span class="annot"><span class="annottext">Int -&gt; Outcome -&gt; ShowS
+[Outcome] -&gt; ShowS
+Outcome -&gt; String
+(Int -&gt; Outcome -&gt; ShowS)
+-&gt; (Outcome -&gt; String) -&gt; ([Outcome] -&gt; ShowS) -&gt; Show Outcome
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Outcome -&gt; ShowS
+showsPrec :: Int -&gt; Outcome -&gt; ShowS
+$cshow :: Outcome -&gt; String
+show :: Outcome -&gt; String
+$cshowList :: [Outcome] -&gt; ShowS
+showList :: [Outcome] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-79"></span><span>
+</span><span id="line-80"></span><span class="hs-comment">-- | Progress, published result and responsibility are independent observations.</span><span>
+</span><span id="line-81"></span><span class="hs-comment">-- A retained uncertain operation still consumes admission and its lane permit.</span><span>
+</span><span id="line-82"></span><span class="hs-keyword">data</span><span> </span><span id="Status"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Status"><span class="hs-identifier hs-var">Status</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Status"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Status"><span class="hs-identifier hs-var">Status</span></a></span></span><span>
+</span><span id="line-83"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="stage"><span class="annot"><span class="annottext">Status -&gt; Stage
+</span><a href="LibTmux.Internal.Scheduler.html#stage"><span class="hs-identifier hs-var hs-var">stage</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Stage"><span class="hs-identifier hs-type">Stage</span></a></span><span> </span><span class="annot"><span class="hs-comment">-- ^ Last proven progress.</span></span><span>
+</span><span id="line-84"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="outcome"><span class="annot"><span class="annottext">Status -&gt; Maybe Outcome
+</span><a href="LibTmux.Internal.Scheduler.html#outcome"><span class="hs-identifier hs-var hs-var">outcome</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Outcome"><span class="hs-identifier hs-type">Outcome</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="hs-comment">-- ^ First published caller result, when available.</span></span><span>
+</span><span id="line-85"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="retained"><span class="annot"><span class="annottext">Status -&gt; Bool
+</span><a href="LibTmux.Internal.Scheduler.html#retained"><span class="hs-identifier hs-var hs-var">retained</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="annot"><span class="hs-comment">-- ^ Whether the scope still retains logical responsibility.</span></span><span>
+</span><span id="line-86"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-87"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679145633"><span id="local-6989586621679145639"><span class="annot"><span class="annottext">Status -&gt; Status -&gt; Bool
+(Status -&gt; Status -&gt; Bool)
+-&gt; (Status -&gt; Status -&gt; Bool) -&gt; Eq Status
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Status -&gt; Status -&gt; Bool
+== :: Status -&gt; Status -&gt; Bool
+$c/= :: Status -&gt; Status -&gt; Bool
+/= :: Status -&gt; Status -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679145643"><span id="local-6989586621679145652"><span id="local-6989586621679145656"><span class="annot"><span class="annottext">Int -&gt; Status -&gt; ShowS
+[Status] -&gt; ShowS
+Status -&gt; String
+(Int -&gt; Status -&gt; ShowS)
+-&gt; (Status -&gt; String) -&gt; ([Status] -&gt; ShowS) -&gt; Show Status
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Status -&gt; ShowS
+showsPrec :: Int -&gt; Status -&gt; ShowS
+$cshow :: Status -&gt; String
+show :: Status -&gt; String
+$cshowList :: [Status] -&gt; ShowS
+showList :: [Status] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-88"></span><span>
+</span><span id="line-89"></span><span class="hs-comment">-- | Operational completion evidence supplied by the Runtime after</span><span>
+</span><span id="line-90"></span><span class="hs-comment">-- 'markResponseClosed'. This constructor does not obtain the evidence.</span><span>
+</span><span id="line-91"></span><span class="hs-keyword">data</span><span> </span><span id="Completion"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Completion"><span class="hs-identifier hs-var">Completion</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Success"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Success"><span class="hs-identifier hs-var">Success</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="CommandFailure"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#CommandFailure"><span class="hs-identifier hs-var">CommandFailure</span></a></span></span><span>
+</span><span id="line-92"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679145661"><span id="local-6989586621679145665"><span class="annot"><span class="annottext">Completion -&gt; Completion -&gt; Bool
+(Completion -&gt; Completion -&gt; Bool)
+-&gt; (Completion -&gt; Completion -&gt; Bool) -&gt; Eq Completion
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Completion -&gt; Completion -&gt; Bool
+== :: Completion -&gt; Completion -&gt; Bool
+$c/= :: Completion -&gt; Completion -&gt; Bool
+/= :: Completion -&gt; Completion -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679145669"><span id="local-6989586621679145671"><span id="local-6989586621679145675"><span class="annot"><span class="annottext">Int -&gt; Completion -&gt; ShowS
+[Completion] -&gt; ShowS
+Completion -&gt; String
+(Int -&gt; Completion -&gt; ShowS)
+-&gt; (Completion -&gt; String)
+-&gt; ([Completion] -&gt; ShowS)
+-&gt; Show Completion
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Completion -&gt; ShowS
+showsPrec :: Int -&gt; Completion -&gt; ShowS
+$cshow :: Completion -&gt; String
+show :: Completion -&gt; String
+$cshowList :: [Completion] -&gt; ShowS
+showList :: [Completion] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-93"></span><span>
+</span><span id="line-94"></span><span class="hs-comment">-- | Rejected admission or transition. 'InvalidTransition' records the</span><span>
+</span><span id="line-95"></span><span class="hs-comment">-- required preceding stage followed by the actual stage. No state changes</span><span>
+</span><span id="line-96"></span><span class="hs-comment">-- survive a rejected STM action.</span><span>
+</span><span id="line-97"></span><span class="hs-keyword">data</span><span> </span><span id="AdmissionError"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#AdmissionError"><span class="hs-identifier hs-var">AdmissionError</span></a></span></span><span>
+</span><span id="line-98"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="AdmissionClosed"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#AdmissionClosed"><span class="hs-identifier hs-var">AdmissionClosed</span></a></span></span><span>
+</span><span id="line-99"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="AdmissionFull"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#AdmissionFull"><span class="hs-identifier hs-var">AdmissionFull</span></a></span></span><span>
+</span><span id="line-100"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="OrdinaryFull"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#OrdinaryFull"><span class="hs-identifier hs-var">OrdinaryFull</span></a></span></span><span>
+</span><span id="line-101"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="KeyExhausted"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#KeyExhausted"><span class="hs-identifier hs-var">KeyExhausted</span></a></span></span><span>
+</span><span id="line-102"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="ForeignContext"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#ForeignContext"><span class="hs-identifier hs-var">ForeignContext</span></a></span></span><span>
+</span><span id="line-103"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="InvalidTransition"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#InvalidTransition"><span class="hs-identifier hs-var">InvalidTransition</span></a></span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Stage"><span class="hs-identifier hs-type">Stage</span></a></span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Stage"><span class="hs-identifier hs-type">Stage</span></a></span><span>
+</span><span id="line-104"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679145684"><span id="local-6989586621679145690"><span class="annot"><span class="annottext">AdmissionError -&gt; AdmissionError -&gt; Bool
+(AdmissionError -&gt; AdmissionError -&gt; Bool)
+-&gt; (AdmissionError -&gt; AdmissionError -&gt; Bool) -&gt; Eq AdmissionError
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: AdmissionError -&gt; AdmissionError -&gt; Bool
+== :: AdmissionError -&gt; AdmissionError -&gt; Bool
+$c/= :: AdmissionError -&gt; AdmissionError -&gt; Bool
+/= :: AdmissionError -&gt; AdmissionError -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679145694"><span id="local-6989586621679145699"><span id="local-6989586621679145703"><span class="annot"><span class="annottext">Int -&gt; AdmissionError -&gt; ShowS
+[AdmissionError] -&gt; ShowS
+AdmissionError -&gt; String
+(Int -&gt; AdmissionError -&gt; ShowS)
+-&gt; (AdmissionError -&gt; String)
+-&gt; ([AdmissionError] -&gt; ShowS)
+-&gt; Show AdmissionError
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; AdmissionError -&gt; ShowS
+showsPrec :: Int -&gt; AdmissionError -&gt; ShowS
+$cshow :: AdmissionError -&gt; String
+show :: AdmissionError -&gt; String
+$cshowList :: [AdmissionError] -&gt; ShowS
+showList :: [AdmissionError] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-105"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679145710"><span id="local-6989586621679145713"><span id="local-6989586621679145716"><span id="local-6989586621679145719"><span class="annot"><span class="hs-identifier hs-type">Exception</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#AdmissionError"><span class="hs-identifier hs-type">AdmissionError</span></a></span></span></span></span></span><span>
+</span><span id="line-106"></span><span>
+</span><span id="line-107"></span><span class="hs-comment">-- | Create an independent context with 64 admission slots. Ordinary work</span><span>
+</span><span id="line-108"></span><span class="hs-comment">-- may occupy 63; inspection can use the remaining capacity. Dispatch allows</span><span>
+</span><span id="line-109"></span><span class="hs-comment">-- four waiting jobs, one mutation and four reads, reserving a read permit</span><span>
+</span><span id="line-110"></span><span class="hs-comment">-- for inspection. These are selected bounds, not throughput measurements.</span><span>
+</span><span id="line-111"></span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#newScheduler"><span class="hs-identifier hs-type">newScheduler</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Scheduler"><span class="hs-identifier hs-type">Scheduler</span></a></span><span>
+</span><span id="line-112"></span><span id="newScheduler"><span class="annot"><span class="annottext">newScheduler :: IO Scheduler
+</span><a href="LibTmux.Internal.Scheduler.html#newScheduler"><span class="hs-identifier hs-var hs-var">newScheduler</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Unique -&gt; TVar State -&gt; Scheduler
+</span><a href="LibTmux.Internal.Scheduler.html#Scheduler"><span class="hs-identifier hs-var">Scheduler</span></a></span><span> </span><span class="annot"><span class="annottext">(Unique -&gt; TVar State -&gt; Scheduler)
+-&gt; IO Unique -&gt; IO (TVar State -&gt; Scheduler)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">IO Unique
+</span><span class="hs-identifier hs-var">newUnique</span></span><span> </span><span class="annot"><span class="annottext">IO (TVar State -&gt; Scheduler) -&gt; IO (TVar State) -&gt; IO Scheduler
+forall a b. IO (a -&gt; b) -&gt; IO a -&gt; IO b
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">State -&gt; IO (TVar State)
+forall a. a -&gt; IO (TVar a)
+</span><span class="hs-identifier hs-var">newTVarIO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool -&gt; Maybe Word64 -&gt; Map Word64 Operation -&gt; State
+</span><a href="LibTmux.Internal.Scheduler.html#State"><span class="hs-identifier hs-var">State</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word64 -&gt; Maybe Word64
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">Word64
+</span><span class="hs-number">0</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Map Word64 Operation
+forall k a. Map k a
+</span><span class="hs-identifier hs-var">Map.empty</span></span><span class="hs-special">)</span><span>
+</span><span id="line-113"></span><span>
+</span><span id="line-114"></span><span class="hs-comment">-- | Reserve logical responsibility before dispatch. Saturation or closure</span><span>
+</span><span id="line-115"></span><span class="hs-comment">-- throws 'AdmissionError' immediately. Retire queued work with 'cancelQueued';</span><span>
+</span><span id="line-116"></span><span class="hs-comment">-- active work requires evidence or explicit 'detachResponsibility'.</span><span>
+</span><span id="line-117"></span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#admit"><span class="hs-identifier hs-type">admit</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Scheduler"><span class="hs-identifier hs-type">Scheduler</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Lane"><span class="hs-identifier hs-type">Lane</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">STM</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">Operation</span></a></span><span>
+</span><span id="line-118"></span><span id="admit"><span class="annot"><span class="annottext">admit :: Scheduler -&gt; Lane -&gt; STM Operation
+</span><a href="LibTmux.Internal.Scheduler.html#admit"><span class="hs-identifier hs-var hs-var">admit</span></a></span></span><span> </span><span id="local-6989586621679145724"><span class="annot"><span class="annottext">Scheduler
+</span><a href="#local-6989586621679145724"><span class="hs-identifier hs-var">scheduler</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Scheduler -&gt; Maybe Group -&gt; Lane -&gt; STM Operation
+</span><a href="LibTmux.Internal.Scheduler.html#reserve"><span class="hs-identifier hs-var">reserve</span></a></span><span> </span><span class="annot"><span class="annottext">Scheduler
+</span><a href="#local-6989586621679145724"><span class="hs-identifier hs-var">scheduler</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe Group
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-119"></span><span>
+</span><span id="line-120"></span><span class="hs-comment">-- | Reserve an operation in one group, under the scheduler's global limits.</span><span>
+</span><span id="line-121"></span><span class="hs-comment">-- Group membership survives logical retirement for physical-owner selection.</span><span>
+</span><span id="line-122"></span><span class="hs-comment">-- The token is forced before admission so metadata retains no caller thunk.</span><span>
+</span><span id="line-123"></span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#admitIn"><span class="hs-identifier hs-type">admitIn</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Scheduler"><span class="hs-identifier hs-type">Scheduler</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Group"><span class="hs-identifier hs-type">Group</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Lane"><span class="hs-identifier hs-type">Lane</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">STM</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">Operation</span></a></span><span>
+</span><span id="line-124"></span><span id="admitIn"><span class="annot"><span class="annottext">admitIn :: Scheduler -&gt; Group -&gt; Lane -&gt; STM Operation
+</span><a href="LibTmux.Internal.Scheduler.html#admitIn"><span class="hs-identifier hs-var hs-var">admitIn</span></a></span></span><span> </span><span id="local-6989586621679145726"><span class="annot"><span class="annottext">Scheduler
+</span><a href="#local-6989586621679145726"><span class="hs-identifier hs-var">scheduler</span></a></span></span><span> </span><span id="local-6989586621679145727"><span class="annot"><span class="annottext">Group
+</span><a href="#local-6989586621679145727"><span class="hs-identifier hs-var">group</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Scheduler -&gt; Maybe Group -&gt; Lane -&gt; STM Operation
+</span><a href="LibTmux.Internal.Scheduler.html#reserve"><span class="hs-identifier hs-var">reserve</span></a></span><span> </span><span class="annot"><span class="annottext">Scheduler
+</span><a href="#local-6989586621679145726"><span class="hs-identifier hs-var">scheduler</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Group -&gt; Maybe Group
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">Group
+</span><a href="#local-6989586621679145727"><span class="hs-identifier hs-var">group</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-125"></span><span>
+</span><span id="line-126"></span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#reserve"><span class="hs-identifier hs-type">reserve</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Scheduler"><span class="hs-identifier hs-type">Scheduler</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Group"><span class="hs-identifier hs-type">Group</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Lane"><span class="hs-identifier hs-type">Lane</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">STM</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">Operation</span></a></span><span>
+</span><span id="line-127"></span><span id="reserve"><span class="annot"><span class="annottext">reserve :: Scheduler -&gt; Maybe Group -&gt; Lane -&gt; STM Operation
+</span><a href="LibTmux.Internal.Scheduler.html#reserve"><span class="hs-identifier hs-var hs-var">reserve</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Scheduler"><span class="hs-identifier hs-type">Scheduler</span></a></span><span> </span><span id="local-6989586621679145728"><span class="annot"><span class="annottext">Unique
+</span><a href="#local-6989586621679145728"><span class="hs-identifier hs-var">context</span></a></span></span><span> </span><span id="local-6989586621679145729"><span class="annot"><span class="annottext">TVar State
+</span><a href="#local-6989586621679145729"><span class="hs-identifier hs-var">variable</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679145730"><span class="annot"><span class="annottext">Maybe Group
+</span><a href="#local-6989586621679145730"><span class="hs-identifier hs-var">group</span></a></span></span><span> </span><span id="local-6989586621679145731"><span class="annot"><span class="annottext">Lane
+</span><a href="#local-6989586621679145731"><span class="hs-identifier hs-var">lane</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-128"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Maybe Group
+</span><a href="#local-6989586621679145730"><span class="hs-identifier hs-var">group</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-129"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621679145732"><span class="annot"><span class="annottext">Group
+</span><a href="#local-6989586621679145732"><span class="hs-identifier hs-var">token</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Group
+</span><a href="#local-6989586621679145732"><span class="hs-identifier hs-var">token</span></a></span><span> </span><span class="annot"><span class="annottext">Group -&gt; STM () -&gt; STM ()
+forall a b. a -&gt; b -&gt; b
+</span><span class="hs-operator hs-var">`seq`</span></span><span> </span><span class="annot"><span class="annottext">() -&gt; STM ()
+forall a. a -&gt; STM a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-130"></span><span>    </span><span class="annot"><span class="annottext">Maybe Group
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">() -&gt; STM ()
+forall a. a -&gt; STM a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-131"></span><span>  </span><span id="local-6989586621679145733"><span class="annot"><a href="#local-6989586621679145733"><span class="hs-identifier hs-var">current</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">TVar State -&gt; STM State
+forall a. TVar a -&gt; STM a
+</span><span class="hs-identifier hs-var">readTVar</span></span><span> </span><span class="annot"><span class="annottext">TVar State
+</span><a href="#local-6989586621679145729"><span class="hs-identifier hs-var">variable</span></a></span><span>
+</span><span id="line-132"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">unless</span></span><span> </span><span class="annot"><span class="hs-identifier">current</span></span><span class="hs-operator">.</span><span class="hs-identifier">accepting</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">throwSTM</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#AdmissionClosed"><span class="hs-identifier hs-type">AdmissionClosed</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-133"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">when</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Map.size</span></span><span> </span><span class="annot"><span class="hs-identifier">current</span></span><span class="hs-operator">.</span><span class="hs-identifier">operations</span><span> </span><span class="annot"><span class="hs-operator hs-type">&gt;=</span></span><span> </span><span class="annot"><span class="hs-number">64</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">throwSTM</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#AdmissionFull"><span class="hs-identifier hs-type">AdmissionFull</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-134"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679145737"><span class="annot"><a href="#local-6989586621679145737"><span class="hs-identifier hs-var hs-var">ordinary</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Map Word64 Operation -&gt; Int
+forall k a. Map k a -&gt; Int
+</span><span class="hs-identifier hs-var">Map.size</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Operation -&gt; Bool) -&gt; Map Word64 Operation -&gt; Map Word64 Operation
+forall a k. (a -&gt; Bool) -&gt; Map k a -&gt; Map k a
+</span><span class="hs-identifier hs-var">Map.filter</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">Operation</span></a></span><span> </span><span class="annot"><span class="annottext">Unique
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Word64
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679145739"><span class="annot"><span class="annottext">Lane
+</span><a href="#local-6989586621679145739"><span class="hs-identifier hs-var">ownedLane</span></a></span></span><span> </span><span class="annot"><span class="annottext">TVar Status
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Maybe Group
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Lane
+</span><a href="#local-6989586621679145739"><span class="hs-identifier hs-var">ownedLane</span></a></span><span> </span><span class="annot"><span class="annottext">Lane -&gt; Lane -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">/=</span></span><span> </span><span class="annot"><span class="annottext">Lane
+</span><a href="LibTmux.Internal.Scheduler.html#Inspection"><span class="hs-identifier hs-var">Inspection</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">State
+</span><a href="#local-6989586621679145733"><span class="hs-identifier hs-var">current</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">operations</span><span class="hs-special">)</span><span>
+</span><span id="line-135"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">when</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679145731"><span class="hs-identifier hs-type">lane</span></a></span><span> </span><span class="annot"><span class="hs-operator hs-type">/=</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Inspection"><span class="hs-identifier hs-type">Inspection</span></a></span><span> </span><span class="annot"><span class="hs-operator hs-type">&amp;&amp;</span></span><span> </span><span class="annot"><a href="#local-6989586621679145737"><span class="hs-identifier hs-type">ordinary</span></a></span><span> </span><span class="annot"><span class="hs-operator hs-type">&gt;=</span></span><span> </span><span class="annot"><span class="hs-number">63</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">throwSTM</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#OrdinaryFull"><span class="hs-identifier hs-type">OrdinaryFull</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-136"></span><span>  </span><span id="local-6989586621679145742"><span class="annot"><a href="#local-6989586621679145742"><span class="hs-identifier hs-var">key</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="hs-identifier hs-type">maybe</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">throwSTM</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#KeyExhausted"><span class="hs-identifier hs-type">KeyExhausted</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="hs-identifier hs-type">pure</span></span><span> </span><span class="annot"><span class="hs-identifier">current</span></span><span class="hs-operator">.</span><span class="hs-identifier">nextKey</span><span>
+</span><span id="line-137"></span><span>  </span><span id="local-6989586621679145744"><span class="annot"><a href="#local-6989586621679145744"><span class="hs-identifier hs-var">observed</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="hs-identifier hs-type">newTVar</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Status"><span class="hs-identifier hs-type">Status</span></a></span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Queued"><span class="hs-identifier hs-type">Queued</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nothing</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">True</span></span><span class="hs-special">)</span><span>
+</span><span id="line-138"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679145746"><span class="annot"><a href="#local-6989586621679145746"><span class="hs-identifier hs-var hs-var">operation</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Unique -&gt; Word64 -&gt; Lane -&gt; TVar Status -&gt; Maybe Group -&gt; Operation
+</span><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-var">Operation</span></a></span><span> </span><span class="annot"><span class="annottext">Unique
+</span><a href="#local-6989586621679145728"><span class="hs-identifier hs-var">context</span></a></span><span> </span><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679145742"><span class="hs-identifier hs-var">key</span></a></span><span> </span><span class="annot"><span class="annottext">Lane
+</span><a href="#local-6989586621679145731"><span class="hs-identifier hs-var">lane</span></a></span><span> </span><span class="annot"><span class="annottext">TVar Status
+</span><a href="#local-6989586621679145744"><span class="hs-identifier hs-var">observed</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe Group
+</span><a href="#local-6989586621679145730"><span class="hs-identifier hs-var">group</span></a></span><span>
+</span><span id="line-139"></span><span>      </span><span id="local-6989586621679145747"><span class="annot"><a href="#local-6989586621679145747"><span class="hs-identifier hs-var hs-var">following</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679145742"><span class="hs-identifier hs-var">key</span></a></span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; Word64 -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Word64
+forall a. Bounded a =&gt; a
+</span><span class="hs-identifier hs-var">maxBound</span></span><span> </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Maybe Word64
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; Maybe Word64
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679145742"><span class="hs-identifier hs-var">key</span></a></span><span> </span><span class="annot"><span class="annottext">Word64 -&gt; Word64 -&gt; Word64
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Word64
+</span><span class="hs-number">1</span></span><span class="hs-special">)</span><span>
+</span><span id="line-140"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">writeTVar</span></span><span> </span><span class="annot"><a href="#local-6989586621679145729"><span class="hs-identifier hs-type">variable</span></a></span><span> </span><span class="annot"><span class="hs-operator hs-type">$!</span></span><span> </span><span class="annot"><a href="#local-6989586621679145733"><span class="hs-identifier hs-type">current</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#nextKey"><span class="hs-identifier hs-var">nextKey</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="#local-6989586621679145747"><span class="hs-identifier hs-type">following</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#operations"><span class="hs-identifier hs-var">operations</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Map.insert</span></span><span> </span><span class="annot"><a href="#local-6989586621679145742"><span class="hs-identifier hs-type">key</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679145746"><span class="hs-identifier hs-type">operation</span></a></span><span> </span><span class="annot"><span class="hs-identifier">current</span></span><span class="hs-operator">.</span><span class="hs-identifier">operations</span><span class="hs-special">}</span><span>
+</span><span id="line-141"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">pure</span></span><span> </span><span class="annot"><a href="#local-6989586621679145746"><span class="hs-identifier hs-type">operation</span></a></span><span>
+</span><span id="line-142"></span><span>
+</span><span id="line-143"></span><span class="hs-comment">-- | Read detached metadata without IO, including after 'closeAdmission' or</span><span>
+</span><span id="line-144"></span><span class="hs-comment">-- explicit 'detachResponsibility'. This does not inspect tmux.</span><span>
+</span><span id="line-145"></span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#status"><span class="hs-identifier hs-type">status</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">Operation</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">STM</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Status"><span class="hs-identifier hs-type">Status</span></a></span><span>
+</span><span id="line-146"></span><span id="status"><span class="annot"><span class="annottext">status :: Operation -&gt; STM Status
+</span><a href="LibTmux.Internal.Scheduler.html#status"><span class="hs-identifier hs-var hs-var">status</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">Operation</span></a></span><span> </span><span class="annot"><span class="annottext">Unique
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Word64
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Lane
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679145753"><span class="annot"><span class="annottext">TVar Status
+</span><a href="#local-6989586621679145753"><span class="hs-identifier hs-var">observed</span></a></span></span><span> </span><span class="annot"><span class="annottext">Maybe Group
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TVar Status -&gt; STM Status
+forall a. TVar a -&gt; STM a
+</span><span class="hs-identifier hs-var">readTVar</span></span><span> </span><span class="annot"><span class="annottext">TVar Status
+</span><a href="#local-6989586621679145753"><span class="hs-identifier hs-var">observed</span></a></span><span>
+</span><span id="line-147"></span><span>
+</span><span id="line-148"></span><span class="hs-comment">-- | Observe retained metadata in admission order, including uncertain work.</span><span>
+</span><span id="line-149"></span><span class="hs-comment">-- The opaque handles remain bound to this context for explicit detach.</span><span>
+</span><span id="line-150"></span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#outstanding"><span class="hs-identifier hs-type">outstanding</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Scheduler"><span class="hs-identifier hs-type">Scheduler</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">STM</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">Operation</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Status"><span class="hs-identifier hs-type">Status</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
+</span><span id="line-151"></span><span id="outstanding"><span class="annot"><span class="annottext">outstanding :: Scheduler -&gt; STM [(Operation, Status)]
+</span><a href="LibTmux.Internal.Scheduler.html#outstanding"><span class="hs-identifier hs-var hs-var">outstanding</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Scheduler"><span class="hs-identifier hs-type">Scheduler</span></a></span><span> </span><span class="annot"><span class="annottext">Unique
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679145754"><span class="annot"><span class="annottext">TVar State
+</span><a href="#local-6989586621679145754"><span class="hs-identifier hs-var">variable</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-152"></span><span>  </span><span id="local-6989586621679145755"><span class="annot"><a href="#local-6989586621679145755"><span class="hs-identifier hs-var">current</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">TVar State -&gt; STM State
+forall a. TVar a -&gt; STM a
+</span><span class="hs-identifier hs-var">readTVar</span></span><span> </span><span class="annot"><span class="annottext">TVar State
+</span><a href="#local-6989586621679145754"><span class="hs-identifier hs-var">variable</span></a></span><span>
+</span><span id="line-153"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">mapM</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679145757"><span class="annot"><span class="annottext">Operation
+</span><a href="#local-6989586621679145757"><span class="hs-identifier hs-var">operation</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Operation
+</span><a href="#local-6989586621679145757"><span class="hs-identifier hs-var">operation</span></a></span><span class="hs-special">,</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Status -&gt; (Operation, Status))
+-&gt; STM Status -&gt; STM (Operation, Status)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">Operation -&gt; STM Status
+</span><a href="LibTmux.Internal.Scheduler.html#status"><span class="hs-identifier hs-var">status</span></a></span><span> </span><span class="annot"><span class="annottext">Operation
+</span><a href="#local-6989586621679145757"><span class="hs-identifier hs-var">operation</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Map.elems</span></span><span> </span><span class="annot"><span class="hs-identifier">current</span></span><span class="hs-operator">.</span><span class="hs-identifier">operations</span><span class="hs-special">)</span><span>
+</span><span id="line-154"></span><span>
+</span><span id="line-155"></span><span class="hs-comment">-- | Retained logical operations in one group, in admission order. Detached</span><span>
+</span><span id="line-156"></span><span class="hs-comment">-- operations remain group members but no longer appear in this list.</span><span>
+</span><span id="line-157"></span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#outstandingIn"><span class="hs-identifier hs-type">outstandingIn</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Scheduler"><span class="hs-identifier hs-type">Scheduler</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Group"><span class="hs-identifier hs-type">Group</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">STM</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">Operation</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Status"><span class="hs-identifier hs-type">Status</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
+</span><span id="line-158"></span><span id="outstandingIn"><span class="annot"><span class="annottext">outstandingIn :: Scheduler -&gt; Group -&gt; STM [(Operation, Status)]
+</span><a href="LibTmux.Internal.Scheduler.html#outstandingIn"><span class="hs-identifier hs-var hs-var">outstandingIn</span></a></span></span><span> </span><span id="local-6989586621679145759"><span class="annot"><span class="annottext">Scheduler
+</span><a href="#local-6989586621679145759"><span class="hs-identifier hs-var">scheduler</span></a></span></span><span> </span><span id="local-6989586621679145760"><span class="annot"><span class="annottext">Group
+</span><a href="#local-6989586621679145760"><span class="hs-identifier hs-var">group</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">((Operation, Status) -&gt; Bool)
+-&gt; [(Operation, Status)] -&gt; [(Operation, Status)]
+forall a. (a -&gt; Bool) -&gt; [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">filter</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Group -&gt; Operation -&gt; Bool
+</span><a href="LibTmux.Internal.Scheduler.html#memberOf"><span class="hs-identifier hs-var">memberOf</span></a></span><span> </span><span class="annot"><span class="annottext">Group
+</span><a href="#local-6989586621679145760"><span class="hs-identifier hs-var">group</span></a></span><span> </span><span class="annot"><span class="annottext">(Operation -&gt; Bool)
+-&gt; ((Operation, Status) -&gt; Operation)
+-&gt; (Operation, Status)
+-&gt; Bool
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">(Operation, Status) -&gt; Operation
+forall a b. (a, b) -&gt; a
+</span><span class="hs-identifier hs-var">fst</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">([(Operation, Status)] -&gt; [(Operation, Status)])
+-&gt; STM [(Operation, Status)] -&gt; STM [(Operation, Status)]
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">Scheduler -&gt; STM [(Operation, Status)]
+</span><a href="LibTmux.Internal.Scheduler.html#outstanding"><span class="hs-identifier hs-var">outstanding</span></a></span><span> </span><span class="annot"><span class="annottext">Scheduler
+</span><a href="#local-6989586621679145759"><span class="hs-identifier hs-var">scheduler</span></a></span><span>
+</span><span id="line-159"></span><span>
+</span><span id="line-160"></span><span class="hs-comment">-- | Match ownership metadata, including after completion or detachment.</span><span>
+</span><span id="line-161"></span><span class="hs-comment">-- This does not establish logical or physical liveness.</span><span>
+</span><span id="line-162"></span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#memberOf"><span class="hs-identifier hs-type">memberOf</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Group"><span class="hs-identifier hs-type">Group</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">Operation</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-163"></span><span id="memberOf"><span class="annot"><span class="annottext">memberOf :: Group -&gt; Operation -&gt; Bool
+</span><a href="LibTmux.Internal.Scheduler.html#memberOf"><span class="hs-identifier hs-var hs-var">memberOf</span></a></span></span><span> </span><span id="local-6989586621679145762"><span class="annot"><span class="annottext">Group
+</span><a href="#local-6989586621679145762"><span class="hs-identifier hs-var">group</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">Operation</span></a></span><span> </span><span class="annot"><span class="annottext">Unique
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Word64
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Lane
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">TVar Status
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679145763"><span class="annot"><span class="annottext">Maybe Group
+</span><a href="#local-6989586621679145763"><span class="hs-identifier hs-var">origin</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Group
+</span><a href="#local-6989586621679145763"><span class="hs-identifier hs-var">origin</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe Group -&gt; Maybe Group -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Group -&gt; Maybe Group
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">Group
+</span><a href="#local-6989586621679145762"><span class="hs-identifier hs-var">group</span></a></span><span>
+</span><span id="line-164"></span><span>
+</span><span id="line-165"></span><span class="hs-comment">-- | Wait for the first published 'Outcome'. Cancelling this transaction</span><span>
+</span><span id="line-166"></span><span class="hs-comment">-- changes neither admission nor responsibility; see 'markUnknown'.</span><span>
+</span><span id="line-167"></span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#await"><span class="hs-identifier hs-type">await</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">Operation</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">STM</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Outcome"><span class="hs-identifier hs-type">Outcome</span></a></span><span>
+</span><span id="line-168"></span><span id="await"><span class="annot"><span class="annottext">await :: Operation -&gt; STM Outcome
+</span><a href="LibTmux.Internal.Scheduler.html#await"><span class="hs-identifier hs-var hs-var">await</span></a></span></span><span> </span><span id="local-6989586621679145764"><span class="annot"><span class="annottext">Operation
+</span><a href="#local-6989586621679145764"><span class="hs-identifier hs-var">operation</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Operation -&gt; STM Status
+</span><a href="LibTmux.Internal.Scheduler.html#status"><span class="hs-identifier hs-var">status</span></a></span><span> </span><span class="annot"><span class="annottext">Operation
+</span><a href="#local-6989586621679145764"><span class="hs-identifier hs-var">operation</span></a></span><span> </span><span class="annot"><span class="annottext">STM Status -&gt; (Status -&gt; STM Outcome) -&gt; STM Outcome
+forall a b. STM a -&gt; (a -&gt; STM b) -&gt; STM b
+forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; (a -&gt; m b) -&gt; m b
+</span><span class="hs-operator hs-var">&gt;&gt;=</span></span><span> </span><span class="annot"><span class="annottext">STM Outcome
+-&gt; (Outcome -&gt; STM Outcome) -&gt; Maybe Outcome -&gt; STM Outcome
+forall b a. b -&gt; (a -&gt; b) -&gt; Maybe a -&gt; b
+</span><span class="hs-identifier hs-var">maybe</span></span><span> </span><span class="annot"><span class="annottext">STM Outcome
+forall a. STM a
+</span><span class="hs-identifier hs-var">retry</span></span><span> </span><span class="annot"><span class="annottext">Outcome -&gt; STM Outcome
+forall a. a -&gt; STM a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Maybe Outcome -&gt; STM Outcome)
+-&gt; (Status -&gt; Maybe Outcome) -&gt; Status -&gt; STM Outcome
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="hs-special">(</span><span class="hs-operator">.</span><span class="hs-identifier">outcome</span><span class="hs-special">)</span><span>
+</span><span id="line-169"></span><span>
+</span><span id="line-170"></span><span class="hs-comment">-- | Claim the oldest eligible queued operation and its lane permit together.</span><span>
+</span><span id="line-171"></span><span class="hs-comment">-- Saturated classes do not obstruct eligible inspection. Retry while open</span><span>
+</span><span id="line-172"></span><span class="hs-comment">-- without eligible work; return 'Nothing' only after 'closeAdmission'.</span><span>
+</span><span id="line-173"></span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#claim"><span class="hs-identifier hs-type">claim</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Scheduler"><span class="hs-identifier hs-type">Scheduler</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">STM</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">Operation</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-174"></span><span id="claim"><span class="annot"><span class="annottext">claim :: Scheduler -&gt; STM (Maybe Operation)
+</span><a href="LibTmux.Internal.Scheduler.html#claim"><span class="hs-identifier hs-var hs-var">claim</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Scheduler"><span class="hs-identifier hs-type">Scheduler</span></a></span><span> </span><span class="annot"><span class="annottext">Unique
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679145766"><span class="annot"><span class="annottext">TVar State
+</span><a href="#local-6989586621679145766"><span class="hs-identifier hs-var">variable</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-175"></span><span>  </span><span id="local-6989586621679145767"><span class="annot"><a href="#local-6989586621679145767"><span class="hs-identifier hs-var">current</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">TVar State -&gt; STM State
+forall a. TVar a -&gt; STM a
+</span><span class="hs-identifier hs-var">readTVar</span></span><span> </span><span class="annot"><span class="annottext">TVar State
+</span><a href="#local-6989586621679145766"><span class="hs-identifier hs-var">variable</span></a></span><span>
+</span><span id="line-176"></span><span>  </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="hs-identifier hs-type">not</span></span><span> </span><span class="annot"><span class="hs-identifier">current</span></span><span class="hs-operator">.</span><span class="hs-identifier">accepting</span><span> </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="hs-identifier hs-type">pure</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nothing</span></span><span> </span><span class="hs-keyword">else</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-177"></span><span>    </span><span id="local-6989586621679145769"><span class="annot"><a href="#local-6989586621679145769"><span class="hs-identifier hs-var">entries</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="hs-identifier hs-type">mapM</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679145770"><span class="annot"><span class="annottext">Operation
+</span><a href="#local-6989586621679145770"><span class="hs-identifier hs-var">operation</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span> </span><span id="local-6989586621679145771"><span class="annot"><a href="#local-6989586621679145771"><span class="hs-identifier hs-var">observed</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Operation -&gt; STM Status
+</span><a href="LibTmux.Internal.Scheduler.html#status"><span class="hs-identifier hs-var">status</span></a></span><span> </span><span class="annot"><span class="annottext">Operation
+</span><a href="#local-6989586621679145770"><span class="hs-identifier hs-var">operation</span></a></span><span class="hs-special">;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">pure</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679145770"><span class="hs-identifier hs-type">operation</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="#local-6989586621679145771"><span class="hs-identifier hs-type">observed</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Map.elems</span></span><span> </span><span class="annot"><span class="hs-identifier">current</span></span><span class="hs-operator">.</span><span class="hs-identifier">operations</span><span class="hs-special">)</span><span>
+</span><span id="line-178"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679145772"><span class="annot"><a href="#local-6989586621679145772"><span class="hs-identifier hs-var hs-var">active</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Lane
+</span><a href="#local-6989586621679145773"><span class="hs-identifier hs-var">lane</span></a></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">Operation</span></a></span><span> </span><span class="annot"><span class="annottext">Unique
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Word64
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679145773"><span class="annot"><span class="annottext">Lane
+</span><a href="#local-6989586621679145773"><span class="hs-identifier hs-var">lane</span></a></span></span><span> </span><span class="annot"><span class="annottext">TVar Status
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Maybe Group
+</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679145774"><span class="annot"><span class="annottext">Status
+</span><a href="#local-6989586621679145774"><span class="hs-identifier hs-var">observed</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">[(Operation, Status)]
+</span><a href="#local-6989586621679145769"><span class="hs-identifier hs-var">entries</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Status
+</span><a href="#local-6989586621679145774"><span class="hs-identifier hs-var">observed</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">stage</span><span> </span><span class="annot"><span class="annottext">Stage -&gt; Stage -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">/=</span></span><span> </span><span class="annot"><span class="annottext">Stage
+</span><a href="LibTmux.Internal.Scheduler.html#Queued"><span class="hs-identifier hs-var">Queued</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-179"></span><span>        </span><span id="local-6989586621679145775"><span class="annot"><a href="#local-6989586621679145775"><span class="hs-identifier hs-var hs-var">count</span></a></span></span><span> </span><span id="local-6989586621679145776"><span class="annot"><span class="annottext">Lane
+</span><a href="#local-6989586621679145776"><span class="hs-identifier hs-var">lane</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Lane] -&gt; Int
+forall a. [a] -&gt; Int
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Int
+</span><span class="hs-identifier hs-var">length</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Lane -&gt; Bool) -&gt; [Lane] -&gt; [Lane]
+forall a. (a -&gt; Bool) -&gt; [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">filter</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Lane -&gt; Lane -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Lane
+</span><a href="#local-6989586621679145776"><span class="hs-identifier hs-var">lane</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[Lane]
+</span><a href="#local-6989586621679145772"><span class="hs-identifier hs-var">active</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-180"></span><span>        </span><span id="local-6989586621679145778"><span class="annot"><a href="#local-6989586621679145778"><span class="hs-identifier hs-var hs-var">readCount</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Lane -&gt; Int
+</span><a href="#local-6989586621679145775"><span class="hs-identifier hs-var">count</span></a></span><span> </span><span class="annot"><span class="annottext">Lane
+</span><a href="LibTmux.Internal.Scheduler.html#ScalarRead"><span class="hs-identifier hs-var">ScalarRead</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Lane -&gt; Int
+</span><a href="#local-6989586621679145775"><span class="hs-identifier hs-var">count</span></a></span><span> </span><span class="annot"><span class="annottext">Lane
+</span><a href="LibTmux.Internal.Scheduler.html#Inspection"><span class="hs-identifier hs-var">Inspection</span></a></span><span>
+</span><span id="line-181"></span><span>        </span><span id="local-6989586621679145779"><span class="annot"><a href="#local-6989586621679145779"><span class="hs-identifier hs-var hs-var">eligible</span></a></span></span><span> </span><span id="local-6989586621679145780"><span class="annot"><span class="annottext">Lane
+</span><a href="#local-6989586621679145780"><span class="hs-identifier hs-var">lane</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Lane] -&gt; Int
+forall a. [a] -&gt; Int
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Int
+</span><span class="hs-identifier hs-var">length</span></span><span> </span><span class="annot"><span class="annottext">[Lane]
+</span><a href="#local-6989586621679145772"><span class="hs-identifier hs-var">active</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">16</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Lane
+</span><a href="#local-6989586621679145780"><span class="hs-identifier hs-var">lane</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-182"></span><span>          </span><span class="annot"><span class="annottext">Lane
+</span><a href="LibTmux.Internal.Scheduler.html#Inspection"><span class="hs-identifier hs-var">Inspection</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679145778"><span class="hs-identifier hs-var">readCount</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">4</span></span><span>
+</span><span id="line-183"></span><span>          </span><span class="annot"><span class="annottext">Lane
+</span><a href="LibTmux.Internal.Scheduler.html#ScalarRead"><span class="hs-identifier hs-var">ScalarRead</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Lane -&gt; Int
+</span><a href="#local-6989586621679145775"><span class="hs-identifier hs-var">count</span></a></span><span> </span><span class="annot"><span class="annottext">Lane
+</span><a href="LibTmux.Internal.Scheduler.html#ScalarRead"><span class="hs-identifier hs-var">ScalarRead</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">3</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679145778"><span class="hs-identifier hs-var">readCount</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">4</span></span><span>
+</span><span id="line-184"></span><span>          </span><span class="annot"><span class="annottext">Lane
+</span><a href="LibTmux.Internal.Scheduler.html#Mutation"><span class="hs-identifier hs-var">Mutation</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Lane -&gt; Int
+</span><a href="#local-6989586621679145775"><span class="hs-identifier hs-var">count</span></a></span><span> </span><span class="annot"><span class="annottext">Lane
+</span><a href="LibTmux.Internal.Scheduler.html#Mutation"><span class="hs-identifier hs-var">Mutation</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span>
+</span><span id="line-185"></span><span>          </span><span class="annot"><span class="annottext">Lane
+</span><a href="LibTmux.Internal.Scheduler.html#Waiting"><span class="hs-identifier hs-var">Waiting</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Lane -&gt; Int
+</span><a href="#local-6989586621679145775"><span class="hs-identifier hs-var">count</span></a></span><span> </span><span class="annot"><span class="annottext">Lane
+</span><a href="LibTmux.Internal.Scheduler.html#Waiting"><span class="hs-identifier hs-var">Waiting</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">4</span></span><span>
+</span><span id="line-186"></span><span>    </span><span class="annot"><a href="#local-6989586621679145782"><span class="hs-identifier hs-type">choose</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679145779"><span class="hs-identifier hs-type">eligible</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679145769"><span class="hs-identifier hs-type">entries</span></a></span><span>
+</span><span id="line-187"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-188"></span><span>    </span><span id="local-6989586621679145782"><span class="annot"><span class="annottext">choose :: (Lane -&gt; Bool) -&gt; [(Operation, Status)] -&gt; STM (Maybe Operation)
+</span><a href="#local-6989586621679145782"><span class="hs-identifier hs-var hs-var">choose</span></a></span></span><span> </span><span class="annot"><span class="annottext">Lane -&gt; Bool
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">STM (Maybe Operation)
+forall a. STM a
+</span><span class="hs-identifier hs-var">retry</span></span><span>
+</span><span id="line-189"></span><span>    </span><span class="annot"><a href="#local-6989586621679145782"><span class="hs-identifier hs-var">choose</span></a></span><span> </span><span id="local-6989586621679145787"><span class="annot"><span class="annottext">Lane -&gt; Bool
+</span><a href="#local-6989586621679145787"><span class="hs-identifier hs-var">eligible</span></a></span></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span id="local-6989586621679145788"><span class="annot"><span class="annottext">operation :: Operation
+</span><a href="#local-6989586621679145788"><span class="hs-identifier hs-var">operation</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">Operation</span></a></span><span> </span><span class="annot"><span class="annottext">Unique
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Word64
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679145789"><span class="annot"><span class="annottext">Lane
+</span><a href="#local-6989586621679145789"><span class="hs-identifier hs-var">lane</span></a></span></span><span> </span><span id="local-6989586621679145790"><span class="annot"><span class="annottext">TVar Status
+</span><a href="#local-6989586621679145790"><span class="hs-identifier hs-var">observed</span></a></span></span><span> </span><span class="annot"><span class="annottext">Maybe Group
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span id="local-6989586621679145791"><span class="annot"><span class="annottext">Status
+</span><a href="#local-6989586621679145791"><span class="hs-identifier hs-var">current</span></a></span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span> </span><span id="local-6989586621679145792"><span class="annot"><span class="annottext">[(Operation, Status)]
+</span><a href="#local-6989586621679145792"><span class="hs-identifier hs-var">rest</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-190"></span><span>      </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Status
+</span><a href="#local-6989586621679145791"><span class="hs-identifier hs-var">current</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">stage</span><span> </span><span class="annot"><span class="annottext">Stage -&gt; Stage -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Stage
+</span><a href="LibTmux.Internal.Scheduler.html#Queued"><span class="hs-identifier hs-var">Queued</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span> </span><span class="annot"><span class="annottext">Lane -&gt; Bool
+</span><a href="#local-6989586621679145787"><span class="hs-identifier hs-var">eligible</span></a></span><span> </span><span class="annot"><span class="annottext">Lane
+</span><a href="#local-6989586621679145789"><span class="hs-identifier hs-var">lane</span></a></span><span> </span><span class="hs-keyword">then</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-191"></span><span>        </span><span class="annot"><span class="annottext">TVar Status -&gt; Status -&gt; STM ()
+forall a. TVar a -&gt; a -&gt; STM ()
+</span><span class="hs-identifier hs-var">writeTVar</span></span><span> </span><span class="annot"><span class="annottext">TVar Status
+</span><a href="#local-6989586621679145790"><span class="hs-identifier hs-var">observed</span></a></span><span> </span><span class="annot"><span class="annottext">(Status -&gt; STM ()) -&gt; Status -&gt; STM ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$!</span></span><span> </span><span class="annot"><span class="annottext">Status
+</span><a href="#local-6989586621679145791"><span class="hs-identifier hs-var">current</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#stage"><span class="hs-identifier hs-var">stage</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Dispatching"><span class="hs-identifier hs-type">Dispatching</span></a></span><span class="hs-special">}</span><span>
+</span><span id="line-192"></span><span>        </span><span class="annot"><span class="annottext">Maybe Operation -&gt; STM (Maybe Operation)
+forall a. a -&gt; STM a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Operation -&gt; Maybe Operation
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">Operation
+</span><a href="#local-6989586621679145788"><span class="hs-identifier hs-var">operation</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-193"></span><span>      </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">(Lane -&gt; Bool) -&gt; [(Operation, Status)] -&gt; STM (Maybe Operation)
+</span><a href="#local-6989586621679145782"><span class="hs-identifier hs-var">choose</span></a></span><span> </span><span class="annot"><span class="annottext">Lane -&gt; Bool
+</span><a href="#local-6989586621679145787"><span class="hs-identifier hs-var">eligible</span></a></span><span> </span><span class="annot"><span class="annottext">[(Operation, Status)]
+</span><a href="#local-6989586621679145792"><span class="hs-identifier hs-var">rest</span></a></span><span>
+</span><span id="line-194"></span><span>
+</span><span id="line-195"></span><span class="hs-comment">-- | Record dispatch evidence after 'claim'. Repeating the same transition</span><span>
+</span><span id="line-196"></span><span class="hs-comment">-- is harmless; a retired handle stays retired. This supplies no IO evidence.</span><span>
+</span><span id="line-197"></span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#markDispatched"><span class="hs-identifier hs-type">markDispatched</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Scheduler"><span class="hs-identifier hs-type">Scheduler</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">Operation</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">STM</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-198"></span><span id="markDispatched"><span class="annot"><span class="annottext">markDispatched :: Scheduler -&gt; Operation -&gt; STM ()
+</span><a href="LibTmux.Internal.Scheduler.html#markDispatched"><span class="hs-identifier hs-var hs-var">markDispatched</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Stage -&gt; Stage -&gt; Scheduler -&gt; Operation -&gt; STM ()
+</span><a href="LibTmux.Internal.Scheduler.html#advance"><span class="hs-identifier hs-var">advance</span></a></span><span> </span><span class="annot"><span class="annottext">Stage
+</span><a href="LibTmux.Internal.Scheduler.html#Dispatching"><span class="hs-identifier hs-var">Dispatching</span></a></span><span> </span><span class="annot"><span class="annottext">Stage
+</span><a href="LibTmux.Internal.Scheduler.html#Dispatched"><span class="hs-identifier hs-var">Dispatched</span></a></span><span>
+</span><span id="line-199"></span><span>
+</span><span id="line-200"></span><span class="hs-comment">-- | Record a closed response after 'markDispatched'. This is distinct from</span><span>
+</span><span id="line-201"></span><span class="hs-comment">-- operation completion: only 'finish' can record that stronger evidence.</span><span>
+</span><span id="line-202"></span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#markResponseClosed"><span class="hs-identifier hs-type">markResponseClosed</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Scheduler"><span class="hs-identifier hs-type">Scheduler</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">Operation</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">STM</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-203"></span><span id="markResponseClosed"><span class="annot"><span class="annottext">markResponseClosed :: Scheduler -&gt; Operation -&gt; STM ()
+</span><a href="LibTmux.Internal.Scheduler.html#markResponseClosed"><span class="hs-identifier hs-var hs-var">markResponseClosed</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Stage -&gt; Stage -&gt; Scheduler -&gt; Operation -&gt; STM ()
+</span><a href="LibTmux.Internal.Scheduler.html#advance"><span class="hs-identifier hs-var">advance</span></a></span><span> </span><span class="annot"><span class="annottext">Stage
+</span><a href="LibTmux.Internal.Scheduler.html#Dispatched"><span class="hs-identifier hs-var">Dispatched</span></a></span><span> </span><span class="annot"><span class="annottext">Stage
+</span><a href="LibTmux.Internal.Scheduler.html#ResponseClosed"><span class="hs-identifier hs-var">ResponseClosed</span></a></span><span>
+</span><span id="line-204"></span><span>
+</span><span id="line-205"></span><span class="hs-comment">-- | Record operation-specific completion after 'markResponseClosed' and</span><span>
+</span><span id="line-206"></span><span class="hs-comment">-- release logical responsibility once. Preserve any earlier caller outcome.</span><span>
+</span><span id="line-207"></span><span class="hs-comment">-- Physical children and buffers still need their independent cleanup.</span><span>
+</span><span id="line-208"></span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#finish"><span class="hs-identifier hs-type">finish</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Scheduler"><span class="hs-identifier hs-type">Scheduler</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">Operation</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Completion"><span class="hs-identifier hs-type">Completion</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">STM</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-209"></span><span id="finish"><span class="annot"><span class="annottext">finish :: Scheduler -&gt; Operation -&gt; Completion -&gt; STM Bool
+</span><a href="LibTmux.Internal.Scheduler.html#finish"><span class="hs-identifier hs-var hs-var">finish</span></a></span></span><span> </span><span id="local-6989586621679145794"><span class="annot"><span class="annottext">Scheduler
+</span><a href="#local-6989586621679145794"><span class="hs-identifier hs-var">scheduler</span></a></span></span><span> </span><span id="local-6989586621679145795"><span class="annot"><span class="annottext">Operation
+</span><a href="#local-6989586621679145795"><span class="hs-identifier hs-var">operation</span></a></span></span><span> </span><span id="local-6989586621679145796"><span class="annot"><span class="annottext">Completion
+</span><a href="#local-6989586621679145796"><span class="hs-identifier hs-var">completion</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Scheduler -&gt; Operation -&gt; Bool -&gt; (Status -&gt; STM Bool) -&gt; STM Bool
+forall a. Scheduler -&gt; Operation -&gt; a -&gt; (Status -&gt; STM a) -&gt; STM a
+</span><a href="LibTmux.Internal.Scheduler.html#withLive"><span class="hs-identifier hs-var">withLive</span></a></span><span> </span><span class="annot"><span class="annottext">Scheduler
+</span><a href="#local-6989586621679145794"><span class="hs-identifier hs-var">scheduler</span></a></span><span> </span><span class="annot"><span class="annottext">Operation
+</span><a href="#local-6989586621679145795"><span class="hs-identifier hs-var">operation</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span> </span><span class="annot"><span class="annottext">((Status -&gt; STM Bool) -&gt; STM Bool)
+-&gt; (Status -&gt; STM Bool) -&gt; STM Bool
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679145798"><span class="annot"><span class="annottext">Status
+</span><a href="#local-6989586621679145798"><span class="hs-identifier hs-var">current</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-210"></span><span>  </span><span class="annot"><span class="annottext">Stage -&gt; Status -&gt; STM ()
+</span><a href="LibTmux.Internal.Scheduler.html#requireStage"><span class="hs-identifier hs-var">requireStage</span></a></span><span> </span><span class="annot"><span class="annottext">Stage
+</span><a href="LibTmux.Internal.Scheduler.html#ResponseClosed"><span class="hs-identifier hs-var">ResponseClosed</span></a></span><span> </span><span class="annot"><span class="annottext">Status
+</span><a href="#local-6989586621679145798"><span class="hs-identifier hs-var">current</span></a></span><span>
+</span><span id="line-211"></span><span>  </span><span class="annot"><span class="annottext">Scheduler -&gt; Operation -&gt; Status -&gt; STM Bool
+</span><a href="LibTmux.Internal.Scheduler.html#retire"><span class="hs-identifier hs-var">retire</span></a></span><span> </span><span class="annot"><span class="annottext">Scheduler
+</span><a href="#local-6989586621679145794"><span class="hs-identifier hs-var">scheduler</span></a></span><span> </span><span class="annot"><span class="annottext">Operation
+</span><a href="#local-6989586621679145795"><span class="hs-identifier hs-var">operation</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Outcome -&gt; Status -&gt; Status
+</span><a href="LibTmux.Internal.Scheduler.html#publish"><span class="hs-identifier hs-var">publish</span></a></span><span> </span><span class="annot"><span class="annottext">Outcome
+</span><a href="#local-6989586621679145802"><span class="hs-identifier hs-var">result</span></a></span><span> </span><span class="annot"><span class="annottext">Status
+</span><a href="#local-6989586621679145798"><span class="hs-identifier hs-var">current</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">{</span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#stage"><span class="hs-identifier hs-var">stage</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#OperationComplete"><span class="hs-identifier hs-type">OperationComplete</span></a></span><span class="hs-special">}</span><span class="hs-special">)</span><span>
+</span><span id="line-212"></span><span>  </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679145802"><span class="annot"><span class="annottext">result :: Outcome
+</span><a href="#local-6989586621679145802"><span class="hs-identifier hs-var hs-var">result</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Completion
+</span><a href="#local-6989586621679145796"><span class="hs-identifier hs-var">completion</span></a></span><span> </span><span class="hs-keyword">of</span><span> </span><span class="annot"><span class="annottext">Completion
+</span><a href="LibTmux.Internal.Scheduler.html#Success"><span class="hs-identifier hs-var">Success</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Outcome
+</span><a href="LibTmux.Internal.Scheduler.html#Succeeded"><span class="hs-identifier hs-var">Succeeded</span></a></span><span class="hs-special">;</span><span> </span><span class="annot"><span class="annottext">Completion
+</span><a href="LibTmux.Internal.Scheduler.html#CommandFailure"><span class="hs-identifier hs-var">CommandFailure</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Outcome
+</span><a href="LibTmux.Internal.Scheduler.html#Failed"><span class="hs-identifier hs-var">Failed</span></a></span><span>
+</span><span id="line-213"></span><span>
+</span><span id="line-214"></span><span class="hs-comment">-- | Publish uncertainty for active work, retaining admission and its permit.</span><span>
+</span><span id="line-215"></span><span class="hs-comment">-- Return 'False' if already published or retired. This does not cancel work.</span><span>
+</span><span id="line-216"></span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#markUnknown"><span class="hs-identifier hs-type">markUnknown</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Scheduler"><span class="hs-identifier hs-type">Scheduler</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">Operation</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">STM</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-217"></span><span id="markUnknown"><span class="annot"><span class="annottext">markUnknown :: Scheduler -&gt; Operation -&gt; STM Bool
+</span><a href="LibTmux.Internal.Scheduler.html#markUnknown"><span class="hs-identifier hs-var hs-var">markUnknown</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Outcome -&gt; Scheduler -&gt; Operation -&gt; STM Bool
+</span><a href="LibTmux.Internal.Scheduler.html#publishActive"><span class="hs-identifier hs-var">publishActive</span></a></span><span> </span><span class="annot"><span class="annottext">Outcome
+</span><a href="LibTmux.Internal.Scheduler.html#OutcomeUnknown"><span class="hs-identifier hs-var">OutcomeUnknown</span></a></span><span>
+</span><span id="line-218"></span><span>
+</span><span id="line-219"></span><span class="hs-comment">-- | Cancel only queued work, publishing 'NotDispatched' and retiring its</span><span>
+</span><span id="line-220"></span><span class="hs-comment">-- admission. Active or previously retired operations return 'False'.</span><span>
+</span><span id="line-221"></span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#cancelQueued"><span class="hs-identifier hs-type">cancelQueued</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Scheduler"><span class="hs-identifier hs-type">Scheduler</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">Operation</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">STM</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-222"></span><span id="cancelQueued"><span class="annot"><span class="annottext">cancelQueued :: Scheduler -&gt; Operation -&gt; STM Bool
+</span><a href="LibTmux.Internal.Scheduler.html#cancelQueued"><span class="hs-identifier hs-var hs-var">cancelQueued</span></a></span></span><span> </span><span id="local-6989586621679145804"><span class="annot"><span class="annottext">Scheduler
+</span><a href="#local-6989586621679145804"><span class="hs-identifier hs-var">scheduler</span></a></span></span><span> </span><span id="local-6989586621679145805"><span class="annot"><span class="annottext">Operation
+</span><a href="#local-6989586621679145805"><span class="hs-identifier hs-var">operation</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Scheduler -&gt; Operation -&gt; Bool -&gt; (Status -&gt; STM Bool) -&gt; STM Bool
+forall a. Scheduler -&gt; Operation -&gt; a -&gt; (Status -&gt; STM a) -&gt; STM a
+</span><a href="LibTmux.Internal.Scheduler.html#withLive"><span class="hs-identifier hs-var">withLive</span></a></span><span> </span><span class="annot"><span class="annottext">Scheduler
+</span><a href="#local-6989586621679145804"><span class="hs-identifier hs-var">scheduler</span></a></span><span> </span><span class="annot"><span class="annottext">Operation
+</span><a href="#local-6989586621679145805"><span class="hs-identifier hs-var">operation</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span> </span><span class="annot"><span class="annottext">((Status -&gt; STM Bool) -&gt; STM Bool)
+-&gt; (Status -&gt; STM Bool) -&gt; STM Bool
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679145806"><span class="annot"><span class="annottext">Status
+</span><a href="#local-6989586621679145806"><span class="hs-identifier hs-var">current</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-223"></span><span>  </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Status
+</span><a href="#local-6989586621679145806"><span class="hs-identifier hs-var">current</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">stage</span><span> </span><span class="annot"><span class="annottext">Stage -&gt; Stage -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Stage
+</span><a href="LibTmux.Internal.Scheduler.html#Queued"><span class="hs-identifier hs-var">Queued</span></a></span><span> </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Scheduler -&gt; Operation -&gt; Status -&gt; STM Bool
+</span><a href="LibTmux.Internal.Scheduler.html#retire"><span class="hs-identifier hs-var">retire</span></a></span><span> </span><span class="annot"><span class="annottext">Scheduler
+</span><a href="#local-6989586621679145804"><span class="hs-identifier hs-var">scheduler</span></a></span><span> </span><span class="annot"><span class="annottext">Operation
+</span><a href="#local-6989586621679145805"><span class="hs-identifier hs-var">operation</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Outcome -&gt; Status -&gt; Status
+</span><a href="LibTmux.Internal.Scheduler.html#publish"><span class="hs-identifier hs-var">publish</span></a></span><span> </span><span class="annot"><span class="annottext">Outcome
+</span><a href="LibTmux.Internal.Scheduler.html#NotDispatched"><span class="hs-identifier hs-var">NotDispatched</span></a></span><span> </span><span class="annot"><span class="annottext">Status
+</span><a href="#local-6989586621679145806"><span class="hs-identifier hs-var">current</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-224"></span><span>  </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; STM Bool
+forall a. a -&gt; STM a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span>
+</span><span id="line-225"></span><span>
+</span><span id="line-226"></span><span class="hs-comment">-- | Retire a claimed operation only with proven pre-birth refusal. Preserve</span><span>
+</span><span id="line-227"></span><span class="hs-comment">-- earlier uncertainty rather than rewriting its published outcome. This</span><span>
+</span><span id="line-228"></span><span class="hs-comment">-- function requires 'Dispatching'; it does not establish non-dispatch itself.</span><span>
+</span><span id="line-229"></span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#refuseBeforeBirth"><span class="hs-identifier hs-type">refuseBeforeBirth</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Scheduler"><span class="hs-identifier hs-type">Scheduler</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">Operation</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">STM</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-230"></span><span id="refuseBeforeBirth"><span class="annot"><span class="annottext">refuseBeforeBirth :: Scheduler -&gt; Operation -&gt; STM Bool
+</span><a href="LibTmux.Internal.Scheduler.html#refuseBeforeBirth"><span class="hs-identifier hs-var hs-var">refuseBeforeBirth</span></a></span></span><span> </span><span id="local-6989586621679145807"><span class="annot"><span class="annottext">Scheduler
+</span><a href="#local-6989586621679145807"><span class="hs-identifier hs-var">scheduler</span></a></span></span><span> </span><span id="local-6989586621679145808"><span class="annot"><span class="annottext">Operation
+</span><a href="#local-6989586621679145808"><span class="hs-identifier hs-var">operation</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Scheduler -&gt; Operation -&gt; Bool -&gt; (Status -&gt; STM Bool) -&gt; STM Bool
+forall a. Scheduler -&gt; Operation -&gt; a -&gt; (Status -&gt; STM a) -&gt; STM a
+</span><a href="LibTmux.Internal.Scheduler.html#withLive"><span class="hs-identifier hs-var">withLive</span></a></span><span> </span><span class="annot"><span class="annottext">Scheduler
+</span><a href="#local-6989586621679145807"><span class="hs-identifier hs-var">scheduler</span></a></span><span> </span><span class="annot"><span class="annottext">Operation
+</span><a href="#local-6989586621679145808"><span class="hs-identifier hs-var">operation</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span> </span><span class="annot"><span class="annottext">((Status -&gt; STM Bool) -&gt; STM Bool)
+-&gt; (Status -&gt; STM Bool) -&gt; STM Bool
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679145809"><span class="annot"><span class="annottext">Status
+</span><a href="#local-6989586621679145809"><span class="hs-identifier hs-var">current</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-231"></span><span>  </span><span class="annot"><span class="annottext">Stage -&gt; Status -&gt; STM ()
+</span><a href="LibTmux.Internal.Scheduler.html#requireStage"><span class="hs-identifier hs-var">requireStage</span></a></span><span> </span><span class="annot"><span class="annottext">Stage
+</span><a href="LibTmux.Internal.Scheduler.html#Dispatching"><span class="hs-identifier hs-var">Dispatching</span></a></span><span> </span><span class="annot"><span class="annottext">Status
+</span><a href="#local-6989586621679145809"><span class="hs-identifier hs-var">current</span></a></span><span>
+</span><span id="line-232"></span><span>  </span><span class="annot"><span class="annottext">Scheduler -&gt; Operation -&gt; Status -&gt; STM Bool
+</span><a href="LibTmux.Internal.Scheduler.html#retire"><span class="hs-identifier hs-var">retire</span></a></span><span> </span><span class="annot"><span class="annottext">Scheduler
+</span><a href="#local-6989586621679145807"><span class="hs-identifier hs-var">scheduler</span></a></span><span> </span><span class="annot"><span class="annottext">Operation
+</span><a href="#local-6989586621679145808"><span class="hs-identifier hs-var">operation</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Outcome -&gt; Status -&gt; Status
+</span><a href="LibTmux.Internal.Scheduler.html#publish"><span class="hs-identifier hs-var">publish</span></a></span><span> </span><span class="annot"><span class="annottext">Outcome
+</span><a href="LibTmux.Internal.Scheduler.html#NotDispatched"><span class="hs-identifier hs-var">NotDispatched</span></a></span><span> </span><span class="annot"><span class="annottext">Status
+</span><a href="#local-6989586621679145809"><span class="hs-identifier hs-var">current</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-233"></span><span>
+</span><span id="line-234"></span><span class="hs-comment">-- | Publish connection retirement for active work without releasing debt.</span><span>
+</span><span id="line-235"></span><span class="hs-comment">-- A retired endpoint does not prove a server job stopped. Later 'finish',</span><span>
+</span><span id="line-236"></span><span class="hs-comment">-- 'refuseBeforeBirth' or explicit 'detachResponsibility' can retire it.</span><span>
+</span><span id="line-237"></span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#connectionRetired"><span class="hs-identifier hs-type">connectionRetired</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Scheduler"><span class="hs-identifier hs-type">Scheduler</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">Operation</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">STM</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-238"></span><span id="connectionRetired"><span class="annot"><span class="annottext">connectionRetired :: Scheduler -&gt; Operation -&gt; STM Bool
+</span><a href="LibTmux.Internal.Scheduler.html#connectionRetired"><span class="hs-identifier hs-var hs-var">connectionRetired</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Outcome -&gt; Scheduler -&gt; Operation -&gt; STM Bool
+</span><a href="LibTmux.Internal.Scheduler.html#publishActive"><span class="hs-identifier hs-var">publishActive</span></a></span><span> </span><span class="annot"><span class="annottext">Outcome
+</span><a href="LibTmux.Internal.Scheduler.html#ConnectionRetired"><span class="hs-identifier hs-var">ConnectionRetired</span></a></span><span>
+</span><span id="line-239"></span><span>
+</span><span id="line-240"></span><span class="hs-comment">-- | Explicitly relinquish uncertain logical responsibility. Accept only</span><span>
+</span><span id="line-241"></span><span class="hs-comment">-- 'OutcomeUnknown' or 'ConnectionRetired'; otherwise return 'False'. Keep</span><span>
+</span><span id="line-242"></span><span class="hs-comment">-- the last stage/outcome, and close no native resource. Detaching a mutation</span><span>
+</span><span id="line-243"></span><span class="hs-comment">-- permits the next mutation despite possible continuing external effects.</span><span>
+</span><span id="line-244"></span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#detachResponsibility"><span class="hs-identifier hs-type">detachResponsibility</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Scheduler"><span class="hs-identifier hs-type">Scheduler</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">Operation</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">STM</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-245"></span><span id="detachResponsibility"><span class="annot"><span class="annottext">detachResponsibility :: Scheduler -&gt; Operation -&gt; STM Bool
+</span><a href="LibTmux.Internal.Scheduler.html#detachResponsibility"><span class="hs-identifier hs-var hs-var">detachResponsibility</span></a></span></span><span> </span><span id="local-6989586621679145810"><span class="annot"><span class="annottext">Scheduler
+</span><a href="#local-6989586621679145810"><span class="hs-identifier hs-var">scheduler</span></a></span></span><span> </span><span id="local-6989586621679145811"><span class="annot"><span class="annottext">Operation
+</span><a href="#local-6989586621679145811"><span class="hs-identifier hs-var">operation</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Scheduler -&gt; Operation -&gt; Bool -&gt; (Status -&gt; STM Bool) -&gt; STM Bool
+forall a. Scheduler -&gt; Operation -&gt; a -&gt; (Status -&gt; STM a) -&gt; STM a
+</span><a href="LibTmux.Internal.Scheduler.html#withLive"><span class="hs-identifier hs-var">withLive</span></a></span><span> </span><span class="annot"><span class="annottext">Scheduler
+</span><a href="#local-6989586621679145810"><span class="hs-identifier hs-var">scheduler</span></a></span><span> </span><span class="annot"><span class="annottext">Operation
+</span><a href="#local-6989586621679145811"><span class="hs-identifier hs-var">operation</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span> </span><span class="annot"><span class="annottext">((Status -&gt; STM Bool) -&gt; STM Bool)
+-&gt; (Status -&gt; STM Bool) -&gt; STM Bool
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679145812"><span class="annot"><span class="annottext">Status
+</span><a href="#local-6989586621679145812"><span class="hs-identifier hs-var">current</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-246"></span><span>  </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Status
+</span><a href="#local-6989586621679145812"><span class="hs-identifier hs-var">current</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">outcome</span><span> </span><span class="annot"><span class="annottext">Maybe Outcome -&gt; [Maybe Outcome] -&gt; Bool
+forall a. Eq a =&gt; a -&gt; [a] -&gt; Bool
+forall (t :: * -&gt; *) a. (Foldable t, Eq a) =&gt; a -&gt; t a -&gt; Bool
+</span><span class="hs-operator hs-var">`elem`</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Outcome -&gt; Maybe Outcome
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">Outcome
+</span><a href="LibTmux.Internal.Scheduler.html#OutcomeUnknown"><span class="hs-identifier hs-var">OutcomeUnknown</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Outcome -&gt; Maybe Outcome
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">Outcome
+</span><a href="LibTmux.Internal.Scheduler.html#ConnectionRetired"><span class="hs-identifier hs-var">ConnectionRetired</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-247"></span><span>    </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Scheduler -&gt; Operation -&gt; Status -&gt; STM Bool
+</span><a href="LibTmux.Internal.Scheduler.html#retire"><span class="hs-identifier hs-var">retire</span></a></span><span> </span><span class="annot"><span class="annottext">Scheduler
+</span><a href="#local-6989586621679145810"><span class="hs-identifier hs-var">scheduler</span></a></span><span> </span><span class="annot"><span class="annottext">Operation
+</span><a href="#local-6989586621679145811"><span class="hs-identifier hs-var">operation</span></a></span><span> </span><span class="annot"><span class="annottext">Status
+</span><a href="#local-6989586621679145812"><span class="hs-identifier hs-var">current</span></a></span><span>
+</span><span id="line-248"></span><span>    </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; STM Bool
+forall a. a -&gt; STM a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span>
+</span><span id="line-249"></span><span>
+</span><span id="line-250"></span><span class="hs-comment">-- | Close admission, settle queued work as 'NotDispatched' and return all</span><span>
+</span><span id="line-251"></span><span class="hs-comment">-- retained active handles for supervision. Wake blocked 'claim' transactions.</span><span>
+</span><span id="line-252"></span><span class="hs-comment">-- Repeated close preserves active debt; it does not release native resources.</span><span>
+</span><span id="line-253"></span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#closeAdmission"><span class="hs-identifier hs-type">closeAdmission</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Scheduler"><span class="hs-identifier hs-type">Scheduler</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">STM</span></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">Operation</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-254"></span><span id="closeAdmission"><span class="annot"><span class="annottext">closeAdmission :: Scheduler -&gt; STM [Operation]
+</span><a href="LibTmux.Internal.Scheduler.html#closeAdmission"><span class="hs-identifier hs-var hs-var">closeAdmission</span></a></span></span><span> </span><span id="local-6989586621679145814"><span class="annot"><span class="annottext">scheduler :: Scheduler
+</span><a href="#local-6989586621679145814"><span class="hs-identifier hs-var">scheduler</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Scheduler"><span class="hs-identifier hs-type">Scheduler</span></a></span><span> </span><span class="annot"><span class="annottext">Unique
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679145815"><span class="annot"><span class="annottext">TVar State
+</span><a href="#local-6989586621679145815"><span class="hs-identifier hs-var">variable</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-255"></span><span>  </span><span id="local-6989586621679145816"><span class="annot"><a href="#local-6989586621679145816"><span class="hs-identifier hs-var">current</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">TVar State -&gt; STM State
+forall a. TVar a -&gt; STM a
+</span><span class="hs-identifier hs-var">readTVar</span></span><span> </span><span class="annot"><span class="annottext">TVar State
+</span><a href="#local-6989586621679145815"><span class="hs-identifier hs-var">variable</span></a></span><span>
+</span><span id="line-256"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">writeTVar</span></span><span> </span><span class="annot"><a href="#local-6989586621679145815"><span class="hs-identifier hs-type">variable</span></a></span><span> </span><span class="annot"><span class="hs-operator hs-type">$!</span></span><span> </span><span class="annot"><a href="#local-6989586621679145816"><span class="hs-identifier hs-type">current</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#accepting"><span class="hs-identifier hs-var">accepting</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">False</span></span><span class="hs-special">}</span><span>
+</span><span id="line-257"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">filterM</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621679145817"><span class="annot"><span class="annottext">Operation
+</span><a href="#local-6989586621679145817"><span class="hs-identifier hs-var">operation</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-258"></span><span>    </span><span id="local-6989586621679145818"><span class="annot"><a href="#local-6989586621679145818"><span class="hs-identifier hs-var">observed</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Operation -&gt; STM Status
+</span><a href="LibTmux.Internal.Scheduler.html#status"><span class="hs-identifier hs-var">status</span></a></span><span> </span><span class="annot"><span class="annottext">Operation
+</span><a href="#local-6989586621679145817"><span class="hs-identifier hs-var">operation</span></a></span><span>
+</span><span id="line-259"></span><span>    </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="hs-identifier">observed</span></span><span class="hs-operator">.</span><span class="hs-identifier">stage</span><span> </span><span class="annot"><span class="hs-operator hs-type">==</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Queued"><span class="hs-identifier hs-type">Queued</span></a></span><span> </span><span class="hs-keyword">then</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#cancelQueued"><span class="hs-identifier hs-type">cancelQueued</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679145814"><span class="hs-identifier hs-type">scheduler</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679145817"><span class="hs-identifier hs-type">operation</span></a></span><span> </span><span class="annot"><span class="hs-operator hs-type">&gt;&gt;</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">pure</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">False</span></span><span>
+</span><span id="line-260"></span><span>    </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="hs-identifier hs-type">pure</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">True</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Map.elems</span></span><span> </span><span class="annot"><span class="hs-identifier">current</span></span><span class="hs-operator">.</span><span class="hs-identifier">operations</span><span class="hs-special">)</span><span>
+</span><span id="line-261"></span><span>
+</span><span id="line-262"></span><span id="local-6989586621679145335"><span class="annot"><a href="LibTmux.Internal.Scheduler.html#withLive"><span class="hs-identifier hs-type">withLive</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Scheduler"><span class="hs-identifier hs-type">Scheduler</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">Operation</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679145335"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Status"><span class="hs-identifier hs-type">Status</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">STM</span></span><span> </span><span class="annot"><a href="#local-6989586621679145335"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">STM</span></span><span> </span><span class="annot"><a href="#local-6989586621679145335"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-263"></span><span id="withLive"><span class="annot"><span class="annottext">withLive :: forall a. Scheduler -&gt; Operation -&gt; a -&gt; (Status -&gt; STM a) -&gt; STM a
+</span><a href="LibTmux.Internal.Scheduler.html#withLive"><span class="hs-identifier hs-var hs-var">withLive</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Scheduler"><span class="hs-identifier hs-type">Scheduler</span></a></span><span> </span><span id="local-6989586621679145828"><span class="annot"><span class="annottext">Unique
+</span><a href="#local-6989586621679145828"><span class="hs-identifier hs-var">context</span></a></span></span><span> </span><span id="local-6989586621679145829"><span class="annot"><span class="annottext">TVar State
+</span><a href="#local-6989586621679145829"><span class="hs-identifier hs-var">variable</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">Operation</span></a></span><span> </span><span id="local-6989586621679145830"><span class="annot"><span class="annottext">Unique
+</span><a href="#local-6989586621679145830"><span class="hs-identifier hs-var">origin</span></a></span></span><span> </span><span id="local-6989586621679145831"><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679145831"><span class="hs-identifier hs-var">key</span></a></span></span><span> </span><span class="annot"><span class="annottext">Lane
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679145832"><span class="annot"><span class="annottext">TVar Status
+</span><a href="#local-6989586621679145832"><span class="hs-identifier hs-var">observed</span></a></span></span><span> </span><span class="annot"><span class="annottext">Maybe Group
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679145833"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679145833"><span class="hs-identifier hs-var">absent</span></a></span></span><span> </span><span id="local-6989586621679145834"><span class="annot"><span class="annottext">Status -&gt; STM a
+</span><a href="#local-6989586621679145834"><span class="hs-identifier hs-var">action</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-264"></span><span>  </span><span class="annot"><span class="annottext">Bool -&gt; STM () -&gt; STM ()
+forall (f :: * -&gt; *). Applicative f =&gt; Bool -&gt; f () -&gt; f ()
+</span><span class="hs-identifier hs-var">unless</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Unique
+</span><a href="#local-6989586621679145828"><span class="hs-identifier hs-var">context</span></a></span><span> </span><span class="annot"><span class="annottext">Unique -&gt; Unique -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Unique
+</span><a href="#local-6989586621679145830"><span class="hs-identifier hs-var">origin</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AdmissionError -&gt; STM ()
+forall e a. Exception e =&gt; e -&gt; STM a
+</span><span class="hs-identifier hs-var">throwSTM</span></span><span> </span><span class="annot"><span class="annottext">AdmissionError
+</span><a href="LibTmux.Internal.Scheduler.html#ForeignContext"><span class="hs-identifier hs-var">ForeignContext</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-265"></span><span>  </span><span id="local-6989586621679145835"><span class="annot"><a href="#local-6989586621679145835"><span class="hs-identifier hs-var">current</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">TVar State -&gt; STM State
+forall a. TVar a -&gt; STM a
+</span><span class="hs-identifier hs-var">readTVar</span></span><span> </span><span class="annot"><span class="annottext">TVar State
+</span><a href="#local-6989586621679145829"><span class="hs-identifier hs-var">variable</span></a></span><span>
+</span><span id="line-266"></span><span>  </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Map.member</span></span><span> </span><span class="annot"><a href="#local-6989586621679145831"><span class="hs-identifier hs-type">key</span></a></span><span> </span><span class="annot"><span class="hs-identifier">current</span></span><span class="hs-operator">.</span><span class="hs-identifier">operations</span><span> </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="hs-identifier hs-type">readTVar</span></span><span> </span><span class="annot"><a href="#local-6989586621679145832"><span class="hs-identifier hs-type">observed</span></a></span><span> </span><span class="annot"><span class="hs-operator hs-type">&gt;&gt;=</span></span><span> </span><span class="annot"><a href="#local-6989586621679145834"><span class="hs-identifier hs-type">action</span></a></span><span>
+</span><span id="line-267"></span><span>  </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="hs-identifier hs-type">pure</span></span><span> </span><span class="annot"><a href="#local-6989586621679145833"><span class="hs-identifier hs-type">absent</span></a></span><span>
+</span><span id="line-268"></span><span>
+</span><span id="line-269"></span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#advance"><span class="hs-identifier hs-type">advance</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Stage"><span class="hs-identifier hs-type">Stage</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Stage"><span class="hs-identifier hs-type">Stage</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Scheduler"><span class="hs-identifier hs-type">Scheduler</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">Operation</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">STM</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-270"></span><span id="advance"><span class="annot"><span class="annottext">advance :: Stage -&gt; Stage -&gt; Scheduler -&gt; Operation -&gt; STM ()
+</span><a href="LibTmux.Internal.Scheduler.html#advance"><span class="hs-identifier hs-var hs-var">advance</span></a></span></span><span> </span><span id="local-6989586621679145837"><span class="annot"><span class="annottext">Stage
+</span><a href="#local-6989586621679145837"><span class="hs-identifier hs-var">required</span></a></span></span><span> </span><span id="local-6989586621679145838"><span class="annot"><span class="annottext">Stage
+</span><a href="#local-6989586621679145838"><span class="hs-identifier hs-var">target</span></a></span></span><span> </span><span id="local-6989586621679145839"><span class="annot"><span class="annottext">Scheduler
+</span><a href="#local-6989586621679145839"><span class="hs-identifier hs-var">scheduler</span></a></span></span><span> </span><span id="local-6989586621679145840"><span class="annot"><span class="annottext">operation :: Operation
+</span><a href="#local-6989586621679145840"><span class="hs-identifier hs-var">operation</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">Operation</span></a></span><span> </span><span class="annot"><span class="annottext">Unique
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Word64
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Lane
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679145841"><span class="annot"><span class="annottext">TVar Status
+</span><a href="#local-6989586621679145841"><span class="hs-identifier hs-var">observed</span></a></span></span><span> </span><span class="annot"><span class="annottext">Maybe Group
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-271"></span><span>  </span><span class="annot"><span class="annottext">Scheduler -&gt; Operation -&gt; () -&gt; (Status -&gt; STM ()) -&gt; STM ()
+forall a. Scheduler -&gt; Operation -&gt; a -&gt; (Status -&gt; STM a) -&gt; STM a
+</span><a href="LibTmux.Internal.Scheduler.html#withLive"><span class="hs-identifier hs-var">withLive</span></a></span><span> </span><span class="annot"><span class="annottext">Scheduler
+</span><a href="#local-6989586621679145839"><span class="hs-identifier hs-var">scheduler</span></a></span><span> </span><span class="annot"><span class="annottext">Operation
+</span><a href="#local-6989586621679145840"><span class="hs-identifier hs-var">operation</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">((Status -&gt; STM ()) -&gt; STM ()) -&gt; (Status -&gt; STM ()) -&gt; STM ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679145842"><span class="annot"><span class="annottext">Status
+</span><a href="#local-6989586621679145842"><span class="hs-identifier hs-var">current</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-272"></span><span>    </span><span class="annot"><span class="annottext">Bool -&gt; STM () -&gt; STM ()
+forall (f :: * -&gt; *). Applicative f =&gt; Bool -&gt; f () -&gt; f ()
+</span><span class="hs-identifier hs-var">unless</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Status
+</span><a href="#local-6989586621679145842"><span class="hs-identifier hs-var">current</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">stage</span><span> </span><span class="annot"><span class="annottext">Stage -&gt; Stage -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Stage
+</span><a href="#local-6989586621679145838"><span class="hs-identifier hs-var">target</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(STM () -&gt; STM ()) -&gt; STM () -&gt; STM ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-273"></span><span>      </span><span class="annot"><span class="annottext">Stage -&gt; Status -&gt; STM ()
+</span><a href="LibTmux.Internal.Scheduler.html#requireStage"><span class="hs-identifier hs-var">requireStage</span></a></span><span> </span><span class="annot"><span class="annottext">Stage
+</span><a href="#local-6989586621679145837"><span class="hs-identifier hs-var">required</span></a></span><span> </span><span class="annot"><span class="annottext">Status
+</span><a href="#local-6989586621679145842"><span class="hs-identifier hs-var">current</span></a></span><span>
+</span><span id="line-274"></span><span>      </span><span class="annot"><span class="annottext">TVar Status -&gt; Status -&gt; STM ()
+forall a. TVar a -&gt; a -&gt; STM ()
+</span><span class="hs-identifier hs-var">writeTVar</span></span><span> </span><span class="annot"><span class="annottext">TVar Status
+</span><a href="#local-6989586621679145841"><span class="hs-identifier hs-var">observed</span></a></span><span> </span><span class="annot"><span class="annottext">(Status -&gt; STM ()) -&gt; Status -&gt; STM ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$!</span></span><span> </span><span class="annot"><span class="annottext">Status
+</span><a href="#local-6989586621679145842"><span class="hs-identifier hs-var">current</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#stage"><span class="hs-identifier hs-var">stage</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="#local-6989586621679145838"><span class="hs-identifier hs-type">target</span></a></span><span class="hs-special">}</span><span>
+</span><span id="line-275"></span><span>
+</span><span id="line-276"></span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#requireStage"><span class="hs-identifier hs-type">requireStage</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Stage"><span class="hs-identifier hs-type">Stage</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Status"><span class="hs-identifier hs-type">Status</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">STM</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-277"></span><span id="requireStage"><span class="annot"><span class="annottext">requireStage :: Stage -&gt; Status -&gt; STM ()
+</span><a href="LibTmux.Internal.Scheduler.html#requireStage"><span class="hs-identifier hs-var hs-var">requireStage</span></a></span></span><span> </span><span id="local-6989586621679145843"><span class="annot"><span class="annottext">Stage
+</span><a href="#local-6989586621679145843"><span class="hs-identifier hs-var">required</span></a></span></span><span> </span><span id="local-6989586621679145844"><span class="annot"><span class="annottext">Status
+</span><a href="#local-6989586621679145844"><span class="hs-identifier hs-var">current</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-278"></span><span>  </span><span class="annot"><span class="annottext">Bool -&gt; STM () -&gt; STM ()
+forall (f :: * -&gt; *). Applicative f =&gt; Bool -&gt; f () -&gt; f ()
+</span><span class="hs-identifier hs-var">unless</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Status
+</span><a href="#local-6989586621679145844"><span class="hs-identifier hs-var">current</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">stage</span><span> </span><span class="annot"><span class="annottext">Stage -&gt; Stage -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Stage
+</span><a href="#local-6989586621679145843"><span class="hs-identifier hs-var">required</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AdmissionError -&gt; STM ()
+forall e a. Exception e =&gt; e -&gt; STM a
+</span><span class="hs-identifier hs-var">throwSTM</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Stage -&gt; Stage -&gt; AdmissionError
+</span><a href="LibTmux.Internal.Scheduler.html#InvalidTransition"><span class="hs-identifier hs-var">InvalidTransition</span></a></span><span> </span><span class="annot"><span class="annottext">Stage
+</span><a href="#local-6989586621679145843"><span class="hs-identifier hs-var">required</span></a></span><span> </span><span class="annot"><span class="annottext">Status
+</span><a href="#local-6989586621679145844"><span class="hs-identifier hs-var">current</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">stage</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-279"></span><span>
+</span><span id="line-280"></span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#publish"><span class="hs-identifier hs-type">publish</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Outcome"><span class="hs-identifier hs-type">Outcome</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Status"><span class="hs-identifier hs-type">Status</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Status"><span class="hs-identifier hs-type">Status</span></a></span><span>
+</span><span id="line-281"></span><span id="publish"><span class="annot"><span class="annottext">publish :: Outcome -&gt; Status -&gt; Status
+</span><a href="LibTmux.Internal.Scheduler.html#publish"><span class="hs-identifier hs-var hs-var">publish</span></a></span></span><span> </span><span id="local-6989586621679145845"><span class="annot"><span class="annottext">Outcome
+</span><a href="#local-6989586621679145845"><span class="hs-identifier hs-var">result</span></a></span></span><span> </span><span id="local-6989586621679145846"><span class="annot"><span class="annottext">Status
+</span><a href="#local-6989586621679145846"><span class="hs-identifier hs-var">current</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Status
+</span><a href="#local-6989586621679145846"><span class="hs-identifier hs-var">current</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">outcome</span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-282"></span><span>  </span><span class="hs-comment">-- Force the enum too, so detached metadata cannot retain a caller thunk.</span><span>
+</span><span id="line-283"></span><span>  </span><span class="annot"><span class="annottext">Maybe Outcome
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Outcome
+</span><a href="#local-6989586621679145845"><span class="hs-identifier hs-var">result</span></a></span><span> </span><span class="annot"><span class="annottext">Outcome -&gt; Status -&gt; Status
+forall a b. a -&gt; b -&gt; b
+</span><span class="hs-operator hs-var">`seq`</span></span><span> </span><span class="annot"><span class="annottext">Status
+</span><a href="#local-6989586621679145846"><span class="hs-identifier hs-var">current</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#outcome"><span class="hs-identifier hs-var">outcome</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="annot"><a href="#local-6989586621679145845"><span class="hs-identifier hs-type">result</span></a></span><span class="hs-special">}</span><span>
+</span><span id="line-284"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="annot"><span class="annottext">Outcome
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Status
+</span><a href="#local-6989586621679145846"><span class="hs-identifier hs-var">current</span></a></span><span>
+</span><span id="line-285"></span><span>
+</span><span id="line-286"></span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#publishActive"><span class="hs-identifier hs-type">publishActive</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Outcome"><span class="hs-identifier hs-type">Outcome</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Scheduler"><span class="hs-identifier hs-type">Scheduler</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">Operation</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">STM</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-287"></span><span id="publishActive"><span class="annot"><span class="annottext">publishActive :: Outcome -&gt; Scheduler -&gt; Operation -&gt; STM Bool
+</span><a href="LibTmux.Internal.Scheduler.html#publishActive"><span class="hs-identifier hs-var hs-var">publishActive</span></a></span></span><span> </span><span id="local-6989586621679145847"><span class="annot"><span class="annottext">Outcome
+</span><a href="#local-6989586621679145847"><span class="hs-identifier hs-var">result</span></a></span></span><span> </span><span id="local-6989586621679145848"><span class="annot"><span class="annottext">Scheduler
+</span><a href="#local-6989586621679145848"><span class="hs-identifier hs-var">scheduler</span></a></span></span><span> </span><span id="local-6989586621679145849"><span class="annot"><span class="annottext">operation :: Operation
+</span><a href="#local-6989586621679145849"><span class="hs-identifier hs-var">operation</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">Operation</span></a></span><span> </span><span class="annot"><span class="annottext">Unique
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Word64
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Lane
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679145850"><span class="annot"><span class="annottext">TVar Status
+</span><a href="#local-6989586621679145850"><span class="hs-identifier hs-var">observed</span></a></span></span><span> </span><span class="annot"><span class="annottext">Maybe Group
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-288"></span><span>  </span><span class="annot"><span class="annottext">Scheduler -&gt; Operation -&gt; Bool -&gt; (Status -&gt; STM Bool) -&gt; STM Bool
+forall a. Scheduler -&gt; Operation -&gt; a -&gt; (Status -&gt; STM a) -&gt; STM a
+</span><a href="LibTmux.Internal.Scheduler.html#withLive"><span class="hs-identifier hs-var">withLive</span></a></span><span> </span><span class="annot"><span class="annottext">Scheduler
+</span><a href="#local-6989586621679145848"><span class="hs-identifier hs-var">scheduler</span></a></span><span> </span><span class="annot"><span class="annottext">Operation
+</span><a href="#local-6989586621679145849"><span class="hs-identifier hs-var">operation</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span> </span><span class="annot"><span class="annottext">((Status -&gt; STM Bool) -&gt; STM Bool)
+-&gt; (Status -&gt; STM Bool) -&gt; STM Bool
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679145851"><span class="annot"><span class="annottext">Status
+</span><a href="#local-6989586621679145851"><span class="hs-identifier hs-var">current</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-289"></span><span>    </span><span class="annot"><span class="annottext">Bool -&gt; STM () -&gt; STM ()
+forall (f :: * -&gt; *). Applicative f =&gt; Bool -&gt; f () -&gt; f ()
+</span><span class="hs-identifier hs-var">when</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Status
+</span><a href="#local-6989586621679145851"><span class="hs-identifier hs-var">current</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">stage</span><span> </span><span class="annot"><span class="annottext">Stage -&gt; Stage -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Stage
+</span><a href="LibTmux.Internal.Scheduler.html#Queued"><span class="hs-identifier hs-var">Queued</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AdmissionError -&gt; STM ()
+forall e a. Exception e =&gt; e -&gt; STM a
+</span><span class="hs-identifier hs-var">throwSTM</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Stage -&gt; Stage -&gt; AdmissionError
+</span><a href="LibTmux.Internal.Scheduler.html#InvalidTransition"><span class="hs-identifier hs-var">InvalidTransition</span></a></span><span> </span><span class="annot"><span class="annottext">Stage
+</span><a href="LibTmux.Internal.Scheduler.html#Dispatching"><span class="hs-identifier hs-var">Dispatching</span></a></span><span> </span><span class="annot"><span class="annottext">Stage
+</span><a href="LibTmux.Internal.Scheduler.html#Queued"><span class="hs-identifier hs-var">Queued</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-290"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Status
+</span><a href="#local-6989586621679145851"><span class="hs-identifier hs-var">current</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">outcome</span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-291"></span><span>      </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="annot"><span class="annottext">Outcome
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; STM Bool
+forall a. a -&gt; STM a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span>
+</span><span id="line-292"></span><span>      </span><span class="annot"><span class="annottext">Maybe Outcome
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-293"></span><span>        </span><span class="annot"><span class="annottext">TVar Status -&gt; Status -&gt; STM ()
+forall a. TVar a -&gt; a -&gt; STM ()
+</span><span class="hs-identifier hs-var">writeTVar</span></span><span> </span><span class="annot"><span class="annottext">TVar Status
+</span><a href="#local-6989586621679145850"><span class="hs-identifier hs-var">observed</span></a></span><span> </span><span class="annot"><span class="annottext">(Status -&gt; STM ()) -&gt; Status -&gt; STM ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$!</span></span><span> </span><span class="annot"><span class="annottext">Outcome -&gt; Status -&gt; Status
+</span><a href="LibTmux.Internal.Scheduler.html#publish"><span class="hs-identifier hs-var">publish</span></a></span><span> </span><span class="annot"><span class="annottext">Outcome
+</span><a href="#local-6989586621679145847"><span class="hs-identifier hs-var">result</span></a></span><span> </span><span class="annot"><span class="annottext">Status
+</span><a href="#local-6989586621679145851"><span class="hs-identifier hs-var">current</span></a></span><span>
+</span><span id="line-294"></span><span>        </span><span class="annot"><span class="annottext">Bool -&gt; STM Bool
+forall a. a -&gt; STM a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-295"></span><span>
+</span><span id="line-296"></span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#retire"><span class="hs-identifier hs-type">retire</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Scheduler"><span class="hs-identifier hs-type">Scheduler</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">Operation</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Status"><span class="hs-identifier hs-type">Status</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">STM</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-297"></span><span id="retire"><span class="annot"><span class="annottext">retire :: Scheduler -&gt; Operation -&gt; Status -&gt; STM Bool
+</span><a href="LibTmux.Internal.Scheduler.html#retire"><span class="hs-identifier hs-var hs-var">retire</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Scheduler"><span class="hs-identifier hs-type">Scheduler</span></a></span><span> </span><span class="annot"><span class="annottext">Unique
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679145852"><span class="annot"><span class="annottext">TVar State
+</span><a href="#local-6989586621679145852"><span class="hs-identifier hs-var">variable</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">Operation</span></a></span><span> </span><span class="annot"><span class="annottext">Unique
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679145853"><span class="annot"><span class="annottext">Word64
+</span><a href="#local-6989586621679145853"><span class="hs-identifier hs-var">key</span></a></span></span><span> </span><span class="annot"><span class="annottext">Lane
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679145854"><span class="annot"><span class="annottext">TVar Status
+</span><a href="#local-6989586621679145854"><span class="hs-identifier hs-var">observed</span></a></span></span><span> </span><span class="annot"><span class="annottext">Maybe Group
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679145855"><span class="annot"><span class="annottext">Status
+</span><a href="#local-6989586621679145855"><span class="hs-identifier hs-var">current</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-298"></span><span>  </span><span id="local-6989586621679145856"><span class="annot"><a href="#local-6989586621679145856"><span class="hs-identifier hs-var">context</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">TVar State -&gt; STM State
+forall a. TVar a -&gt; STM a
+</span><span class="hs-identifier hs-var">readTVar</span></span><span> </span><span class="annot"><span class="annottext">TVar State
+</span><a href="#local-6989586621679145852"><span class="hs-identifier hs-var">variable</span></a></span><span>
+</span><span id="line-299"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">writeTVar</span></span><span> </span><span class="annot"><a href="#local-6989586621679145854"><span class="hs-identifier hs-type">observed</span></a></span><span> </span><span class="annot"><span class="hs-operator hs-type">$!</span></span><span> </span><span class="annot"><a href="#local-6989586621679145855"><span class="hs-identifier hs-type">current</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#retained"><span class="hs-identifier hs-var">retained</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">False</span></span><span class="hs-special">}</span><span>
+</span><span id="line-300"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">writeTVar</span></span><span> </span><span class="annot"><a href="#local-6989586621679145852"><span class="hs-identifier hs-type">variable</span></a></span><span> </span><span class="annot"><span class="hs-operator hs-type">$!</span></span><span> </span><span class="annot"><a href="#local-6989586621679145856"><span class="hs-identifier hs-type">context</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#operations"><span class="hs-identifier hs-var">operations</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Map.delete</span></span><span> </span><span class="annot"><a href="#local-6989586621679145853"><span class="hs-identifier hs-type">key</span></a></span><span> </span><span class="annot"><span class="hs-identifier">context</span></span><span class="hs-operator">.</span><span class="hs-identifier">operations</span><span class="hs-special">}</span><span>
+</span><span id="line-301"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">pure</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">True</span></span><span>
+</span><span id="line-302"></span></pre></body></html>

@@ -52,6 +52,76 @@ def _profile_inputs(fixture_name="haskell-observations-native"):
     ]
 
 
+def _creation_inputs():
+    inputs = _profile_inputs("haskell-creations-native")
+    fixture = ROOT / "test/fixtures/haskell-creations-native/src"
+    inputs.append({path.stem: path.read_text() for path in fixture.glob("*.html")})
+    return inputs
+
+
+class _CreationExportTest(unittest.TestCase):
+    def test_created_fields_keep_compiler_types_without_exporting_the_constructor(self):
+        result = EXPORT.extract_modules(*_creation_inputs())
+        symbols = {item["id"]: item for item in result["symbols"]}
+        created = "LibTmux.Creation#t:CreatedSession"
+        self.assertEqual(symbols[created]["modifiers"], ["opaque"])
+        self.assertNotIn("LibTmux.Creation#v:CreatedSession", symbols)
+        for name, value in [
+            ("session", "SessionRef"),
+            ("window", "WindowRef"),
+            ("pane", "PaneRef"),
+            ("windowIndex", "WindowIndex"),
+            ("serverPid", "Integer"),
+        ]:
+            field = symbols[f"LibTmux.Creation#v:CreatedSession.{name}"]
+            self.assertEqual(field["parent"], created)
+            self.assertEqual(field["signatures"][0]["raw"], f"{name} :: {value}")
+            self.assertEqual(field["definingModule"], "LibTmux.Internal.Graph")
+            self.assertEqual(field["source"]["file"], "internal/LibTmux/Internal/Graph.hs")
+            self.assertIsInstance(field["source"]["line"], int)
+        recovery = symbols["LibTmux.Server#t:CreationRecovery"]
+        self.assertEqual(recovery["modifiers"], ["opaque"])
+        self.assertEqual(recovery["source"]["file"], "internal/LibTmux/Internal/Creation.hs")
+        self.assertIn(
+            "IO CreatedSession", symbols["LibTmux.Server#v:createSession"]["signatures"][0]["raw"]
+        )
+        self.assertFalse(any("Internal" in item["id"] for item in result["symbols"]))
+
+    def test_read_only_fields_require_matching_native_type_evidence(self):
+        for change in ["missing", "type", "owner"]:
+            inputs = _creation_inputs()
+            source = inputs[5]
+            if change == "missing":
+                del source["LibTmux.Internal.Graph"]
+            else:
+                old = "CreatedSession -&gt; PaneRef\n"
+                self.assertEqual(source["LibTmux.Internal.Graph"].count(old), 1)
+                new = (
+                    "CreatedSession -&gt; WindowRef\n"
+                    if change == "type"
+                    else "PaneOccurrence -&gt; PaneRef\n"
+                )
+                source["LibTmux.Internal.Graph"] = source["LibTmux.Internal.Graph"].replace(
+                    old, new
+                )
+            with (
+                self.subTest(change=change),
+                self.assertRaisesRegex(ValueError, "source|field|annotation"),
+            ):
+                EXPORT.extract_modules(*inputs)
+
+    def test_shared_labels_reject_an_owner_without_that_public_field(self):
+        inputs = _creation_inputs()
+        key = "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Graph$session"
+        self.assertIn(inputs[1]["link_env"][key], ["LibTmux.Snapshot", "LibTmux.Creation"])
+        for owner in ["LibTmux.Snapshot", "LibTmux.Creation"]:
+            inputs[1]["link_env"][key] = owner
+            EXPORT.extract_modules(*inputs)
+        inputs[1]["link_env"][key] = "LibTmux.Value"
+        with self.assertRaisesRegex(ValueError, "Compiled public owner differs"):
+            EXPORT.extract_modules(*inputs)
+
+
 class _MutationExportTest(unittest.TestCase):
     def test_mutations_keep_io_options_and_recovery_sources(self):
         result = EXPORT.extract_modules(*_profile_inputs("haskell-mutations-native"))

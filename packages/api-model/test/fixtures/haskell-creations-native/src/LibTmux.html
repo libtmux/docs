@@ -1,0 +1,28 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-comment">-- | Capture tmux state in IO and process detached observations with ordinary</span><span>
+</span><span id="line-2"></span><span class="hs-comment">-- Haskell collections. Start with 'withServer' and 'capture'; navigation and</span><span>
+</span><span id="line-3"></span><span class="hs-comment">-- field access from &quot;LibTmux.Snapshot&quot; perform no external operations.</span><span>
+</span><span id="line-4"></span><span class="hs-comment">-- 'renameSession', 'renameWindow' and 'setPaneTitle' act on explicit references</span><span>
+</span><span id="line-5"></span><span class="hs-comment">-- in IO; detached observations change only when acquired again with 'capture'.</span><span>
+</span><span id="line-6"></span><span class="hs-comment">-- 'createSession' returns the actual initial references; &quot;LibTmux.Creation&quot;</span><span>
+</span><span id="line-7"></span><span class="hs-comment">-- describes its options and historical receipt. Capture again for observations.</span><span>
+</span><span id="line-8"></span><span class="hs-comment">--</span><span>
+</span><span id="line-9"></span><span class="hs-comment">-- &quot;LibTmux.Server&quot; documents ownership and failure recovery. Typed IDs,</span><span>
+</span><span id="line-10"></span><span class="hs-comment">-- checked dimensions and supported releases have their own pure modules.</span><span>
+</span><span id="line-11"></span><span class="hs-comment">-- &quot;LibTmux.Query&quot; provides qualified typed descriptions over the same</span><span>
+</span><span id="line-12"></span><span class="hs-comment">-- snapshots; query source names are separate from collection access here.</span><span>
+</span><span id="line-13"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="LibTmux.html"><span class="hs-identifier">LibTmux</span></a></span><span>
+</span><span id="line-14"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="LibTmux.Creation.html"><span class="hs-identifier">LibTmux.Creation</span></a></span><span>
+</span><span id="line-15"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="LibTmux.Server.html"><span class="hs-identifier">LibTmux.Server</span></a></span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="LibTmux.Snapshot.html"><span class="hs-identifier">LibTmux.Snapshot</span></a></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="LibTmux.Id.html"><span class="hs-identifier">LibTmux.Id</span></a></span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="LibTmux.Value.html"><span class="hs-identifier">LibTmux.Value</span></a></span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="LibTmux.Version.html"><span class="hs-identifier">LibTmux.Version</span></a></span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-21"></span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="LibTmux.Creation.html"><span class="hs-identifier">LibTmux.Creation</span></a></span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="LibTmux.Id.html"><span class="hs-identifier">LibTmux.Id</span></a></span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="LibTmux.Server.html"><span class="hs-identifier">LibTmux.Server</span></a></span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="LibTmux.Snapshot.html"><span class="hs-identifier">LibTmux.Snapshot</span></a></span><span>
+</span><span id="line-26"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="LibTmux.Value.html"><span class="hs-identifier">LibTmux.Value</span></a></span><span>
+</span><span id="line-27"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="LibTmux.Version.html"><span class="hs-identifier">LibTmux.Version</span></a></span><span>
+</span><span id="line-28"></span></pre></body></html>
