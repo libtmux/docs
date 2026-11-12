@@ -168,4 +168,11 @@ describe('the Core player\'s links', () => {
     expect(linked('go', '*tmux.Pane'), 'a field named Pane is no type').toEqual(['Pane'])
     expect(linked('java', 'Optional<List<Pane>>')).toEqual(['Pane'])
   })
+
+  it('reads a hyphen as part of a Lisp type\'s name and as an operator in the other languages', () => {
+    const linked = (port: string, type: string) => typeText(port, type).filter((part) => part.href).map((part) => part.text)
+    expect(linked('lisp', '(vector command-outcome)'), 'command-outcome is one class').toEqual(['command-outcome'])
+    expect(typeText('lisp', '(vector command-outcome)').map((part) => part.text).join('')).toBe('(vector command-outcome)')
+    expect(linked('rs', 'Fn(Pane)->Window'), 'the arrow is not part of Pane').toEqual(['Pane', 'Window'])
+  })
 })
