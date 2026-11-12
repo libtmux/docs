@@ -1,0 +1,574 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Exception and recovery policy for an owned Runtime scope.</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html"><span class="hs-identifier">LibTmux.Internal.Scope</span></a></span><span>
+</span><span id="line-3"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html#TmuxException"><span class="hs-identifier">TmuxException</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html#CleanupStatus"><span class="hs-identifier">CleanupStatus</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html#CleanupRecovery"><span class="hs-identifier">CleanupRecovery</span></a></span><span>
+</span><span id="line-4"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html#runScope"><span class="hs-identifier">runScope</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html#runServerScope"><span class="hs-identifier">runServerScope</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html#cleanupRecoveries"><span class="hs-identifier">cleanupRecoveries</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html#cleanupFailure"><span class="hs-identifier">cleanupFailure</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html#cleanupObservation"><span class="hs-identifier">cleanupObservation</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html#inspectCleanup"><span class="hs-identifier">inspectCleanup</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html#resumeCleanup"><span class="hs-identifier">resumeCleanup</span></a></span><span>
+</span><span id="line-5"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html#awaitCleanup"><span class="hs-identifier">awaitCleanup</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html#detachUnresolved"><span class="hs-identifier">detachUnresolved</span></a></span><span>
+</span><span id="line-6"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Concurrent.STM</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">STM</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">atomically</span></span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Exception</span></span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Exception.Annotation</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">ExceptionAnnotation</span></span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Exception.Context</span></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Context</span></span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.ByteString</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">ByteString</span></span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Maybe</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">catMaybes</span></span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="LibTmux.Internal.Process.html"><span class="hs-identifier">LibTmux.Internal.Process</span></a></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">P</span></span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="LibTmux.Internal.Runtime.html"><span class="hs-identifier">LibTmux.Internal.Runtime</span></a></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">R</span></span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html"><span class="hs-identifier">LibTmux.Internal.Scheduler</span></a></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">S</span></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="LibTmux.Version.html"><span class="hs-identifier">LibTmux.Version</span></a></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Version</span></span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="hs-comment">-- | Library operational failures. Context-preserving catching retains any</span><span>
+</span><span id="line-21"></span><span class="hs-comment">-- cleanup owners; the original application or cancellation exception keeps</span><span>
+</span><span id="line-22"></span><span class="hs-comment">-- its class when the callback itself failed.</span><span>
+</span><span id="line-23"></span><span class="hs-keyword">data</span><span> </span><span id="TmuxException"><span class="annot"><a href="LibTmux.Internal.Scope.html#TmuxException"><span class="hs-identifier hs-var">TmuxException</span></a></span></span><span>
+</span><span id="line-24"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="ServerClosed"><span class="annot"><a href="LibTmux.Internal.Scope.html#ServerClosed"><span class="hs-identifier hs-var">ServerClosed</span></a></span></span><span> </span><span class="annot"><span class="hs-comment">-- ^ Admission through the retained Server handle has closed.</span></span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="RuntimeClosed"><span class="annot"><a href="LibTmux.Internal.Scope.html#RuntimeClosed"><span class="hs-identifier hs-var">RuntimeClosed</span></a></span></span><span> </span><span class="annot"><span class="hs-comment">-- ^ Admission through the retained Runtime has closed.</span></span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="InvalidConfiguration"><span class="annot"><a href="LibTmux.Internal.Scope.html#InvalidConfiguration"><span class="hs-identifier hs-var">InvalidConfiguration</span></a></span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><span class="hs-comment">-- ^ Configuration failed before acquisition.</span></span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="InvalidObservation"><span class="annot"><a href="LibTmux.Internal.Scope.html#InvalidObservation"><span class="hs-identifier hs-var">InvalidObservation</span></a></span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><span class="hs-comment">-- ^ Acquired metadata failed final validation.</span></span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="InvalidTarget"><span class="annot"><a href="LibTmux.Internal.Scope.html#InvalidTarget"><span class="hs-identifier hs-var">InvalidTarget</span></a></span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><span class="hs-comment">-- ^ Target belongs to a different connection or an offline fixture.</span></span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="UnsupportedTmuxVersion"><span class="annot"><a href="LibTmux.Internal.Scope.html#UnsupportedTmuxVersion"><span class="hs-identifier hs-var">UnsupportedTmuxVersion</span></a></span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="LibTmux.Version.html#VersionError"><span class="hs-identifier hs-type">Version.VersionError</span></a></span><span> </span><span class="annot"><span class="hs-comment">-- ^ Daemon release failed supported-range admission.</span></span><span>
+</span><span id="line-30"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="InvalidMutationArgument"><span class="annot"><a href="LibTmux.Internal.Scope.html#InvalidMutationArgument"><span class="hs-identifier hs-var">InvalidMutationArgument</span></a></span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><span class="hs-comment">-- ^ Invalid command operand; no command was admitted.</span></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="MutationRejected"><span class="annot"><a href="LibTmux.Internal.Scope.html#MutationRejected"><span class="hs-identifier hs-var">MutationRejected</span></a></span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">ByteString</span></span><span> </span><span class="annot"><span class="hs-comment">-- ^ tmux rejected the primary command; bounded diagnostic bytes.</span></span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="MutationAppliedWithErrors"><span class="annot"><a href="LibTmux.Internal.Scope.html#MutationAppliedWithErrors"><span class="hs-identifier hs-var">MutationAppliedWithErrors</span></a></span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">ByteString</span></span><span> </span><span class="annot"><span class="hs-comment">-- ^ The primary command ran, then a command hook failed.</span></span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="MutationTimedOut"><span class="annot"><a href="LibTmux.Internal.Scope.html#MutationTimedOut"><span class="hs-identifier hs-var">MutationTimedOut</span></a></span></span><span> </span><span class="annot"><span class="hs-comment">-- ^ The deadline elapsed; a correlated recovery may retain an unknown outcome.</span></span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="OperationFailed"><span class="annot"><a href="LibTmux.Internal.Scope.html#OperationFailed"><span class="hs-identifier hs-var">OperationFailed</span></a></span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">SomeException</span></span><span> </span><span class="annot"><span class="hs-comment">-- ^ Known backend failure with its original cause.</span></span><span>
+</span><span id="line-35"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="CleanupFailed"><span class="annot"><a href="LibTmux.Internal.Scope.html#CleanupFailed"><span class="hs-identifier hs-var">CleanupFailed</span></a></span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="LibTmux.Internal.Scope.html#CleanupStatus"><span class="hs-identifier hs-type">CleanupStatus</span></a></span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">SomeException</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="hs-comment">-- ^ Cleanup remained incomplete or its worker could not start.</span></span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679160753"><span id="local-6989586621679160781"><span id="local-6989586621679160785"><span class="annot"><span class="annottext">Int -&gt; TmuxException -&gt; ShowS
+[TmuxException] -&gt; ShowS
+TmuxException -&gt; String
+(Int -&gt; TmuxException -&gt; ShowS)
+-&gt; (TmuxException -&gt; String)
+-&gt; ([TmuxException] -&gt; ShowS)
+-&gt; Show TmuxException
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; TmuxException -&gt; ShowS
+showsPrec :: Int -&gt; TmuxException -&gt; ShowS
+$cshow :: TmuxException -&gt; String
+show :: TmuxException -&gt; String
+$cshowList :: [TmuxException] -&gt; ShowS
+showList :: [TmuxException] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-37"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679160794"><span id="local-6989586621679160798"><span id="local-6989586621679160801"><span id="local-6989586621679160804"><span class="annot"><span class="hs-identifier hs-type">Exception</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html#TmuxException"><span class="hs-identifier hs-type">TmuxException</span></a></span></span></span></span></span><span>
+</span><span id="line-38"></span><span>
+</span><span id="line-39"></span><span class="hs-comment">-- | Local observations of the selected physical and logical responsibility.</span><span>
+</span><span id="line-40"></span><span class="hs-comment">-- Each inspection returns new metadata; it performs no tmux operation.</span><span>
+</span><span id="line-41"></span><span class="hs-keyword">data</span><span> </span><span id="CleanupStatus"><span class="annot"><a href="LibTmux.Internal.Scope.html#CleanupStatus"><span class="hs-identifier hs-var">CleanupStatus</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="CleanupStatus"><span class="annot"><a href="LibTmux.Internal.Scope.html#CleanupStatus"><span class="hs-identifier hs-var">CleanupStatus</span></a></span></span><span>
+</span><span id="line-42"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="complete"><span class="annot"><span class="annottext">CleanupStatus -&gt; Bool
+</span><a href="LibTmux.Internal.Scope.html#complete"><span class="hs-identifier hs-var hs-var">complete</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="annot"><span class="hs-comment">-- ^ All physical owners, operation workers and logical responsibility have retired.</span></span><span>
+</span><span id="line-43"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="pendingHandles"><span class="annot"><span class="annottext">CleanupStatus -&gt; Int
+</span><a href="LibTmux.Internal.Scope.html#pendingHandles"><span class="hs-identifier hs-var hs-var">pendingHandles</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="annot"><span class="hs-comment">-- ^ Server handles still awaiting physical retirement.</span></span><span>
+</span><span id="line-44"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="pendingReads"><span class="annot"><span class="annottext">CleanupStatus -&gt; Int
+</span><a href="LibTmux.Internal.Scope.html#pendingReads"><span class="hs-identifier hs-var hs-var">pendingReads</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="annot"><span class="hs-comment">-- ^ Decoder or recovery workers retaining operation envelopes.</span></span><span>
+</span><span id="line-45"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="unresolved"><span class="annot"><span class="annottext">CleanupStatus -&gt; [(Operation, Status)]
+</span><a href="LibTmux.Internal.Scope.html#unresolved"><span class="hs-identifier hs-var hs-var">unresolved</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">S.Operation</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Status"><span class="hs-identifier hs-type">S.Status</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span> </span><span class="annot"><span class="hs-comment">-- ^ Retained logical operations with their observed status.</span></span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="failures"><span class="annot"><span class="annottext">CleanupStatus -&gt; [SomeException]
+</span><a href="LibTmux.Internal.Scope.html#failures"><span class="hs-identifier hs-var hs-var">failures</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">SomeException</span></span><span class="hs-special">]</span><span> </span><span class="annot"><span class="hs-comment">-- ^ Currently observed pin, worker or cleanup-request failures.</span></span><span>
+</span><span id="line-47"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-48"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679160814"><span id="local-6989586621679160827"><span id="local-6989586621679160830"><span class="annot"><span class="annottext">Int -&gt; CleanupStatus -&gt; ShowS
+[CleanupStatus] -&gt; ShowS
+CleanupStatus -&gt; String
+(Int -&gt; CleanupStatus -&gt; ShowS)
+-&gt; (CleanupStatus -&gt; String)
+-&gt; ([CleanupStatus] -&gt; ShowS)
+-&gt; Show CleanupStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; CleanupStatus -&gt; ShowS
+showsPrec :: Int -&gt; CleanupStatus -&gt; ShowS
+$cshow :: CleanupStatus -&gt; String
+show :: CleanupStatus -&gt; String
+$cshowList :: [CleanupStatus] -&gt; ShowS
+showList :: [CleanupStatus] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-49"></span><span>
+</span><span id="line-50"></span><span class="hs-keyword">data</span><span> </span><span id="Target"><span class="annot"><a href="LibTmux.Internal.Scope.html#Target"><span class="hs-identifier hs-var">Target</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="RuntimeTarget"><span class="annot"><a href="LibTmux.Internal.Scope.html#RuntimeTarget"><span class="hs-identifier hs-var">RuntimeTarget</span></a></span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="LibTmux.Internal.Runtime.html#Runtime"><span class="hs-identifier hs-type">R.Runtime</span></a></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="ServerTarget"><span class="annot"><a href="LibTmux.Internal.Scope.html#ServerTarget"><span class="hs-identifier hs-var">ServerTarget</span></a></span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="LibTmux.Internal.Runtime.html#Runtime"><span class="hs-identifier hs-type">R.Runtime</span></a></span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="LibTmux.Internal.Runtime.html#ServerOwner"><span class="hs-identifier hs-type">R.ServerOwner</span></a></span><span>
+</span><span id="line-51"></span><span>
+</span><span id="line-52"></span><span class="hs-comment">-- | Reachable responsibility after an incomplete or failed scope release.</span><span>
+</span><span id="line-53"></span><span class="hs-comment">-- Retaining this value keeps its selected cleanup target and Runtime reachable.</span><span>
+</span><span id="line-54"></span><span class="hs-keyword">data</span><span> </span><span id="CleanupRecovery"><span class="annot"><a href="LibTmux.Internal.Scope.html#CleanupRecovery"><span class="hs-identifier hs-var">CleanupRecovery</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="CleanupRecovery"><span class="annot"><a href="LibTmux.Internal.Scope.html#CleanupRecovery"><span class="hs-identifier hs-var">CleanupRecovery</span></a></span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="LibTmux.Internal.Scope.html#Target"><span class="hs-identifier hs-type">Target</span></a></span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="LibTmux.Internal.Scope.html#CleanupStatus"><span class="hs-identifier hs-type">CleanupStatus</span></a></span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">SomeException</span></span><span class="hs-special">)</span><span>
+</span><span id="line-55"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679160841"><span id="local-6989586621679160846"><span class="annot"><span class="hs-identifier hs-type">Show</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html#CleanupRecovery"><span class="hs-identifier hs-type">CleanupRecovery</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-56"></span><span>  </span><span id="local-6989586621679160848"><span class="annot"><span class="annottext">show :: CleanupRecovery -&gt; String
+</span><a href="#local-6989586621679160848"><span class="hs-identifier hs-var hs-var hs-var">show</span></a></span></span><span> </span><span class="annot"><span class="annottext">CleanupRecovery
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;CleanupRecovery&quot;</span></span><span>
+</span><span id="line-57"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679160853"><span class="annot"><span class="hs-identifier hs-type">ExceptionAnnotation</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html#CleanupRecovery"><span class="hs-identifier hs-type">CleanupRecovery</span></a></span></span><span>
+</span><span id="line-58"></span><span>
+</span><span id="line-59"></span><span class="hs-comment">-- | Protect one registered owner, including its pin acquisition. Keep the</span><span>
+</span><span id="line-60"></span><span class="hs-comment">-- registration handoff masked and restore the action with the outer restore.</span><span>
+</span><span id="line-61"></span><span id="local-6989586621679160647"><span class="annot"><a href="LibTmux.Internal.Scope.html#runServerScope"><span class="hs-identifier hs-type">runServerScope</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Runtime.html#Runtime"><span class="hs-identifier hs-type">R.Runtime</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Runtime.html#ServerOwner"><span class="hs-identifier hs-type">R.ServerOwner</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621679160647"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621679160647"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-62"></span><span id="runServerScope"><span class="annot"><span class="annottext">runServerScope :: forall a. Runtime -&gt; ServerOwner -&gt; IO a -&gt; IO a
+</span><a href="LibTmux.Internal.Scope.html#runServerScope"><span class="hs-identifier hs-var hs-var">runServerScope</span></a></span></span><span> </span><span id="local-6989586621679160857"><span class="annot"><span class="annottext">Runtime
+</span><a href="#local-6989586621679160857"><span class="hs-identifier hs-var">runtime</span></a></span></span><span> </span><span id="local-6989586621679160858"><span class="annot"><span class="annottext">ServerOwner
+</span><a href="#local-6989586621679160858"><span class="hs-identifier hs-var">owner</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Target -&gt; IO a -&gt; IO a
+forall a. Target -&gt; IO a -&gt; IO a
+</span><a href="LibTmux.Internal.Scope.html#runTarget"><span class="hs-identifier hs-var">runTarget</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Runtime -&gt; ServerOwner -&gt; Target
+</span><a href="LibTmux.Internal.Scope.html#ServerTarget"><span class="hs-identifier hs-var">ServerTarget</span></a></span><span> </span><span class="annot"><span class="annottext">Runtime
+</span><a href="#local-6989586621679160857"><span class="hs-identifier hs-var">runtime</span></a></span><span> </span><span class="annot"><span class="annottext">ServerOwner
+</span><a href="#local-6989586621679160858"><span class="hs-identifier hs-var">owner</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-63"></span><span>
+</span><span id="line-64"></span><span id="local-6989586621679160651"><span class="annot"><a href="LibTmux.Internal.Scope.html#runScope"><span class="hs-identifier hs-type">runScope</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Runtime.html#Runtime"><span class="hs-identifier hs-type">R.Runtime</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621679160651"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621679160651"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-65"></span><span id="runScope"><span class="annot"><span class="annottext">runScope :: forall a. Runtime -&gt; IO a -&gt; IO a
+</span><a href="LibTmux.Internal.Scope.html#runScope"><span class="hs-identifier hs-var hs-var">runScope</span></a></span></span><span> </span><span id="local-6989586621679160860"><span class="annot"><span class="annottext">Runtime
+</span><a href="#local-6989586621679160860"><span class="hs-identifier hs-var">runtime</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Target -&gt; IO a -&gt; IO a
+forall a. Target -&gt; IO a -&gt; IO a
+</span><a href="LibTmux.Internal.Scope.html#runTarget"><span class="hs-identifier hs-var">runTarget</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Runtime -&gt; Target
+</span><a href="LibTmux.Internal.Scope.html#RuntimeTarget"><span class="hs-identifier hs-var">RuntimeTarget</span></a></span><span> </span><span class="annot"><span class="annottext">Runtime
+</span><a href="#local-6989586621679160860"><span class="hs-identifier hs-var">runtime</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-66"></span><span>
+</span><span id="line-67"></span><span id="local-6989586621679160650"><span class="annot"><a href="LibTmux.Internal.Scope.html#runTarget"><span class="hs-identifier hs-type">runTarget</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html#Target"><span class="hs-identifier hs-type">Target</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621679160650"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621679160650"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-68"></span><span id="runTarget"><span class="annot"><span class="annottext">runTarget :: forall a. Target -&gt; IO a -&gt; IO a
+</span><a href="LibTmux.Internal.Scope.html#runTarget"><span class="hs-identifier hs-var hs-var">runTarget</span></a></span></span><span> </span><span id="local-6989586621679160881"><span class="annot"><span class="annottext">Target
+</span><a href="#local-6989586621679160881"><span class="hs-identifier hs-var">target</span></a></span></span><span> </span><span id="local-6989586621679160882"><span class="annot"><span class="annottext">IO a
+</span><a href="#local-6989586621679160882"><span class="hs-identifier hs-var">action</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">((forall a. IO a -&gt; IO a) -&gt; IO a) -&gt; IO a
+forall b. ((forall a. IO a -&gt; IO a) -&gt; IO b) -&gt; IO b
+</span><span class="hs-identifier hs-var">mask</span></span><span> </span><span class="annot"><span class="annottext">(((forall a. IO a -&gt; IO a) -&gt; IO a) -&gt; IO a)
+-&gt; ((forall a. IO a -&gt; IO a) -&gt; IO a) -&gt; IO a
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679160884"><span class="annot"><span class="annottext">forall a. IO a -&gt; IO a
+</span><a href="#local-6989586621679160884"><span class="hs-identifier hs-var">restore</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-69"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Target
+</span><a href="#local-6989586621679160881"><span class="hs-identifier hs-var">target</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-70"></span><span>    </span><span class="annot"><a href="LibTmux.Internal.Scope.html#RuntimeTarget"><span class="hs-identifier hs-type">RuntimeTarget</span></a></span><span> </span><span class="annot"><span class="annottext">Runtime
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">() -&gt; IO ()
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-71"></span><span>    </span><span class="annot"><a href="LibTmux.Internal.Scope.html#ServerTarget"><span class="hs-identifier hs-type">ServerTarget</span></a></span><span> </span><span id="local-6989586621679160885"><span class="annot"><span class="annottext">Runtime
+</span><a href="#local-6989586621679160885"><span class="hs-identifier hs-var">runtime</span></a></span></span><span> </span><span id="local-6989586621679160886"><span class="annot"><span class="annottext">ServerOwner
+</span><a href="#local-6989586621679160886"><span class="hs-identifier hs-var">owner</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-72"></span><span>      </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">STM Report -&gt; IO Report
+forall a. STM a -&gt; IO a
+</span><span class="hs-identifier hs-var">atomically</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Runtime -&gt; ServerOwner -&gt; STM Report
+</span><a href="LibTmux.Internal.Runtime.html#inspectServerOwner"><span class="hs-identifier hs-var">R.inspectServerOwner</span></a></span><span> </span><span class="annot"><span class="annottext">Runtime
+</span><a href="#local-6989586621679160885"><span class="hs-identifier hs-var">runtime</span></a></span><span> </span><span class="annot"><span class="annottext">ServerOwner
+</span><a href="#local-6989586621679160886"><span class="hs-identifier hs-var">owner</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-73"></span><span>      </span><span class="annot"><span class="hs-identifier hs-type">pure</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-74"></span><span>  </span><span id="local-6989586621679160888"><span class="annot"><a href="#local-6989586621679160888"><span class="hs-identifier hs-var">body</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">forall e a.
+Exception e =&gt;
+IO a -&gt; IO (Either (ExceptionWithContext e) a)
+</span><span class="hs-identifier hs-var">tryWithContext</span></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-identifier hs-type">SomeException</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">IO a -&gt; IO a
+forall a. IO a -&gt; IO a
+</span><a href="#local-6989586621679160884"><span class="hs-identifier hs-var">restore</span></a></span><span> </span><span class="annot"><span class="annottext">IO a
+</span><a href="#local-6989586621679160882"><span class="hs-identifier hs-var">action</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-75"></span><span>  </span><span id="local-6989586621679160890"><span class="annot"><a href="#local-6989586621679160890"><span class="hs-identifier hs-var">cleanup</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="hs-identifier hs-type">tryWithContext</span></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-identifier hs-type">SomeException</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scope.html#shutdownTarget"><span class="hs-identifier hs-type">shutdownTarget</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679160881"><span class="hs-identifier hs-type">target</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-76"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="#local-6989586621679160890"><span class="hs-identifier hs-type">cleanup</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-77"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621679160892"><span class="annot"><span class="annottext">Report
+</span><a href="#local-6989586621679160892"><span class="hs-identifier hs-var">report</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-78"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679160893"><span class="annot"><span class="annottext">status :: CleanupStatus
+</span><a href="#local-6989586621679160893"><span class="hs-identifier hs-var hs-var">status</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Report -&gt; CleanupStatus
+</span><a href="LibTmux.Internal.Scope.html#observed"><span class="hs-identifier hs-var">observed</span></a></span><span> </span><span class="annot"><span class="annottext">Report
+</span><a href="#local-6989586621679160892"><span class="hs-identifier hs-var">report</span></a></span><span>
+</span><span id="line-79"></span><span>      </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">CleanupStatus
+</span><a href="#local-6989586621679160893"><span class="hs-identifier hs-var">status</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">complete</span><span> </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">(ExceptionWithContext SomeException -&gt; IO a)
+-&gt; (a -&gt; IO a)
+-&gt; Either (ExceptionWithContext SomeException) a
+-&gt; IO a
+forall a c b. (a -&gt; c) -&gt; (b -&gt; c) -&gt; Either a b -&gt; c
+</span><span class="hs-identifier hs-var">either</span></span><span> </span><span class="annot"><span class="annottext">ExceptionWithContext SomeException -&gt; IO a
+forall e a. Exception e =&gt; ExceptionWithContext e -&gt; IO a
+</span><span class="hs-identifier hs-var">rethrowIO</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; IO a
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">Either (ExceptionWithContext SomeException) a
+</span><a href="#local-6989586621679160888"><span class="hs-identifier hs-var">body</span></a></span><span> </span><span class="hs-keyword">else</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-80"></span><span>        </span><span class="hs-keyword">let</span><span> </span><span class="hs-glyph">!</span><span id="local-6989586621679160897"><span class="annot"><span class="annottext">recovery :: CleanupRecovery
+</span><a href="#local-6989586621679160897"><span class="hs-identifier hs-var hs-var">recovery</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Target -&gt; CleanupStatus -&gt; Maybe SomeException -&gt; CleanupRecovery
+</span><a href="LibTmux.Internal.Scope.html#CleanupRecovery"><span class="hs-identifier hs-var">CleanupRecovery</span></a></span><span> </span><span class="annot"><span class="annottext">Target
+</span><a href="#local-6989586621679160881"><span class="hs-identifier hs-var">target</span></a></span><span> </span><span class="annot"><span class="annottext">CleanupStatus
+</span><a href="#local-6989586621679160893"><span class="hs-identifier hs-var">status</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe SomeException
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-81"></span><span>        </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Either (ExceptionWithContext SomeException) a
+</span><a href="#local-6989586621679160888"><span class="hs-identifier hs-var">body</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-82"></span><span>          </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679160898"><span class="annot"><span class="annottext">ExceptionWithContext SomeException
+</span><a href="#local-6989586621679160898"><span class="hs-identifier hs-var">primary</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ExceptionWithContext SomeException -&gt; IO a
+forall e a. Exception e =&gt; ExceptionWithContext e -&gt; IO a
+</span><span class="hs-identifier hs-var">rethrowIO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">CleanupRecovery
+-&gt; ExceptionWithContext SomeException
+-&gt; ExceptionWithContext SomeException
+</span><a href="LibTmux.Internal.Scope.html#annotated"><span class="hs-identifier hs-var">annotated</span></a></span><span> </span><span class="annot"><span class="annottext">CleanupRecovery
+</span><a href="#local-6989586621679160897"><span class="hs-identifier hs-var">recovery</span></a></span><span> </span><span class="annot"><span class="annottext">ExceptionWithContext SomeException
+</span><a href="#local-6989586621679160898"><span class="hs-identifier hs-var">primary</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-83"></span><span>          </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="annot"><span class="annottext">a
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ExceptionWithContext SomeException -&gt; IO a
+forall e a. Exception e =&gt; ExceptionWithContext e -&gt; IO a
+</span><span class="hs-identifier hs-var">rethrowIO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">CleanupRecovery
+-&gt; ExceptionWithContext SomeException
+-&gt; ExceptionWithContext SomeException
+</span><a href="LibTmux.Internal.Scope.html#annotated"><span class="hs-identifier hs-var">annotated</span></a></span><span> </span><span class="annot"><span class="annottext">CleanupRecovery
+</span><a href="#local-6989586621679160897"><span class="hs-identifier hs-var">recovery</span></a></span><span>
+</span><span id="line-84"></span><span>            </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ExceptionContext
+-&gt; SomeException -&gt; ExceptionWithContext SomeException
+forall a. ExceptionContext -&gt; a -&gt; ExceptionWithContext a
+</span><span class="hs-identifier hs-var">ExceptionWithContext</span></span><span> </span><span class="annot"><span class="annottext">ExceptionContext
+forall a. Monoid a =&gt; a
+</span><span class="hs-identifier hs-var">mempty</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TmuxException -&gt; SomeException
+forall e. Exception e =&gt; e -&gt; SomeException
+</span><span class="hs-identifier hs-var">toException</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">CleanupStatus -&gt; Maybe SomeException -&gt; TmuxException
+</span><a href="LibTmux.Internal.Scope.html#CleanupFailed"><span class="hs-identifier hs-var">CleanupFailed</span></a></span><span> </span><span class="annot"><span class="annottext">CleanupStatus
+</span><a href="#local-6989586621679160893"><span class="hs-identifier hs-var">status</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe SomeException
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-85"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679160902"><span class="annot"><span class="annottext">ExceptionWithContext SomeException
+</span><a href="#local-6989586621679160902"><span class="hs-identifier hs-var">problem</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-86"></span><span>      </span><span id="local-6989586621679160903"><span class="annot"><a href="#local-6989586621679160903"><span class="hs-identifier hs-var">status</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Report -&gt; CleanupStatus
+</span><a href="LibTmux.Internal.Scope.html#observed"><span class="hs-identifier hs-var">observed</span></a></span><span> </span><span class="annot"><span class="annottext">(Report -&gt; CleanupStatus) -&gt; IO Report -&gt; IO CleanupStatus
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">STM Report -&gt; IO Report
+forall a. STM a -&gt; IO a
+</span><span class="hs-identifier hs-var">atomically</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Target -&gt; STM Report
+</span><a href="LibTmux.Internal.Scope.html#inspectTarget"><span class="hs-identifier hs-var">inspectTarget</span></a></span><span> </span><span class="annot"><span class="annottext">Target
+</span><a href="#local-6989586621679160881"><span class="hs-identifier hs-var">target</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-87"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ExceptionWithContext</span></span><span> </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679160906"><span class="annot"><a href="#local-6989586621679160906"><span class="hs-identifier hs-var">cause</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="#local-6989586621679160902"><span class="hs-identifier hs-type">problem</span></a></span><span>
+</span><span id="line-88"></span><span>          </span><span class="hs-glyph">!</span><span id="local-6989586621679160907"><span class="annot"><a href="#local-6989586621679160907"><span class="hs-identifier hs-var hs-var">recovery</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Target -&gt; CleanupStatus -&gt; Maybe SomeException -&gt; CleanupRecovery
+</span><a href="LibTmux.Internal.Scope.html#CleanupRecovery"><span class="hs-identifier hs-var">CleanupRecovery</span></a></span><span> </span><span class="annot"><span class="annottext">Target
+</span><a href="#local-6989586621679160881"><span class="hs-identifier hs-var">target</span></a></span><span> </span><span class="annot"><span class="annottext">CleanupStatus
+</span><a href="#local-6989586621679160903"><span class="hs-identifier hs-var">status</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SomeException -&gt; Maybe SomeException
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">SomeException
+</span><a href="#local-6989586621679160906"><span class="hs-identifier hs-var">cause</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-89"></span><span>      </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="#local-6989586621679160888"><span class="hs-identifier hs-type">body</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-90"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621679160908"><span class="annot"><span class="annottext">ExceptionWithContext SomeException
+</span><a href="#local-6989586621679160908"><span class="hs-identifier hs-var">primary</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ExceptionWithContext SomeException -&gt; IO a
+forall e a. Exception e =&gt; ExceptionWithContext e -&gt; IO a
+</span><span class="hs-identifier hs-var">rethrowIO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">CleanupRecovery
+-&gt; ExceptionWithContext SomeException
+-&gt; ExceptionWithContext SomeException
+</span><a href="LibTmux.Internal.Scope.html#annotated"><span class="hs-identifier hs-var">annotated</span></a></span><span> </span><span class="annot"><span class="annottext">CleanupRecovery
+</span><a href="#local-6989586621679160907"><span class="hs-identifier hs-var">recovery</span></a></span><span> </span><span class="annot"><span class="annottext">ExceptionWithContext SomeException
+</span><a href="#local-6989586621679160908"><span class="hs-identifier hs-var">primary</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-91"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="annot"><span class="annottext">a
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">CleanupRecovery -&gt; ExceptionWithContext SomeException -&gt; IO a
+forall a.
+CleanupRecovery -&gt; ExceptionWithContext SomeException -&gt; IO a
+</span><a href="LibTmux.Internal.Scope.html#throwCleanup"><span class="hs-identifier hs-var">throwCleanup</span></a></span><span> </span><span class="annot"><span class="annottext">CleanupRecovery
+</span><a href="#local-6989586621679160907"><span class="hs-identifier hs-var">recovery</span></a></span><span> </span><span class="annot"><span class="annottext">ExceptionWithContext SomeException
+</span><a href="#local-6989586621679160902"><span class="hs-identifier hs-var">problem</span></a></span><span>
+</span><span id="line-92"></span><span>
+</span><span id="line-93"></span><span class="annot"><a href="LibTmux.Internal.Scope.html#cleanupRecoveries"><span class="hs-identifier hs-type">cleanupRecoveries</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">SomeException</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="LibTmux.Internal.Scope.html#CleanupRecovery"><span class="hs-identifier hs-type">CleanupRecovery</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-94"></span><span id="cleanupRecoveries"><span class="annot"><span class="annottext">cleanupRecoveries :: SomeException -&gt; [CleanupRecovery]
+</span><a href="LibTmux.Internal.Scope.html#cleanupRecoveries"><span class="hs-identifier hs-var hs-var">cleanupRecoveries</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ExceptionContext -&gt; [CleanupRecovery]
+forall a. ExceptionAnnotation a =&gt; ExceptionContext -&gt; [a]
+</span><span class="hs-identifier hs-var">Context.getExceptionAnnotations</span></span><span> </span><span class="annot"><span class="annottext">(ExceptionContext -&gt; [CleanupRecovery])
+-&gt; (SomeException -&gt; ExceptionContext)
+-&gt; SomeException
+-&gt; [CleanupRecovery]
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">SomeException -&gt; ExceptionContext
+</span><span class="hs-identifier hs-var">someExceptionContext</span></span><span>
+</span><span id="line-95"></span><span>
+</span><span id="line-96"></span><span class="hs-comment">-- | Exception that interrupted the original cleanup attempt, when there was</span><span>
+</span><span id="line-97"></span><span class="hs-comment">-- one. Pending ownership alone need not have an associated exception.</span><span>
+</span><span id="line-98"></span><span class="annot"><a href="LibTmux.Internal.Scope.html#cleanupFailure"><span class="hs-identifier hs-type">cleanupFailure</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html#CleanupRecovery"><span class="hs-identifier hs-type">CleanupRecovery</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">SomeException</span></span><span>
+</span><span id="line-99"></span><span id="cleanupFailure"><span class="annot"><span class="annottext">cleanupFailure :: CleanupRecovery -&gt; Maybe SomeException
+</span><a href="LibTmux.Internal.Scope.html#cleanupFailure"><span class="hs-identifier hs-var hs-var">cleanupFailure</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scope.html#CleanupRecovery"><span class="hs-identifier hs-type">CleanupRecovery</span></a></span><span> </span><span class="annot"><span class="annottext">Target
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">CleanupStatus
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679160913"><span class="annot"><span class="annottext">Maybe SomeException
+</span><a href="#local-6989586621679160913"><span class="hs-identifier hs-var">problem</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe SomeException
+</span><a href="#local-6989586621679160913"><span class="hs-identifier hs-var">problem</span></a></span><span>
+</span><span id="line-100"></span><span>
+</span><span id="line-101"></span><span class="annot"><span class="hs-comment">-- | The cleanup metadata recorded when this recovery owner was attached.</span></span><span>
+</span><span id="line-102"></span><span class="annot"><a href="LibTmux.Internal.Scope.html#cleanupObservation"><span class="hs-identifier hs-type">cleanupObservation</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html#CleanupRecovery"><span class="hs-identifier hs-type">CleanupRecovery</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html#CleanupStatus"><span class="hs-identifier hs-type">CleanupStatus</span></a></span><span>
+</span><span id="line-103"></span><span id="cleanupObservation"><span class="annot"><span class="annottext">cleanupObservation :: CleanupRecovery -&gt; CleanupStatus
+</span><a href="LibTmux.Internal.Scope.html#cleanupObservation"><span class="hs-identifier hs-var hs-var">cleanupObservation</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scope.html#CleanupRecovery"><span class="hs-identifier hs-type">CleanupRecovery</span></a></span><span> </span><span class="annot"><span class="annottext">Target
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679160914"><span class="annot"><span class="annottext">CleanupStatus
+</span><a href="#local-6989586621679160914"><span class="hs-identifier hs-var">status</span></a></span></span><span> </span><span class="annot"><span class="annottext">Maybe SomeException
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CleanupStatus
+</span><a href="#local-6989586621679160914"><span class="hs-identifier hs-var">status</span></a></span><span>
+</span><span id="line-104"></span><span>
+</span><span id="line-105"></span><span class="annot"><span class="hs-comment">-- | Inspect current owned cleanup and logical uncertainty without tmux IO.</span></span><span>
+</span><span id="line-106"></span><span class="annot"><a href="LibTmux.Internal.Scope.html#inspectCleanup"><span class="hs-identifier hs-type">inspectCleanup</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html#CleanupRecovery"><span class="hs-identifier hs-type">CleanupRecovery</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html#CleanupStatus"><span class="hs-identifier hs-type">CleanupStatus</span></a></span><span>
+</span><span id="line-107"></span><span id="inspectCleanup"><span class="annot"><span class="annottext">inspectCleanup :: CleanupRecovery -&gt; IO CleanupStatus
+</span><a href="LibTmux.Internal.Scope.html#inspectCleanup"><span class="hs-identifier hs-var hs-var">inspectCleanup</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scope.html#CleanupRecovery"><span class="hs-identifier hs-type">CleanupRecovery</span></a></span><span> </span><span id="local-6989586621679160915"><span class="annot"><span class="annottext">Target
+</span><a href="#local-6989586621679160915"><span class="hs-identifier hs-var">target</span></a></span></span><span> </span><span class="annot"><span class="annottext">CleanupStatus
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Maybe SomeException
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Report -&gt; CleanupStatus
+</span><a href="LibTmux.Internal.Scope.html#observed"><span class="hs-identifier hs-var">observed</span></a></span><span> </span><span class="annot"><span class="annottext">(Report -&gt; CleanupStatus) -&gt; IO Report -&gt; IO CleanupStatus
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">STM Report -&gt; IO Report
+forall a. STM a -&gt; IO a
+</span><span class="hs-identifier hs-var">atomically</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Target -&gt; STM Report
+</span><a href="LibTmux.Internal.Scope.html#inspectTarget"><span class="hs-identifier hs-var">inspectTarget</span></a></span><span> </span><span class="annot"><span class="annottext">Target
+</span><a href="#local-6989586621679160915"><span class="hs-identifier hs-var">target</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-108"></span><span>
+</span><span id="line-109"></span><span class="hs-comment">-- | Retry bounded owned cleanup. An incomplete result retains this owner;</span><span>
+</span><span id="line-110"></span><span class="hs-comment">-- the operation does not retry a tmux command or release logical uncertainty.</span><span>
+</span><span id="line-111"></span><span class="annot"><a href="LibTmux.Internal.Scope.html#resumeCleanup"><span class="hs-identifier hs-type">resumeCleanup</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html#CleanupRecovery"><span class="hs-identifier hs-type">CleanupRecovery</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html#CleanupStatus"><span class="hs-identifier hs-type">CleanupStatus</span></a></span><span>
+</span><span id="line-112"></span><span id="resumeCleanup"><span class="annot"><span class="annottext">resumeCleanup :: CleanupRecovery -&gt; IO CleanupStatus
+</span><a href="LibTmux.Internal.Scope.html#resumeCleanup"><span class="hs-identifier hs-var hs-var">resumeCleanup</span></a></span></span><span> </span><span id="local-6989586621679160916"><span class="annot"><span class="annottext">recovery :: CleanupRecovery
+</span><a href="#local-6989586621679160916"><span class="hs-identifier hs-var">recovery</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scope.html#CleanupRecovery"><span class="hs-identifier hs-type">CleanupRecovery</span></a></span><span> </span><span id="local-6989586621679160917"><span class="annot"><span class="annottext">Target
+</span><a href="#local-6989586621679160917"><span class="hs-identifier hs-var">target</span></a></span></span><span> </span><span class="annot"><span class="annottext">CleanupStatus
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Maybe SomeException
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-113"></span><span>  </span><span class="annot"><span class="annottext">CleanupRecovery -&gt; IO Report -&gt; IO CleanupStatus
+</span><a href="LibTmux.Internal.Scope.html#recoverCleanup"><span class="hs-identifier hs-var">recoverCleanup</span></a></span><span> </span><span class="annot"><span class="annottext">CleanupRecovery
+</span><a href="#local-6989586621679160916"><span class="hs-identifier hs-var">recovery</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Target -&gt; IO Report
+</span><a href="LibTmux.Internal.Scope.html#shutdownTarget"><span class="hs-identifier hs-var">shutdownTarget</span></a></span><span> </span><span class="annot"><span class="annottext">Target
+</span><a href="#local-6989586621679160917"><span class="hs-identifier hs-var">target</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-114"></span><span>
+</span><span id="line-115"></span><span class="hs-comment">-- | Wait for this target's physical cleanup, then inspect its logical debt.</span><span>
+</span><span id="line-116"></span><span class="hs-comment">-- The wait has no deadline.</span><span>
+</span><span id="line-117"></span><span class="hs-comment">-- Cancellation or failure preserves an annotated cleanup owner. Use</span><span>
+</span><span id="line-118"></span><span class="hs-comment">-- 'resumeCleanup' when the caller requires a bounded attempt.</span><span>
+</span><span id="line-119"></span><span class="annot"><a href="LibTmux.Internal.Scope.html#awaitCleanup"><span class="hs-identifier hs-type">awaitCleanup</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html#CleanupRecovery"><span class="hs-identifier hs-type">CleanupRecovery</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html#CleanupStatus"><span class="hs-identifier hs-type">CleanupStatus</span></a></span><span>
+</span><span id="line-120"></span><span id="awaitCleanup"><span class="annot"><span class="annottext">awaitCleanup :: CleanupRecovery -&gt; IO CleanupStatus
+</span><a href="LibTmux.Internal.Scope.html#awaitCleanup"><span class="hs-identifier hs-var hs-var">awaitCleanup</span></a></span></span><span> </span><span id="local-6989586621679160919"><span class="annot"><span class="annottext">recovery :: CleanupRecovery
+</span><a href="#local-6989586621679160919"><span class="hs-identifier hs-var">recovery</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scope.html#CleanupRecovery"><span class="hs-identifier hs-type">CleanupRecovery</span></a></span><span> </span><span id="local-6989586621679160920"><span class="annot"><span class="annottext">Target
+</span><a href="#local-6989586621679160920"><span class="hs-identifier hs-var">target</span></a></span></span><span> </span><span class="annot"><span class="annottext">CleanupStatus
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Maybe SomeException
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CleanupRecovery -&gt; IO Report -&gt; IO CleanupStatus
+</span><a href="LibTmux.Internal.Scope.html#recoverCleanup"><span class="hs-identifier hs-var">recoverCleanup</span></a></span><span> </span><span class="annot"><span class="annottext">CleanupRecovery
+</span><a href="#local-6989586621679160919"><span class="hs-identifier hs-var">recovery</span></a></span><span> </span><span class="annot"><span class="annottext">(IO Report -&gt; IO CleanupStatus) -&gt; IO Report -&gt; IO CleanupStatus
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-121"></span><span>  </span><span class="annot"><span class="annottext">Target -&gt; IO ()
+</span><a href="LibTmux.Internal.Scope.html#awaitTarget"><span class="hs-identifier hs-var">awaitTarget</span></a></span><span> </span><span class="annot"><span class="annottext">Target
+</span><a href="#local-6989586621679160920"><span class="hs-identifier hs-var">target</span></a></span><span>
+</span><span id="line-122"></span><span>  </span><span class="annot"><span class="annottext">STM Report -&gt; IO Report
+forall a. STM a -&gt; IO a
+</span><span class="hs-identifier hs-var">atomically</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Target -&gt; STM Report
+</span><a href="LibTmux.Internal.Scope.html#inspectTarget"><span class="hs-identifier hs-var">inspectTarget</span></a></span><span> </span><span class="annot"><span class="annottext">Target
+</span><a href="#local-6989586621679160920"><span class="hs-identifier hs-var">target</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-123"></span><span>
+</span><span id="line-124"></span><span class="annot"><a href="LibTmux.Internal.Scope.html#detachUnresolved"><span class="hs-identifier hs-type">detachUnresolved</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html#CleanupRecovery"><span class="hs-identifier hs-type">CleanupRecovery</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scheduler.html#Operation"><span class="hs-identifier hs-type">S.Operation</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-125"></span><span id="detachUnresolved"><span class="annot"><span class="annottext">detachUnresolved :: CleanupRecovery -&gt; Operation -&gt; IO Bool
+</span><a href="LibTmux.Internal.Scope.html#detachUnresolved"><span class="hs-identifier hs-var hs-var">detachUnresolved</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scope.html#CleanupRecovery"><span class="hs-identifier hs-type">CleanupRecovery</span></a></span><span> </span><span id="local-6989586621679160922"><span class="annot"><span class="annottext">Target
+</span><a href="#local-6989586621679160922"><span class="hs-identifier hs-var">target</span></a></span></span><span> </span><span class="annot"><span class="annottext">CleanupStatus
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Maybe SomeException
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679160923"><span class="annot"><span class="annottext">Operation
+</span><a href="#local-6989586621679160923"><span class="hs-identifier hs-var">operation</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">STM Bool -&gt; IO Bool
+forall a. STM a -&gt; IO a
+</span><span class="hs-identifier hs-var">atomically</span></span><span> </span><span class="annot"><span class="annottext">(STM Bool -&gt; IO Bool) -&gt; STM Bool -&gt; IO Bool
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Target
+</span><a href="#local-6989586621679160922"><span class="hs-identifier hs-var">target</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-126"></span><span>  </span><span class="annot"><a href="LibTmux.Internal.Scope.html#RuntimeTarget"><span class="hs-identifier hs-type">RuntimeTarget</span></a></span><span> </span><span id="local-6989586621679160924"><span class="annot"><span class="annottext">Runtime
+</span><a href="#local-6989586621679160924"><span class="hs-identifier hs-var">runtime</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Runtime -&gt; Operation -&gt; STM Bool
+</span><a href="LibTmux.Internal.Runtime.html#detachOperation"><span class="hs-identifier hs-var">R.detachOperation</span></a></span><span> </span><span class="annot"><span class="annottext">Runtime
+</span><a href="#local-6989586621679160924"><span class="hs-identifier hs-var">runtime</span></a></span><span> </span><span class="annot"><span class="annottext">Operation
+</span><a href="#local-6989586621679160923"><span class="hs-identifier hs-var">operation</span></a></span><span>
+</span><span id="line-127"></span><span>  </span><span class="annot"><a href="LibTmux.Internal.Scope.html#ServerTarget"><span class="hs-identifier hs-type">ServerTarget</span></a></span><span> </span><span id="local-6989586621679160926"><span class="annot"><span class="annottext">Runtime
+</span><a href="#local-6989586621679160926"><span class="hs-identifier hs-var">runtime</span></a></span></span><span> </span><span id="local-6989586621679160927"><span class="annot"><span class="annottext">ServerOwner
+</span><a href="#local-6989586621679160927"><span class="hs-identifier hs-var">owner</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Runtime -&gt; ServerOwner -&gt; Operation -&gt; STM Bool
+</span><a href="LibTmux.Internal.Runtime.html#detachServerOwnerOperation"><span class="hs-identifier hs-var">R.detachServerOwnerOperation</span></a></span><span> </span><span class="annot"><span class="annottext">Runtime
+</span><a href="#local-6989586621679160926"><span class="hs-identifier hs-var">runtime</span></a></span><span> </span><span class="annot"><span class="annottext">ServerOwner
+</span><a href="#local-6989586621679160927"><span class="hs-identifier hs-var">owner</span></a></span><span> </span><span class="annot"><span class="annottext">Operation
+</span><a href="#local-6989586621679160923"><span class="hs-identifier hs-var">operation</span></a></span><span>
+</span><span id="line-128"></span><span>
+</span><span id="line-129"></span><span class="annot"><a href="LibTmux.Internal.Scope.html#annotated"><span class="hs-identifier hs-type">annotated</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html#CleanupRecovery"><span class="hs-identifier hs-type">CleanupRecovery</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ExceptionWithContext</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">SomeException</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ExceptionWithContext</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">SomeException</span></span><span>
+</span><span id="line-130"></span><span id="annotated"><span class="annot"><span class="annottext">annotated :: CleanupRecovery
+-&gt; ExceptionWithContext SomeException
+-&gt; ExceptionWithContext SomeException
+</span><a href="LibTmux.Internal.Scope.html#annotated"><span class="hs-identifier hs-var hs-var">annotated</span></a></span></span><span> </span><span id="local-6989586621679160929"><span class="annot"><span class="annottext">CleanupRecovery
+</span><a href="#local-6989586621679160929"><span class="hs-identifier hs-var">recovery</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ExceptionWithContext</span></span><span> </span><span id="local-6989586621679160930"><span class="annot"><span class="annottext">ExceptionContext
+</span><a href="#local-6989586621679160930"><span class="hs-identifier hs-var">context</span></a></span></span><span> </span><span id="local-6989586621679160931"><span class="annot"><span class="annottext">SomeException
+</span><a href="#local-6989586621679160931"><span class="hs-identifier hs-var">problem</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-131"></span><span>  </span><span class="annot"><span class="annottext">ExceptionContext
+-&gt; SomeException -&gt; ExceptionWithContext SomeException
+forall a. ExceptionContext -&gt; a -&gt; ExceptionWithContext a
+</span><span class="hs-identifier hs-var">ExceptionWithContext</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">CleanupRecovery -&gt; ExceptionContext -&gt; ExceptionContext
+forall a.
+ExceptionAnnotation a =&gt;
+a -&gt; ExceptionContext -&gt; ExceptionContext
+</span><span class="hs-identifier hs-var">Context.addExceptionAnnotation</span></span><span> </span><span class="annot"><span class="annottext">CleanupRecovery
+</span><a href="#local-6989586621679160929"><span class="hs-identifier hs-var">recovery</span></a></span><span> </span><span class="annot"><span class="annottext">ExceptionContext
+</span><a href="#local-6989586621679160930"><span class="hs-identifier hs-var">context</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">SomeException
+</span><a href="#local-6989586621679160931"><span class="hs-identifier hs-var">problem</span></a></span><span>
+</span><span id="line-132"></span><span>
+</span><span id="line-133"></span><span id="local-6989586621679160678"><span class="annot"><a href="LibTmux.Internal.Scope.html#throwCleanup"><span class="hs-identifier hs-type">throwCleanup</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html#CleanupRecovery"><span class="hs-identifier hs-type">CleanupRecovery</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ExceptionWithContext</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">SomeException</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621679160678"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-134"></span><span id="throwCleanup"><span class="annot"><span class="annottext">throwCleanup :: forall a.
+CleanupRecovery -&gt; ExceptionWithContext SomeException -&gt; IO a
+</span><a href="LibTmux.Internal.Scope.html#throwCleanup"><span class="hs-identifier hs-var hs-var">throwCleanup</span></a></span></span><span> </span><span id="local-6989586621679160938"><span class="annot"><span class="annottext">CleanupRecovery
+</span><a href="#local-6989586621679160938"><span class="hs-identifier hs-var">recovery</span></a></span></span><span> </span><span id="local-6989586621679160939"><span class="annot"><span class="annottext">problem :: ExceptionWithContext SomeException
+</span><a href="#local-6989586621679160939"><span class="hs-identifier hs-var">problem</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ExceptionWithContext</span></span><span> </span><span id="local-6989586621679160940"><span class="annot"><span class="annottext">ExceptionContext
+</span><a href="#local-6989586621679160940"><span class="hs-identifier hs-var">context</span></a></span></span><span> </span><span id="local-6989586621679160941"><span class="annot"><span class="annottext">SomeException
+</span><a href="#local-6989586621679160941"><span class="hs-identifier hs-var">cause</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-135"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">forall e. Exception e =&gt; SomeException -&gt; Maybe e
+</span><span class="hs-identifier hs-var">fromException</span></span><span> </span><span class="hs-glyph">@</span><span class="annot"><span class="hs-identifier hs-type">SomeAsyncException</span></span><span> </span><span class="annot"><span class="annottext">SomeException
+</span><a href="#local-6989586621679160941"><span class="hs-identifier hs-var">cause</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-136"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="annot"><span class="annottext">SomeAsyncException
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ExceptionWithContext SomeException -&gt; IO a
+forall e a. Exception e =&gt; ExceptionWithContext e -&gt; IO a
+</span><span class="hs-identifier hs-var">rethrowIO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">CleanupRecovery
+-&gt; ExceptionWithContext SomeException
+-&gt; ExceptionWithContext SomeException
+</span><a href="LibTmux.Internal.Scope.html#annotated"><span class="hs-identifier hs-var">annotated</span></a></span><span> </span><span class="annot"><span class="annottext">CleanupRecovery
+</span><a href="#local-6989586621679160938"><span class="hs-identifier hs-var">recovery</span></a></span><span> </span><span class="annot"><span class="annottext">ExceptionWithContext SomeException
+</span><a href="#local-6989586621679160939"><span class="hs-identifier hs-var">problem</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-137"></span><span>    </span><span class="annot"><span class="annottext">Maybe SomeAsyncException
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ExceptionWithContext SomeException -&gt; IO a
+forall e a. Exception e =&gt; ExceptionWithContext e -&gt; IO a
+</span><span class="hs-identifier hs-var">rethrowIO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">CleanupRecovery
+-&gt; ExceptionWithContext SomeException
+-&gt; ExceptionWithContext SomeException
+</span><a href="LibTmux.Internal.Scope.html#annotated"><span class="hs-identifier hs-var">annotated</span></a></span><span> </span><span class="annot"><span class="annottext">CleanupRecovery
+</span><a href="#local-6989586621679160938"><span class="hs-identifier hs-var">recovery</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ExceptionContext
+-&gt; SomeException -&gt; ExceptionWithContext SomeException
+forall a. ExceptionContext -&gt; a -&gt; ExceptionWithContext a
+</span><span class="hs-identifier hs-var">ExceptionWithContext</span></span><span> </span><span class="annot"><span class="annottext">ExceptionContext
+</span><a href="#local-6989586621679160940"><span class="hs-identifier hs-var">context</span></a></span><span>
+</span><span id="line-138"></span><span>      </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TmuxException -&gt; SomeException
+forall e. Exception e =&gt; e -&gt; SomeException
+</span><span class="hs-identifier hs-var">toException</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">CleanupStatus -&gt; Maybe SomeException -&gt; TmuxException
+</span><a href="LibTmux.Internal.Scope.html#CleanupFailed"><span class="hs-identifier hs-var">CleanupFailed</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">CleanupRecovery -&gt; CleanupStatus
+</span><a href="LibTmux.Internal.Scope.html#cleanupObservation"><span class="hs-identifier hs-var">cleanupObservation</span></a></span><span> </span><span class="annot"><span class="annottext">CleanupRecovery
+</span><a href="#local-6989586621679160938"><span class="hs-identifier hs-var">recovery</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SomeException -&gt; Maybe SomeException
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">SomeException
+</span><a href="#local-6989586621679160941"><span class="hs-identifier hs-var">cause</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span class="hs-special">)</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-139"></span><span>
+</span><span id="line-140"></span><span class="annot"><a href="LibTmux.Internal.Scope.html#recoverCleanup"><span class="hs-identifier hs-type">recoverCleanup</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html#CleanupRecovery"><span class="hs-identifier hs-type">CleanupRecovery</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Runtime.html#Report"><span class="hs-identifier hs-type">R.Report</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html#CleanupStatus"><span class="hs-identifier hs-type">CleanupStatus</span></a></span><span>
+</span><span id="line-141"></span><span id="recoverCleanup"><span class="annot"><span class="annottext">recoverCleanup :: CleanupRecovery -&gt; IO Report -&gt; IO CleanupStatus
+</span><a href="LibTmux.Internal.Scope.html#recoverCleanup"><span class="hs-identifier hs-var hs-var">recoverCleanup</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scope.html#CleanupRecovery"><span class="hs-identifier hs-type">CleanupRecovery</span></a></span><span> </span><span id="local-6989586621679160943"><span class="annot"><span class="annottext">Target
+</span><a href="#local-6989586621679160943"><span class="hs-identifier hs-var">target</span></a></span></span><span> </span><span class="annot"><span class="annottext">CleanupStatus
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Maybe SomeException
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679160944"><span class="annot"><span class="annottext">IO Report
+</span><a href="#local-6989586621679160944"><span class="hs-identifier hs-var">action</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-142"></span><span>  </span><span class="annot"><span class="annottext">IO CleanupStatus
+-&gt; (ExceptionWithContext SomeException -&gt; IO CleanupStatus)
+-&gt; IO CleanupStatus
+forall e a.
+Exception e =&gt;
+IO a -&gt; (ExceptionWithContext e -&gt; IO a) -&gt; IO a
+</span><span class="hs-identifier hs-var">catchNoPropagate</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Report -&gt; CleanupStatus
+</span><a href="LibTmux.Internal.Scope.html#observed"><span class="hs-identifier hs-var">observed</span></a></span><span> </span><span class="annot"><span class="annottext">(Report -&gt; CleanupStatus) -&gt; IO Report -&gt; IO CleanupStatus
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">IO Report
+</span><a href="#local-6989586621679160944"><span class="hs-identifier hs-var">action</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">((ExceptionWithContext SomeException -&gt; IO CleanupStatus)
+ -&gt; IO CleanupStatus)
+-&gt; (ExceptionWithContext SomeException -&gt; IO CleanupStatus)
+-&gt; IO CleanupStatus
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679160946"><span class="annot"><span class="annottext">problem :: ExceptionWithContext SomeException
+</span><a href="#local-6989586621679160946"><span class="hs-identifier hs-var">problem</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ExceptionWithContext</span></span><span> </span><span class="annot"><span class="annottext">ExceptionContext
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679160947"><span class="annot"><span class="annottext">SomeException
+</span><a href="#local-6989586621679160947"><span class="hs-identifier hs-var">cause</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">SomeException</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-143"></span><span>    </span><span id="local-6989586621679160948"><span class="annot"><a href="#local-6989586621679160948"><span class="hs-identifier hs-var">status</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Report -&gt; CleanupStatus
+</span><a href="LibTmux.Internal.Scope.html#observed"><span class="hs-identifier hs-var">observed</span></a></span><span> </span><span class="annot"><span class="annottext">(Report -&gt; CleanupStatus) -&gt; IO Report -&gt; IO CleanupStatus
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">STM Report -&gt; IO Report
+forall a. STM a -&gt; IO a
+</span><span class="hs-identifier hs-var">atomically</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Target -&gt; STM Report
+</span><a href="LibTmux.Internal.Scope.html#inspectTarget"><span class="hs-identifier hs-var">inspectTarget</span></a></span><span> </span><span class="annot"><span class="annottext">Target
+</span><a href="#local-6989586621679160943"><span class="hs-identifier hs-var">target</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-144"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span class="hs-glyph">!</span><span id="local-6989586621679160949"><span class="annot"><a href="#local-6989586621679160949"><span class="hs-identifier hs-var hs-var">recovery</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Target -&gt; CleanupStatus -&gt; Maybe SomeException -&gt; CleanupRecovery
+</span><a href="LibTmux.Internal.Scope.html#CleanupRecovery"><span class="hs-identifier hs-var">CleanupRecovery</span></a></span><span> </span><span class="annot"><span class="annottext">Target
+</span><a href="#local-6989586621679160943"><span class="hs-identifier hs-var">target</span></a></span><span> </span><span class="annot"><span class="annottext">CleanupStatus
+</span><a href="#local-6989586621679160948"><span class="hs-identifier hs-var">status</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SomeException -&gt; Maybe SomeException
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">SomeException
+</span><a href="#local-6989586621679160947"><span class="hs-identifier hs-var">cause</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-145"></span><span>    </span><span class="annot"><a href="LibTmux.Internal.Scope.html#throwCleanup"><span class="hs-identifier hs-type">throwCleanup</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679160949"><span class="hs-identifier hs-type">recovery</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679160946"><span class="hs-identifier hs-type">problem</span></a></span><span>
+</span><span id="line-146"></span><span>
+</span><span id="line-147"></span><span class="annot"><a href="LibTmux.Internal.Scope.html#inspectTarget"><span class="hs-identifier hs-type">inspectTarget</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html#Target"><span class="hs-identifier hs-type">Target</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">STM</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Runtime.html#Report"><span class="hs-identifier hs-type">R.Report</span></a></span><span>
+</span><span id="line-148"></span><span id="inspectTarget"><span class="annot"><span class="annottext">inspectTarget :: Target -&gt; STM Report
+</span><a href="LibTmux.Internal.Scope.html#inspectTarget"><span class="hs-identifier hs-var hs-var">inspectTarget</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scope.html#RuntimeTarget"><span class="hs-identifier hs-type">RuntimeTarget</span></a></span><span> </span><span id="local-6989586621679160950"><span class="annot"><span class="annottext">Runtime
+</span><a href="#local-6989586621679160950"><span class="hs-identifier hs-var">runtime</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Runtime -&gt; STM Report
+</span><a href="LibTmux.Internal.Runtime.html#inspect"><span class="hs-identifier hs-var">R.inspect</span></a></span><span> </span><span class="annot"><span class="annottext">Runtime
+</span><a href="#local-6989586621679160950"><span class="hs-identifier hs-var">runtime</span></a></span><span>
+</span><span id="line-149"></span><span class="annot"><a href="LibTmux.Internal.Scope.html#inspectTarget"><span class="hs-identifier hs-var">inspectTarget</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scope.html#ServerTarget"><span class="hs-identifier hs-type">ServerTarget</span></a></span><span> </span><span id="local-6989586621679160952"><span class="annot"><span class="annottext">Runtime
+</span><a href="#local-6989586621679160952"><span class="hs-identifier hs-var">runtime</span></a></span></span><span> </span><span id="local-6989586621679160953"><span class="annot"><span class="annottext">ServerOwner
+</span><a href="#local-6989586621679160953"><span class="hs-identifier hs-var">owner</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Runtime -&gt; ServerOwner -&gt; STM Report
+</span><a href="LibTmux.Internal.Runtime.html#inspectServerOwner"><span class="hs-identifier hs-var">R.inspectServerOwner</span></a></span><span> </span><span class="annot"><span class="annottext">Runtime
+</span><a href="#local-6989586621679160952"><span class="hs-identifier hs-var">runtime</span></a></span><span> </span><span class="annot"><span class="annottext">ServerOwner
+</span><a href="#local-6989586621679160953"><span class="hs-identifier hs-var">owner</span></a></span><span>
+</span><span id="line-150"></span><span>
+</span><span id="line-151"></span><span class="annot"><a href="LibTmux.Internal.Scope.html#shutdownTarget"><span class="hs-identifier hs-type">shutdownTarget</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html#Target"><span class="hs-identifier hs-type">Target</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Runtime.html#Report"><span class="hs-identifier hs-type">R.Report</span></a></span><span>
+</span><span id="line-152"></span><span id="shutdownTarget"><span class="annot"><span class="annottext">shutdownTarget :: Target -&gt; IO Report
+</span><a href="LibTmux.Internal.Scope.html#shutdownTarget"><span class="hs-identifier hs-var hs-var">shutdownTarget</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scope.html#RuntimeTarget"><span class="hs-identifier hs-type">RuntimeTarget</span></a></span><span> </span><span id="local-6989586621679160954"><span class="annot"><span class="annottext">Runtime
+</span><a href="#local-6989586621679160954"><span class="hs-identifier hs-var">runtime</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Runtime -&gt; IO Report
+</span><a href="LibTmux.Internal.Runtime.html#shutdown"><span class="hs-identifier hs-var">R.shutdown</span></a></span><span> </span><span class="annot"><span class="annottext">Runtime
+</span><a href="#local-6989586621679160954"><span class="hs-identifier hs-var">runtime</span></a></span><span>
+</span><span id="line-153"></span><span class="annot"><a href="LibTmux.Internal.Scope.html#shutdownTarget"><span class="hs-identifier hs-var">shutdownTarget</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scope.html#ServerTarget"><span class="hs-identifier hs-type">ServerTarget</span></a></span><span> </span><span id="local-6989586621679160956"><span class="annot"><span class="annottext">Runtime
+</span><a href="#local-6989586621679160956"><span class="hs-identifier hs-var">runtime</span></a></span></span><span> </span><span id="local-6989586621679160957"><span class="annot"><span class="annottext">ServerOwner
+</span><a href="#local-6989586621679160957"><span class="hs-identifier hs-var">owner</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Runtime -&gt; ServerOwner -&gt; IO Report
+</span><a href="LibTmux.Internal.Runtime.html#shutdownServerOwner"><span class="hs-identifier hs-var">R.shutdownServerOwner</span></a></span><span> </span><span class="annot"><span class="annottext">Runtime
+</span><a href="#local-6989586621679160956"><span class="hs-identifier hs-var">runtime</span></a></span><span> </span><span class="annot"><span class="annottext">ServerOwner
+</span><a href="#local-6989586621679160957"><span class="hs-identifier hs-var">owner</span></a></span><span>
+</span><span id="line-154"></span><span>
+</span><span id="line-155"></span><span class="annot"><a href="LibTmux.Internal.Scope.html#awaitTarget"><span class="hs-identifier hs-type">awaitTarget</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html#Target"><span class="hs-identifier hs-type">Target</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-156"></span><span id="awaitTarget"><span class="annot"><span class="annottext">awaitTarget :: Target -&gt; IO ()
+</span><a href="LibTmux.Internal.Scope.html#awaitTarget"><span class="hs-identifier hs-var hs-var">awaitTarget</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scope.html#RuntimeTarget"><span class="hs-identifier hs-type">RuntimeTarget</span></a></span><span> </span><span id="local-6989586621679160959"><span class="annot"><span class="annottext">Runtime
+</span><a href="#local-6989586621679160959"><span class="hs-identifier hs-var">runtime</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Runtime -&gt; IO ()
+</span><a href="LibTmux.Internal.Runtime.html#awaitCleanup"><span class="hs-identifier hs-var">R.awaitCleanup</span></a></span><span> </span><span class="annot"><span class="annottext">Runtime
+</span><a href="#local-6989586621679160959"><span class="hs-identifier hs-var">runtime</span></a></span><span>
+</span><span id="line-157"></span><span class="annot"><a href="LibTmux.Internal.Scope.html#awaitTarget"><span class="hs-identifier hs-var">awaitTarget</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Scope.html#ServerTarget"><span class="hs-identifier hs-type">ServerTarget</span></a></span><span> </span><span id="local-6989586621679160961"><span class="annot"><span class="annottext">Runtime
+</span><a href="#local-6989586621679160961"><span class="hs-identifier hs-var">runtime</span></a></span></span><span> </span><span id="local-6989586621679160962"><span class="annot"><span class="annottext">ServerOwner
+</span><a href="#local-6989586621679160962"><span class="hs-identifier hs-var">owner</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Runtime -&gt; ServerOwner -&gt; IO ()
+</span><a href="LibTmux.Internal.Runtime.html#awaitServerOwnerCleanup"><span class="hs-identifier hs-var">R.awaitServerOwnerCleanup</span></a></span><span> </span><span class="annot"><span class="annottext">Runtime
+</span><a href="#local-6989586621679160961"><span class="hs-identifier hs-var">runtime</span></a></span><span> </span><span class="annot"><span class="annottext">ServerOwner
+</span><a href="#local-6989586621679160962"><span class="hs-identifier hs-var">owner</span></a></span><span>
+</span><span id="line-158"></span><span>
+</span><span id="line-159"></span><span class="annot"><a href="LibTmux.Internal.Scope.html#observed"><span class="hs-identifier hs-type">observed</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.Runtime.html#Report"><span class="hs-identifier hs-type">R.Report</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Scope.html#CleanupStatus"><span class="hs-identifier hs-type">CleanupStatus</span></a></span><span>
+</span><span id="line-160"></span><span id="observed"><span class="annot"><span class="annottext">observed :: Report -&gt; CleanupStatus
+</span><a href="LibTmux.Internal.Scope.html#observed"><span class="hs-identifier hs-var hs-var">observed</span></a></span></span><span> </span><span id="local-6989586621679160964"><span class="annot"><span class="annottext">Report
+</span><a href="#local-6989586621679160964"><span class="hs-identifier hs-var">report</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-161"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679160965"><span class="annot"><span class="annottext">failures :: [SomeException]
+</span><a href="#local-6989586621679160965"><span class="hs-identifier hs-var hs-var">failures</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">((Int, SomeException) -&gt; SomeException)
+-&gt; [(Int, SomeException)] -&gt; [SomeException]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">(Int, SomeException) -&gt; SomeException
+forall a b. (a, b) -&gt; b
+</span><span class="hs-identifier hs-var">snd</span></span><span> </span><span class="annot"><span class="annottext">Report
+</span><a href="#local-6989586621679160964"><span class="hs-identifier hs-var">report</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">closeFailures</span><span>
+</span><span id="line-162"></span><span>        </span><span class="annot"><span class="annottext">[SomeException] -&gt; [SomeException] -&gt; [SomeException]
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">SomeException
+</span><a href="#local-6989586621679160967"><span class="hs-identifier hs-var">problem</span></a></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Process.html#PinCleanupFailed"><span class="hs-identifier hs-type">P.PinCleanupFailed</span></a></span><span> </span><span id="local-6989586621679160967"><span class="annot"><span class="annottext">SomeException
+</span><a href="#local-6989586621679160967"><span class="hs-identifier hs-var">problem</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Report
+</span><a href="#local-6989586621679160964"><span class="hs-identifier hs-var">report</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">pending</span><span class="hs-special">]</span><span>
+</span><span id="line-163"></span><span>        </span><span class="annot"><span class="annottext">[SomeException] -&gt; [SomeException] -&gt; [SomeException]
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">[Maybe SomeException] -&gt; [SomeException]
+forall a. [Maybe a] -&gt; [a]
+</span><span class="hs-identifier hs-var">catMaybes</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">((Operation, Maybe SomeException) -&gt; Maybe SomeException)
+-&gt; [(Operation, Maybe SomeException)] -&gt; [Maybe SomeException]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">(Operation, Maybe SomeException) -&gt; Maybe SomeException
+forall a b. (a, b) -&gt; b
+</span><span class="hs-identifier hs-var">snd</span></span><span> </span><span class="annot"><span class="annottext">Report
+</span><a href="#local-6989586621679160964"><span class="hs-identifier hs-var">report</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">readWorkers</span><span class="hs-special">)</span><span>
+</span><span id="line-164"></span><span>      </span><span id="local-6989586621679160969"><span class="annot"><span class="annottext">complete :: Bool
+</span><a href="#local-6989586621679160969"><span class="hs-identifier hs-var hs-var">complete</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[(Int, CloseReport)] -&gt; Bool
+forall a. [a] -&gt; Bool
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Bool
+</span><span class="hs-identifier hs-var">null</span></span><span> </span><span class="annot"><span class="annottext">Report
+</span><a href="#local-6989586621679160964"><span class="hs-identifier hs-var">report</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">pending</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span> </span><span class="annot"><span class="annottext">[(Operation, Maybe SomeException)] -&gt; Bool
+forall a. [a] -&gt; Bool
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Bool
+</span><span class="hs-identifier hs-var">null</span></span><span> </span><span class="annot"><span class="annottext">Report
+</span><a href="#local-6989586621679160964"><span class="hs-identifier hs-var">report</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">readWorkers</span><span>
+</span><span id="line-165"></span><span>        </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span> </span><span class="annot"><span class="annottext">[(Operation, Status)] -&gt; Bool
+forall a. [a] -&gt; Bool
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Bool
+</span><span class="hs-identifier hs-var">null</span></span><span> </span><span class="annot"><span class="annottext">Report
+</span><a href="#local-6989586621679160964"><span class="hs-identifier hs-var">report</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">unresolved</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span> </span><span class="annot"><span class="annottext">[SomeException] -&gt; Bool
+forall a. [a] -&gt; Bool
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Bool
+</span><span class="hs-identifier hs-var">null</span></span><span> </span><span class="annot"><span class="annottext">[SomeException]
+</span><a href="#local-6989586621679160965"><span class="hs-identifier hs-var">failures</span></a></span><span>
+</span><span id="line-166"></span><span>  </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">Bool
+-&gt; Int
+-&gt; Int
+-&gt; [(Operation, Status)]
+-&gt; [SomeException]
+-&gt; CleanupStatus
+</span><a href="LibTmux.Internal.Scope.html#CleanupStatus"><span class="hs-identifier hs-var">CleanupStatus</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679160969"><span class="hs-identifier hs-var">complete</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[(Int, CloseReport)] -&gt; Int
+forall a. [a] -&gt; Int
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Int
+</span><span class="hs-identifier hs-var">length</span></span><span> </span><span class="annot"><span class="annottext">Report
+</span><a href="#local-6989586621679160964"><span class="hs-identifier hs-var">report</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">pending</span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[(Operation, Maybe SomeException)] -&gt; Int
+forall a. [a] -&gt; Int
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Int
+</span><span class="hs-identifier hs-var">length</span></span><span> </span><span class="annot"><span class="annottext">Report
+</span><a href="#local-6989586621679160964"><span class="hs-identifier hs-var">report</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">readWorkers</span><span class="hs-special">)</span><span>
+</span><span id="line-167"></span><span>       </span><span class="annot"><span class="annottext">Report
+</span><a href="#local-6989586621679160964"><span class="hs-identifier hs-var">report</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">unresolved</span><span> </span><span class="annot"><span class="annottext">[SomeException]
+</span><a href="#local-6989586621679160965"><span class="hs-identifier hs-var">failures</span></a></span><span>
+</span><span id="line-168"></span></pre></body></html>

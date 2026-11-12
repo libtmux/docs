@@ -1,0 +1,348 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-comment">-- | Build validated detached snapshots for pure application tests.</span><span>
+</span><span id="line-2"></span><span class="hs-comment">--</span><span>
+</span><span id="line-3"></span><span class="hs-comment">-- No operation in this module contacts tmux. Named fixture references can</span><span>
+</span><span id="line-4"></span><span class="hs-comment">-- model successive observations; they never equal a live Server generation.</span><span>
+</span><span id="line-5"></span><span class="hs-comment">-- Snapshot and live-reference constructors remain hidden.</span><span>
+</span><span id="line-6"></span><span class="hs-comment">-- Validation checks graph and metadata laws; wire decoding, tmux normalization</span><span>
+</span><span id="line-7"></span><span class="hs-comment">-- and transport limits belong to acquisition rather than fixture construction.</span><span>
+</span><span id="line-8"></span><span class="hs-comment">--</span><span>
+</span><span id="line-9"></span><span class="hs-comment">-- Start with 'fixtureOrigin' and 'emptyFixture', construct ordinary observation</span><span>
+</span><span id="line-10"></span><span class="hs-comment">-- records using this module's reference builders, then call 'validateFixture'.</span><span>
+</span><span id="line-11"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="LibTmux.Snapshot.Fixture.html"><span class="hs-identifier">LibTmux.Snapshot.Fixture</span></a></span><span>
+</span><span id="line-12"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-comment">-- * Offline identity</span></span><span>
+</span><span id="line-13"></span><span>    </span><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#FixtureOrigin"><span class="hs-identifier">FixtureOrigin</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#fixtureOrigin"><span class="hs-identifier">fixtureOrigin</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#fixtureGeneration"><span class="hs-identifier">fixtureGeneration</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#sessionRef"><span class="hs-identifier">sessionRef</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#windowRef"><span class="hs-identifier">windowRef</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#paneRef"><span class="hs-identifier">paneRef</span></a></span><span>
+</span><span id="line-14"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Complete fixture inputs</span></span><span>
+</span><span id="line-15"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#Fixture"><span class="hs-identifier">Fixture</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#AttachedClient"><span class="hs-identifier">AttachedClient</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#emptyFixture"><span class="hs-identifier">emptyFixture</span></a></span><span>
+</span><span id="line-16"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Validation</span></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#FixtureError"><span class="hs-identifier">FixtureError</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#validateFixture"><span class="hs-identifier">validateFixture</span></a></span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Bifunctor</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">first</span></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Text</span></span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="LibTmux.Id.html"><span class="hs-identifier">LibTmux.Id</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Id.html#PaneId"><span class="hs-identifier">PaneId</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Id.html#SessionId"><span class="hs-identifier">SessionId</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Id.html#WindowId"><span class="hs-identifier">WindowId</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="LibTmux.Internal.Graph.html"><span class="hs-identifier">LibTmux.Internal.Graph</span></a></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">G</span></span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="LibTmux.Snapshot.html"><span class="hs-identifier">LibTmux.Snapshot</span></a></span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="LibTmux.Internal.Graph.html#Generation"><span class="hs-identifier">Generation</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Graph.html#Snapshot"><span class="hs-identifier">Snapshot</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Graph.html#ServerInfo"><span class="hs-identifier">ServerInfo</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Graph.html#Session"><span class="hs-identifier">Session</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Graph.html#SessionRef"><span class="hs-identifier">SessionRef</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Graph.html#Window"><span class="hs-identifier">Window</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Graph.html#WindowRef"><span class="hs-identifier">WindowRef</span></a></span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Graph.html#Pane"><span class="hs-identifier">Pane</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Graph.html#PaneRef"><span class="hs-identifier">PaneRef</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LibTmux.Internal.Graph.html#WindowLink"><span class="hs-identifier">WindowLink</span></a></span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="LibTmux.Value.html"><span class="hs-identifier">LibTmux.Value</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Value.html#WindowIndex"><span class="hs-identifier">WindowIndex</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-30"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="LibTmux.Version.html"><span class="hs-identifier">LibTmux.Version</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Version.html#TmuxVersion"><span class="hs-identifier">TmuxVersion</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-31"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">System.OsPath.Posix</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">PosixPath</span></span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">System.OsString.Posix</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">PosixString</span></span><span class="hs-special">)</span><span>
+</span><span id="line-33"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">System.OsString.Posix</span></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Os</span></span><span>
+</span><span id="line-34"></span><span>
+</span><span id="line-35"></span><span class="hs-comment">-- | A named offline namespace. Equal names deliberately compare equal, so</span><span>
+</span><span id="line-36"></span><span class="hs-comment">-- tests can model successive observations. This cannot represent a Server.</span><span>
+</span><span id="line-37"></span><span class="hs-keyword">newtype</span><span> </span><span id="FixtureOrigin"><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#FixtureOrigin"><span class="hs-identifier hs-var">FixtureOrigin</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="FixtureOrigin"><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#FixtureOrigin"><span class="hs-identifier hs-var">FixtureOrigin</span></a></span></span><span> </span><span class="annot"><a href="LibTmux.Internal.Graph.html#Generation"><span class="hs-identifier hs-type">Generation</span></a></span><span>
+</span><span id="line-38"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679152327"><span id="local-6989586621679152331"><span class="annot"><span class="annottext">FixtureOrigin -&gt; FixtureOrigin -&gt; Bool
+(FixtureOrigin -&gt; FixtureOrigin -&gt; Bool)
+-&gt; (FixtureOrigin -&gt; FixtureOrigin -&gt; Bool) -&gt; Eq FixtureOrigin
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: FixtureOrigin -&gt; FixtureOrigin -&gt; Bool
+== :: FixtureOrigin -&gt; FixtureOrigin -&gt; Bool
+$c/= :: FixtureOrigin -&gt; FixtureOrigin -&gt; Bool
+/= :: FixtureOrigin -&gt; FixtureOrigin -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679152338"><span id="local-6989586621679152342"><span id="local-6989586621679152345"><span id="local-6989586621679152349"><span id="local-6989586621679152352"><span id="local-6989586621679152355"><span id="local-6989586621679152358"><span class="annot"><span class="annottext">Eq FixtureOrigin
+Eq FixtureOrigin =&gt;
+(FixtureOrigin -&gt; FixtureOrigin -&gt; Ordering)
+-&gt; (FixtureOrigin -&gt; FixtureOrigin -&gt; Bool)
+-&gt; (FixtureOrigin -&gt; FixtureOrigin -&gt; Bool)
+-&gt; (FixtureOrigin -&gt; FixtureOrigin -&gt; Bool)
+-&gt; (FixtureOrigin -&gt; FixtureOrigin -&gt; Bool)
+-&gt; (FixtureOrigin -&gt; FixtureOrigin -&gt; FixtureOrigin)
+-&gt; (FixtureOrigin -&gt; FixtureOrigin -&gt; FixtureOrigin)
+-&gt; Ord FixtureOrigin
+FixtureOrigin -&gt; FixtureOrigin -&gt; Bool
+FixtureOrigin -&gt; FixtureOrigin -&gt; Ordering
+FixtureOrigin -&gt; FixtureOrigin -&gt; FixtureOrigin
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: FixtureOrigin -&gt; FixtureOrigin -&gt; Ordering
+compare :: FixtureOrigin -&gt; FixtureOrigin -&gt; Ordering
+$c&lt; :: FixtureOrigin -&gt; FixtureOrigin -&gt; Bool
+&lt; :: FixtureOrigin -&gt; FixtureOrigin -&gt; Bool
+$c&lt;= :: FixtureOrigin -&gt; FixtureOrigin -&gt; Bool
+&lt;= :: FixtureOrigin -&gt; FixtureOrigin -&gt; Bool
+$c&gt; :: FixtureOrigin -&gt; FixtureOrigin -&gt; Bool
+&gt; :: FixtureOrigin -&gt; FixtureOrigin -&gt; Bool
+$c&gt;= :: FixtureOrigin -&gt; FixtureOrigin -&gt; Bool
+&gt;= :: FixtureOrigin -&gt; FixtureOrigin -&gt; Bool
+$cmax :: FixtureOrigin -&gt; FixtureOrigin -&gt; FixtureOrigin
+max :: FixtureOrigin -&gt; FixtureOrigin -&gt; FixtureOrigin
+$cmin :: FixtureOrigin -&gt; FixtureOrigin -&gt; FixtureOrigin
+min :: FixtureOrigin -&gt; FixtureOrigin -&gt; FixtureOrigin
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679152366"><span id="local-6989586621679152372"><span id="local-6989586621679152376"><span class="annot"><span class="annottext">Int -&gt; FixtureOrigin -&gt; ShowS
+[FixtureOrigin] -&gt; ShowS
+FixtureOrigin -&gt; String
+(Int -&gt; FixtureOrigin -&gt; ShowS)
+-&gt; (FixtureOrigin -&gt; String)
+-&gt; ([FixtureOrigin] -&gt; ShowS)
+-&gt; Show FixtureOrigin
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; FixtureOrigin -&gt; ShowS
+showsPrec :: Int -&gt; FixtureOrigin -&gt; ShowS
+$cshow :: FixtureOrigin -&gt; String
+show :: FixtureOrigin -&gt; String
+$cshowList :: [FixtureOrigin] -&gt; ShowS
+showList :: [FixtureOrigin] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-39"></span><span>
+</span><span id="line-40"></span><span class="annot"><span class="hs-comment">-- | Select a pure fixture namespace. No endpoint lookup or random IO occurs.</span></span><span>
+</span><span id="line-41"></span><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#fixtureOrigin"><span class="hs-identifier hs-type">fixtureOrigin</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#FixtureOrigin"><span class="hs-identifier hs-type">FixtureOrigin</span></a></span><span>
+</span><span id="line-42"></span><span id="fixtureOrigin"><span class="annot"><span class="annottext">fixtureOrigin :: Text -&gt; FixtureOrigin
+</span><a href="LibTmux.Snapshot.Fixture.html#fixtureOrigin"><span class="hs-identifier hs-var hs-var">fixtureOrigin</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Generation -&gt; FixtureOrigin
+</span><a href="LibTmux.Snapshot.Fixture.html#FixtureOrigin"><span class="hs-identifier hs-var">FixtureOrigin</span></a></span><span> </span><span class="annot"><span class="annottext">(Generation -&gt; FixtureOrigin)
+-&gt; (Text -&gt; Generation) -&gt; Text -&gt; FixtureOrigin
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Generation
+</span><a href="LibTmux.Internal.Graph.html#FixtureGeneration"><span class="hs-identifier hs-var">G.FixtureGeneration</span></a></span><span>
+</span><span id="line-43"></span><span>
+</span><span id="line-44"></span><span class="hs-comment">-- | The offline generation for t'Fixture' metadata. Replacing it with a connection</span><span>
+</span><span id="line-45"></span><span class="hs-comment">-- generation causes 'validateFixture' to reject the metadata.</span><span>
+</span><span id="line-46"></span><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#fixtureGeneration"><span class="hs-identifier hs-type">fixtureGeneration</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#FixtureOrigin"><span class="hs-identifier hs-type">FixtureOrigin</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Graph.html#Generation"><span class="hs-identifier hs-type">Generation</span></a></span><span>
+</span><span id="line-47"></span><span id="fixtureGeneration"><span class="annot"><span class="annottext">fixtureGeneration :: FixtureOrigin -&gt; Generation
+</span><a href="LibTmux.Snapshot.Fixture.html#fixtureGeneration"><span class="hs-identifier hs-var hs-var">fixtureGeneration</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#FixtureOrigin"><span class="hs-identifier hs-type">FixtureOrigin</span></a></span><span> </span><span id="local-6989586621679152383"><span class="annot"><span class="annottext">Generation
+</span><a href="#local-6989586621679152383"><span class="hs-identifier hs-var">generation</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Generation
+</span><a href="#local-6989586621679152383"><span class="hs-identifier hs-var">generation</span></a></span><span>
+</span><span id="line-48"></span><span>
+</span><span id="line-49"></span><span class="annot"><span class="hs-comment">-- | Construct a session reference that belongs only to this offline origin.</span></span><span>
+</span><span id="line-50"></span><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#sessionRef"><span class="hs-identifier hs-type">sessionRef</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#FixtureOrigin"><span class="hs-identifier hs-type">FixtureOrigin</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Id.html#SessionId"><span class="hs-identifier hs-type">SessionId</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Graph.html#SessionRef"><span class="hs-identifier hs-type">SessionRef</span></a></span><span>
+</span><span id="line-51"></span><span id="sessionRef"><span class="annot"><span class="annottext">sessionRef :: FixtureOrigin -&gt; SessionId -&gt; SessionRef
+</span><a href="LibTmux.Snapshot.Fixture.html#sessionRef"><span class="hs-identifier hs-var hs-var">sessionRef</span></a></span></span><span> </span><span id="local-6989586621679152384"><span class="annot"><span class="annottext">FixtureOrigin
+</span><a href="#local-6989586621679152384"><span class="hs-identifier hs-var">origin</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Generation -&gt; SessionId -&gt; SessionRef
+</span><a href="LibTmux.Internal.Graph.html#SessionRef"><span class="hs-identifier hs-var">G.SessionRef</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">FixtureOrigin -&gt; Generation
+</span><a href="LibTmux.Snapshot.Fixture.html#fixtureGeneration"><span class="hs-identifier hs-var">fixtureGeneration</span></a></span><span> </span><span class="annot"><span class="annottext">FixtureOrigin
+</span><a href="#local-6989586621679152384"><span class="hs-identifier hs-var">origin</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-52"></span><span>
+</span><span id="line-53"></span><span class="annot"><span class="hs-comment">-- | Construct a physical window reference without granting live authority.</span></span><span>
+</span><span id="line-54"></span><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#windowRef"><span class="hs-identifier hs-type">windowRef</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#FixtureOrigin"><span class="hs-identifier hs-type">FixtureOrigin</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Id.html#WindowId"><span class="hs-identifier hs-type">WindowId</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Graph.html#WindowRef"><span class="hs-identifier hs-type">WindowRef</span></a></span><span>
+</span><span id="line-55"></span><span id="windowRef"><span class="annot"><span class="annottext">windowRef :: FixtureOrigin -&gt; WindowId -&gt; WindowRef
+</span><a href="LibTmux.Snapshot.Fixture.html#windowRef"><span class="hs-identifier hs-var hs-var">windowRef</span></a></span></span><span> </span><span id="local-6989586621679152386"><span class="annot"><span class="annottext">FixtureOrigin
+</span><a href="#local-6989586621679152386"><span class="hs-identifier hs-var">origin</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Generation -&gt; WindowId -&gt; WindowRef
+</span><a href="LibTmux.Internal.Graph.html#WindowRef"><span class="hs-identifier hs-var">G.WindowRef</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">FixtureOrigin -&gt; Generation
+</span><a href="LibTmux.Snapshot.Fixture.html#fixtureGeneration"><span class="hs-identifier hs-var">fixtureGeneration</span></a></span><span> </span><span class="annot"><span class="annottext">FixtureOrigin
+</span><a href="#local-6989586621679152386"><span class="hs-identifier hs-var">origin</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-56"></span><span>
+</span><span id="line-57"></span><span class="annot"><span class="hs-comment">-- | Construct a pane reference without consulting or targeting a daemon.</span></span><span>
+</span><span id="line-58"></span><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#paneRef"><span class="hs-identifier hs-type">paneRef</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#FixtureOrigin"><span class="hs-identifier hs-type">FixtureOrigin</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Id.html#PaneId"><span class="hs-identifier hs-type">PaneId</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Internal.Graph.html#PaneRef"><span class="hs-identifier hs-type">PaneRef</span></a></span><span>
+</span><span id="line-59"></span><span id="paneRef"><span class="annot"><span class="annottext">paneRef :: FixtureOrigin -&gt; PaneId -&gt; PaneRef
+</span><a href="LibTmux.Snapshot.Fixture.html#paneRef"><span class="hs-identifier hs-var hs-var">paneRef</span></a></span></span><span> </span><span id="local-6989586621679152388"><span class="annot"><span class="annottext">FixtureOrigin
+</span><a href="#local-6989586621679152388"><span class="hs-identifier hs-var">origin</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Generation -&gt; PaneId -&gt; PaneRef
+</span><a href="LibTmux.Internal.Graph.html#PaneRef"><span class="hs-identifier hs-var">G.PaneRef</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">FixtureOrigin -&gt; Generation
+</span><a href="LibTmux.Snapshot.Fixture.html#fixtureGeneration"><span class="hs-identifier hs-var">fixtureGeneration</span></a></span><span> </span><span class="annot"><span class="annottext">FixtureOrigin
+</span><a href="#local-6989586621679152388"><span class="hs-identifier hs-var">origin</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-60"></span><span>
+</span><span id="line-61"></span><span class="hs-comment">-- | Ordinary finite inputs. Validation applies the captured graph's laws;</span><span>
+</span><span id="line-62"></span><span class="hs-comment">-- record construction or updates alone do not establish those laws.</span><span>
+</span><span id="line-63"></span><span class="hs-keyword">data</span><span> </span><span id="Fixture"><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#Fixture"><span class="hs-identifier hs-var">Fixture</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Fixture"><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#Fixture"><span class="hs-identifier hs-var">Fixture</span></a></span></span><span>
+</span><span id="line-64"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="info"><span class="annot"><span class="annottext">Fixture -&gt; ServerInfo
+</span><a href="LibTmux.Snapshot.Fixture.html#info"><span class="hs-identifier hs-var hs-var">info</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="LibTmux.Internal.Graph.html#ServerInfo"><span class="hs-identifier hs-type">ServerInfo</span></a></span><span> </span><span class="annot"><span class="hs-comment">-- ^ Synthetic metadata in the supplied offline generation.</span></span><span>
+</span><span id="line-65"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="sessions"><span class="annot"><span class="annottext">Fixture -&gt; [Session]
+</span><a href="LibTmux.Snapshot.Fixture.html#sessions"><span class="hs-identifier hs-var hs-var">sessions</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">[</span><span class="annot"><a href="LibTmux.Internal.Graph.html#Session"><span class="hs-identifier hs-type">Session</span></a></span><span class="hs-special">]</span><span> </span><span class="annot"><span class="hs-comment">-- ^ Physical sessions, with references from this origin.</span></span><span>
+</span><span id="line-66"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="windows"><span class="annot"><span class="annottext">Fixture -&gt; [Window]
+</span><a href="LibTmux.Snapshot.Fixture.html#windows"><span class="hs-identifier hs-var hs-var">windows</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">[</span><span class="annot"><a href="LibTmux.Internal.Graph.html#Window"><span class="hs-identifier hs-type">Window</span></a></span><span class="hs-special">]</span><span> </span><span class="annot"><span class="hs-comment">-- ^ Physical windows, independent of contextual appearances.</span></span><span>
+</span><span id="line-67"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="panes"><span class="annot"><span class="annottext">Fixture -&gt; [Pane]
+</span><a href="LibTmux.Snapshot.Fixture.html#panes"><span class="hs-identifier hs-var hs-var">panes</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">[</span><span class="annot"><a href="LibTmux.Internal.Graph.html#Pane"><span class="hs-identifier hs-type">Pane</span></a></span><span class="hs-special">]</span><span> </span><span class="annot"><span class="hs-comment">-- ^ Physical panes with their containing window references.</span></span><span>
+</span><span id="line-68"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="windowLinks"><span class="annot"><span class="annottext">Fixture -&gt; [WindowLink]
+</span><a href="LibTmux.Snapshot.Fixture.html#windowLinks"><span class="hs-identifier hs-var hs-var">windowLinks</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">[</span><span class="annot"><a href="LibTmux.Internal.Graph.html#WindowLink"><span class="hs-identifier hs-type">WindowLink</span></a></span><span class="hs-special">]</span><span> </span><span class="annot"><span class="hs-comment">-- ^ Session/index/window appearances, including active selections.</span></span><span>
+</span><span id="line-69"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="clients"><span class="annot"><span class="annottext">Fixture -&gt; [AttachedClient]
+</span><a href="LibTmux.Snapshot.Fixture.html#clients"><span class="hs-identifier hs-var hs-var">clients</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">[</span><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#AttachedClient"><span class="hs-identifier hs-type">AttachedClient</span></a></span><span class="hs-special">]</span><span> </span><span class="annot"><span class="hs-comment">-- ^ Complete attached-client listing for this fixture.</span></span><span>
+</span><span id="line-70"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-71"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679152397"><span id="local-6989586621679152412"><span class="annot"><span class="annottext">Fixture -&gt; Fixture -&gt; Bool
+(Fixture -&gt; Fixture -&gt; Bool)
+-&gt; (Fixture -&gt; Fixture -&gt; Bool) -&gt; Eq Fixture
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Fixture -&gt; Fixture -&gt; Bool
+== :: Fixture -&gt; Fixture -&gt; Bool
+$c/= :: Fixture -&gt; Fixture -&gt; Bool
+/= :: Fixture -&gt; Fixture -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679152421"><span id="local-6989586621679152437"><span id="local-6989586621679152441"><span class="annot"><span class="annottext">Int -&gt; Fixture -&gt; ShowS
+[Fixture] -&gt; ShowS
+Fixture -&gt; String
+(Int -&gt; Fixture -&gt; ShowS)
+-&gt; (Fixture -&gt; String) -&gt; ([Fixture] -&gt; ShowS) -&gt; Show Fixture
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Fixture -&gt; ShowS
+showsPrec :: Int -&gt; Fixture -&gt; ShowS
+$cshow :: Fixture -&gt; String
+show :: Fixture -&gt; String
+$cshowList :: [Fixture] -&gt; ShowS
+showList :: [Fixture] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-72"></span><span>
+</span><span id="line-73"></span><span class="hs-comment">-- | An attached client's native identity and context before graph validation.</span><span>
+</span><span id="line-74"></span><span class="hs-comment">-- Validation resolves its values from the same snapshot; it never trusts a</span><span>
+</span><span id="line-75"></span><span class="hs-comment">-- caller-supplied nested attachment record.</span><span>
+</span><span id="line-76"></span><span class="hs-keyword">data</span><span> </span><span id="AttachedClient"><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#AttachedClient"><span class="hs-identifier hs-var">AttachedClient</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="AttachedClient"><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#AttachedClient"><span class="hs-identifier hs-var">AttachedClient</span></a></span></span><span>
+</span><span id="line-77"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="name"><span class="annot"><span class="annottext">AttachedClient -&gt; PosixString
+</span><a href="LibTmux.Snapshot.Fixture.html#name"><span class="hs-identifier hs-var hs-var">name</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">PosixString</span></span><span> </span><span class="annot"><span class="hs-comment">-- ^ Nonempty reported client-name bytes.</span></span><span>
+</span><span id="line-78"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="pid"><span class="annot"><span class="annottext">AttachedClient -&gt; Integer
+</span><a href="LibTmux.Snapshot.Fixture.html#pid"><span class="hs-identifier hs-var hs-var">pid</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span> </span><span class="annot"><span class="hs-comment">-- ^ Positive synthetic client PID in the native PID range.</span></span><span>
+</span><span id="line-79"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="tty"><span class="annot"><span class="annottext">AttachedClient -&gt; Maybe PosixString
+</span><a href="LibTmux.Snapshot.Fixture.html#tty"><span class="hs-identifier hs-var hs-var">tty</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">PosixPath</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="hs-comment">-- ^ Nonempty terminal path when provided.</span></span><span>
+</span><span id="line-80"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="session"><span class="annot"><span class="annottext">AttachedClient -&gt; SessionId
+</span><a href="LibTmux.Snapshot.Fixture.html#session"><span class="hs-identifier hs-var hs-var">session</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="LibTmux.Id.html#SessionId"><span class="hs-identifier hs-type">SessionId</span></a></span><span> </span><span class="annot"><span class="hs-comment">-- ^ Attachment session ID.</span></span><span>
+</span><span id="line-81"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="window"><span class="annot"><span class="annottext">AttachedClient -&gt; WindowId
+</span><a href="LibTmux.Snapshot.Fixture.html#window"><span class="hs-identifier hs-var hs-var">window</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="LibTmux.Id.html#WindowId"><span class="hs-identifier hs-type">WindowId</span></a></span><span> </span><span class="annot"><span class="hs-comment">-- ^ Selected physical window ID.</span></span><span>
+</span><span id="line-82"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="index"><span class="annot"><span class="annottext">AttachedClient -&gt; WindowIndex
+</span><a href="LibTmux.Snapshot.Fixture.html#index"><span class="hs-identifier hs-var hs-var">index</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="LibTmux.Value.html#WindowIndex"><span class="hs-identifier hs-type">WindowIndex</span></a></span><span> </span><span class="annot"><span class="hs-comment">-- ^ Selected window-link index in the attachment session.</span></span><span>
+</span><span id="line-83"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="pane"><span class="annot"><span class="annottext">AttachedClient -&gt; PaneId
+</span><a href="LibTmux.Snapshot.Fixture.html#pane"><span class="hs-identifier hs-var hs-var">pane</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="LibTmux.Id.html#PaneId"><span class="hs-identifier hs-type">PaneId</span></a></span><span> </span><span class="annot"><span class="hs-comment">-- ^ The selected physical pane, not an independent client focus.</span></span><span>
+</span><span id="line-84"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-85"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679152457"><span id="local-6989586621679152473"><span class="annot"><span class="annottext">AttachedClient -&gt; AttachedClient -&gt; Bool
+(AttachedClient -&gt; AttachedClient -&gt; Bool)
+-&gt; (AttachedClient -&gt; AttachedClient -&gt; Bool) -&gt; Eq AttachedClient
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: AttachedClient -&gt; AttachedClient -&gt; Bool
+== :: AttachedClient -&gt; AttachedClient -&gt; Bool
+$c/= :: AttachedClient -&gt; AttachedClient -&gt; Bool
+/= :: AttachedClient -&gt; AttachedClient -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679152476"><span id="local-6989586621679152493"><span id="local-6989586621679152496"><span class="annot"><span class="annottext">Int -&gt; AttachedClient -&gt; ShowS
+[AttachedClient] -&gt; ShowS
+AttachedClient -&gt; String
+(Int -&gt; AttachedClient -&gt; ShowS)
+-&gt; (AttachedClient -&gt; String)
+-&gt; ([AttachedClient] -&gt; ShowS)
+-&gt; Show AttachedClient
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; AttachedClient -&gt; ShowS
+showsPrec :: Int -&gt; AttachedClient -&gt; ShowS
+$cshow :: AttachedClient -&gt; String
+show :: AttachedClient -&gt; String
+$cshowList :: [AttachedClient] -&gt; ShowS
+showList :: [AttachedClient] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-86"></span><span>
+</span><span id="line-87"></span><span class="hs-comment">-- | Empty complete inputs with explicit synthetic metadata: PID 1, epoch 0</span><span>
+</span><span id="line-88"></span><span class="hs-comment">-- and path @fixture:offline@. No process or socket exists by implication.</span><span>
+</span><span id="line-89"></span><span class="hs-comment">-- The version and every edited field are checked by 'validateFixture'.</span><span>
+</span><span id="line-90"></span><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#emptyFixture"><span class="hs-identifier hs-type">emptyFixture</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#FixtureOrigin"><span class="hs-identifier hs-type">FixtureOrigin</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Version.html#TmuxVersion"><span class="hs-identifier hs-type">TmuxVersion</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#Fixture"><span class="hs-identifier hs-type">Fixture</span></a></span><span>
+</span><span id="line-91"></span><span id="emptyFixture"><span class="annot"><span class="annottext">emptyFixture :: FixtureOrigin -&gt; TmuxVersion -&gt; Fixture
+</span><a href="LibTmux.Snapshot.Fixture.html#emptyFixture"><span class="hs-identifier hs-var hs-var">emptyFixture</span></a></span></span><span> </span><span id="local-6989586621679152498"><span class="annot"><span class="annottext">FixtureOrigin
+</span><a href="#local-6989586621679152498"><span class="hs-identifier hs-var">origin</span></a></span></span><span> </span><span id="local-6989586621679152499"><span class="annot"><span class="annottext">TmuxVersion
+</span><a href="#local-6989586621679152499"><span class="hs-identifier hs-var">version</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ServerInfo
+-&gt; [Session]
+-&gt; [Window]
+-&gt; [Pane]
+-&gt; [WindowLink]
+-&gt; [AttachedClient]
+-&gt; Fixture
+</span><a href="LibTmux.Snapshot.Fixture.html#Fixture"><span class="hs-identifier hs-var">Fixture</span></a></span><span>
+</span><span id="line-92"></span><span>  </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Generation
+-&gt; Integer -&gt; Integer -&gt; TmuxVersion -&gt; PosixString -&gt; ServerInfo
+</span><a href="LibTmux.Internal.Graph.html#ServerInfo"><span class="hs-identifier hs-var">ServerInfo</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">FixtureOrigin -&gt; Generation
+</span><a href="LibTmux.Snapshot.Fixture.html#fixtureGeneration"><span class="hs-identifier hs-var">fixtureGeneration</span></a></span><span> </span><span class="annot"><span class="annottext">FixtureOrigin
+</span><a href="#local-6989586621679152498"><span class="hs-identifier hs-var">origin</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">TmuxVersion
+</span><a href="#local-6989586621679152499"><span class="hs-identifier hs-var">version</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ByteString -&gt; PosixString
+</span><span class="hs-identifier hs-var">Os.fromBytestring</span></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><span class="hs-string">&quot;fixture:offline&quot;</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-93"></span><span>  </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-94"></span><span>
+</span><span id="line-95"></span><span class="hs-comment">-- | A failed graph or complete-snapshot validation, with domain</span><span>
+</span><span id="line-96"></span><span class="hs-comment">-- context from the validator. Failed input never becomes an empty snapshot.</span><span>
+</span><span id="line-97"></span><span class="hs-keyword">data</span><span> </span><span id="FixtureError"><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#FixtureError"><span class="hs-identifier hs-var">FixtureError</span></a></span></span><span>
+</span><span id="line-98"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="InvalidGraph"><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#InvalidGraph"><span class="hs-identifier hs-var">InvalidGraph</span></a></span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><span class="hs-comment">-- ^ Invalid references, multiplicity, attachment counts or selections.</span></span><span>
+</span><span id="line-99"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="InvalidSnapshot"><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#InvalidSnapshot"><span class="hs-identifier hs-var">InvalidSnapshot</span></a></span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><span class="hs-comment">-- ^ Invalid metadata or attached-client context.</span></span><span>
+</span><span id="line-100"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679152505"><span id="local-6989586621679152513"><span class="annot"><span class="annottext">FixtureError -&gt; FixtureError -&gt; Bool
+(FixtureError -&gt; FixtureError -&gt; Bool)
+-&gt; (FixtureError -&gt; FixtureError -&gt; Bool) -&gt; Eq FixtureError
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: FixtureError -&gt; FixtureError -&gt; Bool
+== :: FixtureError -&gt; FixtureError -&gt; Bool
+$c/= :: FixtureError -&gt; FixtureError -&gt; Bool
+/= :: FixtureError -&gt; FixtureError -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679152517"><span id="local-6989586621679152524"><span id="local-6989586621679152528"><span class="annot"><span class="annottext">Int -&gt; FixtureError -&gt; ShowS
+[FixtureError] -&gt; ShowS
+FixtureError -&gt; String
+(Int -&gt; FixtureError -&gt; ShowS)
+-&gt; (FixtureError -&gt; String)
+-&gt; ([FixtureError] -&gt; ShowS)
+-&gt; Show FixtureError
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; FixtureError -&gt; ShowS
+showsPrec :: Int -&gt; FixtureError -&gt; ShowS
+$cshow :: FixtureError -&gt; String
+show :: FixtureError -&gt; String
+$cshowList :: [FixtureError] -&gt; ShowS
+showList :: [FixtureError] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-101"></span><span>
+</span><span id="line-102"></span><span class="hs-comment">-- | Validate and force owned values using the capture graph's invariants.</span><span>
+</span><span id="line-103"></span><span class="hs-comment">-- Successful fixtures have no acquisition interval and carry offline</span><span>
+</span><span id="line-104"></span><span class="hs-comment">-- provenance. Their references cannot equal references from a Server scope.</span><span>
+</span><span id="line-105"></span><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#validateFixture"><span class="hs-identifier hs-type">validateFixture</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#FixtureOrigin"><span class="hs-identifier hs-type">FixtureOrigin</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#Fixture"><span class="hs-identifier hs-type">Fixture</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#FixtureError"><span class="hs-identifier hs-type">FixtureError</span></a></span><span> </span><span class="annot"><a href="LibTmux.Internal.Graph.html#Snapshot"><span class="hs-identifier hs-type">Snapshot</span></a></span><span>
+</span><span id="line-106"></span><span id="validateFixture"><span class="annot"><span class="annottext">validateFixture :: FixtureOrigin -&gt; Fixture -&gt; Either FixtureError Snapshot
+</span><a href="LibTmux.Snapshot.Fixture.html#validateFixture"><span class="hs-identifier hs-var hs-var">validateFixture</span></a></span></span><span> </span><span id="local-6989586621679152530"><span class="annot"><span class="annottext">FixtureOrigin
+</span><a href="#local-6989586621679152530"><span class="hs-identifier hs-var">origin</span></a></span></span><span> </span><span id="local-6989586621679152531"><span class="annot"><span class="annottext">Fixture
+</span><a href="#local-6989586621679152531"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-107"></span><span>  </span><span id="local-6989586621679152532"><span class="annot"><a href="#local-6989586621679152532"><span class="hs-identifier hs-var">graph</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">(GraphError -&gt; FixtureError)
+-&gt; Either GraphError EntityGraph -&gt; Either FixtureError EntityGraph
+forall a b c. (a -&gt; b) -&gt; Either a c -&gt; Either b c
+forall (p :: * -&gt; * -&gt; *) a b c.
+Bifunctor p =&gt;
+(a -&gt; b) -&gt; p a c -&gt; p b c
+</span><span class="hs-identifier hs-var">first</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; FixtureError
+</span><a href="LibTmux.Snapshot.Fixture.html#InvalidGraph"><span class="hs-identifier hs-var">InvalidGraph</span></a></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; FixtureError)
+-&gt; (GraphError -&gt; Text) -&gt; GraphError -&gt; FixtureError
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
+</span><span class="hs-identifier hs-var">Text.pack</span></span><span> </span><span class="annot"><span class="annottext">(String -&gt; Text) -&gt; (GraphError -&gt; String) -&gt; GraphError -&gt; Text
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">GraphError -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><span class="hs-identifier hs-var">show</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Either GraphError EntityGraph -&gt; Either FixtureError EntityGraph)
+-&gt; Either GraphError EntityGraph -&gt; Either FixtureError EntityGraph
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span>
+</span><span id="line-108"></span><span>    </span><span class="annot"><span class="annottext">Generation
+-&gt; [Session]
+-&gt; [Window]
+-&gt; [Pane]
+-&gt; [WindowLink]
+-&gt; Either GraphError EntityGraph
+</span><a href="LibTmux.Internal.Graph.html#assembleEntityGraph"><span class="hs-identifier hs-var">G.assembleEntityGraph</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">FixtureOrigin -&gt; Generation
+</span><a href="LibTmux.Snapshot.Fixture.html#fixtureGeneration"><span class="hs-identifier hs-var">fixtureGeneration</span></a></span><span> </span><span class="annot"><span class="annottext">FixtureOrigin
+</span><a href="#local-6989586621679152530"><span class="hs-identifier hs-var">origin</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-109"></span><span>      </span><span class="annot"><span class="annottext">Fixture
+</span><a href="#local-6989586621679152531"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">sessions</span><span> </span><span class="annot"><span class="annottext">Fixture
+</span><a href="#local-6989586621679152531"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">windows</span><span> </span><span class="annot"><span class="annottext">Fixture
+</span><a href="#local-6989586621679152531"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">panes</span><span> </span><span class="annot"><span class="annottext">Fixture
+</span><a href="#local-6989586621679152531"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">windowLinks</span><span>
+</span><span id="line-110"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679152536"><span class="annot"><a href="#local-6989586621679152536"><span class="hs-identifier hs-var hs-var">clients</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-111"></span><span>        </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">PosixString
+-&gt; Integer
+-&gt; Maybe PosixString
+-&gt; SessionId
+-&gt; WindowId
+-&gt; WindowIndex
+-&gt; PaneId
+-&gt; ClientInput
+</span><a href="LibTmux.Internal.Graph.html#ClientInput"><span class="hs-identifier hs-var">G.ClientInput</span></a></span><span> </span><span class="annot"><span class="annottext">AttachedClient
+</span><a href="#local-6989586621679152538"><span class="hs-identifier hs-var">row</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">name</span><span> </span><span class="annot"><span class="annottext">AttachedClient
+</span><a href="#local-6989586621679152538"><span class="hs-identifier hs-var">row</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">pid</span><span> </span><span class="annot"><span class="annottext">AttachedClient
+</span><a href="#local-6989586621679152538"><span class="hs-identifier hs-var">row</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">tty</span><span> </span><span class="annot"><span class="annottext">AttachedClient
+</span><a href="#local-6989586621679152538"><span class="hs-identifier hs-var">row</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">session</span><span> </span><span class="annot"><span class="annottext">AttachedClient
+</span><a href="#local-6989586621679152538"><span class="hs-identifier hs-var">row</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">window</span><span> </span><span class="annot"><span class="annottext">AttachedClient
+</span><a href="#local-6989586621679152538"><span class="hs-identifier hs-var">row</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">index</span><span> </span><span class="annot"><span class="annottext">AttachedClient
+</span><a href="#local-6989586621679152538"><span class="hs-identifier hs-var">row</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">pane</span><span>
+</span><span id="line-112"></span><span>        </span><span class="hs-glyph">|</span><span> </span><span id="local-6989586621679152538"><span class="annot"><span class="annottext">AttachedClient
+</span><a href="#local-6989586621679152538"><span class="hs-identifier hs-var">row</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Fixture
+</span><a href="#local-6989586621679152531"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-operator">.</span><span class="hs-identifier">clients</span><span>
+</span><span id="line-113"></span><span>        </span><span class="hs-special">]</span><span>
+</span><span id="line-114"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">first</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Snapshot.Fixture.html#InvalidSnapshot"><span class="hs-identifier hs-type">InvalidSnapshot</span></a></span><span> </span><span class="annot"><span class="hs-operator hs-type">.</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text.pack</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">.</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">show</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.Graph.html#assembleSnapshot"><span class="hs-identifier hs-type">G.assembleSnapshot</span></a></span><span> </span><span class="annot"><span class="hs-identifier">input</span></span><span class="hs-operator">.</span><span class="hs-identifier">info</span><span> </span><span class="annot"><a href="#local-6989586621679152532"><span class="hs-identifier hs-type">graph</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679152536"><span class="hs-identifier hs-type">clients</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-115"></span></pre></body></html>
