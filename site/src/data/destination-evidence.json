@@ -1863,27 +1863,6 @@
       ]
     },
     {
-      "url": "https://github.com/libtmux/libtmux-erlang/tree/master/apps/libtmux_erlang_workspace",
-      "kinds": [
-        "source"
-      ],
-      "host": "github",
-      "ok": true,
-      "status": 200,
-      "requested": "https://github.com/libtmux/libtmux-erlang/tree/master/apps/libtmux_erlang_workspace",
-      "identity": "libtmux/libtmux-erlang/apps/libtmux_erlang_workspace",
-      "versionChecks": [
-        {
-          "check": "unsupported",
-          "note": "a branch link names no release"
-        }
-      ],
-      "checkedAt": "2026-11-08",
-      "entries": [
-        "erlang:libtmux_erlang_workspace"
-      ]
-    },
-    {
       "url": "https://github.com/libtmux/libtmux-go",
       "kinds": [
         "source"

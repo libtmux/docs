@@ -69,7 +69,7 @@ describe('reference picker exits', () => {
     }
   })
 
-  it('excludes absent products and keeps language homes', async () => {
+  it('links no port that lacks the product, and keeps language homes', async () => {
     const picker = await loadAstroTemplate('components/PagePortSwitcher.astro')
     const productDocs = [{ id: 'workspace', data: {} }]
     for (const product of ['mcp', 'workspace'] as const) {
@@ -86,16 +86,12 @@ describe('reference picker exits', () => {
         const window = new Window()
         try {
           window.document.body.innerHTML = await renderAstroTemplate(picker, { props: { entries, portSlug: 'ts' } })
-          const haskell = window.document.querySelector('[data-port="haskell"]')!
-          expect(haskell.textContent).toContain('No matching page')
-          expect([...haskell.querySelectorAll('a')].map((link) => link.getAttribute('href')))
-            .toEqual(['/pr-42/en/haskell/latest/'])
-          // Erlang's workspace manager has a page, though no registry publishes it.
-          const erlang = window.document.querySelector('[data-port="erlang"]')!
-          if (product === 'workspace') {
-            expect(erlang.tagName).toBe('A')
-            expect(erlang.getAttribute('href')).toBe('/pr-42/en/erlang/latest/workspace/')
-          } else expect(erlang.textContent).toContain('No matching page')
+          for (const slug of ['haskell', 'erlang']) {
+            const row = window.document.querySelector(`[data-port="${slug}"]`)!
+            expect(row.textContent).toContain('No matching page')
+            expect([...row.querySelectorAll('a')].map((link) => link.getAttribute('href')))
+              .toEqual([`/pr-42/en/${slug}/latest/`])
+          }
         } finally { await window.happyDOM.abort() }
       }
     }
@@ -177,17 +173,15 @@ describe('shared product pages and the ports that lack the product', () => {
     }
   })
 
-  it('keeps the overview of an unpublished workspace root, and drops an excluded one', () => {
+  it('links no workspace overview for a port whose repository publishes no workspace manager', () => {
     // The shared workspace overview, which every port renders at its own root.
     const overview = (slug: string) => pagePortLinks({ ...options, docs: [{ id: 'workspace', data: {} }], pagePath: 'workspace', portSlug: 'rs' })
       .find((entry) => entry.port === slug)!
-    // Erlang builds its workspace manager from source, so its overview stays.
-    expect(PORT_BY_SLUG.erlang.productAvailability?.workspace).toBe('unpublished')
-    expect(overview('erlang').links.map((link) => link.href)).toEqual(['/pr-42/en/erlang/latest/workspace/'])
-    for (const slug of ['lua', 'elixir', 'haskell']) {
+    for (const slug of ['lua', 'elixir', 'haskell', 'erlang']) {
       expect(PORT_BY_SLUG[slug].productAvailability?.workspace, slug).toBe('excluded')
       expect(overview(slug).links, slug).toEqual([])
     }
+    expect(overview('lisp').links.map((link) => link.href)).toEqual(['/pr-42/en/lisp/latest/workspace/'])
     const synthetic = PORT_BY_SLUG.go
     const before = synthetic.productAvailability
     try {

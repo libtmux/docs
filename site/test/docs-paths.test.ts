@@ -83,11 +83,14 @@ describe('product document URLs', () => {
       { path: 'lisp/latest/guides/query-api', target: 'lisp/latest/reference' },
       { path: 'lisp/latest/guides/json-api', target: 'lisp/latest/reference' },
       { path: 'lisp/latest/workspace/api', target: 'lisp/latest/workspace/reference' },
+      { path: 'powershell/latest/guides/mcp', target: 'powershell/latest' },
+      { path: 'powershell/latest/mcp', target: 'powershell/latest' },
       { path: 'julia/latest/guides/api-overview', target: 'julia/latest/reference' },
       { path: 'clojure/latest/guides/native-api', target: 'clojure/latest/reference' },
       { path: 'clojure/latest/guides/adapter-api', target: 'clojure/latest/reference/libtmux-core-async' },
       { path: 'fsharp/v0.46.2/guides/api-overview', target: 'fsharp/v0.46.2/reference' },
       { path: 'erlang/latest/guides/overview', target: 'erlang/latest/guides' },
+      { path: 'erlang/latest/workspace', target: 'erlang/latest' },
       { path: 'elixir/latest/mcp', target: 'elixir/latest' },
       { path: 'elixir/latest/workspace', target: 'elixir/latest' },
       { path: 'lua/latest/mcp', target: 'lua/latest' },
@@ -101,6 +104,7 @@ describe('product document URLs', () => {
     ])
     expect(sourceGuideRedirects('erlang')).toEqual([
       { path: 'guides/overview', target: 'guides' },
+      { path: 'workspace', target: '' },
     ])
     expect(sourceGuideRedirects('ocaml')).toEqual([
       { path: 'guides/api', target: 'reference' },

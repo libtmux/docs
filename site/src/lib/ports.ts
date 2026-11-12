@@ -61,12 +61,11 @@ export interface PortPackage {
 }
 
 /**
- * `excluded` marks a product the port's repository does not ship: the site
- * builds no page for it, lists it nowhere and links to none. `unpublished`
- * marks one that ships from source, so its overview page exists, but that no
- * registry carries.
+ * `excluded` marks a product the port has not published: the site builds no
+ * page for it, lists it nowhere and links to none. A product is available or
+ * it is excluded; there is no placeholder in between.
  */
-export type ProductAvailability = 'available' | 'unpublished' | 'excluded'
+export type ProductAvailability = 'available' | 'excluded'
 
 /**
  * One way to add a port's package to a project.
@@ -677,7 +676,7 @@ const CORE_PORTS: readonly Port[] = [
     packageName: 'libtmux_erlang',
     repo: 'libtmux/libtmux-erlang',
     docsDispatch: { workflow: 'docs.yml' },
-    productAvailability: { workspace: 'unpublished', mcp: 'excluded' },
+    productAvailability: { workspace: 'excluded', mcp: 'excluded' },
     checkout: '~/work/libtmux/libtmux-erlang',
     worktree: '~/work/libtmux/libtmux-erlang-docs-site',
     source: { path: 'apps/libtmux_erlang', ref: 'master' },
@@ -1660,17 +1659,12 @@ export const PICKER_GROUP_SUMMARY: Readonly<Record<PickerGroup, string>> = {
   core: 'API reference and guides', mcp: 'Tools for connected assistants', workspace: 'Repeatable development environments',
 }
 
-/** Whether a port ships a product, so it has pages: an unpublished product still has its overview. */
-export function productIncluded(port: Port, product: DocProduct): boolean {
-  return !port.parentLibrary && port.productAvailability?.[product] !== 'excluded'
-}
-
-/** Whether a companion product has a published implementation for a port. */
+/** Whether a companion product is published for a port, so the site has pages for it. */
 export function productAvailable(port: Port, product: DocProduct): boolean {
-  return !port.parentLibrary && port.productAvailability?.[product] !== 'unpublished' && !productExcluded(port, product)
+  return !port.parentLibrary && !productExcluded(port, product)
 }
 
-/** Whether a port ships no such companion product, so it has no page for it, as opposed to one that is only unpublished. */
+/** Whether a port declares it has not published a companion product, as opposed to a wrapper library that has none. */
 export function productExcluded(port: Port, product: DocProduct): boolean {
   return port.productAvailability?.[product] === 'excluded'
 }

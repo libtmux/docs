@@ -4,13 +4,12 @@ import {
   PORT_BY_SLUG,
   portPageUrl,
   productAvailable,
-  productIncluded,
   productDescription,
   type DocProduct,
   type PortPackageId,
 } from './ports.ts'
 
-export type DocumentationDomainKind = 'core' | 'companion-package' | 'runtime' | 'product' | 'unavailable'
+export type DocumentationDomainKind = 'core' | 'companion-package' | 'runtime' | 'product'
 
 export interface DocumentationDomain {
   id: string
@@ -176,9 +175,9 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
       guide('README.md', 'guides/getting-started', 'core', { title: 'Getting started', sidebar: { group: 'Guides', order: 1 } }),
       ...['read', 'query', 'create', 'remove', 'layout', 'placement', 'input', 'capture', 'commands', 'watch', 'clients', 'environment', 'options', 'hooks', 'compatibility', 'troubleshooting'].map((name) =>
         guide(`docs/${name}.md`, `guides/${name}`, 'core')),
-      guide('docs/mcp.md', 'guides/mcp', 'core', { title: 'Using the .NET MCP server', aliases: ['mcp'] }),
       guide('docs/workspace.md', 'workspace/source-guide', 'workspace', { title: 'Workspace guide', product: 'workspace', package: 'workspace', aliases: [] }),
     ],
+    redirects: [{ path: 'guides/mcp', target: '' }, { path: 'mcp', target: '' }],
   },
   julia: {
     domains: [
@@ -337,8 +336,6 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
     apiDocRoot: 'docs',
     domains: [
       libraryDomain('Install the OTP application from Git and use native records, captured graphs and explicit tmux operations.'),
-      { id: 'workspace', label: 'Workspace Manager', kind: 'unavailable', navGroup: 'Availability', route: 'workspace', product: 'workspace',
-        description: 'Plan and apply JSON workspaces with a standalone escript built from source. No package is published.' },
     ],
     sourceGuides: [
       guide('README.md', 'guides/getting-started', 'core', { title: 'Getting started', aliases: [], sidebar: { group: 'Guides', order: 1 } }),
@@ -361,7 +358,7 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
       guide('docs/workspaces.md', 'guides/workspace-json', 'core', { title: 'Workspace JSON loader', aliases: [] }),
       guide('docs/project-policy.md', 'topics/project-policy', 'core', { title: 'Project policy', aliases: [] }),
     ],
-    redirects: [{ sourcePath: 'docs/guides.md', path: 'guides/overview', target: 'guides' }],
+    redirects: [{ sourcePath: 'docs/guides.md', path: 'guides/overview', target: 'guides' }, { path: 'workspace', target: '' }],
   },
   elixir: {
     domains: [
@@ -471,20 +468,16 @@ function validate(portSlug: string, config: PortDocumentation): void {
   const domainById = new Map(config.domains.map((domain) => [domain.id, domain]))
   for (const domain of config.domains) {
     if (domain.route.startsWith('/') || domain.route.includes('..')) throw new Error(`port-documentation: invalid route ${domain.route}`)
-    if (domain.product && !productIncluded(port, domain.product)) throw new Error(`port-documentation: ${domain.id} names the excluded product ${domain.product}`)
+    if (domain.product && !productAvailable(port, domain.product)) throw new Error(`port-documentation: ${domain.id} names the excluded product ${domain.product}`)
     if (domain.kind === 'runtime' && (domain.package || domain.product)) throw new Error(`port-documentation: runtime ${domain.id} cannot be a package or product`)
-    if (domain.kind === 'unavailable') {
-      if (!domain.product || productAvailable(port, domain.product) || domain.package) throw new Error(`port-documentation: unavailable ${domain.id} must be an unavailable product without a package`)
-      continue
-    }
-    if (domain.kind === 'product' && (!domain.product || !productAvailable(port, domain.product))) throw new Error(`port-documentation: product ${domain.id} must be available`)
+    if (domain.kind === 'product' && !domain.product) throw new Error(`port-documentation: product ${domain.id} must name its product`)
     if (domain.kind === 'companion-package' && (!domain.package || domain.package === 'core' || !port.packages?.some((pkg) => pkg.id === domain.package))) throw new Error(`port-documentation: companion ${domain.id} needs a published package`)
   }
   const guidePaths = config.sourceGuides.flatMap((entry) => [entry.route, ...entry.aliases])
   assertDistinct(`${portSlug} source guide route or alias`, guidePaths)
   for (const entry of config.sourceGuides) {
     if (!domainById.has(entry.domain)) throw new Error(`port-documentation: ${entry.sourcePath} names unknown domain ${entry.domain}`)
-    if (entry.product && !productIncluded(port, entry.product)) throw new Error(`port-documentation: ${entry.sourcePath} names the excluded product ${entry.product}`)
+    if (entry.product && !productAvailable(port, entry.product)) throw new Error(`port-documentation: ${entry.sourcePath} names the excluded product ${entry.product}`)
     if (entry.route.startsWith('/') || entry.route.includes('..')) throw new Error(`port-documentation: invalid source guide route ${entry.route}`)
   }
 }
@@ -496,18 +489,15 @@ function fallbackAreas(portSlug: string): readonly DocumentationDomain[] {
       id: 'core', label: 'Core library', kind: 'core', navGroup: 'Library', route: 'core', package: 'core',
       description: `Install ${port.packageName} and use the ${port.name} tmux API.`,
     },
-    ...Object.entries(DOC_PRODUCTS).filter(([id]) => productIncluded(port, id as DocProduct)).map(([id, product]) => {
-      const available = productAvailable(port, id as DocProduct)
-      return {
-        id,
-        label: product.label,
-        description: productDescription(port, id as DocProduct),
-        kind: available ? 'product' as const : 'unavailable' as const,
-        navGroup: available ? 'Apps' : 'Availability',
-        route: id,
-        product: id as DocProduct,
-      }
-    }),
+    ...Object.entries(DOC_PRODUCTS).filter(([id]) => productAvailable(port, id as DocProduct)).map(([id, product]) => ({
+      id,
+      label: product.label,
+      description: productDescription(port, id as DocProduct),
+      kind: 'product' as const,
+      navGroup: 'Apps',
+      route: id,
+      product: id as DocProduct,
+    })),
   ]
 }
 
@@ -597,7 +587,6 @@ export function documentationNavigation(portSlug: string, version: string): Docu
   if (!port) throw new Error(`port-documentation: unknown port ${portSlug}`)
   const groups = new Map<string, DocumentationNavigationGroup>()
   for (const domain of documentationAreas(portSlug)) {
-    if (domain.kind === 'unavailable') continue
     const group = groups.get(domain.navGroup) ?? { label: domain.navGroup, items: [] }
     group.items.push({
       type: 'link',
@@ -614,7 +603,7 @@ export function documentationCards(portSlug: string, version: string): Documenta
   const port = PORT_BY_SLUG[portSlug]
   if (!port) throw new Error(`port-documentation: unknown port ${portSlug}`)
   return documentationAreas(portSlug)
-    .filter((domain) => domain.kind !== 'core' && domain.kind !== 'unavailable')
+    .filter((domain) => domain.kind !== 'core')
     .map((domain) => ({
       label: domain.label,
       body: domain.description,

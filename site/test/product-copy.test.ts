@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { parseFrontmatter } from '@astrojs/markdown-remark'
 import { describe, expect, it, vi } from 'vitest'
 import data from '../src/data/product-copy.json'
@@ -59,16 +59,14 @@ describe('the product page titles', () => {
     }
   })
 
-  it('leave no page with the old forms, and give a port with nothing published the new form with a verdict', () => {
+  it('leave no page with the old forms, and build none for a port with nothing published', () => {
     const files = [...SHARED_WORKSPACE.map(() => '_workspace-shared/workspace/index.md'), ...OWN_WORKSPACE.map((port) => `docs/ports/${port}/workspace/index.md`),
       ...MCP_PORTS.map((port) => `docs/ports/${port}/mcp/index.md`)]
     for (const file of new Set(files)) {
       expect(read(file), file).not.toMatch(/^\s*title: (?:(?:Python|TypeScript|Rust|Go|Java|C#|C\+\+|Swift|Ruby|Julia|PowerShell) workspace manager|tmux workspace manager for \S+|Workspace Manager|tmux MCP for \S+|MCP server)$/m)
     }
     for (const port of ['elixir', 'lua']) {
-      const name = port === 'elixir' ? 'Elixir' : 'Lua'
-      expect(frontmatter(`docs/ports/${port}/workspace/index.md`).title).toBe(`tmux workspace manager, forged in ${name}, is not published`)
-      expect(frontmatter(`docs/ports/${port}/mcp/index.md`).title).toBe(`tmux MCP, built in ${name}, is not published`)
+      for (const product of ['workspace', 'mcp']) expect(existsSync(new URL(`docs/ports/${port}/${product}`, CONTENT)), `${port} ${product}`).toBe(false)
     }
   })
 

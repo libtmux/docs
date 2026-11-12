@@ -26,13 +26,6 @@ export const LANDING_LABEL: Readonly<Record<LandingProduct, string>> = {
   workspace: DOC_PRODUCTS.workspace.label,
 }
 
-/**
- * A port whose MCP server is another port's package. PowerShell has no server
- * of its own: its guide drives the .NET tool, so the panel installs and quotes
- * that tool.
- */
-export const MCP_SERVED_BY: Readonly<Record<string, string>> = { powershell: 'csharp' }
-
 /** The workflow command that runs the program. */
 export interface LandingCi {
   /** Workflow file in the repository, such as `.github/workflows/tests.yml`. */
@@ -101,16 +94,10 @@ export function workflowRuns(workflow: string, command: string): boolean {
 /** Where the cache holds a product's file; a product may live outside the library's repository. */
 export const landingCacheKey = (owner: string, product: DocProduct, file: string) => `${owner}/${product}:${file}`
 
-/** The port whose source and example serve a product. */
-export function landingOwner(port: Port, product: DocProduct): string {
-  return product === 'mcp' ? MCP_SERVED_BY[port.slug] ?? port.slug : port.slug
-}
-
 /** The products a port ships, in selector order. Core API is always first. */
 export function landingProducts(port: Port): LandingProduct[] {
   return LANDING_PRODUCTS.filter((product) => product === 'core'
-    || (product === 'mcp' && (productAvailable(port, 'mcp') || port.slug in MCP_SERVED_BY))
-    || (product === 'workspace' && productAvailable(port, 'workspace')))
+    || productAvailable(port, product))
 }
 
 /** One cached file, as `example-sources.json` holds it. */
@@ -142,10 +129,9 @@ export function landingExcerpt(
   table: LandingTable,
   cache: Readonly<Record<string, CachedSource | undefined>>,
 ): ResolvedExcerpt | undefined {
-  const owner = landingOwner(port, product)
-  const entry = table[owner]?.[product]
+  const entry = table[port.slug]?.[product]
   if (!entry || isGap(entry)) return undefined
-  const key = landingCacheKey(owner, product, entry.file)
+  const key = landingCacheKey(port.slug, product, entry.file)
   const cached = cache[key]
   if (!cached) throw new Error(`port-landing: ${key} is not in the example cache; run node scripts/gen-example-sources.mjs`)
   return {
@@ -169,8 +155,6 @@ export interface LandingPanel {
   excerpt?: ResolvedExcerpt
   /** The package the install widget adds. */
   packageName?: string
-  /** The port whose package serves the product when this port has none of its own. */
-  servedBy?: string
   /** Which install widget the panel keeps, and the port whose package it installs. */
   install?: { widget: 'package' | 'mcp'; port: string }
 }
@@ -179,25 +163,21 @@ export interface LandingPanel {
 export function landingPanels(
   port: Port,
   version: string,
-  ports: Readonly<Record<string, Port>>,
   table: LandingTable,
   cache: Readonly<Record<string, CachedSource | undefined>>,
 ): LandingPanel[] {
   return landingProducts(port).map((product): LandingPanel => {
     if (product === 'core') return { product, label: LANDING_LABEL.core, packageName: port.packageName, install: { widget: 'package', port: port.slug } }
-    const owner = ports[landingOwner(port, product)]!
-    const packageName = owner.packages?.find((entry) => entry.id === product)?.name
+    const packageName = port.packages?.find((entry) => entry.id === product)?.name
     const installed = product === 'mcp'
-      ? { widget: 'mcp' as const, port: owner.slug }
+      ? { widget: 'mcp' as const, port: port.slug }
       : hasPackageInstalls(port, 'workspace') ? { widget: 'package' as const, port: port.slug } : undefined
     return {
       product,
       label: LANDING_LABEL[product],
-      // PowerShell documents its MCP use as a guide in the library, not a product tree.
-      href: portPageUrl(port, version, port.slug in MCP_SERVED_BY && product === 'mcp' ? 'guides/mcp' : product),
+      href: portPageUrl(port, version, product),
       excerpt: landingExcerpt(port, product, table, cache),
       packageName,
-      servedBy: owner.slug === port.slug ? undefined : owner.name,
       install: installed,
     }
   })

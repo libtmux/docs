@@ -384,7 +384,7 @@ export const INVENTORY: Readonly<Record<string, readonly InventoryEntry[]>> = {
       aliases: ['Erlang/OTP', 'Rebar3'], note: 'Installs from Git with Rebar3 git_subdir; no Hex release.' }),
     erlang({ id: 'repository', kind: 'source', product: 'core', label: 'libtmux-erlang', coordinate: 'libtmux/libtmux-erlang' }),
     erlang({ id: 'libtmux_erlang_workspace', kind: 'companion', product: 'workspace', label: 'libtmux_erlang_workspace', path: 'apps/libtmux_erlang_workspace',
-      note: 'Source application that plans and applies JSON workspaces, with a standalone escript built from source; no Hex release.' }),
+      status: 'planned', note: 'Source application with a standalone escript; no Hex release and no published product.' }),
   ],
   elixir: [
     elixir({ id: 'libtmux', kind: 'library', product: 'core', label: 'libtmux', ...hexPackage('libtmux'), path: 'lib', aliases: ['LibTmux'] }),
