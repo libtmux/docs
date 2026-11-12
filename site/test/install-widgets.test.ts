@@ -211,7 +211,9 @@ describe('homepage preference before body parsing', () => {
 
 const describeIfBuilt = SITE_BUILT && existsSync(PORT_HOME) ? describe : describe.skip
 
-describeIfBuilt('package install picker', () => {
+// Each test here parses and scripts a built page of over a megabyte, and one loads it three times:
+// 0.7-1.0 s a load alone, 3 s for that test, so a loaded runner needs more than the default.
+describeIfBuilt('package install picker', { timeout: 20_000 }, () => {
   const url = `https://libtmux.org/${SITE_PREFIX}ts/latest/`
 
   it('shows one command per port, and the first by default', () => {
