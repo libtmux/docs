@@ -15,6 +15,10 @@ import { resolveCheckout } from '../port-checkout.mjs'
  *   and the marked copy under `sandbox/exact` and `sandbox/marked`;
  * - `command(dir)` is the argv that runs one built copy, and `normalizeOutput`,
  *   when given, reads what it printed the way the port's own test does;
+ * - `setup({ dir, env })`, when given, does what the page's setup commands do
+ *   before the program runs (start the server it connects to). It runs without
+ *   the tmux shim, so no step is credited with it, and tmux is read after it
+ *   for the state before the first call;
  * - `toolchain()` names the compiler for the recording's provenance;
  * - `instrument(code, steps)` is the marked copy;
  * - `steps` is the hand-written step map, in the order the calls run. A step
@@ -47,12 +51,14 @@ export const checkoutOf = (port, env) => resolveCheckout(port, { env, order: ['w
  * Insert a marker line after each step's statement. `mark(step)` is the line
  * in the port's language and ends in `docs:mark`, so a copy without those
  * lines is the displayed program. A step may set `after`, the line to insert
- * after, when its statement is not where its value is in scope.
+ * after, when its statement is not where its value is in scope. `syntax` says
+ * how the language's comments and quotes are read (`statementLines`): the text
+ * that starts a comment, or `syntaxOf(port)`.
  */
-export function instrumentLines(source, steps, mark, comment = '//') {
+export function instrumentLines(source, steps, mark, syntax = '//') {
   const lines = source.split('\n')
   const inserts = steps.map((step) => {
-    const range = statementLines(source, step.anchor, comment, step.occurrence)
+    const range = statementLines(source, step.anchor, syntax, step.occurrence)
     if (!range) throw new Error(`${step.id}: the anchor ${JSON.stringify(step.anchor)} is not on exactly one line of the program`)
     const indent = /^\s*/.exec(lines[range[0] - 1])[0]
     return { after: step.after ?? range[1], text: `${indent}${mark(step)}` }

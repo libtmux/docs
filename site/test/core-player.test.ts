@@ -4,7 +4,7 @@ import { Window } from 'happy-dom'
 import { ModuleKind, ScriptTarget, transpileModule } from 'typescript'
 import { afterEach, describe, expect, it } from 'vitest'
 import { capabilityExample, coreFrames, coreRecordingFor, paneActivity, playableCapability, stepChanges, stepNote, tmuxChanges, viewSteps, visibleCommands } from '../src/lib/core-player'
-import { statementLines } from '../src/lib/core-statement'
+import { statementLines, syntaxOf } from '../src/lib/core-statement'
 import { HOME_VIEWS, QUICKSTARTS, homeProgram } from '../src/lib/quickstarts'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 
@@ -32,6 +32,63 @@ describe('finding a call in a program', () => {
 
   it('reads a statement with no parenthesis as its own line', () => {
     expect(statementLines('a := 1\nb := 2', 'b := 2')).toEqual([2, 2])
+  })
+})
+
+describe('finding a call in a Lisp, Erlang or Perl program', () => {
+  const lines = (...text: string[]) => text.join('\n')
+  const c = { comment: '//', quotes: '"\'`' }
+
+  it('reads a quoted list in Lisp as a form, not a string, and `;` as a comment', () => {
+    const lisp = lines(
+      '(let* ((right (observed-value',
+      '               (libtmux:split-pane',
+      '                client left :command \'("/bin/cat"))))',
+      '       (pane (find id panes :key #\'libtmux:id :test #\'string=)))',
+      '  ; a ) in a comment',
+      '  (libtmux:kill-server client))',
+    )
+    expect(statementLines(lisp, '(libtmux:split-pane', syntaxOf('lisp'))).toEqual([2, 3])
+    expect(statementLines(lisp, '(libtmux:kill-server', syntaxOf('lisp'))).toEqual([6, 6])
+    expect(statementLines(lisp, '(libtmux:split-pane', c), 'C reads the quote as a string that swallows the closing brackets').not.toEqual([2, 3])
+  })
+
+  it('does not count a bracket in a Lisp character literal', () => {
+    const lisp = lines('(find #\\) (list #\\( #\\"', '            #\\;))', '(next)')
+    expect(statementLines(lisp, '(find', syntaxOf('lisp'))).toEqual([1, 2])
+  })
+
+  it('reads `%` as an Erlang comment and `\'` as an atom, and does not count `$)` or `$"`', () => {
+    const erlang = lines(
+      '    {ok, A} = tmux_x:create(S, #{c => $), % a ) comment',
+      "                                 name => 'a b)'}),",
+      '    {ok, B} = tmux_x:split(A, $", $\\n, "z"),',
+      '    ok.',
+    )
+    expect(statementLines(erlang, 'tmux_x:create(', syntaxOf('erlang'))).toEqual([1, 2])
+    expect(statementLines(erlang, 'tmux_x:split(', syntaxOf('erlang'))).toEqual([3, 3])
+    expect(statementLines(erlang, 'tmux_x:create(', c), 'C reads `$)` as the bracket that closes the call').not.toEqual([1, 2])
+  })
+
+  it('reads `#` as a Perl comment, except in `$#array`, and `$\'` as a variable', () => {
+    const perl = lines(
+      '    my $last = $server->mark($#items);',
+      "    $server->name('it)s', $'); # a ) comment",
+      '    $server->next(',
+      '        size => 1, # a ( comment',
+      '    );',
+    )
+    expect(statementLines(perl, '$server->mark(', syntaxOf('perl'))).toEqual([1, 1])
+    expect(statementLines(perl, '$server->name(', syntaxOf('perl'))).toEqual([2, 2])
+    expect(statementLines(perl, '$server->next(', syntaxOf('perl'))).toEqual([3, 5])
+    const bare = { comment: '#', quotes: '"\'' }
+    expect(statementLines(perl, '$server->mark(', bare), 'without the `$` rule the `#` of `$#items` hides the closing bracket').not.toEqual([1, 1])
+  })
+
+  it('keeps C\'s rules for a port that has none of its own', () => {
+    const go = lines('x := f("a)") // (', 'y := g()')
+    expect(statementLines(go, 'f(', syntaxOf('go'))).toEqual(statementLines(go, 'f('))
+    expect(syntaxOf(undefined)).toEqual(syntaxOf('go'))
   })
 })
 

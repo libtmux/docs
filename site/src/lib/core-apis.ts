@@ -215,7 +215,9 @@ export function callHref(port: string, label: string, context: ApiLinkContext = 
 
 /** A returned type as text, each name in it that is one type of the port's models linked to its page; `expected`, `Result<T, E>`'s `Result` and the like stay text unless the library defines them. */
 export function typeText(port: string, type: string, context: ApiLinkContext = {}): ApiText[] {
-  return type.split(/([A-Za-z_]\w*)/).filter((text) => text !== '').map((text) => {
+  // A Lisp type is named with hyphens (`command-outcome`); in the other languages a hyphen is an operator (`->`).
+  const name = port === 'lisp' ? /([A-Za-z_][\w-]*)/ : /([A-Za-z_]\w*)/
+  return type.split(name).filter((text) => text !== '').map((text) => {
     const href = /^[A-Za-z_]/.test(text) ? resolve(port, context, (index) => typeNamed(index, text)) : undefined
     return href ? { text, href } : { text }
   })

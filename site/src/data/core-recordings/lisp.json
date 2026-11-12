@@ -1,0 +1,1435 @@
+{
+  "generated": "scripts/gen-core-recording.mjs",
+  "port": "lisp",
+  "repo": "libtmux/libtmux-lisp",
+  "revision": "99874b44dbe29b3651597a5debbacccde235d96c",
+  "sandbox": {
+    "tmux": "tmux 3.8a",
+    "sbcl": "2.6.10",
+    "asdf": "3.3.7",
+    "shell": "/bin/sh",
+    "rewritten": {
+      "socket": "libtmux-quickstart-12345",
+      "tmuxExecutable": "/usr/bin/tmux",
+      "tmpdir": "/tmp"
+    }
+  },
+  "capabilities": {
+    "typed-graph": {
+      "program": {
+        "file": "quickstart.lisp",
+        "sha256": "d6f5dfbc7f59d35f03717afe659e7b1bb5a6c0e6df926cf255757eed44db0808"
+      },
+      "stepMap": "hand-written",
+      "printed": [
+        "session demo",
+        "  window 0:editor: %0 %1",
+        "  window 1:logs: %2",
+        "%1 is in window editor of session demo"
+      ],
+      "tmuxBefore": {
+        "sessions": [
+          {
+            "id": "$0",
+            "name": "demo"
+          }
+        ],
+        "windows": [
+          {
+            "session": "$0",
+            "id": "@0",
+            "index": 0,
+            "name": "editor",
+            "active": true,
+            "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+          }
+        ],
+        "panes": [
+          {
+            "window": "@0",
+            "id": "%0",
+            "command": "sh",
+            "left": 0,
+            "top": 0,
+            "width": 80,
+            "height": 24,
+            "active": true
+          }
+        ]
+      },
+      "steps": [
+        {
+          "id": "snapshot-before",
+          "label": "libtmux:fetch-snapshot",
+          "anchor": "(before (libtmux:fetch-snapshot client))",
+          "type": "snapshot",
+          "returned": {
+            "sessions": 1,
+            "windows": 1,
+            "panes": 1
+          },
+          "commands": [
+            {
+              "role": "probe",
+              "tmux": "-u -S <socket> -f /dev/null -V",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "probe",
+              "tmux": "show-options -s -v command-alias",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "probe",
+              "tmux": "-u -S <socket> -f /dev/null -N",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "list-sessions -F 'session/1\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_name}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_created}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_attached}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_windows}'",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "session/1\t$0\tdemo\t1794446456\t0\t1",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "list-windows -a -F 'window-link/1\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_index}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_name}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_width}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_height}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_panes}\t#{s/%/%…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "window-link/1\t$0\t0\t@0\teditor\t80\t24\t1\t1\t{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%250\"}}",
+              "stderr": "",
+              "shortened": true
+            },
+            {
+              "role": "command",
+              "tmux": "list-panes -a -F 'pane/1\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_index}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:pane_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:pane_index}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:pane_active}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:pane_width}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "pane/1\t$0\t0\t@0\t%250\t0\t1\t80\t24\tsh\t/tmp/marked\thost\t1539271\t0\t/bin/cat",
+              "stderr": "",
+              "shortened": true
+            },
+            {
+              "role": "command",
+              "tmux": "list-clients -F 'client/1\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_name}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_pid}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_created}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_tty}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_control_mode}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_readonly}'",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "probe",
+              "tmux": "-u -S <socket> -f /dev/null -N",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            }
+          ],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "sessions",
+          "label": "libtmux:sessions",
+          "anchor": "(libtmux:sessions before)",
+          "type": "(vector session)",
+          "returned": [
+            "demo"
+          ],
+          "commands": [],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "window-links",
+          "label": "libtmux:window-links",
+          "anchor": "(libtmux:window-links demo)",
+          "type": "(vector window-link)",
+          "returned": [
+            0
+          ],
+          "commands": [],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "editor",
+          "label": "libtmux:window",
+          "anchor": "(libtmux:window editor-link)",
+          "type": "window",
+          "returned": {
+            "id": "@0",
+            "name": "editor"
+          },
+          "commands": [],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "editor-panes",
+          "label": "libtmux:panes",
+          "anchor": "(libtmux:panes editor)",
+          "type": "(vector pane)",
+          "returned": [
+            "%0"
+          ],
+          "commands": [],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "split",
+          "label": "libtmux:split-pane",
+          "anchor": "(libtmux:split-pane",
+          "type": "command-outcome",
+          "returned": {
+            "status": "succeeded",
+            "pane": "%1"
+          },
+          "commands": [
+            {
+              "role": "probe",
+              "tmux": "show-options -s -v command-alias",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "probe",
+              "tmux": "-u -S <socket> -f /dev/null -N",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "list-sessions -F 'session/1\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_name}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_created}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_attached}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_windows}'",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "session/1\t$0\tdemo\t1794446456\t0\t1",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "list-windows -a -F 'window-link/1\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_index}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_name}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_width}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_height}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_panes}\t#{s/%/%…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "window-link/1\t$0\t0\t@0\teditor\t80\t24\t1\t1\t{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%250\"}}",
+              "stderr": "",
+              "shortened": true
+            },
+            {
+              "role": "command",
+              "tmux": "list-panes -a -F 'pane/1\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_index}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:pane_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:pane_index}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:pane_active}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:pane_width}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "pane/1\t$0\t0\t@0\t%250\t0\t1\t80\t24\tsh\t/tmp/marked\thost\t1539271\t0\t/bin/cat",
+              "stderr": "",
+              "shortened": true
+            },
+            {
+              "role": "command",
+              "tmux": "list-clients -F 'client/1\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_name}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_pid}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_created}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_tty}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_control_mode}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_readonly}'",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "probe",
+              "tmux": "-u -S <socket> -f /dev/null -N",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "split-window -P -F #{pane_id} -t %0 -h -d -- /bin/sh -c 'exec \"$@\"' libtmux-exec /bin/cat",
+              "mutates": true,
+              "exit": 0,
+              "stdout": "%1",
+              "stderr": ""
+            },
+            {
+              "role": "probe",
+              "tmux": "show-options -s -v command-alias",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "probe",
+              "tmux": "-u -S <socket> -f /dev/null -N",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "list-sessions -F 'session/1\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_name}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_created}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_attached}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_windows}'",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "session/1\t$0\tdemo\t1794446456\t0\t1",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "list-windows -a -F 'window-link/1\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_index}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_name}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_width}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_height}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_panes}\t#{s/%/%…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "window-link/1\t$0\t0\t@0\teditor\t80\t24\t2\t1\t{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%250\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%251\"}]}}",
+              "stderr": "",
+              "shortened": true
+            },
+            {
+              "role": "command",
+              "tmux": "list-panes -a -F 'pane/1\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_index}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:pane_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:pane_index}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:pane_active}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:pane_width}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "pane/1\t$0\t0\t@0\t%250\t0\t1\t40\t24\tsh\t/tmp/marked\thost\t1539271\t0\t/bin/cat\npane/1\t$0\t0\t@0\t%251\t1\t0\t39\t24\tcat\t/tmp/marked\thost\t1539867\t0\t/bin/sh -c \"exec \\\"$@\\\"\" libtmux-exec /bin/cat",
+              "stderr": "",
+              "shortened": true
+            },
+            {
+              "role": "command",
+              "tmux": "list-clients -F 'client/1\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_name}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_pid}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_created}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_tty}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_control_mode}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_readonly}'",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "probe",
+              "tmux": "-u -S <socket> -f /dev/null -N",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            }
+          ],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 40,
+                "height": 24,
+                "active": true
+              },
+              {
+                "window": "@0",
+                "id": "%1",
+                "command": "cat",
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
+                "active": false
+              }
+            ]
+          }
+        },
+        {
+          "id": "new-window",
+          "label": "libtmux:new-window",
+          "anchor": "(libtmux:new-window",
+          "type": "command-outcome",
+          "returned": {
+            "status": "succeeded",
+            "window": "@1"
+          },
+          "commands": [
+            {
+              "role": "probe",
+              "tmux": "show-options -s -v command-alias",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "probe",
+              "tmux": "-u -S <socket> -f /dev/null -N",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "list-sessions -F 'session/1\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_name}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_created}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_attached}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_windows}'",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "session/1\t$0\tdemo\t1794446456\t0\t1",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "list-windows -a -F 'window-link/1\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_index}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_name}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_width}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_height}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_panes}\t#{s/%/%…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "window-link/1\t$0\t0\t@0\teditor\t80\t24\t2\t1\t{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%250\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%251\"}]}}",
+              "stderr": "",
+              "shortened": true
+            },
+            {
+              "role": "command",
+              "tmux": "list-panes -a -F 'pane/1\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_index}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:pane_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:pane_index}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:pane_active}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:pane_width}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "pane/1\t$0\t0\t@0\t%250\t0\t1\t40\t24\tsh\t/tmp/marked\thost\t1539271\t0\t/bin/cat\npane/1\t$0\t0\t@0\t%251\t1\t0\t39\t24\tcat\t/tmp/marked\thost\t1539867\t0\t/bin/sh -c \"exec \\\"$@\\\"\" libtmux-exec /bin/cat",
+              "stderr": "",
+              "shortened": true
+            },
+            {
+              "role": "command",
+              "tmux": "list-clients -F 'client/1\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_name}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_pid}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_created}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_tty}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_control_mode}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_readonly}'",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "probe",
+              "tmux": "-u -S <socket> -f /dev/null -N",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "new-window -P -F #{window_id} -t $0: -d -n logs -- /bin/sh -c 'exec \"$@\"' libtmux-exec /bin/cat",
+              "mutates": true,
+              "exit": 0,
+              "stdout": "@1",
+              "stderr": ""
+            },
+            {
+              "role": "probe",
+              "tmux": "show-options -s -v command-alias",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "probe",
+              "tmux": "-u -S <socket> -f /dev/null -N",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "list-sessions -F 'session/1\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_name}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_created}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_attached}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_windows}'",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "session/1\t$0\tdemo\t1794446456\t0\t2",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "list-windows -a -F 'window-link/1\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_index}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_name}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_width}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_height}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_panes}\t#{s/%/%…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "window-link/1\t$0\t0\t@0\teditor\t80\t24\t2\t1\t{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%250\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%251\"}]}}\nwindow-link/1\t$0\t1\t@1\tlogs\t80\t24\t1\t0\t{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%252\"}}",
+              "stderr": "",
+              "shortened": true
+            },
+            {
+              "role": "command",
+              "tmux": "list-panes -a -F 'pane/1\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_index}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:pane_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:pane_index}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:pane_active}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:pane_width}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "pane/1\t$0\t0\t@0\t%250\t0\t1\t40\t24\tsh\t/tmp/marked\thost\t1539271\t0\t/bin/cat\npane/1\t$0\t0\t@0\t%251\t1\t0\t39\t24\tcat\t/tmp/marked\thost\t1539867\t0\t/bin/sh -c \"exec \\\"$@\\\"\" libtmux-exec /bin/cat\npane/1\t$0\t1\t@1\t%252\t0\t1\t80\t24\tcat\t/tmp/marked\thost\t1540030\t0\t/bin/sh -c \"exec \\\"$@\\\"\" libtmux-exec /bin/cat",
+              "stderr": "",
+              "shortened": true
+            },
+            {
+              "role": "command",
+              "tmux": "list-clients -F 'client/1\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_name}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_pid}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_created}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_tty}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_control_mode}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_readonly}'",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "probe",
+              "tmux": "-u -S <socket> -f /dev/null -N",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            }
+          ],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
+              },
+              {
+                "session": "$0",
+                "id": "@1",
+                "index": 1,
+                "name": "logs",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%2\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 40,
+                "height": 24,
+                "active": true
+              },
+              {
+                "window": "@0",
+                "id": "%1",
+                "command": "cat",
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
+                "active": false
+              },
+              {
+                "window": "@1",
+                "id": "%2",
+                "command": "cat",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "send-text",
+          "label": "libtmux:send-text",
+          "anchor": "(libtmux:send-text",
+          "type": "command-outcome",
+          "returned": {
+            "status": "succeeded"
+          },
+          "commands": [
+            {
+              "role": "probe",
+              "tmux": "show-options -s -v command-alias",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "probe",
+              "tmux": "-u -S <socket> -f /dev/null -N",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "list-sessions -F 'session/1\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_name}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_created}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_attached}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_windows}'",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "session/1\t$0\tdemo\t1794446456\t0\t2",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "list-windows -a -F 'window-link/1\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_index}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_name}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_width}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_height}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_panes}\t#{s/%/%…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "window-link/1\t$0\t0\t@0\teditor\t80\t24\t2\t1\t{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%250\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%251\"}]}}\nwindow-link/1\t$0\t1\t@1\tlogs\t80\t24\t1\t0\t{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%252\"}}",
+              "stderr": "",
+              "shortened": true
+            },
+            {
+              "role": "command",
+              "tmux": "list-panes -a -F 'pane/1\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_index}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:pane_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:pane_index}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:pane_active}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:pane_width}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "pane/1\t$0\t0\t@0\t%250\t0\t1\t40\t24\tsh\t/tmp/marked\thost\t1539271\t0\t/bin/cat\npane/1\t$0\t0\t@0\t%251\t1\t0\t39\t24\tcat\t/tmp/marked\thost\t1539867\t0\t/bin/sh -c \"exec \\\"$@\\\"\" libtmux-exec /bin/cat\npane/1\t$0\t1\t@1\t%252\t0\t1\t80\t24\tcat\t/tmp/marked\thost\t1540030\t0\t/bin/sh -c \"exec \\\"$@\\\"\" libtmux-exec /bin/cat",
+              "stderr": "",
+              "shortened": true
+            },
+            {
+              "role": "command",
+              "tmux": "list-clients -F 'client/1\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_name}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_pid}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_created}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_tty}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_control_mode}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_readonly}'",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "probe",
+              "tmux": "-u -S <socket> -f /dev/null -N",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "send-keys -l -t %1 -- 'hello from tmux\\015'",
+              "mutates": true,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            }
+          ],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
+              },
+              {
+                "session": "$0",
+                "id": "@1",
+                "index": 1,
+                "name": "logs",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%2\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 40,
+                "height": 24,
+                "active": true
+              },
+              {
+                "window": "@0",
+                "id": "%1",
+                "command": "cat",
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
+                "active": false
+              },
+              {
+                "window": "@1",
+                "id": "%2",
+                "command": "cat",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "capture",
+          "label": "libtmux:capture-pane",
+          "anchor": "(libtmux:capture-pane",
+          "type": "string",
+          "returned": {
+            "status": "succeeded",
+            "text": "hello from tmux\nhello from tmux"
+          },
+          "commands": [
+            {
+              "role": "probe",
+              "tmux": "show-options -s -v command-alias",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "probe",
+              "tmux": "-u -S <socket> -f /dev/null -N",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "list-sessions -F 'session/1\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_name}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_created}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_attached}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_windows}'",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "session/1\t$0\tdemo\t1794446456\t0\t2",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "list-windows -a -F 'window-link/1\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_index}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_name}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_width}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_height}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_panes}\t#{s/%/%…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "window-link/1\t$0\t0\t@0\teditor\t80\t24\t2\t1\t{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%250\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%251\"}]}}\nwindow-link/1\t$0\t1\t@1\tlogs\t80\t24\t1\t0\t{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%252\"}}",
+              "stderr": "",
+              "shortened": true
+            },
+            {
+              "role": "command",
+              "tmux": "list-panes -a -F 'pane/1\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_index}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:pane_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:pane_index}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:pane_active}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:pane_width}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "pane/1\t$0\t0\t@0\t%250\t0\t1\t40\t24\tsh\t/tmp/marked\thost\t1539271\t0\t/bin/cat\npane/1\t$0\t0\t@0\t%251\t1\t0\t39\t24\tcat\t/tmp/marked\thost\t1539867\t0\t/bin/sh -c \"exec \\\"$@\\\"\" libtmux-exec /bin/cat\npane/1\t$0\t1\t@1\t%252\t0\t1\t80\t24\tcat\t/tmp/marked\thost\t1540030\t0\t/bin/sh -c \"exec \\\"$@\\\"\" libtmux-exec /bin/cat",
+              "stderr": "",
+              "shortened": true
+            },
+            {
+              "role": "command",
+              "tmux": "list-clients -F 'client/1\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_name}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_pid}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_created}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_tty}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_control_mode}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_readonly}'",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "probe",
+              "tmux": "-u -S <socket> -f /dev/null -N",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "capture-pane -p -t %1",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "hello from tmux\nhello from tmux\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
+              "stderr": ""
+            }
+          ],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
+              },
+              {
+                "session": "$0",
+                "id": "@1",
+                "index": 1,
+                "name": "logs",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%2\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 40,
+                "height": 24,
+                "active": true
+              },
+              {
+                "window": "@0",
+                "id": "%1",
+                "command": "cat",
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
+                "active": false
+              },
+              {
+                "window": "@1",
+                "id": "%2",
+                "command": "cat",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "snapshot",
+          "label": "libtmux:fetch-snapshot",
+          "anchor": "(snapshot (libtmux:fetch-snapshot client))",
+          "type": "snapshot",
+          "returned": {
+            "sessions": 1,
+            "windows": 2,
+            "panes": 3
+          },
+          "commands": [
+            {
+              "role": "probe",
+              "tmux": "show-options -s -v command-alias",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "probe",
+              "tmux": "-u -S <socket> -f /dev/null -N",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "list-sessions -F 'session/1\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_name}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_created}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_attached}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_windows}'",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "session/1\t$0\tdemo\t1794446456\t0\t2",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "list-windows -a -F 'window-link/1\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_index}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_name}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_width}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_height}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_panes}\t#{s/%/%…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "window-link/1\t$0\t0\t@0\teditor\t80\t24\t2\t1\t{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%250\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%251\"}]}}\nwindow-link/1\t$0\t1\t@1\tlogs\t80\t24\t1\t0\t{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%252\"}}",
+              "stderr": "",
+              "shortened": true
+            },
+            {
+              "role": "command",
+              "tmux": "list-panes -a -F 'pane/1\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_index}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:window_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:pane_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:pane_index}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:pane_active}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:pane_width}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0…",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "pane/1\t$0\t0\t@0\t%250\t0\t1\t40\t24\tsh\t/tmp/marked\thost\t1539271\t0\t/bin/cat\npane/1\t$0\t0\t@0\t%251\t1\t0\t39\t24\tcat\t/tmp/marked\thost\t1539867\t0\t/bin/sh -c \"exec \\\"$@\\\"\" libtmux-exec /bin/cat\npane/1\t$0\t1\t@1\t%252\t0\t1\t80\t24\tcat\t/tmp/marked\thost\t1540030\t0\t/bin/sh -c \"exec \\\"$@\\\"\" libtmux-exec /bin/cat",
+              "stderr": "",
+              "shortened": true
+            },
+            {
+              "role": "command",
+              "tmux": "list-clients -F 'client/1\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_name}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_pid}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_created}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_tty}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:session_id}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_control_mode}\t#{s/%/%25/;s/\n/%0A/;s/\r/%0D/;s/\t/%09/:client_readonly}'",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "probe",
+              "tmux": "-u -S <socket> -f /dev/null -N",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            }
+          ],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
+              },
+              {
+                "session": "$0",
+                "id": "@1",
+                "index": 1,
+                "name": "logs",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%2\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 40,
+                "height": 24,
+                "active": true
+              },
+              {
+                "window": "@0",
+                "id": "%1",
+                "command": "cat",
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
+                "active": false
+              },
+              {
+                "window": "@1",
+                "id": "%2",
+                "command": "cat",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "panes",
+          "label": "libtmux:panes",
+          "anchor": "(libtmux:panes snapshot)",
+          "type": "(vector pane)",
+          "returned": [
+            "%0",
+            "%1",
+            "%2"
+          ],
+          "commands": [],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
+              },
+              {
+                "session": "$0",
+                "id": "@1",
+                "index": 1,
+                "name": "logs",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%2\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 40,
+                "height": 24,
+                "active": true
+              },
+              {
+                "window": "@0",
+                "id": "%1",
+                "command": "cat",
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
+                "active": false
+              },
+              {
+                "window": "@1",
+                "id": "%2",
+                "command": "cat",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "pane-window",
+          "label": "libtmux:window",
+          "anchor": "(libtmux:window pane)",
+          "type": "window",
+          "returned": {
+            "id": "@0",
+            "name": "editor"
+          },
+          "commands": [],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
+              },
+              {
+                "session": "$0",
+                "id": "@1",
+                "index": 1,
+                "name": "logs",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%2\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 40,
+                "height": 24,
+                "active": true
+              },
+              {
+                "window": "@0",
+                "id": "%1",
+                "command": "cat",
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
+                "active": false
+              },
+              {
+                "window": "@1",
+                "id": "%2",
+                "command": "cat",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "owner-links",
+          "label": "libtmux:window-links",
+          "anchor": "(libtmux:window-links window)",
+          "type": "(vector window-link)",
+          "returned": [
+            0
+          ],
+          "commands": [],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
+              },
+              {
+                "session": "$0",
+                "id": "@1",
+                "index": 1,
+                "name": "logs",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%2\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 40,
+                "height": 24,
+                "active": true
+              },
+              {
+                "window": "@0",
+                "id": "%1",
+                "command": "cat",
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
+                "active": false
+              },
+              {
+                "window": "@1",
+                "id": "%2",
+                "command": "cat",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "owner",
+          "label": "libtmux:session",
+          "anchor": "(libtmux:session owner-link)",
+          "type": "session",
+          "returned": {
+            "id": "$0",
+            "name": "demo"
+          },
+          "commands": [],
+          "transient": [],
+          "tmux": {
+            "sessions": [
+              {
+                "id": "$0",
+                "name": "demo"
+              }
+            ],
+            "windows": [
+              {
+                "session": "$0",
+                "id": "@0",
+                "index": 0,
+                "name": "editor",
+                "active": true,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
+              },
+              {
+                "session": "$0",
+                "id": "@1",
+                "index": 1,
+                "name": "logs",
+                "active": false,
+                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%2\"}}"
+              }
+            ],
+            "panes": [
+              {
+                "window": "@0",
+                "id": "%0",
+                "command": "sh",
+                "left": 0,
+                "top": 0,
+                "width": 40,
+                "height": 24,
+                "active": true
+              },
+              {
+                "window": "@0",
+                "id": "%1",
+                "command": "cat",
+                "left": 41,
+                "top": 0,
+                "width": 39,
+                "height": 24,
+                "active": false
+              },
+              {
+                "window": "@1",
+                "id": "%2",
+                "command": "cat",
+                "left": 0,
+                "top": 0,
+                "width": 80,
+                "height": 24,
+                "active": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "kill-server",
+          "label": "libtmux:kill-server",
+          "anchor": "(libtmux:kill-server client)",
+          "type": "command-outcome",
+          "returned": {
+            "status": "succeeded"
+          },
+          "commands": [
+            {
+              "role": "probe",
+              "tmux": "show-options -s -v command-alias",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "probe",
+              "tmux": "-u -S <socket> -f /dev/null -N",
+              "mutates": false,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            },
+            {
+              "role": "command",
+              "tmux": "kill-server",
+              "mutates": true,
+              "exit": 0,
+              "stdout": "",
+              "stderr": ""
+            }
+          ],
+          "transient": [],
+          "tmux": {
+            "sessions": [],
+            "windows": [],
+            "panes": []
+          }
+        }
+      ]
+    }
+  }
+}
