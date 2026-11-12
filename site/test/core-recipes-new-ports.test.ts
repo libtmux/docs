@@ -15,6 +15,8 @@ import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 const recording = (port: string): CoreRecording => JSON.parse(readFileSync(new URL(`../src/data/core-recordings/${port}.json`, import.meta.url), 'utf8'))
 const capabilityOf = (port: string) => recording(port).capabilities['typed-graph']!
 const shown = (port: string) => homeProgram(QUICKSTARTS[port]!.complete!, 'full')
+/** Which of several lines holding an anchor a step means, when its recipe says. */
+const occurrenceOf = (step: object) => (step as { occurrence?: number }).occurrence
 /** The Code block of the page, as text, so a template renders without Expressive Code. */
 const Code = createComponent((_result: unknown, props: { code: string }) => renderTemplate`<pre data-code>${props.code}</pre>`)
 
@@ -64,7 +66,7 @@ describe('Common Lisp recipe', () => {
   it('finds every call on exactly one line of every view of the program', () => {
     for (const view of views('lisp')) {
       for (const step of recipe.steps) {
-        expect(statementLines(view, step.anchor, syntaxOf('lisp'), step.occurrence), step.id).toBeDefined()
+        expect(statementLines(view, step.anchor, syntaxOf('lisp'), occurrenceOf(step)), step.id).toBeDefined()
       }
     }
   })
@@ -227,7 +229,7 @@ describe('Perl recipe', () => {
   })
 
   it('finds every call on exactly one line of the displayed program, the second snapshot by its occurrence', () => {
-    for (const step of recipe.steps) expect(statementLines(code, step.anchor, syntaxOf('perl'), step.occurrence), step.id).toBeDefined()
+    for (const step of recipe.steps) expect(statementLines(code, step.anchor, syntaxOf('perl'), occurrenceOf(step)), step.id).toBeDefined()
     expect(statementLines(code, '$snapshot = $server->snapshot;', syntaxOf('perl'))).toBeUndefined()
   })
 })
@@ -300,18 +302,18 @@ describe('Erlang recipe', () => {
     const lines = marked.split('\n')
     const mark = lines.findIndex((line: string) => line.includes('docs_mark:mark(<<"retire">>'))
     expect(lines[mark - 1]).toBe('    end),')
-    expect(recipe.steps.find((step: { id: string }) => step.id === 'retire').stopsServer).toBe(true)
+    expect(recipe.steps.find((step: { id: string }) => step.id === 'retire')?.stopsServer).toBe(true)
   })
 
   it('finds every call on exactly one line of the displayed program, `%` and `\'` read as Erlang reads them', () => {
-    for (const step of recipe.steps) expect(statementLines(code, step.anchor, syntaxOf('erlang'), step.occurrence), step.id).toBeDefined()
+    for (const step of recipe.steps) expect(statementLines(code, step.anchor, syntaxOf('erlang'), occurrenceOf(step)), step.id).toBeDefined()
     expect(() => recipe.instrument(code, [{ id: 'x', anchor: 'tmux_pane:nope(', value: 'ok' }])).toThrow(/not on exactly one line/)
   })
 
   it('compiles a helper beside the marked program only, which stops the program when a mark fails', () => {
     expect(recipe.helpers.map((helper: { file: string }) => helper.file)).toEqual(['src/docs_mark.erl'])
-    expect(recipe.helpers[0].source).toContain('-module(docs_mark).')
-    expect(recipe.helpers[0].source).toContain('erlang:halt(Status)')
+    expect(recipe.helpers[0]!.source).toContain('-module(docs_mark).')
+    expect(recipe.helpers[0]!.source).toContain('erlang:halt(Status)')
   })
 })
 
