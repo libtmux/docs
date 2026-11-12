@@ -113,7 +113,10 @@ class _CreationExportTest(unittest.TestCase):
     def test_shared_labels_reject_an_owner_without_that_public_field(self):
         inputs = _creation_inputs()
         key = "$libtmux-haskell-0.1.0.0-inplace$LibTmux.Internal.Graph$session"
-        self.assertEqual(inputs[1]["link_env"][key], "LibTmux.Snapshot")
+        self.assertIn(inputs[1]["link_env"][key], ["LibTmux.Snapshot", "LibTmux.Creation"])
+        for owner in ["LibTmux.Snapshot", "LibTmux.Creation"]:
+            inputs[1]["link_env"][key] = owner
+            EXPORT.extract_modules(*inputs)
         inputs[1]["link_env"][key] = "LibTmux.Value"
         with self.assertRaisesRegex(ValueError, "Compiled public owner differs"):
             EXPORT.extract_modules(*inputs)

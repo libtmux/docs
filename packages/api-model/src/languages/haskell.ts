@@ -58,6 +58,9 @@ const QUERY_ORIGINS = [...QUERY_MODULES,
   ...['Capture', 'Field', 'Graph', 'Query', 'Runtime', 'Scheduler', 'Scope', 'TmuxText']
     .map((name) => `LibTmux.Internal.${name}`)]
 const MUTATION_ORIGINS = [...QUERY_ORIGINS, 'LibTmux.Internal.Mutation']
+const CREATION_MODULES = [...QUERY_MODULES, 'LibTmux.Creation'].toSorted()
+const CREATION_ORIGINS = [...CREATION_MODULES,
+  ...MUTATION_ORIGINS.filter((module) => !QUERY_MODULES.includes(module)), 'LibTmux.Internal.Creation']
 const VERSION = /^(?:0|[1-9]\d*)(?:\.(?:0|[1-9]\d*))+$/
 
 function check(condition: unknown, reason: string): asserts condition {
@@ -107,11 +110,12 @@ function validateSignature(signature: Signature, symbol: NativeSymbol, byId: Map
   check(signature.methodKind === undefined || signature.methodKind === 'constructor', `unsupported method kind for ${symbol.id}`)
 }
 
-/** Adapt the qualified GHC 9.14/Haddock public profile without parsing Haskell source. */
+/** Adapt qualified native Haskell profiles without parsing implementation text. */
 export function extractHaskellArtifact(input: unknown, expectedRevision?: string): ApiModel {
   check(input && typeof input === 'object', 'missing document')
   const artifact = structuredClone(input) as HaskellArtifact
-  const mutations = artifact.schema === 'libtmux.haskell-api/4' && artifact.profile === 'mutations/1'
+  const creations = artifact.schema === 'libtmux.haskell-api/5' && artifact.profile === 'creations/1'
+  const mutations = creations || (artifact.schema === 'libtmux.haskell-api/4' && artifact.profile === 'mutations/1')
   const queries = mutations || (artifact.schema === 'libtmux.haskell-api/3' && artifact.profile === 'queries/1')
   const observations = queries || (artifact.schema === 'libtmux.haskell-api/2' && artifact.profile === 'observations/1')
   check((artifact.schema === 'libtmux.haskell-api/1' || observations) && artifact.port === 'haskell' &&
@@ -123,7 +127,7 @@ export function extractHaskellArtifact(input: unknown, expectedRevision?: string
   check(artifact.package?.name === 'libtmux-haskell' && VERSION.test(artifact.package.version) &&
     Array.isArray(artifact.package.exposedModules) && artifact.package.exposedModules.length, 'invalid Cabal package identity')
   const modules = artifact.package.exposedModules
-  const qualified = queries ? QUERY_MODULES : observations ? OBSERVATION_MODULES : QUALIFIED_MODULES
+  const qualified = creations ? CREATION_MODULES : queries ? QUERY_MODULES : observations ? OBSERVATION_MODULES : QUALIFIED_MODULES
   check(modules.length === qualified.length && modules.every((module, index) => module === qualified[index]),
     'unqualified exposed module profile')
   check(Array.isArray(artifact.modules) && artifact.modules.length === modules.length &&
@@ -141,14 +145,14 @@ export function extractHaskellArtifact(input: unknown, expectedRevision?: string
     }
   }
   const exporter = artifact.nativeProvenance?.exporter
-  check(exporter?.name === 'Haddock public interface export' && exporter.version === (mutations ? 4 : queries ? 3 : observations ? 2 : 1) && exporter.repository === 'libtmux/docs' &&
+  check(exporter?.name === 'Haddock public interface export' && exporter.version === (creations ? 5 : mutations ? 4 : queries ? 3 : observations ? 2 : 1) && exporter.repository === 'libtmux/docs' &&
     typeof exporter.revision === 'string' && COMMIT.test(exporter.revision) &&
     exporter.path === 'packages/api-model/scripts/export-haskell.py' && HASH.test(exporter.sha256), 'missing committed producer identity')
   check(exporter.build?.compiler === `ghc-${artifact.compiler}` && exporter.build.cabal === '3.18.2.0' &&
     exporter.build.unit === `${artifact.package.name}-${artifact.package.version}-inplace` &&
     typeof exporter.build.platform === 'string' && /^[\w]+-[\w]+$/.test(exporter.build.platform) &&
     ['stdout', 'stderr'].includes(exporter.interfaceStream), 'invalid configured native build')
-  const origins = mutations ? MUTATION_ORIGINS : queries ? QUERY_ORIGINS : observations ? OBSERVATION_ORIGINS : modules
+  const origins = creations ? CREATION_ORIGINS : mutations ? MUTATION_ORIGINS : queries ? QUERY_ORIGINS : observations ? OBSERVATION_ORIGINS : modules
   const sourceFile = (module: string) => `${module.startsWith('LibTmux.Internal.') ? 'internal' : 'src'}/${module.replaceAll('.', '/')}.hs`
   const sourceFiles = origins.map(sourceFile)
   hashedInputs(artifact.nativeProvenance.files, ['.tool-versions', 'cabal.project', 'libtmux-haskell.cabal', ...sourceFiles], 'source inputs')
@@ -205,8 +209,9 @@ export function extractHaskellArtifact(input: unknown, expectedRevision?: string
     if (symbol.kind === 'module') continue
     const parent = byId.get(symbol.parent ?? '')
     const constructor = symbol.signatures[0].methodKind === 'constructor'
+    const opaqueField = creations && symbol.kind === 'property' && !constructor
     check(parent && (parent.kind === 'module' ? parent.id === symbol.namespace && symbol.kind !== 'property' && !constructor
-      : parent.kind === 'typealias' && !parent.modifiers.includes('opaque') && parent.namespace === symbol.namespace &&
+      : parent.kind === 'typealias' && (!parent.modifiers.includes('opaque') || opaqueField) && parent.namespace === symbol.namespace &&
         ((symbol.kind === 'property' && !constructor) || (symbol.kind === 'function' && constructor))), `invalid public parent for ${symbol.id}`)
     if (observations && parent.kind !== 'module') {
       check(symbol.definingModule === parent.definingModule, `child defining origin differs for ${symbol.id}`)

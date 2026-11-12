@@ -169,5 +169,206 @@
       "path": "internal/LibTmux/Internal/Creation.hs",
       "sha256": "3c6df9a21857807629a0202d7fc32073ab2858e28c90e58d2fb965d947793263"
     }
-  ]
+  ],
+  "exporter": {
+    "build": {
+      "cabal": "3.18.2.0",
+      "compiler": "ghc-9.14.1",
+      "platform": "x86_64-linux",
+      "unit": "libtmux-haskell-0.1.0.0-inplace"
+    },
+    "interfaceStream": "stderr",
+    "name": "Haddock public interface export",
+    "nativeArtifacts": [
+      {
+        "path": "LibTmux-Creation.html",
+        "sha256": "a51a5c640a0c4455a79d84770f3cbd1733e142026c2623296cde4f3cf198ebb5"
+      },
+      {
+        "path": "LibTmux-Id.html",
+        "sha256": "cf7102eba62a0e9b02e7ea7acefb85d1822a4d192a1fceb680246ed42bd10d45"
+      },
+      {
+        "path": "LibTmux-Query-Client.html",
+        "sha256": "841c8d5a537f3d06d0f7a4a192c7922bf88bdbfbc0e6027143f0a36464826d8b"
+      },
+      {
+        "path": "LibTmux-Query-ClientAttachment.html",
+        "sha256": "fc039ad4e8e5f78703a4fd47abb7691edd8e6a63ea4421f7fd944899c98f6204"
+      },
+      {
+        "path": "LibTmux-Query-Link.html",
+        "sha256": "1dfbdc7a40b484dd04c7a949fc88ff4d28d405e95707900d5231cd17ab522fdf"
+      },
+      {
+        "path": "LibTmux-Query-Occurrence.html",
+        "sha256": "792f12ae0bbc792264ad9261b94070046cc31ee8bd20a3b6ec34bf742249ae9a"
+      },
+      {
+        "path": "LibTmux-Query-Pane.html",
+        "sha256": "036fcb94031ed3818ba7dc372e1950d706c1a66c359db35d833156c553054c03"
+      },
+      {
+        "path": "LibTmux-Query-ServerInfo.html",
+        "sha256": "1df595aa9f3a7bb189165062f1c59047598b313502ec6252dbc285ab30fc4888"
+      },
+      {
+        "path": "LibTmux-Query-Session.html",
+        "sha256": "b7a7b61ae49403b4bf7eeaa5be68371f6e216afa0748c4041c8244d0409155e4"
+      },
+      {
+        "path": "LibTmux-Query-Window.html",
+        "sha256": "aaa13d0c47e88ed2551aeb7c45e19c506e262a87c75d627c21b7ff3ef9b74705"
+      },
+      {
+        "path": "LibTmux-Query.html",
+        "sha256": "0c77ec7728fcaddd2d4a35744ba3da1270b265e77efe9212fdc0ad9aa0f6d4f1"
+      },
+      {
+        "path": "LibTmux-Server.html",
+        "sha256": "23c260f61c5a5c5e99367af71439aa6f244ce0673a0fe6502cb87afc16dd0cbd"
+      },
+      {
+        "path": "LibTmux-Snapshot-Fixture.html",
+        "sha256": "9d0939a019c99f33119619f0c424a87fea6e87abbd0a8ade758d78e05ae53a7c"
+      },
+      {
+        "path": "LibTmux-Snapshot.html",
+        "sha256": "4ec213653502b99ca25676aac064b8f08a77dcba98dda016ec6e49f1831ddb4e"
+      },
+      {
+        "path": "LibTmux-Value.html",
+        "sha256": "4160151534c27a8c787c9ab36fa6dcbf740fc193a7a3553935172be72111ff1d"
+      },
+      {
+        "path": "LibTmux-Version.html",
+        "sha256": "a42e7c6cb2d375ed07f9beee73030be13ae3409246222cd11682854f254739ee"
+      },
+      {
+        "path": "LibTmux.html",
+        "sha256": "db1ba5b3a68b5d1f1e7b8514432dc8ee6b57cd6b48ab607b6b458ea6993b268e"
+      },
+      {
+        "path": "interface.haddock",
+        "sha256": "e4ead1339cd03208a6a744af94d13def2d9966b0e1074d162a5cd0682b6fc512"
+      },
+      {
+        "path": "interface.json",
+        "sha256": "017226aefe48e69a2bc2cff3cf4d7eb7072ef7872bb0a4046a4bcd22d7b43df5"
+      },
+      {
+        "path": "src/LibTmux.Creation.html",
+        "sha256": "5aaaba11005597f95e75a42d8ab755647a9563ada39d8458899506c169d69a65"
+      },
+      {
+        "path": "src/LibTmux.Id.html",
+        "sha256": "549962d87a2da0cf45a0176854fa08d0ea65d0c1ee0557e8bbc42b1ddc6e4283"
+      },
+      {
+        "path": "src/LibTmux.Internal.Capture.html",
+        "sha256": "adde78313043d4805434d1fbe97913ce6635b19ca96e9c5b27c0253b677ed61b"
+      },
+      {
+        "path": "src/LibTmux.Internal.Creation.html",
+        "sha256": "b63254e838b245bae19c91fc31b3abbc24d2b592636bfd798e3f412a2b40a727"
+      },
+      {
+        "path": "src/LibTmux.Internal.Field.html",
+        "sha256": "098d2740167b6968bde565b1d582c9d7f084e70bb4c1fbd9c7bb6804918ca971"
+      },
+      {
+        "path": "src/LibTmux.Internal.Graph.html",
+        "sha256": "3d728b2767fc4d940d5a53dbfe6f542c6533f24036b1402eb0debfefec4569d0"
+      },
+      {
+        "path": "src/LibTmux.Internal.Mutation.html",
+        "sha256": "a9f8ea31e1025a9efb6b4a459a8e52f7dbafb351ec14543316b2ef95ed50bcd4"
+      },
+      {
+        "path": "src/LibTmux.Internal.Query.html",
+        "sha256": "ccd911ddc01fa4acdbf851c3086dfee14d13347ee1621cd11f9d89bf0292b5f0"
+      },
+      {
+        "path": "src/LibTmux.Internal.Runtime.html",
+        "sha256": "8bac2fa87a923ac3154f4e7a6a1e94ae5f43972dc896cb2fb0869606e190e4c1"
+      },
+      {
+        "path": "src/LibTmux.Internal.Scheduler.html",
+        "sha256": "0338df392b06e8d51cf6c58502a2937c7b7f1454e51301b84c0037dcd0004e82"
+      },
+      {
+        "path": "src/LibTmux.Internal.Scope.html",
+        "sha256": "fd44d5e099bb5af59cb254ca9dca12cdff5f536afcab968f117fa05884d42fae"
+      },
+      {
+        "path": "src/LibTmux.Internal.TmuxText.html",
+        "sha256": "7b5543bf893316d875c55b4490dca55f569a2fcd3ab2d2aa5ae8574dcfe921dc"
+      },
+      {
+        "path": "src/LibTmux.Query.Client.html",
+        "sha256": "63b8825e19f974abe4572598f213e5ad677d1b330659911109bfa39ba5853c10"
+      },
+      {
+        "path": "src/LibTmux.Query.ClientAttachment.html",
+        "sha256": "ddd214d2151a04e988d7573b5a37922793a51d0dc253467a7ace7eafdcf24522"
+      },
+      {
+        "path": "src/LibTmux.Query.Link.html",
+        "sha256": "704c97d3a9393b3a8834b5c4c5723cde3aaf9353272bb29bc4dce0c17260cc94"
+      },
+      {
+        "path": "src/LibTmux.Query.Occurrence.html",
+        "sha256": "6b8434f01e2172bb84b29907ca9f41e9983b0e2250cee6134d7086f406a57034"
+      },
+      {
+        "path": "src/LibTmux.Query.Pane.html",
+        "sha256": "a914f4b39e741ccca3dfba10941a037266cda6b39991c9901eb53f0d47de0ec3"
+      },
+      {
+        "path": "src/LibTmux.Query.ServerInfo.html",
+        "sha256": "a1eb1a088b566436a553697610f9841c926dd7fcdaaf04acc6fe8072e3e09037"
+      },
+      {
+        "path": "src/LibTmux.Query.Session.html",
+        "sha256": "e9f14446ea7e4998944700ee53f869d26e3a43ad44013590ec2f0bc833c8b247"
+      },
+      {
+        "path": "src/LibTmux.Query.Window.html",
+        "sha256": "d1c54f7e867221a773a1f6b0b3994954a1be51ee841349cd3ad575e449e18293"
+      },
+      {
+        "path": "src/LibTmux.Query.html",
+        "sha256": "2b2940c5efcab7201c2053f880bcf3f37f012a86ea6736c46ae64e9a18cb9d28"
+      },
+      {
+        "path": "src/LibTmux.Server.html",
+        "sha256": "54d379ebd681d520277ed37d5cd78f03c4dcf0bd7aadf1c5544f14e9e6b44eaa"
+      },
+      {
+        "path": "src/LibTmux.Snapshot.Fixture.html",
+        "sha256": "02e29bd320e2770a73a539c4653df4aabd131f6b86896637c09b9bf005e2f067"
+      },
+      {
+        "path": "src/LibTmux.Snapshot.html",
+        "sha256": "1a2ebef9c7077b8cb41c629c3f4ace716c4c8bc38907fd2d3f14c899a7b824ab"
+      },
+      {
+        "path": "src/LibTmux.Value.html",
+        "sha256": "76b93347da3487e209a93e705cc373a29ed1e3232a9b0834e94f27b95a89afd8"
+      },
+      {
+        "path": "src/LibTmux.Version.html",
+        "sha256": "282693b29683d09d0a2a53bf0c0c487869467c1d61b80006dc419dfc35d3569b"
+      },
+      {
+        "path": "src/LibTmux.html",
+        "sha256": "feb933927272f8a3650acac4f6d4eb844407c3bb48ed6681dccf3c0d280b5f4d"
+      }
+    ],
+    "path": "packages/api-model/scripts/export-haskell.py",
+    "repository": "libtmux/docs",
+    "revision": "ddc46a3e7dbbafdc4f86b77cddbea8ab0783ab1b",
+    "sha256": "250b17c6ffb9a356a0a3d65a2a185c71fd1877abe8064b3e4a68c3649d199a31",
+    "version": 5
+  }
 }

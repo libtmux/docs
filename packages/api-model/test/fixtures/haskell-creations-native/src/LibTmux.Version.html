@@ -30,7 +30,7 @@
 </span><span id="line-30"></span><span class="hs-comment">-- | A stable release, constructed by 'parseVersion' and rendered by</span><span>
 </span><span id="line-31"></span><span class="hs-comment">-- 'renderVersion'. Ordering compares numeric components before the patch letter.</span><span>
 </span><span id="line-32"></span><span class="hs-keyword">data</span><span> </span><span id="TmuxVersion"><span class="annot"><a href="LibTmux.Version.html#TmuxVersion"><span class="hs-identifier hs-var">TmuxVersion</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="TmuxVersion"><span class="annot"><a href="LibTmux.Version.html#TmuxVersion"><span class="hs-identifier hs-var">TmuxVersion</span></a></span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Char</span></span><span class="hs-special">)</span><span>
-</span><span id="line-33"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679149834"><span id="local-6989586621679149842"><span class="annot"><span class="annottext">TmuxVersion -&gt; TmuxVersion -&gt; Bool
+</span><span id="line-33"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679146402"><span id="local-6989586621679146410"><span class="annot"><span class="annottext">TmuxVersion -&gt; TmuxVersion -&gt; Bool
 (TmuxVersion -&gt; TmuxVersion -&gt; Bool)
 -&gt; (TmuxVersion -&gt; TmuxVersion -&gt; Bool) -&gt; Eq TmuxVersion
 forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
@@ -38,7 +38,7 @@ $c== :: TmuxVersion -&gt; TmuxVersion -&gt; Bool
 == :: TmuxVersion -&gt; TmuxVersion -&gt; Bool
 $c/= :: TmuxVersion -&gt; TmuxVersion -&gt; Bool
 /= :: TmuxVersion -&gt; TmuxVersion -&gt; Bool
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679149850"><span id="local-6989586621679149857"><span id="local-6989586621679149862"><span id="local-6989586621679149865"><span id="local-6989586621679149868"><span id="local-6989586621679149871"><span id="local-6989586621679149874"><span class="annot"><span class="annottext">Eq TmuxVersion
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679146418"><span id="local-6989586621679146425"><span id="local-6989586621679146430"><span id="local-6989586621679146433"><span id="local-6989586621679146436"><span id="local-6989586621679146439"><span id="local-6989586621679146442"><span class="annot"><span class="annottext">Eq TmuxVersion
 Eq TmuxVersion =&gt;
 (TmuxVersion -&gt; TmuxVersion -&gt; Ordering)
 -&gt; (TmuxVersion -&gt; TmuxVersion -&gt; Bool)
@@ -75,7 +75,7 @@ $cmax :: TmuxVersion -&gt; TmuxVersion -&gt; TmuxVersion
 max :: TmuxVersion -&gt; TmuxVersion -&gt; TmuxVersion
 $cmin :: TmuxVersion -&gt; TmuxVersion -&gt; TmuxVersion
 min :: TmuxVersion -&gt; TmuxVersion -&gt; TmuxVersion
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679149882"><span id="local-6989586621679149890"><span id="local-6989586621679149894"><span class="annot"><span class="annottext">Int -&gt; TmuxVersion -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679146450"><span id="local-6989586621679146458"><span id="local-6989586621679146462"><span class="annot"><span class="annottext">Int -&gt; TmuxVersion -&gt; ShowS
 [TmuxVersion] -&gt; ShowS
 TmuxVersion -&gt; String
 (Int -&gt; TmuxVersion -&gt; ShowS)
@@ -93,30 +93,30 @@ showList :: [TmuxVersion] -&gt; ShowS
 </span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
 </span><span id="line-34"></span><span>
 </span><span id="line-35"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><span class="hs-identifier hs-type">NFData</span></span><span> </span><span class="annot"><a href="LibTmux.Version.html#TmuxVersion"><span class="hs-identifier hs-type">TmuxVersion</span></a></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-36"></span><span>  </span><span id="local-6989586621679149909"><span class="annot"><span class="annottext">rnf :: TmuxVersion -&gt; ()
-</span><span class="hs-identifier hs-var hs-var hs-var">rnf</span></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Version.html#TmuxVersion"><span class="hs-identifier hs-type">TmuxVersion</span></a></span><span> </span><span id="local-6989586621679149910"><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679149910"><span class="hs-identifier hs-var">major</span></a></span></span><span> </span><span id="local-6989586621679149911"><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679149911"><span class="hs-identifier hs-var">minor</span></a></span></span><span> </span><span id="local-6989586621679149912"><span class="annot"><span class="annottext">Maybe Char
-</span><a href="#local-6989586621679149912"><span class="hs-identifier hs-var">suffix</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Integer -&gt; ()
+</span><span id="line-36"></span><span>  </span><span id="local-6989586621679146477"><span class="annot"><span class="annottext">rnf :: TmuxVersion -&gt; ()
+</span><span class="hs-identifier hs-var hs-var hs-var">rnf</span></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Version.html#TmuxVersion"><span class="hs-identifier hs-type">TmuxVersion</span></a></span><span> </span><span id="local-6989586621679146478"><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621679146478"><span class="hs-identifier hs-var">major</span></a></span></span><span> </span><span id="local-6989586621679146479"><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621679146479"><span class="hs-identifier hs-var">minor</span></a></span></span><span> </span><span id="local-6989586621679146480"><span class="annot"><span class="annottext">Maybe Char
+</span><a href="#local-6989586621679146480"><span class="hs-identifier hs-var">suffix</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Integer -&gt; ()
 forall a. NFData a =&gt; a -&gt; ()
 </span><span class="hs-identifier hs-var">rnf</span></span><span> </span><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679149910"><span class="hs-identifier hs-var">major</span></a></span><span> </span><span class="annot"><span class="annottext">() -&gt; () -&gt; ()
+</span><a href="#local-6989586621679146478"><span class="hs-identifier hs-var">major</span></a></span><span> </span><span class="annot"><span class="annottext">() -&gt; () -&gt; ()
 forall a b. a -&gt; b -&gt; b
 </span><span class="hs-operator hs-var">`seq`</span></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; ()
 forall a. NFData a =&gt; a -&gt; ()
 </span><span class="hs-identifier hs-var">rnf</span></span><span> </span><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679149911"><span class="hs-identifier hs-var">minor</span></a></span><span> </span><span class="annot"><span class="annottext">() -&gt; () -&gt; ()
+</span><a href="#local-6989586621679146479"><span class="hs-identifier hs-var">minor</span></a></span><span> </span><span class="annot"><span class="annottext">() -&gt; () -&gt; ()
 forall a b. a -&gt; b -&gt; b
 </span><span class="hs-operator hs-var">`seq`</span></span><span> </span><span class="annot"><span class="annottext">Maybe Char -&gt; ()
 forall a. NFData a =&gt; a -&gt; ()
 </span><span class="hs-identifier hs-var">rnf</span></span><span> </span><span class="annot"><span class="annottext">Maybe Char
-</span><a href="#local-6989586621679149912"><span class="hs-identifier hs-var">suffix</span></a></span><span>
+</span><a href="#local-6989586621679146480"><span class="hs-identifier hs-var">suffix</span></a></span><span>
 </span><span id="line-37"></span><span>
 </span><span id="line-38"></span><span class="annot"><span class="hs-comment">-- | Invalid release syntax or a release outside the supported range.</span></span><span>
 </span><span id="line-39"></span><span class="hs-keyword">data</span><span> </span><span id="VersionError"><span class="annot"><a href="LibTmux.Version.html#VersionError"><span class="hs-identifier hs-var">VersionError</span></a></span></span><span>
 </span><span id="line-40"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="MalformedVersion"><span class="annot"><a href="LibTmux.Version.html#MalformedVersion"><span class="hs-identifier hs-var">MalformedVersion</span></a></span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><span class="hs-comment">-- ^ Bounded copy of input that is not a stable release.</span></span><span>
 </span><span id="line-41"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="UnsupportedVersion"><span class="annot"><a href="LibTmux.Version.html#UnsupportedVersion"><span class="hs-identifier hs-var">UnsupportedVersion</span></a></span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="LibTmux.Version.html#TmuxVersion"><span class="hs-identifier hs-type">TmuxVersion</span></a></span><span> </span><span class="annot"><span class="hs-comment">-- ^ A stable release outside 3.3a through 3.8.</span></span><span>
-</span><span id="line-42"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679149916"><span id="local-6989586621679149924"><span class="annot"><span class="annottext">VersionError -&gt; VersionError -&gt; Bool
+</span><span id="line-42"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679146484"><span id="local-6989586621679146492"><span class="annot"><span class="annottext">VersionError -&gt; VersionError -&gt; Bool
 (VersionError -&gt; VersionError -&gt; Bool)
 -&gt; (VersionError -&gt; VersionError -&gt; Bool) -&gt; Eq VersionError
 forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
@@ -124,7 +124,7 @@ $c== :: VersionError -&gt; VersionError -&gt; Bool
 == :: VersionError -&gt; VersionError -&gt; Bool
 $c/= :: VersionError -&gt; VersionError -&gt; Bool
 /= :: VersionError -&gt; VersionError -&gt; Bool
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679149928"><span id="local-6989586621679149935"><span id="local-6989586621679149939"><span class="annot"><span class="annottext">Int -&gt; VersionError -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679146496"><span id="local-6989586621679146503"><span id="local-6989586621679146507"><span class="annot"><span class="annottext">Int -&gt; VersionError -&gt; ShowS
 [VersionError] -&gt; ShowS
 VersionError -&gt; String
 (Int -&gt; VersionError -&gt; ShowS)
@@ -146,15 +146,15 @@ showList :: [VersionError] -&gt; ShowS
 </span><span id="line-46"></span><span class="hs-comment">-- capabilities from a guessed stable version. Diagnostics retain at most 64 chars.</span><span>
 </span><span id="line-47"></span><span class="annot"><a href="LibTmux.Version.html#parseVersion"><span class="hs-identifier hs-type">parseVersion</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><a href="LibTmux.Version.html#VersionError"><span class="hs-identifier hs-type">VersionError</span></a></span><span> </span><span class="annot"><a href="LibTmux.Version.html#TmuxVersion"><span class="hs-identifier hs-type">TmuxVersion</span></a></span><span>
 </span><span id="line-48"></span><span id="parseVersion"><span class="annot"><span class="annottext">parseVersion :: Text -&gt; Either VersionError TmuxVersion
-</span><a href="LibTmux.Version.html#parseVersion"><span class="hs-identifier hs-var hs-var">parseVersion</span></a></span></span><span> </span><span id="local-6989586621679149941"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621679149941"><span class="hs-identifier hs-var">input</span></a></span></span><span>
+</span><a href="LibTmux.Version.html#parseVersion"><span class="hs-identifier hs-var hs-var">parseVersion</span></a></span></span><span> </span><span id="local-6989586621679146509"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679146509"><span class="hs-identifier hs-var">input</span></a></span></span><span>
 </span><span id="line-49"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Int
 </span><span class="hs-identifier hs-var">Text.length</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621679149941"><span class="hs-identifier hs-var">input</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+</span><a href="#local-6989586621679146509"><span class="hs-identifier hs-var">input</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
 forall a. Ord a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">&gt;</span></span><span> </span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">64</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Either VersionError TmuxVersion
-</span><a href="#local-6989586621679149943"><span class="hs-identifier hs-var">invalid</span></a></span><span>
+</span><a href="#local-6989586621679146511"><span class="hs-identifier hs-var">invalid</span></a></span><span>
 </span><span id="line-50"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Either VersionError TmuxVersion
 -&gt; (TmuxVersion -&gt; Either VersionError TmuxVersion)
@@ -162,66 +162,66 @@ forall a. Ord a =&gt; a -&gt; a -&gt; Bool
 -&gt; Either VersionError TmuxVersion
 forall b a. b -&gt; (a -&gt; b) -&gt; Maybe a -&gt; b
 </span><span class="hs-identifier hs-var">maybe</span></span><span> </span><span class="annot"><span class="annottext">Either VersionError TmuxVersion
-</span><a href="#local-6989586621679149943"><span class="hs-identifier hs-var">invalid</span></a></span><span> </span><span class="annot"><span class="annottext">TmuxVersion -&gt; Either VersionError TmuxVersion
+</span><a href="#local-6989586621679146511"><span class="hs-identifier hs-var">invalid</span></a></span><span> </span><span class="annot"><span class="annottext">TmuxVersion -&gt; Either VersionError TmuxVersion
 forall a b. b -&gt; Either a b
 </span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">Maybe TmuxVersion
-</span><a href="#local-6989586621679149945"><span class="hs-identifier hs-var">parsed</span></a></span><span>
+</span><a href="#local-6989586621679146513"><span class="hs-identifier hs-var">parsed</span></a></span><span>
 </span><span id="line-51"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-52"></span><span>    </span><span id="local-6989586621679149943"><span class="annot"><span class="annottext">invalid :: Either VersionError TmuxVersion
-</span><a href="#local-6989586621679149943"><span class="hs-identifier hs-var hs-var">invalid</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">VersionError -&gt; Either VersionError TmuxVersion
+</span><span id="line-52"></span><span>    </span><span id="local-6989586621679146511"><span class="annot"><span class="annottext">invalid :: Either VersionError TmuxVersion
+</span><a href="#local-6989586621679146511"><span class="hs-identifier hs-var hs-var">invalid</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">VersionError -&gt; Either VersionError TmuxVersion
 forall a b. a -&gt; Either a b
 </span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; VersionError
 </span><a href="LibTmux.Version.html#MalformedVersion"><span class="hs-identifier hs-var">MalformedVersion</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Text
 </span><span class="hs-identifier hs-var">Text.copy</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; Text -&gt; Text
 </span><span class="hs-identifier hs-var">Text.take</span></span><span> </span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">64</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621679149941"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
-</span><span id="line-53"></span><span>    </span><span id="local-6989586621679149948"><span class="annot"><span class="annottext">line :: Text
-</span><a href="#local-6989586621679149948"><span class="hs-identifier hs-var hs-var">line</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Maybe Text -&gt; Text
+</span><a href="#local-6989586621679146509"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-53"></span><span>    </span><span id="local-6989586621679146516"><span class="annot"><span class="annottext">line :: Text
+</span><a href="#local-6989586621679146516"><span class="hs-identifier hs-var hs-var">line</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Maybe Text -&gt; Text
 forall a. a -&gt; Maybe a -&gt; a
 </span><span class="hs-identifier hs-var">fromMaybe</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621679149941"><span class="hs-identifier hs-var">input</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Maybe Text
+</span><a href="#local-6989586621679146509"><span class="hs-identifier hs-var">input</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Maybe Text
 </span><span class="hs-identifier hs-var">Text.stripSuffix</span></span><span> </span><span class="annot"><span class="annottext">Text
 </span><span class="hs-string">&quot;\n&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621679149941"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-54"></span><span>    </span><span id="local-6989586621679149950"><span class="annot"><span class="annottext">body :: Text
-</span><a href="#local-6989586621679149950"><span class="hs-identifier hs-var hs-var">body</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Maybe Text -&gt; Text
+</span><a href="#local-6989586621679146509"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-54"></span><span>    </span><span id="local-6989586621679146518"><span class="annot"><span class="annottext">body :: Text
+</span><a href="#local-6989586621679146518"><span class="hs-identifier hs-var hs-var">body</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Maybe Text -&gt; Text
 forall a. a -&gt; Maybe a -&gt; a
 </span><span class="hs-identifier hs-var">fromMaybe</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621679149948"><span class="hs-identifier hs-var">line</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Maybe Text
+</span><a href="#local-6989586621679146516"><span class="hs-identifier hs-var">line</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Maybe Text
 </span><span class="hs-identifier hs-var">Text.stripPrefix</span></span><span> </span><span class="annot"><span class="annottext">Text
 </span><span class="hs-string">&quot;tmux &quot;</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621679149948"><span class="hs-identifier hs-var">line</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-55"></span><span>    </span><span id="local-6989586621679149945"><span class="annot"><span class="annottext">parsed :: Maybe TmuxVersion
-</span><a href="#local-6989586621679149945"><span class="hs-identifier hs-var hs-var">parsed</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-56"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679149952"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621679149952"><span class="hs-identifier hs-var hs-var">majorText</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679149953"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621679149953"><span class="hs-identifier hs-var hs-var">rest</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">HasCallStack =&gt; Text -&gt; Text -&gt; (Text, Text)
+</span><a href="#local-6989586621679146516"><span class="hs-identifier hs-var">line</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-55"></span><span>    </span><span id="local-6989586621679146513"><span class="annot"><span class="annottext">parsed :: Maybe TmuxVersion
+</span><a href="#local-6989586621679146513"><span class="hs-identifier hs-var hs-var">parsed</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-56"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679146520"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679146520"><span class="hs-identifier hs-var hs-var">majorText</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679146521"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679146521"><span class="hs-identifier hs-var hs-var">rest</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">HasCallStack =&gt; Text -&gt; Text -&gt; (Text, Text)
 Text -&gt; Text -&gt; (Text, Text)
 </span><span class="hs-identifier hs-var">Text.breakOn</span></span><span> </span><span class="annot"><span class="annottext">Text
 </span><span class="hs-string">&quot;.&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621679149950"><span class="hs-identifier hs-var">body</span></a></span><span>
-</span><span id="line-57"></span><span>      </span><span id="local-6989586621679149955"><span class="annot"><a href="#local-6989586621679149955"><span class="hs-identifier hs-var">afterDot</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Maybe Text
+</span><a href="#local-6989586621679146518"><span class="hs-identifier hs-var">body</span></a></span><span>
+</span><span id="line-57"></span><span>      </span><span id="local-6989586621679146523"><span class="annot"><a href="#local-6989586621679146523"><span class="hs-identifier hs-var">afterDot</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Maybe Text
 </span><span class="hs-identifier hs-var">Text.stripPrefix</span></span><span> </span><span class="annot"><span class="annottext">Text
 </span><span class="hs-string">&quot;.&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621679149953"><span class="hs-identifier hs-var">rest</span></a></span><span>
-</span><span id="line-58"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679149956"><span class="annot"><a href="#local-6989586621679149956"><span class="hs-identifier hs-var">minorText</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679149957"><span class="annot"><a href="#local-6989586621679149957"><span class="hs-identifier hs-var">suffixText</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text.span</span></span><span> </span><span class="annot"><a href="#local-6989586621679149959"><span class="hs-identifier hs-type">asciiDigit</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679149955"><span class="hs-identifier hs-type">afterDot</span></a></span><span>
-</span><span id="line-59"></span><span>      </span><span id="local-6989586621679149960"><span class="annot"><a href="#local-6989586621679149960"><span class="hs-identifier hs-var">major</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><a href="#local-6989586621679149961"><span class="hs-identifier hs-type">number</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679149952"><span class="hs-identifier hs-type">majorText</span></a></span><span>
-</span><span id="line-60"></span><span>      </span><span id="local-6989586621679149962"><span class="annot"><a href="#local-6989586621679149962"><span class="hs-identifier hs-var">minor</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><a href="#local-6989586621679149961"><span class="hs-identifier hs-type">number</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679149956"><span class="hs-identifier hs-type">minorText</span></a></span><span>
-</span><span id="line-61"></span><span>      </span><span id="local-6989586621679149963"><span class="annot"><a href="#local-6989586621679149963"><span class="hs-identifier hs-var">suffix</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text.unpack</span></span><span> </span><span class="annot"><a href="#local-6989586621679149957"><span class="hs-identifier hs-type">suffixText</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><a href="#local-6989586621679146521"><span class="hs-identifier hs-var">rest</span></a></span><span>
+</span><span id="line-58"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679146524"><span class="annot"><a href="#local-6989586621679146524"><span class="hs-identifier hs-var">minorText</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679146525"><span class="annot"><a href="#local-6989586621679146525"><span class="hs-identifier hs-var">suffixText</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text.span</span></span><span> </span><span class="annot"><a href="#local-6989586621679146527"><span class="hs-identifier hs-type">asciiDigit</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679146523"><span class="hs-identifier hs-type">afterDot</span></a></span><span>
+</span><span id="line-59"></span><span>      </span><span id="local-6989586621679146528"><span class="annot"><a href="#local-6989586621679146528"><span class="hs-identifier hs-var">major</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><a href="#local-6989586621679146529"><span class="hs-identifier hs-type">number</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679146520"><span class="hs-identifier hs-type">majorText</span></a></span><span>
+</span><span id="line-60"></span><span>      </span><span id="local-6989586621679146530"><span class="annot"><a href="#local-6989586621679146530"><span class="hs-identifier hs-var">minor</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><a href="#local-6989586621679146529"><span class="hs-identifier hs-type">number</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679146524"><span class="hs-identifier hs-type">minorText</span></a></span><span>
+</span><span id="line-61"></span><span>      </span><span id="local-6989586621679146531"><span class="annot"><a href="#local-6989586621679146531"><span class="hs-identifier hs-var">suffix</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text.unpack</span></span><span> </span><span class="annot"><a href="#local-6989586621679146525"><span class="hs-identifier hs-type">suffixText</span></a></span><span> </span><span class="hs-keyword">of</span><span>
 </span><span id="line-62"></span><span>        </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Maybe Char -&gt; Maybe (Maybe Char)
 forall a. a -&gt; Maybe a
 </span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">Maybe Char
 forall a. Maybe a
 </span><span class="hs-identifier hs-var">Nothing</span></span><span>
-</span><span id="line-63"></span><span>        </span><span class="hs-special">[</span><span id="local-6989586621679149965"><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621679149965"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621679149965"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
+</span><span id="line-63"></span><span>        </span><span class="hs-special">[</span><span id="local-6989586621679146533"><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621679146533"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621679146533"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
 forall a. Ord a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">&gt;=</span></span><span> </span><span class="annot"><span class="annottext">Char
 </span><span class="hs-char">'a'</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
 </span><span class="hs-operator hs-var">&amp;&amp;</span></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621679149965"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
+</span><a href="#local-6989586621679146533"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
 forall a. Ord a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">&lt;=</span></span><span> </span><span class="annot"><span class="annottext">Char
 </span><span class="hs-char">'z'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Maybe Char -&gt; Maybe (Maybe Char)
@@ -229,53 +229,53 @@ forall a. a -&gt; Maybe a
 </span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char -&gt; Maybe Char
 forall a. a -&gt; Maybe a
 </span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621679149965"><span class="hs-identifier hs-var">c</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679146533"><span class="hs-identifier hs-var">c</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-64"></span><span>        </span><span class="annot"><span class="annottext">String
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Maybe (Maybe Char)
 forall a. Maybe a
 </span><span class="hs-identifier hs-var">Nothing</span></span><span>
-</span><span id="line-65"></span><span>      </span><span class="annot"><span class="hs-identifier hs-type">pure</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Version.html#TmuxVersion"><span class="hs-identifier hs-type">TmuxVersion</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679149960"><span class="hs-identifier hs-type">major</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679149962"><span class="hs-identifier hs-type">minor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679149963"><span class="hs-identifier hs-type">suffix</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-65"></span><span>      </span><span class="annot"><span class="hs-identifier hs-type">pure</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Version.html#TmuxVersion"><span class="hs-identifier hs-type">TmuxVersion</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679146528"><span class="hs-identifier hs-type">major</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679146530"><span class="hs-identifier hs-type">minor</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679146531"><span class="hs-identifier hs-type">suffix</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-66"></span><span>
-</span><span id="line-67"></span><span>    </span><span id="local-6989586621679149961"><span class="annot"><span class="annottext">number :: Text -&gt; Maybe a
-</span><a href="#local-6989586621679149961"><span class="hs-identifier hs-var hs-var">number</span></a></span></span><span> </span><span id="local-6989586621679149969"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621679149969"><span class="hs-identifier hs-var">value</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Maybe (Char, Text)
+</span><span id="line-67"></span><span>    </span><span id="local-6989586621679146529"><span class="annot"><span class="annottext">number :: Text -&gt; Maybe a
+</span><a href="#local-6989586621679146529"><span class="hs-identifier hs-var hs-var">number</span></a></span></span><span> </span><span id="local-6989586621679146537"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679146537"><span class="hs-identifier hs-var">value</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Maybe (Char, Text)
 </span><span class="hs-identifier hs-var">Text.uncons</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621679149969"><span class="hs-identifier hs-var">value</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><a href="#local-6989586621679146537"><span class="hs-identifier hs-var">value</span></a></span><span> </span><span class="hs-keyword">of</span><span>
 </span><span id="line-68"></span><span>      </span><span class="annot"><span class="annottext">Maybe (Char, Text)
 </span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Maybe a
 forall a. Maybe a
 </span><span class="hs-identifier hs-var">Nothing</span></span><span>
 </span><span id="line-69"></span><span>      </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char
-</span><span class="hs-char">'0'</span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679149971"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621679149971"><span class="hs-identifier hs-var">remaining</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool
+</span><span class="hs-char">'0'</span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679146539"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679146539"><span class="hs-identifier hs-var">remaining</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool
 </span><span class="hs-identifier hs-var">not</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Bool
 </span><span class="hs-identifier hs-var">Text.null</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621679149971"><span class="hs-identifier hs-var">remaining</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Maybe a
+</span><a href="#local-6989586621679146539"><span class="hs-identifier hs-var">remaining</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Maybe a
 forall a. Maybe a
 </span><span class="hs-identifier hs-var">Nothing</span></span><span>
 </span><span id="line-70"></span><span>      </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="annot"><span class="annottext">(Char, Text)
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Text -&gt; Bool
 </span><span class="hs-identifier hs-var">Text.all</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
-</span><a href="#local-6989586621679149959"><span class="hs-identifier hs-var">asciiDigit</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621679149969"><span class="hs-identifier hs-var">value</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String -&gt; Maybe a
+</span><a href="#local-6989586621679146527"><span class="hs-identifier hs-var">asciiDigit</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679146537"><span class="hs-identifier hs-var">value</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String -&gt; Maybe a
 forall a. Read a =&gt; String -&gt; Maybe a
 </span><span class="hs-identifier hs-var">readMaybe</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; String
 </span><span class="hs-identifier hs-var">Text.unpack</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621679149969"><span class="hs-identifier hs-var">value</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679146537"><span class="hs-identifier hs-var">value</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-71"></span><span>      </span><span class="annot"><span class="annottext">Maybe (Char, Text)
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Maybe a
 forall a. Maybe a
 </span><span class="hs-identifier hs-var">Nothing</span></span><span>
 </span><span id="line-72"></span><span>
-</span><span id="line-73"></span><span>    </span><span id="local-6989586621679149959"><span class="annot"><span class="annottext">asciiDigit :: Char -&gt; Bool
-</span><a href="#local-6989586621679149959"><span class="hs-identifier hs-var hs-var">asciiDigit</span></a></span></span><span> </span><span id="local-6989586621679149977"><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621679149977"><span class="hs-identifier hs-var">c</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621679149977"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
+</span><span id="line-73"></span><span>    </span><span id="local-6989586621679146527"><span class="annot"><span class="annottext">asciiDigit :: Char -&gt; Bool
+</span><a href="#local-6989586621679146527"><span class="hs-identifier hs-var hs-var">asciiDigit</span></a></span></span><span> </span><span id="local-6989586621679146545"><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621679146545"><span class="hs-identifier hs-var">c</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621679146545"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
 forall a. Ord a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">&gt;=</span></span><span> </span><span class="annot"><span class="annottext">Char
 </span><span class="hs-char">'0'</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
 </span><span class="hs-operator hs-var">&amp;&amp;</span></span><span> </span><span class="annot"><span class="annottext">Char
-</span><a href="#local-6989586621679149977"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
+</span><a href="#local-6989586621679146545"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
 forall a. Ord a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">&lt;=</span></span><span> </span><span class="annot"><span class="annottext">Char
 </span><span class="hs-char">'9'</span></span><span>
@@ -283,15 +283,15 @@ forall a. Ord a =&gt; a -&gt; a -&gt; Bool
 </span><span id="line-75"></span><span class="annot"><span class="hs-comment">-- | Render the canonical release without the executable name or newline.</span></span><span>
 </span><span id="line-76"></span><span class="annot"><a href="LibTmux.Version.html#renderVersion"><span class="hs-identifier hs-type">renderVersion</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Version.html#TmuxVersion"><span class="hs-identifier hs-type">TmuxVersion</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
 </span><span id="line-77"></span><span id="renderVersion"><span class="annot"><span class="annottext">renderVersion :: TmuxVersion -&gt; Text
-</span><a href="LibTmux.Version.html#renderVersion"><span class="hs-identifier hs-var hs-var">renderVersion</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Version.html#TmuxVersion"><span class="hs-identifier hs-type">TmuxVersion</span></a></span><span> </span><span id="local-6989586621679149978"><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679149978"><span class="hs-identifier hs-var">major</span></a></span></span><span> </span><span id="local-6989586621679149979"><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679149979"><span class="hs-identifier hs-var">minor</span></a></span></span><span> </span><span id="local-6989586621679149980"><span class="annot"><span class="annottext">Maybe Char
-</span><a href="#local-6989586621679149980"><span class="hs-identifier hs-var">suffix</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><a href="LibTmux.Version.html#renderVersion"><span class="hs-identifier hs-var hs-var">renderVersion</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Version.html#TmuxVersion"><span class="hs-identifier hs-type">TmuxVersion</span></a></span><span> </span><span id="local-6989586621679146546"><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621679146546"><span class="hs-identifier hs-var">major</span></a></span></span><span> </span><span id="local-6989586621679146547"><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621679146547"><span class="hs-identifier hs-var">minor</span></a></span></span><span> </span><span id="local-6989586621679146548"><span class="annot"><span class="annottext">Maybe Char
+</span><a href="#local-6989586621679146548"><span class="hs-identifier hs-var">suffix</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-78"></span><span>  </span><span class="annot"><span class="annottext">String -&gt; Text
 </span><span class="hs-identifier hs-var">Text.pack</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Integer -&gt; String
 forall a. Show a =&gt; a -&gt; String
 </span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679149978"><span class="hs-identifier hs-var">major</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; ShowS
+</span><a href="#local-6989586621679146546"><span class="hs-identifier hs-var">major</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; ShowS
 forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;.&quot;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; ShowS
@@ -299,7 +299,7 @@ forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; String
 forall a. Show a =&gt; a -&gt; String
 </span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679149979"><span class="hs-identifier hs-var">minor</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; ShowS
+</span><a href="#local-6989586621679146547"><span class="hs-identifier hs-var">minor</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; ShowS
 forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; (Char -&gt; String) -&gt; Maybe Char -&gt; String
 forall b a. b -&gt; (a -&gt; b) -&gt; Maybe a -&gt; b
@@ -307,17 +307,17 @@ forall b a. b -&gt; (a -&gt; b) -&gt; Maybe a -&gt; b
 </span><span class="hs-string">&quot;&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char -&gt; ShowS
 forall a. a -&gt; [a] -&gt; [a]
 </span><span class="hs-glyph hs-var">:</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Maybe Char
-</span><a href="#local-6989586621679149980"><span class="hs-identifier hs-var">suffix</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679146548"><span class="hs-identifier hs-var">suffix</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-79"></span><span>
 </span><span id="line-80"></span><span class="hs-comment">-- | Admit every stable release from 3.3a through 3.8, including intermediate</span><span>
 </span><span id="line-81"></span><span class="hs-comment">-- releases. Versions outside that range fail. Individual features need their own</span><span>
 </span><span id="line-82"></span><span class="hs-comment">-- capability checks; passing this check does not qualify an entire release.</span><span>
 </span><span id="line-83"></span><span class="annot"><a href="LibTmux.Version.html#requireSupported"><span class="hs-identifier hs-type">requireSupported</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Version.html#TmuxVersion"><span class="hs-identifier hs-type">TmuxVersion</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><a href="LibTmux.Version.html#VersionError"><span class="hs-identifier hs-type">VersionError</span></a></span><span> </span><span class="annot"><a href="LibTmux.Version.html#TmuxVersion"><span class="hs-identifier hs-type">TmuxVersion</span></a></span><span>
 </span><span id="line-84"></span><span id="requireSupported"><span class="annot"><span class="annottext">requireSupported :: TmuxVersion -&gt; Either VersionError TmuxVersion
-</span><a href="LibTmux.Version.html#requireSupported"><span class="hs-identifier hs-var hs-var">requireSupported</span></a></span></span><span> </span><span id="local-6989586621679149983"><span class="annot"><span class="annottext">TmuxVersion
-</span><a href="#local-6989586621679149983"><span class="hs-identifier hs-var">version</span></a></span></span><span>
+</span><a href="LibTmux.Version.html#requireSupported"><span class="hs-identifier hs-var hs-var">requireSupported</span></a></span></span><span> </span><span id="local-6989586621679146551"><span class="annot"><span class="annottext">TmuxVersion
+</span><a href="#local-6989586621679146551"><span class="hs-identifier hs-var">version</span></a></span></span><span>
 </span><span id="line-85"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">TmuxVersion
-</span><a href="#local-6989586621679149983"><span class="hs-identifier hs-var">version</span></a></span><span> </span><span class="annot"><span class="annottext">TmuxVersion -&gt; TmuxVersion -&gt; Bool
+</span><a href="#local-6989586621679146551"><span class="hs-identifier hs-var">version</span></a></span><span> </span><span class="annot"><span class="annottext">TmuxVersion -&gt; TmuxVersion -&gt; Bool
 forall a. Ord a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Integer -&gt; Maybe Char -&gt; TmuxVersion
 </span><a href="LibTmux.Version.html#TmuxVersion"><span class="hs-identifier hs-var">TmuxVersion</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
@@ -327,7 +327,7 @@ forall a. a -&gt; Maybe a
 </span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">Char
 </span><span class="hs-char">'a'</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
 </span><span class="hs-operator hs-var">||</span></span><span> </span><span class="annot"><span class="annottext">TmuxVersion
-</span><a href="#local-6989586621679149983"><span class="hs-identifier hs-var">version</span></a></span><span> </span><span class="annot"><span class="annottext">TmuxVersion -&gt; TmuxVersion -&gt; Bool
+</span><a href="#local-6989586621679146551"><span class="hs-identifier hs-var">version</span></a></span><span> </span><span class="annot"><span class="annottext">TmuxVersion -&gt; TmuxVersion -&gt; Bool
 forall a. Ord a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">&gt;</span></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Integer -&gt; Maybe Char -&gt; TmuxVersion
 </span><a href="LibTmux.Version.html#TmuxVersion"><span class="hs-identifier hs-var">TmuxVersion</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
@@ -338,10 +338,10 @@ forall a. Maybe a
 forall a b. a -&gt; Either a b
 </span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TmuxVersion -&gt; VersionError
 </span><a href="LibTmux.Version.html#UnsupportedVersion"><span class="hs-identifier hs-var">UnsupportedVersion</span></a></span><span> </span><span class="annot"><span class="annottext">TmuxVersion
-</span><a href="#local-6989586621679149983"><span class="hs-identifier hs-var">version</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679146551"><span class="hs-identifier hs-var">version</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-86"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TmuxVersion -&gt; Either VersionError TmuxVersion
 forall a b. b -&gt; Either a b
 </span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">TmuxVersion
-</span><a href="#local-6989586621679149983"><span class="hs-identifier hs-var">version</span></a></span><span>
+</span><a href="#local-6989586621679146551"><span class="hs-identifier hs-var">version</span></a></span><span>
 </span><span id="line-87"></span></pre></body></html>
