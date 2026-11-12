@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import artifact from './fixtures/haskell-mutations-native/artifact.json'
 import { extractHaskellArtifact } from '../src/languages/haskell'
 import { SymbolIndex, tokenizeDoc } from '../src/reference'
-import { navSidecar } from '../src/nav-sidecar'
+import { exportGroupsNav, navSidecarFor } from '../src/nav-sidecar'
 
 describe('the native Haskell mutation profile', () => {
   it('preserves checked commands, options and opaque recovery ownership', () => {
@@ -21,8 +21,17 @@ describe('the native Haskell mutation profile', () => {
     })
     expect(symbol('v:MutationAppliedWithErrors').parent).toBe('LibTmux.Server#t:TmuxException')
     expect(model.symbols.some((entry) => entry.id.includes('Internal'))).toBe(false)
-    expect(navSidecar('haskell', structuredClone(model))!.diagnostics)
+    expect(navSidecarFor('haskell', structuredClone(model), exportGroupsNav(model)).diagnostics)
       .toEqual({ unmatched: [], deadBuckets: [], ambiguous: [], staleUnsettled: [] })
+  })
+
+  it('adds the export-group directory only to modules with three or more groups', () => {
+    const model = extractHaskellArtifact(artifact)
+    const listed = model.symbols.filter((entry) => entry.kind === 'module' && entry.doc?.body?.includes('# What is on here'))
+    expect(listed.map((entry) => entry.id).sort()).toEqual(artifact.modules
+      .filter((module: { groups: unknown[] }) => module.groups.length >= 3).map((module: { name: string }) => module.name).sort())
+    expect(listed.map((entry) => entry.id)).toContain('LibTmux.Server')
+    expect(model.symbols.find((entry) => entry.id === 'LibTmux.Query.Pane')!.doc?.body ?? '').not.toContain('What is on here')
   })
 
   it('resolves recovery and command links through the public reference', () => {

@@ -128,6 +128,55 @@ describe('native PowerShell and Julia navigation', () => {
 })
 
 
+describe('Haskell reference navigation', () => {
+  const model = JSON.parse(
+    readFileSync(new URL('../../../site/src/data/api/haskell.json', import.meta.url), 'utf8'),
+  ) as ApiModel
+  const nav = navSidecar('haskell', model)!
+
+  it('groups by the shared tmux roles instead of one bucket per module', () => {
+    expect(nav.buckets.map((bucket) => bucket.id)).toEqual(NAV.swift.buckets.map((bucket) => bucket.id))
+    expect(nav.buckets.slice(0, 5).map((bucket) => bucket.label)).toEqual(['Server', 'Session', 'Window', 'Pane', 'Client'])
+    expect(nav.buckets.some((bucket) => bucket.label.startsWith('LibTmux'))).toBe(false)
+  })
+
+  it('files the owned handle under Server and the detached records under their objects', () => {
+    expect(nav.placement).toMatchObject({
+      'LibTmux.Server': 'server', 'LibTmux.Server#t:Server': 'server',
+      'LibTmux.Snapshot#t:Session': 'session', 'LibTmux.Id#t:SessionId': 'session',
+      'LibTmux.Snapshot#t:Window': 'window', 'LibTmux.Snapshot#t:WindowLink': 'window',
+      'LibTmux.Snapshot#t:Pane': 'pane', 'LibTmux.Snapshot#t:PaneRef': 'pane',
+      'LibTmux.Snapshot#t:Client': 'client',
+    })
+    expect(nav.buckets.slice(0, 4).map((bucket) => bucket.target?.id)).toEqual([
+      'LibTmux.Server', 'LibTmux.Snapshot#t:Session', 'LibTmux.Snapshot#t:Window', 'LibTmux.Snapshot#t:Pane',
+    ])
+  })
+
+  it('keeps the other modules where the other ports file ids, queries, versions, errors and fixtures', () => {
+    expect(nav.placement).toMatchObject({
+      'LibTmux.Query': 'queries', 'LibTmux.Query.Session': 'queries', 'LibTmux.Snapshot': 'snapshots',
+      'LibTmux.Version': 'version', 'LibTmux.Snapshot.Fixture': 'testing',
+      'LibTmux.Id#t:IdError': 'errors', 'LibTmux.Server#t:TmuxException': 'errors',
+    })
+  })
+
+  it('keeps everything LibTmux.Server exports with the handle except its operational error', () => {
+    const exported = model.symbols.filter((entry) => entry.parent === 'LibTmux.Server')
+    expect(exported.length).toBeGreaterThan(40)
+    for (const entry of exported) {
+      expect(nav.placement[entry.id], entry.id).toBe(entry.name === 'TmuxException' ? 'errors' : 'server')
+    }
+  })
+
+  it('reports nothing unmatched and exempts only the modules that span several objects', () => {
+    expect(nav.unplaced.map((entry) => entry.id)).toEqual(['LibTmux', 'LibTmux.Id', 'LibTmux.Value'])
+    expect(nav.diagnostics.unmatched).toEqual([])
+    expect(nav.diagnostics.ambiguous).toEqual([])
+    expect(nav.diagnostics.staleUnsettled).toEqual([])
+  })
+})
+
 describe('navigation checker member ownership', () => {
   const source = { file: 'src/owners.rs' }
   const owner = (id: string, kind: ApiSymbol['kind'], extra: Partial<ApiSymbol> = {}): ApiSymbol => ({

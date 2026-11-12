@@ -95,7 +95,10 @@ export function exportGroupsNav(model: ApiModelBase): NavConfig {
  * `gen-api-model.mjs --nav` writes this and `check-nav.mjs` compares it.
  */
 export function navSidecar(port: string, model: ApiModel) {
-  const nav = model.exportGroups || port === 'haskell' ? exportGroupsNav(model) : NAV[port]
+  // Export groups are validated whenever they exist, and are the sidebar only
+  // for a port with no curated one.
+  const groups = model.exportGroups || port === 'haskell' ? exportGroupsNav(model) : undefined
+  const nav = NAV[port] ?? groups
   if (!nav) return undefined
   return navSidecarFor(port, model, nav)
 }

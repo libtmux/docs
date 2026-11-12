@@ -84,19 +84,29 @@ describe('Lua API sidebar', () => {
   })
 })
 
+describe('Haskell API sidebar', () => {
+  it('groups by the shared tmux roles and opens Server on its module', () => {
+    const tree = navTree('haskell')
+    expect(tree.slice(0, 5).map((bucket) => bucket.id)).toEqual(['server', 'session', 'window', 'pane', 'client'])
+    expect(tree.some((bucket) => bucket.label.startsWith('LibTmux'))).toBe(false)
+    expect(tree.slice(0, 4).map((bucket) => firstEntry(bucket)?.id)).toEqual([
+      'LibTmux.Server', 'LibTmux.Snapshot#t:Session', 'LibTmux.Snapshot#t:Window', 'LibTmux.Snapshot#t:Pane',
+    ])
+  })
+
+  it('keeps every Server export in the Server bucket except the operational error', () => {
+    const server = navTree('haskell').find((bucket) => bucket.id === 'server')!
+    const listed = new Set(server.entries.map((entry) => entry.id))
+    const exported = API_MODELS.haskell.symbols.filter((symbol) => symbol.parent === 'LibTmux.Server')
+    for (const symbol of exported) expect(listed.has(symbol.id), symbol.id).toBe(symbol.name !== 'TmuxException')
+  })
+})
+
 describe('shared reference index sections', () => {
-  it.each(PORTS)('leads the %s index and exports with its native entry groups', (port) => {
+  it.each(PORTS)('leads the %s index and exports with its Server', (port) => {
     const sections = referenceIndexSections(port)
     if (port === 'haskell') {
-      const modules = API_MODELS[port].symbols.filter((symbol) => symbol.kind === 'module')
-      const moduleSections = sections.filter((section) => [...section.types, ...section.free]
-        .some((symbol) => symbol.kind === 'module'))
-      expect(modules.length).toBeGreaterThan(0)
-      expect(sections[0].id).toBe(`exports:${modules[0].id}`)
-      expect(moduleSections.map((section) => section.id)).toEqual(modules.map((symbol) => `exports:${symbol.id}`))
-      for (const [i, section] of moduleSections.entries()) {
-        expect([...section.types, ...section.free].map((symbol) => symbol.id)).toEqual([modules[i].id])
-      }
+      expect([...sections[0].types, ...sections[0].free][0]).toMatchObject({ id: 'LibTmux.Server', kind: 'module' })
     } else if (port === 'powershell') expect(sections[0].free.map((symbol) => symbol.name))
       .toEqual(expect.arrayContaining(['Connect-TmuxServer', 'Get-TmuxServer', 'New-TmuxServer']))
     else if (port === 'ocaml') {
@@ -107,7 +117,7 @@ describe('shared reference index sections', () => {
     } else if (port === 'clojure') expect(sections[0].types[0].name).toBe('libtmux.core')
     else if (port === 'erlang') expect(sections[0].types[0]).toMatchObject({ name: 'tmux_server', kind: 'module' })
     else if (port !== 'haskell') expect(sections[0].types[0].publicId ?? sections[0].types[0].id).toBe(CORE_HOME[port].objects!.server)
-    if (port !== 'haskell') expect(sections[0].id).toBe('server')
+    expect(sections[0].id).toBe('server')
     const ids = sections.flatMap((section) => [...section.types, ...section.free]).map((symbol) => symbol.id)
     expect(new Set(ids).size).toBe(ids.length)
     const available = new Set(sections.map((section) => section.id))
