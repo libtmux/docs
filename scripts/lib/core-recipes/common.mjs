@@ -63,7 +63,10 @@ export const checkoutOf = (port, env) => resolveCheckout(port, { env, order: ['w
  * Insert a marker line after each step's statement. `mark(step)` is the line
  * in the port's language and ends in `docs:mark`, so a copy without those
  * lines is the displayed program. A step may set `after`, the line to insert
- * after, when its statement is not where its value is in scope. `syntax` says
+ * after, when its statement is not where its value is in scope, and `indent`,
+ * the columns of the new line, when its anchor is on a later line of a
+ * statement that continues over several (a layout language reads the indent
+ * as the statement it belongs to). `syntax` says
  * how the language's comments and quotes are read (`statementLines`): the text
  * that starts a comment, or `syntaxOf(port)`.
  */
@@ -72,7 +75,7 @@ export function instrumentLines(source, steps, mark, syntax = '//') {
   const inserts = steps.map((step) => {
     const range = statementLines(source, step.anchor, syntax, step.occurrence)
     if (!range) throw new Error(`${step.id}: the anchor ${JSON.stringify(step.anchor)} is not on exactly one line of the program`)
-    const indent = /^\s*/.exec(lines[range[0] - 1])[0]
+    const indent = step.indent === undefined ? /^\s*/.exec(lines[range[0] - 1])[0] : ' '.repeat(step.indent)
     return { after: step.after ?? range[1], text: `${indent}${mark(step)}` }
   })
   for (const { after, text } of inserts.toSorted((a, b) => b.after - a.after)) lines.splice(after, 0, text)

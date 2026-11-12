@@ -25,9 +25,11 @@ export interface StatementSyntax {
   quotes: string
   /** What makes the next character a plain one, so that a quote or bracket it names is not one: Lisp's `#\`, Erlang's and Perl's `$`. */
   literal?: string
-  /** A comment between these two that nests and may run over lines: OCaml's `(* *)`. It reads the strings inside it, so `"*)"` does not end it. */
+  /** The characters that make up an operator. A `comment` that is part of a longer run of them is an operator, not a comment: Haskell's `-->`. */
+  operator?: string
+  /** A comment between these two that nests and may run over lines: OCaml's `(* *)` and Haskell's `{- -}`. OCaml reads the strings inside it, so `"*)"` does not end it. */
   block?: { open: string; close: string; strings?: boolean }
-  /** `'` is a character literal only if one character, or one escape, and a `'` follow it; anywhere else it is a type variable or a prime in a name. */
+  /** `'` is a character literal only if one character, or one escape, and a `'` follow it; anywhere else it is a type variable, a prime in a name or a promotion tick. */
   ticks?: boolean
   /** OCaml's `{id|...|id}` strings, which end at `|id}` whatever they hold. */
   braces?: boolean
@@ -40,13 +42,14 @@ const DEFAULT: StatementSyntax = { comment: '//', quotes: '"\'`' }
  * with `'`, so `'("/bin/cat")` holds no string; Erlang's `'` quotes an atom and
  * its `%` starts a comment; Perl's `#` starts a comment except after the `$` of
  * `$#array`. OCaml's comments are `(* *)` and its `'` is a character, or a type
- * variable.
+ * variable; Haskell's are `--` and `{- -}`, and `'` ends many names.
  */
 const SYNTAX: Readonly<Record<string, StatementSyntax>> = {
   lisp: { comment: ';', quotes: '"', literal: '#\\' },
   erlang: { comment: '%', quotes: '"\'', literal: '$' },
   perl: { comment: '#', quotes: '"\'', literal: '$' },
   ocaml: { quotes: '"', block: { open: '(*', close: '*)', strings: true }, ticks: true, braces: true },
+  haskell: { comment: '--', quotes: '"', operator: '!#$%&*+./<=>?@\\^|-~:', block: { open: '{-', close: '-}' }, ticks: true },
 }
 
 /** How `port`'s programs are read: its own syntax if it needs one, else C's. */
@@ -65,7 +68,7 @@ export const syntaxOf = (port: string | undefined): StatementSyntax => (port ===
  * comments, with the quotes of C, Go and Rust.
  */
 export function statementLines(code: string, anchor: string, syntax: string | StatementSyntax = '//', occurrence?: number): LineRange | undefined {
-  const { comment, quotes, literal, block, ticks, braces } = typeof syntax === 'string' ? { ...DEFAULT, comment: syntax } : syntax
+  const { comment, quotes, literal, operator, block, ticks, braces } = typeof syntax === 'string' ? { ...DEFAULT, comment: syntax } : syntax
   const lines = code.split('\n')
   const hits = lines.flatMap((line, index) => (line.includes(anchor) ? [index] : []))
   if (occurrence === undefined ? hits.length !== 1 : !Number.isInteger(occurrence) || occurrence < 1 || occurrence > hits.length) return undefined
@@ -95,7 +98,7 @@ export function statementLines(code: string, anchor: string, syntax: string | St
         else if (line.startsWith(block!.open, column)) { comments++; column += block!.open.length - 1 }
         continue
       }
-      if (comment && line.startsWith(comment, column)) break
+      if (comment && line.startsWith(comment, column) && !partOfOperator(line, column, comment, operator)) break
       if (block && line.startsWith(block.open, column)) { comments++; column += block.open.length - 1; continue }
       if (literal && line.startsWith(literal, column)) {
         // The character after the prefix, and the one a backslash there escapes (Erlang's `$\n`; Lisp's `#\\` is complete).
@@ -122,8 +125,19 @@ export function statementLines(code: string, anchor: string, syntax: string | St
 }
 
 /**
+ * Whether the comment text at `column` is the start of a longer operator and so no comment (Haskell's `-->`, `|--`):
+ * an operator's character comes just before it or just after the run of its last character.
+ */
+function partOfOperator(line: string, column: number, comment: string, operator: string | undefined): boolean {
+  if (!operator) return false
+  let end = column + comment.length
+  while (line[end] === comment.at(-1)) end++
+  return operator.includes(line[column - 1] ?? ' ') || operator.includes(line[end] ?? ' ')
+}
+
+/**
  * The column to carry on from after a `'` at `column`: the end of the character literal it opens (`'x'`, `'\n'`, `'\''`),
- * or the tick itself when it is a prime in a name (`x'`) or a type variable (`'a`).
+ * or the tick itself when it is a prime in a name (`x'`, `foldl'`) or a type variable or promotion tick (`'a`, `'[]`).
  */
 function afterTick(line: string, column: number): number {
   if (/[\w']/.test(line[column - 1] ?? ' ')) return column

@@ -92,7 +92,7 @@ describe('finding a call in a Lisp, Erlang or Perl program', () => {
   })
 })
 
-describe('finding a call in an OCaml program', () => {
+describe('finding a call in an OCaml or Haskell program', () => {
   const lines = (...text: string[]) => text.join('\n')
   const c = { comment: '//', quotes: '"\'`' }
 
@@ -119,6 +119,24 @@ describe('finding a call in an OCaml program', () => {
     const ocaml = lines('Client.run client {|a ( |} {id|b ( |} |id} (f ())')
     expect(statementLines(ocaml, 'Client.run', syntaxOf('ocaml'))).toEqual([1, 1])
     expect(statementLines(ocaml, 'Client.run', c)).toBeUndefined()
+  })
+
+  it('reads `--` and `{- -}` as Haskell comments, except in an operator such as `-->`, and `\'` as a prime in a name', () => {
+    const haskell = lines(
+      'Tmux.open server (Q.x {- ( an',
+      '   (( unmatched {- nested -} -} y)',
+      'Tmux.fold server (foldl\' step 0 xs) -- a ) comment',
+      'Tmux.arrow server (a --> b)',
+      'Tmux.close server (c |-- d)',
+    )
+    expect(statementLines(haskell, 'Tmux.open', syntaxOf('haskell'))).toEqual([1, 2])
+    expect(statementLines(haskell, 'Tmux.open', c), 'C reads the brackets in the comment').not.toEqual([1, 2])
+    expect(statementLines(haskell, 'Tmux.fold', syntaxOf('haskell'))).toEqual([3, 3])
+    expect(statementLines(haskell, 'Tmux.fold', { comment: '--', quotes: '"\'' }), 'with `\'` a quote the prime of foldl\' hides the bracket').not.toEqual([3, 3])
+    expect(statementLines(haskell, 'Tmux.arrow', syntaxOf('haskell'))).toEqual([4, 4])
+    expect(statementLines(haskell, 'Tmux.arrow', { comment: '--', quotes: '"' }), 'a `-->` is not the start of a comment').not.toEqual([4, 4])
+    expect(statementLines(haskell, 'Tmux.close', syntaxOf('haskell'))).toEqual([5, 5])
+    expect(statementLines(lines('Tmux.chr server (f \'(\' \')\' \'\\\'\' \'"\' "--" @\'[Int])'), 'Tmux.chr', syntaxOf('haskell'))).toEqual([1, 1])
   })
 })
 
