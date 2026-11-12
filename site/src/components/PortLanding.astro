@@ -7,7 +7,7 @@ import WorkspaceConfig from './workspace/WorkspaceConfig.astro'
 import WorkspaceEvidence from './workspace/WorkspaceEvidence.astro'
 import WorkspacePicker from './workspace/WorkspacePicker.astro'
 import WorkspaceWindows from './workspace/WorkspaceWindows.astro'
-import { PORT_BY_SLUG, portPageUrl, type Port } from '../lib/ports'
+import { portPageUrl, type Port } from '../lib/ports'
 import { landingPanels, type CachedSource, type LandingTable } from '../lib/port-landing'
 import { mcpShowcase, toolHeadings } from '../lib/mcp-showcase'
 import { loadCommand } from '../lib/workspace-links'
@@ -39,8 +39,8 @@ interface Props {
   version: string
 }
 const { port, version } = Astro.props as Props
-const panels = landingPanels(port, version, PORT_BY_SLUG, LANDING as LandingTable, SOURCES as Record<string, CachedSource>)
-// The MCP overview's showcase, for the port whose server the panel installs. A port served by another port's package gets no worked example.
+const panels = landingPanels(port, version, LANDING as LandingTable, SOURCES as Record<string, CachedSource>)
+// The MCP overview's showcase, for a port that publishes an MCP server.
 const showcases = new Map(await Promise.all(panels.filter((panel) => panel.product === 'mcp' && panel.install)
   .map(async (panel) => [panel.product, await mcpShowcase(panel.install!.port, version)] as const)))
 const workspace = workspaceShowcase(port.slug)
@@ -85,15 +85,12 @@ const panelId = (product: string) => `landing-panel-${product}`
       <LandingInstall panel={panel} port={port.slug} />
     </> : panel.product === 'mcp' ? <>
       <h2 class="sr-only">{panel.label}</h2>
-      {panel.servedBy && <p class="landing-note">
-        {port.name} has no {panel.label} package of its own. It uses the {panel.servedBy} port's <code>{panel.packageName}</code>.
-      </p>}
-      {showcase?.example && !panel.servedBy && <div class="landing-example" data-landing-example="mcp">
+      {showcase?.example && <div class="landing-example" data-landing-example="mcp">
         <McpReplay example={showcase.example} portName={port.name} level={3} />
       </div>}
       <LandingInstall panel={panel} port={port.slug} />
       <ul class="landing-links">
-        {showcase && !panel.servedBy && <li><a href={`${panel.href}#${toolHeadings(showcase)[0]!.slug}`}>All tools{showcase.groups.some((group) => group.tier) ? ' by tier' : ''} →</a></li>}
+        {showcase && <li><a href={`${panel.href}#${toolHeadings(showcase)[0]!.slug}`}>All tools{showcase.groups.some((group) => group.tier) ? ' by tier' : ''} →</a></li>}
         {showcase && <li><a href={showcase.toolsHref}>Every tool, with its arguments and result →</a></li>}
         <li><a href={panel.href}>{panel.label} documentation →</a></li>
       </ul>

@@ -20,8 +20,6 @@ const PAGES = [
   ['Ruby MCP', '/ruby/latest/mcp/', /libtmux-mcp/i],
   ['Ruby MCP tool', '/ruby/latest/mcp/tools/tmux_capabilities/', /tmux_capabilities/i],
   ['Ruby workspace', '/ruby/latest/workspace/', /validate[\s\S]*plan[\s\S]*load/i],
-  ['Lua MCP availability', '/lua/latest/mcp/', /not published|no published/i],
-  ['Lua workspace availability', '/lua/latest/workspace/', /not published|no published/i],
 ]
 
 const browser = await chromium.launch()
@@ -94,6 +92,13 @@ for (const scheme of ['light', 'dark']) {
         const offered = page.locator(`main a[href$="/lua/latest/${product}/"], [data-surface-picker] a[href$="/lua/latest/${product}/"]`)
         check(await offered.count() === 0, `${scheme}/${viewport}: Lua offers unavailable ${product}`)
       }
+    }
+    // Lua ships neither product; their former URLs lead to the Lua home.
+    const luaHome = new URL(`${BASE}/lua/latest/`).pathname
+    for (const product of ['mcp', 'workspace']) {
+      await page.goto(`${BASE}/lua/latest/${product}/`, { waitUntil: 'networkidle' })
+      const landed = await page.waitForURL((url) => url.pathname === luaHome, { timeout: 2000 }).then(() => true, () => false)
+      check(landed, `${scheme}/${viewport}: Lua ${product} did not redirect to the Lua home`)
     }
 
     const response = await page.goto(`${BASE}/`, { waitUntil: 'networkidle' })

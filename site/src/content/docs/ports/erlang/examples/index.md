@@ -46,6 +46,3 @@ adapting a program to an existing server.
 | Program | What it demonstrates | Guide |
 | --- | --- | --- |
 | [workspace_demo.erl](https://github.com/libtmux/libtmux-erlang/blob/6fc546e1407b3257bce4699a564e2fbe32ea70a2/examples/workspace_demo.erl) | Load a real workspace file and inspect its desired object graph. | [Workspace JSON loader](../guides/workspace-json/) |
-
-The [workspace manager](../workspace/) page covers planning and applying a
-workspace on its own server.

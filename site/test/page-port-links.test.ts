@@ -23,13 +23,13 @@ describe('prose route ownership', () => {
   const ruby = { id: '_staged/ruby/concepts', data: { port: 'ruby', route: 'concepts' } }
   const lua = { id: '_staged/lua/concepts', data: { port: 'lua', route: 'concepts' } }
 
-  it('omits excluded product overviews while retaining unpublished ones', () => {
+  it('omits the MCP overview of every port that ships no MCP server', () => {
     for (const pagePath of ['mcp', 'mcp/']) {
       const links = pagePortLinks({ ...options, pagePath, portSlug: 'ts' })
-      expect(links.find((entry) => entry.port === 'erlang')?.links).toEqual([])
-      expect(links.find((entry) => entry.port === 'elixir')?.links).toEqual([
-        { href: '/pr-42/en/elixir/latest/mcp/' },
-      ])
+      for (const port of ['erlang', 'elixir', 'lua', 'haskell', 'powershell']) {
+        expect(links.find((entry) => entry.port === port)?.links, `${port}/${pagePath}`).toEqual([])
+      }
+      expect(links.find((entry) => entry.port === 'ts')?.links).toEqual([{ href: '/pr-42/en/ts/v1.2.3/mcp/' }])
     }
   })
 
@@ -109,7 +109,7 @@ describe('reference picker exits', () => {
     }
   })
 
-  it('excludes absent products and keeps unpublished overviews and language homes', async () => {
+  it('links no port that lacks the product, and keeps language homes', async () => {
     const picker = await loadAstroTemplate('components/PagePortSwitcher.astro')
     const productDocs = [{ id: 'workspace', data: {} }]
     for (const product of ['mcp', 'workspace'] as const) {
@@ -126,14 +126,11 @@ describe('reference picker exits', () => {
         const window = new Window()
         try {
           window.document.body.innerHTML = await renderAstroTemplate(picker, { props: { entries, portSlug: 'ts' } })
-          const haskell = window.document.querySelector('[data-port="haskell"]')!
-          if (product === 'mcp') {
-            expect(haskell.textContent).toContain('No matching page')
-            expect([...haskell.querySelectorAll('a')].map((link) => link.getAttribute('href')))
-              .toEqual(['/pr-42/en/haskell/latest/'])
-          } else {
-            expect(haskell.tagName).toBe('A')
-            expect(haskell.getAttribute('href')).toBe('/pr-42/en/haskell/latest/workspace/')
+          for (const slug of ['haskell', 'erlang']) {
+            const row = window.document.querySelector(`[data-port="${slug}"]`)!
+            expect(row.textContent).toContain('No matching page')
+            expect([...row.querySelectorAll('a')].map((link) => link.getAttribute('href')))
+              .toEqual([`/pr-42/en/${slug}/latest/`])
           }
         } finally { await window.happyDOM.abort() }
       }
@@ -208,20 +205,23 @@ describe('shared product pages and the ports that lack the product', () => {
     expect(linkFor(path, 'go').links.length).toBeGreaterThan(0)
   })
 
-  it('keeps the overview of a product that is unpublished, which has a page', () => {
-    expect(PORT_BY_SLUG.lua.productAvailability?.mcp).toBe('unpublished')
-    expect(productAvailable(PORT_BY_SLUG.lua, 'mcp')).toBe(false)
-    expect(linkFor('mcp', 'lua').links).toEqual([{ href: '/pr-42/en/lua/latest/mcp/' }])
+  it('links no overview for a port whose repository ships no MCP server', () => {
+    for (const slug of ['lua', 'elixir', 'haskell', 'powershell']) {
+      expect(PORT_BY_SLUG[slug].productAvailability?.mcp, slug).toBe('excluded')
+      expect(linkFor('mcp', slug).links, slug).toEqual([])
+      expect(linkFor('mcp', slug).home?.href, slug).toBe(`/pr-42/en/${slug}/latest/`)
+    }
   })
 
-  it('keeps the overview of an unpublished workspace root, and drops an excluded one', () => {
+  it('links no workspace overview for a port whose repository publishes no workspace manager', () => {
     // The shared workspace overview, which every port renders at its own root.
     const overview = (slug: string) => pagePortLinks({ ...options, docs: [{ id: 'workspace', data: {} }], pagePath: 'workspace', portSlug: 'rs' })
       .find((entry) => entry.port === slug)!
-    for (const slug of ['lua', 'elixir']) {
-      expect(PORT_BY_SLUG[slug].productAvailability?.workspace).toBe('unpublished')
-      expect(overview(slug).links.map((link) => link.href)).toEqual([expect.stringMatching(new RegExp(`/${slug}/[^/]+/workspace/$`))])
+    for (const slug of ['lua', 'elixir', 'haskell', 'erlang']) {
+      expect(PORT_BY_SLUG[slug].productAvailability?.workspace, slug).toBe('excluded')
+      expect(overview(slug).links, slug).toEqual([])
     }
+    expect(overview('lisp').links.map((link) => link.href)).toEqual(['/pr-42/en/lisp/latest/workspace/'])
     const synthetic = PORT_BY_SLUG.go
     const before = synthetic.productAvailability
     try {

@@ -132,9 +132,7 @@ separates the ranges with a blank line. Each range must be a whole unit.
 `ci` names the workflow and the command in one of its `run` steps that reaches
 the file. A test reads the workflow at that revision and requires the command
 there, with continued lines joined; a comment, a step name or an environment
-value that spells the command does not count. A port that
-serves a product with another port's package has no entry of its own:
-PowerShell's MCP is the .NET tool, so its panel quotes the C# entry.
+value that spells the command does not count.
 
 A product that ships without such a program is recorded as
 `{ "missing": "<reason>" }`. Its panel keeps the install widget and shows no

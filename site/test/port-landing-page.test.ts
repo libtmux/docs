@@ -145,17 +145,11 @@ describe('the landing page markup', () => {
     }
   })
 
-  it('shows a worked example for every port that has one, and none for a port served by another port\'s package', async () => {
+  it('shows a worked example for every port that has an MCP server', async () => {
     for (const slug of ['py', 'ts', 'go', 'java', 'csharp', 'cxx', 'swift', 'ruby', 'julia']) {
       const document = await render(slug)
       expect(document.querySelectorAll(`[data-landing-panel="mcp"] [data-landing-example="mcp"] article.mcp-turn`), slug).toHaveLength(EXAMPLES[slug]!.steps.length)
     }
-    const document = await render('powershell')
-    const panel = document.querySelector('[data-landing-panel="mcp"]')!
-    expect(panel.querySelector('[data-landing-example]'), 'no invented calls').toBeNull()
-    expect(panel.querySelector('.mcp-turn')).toBeNull()
-    expect(panel.querySelector('[data-mcp-install]')!.getAttribute('data-mcp-install')).toBe('csharp')
-    expect(panel.querySelector('a[href="/powershell/latest/guides/mcp/"]')).not.toBeNull()
   })
 
   /** The ports whose showcase has one file, and the ports whose showcase has several. */
@@ -339,12 +333,12 @@ describe('the landing page markup', () => {
     expect(within('mcp', '[data-package-install]')).toBeNull()
   })
 
-  it('installs the .NET tool in the PowerShell MCP panel', async () => {
+  it('offers PowerShell no MCP panel, option or link', async () => {
     const document = await render('powershell')
-    expect(document.querySelector('[data-landing-panel="mcp"] [data-mcp-install]')!.getAttribute('data-mcp-install')).toBe('csharp')
-    expect(document.querySelector('[data-landing-panel="mcp"] a[href="/powershell/latest/guides/mcp/"]')).not.toBeNull()
-    expect(document.querySelector('[data-landing-panel="mcp"] .landing-note')!.textContent).toMatch(/PowerShell has no MCP package of its own.*C# port's LibTmux\.Mcp/)
-    expect(document.querySelector('[data-landing-panel="workspace"] .landing-note'), 'Workspace Manager is PowerShell\'s own').toBeNull()
+    expect(document.querySelector('[data-landing-panel="mcp"]')).toBeNull()
+    expect(document.querySelector('[data-landing-product][value="mcp"]')).toBeNull()
+    expect(document.querySelector('a[href$="/guides/mcp/"], a[href$="/powershell/latest/mcp/"]')).toBeNull()
+    expect(document.querySelector('[data-landing-panel="workspace"]')).not.toBeNull()
   })
 
   it('shows an excerpt in every panel but the one the port has no program for', async () => {

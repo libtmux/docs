@@ -93,7 +93,7 @@ export function pagePortLinks({
     ? docs.filter((entry) => entry.data.equivalence === own.data.equivalence && entry.data.product === own.data.product)
     : paths.flatMap((candidate) => docs.filter((entry) => docsPath(entry) === candidate || entry.data.aliases?.includes(candidate)))
   const product = /^(mcp|workspace)\//.exec(path)?.[1] as 'mcp' | 'workspace' | undefined
-  // The bare product root counts too when a port excludes the product; an unpublished root still has its overview page.
+  // The bare product root counts too, so a port that excludes the product links nowhere.
   const productRoot = /^(mcp|workspace)(?:\/|$)/.exec(path)?.[1] as 'mcp' | 'workspace' | undefined
   const protocol = /^mcp\/(tools|prompts|resources)(?:\/(.+))?$/.exec(path)
   const object = protocol && portSlug ? mcpObjectAt(portSlug, protocol[1] as McpSection, protocol[2]) : undefined
@@ -177,7 +177,7 @@ export function pagePortLinks({
         }]
       }
     }
-    // A port that excludes the product has no page to link; an unpublished one still has its overview.
+    // A port that excludes the product has no page to link.
     if (productRoot && productExcluded(port, productRoot)) links = []
     const homeProduct = product && productAvailable(port, product) ? product : undefined
     const home = {

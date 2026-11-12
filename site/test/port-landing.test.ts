@@ -7,7 +7,7 @@ import { checkoutFor } from '../src/plugins/remark-port-code.mjs'
 import { unbalanced } from '../src/lib/example-blocks'
 import { sliceExcerpt } from '../src/lib/example-excerpt'
 import {
-  LANDING_LABEL, MCP_SERVED_BY, isGap, landingCacheKey, landingExcerpt, landingOwner, landingPanels, landingProducts, landingRanges, workflowRuns,
+  LANDING_LABEL, isGap, landingCacheKey, landingExcerpt, landingPanels, landingProducts, landingRanges, workflowRuns,
   type CachedSource, type LandingExcerpt, type LandingProduct, type LandingTable,
 } from '../src/lib/port-landing'
 import { PORTS, PORT_BY_SLUG, productAvailable, type DocProduct } from '../src/lib/ports'
@@ -18,14 +18,14 @@ const table = LANDING as LandingTable
 const cache = SOURCES as Record<string, CachedSource>
 const read = (path: string) => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'))
 
-/** Every product a port ships, as the selector offers it. PowerShell serves MCP with the .NET tool. */
+/** Every product a port ships, as the selector offers it. */
 const PRODUCTS: Record<string, LandingProduct[]> = {
   ocaml: ['core', 'workspace'],
   perl: ['core', 'workspace'],
   py: ['core', 'mcp', 'workspace'],
   ruby: ['core', 'mcp', 'workspace'],
   lua: ['core'],
-  powershell: ['core', 'mcp', 'workspace'],
+  powershell: ['core', 'workspace'],
   julia: ['core', 'mcp', 'workspace'],
   elixir: ['core'],
   haskell: ['core'],
@@ -96,21 +96,21 @@ describe('the products a port landing page offers', () => {
     expect(landingProducts(PORT_BY_SLUG.go!).map((product) => LANDING_LABEL[product])).toEqual(['Core API', 'MCP', 'Workspace Manager'])
   })
 
-  it('derives the set from what each port ships, apart from the .NET tool', () => {
+  it('derives the set from what each port ships', () => {
     for (const port of PORTS) {
       expect(products(port.slug).includes('workspace'), `${port.slug} workspace`).toBe(productAvailable(port, 'workspace'))
-      expect(products(port.slug).includes('mcp'), `${port.slug} mcp`).toBe(productAvailable(port, 'mcp') || port.slug in MCP_SERVED_BY)
+      expect(products(port.slug).includes('mcp'), `${port.slug} mcp`).toBe(productAvailable(port, 'mcp'))
     }
-    expect(MCP_SERVED_BY).toEqual({ powershell: 'csharp' })
   })
 
-  it('offers neither product for Lua, Elixir, Haskell, Erlang or a wrapper library', () => {
+  it('offers neither product for Lua, Elixir, Haskell, Erlang or a wrapper library, and no MCP for PowerShell', () => {
     for (const slug of ['lua', 'elixir', 'haskell', 'erlang', 'kotlin', 'scala', 'fsharp']) expect(products(slug), slug).toEqual([])
+    expect(products('powershell')).not.toContain('mcp')
   })
 })
 
 describe('the excerpt of each shipped product', () => {
-  const owned = PORTS.flatMap((port) => products(port.slug).map((product) => ({ port, product, owner: landingOwner(port, product) })))
+  const owned = PORTS.flatMap((port) => products(port.slug).map((product) => ({ port, product, owner: port.slug })))
   const excerpts = Object.entries(table).flatMap(([owner, entries]) =>
     Object.entries(entries).flatMap(([product, entry]) => (isGap(entry!) ? [] : [{ owner, product: product as DocProduct, entry: entry as LandingExcerpt }])))
 
@@ -132,13 +132,6 @@ describe('the excerpt of each shipped product', () => {
 
   it('quotes these programs', () => {
     expect(Object.fromEntries(excerpts.map(({ owner, product, entry }) => [`${owner}/${product}`, entry.file]))).toEqual(EXCERPT_FILES)
-  })
-
-  it('reads PowerShell MCP from the .NET tool and keeps no entry of its own', () => {
-    expect(table.powershell?.mcp).toBeUndefined()
-    expect(landingOwner(PORT_BY_SLUG.powershell!, 'mcp')).toBe('csharp')
-    expect(landingOwner(PORT_BY_SLUG.powershell!, 'workspace')).toBe('powershell')
-    expect(landingExcerpt(PORT_BY_SLUG.powershell!, 'mcp', table, cache)).toEqual(landingExcerpt(PORT_BY_SLUG.csharp!, 'mcp', table, cache))
   })
 
   it.each(excerpts.map((item) => [`${item.owner} ${item.product}`, item] as const))('%s quotes the cached file at the revision its API model records', (_name, { owner, product, entry }) => {
@@ -242,7 +235,7 @@ describe('the workflow command an excerpt records', () => {
 })
 
 describe('panels of the landing page', () => {
-  const panels = (slug: string) => landingPanels(PORT_BY_SLUG[slug]!, 'latest', PORT_BY_SLUG, table, cache)
+  const panels = (slug: string) => landingPanels(PORT_BY_SLUG[slug]!, 'latest', table, cache)
 
   it('has one panel per product, in selector order', () => {
     for (const [slug, expected] of Object.entries(PRODUCTS)) expect(panels(slug).map((panel) => panel.product), slug).toEqual(expected)
@@ -252,13 +245,8 @@ describe('panels of the landing page', () => {
     expect(panels('go').map((panel) => panel.href)).toEqual([undefined, '/go/latest/mcp/', '/go/latest/workspace/'])
   })
 
-  it('sends PowerShell MCP readers to the guide for the .NET tool and installs that tool', () => {
-    const mcp = panels('powershell').find((panel) => panel.product === 'mcp')!
-    expect(mcp.href).toBe('/powershell/latest/guides/mcp/')
-    expect(mcp.install).toEqual({ widget: 'mcp', port: 'csharp' })
-    expect(mcp.packageName).toBe('LibTmux.Mcp')
-    expect(mcp.servedBy).toBe('C#')
-    expect(panels('csharp').find((panel) => panel.product === 'mcp')!.servedBy, 'a port with its own server').toBeUndefined()
+  it('gives PowerShell a Workspace Manager panel and no MCP panel', () => {
+    expect(panels('powershell').map((panel) => panel.product)).toEqual(['core', 'workspace'])
     expect(panels('powershell').find((panel) => panel.product === 'workspace')!.install).toEqual({ widget: 'package', port: 'powershell' })
   })
 

@@ -55,7 +55,7 @@ export function buildDocumentationSurfaces(
 ): DocumentationSurface[] {
   const info = PORT_BY_SLUG[port]
   const base = portPageUrl(info, version)
-  return documentationAreas(port).filter((domain) => domain.kind !== 'unavailable' && (domain.id === 'core' || domain.product))
+  return documentationAreas(port).filter((domain) => domain.id === 'core' || domain.product)
     .sort((a, b) => ['core', 'mcp', 'workspace'].indexOf(a.product ?? 'core') - ['core', 'mcp', 'workspace'].indexOf(b.product ?? 'core'))
     .map((domain) => {
     const id = domain.product ?? 'core'
@@ -186,7 +186,7 @@ export function getDocumentationSurfaces(port: string | undefined, version: stri
       }))
       return [{ id: 'tmux', label: 'tmux', href: withPortRoot('/tmux/'), sections }]
     }
-    const products = documentationAreas(port).flatMap((domain) => domain.kind !== 'unavailable' && domain.product ? [domain.product] : [])
+    const products = documentationAreas(port).flatMap((domain) => domain.product ? [domain.product] : [])
     const menus = await Promise.all(['core' as const, ...products].map(async (product) =>
       [product, await getSidebar(port, version, locale, product === 'core' ? undefined : product)] as const))
     return withLanguageHome(port, version, buildDocumentationSurfaces(port, version, Object.fromEntries(menus)))
