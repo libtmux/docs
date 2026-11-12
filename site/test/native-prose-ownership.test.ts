@@ -61,12 +61,17 @@ const nativeCases = [
 ] as const
 
 describe('native tmux prose ownership', () => {
-  it('preserves the native corpus text and every executable fence through HTML and exports', async () => {
-    const entries = globSync('**/*.{md,mdx}', { cwd: fileURLToPath(new URL('../src/content/docs/', import.meta.url)) })
+  describe('preserves the native corpus text and every executable fence through HTML and exports', () => {
+    // One page per test: a page renders through both processors and the export.
+    const files = globSync('**/*.{md,mdx}', { cwd: fileURLToPath(new URL('../src/content/docs/', import.meta.url)) })
       .filter((file) => /^(guides|topics|concepts|examples)(?:\/|\.mdx?$)/.test(file))
-      .map((file) => sourceEntry(file.replace(/\.mdx?$/, ''), file))
-    expect(entries.length).toBeGreaterThan(0)
-    for (const entry of entries) {
+
+    it('finds the native corpus', () => {
+      expect(files.length).toBeGreaterThan(0)
+    })
+
+    it.each(files)('%s', async (file) => {
+      const entry = sourceEntry(file.replace(/\.mdx?$/, ''), file)
       const markdown = markdownOf(entry)
       // An excerpt fence is authored as anchors; the export carries its lines.
       expect(fences(markdown), entry.id).toEqual(fences(resolvePortCode(entry.body!)))
@@ -77,7 +82,7 @@ describe('native tmux prose ownership', () => {
       expect(html, entry.id).not.toContain('api-mention')
       expect(html.match(/<pre\b[\s\S]*?<\/pre>/g) ?? [], entry.id)
         .toEqual(plainHtml.match(/<pre\b[\s\S]*?<\/pre>/g) ?? [])
-    }
+    })
   })
 
   it.each(nativeCases)('keeps native %s HTML free of inferred library links', async (id) => {
