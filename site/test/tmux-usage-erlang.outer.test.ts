@@ -258,8 +258,9 @@ describe('Erlang tmux command source', () => {
     }] }).join('\n')).toMatch(/no cited line shows/)
   })
 
-  it('requires an executable native port call rather than transport-looking text', async () => {
-    for (const [body, accepts] of [
+  // One case per test: each scans its own source through an escript.
+  describe('requires an executable native port call rather than transport-looking text', () => {
+    it.each([
       ['open_port({spawn_executable, Name}, Args)', true],
       ['erlang:open_port({spawn_executable, Name}, Args)', true],
       ['{Name, Args, <<"open_port({spawn_executable,">>}', false],
@@ -268,7 +269,7 @@ describe('Erlang tmux command source', () => {
       ['{open_port({spawn, Name}, Args), <<"open_port({spawn_executable,">>}', false],
       ['{erlang:open_port({spawn_executable =:= spawn, Name}, Args), <<"open_port({spawn_executable,">>}', false],
       ['open_port({spawn_executable, Name}, Args).\n-compile({no_auto_import,[open_port/2]}).\nopen_port(_,_) -> ok', false],
-    ] as const) {
+    ] as const)('%j', async (body, accepts) => {
       const text = `-module(tmux_transport).\nraw(Name, Args) -> ${body}.\n`
       const { functions } = await scan(text)
       const file = 'apps/libtmux_erlang/src/tmux_transport.erl'
@@ -279,6 +280,6 @@ describe('Erlang tmux command source', () => {
           evidence: [{ at: `${file}:2`, has: ['raw(Name, Args)'] }] }],
       })
       expect(problems.length === 0, body).toBe(accepts)
-    }
+    })
   })
 })

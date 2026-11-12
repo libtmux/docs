@@ -103,12 +103,6 @@
           "version": null,
           "release": null,
           "tag": null
-        },
-        "libtmux_erlang_workspace": {
-          "status": "unpublished",
-          "version": null,
-          "release": null,
-          "tag": null
         }
       }
     },

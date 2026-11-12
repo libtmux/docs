@@ -103,11 +103,7 @@ describe('Erlang compiler artifact adapter', () => {
       .find((span) => span.text === 'file:no_such_type')?.link).toBeUndefined()
   })
 
-  it('retains the workspace application product boundary', () => {
-    const workspace = structuredClone(fixture)
-    workspace.package.name = 'libtmux_erlang_workspace'
-    expect(extractErlang(workspace).symbols.every((symbol) => symbol.product === 'workspace' &&
-      symbol.package === 'libtmux_erlang_workspace')).toBe(true)
+  it('maps every exported application to the core product', () => {
     expect(model().symbols.every((symbol) => symbol.product === 'core')).toBe(true)
   })
 

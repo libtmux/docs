@@ -110,6 +110,13 @@ describe('products a port does not ship', () => {
     expect(sourceGuideRedirects().find((entry) => entry.path === 'powershell/latest/guides/mcp')?.target).toBe('powershell/latest')
   })
 
+  it('sends the former Erlang workspace loader guide to the Erlang home', () => {
+    // docs/workspaces.md left libtmux-erlang with its unpublished Workspace application.
+    expect(sourceGuidesFor('erlang').map((guide) => guide.sourcePath)).not.toContain('docs/workspaces.md')
+    expect(sourceGuideRedirects('erlang')).toContainEqual({ path: 'guides/workspace-json', target: '' })
+    expect(sourceGuideRedirects().find((entry) => entry.path === 'erlang/latest/guides/workspace-json')?.target).toBe('erlang/latest')
+  })
+
   it('redirects a product root only for a product the port does not ship', () => {
     for (const port of PORTS.filter((entry) => !entry.parentLibrary)) {
       for (const product of products) {

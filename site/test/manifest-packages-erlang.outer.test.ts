@@ -19,18 +19,19 @@ describe.skipIf(!available)('Erlang application manifests', () => {
   it('reads source-installed umbrella apps without inventing a package for assets', () => {
     const files = {
       'apps/libtmux_erlang/src/libtmux_erlang.app.src': '% {vsn,"wrong"}\n{application, libtmux_erlang, [{description,"{vsn, wrong}"}, {vsn,"0.0.0+development"}]}.',
-      'apps/libtmux_erlang_workspace/src/libtmux_erlang_workspace.app.src': '{application, libtmux_erlang_workspace, [{vsn,"0.0.0+development"}]}.',
+      'apps/libtmux_erlang_fixture/src/libtmux_erlang_fixture.app.src': '{application, libtmux_erlang_fixture, [{vsn,"0.0.0+development"}]}.',
       'apps/libtmux_erlang_mcp/README.md': 'Artwork only.',
       '_build/default/lib/old/src/old.app.src': '{application, old, [{vsn,"9"}]}.',
     }
     expect(readPort('erlang', repo(files))).toEqual({ distributions: [
       { name: 'libtmux_erlang', version: '0.0.0+development', manifest: 'apps/libtmux_erlang/src/libtmux_erlang.app.src' },
-      { name: 'libtmux_erlang_workspace', version: '0.0.0+development', manifest: 'apps/libtmux_erlang_workspace/src/libtmux_erlang_workspace.app.src' },
+      { name: 'libtmux_erlang_fixture', version: '0.0.0+development', manifest: 'apps/libtmux_erlang_fixture/src/libtmux_erlang_fixture.app.src' },
     ], units: [] })
   })
 
-  it('rejects ambiguous metadata, mismatched app names and executable expressions', () => {
-    for (const term of [
+  // One case per test: each reads a manifest through its own escript.
+  describe('rejects ambiguous metadata, mismatched app names and executable expressions', () => {
+    it.each([
       '{application, probe, [{vsn,"1"},{vsn,"2"}]}.',
       '{application, another, [{vsn,"1"}]}.',
       '{application, probe, [{vsn, atom_to_list(probe)}]}.',
@@ -38,8 +39,8 @@ describe.skipIf(!available)('Erlang application manifests', () => {
       '{application, probe, [{vsn, [[],[]]}]}.',
       '{application, probe, [{vsn, ["1"]}]}.',
       '{application, probe, [{vsn, [<<"1">>]}]}.',
-    ]) {
+    ])('%s', (term) => {
       expect(() => readPort('erlang', repo({ 'src/probe.app.src': term }))).toThrow('Invalid Erlang application manifest')
-    }
+    })
   })
 })

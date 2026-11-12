@@ -1,5 +1,10 @@
 #!/usr/bin/env escript
-%%! +S 2:2
+%%! +S 1:1 +SDcpu 1:1 +SDio 1 +sbwt none +sbwtdcpu none +sbwtdio none
+%% One scheduler that never spins: a short-lived run on a busy host
+%% would otherwise spend its CPU share waiting for work. The script is
+%% interpreted because compiling it on every start costs more than it saves
+%% on a source or manifest of ordinary size.
+-mode(interpret).
 %% OTP owns token boundaries, sigils, string indentation and atom spelling.
 main([]) ->
     "29" = erlang:system_info(otp_release),
