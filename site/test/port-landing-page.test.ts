@@ -145,11 +145,12 @@ describe('the landing page markup', () => {
     }
   })
 
-  it('shows a worked example for every port that has an MCP server', async () => {
-    for (const slug of ['py', 'ts', 'go', 'java', 'csharp', 'cxx', 'swift', 'ruby', 'julia']) {
+  // A landing page is a large document, so each port is its own test.
+  describe('shows a worked example for every port that has an MCP server', () => {
+    it.each(['py', 'ts', 'go', 'java', 'csharp', 'cxx', 'swift', 'ruby', 'julia'])('%s', async (slug) => {
       const document = await render(slug)
       expect(document.querySelectorAll(`[data-landing-panel="mcp"] [data-landing-example="mcp"] article.mcp-turn`), slug).toHaveLength(EXAMPLES[slug]!.steps.length)
-    }
+    })
   })
 
   /** The ports whose showcase has one file, and the ports whose showcase has several. */
@@ -187,8 +188,8 @@ describe('the landing page markup', () => {
     }
   })
 
-  it('offers the overview\'s preset picker for every port whose showcase has several files', async () => {
-    for (const slug of PICKER) {
+  describe('offers the overview\'s preset picker for every port whose showcase has several files', () => {
+    it.each(PICKER)('%s', async (slug) => {
       const document = await render(slug)
       const panel = document.querySelector('[data-landing-panel="workspace"]')!
       const showcase = workspaceShowcase(slug)!
@@ -207,11 +208,11 @@ describe('the landing page markup', () => {
       expect(body.querySelectorAll('.ws-config__panel--yaml'), `${slug} one copy of each file`).toHaveLength(showcase.examples.length)
       const after = ['[data-package-install]', '.landing-links', '[data-landing-excerpt]'].map((selector) => panel.querySelector(selector))
       expect(body.compareDocumentPosition(after[0] ?? after[1]!) & 4, `${slug} install follows the picker`).toBeTruthy()
-    }
+    })
   })
 
-  it('opens the picker on the file the landing rule chooses, never on the short-hand fixture, and lists it first', async () => {
-    for (const slug of PICKER) {
+  describe('opens the picker on the file the landing rule chooses, never on the short-hand fixture, and lists it first', () => {
+    it.each(PICKER)('%s', async (slug) => {
       const document = await render(slug)
       const showcase = workspaceShowcase(slug)!
       const opening = landingExample(showcase).topic
@@ -225,11 +226,11 @@ describe('the landing page markup', () => {
       // The remaining rows keep the overview's order.
       const rest = [...root.querySelectorAll<HTMLElement>('[data-preset-option]')].slice(1).map((row) => row.dataset.presetOption)
       expect(rest, slug).toEqual(presetOptions(showcase).map((preset) => preset.id).filter((id) => id !== opening))
-    }
+    })
   })
 
-  it('gives each preset its own summary, command and evidence, so they follow the one on show', async () => {
-    for (const slug of PICKER) {
+  describe('gives each preset its own summary, command and evidence, so they follow the one on show', () => {
+    it.each(PICKER)('%s', async (slug) => {
       const document = await render(slug)
       const showcase = workspaceShowcase(slug)!
       for (const example of showcase.examples) {
@@ -245,7 +246,7 @@ describe('the landing page markup', () => {
         const command = [...panel.querySelectorAll('pre')].map((pre) => pre.textContent!).find((text) => text.includes(' load workspace.yaml'))
         expect(command, `${slug} ${example.topic} command`).toBe(program ? `${program} load workspace.yaml` : undefined)
       }
-    }
+    })
   })
 
   it('names the load command only for the presets a test runs it on', async () => {
@@ -341,8 +342,8 @@ describe('the landing page markup', () => {
     expect(document.querySelector('[data-landing-panel="workspace"]')).not.toBeNull()
   })
 
-  it('shows an excerpt in every panel but the one the port has no program for', async () => {
-    for (const port of PORTS) {
+  describe('shows an excerpt in every panel but the one the port has no program for', () => {
+    it.each(PORTS)('$slug', async (port) => {
       const document = await render(port.slug)
       for (const product of landingProducts(port).filter((candidate): candidate is DocProduct => candidate !== 'core')) {
         const gap = port.slug === 'julia' && product === 'mcp'
@@ -350,7 +351,7 @@ describe('the landing page markup', () => {
         expect(excerpt === null, `${port.slug} ${product}`).toBe(gap)
         if (excerpt) expect(excerpt.querySelector('pre')!.textContent, `${port.slug} ${product}`).toBe(landingExcerpt(port, product, table, cache)!.code)
       }
-    }
+    })
   })
 
   it('keeps the install widget and the documentation link where the port has no program for a product', async () => {
