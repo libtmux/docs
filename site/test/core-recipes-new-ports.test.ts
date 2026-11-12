@@ -7,6 +7,8 @@ import { RECIPES as ERLANG, withoutMarks as withoutErlangMarks } from '../../scr
 import { RECIPES as PERL, withoutMarks as withoutPerlMarks } from '../../scripts/lib/core-recipes/perl.mjs'
 import { RECIPES as OCAML, ocamlHelper, withoutMarks as withoutOcamlMarks } from '../../scripts/lib/core-recipes/ocaml.mjs'
 import { RECIPES as HASKELL, withoutMarks as withoutHaskellMarks } from '../../scripts/lib/core-recipes/haskell.mjs'
+import { RECIPES as CLOJURE, clojureHelper, withoutMarks as withoutClojureMarks } from '../../scripts/lib/core-recipes/clojure.mjs'
+import * as corePlayer from '../src/lib/core-player'
 import { playableCapability, tmuxChanges, viewSteps } from '../src/lib/core-player'
 import { recordingProblems, sha256, type CoreRecording } from '../src/lib/core-recording'
 import { statementLines, syntaxOf } from '../src/lib/core-statement'
@@ -15,7 +17,7 @@ import home from '../src/data/home-examples.json'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 
 /** The ports whose landing program the player plays that this file covers. */
-type NewPort = 'lisp' | 'perl' | 'erlang' | 'ocaml' | 'haskell'
+type NewPort = 'lisp' | 'perl' | 'erlang' | 'ocaml' | 'haskell' | 'clojure'
 
 const recording = (port: string): CoreRecording => JSON.parse(readFileSync(new URL(`../src/data/core-recordings/${port}.json`, import.meta.url), 'utf8'))
 const capabilityOf = (port: string) => recording(port).capabilities['typed-graph']!
@@ -161,8 +163,8 @@ describe('the player of a program that connects to a server its setup started', 
 })
 
 describe('the real player component for each new port', () => {
-  const names = { lisp: 'Common Lisp', perl: 'Perl', erlang: 'Erlang', ocaml: 'OCaml', haskell: 'Haskell' } as const
-  it.each(['lisp', 'perl', 'erlang', 'ocaml', 'haskell'] as const)('draws %s: a frame and a result for the state before the first call and for each call, and plans each view', async (port) => {
+  const names = { lisp: 'Common Lisp', perl: 'Perl', erlang: 'Erlang', ocaml: 'OCaml', haskell: 'Haskell', clojure: 'Clojure' } as const
+  it.each(['lisp', 'perl', 'erlang', 'ocaml', 'haskell', 'clojure'] as const)('draws %s: a frame and a result for the state before the first call and for each call, and plans each view', async (port) => {
     const played = (await playableCapability(port, 'typed-graph', shown(port)))!
     const template = await loadAstroTemplate('components/core/CorePlayer.astro', {
       real: ['components/HomeExample.astro', 'components/replay/TmuxScreen.astro', 'components/replay/ReplayControls.astro'],
@@ -183,33 +185,31 @@ describe('the real player component for each new port', () => {
 })
 
 describe('the landing page player of the new ports', () => {
-  it('replaces the plain example with the player once a port has a sound recording, and keeps it for a port without one', async () => {
-    const template = await loadAstroTemplate('components/CoreShowcase.astro', {
-      stubs: {
-        'components/HomeExample.astro': '---\nconst { port } = Astro.props\n---\n<div data-home-example={port} />',
-        'components/core/CorePlayer.astro': '---\nconst { port, capabilityId = "typed-graph" } = Astro.props\n---\n<div data-core-player={capabilityId} data-port={port} />',
-      },
-      modules: { 'astro-expressive-code/components': { Code } },
-    })
-    const render = async (port: string) => {
-      const window = new Window()
-      window.document.body.innerHTML = await renderAstroTemplate(template, { url: `https://libtmux.org/${port}/latest/`, props: { port, links: [] } })
-      return window.document as unknown as Document
+  const stubs = {
+    'components/HomeExample.astro': '---\nconst { port } = Astro.props\n---\n<div data-home-example={port} />',
+    'components/core/CorePlayer.astro': '---\nconst { port, capabilityId = "typed-graph" } = Astro.props\n---\n<div data-core-player={capabilityId} data-port={port} />',
+  }
+  const renderer = (template: Awaited<ReturnType<typeof loadAstroTemplate>>) => async (port: string) => {
+    const window = new Window()
+    window.document.body.innerHTML = await renderAstroTemplate(template, { url: `https://libtmux.org/${port}/latest/`, props: { port, links: [] } })
+    return window.document as unknown as Document
+  }
+
+  it('replaces the plain example with the player once a port has a sound recording', async () => {
+    const render = renderer(await loadAstroTemplate('components/CoreShowcase.astro', { stubs, modules: { 'astro-expressive-code/components': { Code } } }))
+    for (const port of ['lisp', 'erlang', 'perl', 'ocaml', 'haskell', 'clojure']) {
+      const document = await render(port)
+      expect(document.querySelector('[data-capability-panel="typed-graph"] [data-core-player]'), `${port} plays its recording`).not.toBeNull()
+      expect(document.querySelector('[data-home-example]'), `${port} keeps no plain example`).toBeNull()
     }
-    const lisp = await render('lisp')
-    expect(lisp.querySelector('[data-capability-panel="typed-graph"] [data-core-player]'), 'lisp plays its recording').not.toBeNull()
-    expect(lisp.querySelector('[data-home-example]')).toBeNull()
-    const erlang = await render('erlang')
-    expect(erlang.querySelector('[data-capability-panel="typed-graph"] [data-core-player]'), 'erlang plays its recording').not.toBeNull()
-    const perl = await render('perl')
-    expect(perl.querySelector('[data-capability-panel="typed-graph"] [data-core-player]'), 'perl plays its recording').not.toBeNull()
-    const ocaml = await render('ocaml')
-    expect(ocaml.querySelector('[data-capability-panel="typed-graph"] [data-core-player]'), 'ocaml plays its recording').not.toBeNull()
-    const haskell = await render('haskell')
-    expect(haskell.querySelector('[data-capability-panel="typed-graph"] [data-core-player]'), 'haskell plays its recording').not.toBeNull()
-    const clojure = await render('clojure')
-    expect(clojure.querySelector('[data-core-player]'), 'clojure has no recording yet').toBeNull()
-    expect(clojure.querySelector('[data-home-example="clojure"]')).not.toBeNull()
+  })
+
+  it('keeps the plain example for a port whose recording is not played', async () => {
+    // No port lacks a recording once all are recorded, so the page is built the way a port without one would get it.
+    const render = renderer(await loadAstroTemplate('components/CoreShowcase.astro', { stubs, modules: { 'astro-expressive-code/components': { Code }, '../lib/core-player': { ...corePlayer, playableCapability: async () => undefined } } }))
+    const document = await render('haskell')
+    expect(document.querySelector('[data-core-player]')).toBeNull()
+    expect(document.querySelector('[data-home-example="haskell"]')).not.toBeNull()
   })
 })
 
@@ -579,5 +579,95 @@ describe('the Haskell recording of the landing page program', () => {
   it('is played for the program it records and for no other', async () => {
     expect(await playableCapability('haskell', 'typed-graph', shown('haskell'))).toBeDefined()
     expect(await playableCapability('haskell', 'typed-graph', `${shown('haskell')}\n-- edited`)).toBeUndefined()
+  })
+})
+
+describe('Clojure recipe', () => {
+  const recipe = CLOJURE['typed-graph']
+  const code = home.clojure.files.find((file) => file.name === 'quickstart.clj')!.code
+  const marked = recipe.instrument(code, recipe.steps)
+
+  it('adds one line to the displayed program, which loads the helper after the library is required', () => {
+    expect(withoutClojureMarks(marked)).toBe(code)
+    const lines = marked.split('\n')
+    const added = lines.filter((line: string) => line.endsWith('docs:mark'))
+    expect(added).toEqual(["(require 'docs-mark) ; docs:mark"])
+    expect(lines[lines.indexOf(added[0]!) - 1]).toBe("         '[libtmux.data :as data])")
+  })
+
+  it('finds every call on exactly one line of every view of the program', () => {
+    for (const view of views('clojure')) for (const step of recipe.steps) expect(statementLines(view, step.anchor, syntaxOf('clojure'), occurrenceOf(step)), step.id).toBeDefined()
+  })
+
+  it('refuses an anchor the program does not hold, and a program that never requires the library', () => {
+    expect(() => recipe.instrument(code, [{ id: 'x', anchor: '(tm/nope!', call: 'libtmux.core/nope!', value: 'nil' }])).toThrow(/not on exactly one line/)
+    expect(() => recipe.instrument(code.replace("'[libtmux.data :as data])", "'[libtmux.data :as d])"), recipe.steps)).toThrow(/libtmux\.data/)
+  })
+
+  it('wraps each function once, with a plan of its steps, and stops the program at a call it did not plan', () => {
+    const helper = clojureHelper(recipe.steps)
+    for (const call of new Set(recipe.steps.map((step: { call: string }) => step.call))) expect(helper.split(`(wrap #'${call} `).length - 1, call).toBe(1)
+    expect(helper).toContain('an unplanned call of')
+    expect(helper).toContain('(System/exit 70)')
+    expect(helper).toContain("(wrap #'libtmux.core/kill-server! [[\"kill-server\" (fn [result _args] nil)]])")
+  })
+})
+
+describe('the Clojure recording of the landing page program', () => {
+  const capability = capabilityOf('clojure')
+  const step = (id: string) => capability.steps.find((each) => each.id === id)!
+  const sent = (id: string) => step(id).commands.filter((command) => command.role === 'command').map((command) => command.tmux.split(' ')[0])
+
+  it('is sound, of the displayed program, and was recorded at the revision the page records', () => {
+    expectPlayable('clojure')
+  })
+
+  it('has one step per call of the step map, in the order the calls ran', () => {
+    expect(capability.steps.map((each) => [each.id, each.label, each.anchor, each.type])).toEqual(CLOJURE['typed-graph'].steps.map((each: { id: string; label: string; anchor: string; type: string }) => [each.id, each.label, each.anchor, each.type]))
+  })
+
+  it('starts with no server: opening a handle sends nothing, and the first session starts the daemon', () => {
+    expect(capability.tmuxBefore.sessions).toEqual([])
+    expect(step('open').commands).toEqual([])
+    expect(sent('new-session')).toContain('new-session')
+  })
+
+  it('records what each call returned and the commands that changed tmux', () => {
+    expect(step('new-session').returned).toEqual({ id: '$0', name: 'demo' })
+    expect(step('rename').returned).toEqual({ id: '@0', name: 'editor' })
+    expect(step('split').returned).toEqual({ id: '%1' })
+    expect(step('new-window').returned).toEqual({ id: '@1', name: 'logs' })
+    expect(step('await-text').returned).toBe('present-at-entry')
+    expect(step('snapshot').returned).toEqual({ sessions: 1, windows: 2, panes: 3 })
+    expect(step('capture').returned).toContain('hello from Clojure')
+    expect(sent('rename')).toContain('rename-window')
+    expect(sent('split')).toContain('split-window')
+    expect(sent('new-window')).toContain('new-window')
+    expect(sent('send-literal')).toContain('send-keys')
+    expect(sent('send-keys')).toContain('send-keys')
+    expect(sent('capture')).toEqual(['capture-pane'])
+  })
+
+  it('shows the command the library asked for, not the guards around it, and in it no delimiter that differs on every run', () => {
+    for (const command of capability.steps.flatMap((each) => each.commands)) {
+      expect(command.tmux + command.stdout).not.toMatch(/if-shell|libtmux-stale/)
+      expect(command.tmux).not.toMatch(/[0-9a-f]{32}/)
+    }
+  })
+
+  it('ends with the call that kills the server, which sends the command and leaves no session', () => {
+    const kill = step('kill-server')
+    expect(kill.commands.some((command) => command.role === 'command' && command.tmux.endsWith('; kill-server'))).toBe(true)
+    expect(kill.tmux.sessions).toEqual([])
+    expect(kill.stopsServer, 'the library asked tmux to stop, so no step says the daemon was stopped by its process id').toBeUndefined()
+  })
+
+  it('plays every call in every view of the program, each on the line its anchor names', () => {
+    expectPlayedInEveryView('clojure')
+  })
+
+  it('is played for the program it records and for no other', async () => {
+    expect(await playableCapability('clojure', 'typed-graph', shown('clojure'))).toBeDefined()
+    expect(await playableCapability('clojure', 'typed-graph', `${shown('clojure')}\n; edited`)).toBeUndefined()
   })
 })

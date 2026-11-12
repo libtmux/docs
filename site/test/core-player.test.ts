@@ -92,7 +92,7 @@ describe('finding a call in a Lisp, Erlang or Perl program', () => {
   })
 })
 
-describe('finding a call in an OCaml or Haskell program', () => {
+describe('finding a call in an OCaml, Haskell or Clojure program', () => {
   const lines = (...text: string[]) => text.join('\n')
   const c = { comment: '//', quotes: '"\'`' }
 
@@ -137,6 +137,18 @@ describe('finding a call in an OCaml or Haskell program', () => {
     expect(statementLines(haskell, 'Tmux.arrow', { comment: '--', quotes: '"' }), 'a `-->` is not the start of a comment').not.toEqual([4, 4])
     expect(statementLines(haskell, 'Tmux.close', syntaxOf('haskell'))).toEqual([5, 5])
     expect(statementLines(lines('Tmux.chr server (f \'(\' \')\' \'\\\'\' \'"\' "--" @\'[Int])'), 'Tmux.chr', syntaxOf('haskell'))).toEqual([1, 1])
+  })
+
+  it('reads a quoted list in Clojure as a form, not a string, and `\\(` as a character', () => {
+    const clojure = lines(
+      '(tm/split-pane! (:tmux/ref pane)',
+      '                {:command \'("/bin/cat")}) ; a ) comment',
+      '(find-char \\( \\) \\" x)',
+    )
+    expect(statementLines(clojure, '(tm/split-pane!', syntaxOf('clojure'))).toEqual([1, 2])
+    expect(statementLines(clojure, '(tm/split-pane!', c), 'C reads the quote as a string that swallows the closing bracket').not.toEqual([1, 2])
+    expect(statementLines(clojure, '(find-char', syntaxOf('clojure'))).toEqual([3, 3])
+    expect(statementLines(clojure, '(find-char', c)).not.toEqual([3, 3])
   })
 })
 

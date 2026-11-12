@@ -23,7 +23,7 @@ export interface StatementSyntax {
   comment?: string
   /** The characters that open a string or quoted name. A backtick is raw: it has no escapes and may run past its line. */
   quotes: string
-  /** What makes the next character a plain one, so that a quote or bracket it names is not one: Lisp's `#\`, Erlang's and Perl's `$`. */
+  /** What makes the next character a plain one, so that a quote or bracket it names is not one: Lisp's `#\`, Erlang's and Perl's `$`, Clojure's `\`. */
   literal?: string
   /** The characters that make up an operator. A `comment` that is part of a longer run of them is an operator, not a comment: Haskell's `-->`. */
   operator?: string
@@ -42,7 +42,8 @@ const DEFAULT: StatementSyntax = { comment: '//', quotes: '"\'`' }
  * with `'`, so `'("/bin/cat")` holds no string; Erlang's `'` quotes an atom and
  * its `%` starts a comment; Perl's `#` starts a comment except after the `$` of
  * `$#array`. OCaml's comments are `(* *)` and its `'` is a character, or a type
- * variable; Haskell's are `--` and `{- -}`, and `'` ends many names.
+ * variable; Haskell's are `--` and `{- -}`, and `'` ends many names; Clojure
+ * quotes a form with `'` and writes a character as `\)`.
  */
 const SYNTAX: Readonly<Record<string, StatementSyntax>> = {
   lisp: { comment: ';', quotes: '"', literal: '#\\' },
@@ -50,6 +51,7 @@ const SYNTAX: Readonly<Record<string, StatementSyntax>> = {
   perl: { comment: '#', quotes: '"\'', literal: '$' },
   ocaml: { quotes: '"', block: { open: '(*', close: '*)', strings: true }, ticks: true, braces: true },
   haskell: { comment: '--', quotes: '"', operator: '!#$%&*+./<=>?@\\^|-~:', block: { open: '{-', close: '-}' }, ticks: true },
+  clojure: { comment: ';', quotes: '"', literal: '\\' },
 }
 
 /** How `port`'s programs are read: its own syntax if it needs one, else C's. */
