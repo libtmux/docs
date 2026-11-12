@@ -462,7 +462,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
     await redirectsTo('lua/latest/guides/source/runtime', 'lua/latest/guides/runtime/')
     // Public product roots that these ports no longer claim lead to the language home.
     for (const path of ['lua/latest/mcp/', 'lua/latest/workspace/', 'elixir/latest/mcp/', 'elixir/latest/workspace/', 'haskell/latest/workspace/',
-      'erlang/latest/workspace/', 'powershell/latest/mcp/', 'powershell/latest/guides/mcp/']) {
+      'erlang/latest/workspace/', 'erlang/latest/guides/workspace-json/', 'powershell/latest/mcp/', 'powershell/latest/guides/mcp/']) {
       await redirectsTo(path, `${path.split('/')[0]}/latest/`)
     }
     await inspect('powershell/latest/mcp/', (document) => {

@@ -355,10 +355,9 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
       guide('docs/options-reference.md', 'reference/options', 'core', { title: 'Options', aliases: [] }),
       guide('docs/commands-reference.md', 'reference/commands', 'core', { title: 'Command capabilities', aliases: [] }),
       guide('docs/api.md', 'guides/api-documentation', 'core', { title: 'Native API documentation', aliases: [] }),
-      guide('docs/workspaces.md', 'guides/workspace-json', 'core', { title: 'Workspace JSON loader', aliases: [] }),
       guide('docs/project-policy.md', 'topics/project-policy', 'core', { title: 'Project policy', aliases: [] }),
     ],
-    redirects: [{ sourcePath: 'docs/guides.md', path: 'guides/overview', target: 'guides' }, { path: 'workspace', target: '' }],
+    redirects: [{ sourcePath: 'docs/guides.md', path: 'guides/overview', target: 'guides' }, { path: 'guides/workspace-json', target: '' }, { path: 'workspace', target: '' }],
   },
   elixir: {
     domains: [

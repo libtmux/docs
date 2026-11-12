@@ -70,6 +70,7 @@ describe('canonical workspace sitemap routes', () => {
     ['powershell/latest/mcp/', 'powershell/latest/'],
     ['powershell/latest/guides/mcp/', 'powershell/latest/'],
     ['erlang/latest/workspace/', 'erlang/latest/'],
+    ['erlang/latest/guides/workspace-json/', 'erlang/latest/'],
     ['julia/latest/guides/api-overview/', 'julia/latest/reference/'],
     ['ruby/latest/guides/source/core/', 'ruby/latest/guides/core/'],
     ['lua/latest/guides/source/overview/', 'lua/latest/guides/overview/'],

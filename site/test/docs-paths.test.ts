@@ -90,6 +90,7 @@ describe('product document URLs', () => {
       { path: 'clojure/latest/guides/adapter-api', target: 'clojure/latest/reference/libtmux-core-async' },
       { path: 'fsharp/v0.46.2/guides/api-overview', target: 'fsharp/v0.46.2/reference' },
       { path: 'erlang/latest/guides/overview', target: 'erlang/latest/guides' },
+      { path: 'erlang/latest/guides/workspace-json', target: 'erlang/latest' },
       { path: 'erlang/latest/workspace', target: 'erlang/latest' },
       { path: 'elixir/latest/mcp', target: 'elixir/latest' },
       { path: 'elixir/latest/workspace', target: 'elixir/latest' },
@@ -104,6 +105,7 @@ describe('product document URLs', () => {
     ])
     expect(sourceGuideRedirects('erlang')).toEqual([
       { path: 'guides/overview', target: 'guides' },
+      { path: 'guides/workspace-json', target: '' },
       { path: 'workspace', target: '' },
     ])
     expect(sourceGuideRedirects('ocaml')).toEqual([
