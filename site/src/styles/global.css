@@ -836,7 +836,19 @@ html[data-theme="purple"][data-theme-mode="dark"] {
  * Not sticky. The header above it is, and a second pinned strip costs every
  * viewport on every page for a sentence that is read once.
  */
-html[data-prerelease='dismissed'] .prerelease-notice {
+html[data-prerelease='dismissed'] .prerelease-notice[data-prerelease-notice] {
+  display: none;
+}
+
+/*
+ * A product's status bar shares every rule below and hides the same way, from
+ * its own list of dismissed ids on the root. One selector per id the site can
+ * draw: `product-notice.test.ts` fails for a status that has none.
+ */
+html[data-product-notice-dismissed~='workspace-concept'] [data-product-notice='workspace-concept'],
+html[data-product-notice-dismissed~='workspace-in-development'] [data-product-notice='workspace-in-development'],
+html[data-product-notice-dismissed~='mcp-concept'] [data-product-notice='mcp-concept'],
+html[data-product-notice-dismissed~='mcp-in-development'] [data-product-notice='mcp-in-development'] {
   display: none;
 }
 
@@ -888,6 +900,12 @@ body[data-documentation-layout='reference'] {
   gap: 0.5rem;
   font-size: 0.8125rem;
   line-height: 1.4;
+}
+
+.prerelease-notice__text a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
 }
 
 /* Filled elements use a foreground paired with their own background. */

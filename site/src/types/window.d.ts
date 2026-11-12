@@ -20,6 +20,7 @@ declare global {
      * paint and disappear.
      */
     __applyPrereleaseNotice?: () => void
+    __applyProductNotices?: () => void
     /** Restore the native source disclosure before its contents can paint. */
     __initApiSourceDetails?: (root: Document) => void
   }

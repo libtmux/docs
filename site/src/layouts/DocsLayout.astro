@@ -62,6 +62,13 @@ interface Props {
   /** Which port's nav to scope the sidebar to. Omit for shell pages with no port. */
   port?: string
   product?: DocProduct
+  /**
+   * The product whose status bar this page shows, when `product` is not set.
+   *
+   * `product` also scopes the sidebar, the breadcrumbs and the reference tree,
+   * which a protocol reference page leaves to the core shell.
+   */
+  statusProduct?: DocProduct
   version?: string
   /** Path within the current port+version, e.g. 'guides/panes'. Forwarded to BaseLayout for canonical/SEO. */
   pagePath?: string
@@ -125,6 +132,7 @@ const {
   description,
   port,
   product,
+  statusProduct = product,
   version: requestedVersion,
   pagePath = '',
   noindex = false,
@@ -218,6 +226,7 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
   {hasContext && <div slot="header-navigation" class="site-header-language">
     <PagePortSwitcher entries={pagePorts} portSlug={port} tmux={!port} reserveLabelWidth />
   </div>}
+  {port && statusProduct && <ProductNotice slot="status" port={port} product={statusProduct} />}
   {hasContext && <DocumentationContext slot="context" port={port} version={contextVersion} locale={locale}
     sourcePath={localeSourcePath(Astro.url.pathname, locale)} localeStatuses={localeStatuses} tableOfContents={tocItems.length > 0}>
     <DocumentationNavigationButtons slot="navigation" tableOfContents={tocItems.length > 0} api={Boolean(apiNavigation)} />
@@ -302,7 +311,6 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
         ) : <h1 id={PAGE_TITLE_ID} class="wrap-anywhere">{symbolTitle
           ? <code class="not-prose symbol-title"><SymbolName name={title} /></code>
           : title}{subtitle && <span class="page-subtitle">{' '}{subtitle}</span>}</h1>}
-        {product && port && <ProductNotice port={port} product={product} overview={pagePath === product} />}
         </div>
         <slot />
       </article>

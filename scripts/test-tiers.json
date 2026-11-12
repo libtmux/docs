@@ -96,6 +96,7 @@
         "site/test/product-api-index.test.ts",
         "site/test/product-copy.test.ts",
         "site/test/product-docs.test.ts",
+        "site/test/product-notice.test.ts",
         "site/test/product-reference.test.ts",
         "site/test/product-status.test.ts",
         "site/test/properties-highlighting.test.ts",

@@ -120,6 +120,30 @@
     }
   }
 
+  /**
+   * Which product status bars have been dismissed, resolved in <head>.
+   *
+   * One key per bar, named for its product and status (`mcp-concept`), so the
+   * attribute lists every dismissed id and `global.css` hides each bar whose
+   * id it holds. Keys that are not such an id are ignored rather than copied
+   * into an attribute.
+   */
+  function applyProductNotices() {
+    const prefix = 'libtmux-docs.product-notice.';
+    const dismissed = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith(prefix) || localStorage.getItem(key) !== 'dismissed') continue;
+      const id = key.slice(prefix.length);
+      if (/^[a-z]+(?:-[a-z]+)*$/.test(id)) dismissed.push(id);
+    }
+    if (dismissed.length) {
+      document.documentElement.setAttribute('data-product-notice-dismissed', dismissed.join(' '));
+    } else {
+      document.documentElement.removeAttribute('data-product-notice-dismissed');
+    }
+  }
+
   const apiSourceKey = 'libtmux-docs.api-source-details';
   const apiSourceStates = new WeakMap();
   function initApiSourceDetails(root) {
@@ -145,7 +169,7 @@
 
   // Apply theme immediately on load
   applyTheme();
-  try { applyPackagePort(); applyCooldown(); applyPrereleaseNotice(); } catch (_) { /* Storage may be disabled. */ }
+  try { applyPackagePort(); applyCooldown(); applyPrereleaseNotice(); applyProductNotices(); } catch (_) { /* Storage may be disabled. */ }
 
   // Expose for the bundled astro:after-swap handler below so the logic isn't
   // duplicated (inline scripts can't be imported from).
@@ -153,6 +177,7 @@
   window.__applyPackagePort = applyPackagePort;
   window.__applyCooldown = applyCooldown;
   window.__applyPrereleaseNotice = applyPrereleaseNotice;
+  window.__applyProductNotices = applyProductNotices;
 
   // Listen for system preference changes
   const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -182,6 +207,7 @@
       window.__applyPackagePort?.()
       window.__applyCooldown?.()
       window.__applyPrereleaseNotice?.()
+      window.__applyProductNotices?.()
     } catch { /* Storage may be disabled. */ }
   })
 </script>

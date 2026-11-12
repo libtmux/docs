@@ -1697,30 +1697,35 @@ export function productInDevelopment(port: Port, product: DocProduct): boolean {
   return product === 'mcp' || port.workspaceCliAvailability !== 'released'
 }
 
-/** Workspace overview support scope and installation prerequisites. */
+/**
+ * How a port's workspace command is obtained, for the overview's install
+ * section. Undefined when the port has no workspace CLI to build or pin.
+ */
+export function workspaceInstallGuidance(port: Port): string | undefined {
+  if (!productAvailable(port, 'workspace') || !port.workspaceCli) return undefined
+  const command = port.workspaceCliRun ?? port.workspaceCli.split(/\s+/)[0]
+  if (port.workspaceCliAvailability === 'published') {
+    return `The \`${command}\` CLI is published to ${port.registry?.name ?? 'the package registry'}, `
+      + 'numbered 0.1.N. Pin its version when automation depends on its output.'
+  }
+  if (port.workspaceCliAvailability !== 'local') return undefined
+  const cliPackage = port.packages?.find((pkg) => pkg.executable === command || pkg.executable === port.workspaceCli)
+  return (port.workspaceCliRun
+    ? `Run \`${command}\` from a source checkout; the installation guide lists the setup. `
+    : `Build \`${command}\` from the source revision in the installation guide. `)
+    + (cliPackage ? `The \`${cliPackage.name}\` package supplies this command. ` : '')
+    + 'Follow the workspace guide for its configuration format.'
+}
+
+/** The overview's support scope with its install guidance, as one paragraph for the Markdown and LLM exports. */
 export function workspaceOverviewNotice(port: Port): { title: string; body: string } | undefined {
   if (!productAvailable(port, 'workspace')) return undefined
   const concept = productConceptNotice(port, 'workspace')
-  if (!port.workspaceCli) return concept
-  const title = concept?.title ?? `Workspace Manager for ${port.name} is in development.`
-  const scope = concept ? `${concept.body} ` : ''
-  const command = port.workspaceCliRun ?? port.workspaceCli.split(/\s+/)[0]
-  if (port.workspaceCliAvailability === 'published') {
-    return {
-      title,
-      body: scope + `The \`${command}\` CLI is published to ${port.registry?.name ?? 'the package registry'}, `
-        + 'numbered 0.1.N. Pin its version when automation depends on its output.',
-    }
-  }
-  if (port.workspaceCliAvailability !== 'local') return concept
-  const cliPackage = port.packages?.find((pkg) => pkg.executable === command || pkg.executable === port.workspaceCli)
+  const guidance = workspaceInstallGuidance(port)
+  if (!guidance) return concept
   return {
-    title,
-    body: scope + (port.workspaceCliRun
-      ? `Run \`${command}\` from a source checkout; the installation guide lists the setup. `
-      : `Build \`${command}\` from the source revision in the installation guide. `)
-      + (cliPackage ? `The \`${cliPackage.name}\` package supplies this command. ` : '')
-      + 'Follow the workspace guide for its configuration format.',
+    title: concept?.title ?? `Workspace Manager for ${port.name} is in development.`,
+    body: (concept ? `${concept.body} ` : '') + guidance,
   }
 }
 
