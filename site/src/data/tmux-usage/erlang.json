@@ -94,7 +94,7 @@
   ],
   "port": "erlang",
   "repo": "libtmux/libtmux-erlang",
-  "revision": "6fc546e1407b3257bce4699a564e2fbe32ea70a2",
+  "revision": "f1a2e66c0fa15d1e8d4efa2725a159121815293b",
   "schemaVersion": 1,
   "symbols": {
     "tmux_buffer:delete/2": [
@@ -277,11 +277,23 @@
         "scope": null
       }
     ],
+    "tmux_option:get_many/3": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "apps/libtmux_erlang/src/tmux_option_batch.erl:71",
+          "apps/libtmux_erlang/src/tmux_option_batch.erl:12",
+          "apps/libtmux_erlang/src/tmux_option.erl:148"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
     "tmux_option:get/3": [
       {
         "command": "show-options",
         "evidence": [
-          "apps/libtmux_erlang/src/tmux_option.erl:109"
+          "apps/libtmux_erlang/src/tmux_option.erl:111"
         ],
         "scope": null
       }
@@ -290,8 +302,8 @@
       {
         "command": "set-option",
         "evidence": [
-          "apps/libtmux_erlang/src/tmux_option.erl:142",
-          "apps/libtmux_erlang/src/tmux_option.erl:121"
+          "apps/libtmux_erlang/src/tmux_option.erl:185",
+          "apps/libtmux_erlang/src/tmux_option.erl:164"
         ],
         "reviewed": true,
         "scope": null
@@ -301,7 +313,7 @@
       {
         "command": "set-option",
         "evidence": [
-          "apps/libtmux_erlang/src/tmux_option.erl:142"
+          "apps/libtmux_erlang/src/tmux_option.erl:185"
         ],
         "scope": null
       }
@@ -310,7 +322,7 @@
       {
         "command": "set-option",
         "evidence": [
-          "apps/libtmux_erlang/src/tmux_option.erl:159"
+          "apps/libtmux_erlang/src/tmux_option.erl:202"
         ],
         "scope": null
       }
@@ -387,7 +399,7 @@
         "evidence": [
           "apps/libtmux_erlang/src/tmux_pane.erl:320",
           "apps/libtmux_erlang/src/tmux_pane.erl:341",
-          "apps/libtmux_erlang/src/tmux_command.erl:215",
+          "apps/libtmux_erlang/src/tmux_command.erl:270",
           "apps/libtmux_erlang/src/tmux_target.erl:59",
           "apps/libtmux_erlang/src/tmux_pane.erl:317"
         ],
@@ -667,7 +679,7 @@
         "evidence": [
           "apps/libtmux_erlang/src/tmux_session.erl:75",
           "apps/libtmux_erlang/src/tmux_session.erl:97",
-          "apps/libtmux_erlang/src/tmux_command.erl:214",
+          "apps/libtmux_erlang/src/tmux_command.erl:269",
           "apps/libtmux_erlang/src/tmux_target.erl:59",
           "apps/libtmux_erlang/src/tmux_session.erl:72"
         ],

@@ -29590,6 +29590,35 @@
     },
     {
       "port": "erlang",
+      "symbol": "tmux_option:get_many/3",
+      "command": "show-options",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "apps/libtmux_erlang/src/tmux_option_batch.erl",
+          "has": [
+            "tmux_command:raw(<<\"show-options\">>,"
+          ],
+          "within": "rows/7"
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_option_batch.erl",
+          "has": [
+            "{ok, Server, Rows, Commands} ?= rows(Scopes, Name, Flags, none, 1, [], []),"
+          ],
+          "within": "prepare/3"
+        },
+        {
+          "at": "apps/libtmux_erlang/src/tmux_option.erl",
+          "has": [
+            "tmux_option_batch:prepare(Scopes, Name, Flags),"
+          ],
+          "in": "tmux_option:get_many/3"
+        }
+      ]
+    },
+    {
+      "port": "erlang",
       "symbol": "tmux_buffer:show/2",
       "command": "show-buffer",
       "scope": null,
