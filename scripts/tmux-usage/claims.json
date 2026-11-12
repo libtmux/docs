@@ -29638,7 +29638,6 @@
     },
     {
       "port": "haskell",
-      "revision": "00b47e6d94b181b5fd94e585be1e9ecefbf93acb",
       "symbol": "LibTmux.Server#v:capture",
       "command": "display-message",
       "scope": null,
@@ -29738,7 +29737,6 @@
     },
     {
       "port": "haskell",
-      "revision": "00b47e6d94b181b5fd94e585be1e9ecefbf93acb",
       "symbol": "LibTmux.Server#v:capture",
       "command": "if-shell",
       "scope": null,
@@ -29838,7 +29836,6 @@
     },
     {
       "port": "haskell",
-      "revision": "00b47e6d94b181b5fd94e585be1e9ecefbf93acb",
       "symbol": "LibTmux.Server#v:capture",
       "command": "list-clients",
       "scope": null,
@@ -29946,7 +29943,6 @@
     },
     {
       "port": "haskell",
-      "revision": "00b47e6d94b181b5fd94e585be1e9ecefbf93acb",
       "symbol": "LibTmux.Query#v:fetch",
       "command": "display-message",
       "scope": null,
@@ -30059,7 +30055,6 @@
     },
     {
       "port": "haskell",
-      "revision": "00b47e6d94b181b5fd94e585be1e9ecefbf93acb",
       "symbol": "LibTmux.Query#v:fetch",
       "command": "if-shell",
       "scope": null,
@@ -30172,7 +30167,6 @@
     },
     {
       "port": "haskell",
-      "revision": "00b47e6d94b181b5fd94e585be1e9ecefbf93acb",
       "symbol": "LibTmux.Query#v:fetch",
       "command": "list-clients",
       "scope": null,
@@ -30293,7 +30287,6 @@
     },
     {
       "port": "haskell",
-      "revision": "00b47e6d94b181b5fd94e585be1e9ecefbf93acb",
       "symbol": "LibTmux.Server#v:renameSession",
       "command": "rename-session",
       "scope": null,
@@ -30417,7 +30410,6 @@
     },
     {
       "port": "haskell",
-      "revision": "00b47e6d94b181b5fd94e585be1e9ecefbf93acb",
       "symbol": "LibTmux.Server#v:renameSessionWith",
       "command": "rename-session",
       "scope": null,
@@ -30535,7 +30527,6 @@
     },
     {
       "port": "haskell",
-      "revision": "00b47e6d94b181b5fd94e585be1e9ecefbf93acb",
       "symbol": "LibTmux.Server#v:renameWindow",
       "command": "rename-window",
       "scope": null,
@@ -30659,7 +30650,6 @@
     },
     {
       "port": "haskell",
-      "revision": "00b47e6d94b181b5fd94e585be1e9ecefbf93acb",
       "symbol": "LibTmux.Server#v:renameWindowWith",
       "command": "rename-window",
       "scope": null,
@@ -30777,7 +30767,6 @@
     },
     {
       "port": "haskell",
-      "revision": "00b47e6d94b181b5fd94e585be1e9ecefbf93acb",
       "symbol": "LibTmux.Server#v:setPaneTitle",
       "command": "select-pane",
       "scope": null,
@@ -30901,7 +30890,6 @@
     },
     {
       "port": "haskell",
-      "revision": "00b47e6d94b181b5fd94e585be1e9ecefbf93acb",
       "symbol": "LibTmux.Server#v:setPaneTitleWith",
       "command": "select-pane",
       "scope": null,

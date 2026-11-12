@@ -19,16 +19,33 @@ for (const [path, content] of sources) {
   mkdirSync(dirname(join(directory, path)), { recursive: true })
   writeFileSync(join(directory, path), content)
 }
+const commit = (message: string, ...flags: string[]) => {
+  execFileSync('git', ['-C', directory, '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '--quiet', ...flags, '-m', message])
+  return execFileSync('git', ['-C', directory, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
+}
 execFileSync('git', ['init', '--quiet', directory])
 execFileSync('git', ['-C', directory, 'add', '.'])
-execFileSync('git', ['-C', directory, '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '--quiet', '-m', 'Source fixture'])
-const revision = execFileSync('git', ['-C', directory, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
-const model = { port: 'haskell', repo: 'libtmux/libtmux-haskell', revision, nativeProvenance: { exporter: { version: 2, build: { compiler: 'ghc-9.14.1' } } }, symbols: [
-  { id: 'LibTmux.Server#v:capture', name: 'capture', kind: 'function', source: { file: 'src/LibTmux/Server.hs', line: 5 } },
-  { id: 'LibTmux.Server#v:withServer', name: 'withServer', kind: 'function', source: { file: 'src/LibTmux/Server.hs', line: 4 } },
-] }
+const revision = commit('Source fixture')
+// A merge commit names the same tree under a new id; one changed byte names a different tree.
+const sameTree = commit('Merge with the same tree', '--allow-empty')
+writeFileSync(join(directory, 'src/LibTmux/Server.hs'), `${sources.get('src/LibTmux/Server.hs')}-- changed\n`)
+const changedByte = commit('Change one source byte', '--all')
+/** The exporter binds every citation to the selected revision: structured fields and the source links in the prose. */
+const modelAt = (at: string) => {
+  const source = (file: string, line: number) => ({ file, line, revision: at, extractedRevision: at })
+  return { port: 'haskell', repo: 'libtmux/libtmux-haskell', revision: at,
+    nativeProvenance: { exporter: { version: 2, build: { compiler: 'ghc-9.14.1' } } },
+    sources: [{ product: 'core', repo: 'libtmux/libtmux-haskell', revision: at, extractedRevision: at }],
+    exportGroups: [{ module: 'LibTmux.Server' }],
+    symbols: [
+      { id: 'LibTmux.Server#v:capture', name: 'capture', kind: 'function', source: source('src/LibTmux/Server.hs', 5),
+        doc: { body: `([Source](https://github.com/libtmux/libtmux-haskell/blob/${at}/src/LibTmux/Server.hs#L5))` } },
+      { id: 'LibTmux.Server#v:withServer', name: 'withServer', kind: 'function', source: source('src/LibTmux/Server.hs', 4) },
+    ] }
+}
+const model = modelAt(revision)
 const claims = [{
-  port: 'haskell', revision, symbol: 'LibTmux.Server#v:capture', command: 'display-message', scope: null,
+  port: 'haskell', symbol: 'LibTmux.Server#v:capture', command: 'display-message', scope: null,
   evidence: [
     { at: 'src/LibTmux/Server.hs:5', has: ['capture = mask_', 'Queue.submit Queue.ReadSnapshot'], in: 'LibTmux.Server#v:capture' },
     { at: 'internal/LibTmux/Internal/Queue.hs:5', has: ['submit command = native'] },
@@ -39,7 +56,7 @@ const claims = [{
 const profile = {
   schemaVersion: 1, repository: model.repo, revision,
   files: Object.fromEntries([...sources].map(([path, content]) => [path, digest(content)])),
-  modelSha256: digest(JSON.stringify({ symbols: model.symbols, build: model.nativeProvenance.exporter.build })),
+  modelSha256: digest(JSON.stringify({ symbols: model.symbols, sources: model.sources, exportGroups: model.exportGroups, build: model.nativeProvenance.exporter.build })),
   claimsSha256: digest(JSON.stringify(claims)),
   classifications: [
     { kind: 'sends', why: 'The snapshot request submits this fixed command.', symbols: ['LibTmux.Server#v:capture'] },
@@ -62,7 +79,7 @@ describe('reviewed native Haskell usage', () => {
   })
 
   it.each([
-    ['revision', { ...profile, revision: '0'.repeat(40) }, /native Haskell.*revision/i],
+    ['revision id', { ...profile, revision: 'main' }, /native Haskell.*revision/i],
     ['source bytes', { ...profile, files: { ...profile.files, 'cbits/process.c': '0'.repeat(64) } }, /native Haskell.*cbits\/process.c/i],
     ['missing source', { ...profile, files: Object.fromEntries(Object.entries(profile.files).filter(([path]) => !path.startsWith('internal/'))) }, /native Haskell.*source inventory/i],
     ['unclassified public action', { ...profile, classifications: profile.classifications.slice(1) }, /native Haskell.*classification/i],
@@ -70,6 +87,23 @@ describe('reviewed native Haskell usage', () => {
     ['claim drift', { ...profile, claimsSha256: '0'.repeat(64) }, /native Haskell.*claims/i],
   ])('rejects stale %s before returning a declaration index', async (_name, nativeProfile, failure) => {
     await expect(scanPort({ ...options, nativeProfile })).rejects.toThrow(failure)
+  })
+
+  it('accepts a merge commit whose bytes and public model match the profile apart from the revision', async () => {
+    const scanned = await scanPort({ ...options, model: modelAt(sameTree) })
+    expect(scanned.symbols.map((symbol) => symbol.id)).toEqual(['LibTmux.Server#v:capture', 'LibTmux.Server#v:withServer'])
+  })
+
+  it('rejects one changed source byte at a new revision', async () => {
+    await expect(scanPort({ ...options, model: modelAt(changedByte) })).rejects.toThrow(/native Haskell.*source bytes changed in src\/LibTmux\/Server.hs/i)
+  })
+
+  it.each([
+    ['a changed signature', (at: string) => ({ ...modelAt(at), symbols: modelAt(at).symbols.map((symbol) => ({ ...symbol, signatures: [{ raw: 'capture :: IO ()' }] })) })],
+    ['a citation of the reviewed revision', (at: string) => ({ ...modelAt(at), symbols: modelAt(at).symbols.map((symbol, index) => (index ? symbol : { ...symbol, source: { ...symbol.source, revision } })) })],
+    ['a citation of a third revision', (at: string) => ({ ...modelAt(at), sources: [{ ...modelAt(at).sources[0], extractedRevision: 'f'.repeat(40) }] })],
+  ])('rejects %s in the model at a new revision', async (_name, changed) => {
+    await expect(scanPort({ ...options, model: changed(sameTree) })).rejects.toThrow(/native Haskell.*public model or native build/i)
   })
 
   it('requires a reviewed profile for the native capture surface', async () => {

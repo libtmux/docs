@@ -223,13 +223,22 @@ attribution; ambiguous or widely shared helpers need further qualification.
 
 The queued native capture path uses a separate
 [reviewed source profile](../scripts/tmux-usage/haskell-native.json).
-Qualification checks the exact revision, the complete library and C-source
+Qualification checks the repository, the complete library and C-source
 inventory, each file's digest, every public callable or field classification,
 the full API model and native build metadata, and the
 [reviewed claims](../scripts/tmux-usage/claims.json). Its parser indexes
 declaration bounds for the shared evidence audit; it does not infer queued
 execution from function names. A changed source, public export or claim fails
 qualification until the profile is reviewed again.
+
+The profile's `revision` is the commit it was reviewed at. Another commit
+qualifies when its inventory and every file digest match, and its model equals
+the reviewed model once the commit's own id, in the `revision` fields and the
+`blob/<revision>/` source links, reads as the reviewed id. A merge commit or a
+change outside `src/`, `internal/`, `cbits/`, `.tool-versions`,
+`cabal.project` and the cabal file therefore needs no new review. A model that
+also cites the reviewed id or a third id fails. The reviewed claims carry no
+`revision` pin, so they hold at the model's revision.
 
 Set `LIBTMUX_DOCS_PORT=haskell` and bind `LIBTMUX_DOCS_SOURCE_SHA` and
 `LIBTMUX_DOCS_SOURCE_REF` to the selected commit when regenerating this model.
