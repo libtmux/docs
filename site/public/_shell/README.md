@@ -52,7 +52,8 @@ navigation on older pages that have no initial header.
 `external-links.css` draws a glyph after a link that leaves the site. It
 matches `a[data-external-link]`, and skips `a[data-external-link-icon]`, the
 mark on a link that holds an icon and no text. The Astro build writes both
-attributes into every page it emits, so the glyph is in the first layout and no
+attributes into every page it emits, and `scripts/mark-external-links.mjs` does
+the same for native reference trees, so the glyph is in the first layout and no
 text moves when scripts run. The origin of the build and `https://libtmux.org`
 count as the site, so a preview published under a path prefix keeps links to the
 production site unmarked.
