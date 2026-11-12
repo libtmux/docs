@@ -1,12 +1,23 @@
 import { readFileSync, existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { Window } from 'happy-dom'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ModuleKind, ScriptTarget, transpileModule } from 'typescript'
 import { pickerPaintRules } from '../src/lib/picker-paint'
 import { PORTS } from '../src/lib/ports'
 import { SITE_BUILT, SITE_ROOT, SITE_PREFIX, publishedPath } from './site-root'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
+
+// happy-dom keeps a window's document alive until `close()`; `abort()` leaves it. A built page is
+// heavy, so a file that only aborted its windows ran its last tests against a heap the earlier pages
+// had filled, and those tests timed out. Open every window here and close it after its test.
+const windows: Window[] = []
+const openWindow = (...args: ConstructorParameters<typeof Window>): Window => {
+  const window = new Window(...args)
+  windows.push(window)
+  return window
+}
+afterEach(async () => { for (const window of windows.splice(0)) await window.happyDOM.close() })
 
 describe('Julia source installation', () => {
   const revision = '1234567890abcdef1234567890abcdef12345678'
@@ -14,7 +25,7 @@ describe('Julia source installation', () => {
   it.each(['core', 'workspace', 'mcp', 'mcp-server'])('installs the documented revision for %s', async (product) => {
     vi.stubEnv('LIBTMUX_DOCS_PORT', 'julia')
     vi.stubEnv('LIBTMUX_DOCS_SOURCE_SHA', revision)
-    const window = new Window()
+    const window = openWindow()
     try {
       const server = product === 'mcp-server'
       const template = await loadAstroTemplate(`components/widgets/${server ? 'McpInstall' : 'PackageInstall'}.astro`, {
@@ -35,7 +46,6 @@ describe('Julia source installation', () => {
       if (server) expect(code).toContain('LibTmuxMCP.install_cli("bin")')
     } finally {
       vi.unstubAllEnvs()
-      await window.happyDOM.abort()
     }
   })
 })
@@ -75,7 +85,7 @@ const compiledModules = new Map<string, string>()
 
 /** Load a built page into a DOM and run its scripts, with `stored` preset. */
 function load(page: string, url: string, stored: Record<string, string> = {}): Loaded {
-  const window = new Window({ url })
+  const window = openWindow({ url })
   const document = window.document as unknown as Document
   for (const [key, value] of Object.entries(stored)) window.localStorage.setItem(key, value)
   document.write(readFileSync(page, 'utf8'))
@@ -183,7 +193,7 @@ describe('homepage preference before body parsing', () => {
     ['?port=unknown', 'unknown', null],
     ['', null, null],
   ])('resolves %s with saved %s as %s before deferred scripts', async (query, saved, expected) => {
-    const window = new Window({ url: `https://libtmux.org/en/${query}` })
+    const window = openWindow({ url: `https://libtmux.org/en/${query}` })
     const { document } = window
     document.documentElement.setAttribute('data-home-ports', PORTS.map((port) => port.slug).join(' '))
     document.documentElement.setAttribute('data-home-brands', JSON.stringify(Object.fromEntries(PORTS.map((port) => [port.slug, port.logoLanguage]))))
@@ -196,7 +206,6 @@ describe('homepage preference before body parsing', () => {
     expect(document.documentElement.getAttribute('data-brand')).toBe(
       PORTS.find((port) => port.slug === (expected ?? 'py'))!.logoLanguage,
     )
-    await window.happyDOM.abort()
   })
 })
 
@@ -480,7 +489,7 @@ describe('MCP install picker, Python', () => {
     const picker = await loadAstroTemplate('components/widgets/McpInstall.astro', {
       modules: { '../../lib/highlight': { highlightWithCooldownSlots: async (code: string) => code } },
     })
-    const window = new Window()
+    const window = openWindow()
     const document = window.document as unknown as Document
     document.body.innerHTML = await renderAstroTemplate(picker, { props: { port: 'py' } })
     expect(document.querySelector('.lm-mcp-install')?.getAttribute('data-port')).toBe('py')
