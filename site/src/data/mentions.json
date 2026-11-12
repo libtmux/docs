@@ -6708,6 +6708,62 @@
   },
   {
    "port": "haskell",
+   "symbol": "LibTmux.Creation",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create a session",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Creation",
+   "page": "/haskell/latest/guides/status/",
+   "title": "Implementation status",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Creation#t:CreatedSession",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create a session",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Creation#t:InitialProcess",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create a session",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Creation#v:DefaultProcess",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create a session",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Creation#v:defaultSessionOptions",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create a session",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Creation#v:DirectCommand",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create a session",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Creation#v:ShellCommand",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create a session",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
    "symbol": "LibTmux.Id",
    "page": "/haskell/latest/guides/status/",
    "title": "Implementation status",
@@ -6884,6 +6940,13 @@
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#t:MutationOptions",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create a session",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#t:MutationOptions",
    "page": "/haskell/latest/guides/mutations/",
    "title": "Rename and set pane titles",
    "section": "guides"
@@ -6905,6 +6968,13 @@
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#t:Server",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create a session",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#t:Server",
    "page": "/haskell/latest/guides/mutations/",
    "title": "Rename and set pane titles",
    "section": "guides"
@@ -6914,6 +6984,13 @@
    "symbol": "LibTmux.Server#t:TmuxException",
    "page": "/haskell/latest/guides/capture/",
    "title": "Capture and navigate",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:awaitCreationRecovery",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create a session",
    "section": "guides"
   },
   {
@@ -6928,6 +7005,13 @@
    "symbol": "LibTmux.Server#v:capture",
    "page": "/haskell/latest/guides/capture/",
    "title": "Capture and navigate",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:capture",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create a session",
    "section": "guides"
   },
   {
@@ -6968,8 +7052,64 @@
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:cleanupRecoveries",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create a session",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:cleanupRecoveries",
    "page": "/haskell/latest/guides/shared-runtime/",
    "title": "Shared Runtime scopes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:createSession",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create a session",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:createSessionWith",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create a session",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:creationGeneration",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create a session",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:creationOperation",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create a session",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:creationReceipt",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create a session",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:creationRecoveries",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create a session",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:detachCreationRecovery",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create a session",
    "section": "guides"
   },
   {
@@ -6988,6 +7128,13 @@
   },
   {
    "port": "haskell",
+   "symbol": "LibTmux.Server#v:inspectCreationRecovery",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create a session",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
    "symbol": "LibTmux.Server#v:inspectMutationRecovery",
    "page": "/haskell/latest/guides/mutations/",
    "title": "Rename and set pane titles",
@@ -6998,6 +7145,13 @@
    "symbol": "LibTmux.Server#v:InvalidTarget",
    "page": "/haskell/latest/guides/mutations/",
    "title": "Rename and set pane titles",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:MutationAppliedWithErrors",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create a session",
    "section": "guides"
   },
   {
@@ -7026,6 +7180,13 @@
    "symbol": "LibTmux.Server#v:mutationRecoveries",
    "page": "/haskell/latest/guides/mutations/",
    "title": "Rename and set pane titles",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:MutationRejected",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create a session",
    "section": "guides"
   },
   {
@@ -7072,6 +7233,13 @@
   },
   {
    "port": "haskell",
+   "symbol": "LibTmux.Server#v:resumeCreationRecovery",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create a session",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
    "symbol": "LibTmux.Server#v:resumeMutationRecovery",
    "page": "/haskell/latest/guides/mutations/",
    "title": "Rename and set pane titles",
@@ -7103,6 +7271,13 @@
    "symbol": "LibTmux.Server#v:tryTmux",
    "page": "/haskell/latest/guides/capture/",
    "title": "Capture and navigate",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:tryTmux",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create a session",
    "section": "guides"
   },
   {
@@ -7159,6 +7334,13 @@
    "symbol": "LibTmux.Server#v:withServerIn",
    "page": "/haskell/latest/guides/status/",
    "title": "Implementation status",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Snapshot",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create a session",
    "section": "guides"
   },
   {
