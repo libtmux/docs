@@ -61,10 +61,12 @@ describe('what a finished recording is scanned for before it is written', () => 
   const dir = new URL('../src/data/mcp-transcripts/', import.meta.url)
   const files = readdirSync(dir).filter((name) => name.endsWith('.json'))
   type Recorded = { contracts?: unknown; tmuxBefore: TmuxState; steps: { tool: string; tmux: TmuxState; structuredContent?: any; content: { text?: string }[] }[]; sandbox: { rewritten?: unknown } }
-  const stateOf = (recorded: Recorded, index: number): TmuxState => (index === 0 ? recorded.tmuxBefore : recorded.steps[index - 1]!.tmux)
+  /** A recording's tmux states and nothing else. */
+  type States = Pick<Recorded, 'tmuxBefore'> & { steps: { tmux: TmuxState }[] }
+  const stateOf = (recorded: States, index: number): TmuxState => (index === 0 ? recorded.tmuxBefore : recorded.steps[index - 1]!.tmux)
 
   /** What the recorder does with a finished session: the rewrite of every step and of the start, then the one call that scans the transcript. */
-  const recorderPipeline = (recorded: Recorded) => {
+  const recorderPipeline = (recorded: Recorded | States) => {
     const steps = recorded.steps.map((step) => sanitize(step, MARKS))
     const tmuxBefore = sanitize(recorded.tmuxBefore, MARKS)
     return hostLeaks({ ...recorded, tmuxBefore, steps }, HOST)
@@ -101,12 +103,15 @@ describe('what a finished recording is scanned for before it is written', () => 
   it('finds each planted form in the window name of every state of every recording the pipeline is given', () => {
     for (const file of files) {
       const recorded = JSON.parse(readFileSync(new URL(file, dir), 'utf8')) as Recorded
+      // The plant is a window name, so the pipeline is given the states alone: the test above scans each step's
+      // result clean, and reading those results again for every plant is what made this test slow.
+      const states: States = { tmuxBefore: recorded.tmuxBefore, steps: recorded.steps.map(({ tmux }) => ({ tmux })) }
       // A window name is the free text a state holds; the first state with a window, a middle one and the last.
-      const withWindow = Array.from({ length: recorded.steps.length + 1 }, (_, index) => index).filter((index) => stateOf(recorded, index).windows.length > 0)
+      const withWindow = Array.from({ length: states.steps.length + 1 }, (_, index) => index).filter((index) => stateOf(states, index).windows.length > 0)
       expect(withWindow.length, `${file} has states with a window to plant in`).toBeGreaterThan(1)
       for (const [what, text] of PLANTS) {
         for (const index of new Set([withWindow[0]!, withWindow[Math.floor(withWindow.length / 2)]!, withWindow.at(-1)!])) {
-          const planted = structuredClone(recorded)
+          const planted = structuredClone(states)
           stateOf(planted, index).windows[0]!.name = text
           expect(recorderPipeline(planted), `${file}: ${what} in state ${index}`).not.toEqual([])
         }
