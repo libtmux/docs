@@ -3,6 +3,7 @@ import { Window } from 'happy-dom'
 import { createComponent, renderTemplate } from 'astro/runtime/server/index.js'
 import { describe, expect, it } from 'vitest'
 import { RECIPES as LISP, lispHelper, withoutMarks as withoutLispMarks } from '../../scripts/lib/core-recipes/lisp.mjs'
+import { RECIPES as ERLANG, withoutMarks as withoutErlangMarks } from '../../scripts/lib/core-recipes/erlang.mjs'
 import { RECIPES as PERL, withoutMarks as withoutPerlMarks } from '../../scripts/lib/core-recipes/perl.mjs'
 import { playableCapability, viewSteps } from '../src/lib/core-player'
 import { recordingProblems, sha256, type CoreRecording } from '../src/lib/core-recording'
@@ -18,7 +19,7 @@ const shown = (port: string) => homeProgram(QUICKSTARTS[port]!.complete!, 'full'
 const Code = createComponent((_result: unknown, props: { code: string }) => renderTemplate`<pre data-code>${props.code}</pre>`)
 
 /** What every recording of a landing program must hold: it is of the displayed program, at the revision the page records, and plays in each view. */
-function expectPlayable(port: 'lisp' | 'perl') {
+function expectPlayable(port: 'lisp' | 'perl' | 'erlang') {
   const entry = home[port]
   const stored = recording(port)
   expect(recordingProblems(stored, { programs: { 'typed-graph': shown(port) } })).toEqual([])
@@ -34,7 +35,7 @@ function expectPlayable(port: 'lisp' | 'perl') {
  * The calls of a recording in every view of the program the page shows, each on the line its anchor names. A view
  * plays a call only if the view holds it; `absent` is what a view may leave out (a program's cleanup).
  */
-function expectPlayedInEveryView(port: 'lisp' | 'perl', absent: Record<string, string[]> = {}) {
+function expectPlayedInEveryView(port: 'lisp' | 'perl' | 'erlang', absent: Record<string, string[]> = {}) {
   const capability = capabilityOf(port)
   for (const view of HOME_VIEWS) {
     const code = homeProgram(QUICKSTARTS[port]!.complete!, view).replace(/\n$/, '')
@@ -45,7 +46,7 @@ function expectPlayedInEveryView(port: 'lisp' | 'perl', absent: Record<string, s
 }
 
 /** The programs the page shows for a port, in every view: the recording plays a call only in a view that holds it. */
-const views = (port: 'lisp' | 'perl') => [shown(port), ...Object.values((home[port] as { variants?: Record<string, string> }).variants ?? {})]
+const views = (port: 'lisp' | 'perl' | 'erlang') => [shown(port), ...Object.values((home[port] as { variants?: Record<string, string> }).variants ?? {})]
 
 describe('Common Lisp recipe', () => {
   const recipe = LISP['typed-graph']
@@ -169,6 +170,8 @@ describe('the landing page player of the new ports', () => {
     const lisp = await render('lisp')
     expect(lisp.querySelector('[data-capability-panel="typed-graph"] [data-core-player]'), 'lisp plays its recording').not.toBeNull()
     expect(lisp.querySelector('[data-home-example]')).toBeNull()
+    const erlang = await render('erlang')
+    expect(erlang.querySelector('[data-capability-panel="typed-graph"] [data-core-player]'), 'erlang plays its recording').not.toBeNull()
     const perl = await render('perl')
     expect(perl.querySelector('[data-capability-panel="typed-graph"] [data-core-player]'), 'perl plays its recording').not.toBeNull()
     const haskell = await render('haskell')
@@ -257,5 +260,91 @@ describe('the Perl recording of the landing page program', () => {
   it('is played for the program it records and for no other', async () => {
     expect(await playableCapability('perl', 'typed-graph', shown('perl'))).toBeDefined()
     expect(await playableCapability('perl', 'typed-graph', `${shown('perl')}\n# edited`)).toBeUndefined()
+  })
+})
+
+describe('Erlang recipe', () => {
+  const recipe = ERLANG['typed-graph']
+  const code = home.erlang.files.find((file) => file.name === 'src/readme_demo.erl')!.code
+  const marked = recipe.instrument(code, recipe.steps)
+
+  it('adds only marker lines to the displayed program: a mark after each call, in the order the calls run', () => {
+    expect(withoutErlangMarks(marked)).toBe(code)
+    const added = marked.split('\n').filter((line: string) => line.endsWith('docs:mark'))
+    expect(added.map((line: string) => /docs_mark:mark\(<<"([^"]+)">>/.exec(line)?.[1])).toEqual(recipe.steps.map((step: { id: string }) => step.id))
+  })
+
+  it('puts the mark of with_owned after the line that closes its function, where the server has been stopped', () => {
+    const lines = marked.split('\n')
+    const mark = lines.findIndex((line: string) => line.includes('docs_mark:mark(<<"retire">>'))
+    expect(lines[mark - 1]).toBe('    end),')
+    expect(recipe.steps.find((step: { id: string }) => step.id === 'retire').stopsServer).toBe(true)
+  })
+
+  it('finds every call on exactly one line of the displayed program, `%` and `\'` read as Erlang reads them', () => {
+    for (const step of recipe.steps) expect(statementLines(code, step.anchor, syntaxOf('erlang'), step.occurrence), step.id).toBeDefined()
+    expect(() => recipe.instrument(code, [{ id: 'x', anchor: 'tmux_pane:nope(', value: 'ok' }])).toThrow(/not on exactly one line/)
+  })
+
+  it('compiles a helper beside the marked program only, which stops the program when a mark fails', () => {
+    expect(recipe.helpers.map((helper: { file: string }) => helper.file)).toEqual(['src/docs_mark.erl'])
+    expect(recipe.helpers[0].source).toContain('-module(docs_mark).')
+    expect(recipe.helpers[0].source).toContain('erlang:halt(Status)')
+  })
+})
+
+describe('the Erlang recording of the landing page program', () => {
+  const capability = capabilityOf('erlang')
+  const step = (id: string) => capability.steps.find((each) => each.id === id)!
+  const sent = (id: string) => step(id).commands.filter((command) => command.role === 'command').map((command) => command.tmux.split(' ')[0])
+
+  it('is sound, of the displayed program, and was recorded at the revision the page records', () => {
+    expectPlayable('erlang')
+  })
+
+  it('has one step per call of the step map, in the order the calls ran', () => {
+    expect(capability.steps.map((each) => [each.id, each.label, each.anchor, each.type])).toEqual(ERLANG['typed-graph'].steps.map((each: { id: string; label: string; anchor: string; type: string }) => [each.id, each.label, each.anchor, each.type]))
+  })
+
+  it('starts with no session: the program starts its own server', () => {
+    expect(capability.tmuxBefore.sessions).toEqual([])
+    expect(sent('session')).toContain('new-session')
+  })
+
+  it('records what each call returned and the commands that changed tmux', () => {
+    expect(step('session').returned).toEqual({ id: '$0', name: 'workspace' })
+    expect(step('worker').returned).toEqual({ id: '@1', name: 'workers' })
+    expect(step('split').returned).toEqual({ id: '%2' })
+    expect(step('snapshot').returned).toEqual({ sessions: 1, windows: 2, panes: 3 })
+    expect(step('children').returned).toEqual(['%1', '%2'])
+    expect(step('renamed').returned).toEqual({ id: '@1', name: 'finished' })
+    expect(sent('worker')).toContain('new-window')
+    expect(sent('split')).toContain('split-window')
+    expect(sent('layout')).toEqual(['select-layout'])
+    expect(sent('resize')).toEqual(['resize-pane'])
+    expect(sent('rename')).toEqual(['rename-window'])
+    expect(sent('windows'), 'reading a snapshot sends nothing').toEqual([])
+  })
+
+  it('counts the library\'s daemon identity checks as probes, not as the commands the call sent', () => {
+    expect(step('layout').commands.filter((command) => command.role === 'probe')).toHaveLength(1)
+    for (const command of capability.steps.flatMap((each) => each.commands)) if (command.role === 'command') expect(command.tmux).not.toContain('#{pid}')
+  })
+
+  it('ends with the call that stops the server by its process id, which sends no command', () => {
+    const retire = step('retire')
+    expect(retire.stopsServer).toBe(true)
+    expect(retire.commands).toEqual([])
+    expect(retire.tmux.sessions).toEqual([])
+    expect(retire.returned).toEqual({ sessions: 1, windows: 2, panes: 3, matched_panes: 2, captured_name: 'workers', immutable: true })
+  })
+
+  it('plays every call in every view of the program, each on the line its anchor names', () => {
+    expectPlayedInEveryView('erlang')
+  })
+
+  it('is played for the program it records and for no other', async () => {
+    expect(await playableCapability('erlang', 'typed-graph', shown('erlang'))).toBeDefined()
+    expect(await playableCapability('erlang', 'typed-graph', `${shown('erlang')}\n% edited`)).toBeUndefined()
   })
 })

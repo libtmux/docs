@@ -106,6 +106,19 @@ describe('the Go recording of the landing page program', () => {
       expect(problems(clone())).toEqual([])
     })
 
+    it('lets a call stop the server without a command only when it says so, and the server was running and is gone', () => {
+      const silent = (recording: CoreRecording) => { const step = capability(recording).steps.at(-1)!; step.commands = []; return step }
+      const stopped = clone()
+      silent(stopped).stopsServer = true
+      expect(problems(stopped)).toEqual([])
+      const unsaid = clone()
+      silent(unsaid)
+      expect(problems(unsaid).join('\n')).toMatch(/tmux changed, but no command the call sent can change it/)
+      const wrong = clone()
+      capability(wrong).steps[1]!.stopsServer = true
+      expect(problems(wrong).join('\n')).toMatch(/says it stopped the server, but the server was not running before it or still holds a session/)
+    })
+
     it('a recording is not played for a program that has since changed', () => {
       expect(problems(stored(), `${program}// changed\n`).join('\n')).toMatch(/is of a different program/)
     })

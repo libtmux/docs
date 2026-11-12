@@ -219,7 +219,7 @@ function stepsOf({ before, entries }) {
         return { ...described, tmux: short(described.tmux), stdout: short(described.stdout), stderr: short(described.stderr), ...(cut ? { shortened: true } : {}) }
       }),
       ...(notifications.length ? { notifications: notifications.map(short) } : {}),
-      transient, tmux: final,
+      transient, ...(step.stopsServer ? { stopsServer: true } : {}), tmux: final,
     })
     earlier = final
     commands = []

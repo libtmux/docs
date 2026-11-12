@@ -52,6 +52,8 @@ export interface CoreStep {
   notifications?: string[]
   /** Windows tmux held while the call ran and no longer holds when it returned. */
   transient: { window: string; name: string }[]
+  /** Set on a call that ended the server without sending a tmux command: whoever owns the daemon stopped it by its process id. */
+  stopsServer?: true
   /** The recording's tmux server once the call had returned. */
   tmux: TmuxState
 }
@@ -94,7 +96,8 @@ export const sha256 = (text: string) => createHash('sha256').update(text).digest
  * Every state is one tmux can be in (`stateProblems`). Every step names a call
  * that is on exactly one line of the program, once, and has the commands that
  * call sent. A state that differs from the one before it needs a command that
- * can change tmux, so a state read late or from another server is caught. The
+ * can change tmux, or a step that says its owner stopped the daemon by its
+ * process id, so a state read late or from another server is caught. The
  * ids a call returned are in tmux after it or in the commands it sent.
  *
  * With `programs` (the displayed program by capability), the recording must
@@ -143,7 +146,10 @@ export function recordingProblems(recording: unknown, { programs }: { programs?:
       state.forEach((problem) => problems.push(here(`its state: ${problem}`)))
       if (state.length > 0) return
       const changed = stateKey(step.tmux) !== stateKey(previous)
-      if (changed && !step.commands.some((command) => command.role === 'command' && command.mutates)) problems.push(here('tmux changed, but no command the call sent can change it'))
+      // A call that stops the daemon by its process id sends no command; it must say so, and leave no session.
+      const stopped = step.stopsServer === true && step.tmux.sessions.length === 0 && previous.sessions.length > 0
+      if (step.stopsServer !== undefined && !stopped) problems.push(here('says it stopped the server, but the server was not running before it or still holds a session'))
+      if (changed && !stopped && !step.commands.some((command) => command.role === 'command' && command.mutates)) problems.push(here('tmux changed, but no command the call sent can change it'))
       const named = new Set([...idsIn(step.tmux), ...idsIn(step.commands.map((command) => command.tmux))])
       for (const returned of idsIn(step.returned)) if (!named.has(returned)) problems.push(here(`it returned ${returned}, which tmux does not hold after the call and no command of the call names`))
       previous = step.tmux
