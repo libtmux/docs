@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { documentationAreas, documentationCards, documentationNavigation, sourceGuideFor, sourceGuidesFor, stagedSectionsFor } from '../src/lib/port-documentation'
 
 describe('port documentation domains', () => {
-  it('maps the public Haskell observation, query and fixture guides to their reader paths', () => {
+  it('maps the public Haskell capture, query, creation and fixture guides to their reader paths', () => {
     expect(documentationAreas('haskell').map(({ id, kind }) => ({ id, kind }))).toEqual([
       { id: 'core', kind: 'core' }, { id: 'workspace', kind: 'unavailable' }, { id: 'mcp', kind: 'unavailable' },
     ])
@@ -12,6 +12,7 @@ describe('port documentation domains', () => {
       ['docs/installation.md', 'guides/installation'],
       ['docs/capture.md', 'guides/capture'],
       ['docs/query.md', 'guides/query'],
+      ['docs/creation.md', 'guides/creation'],
       ['docs/mutations.md', 'guides/mutations'],
       ['docs/shared-runtime.md', 'guides/shared-runtime'],
       ['docs/fixtures.md', 'guides/offline-fixtures'],
