@@ -104,9 +104,9 @@ const columns = tiles.length <= 2 ? 1 : tiles.length <= 4 ? 2 : 3
 const rows = Math.max(1, Math.ceil(tiles.length / columns))
 const percent = (value: number, total: number) => `${(value / total) * 100}%`
 
-// `client`: one view per window, keyed by session and window, and the one the first session's client is on.
+// `client`: one view per window, keyed by session and window (and by index when a session links the window twice), and the one the first session's client is on.
 type SessionOf = Frame['sessions'][number]
-const viewKey = (owner: SessionOf, window: WindowState) => `${owner.id ?? owner.name ?? ''}/${window.id ?? window.index ?? window.name ?? ''}`
+const viewKey = (owner: SessionOf, window: WindowState) => `${owner.id ?? owner.name ?? ''}/${window.id ?? window.index ?? window.name ?? ''}${window.id !== undefined && owner.windows.filter((other) => other.id === window.id).length > 1 ? `:${window.index}` : ''}`
 const currentOf = (owner: SessionOf) => owner.windows.find((window) => window.active) ?? owner.windows[0]
 const sessionNumber = (owner: SessionOf) => Number(/^\$(\d+)$/.exec(owner.id ?? '')?.[1] ?? Number.POSITIVE_INFINITY)
 const clientSession = client ? [...frame.sessions].sort((a, b) => sessionNumber(a) - sessionNumber(b))[0] : undefined

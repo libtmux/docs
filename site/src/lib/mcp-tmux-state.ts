@@ -65,6 +65,10 @@ function shapeProblems(value: unknown): string[] {
  * and each window a pane, one window and one pane are active, and a window's
  * layout names exactly its panes at the rectangles the panes report.
  *
+ * A window can be linked into several sessions, or into one at several
+ * indices, and is then listed once per link: its id repeats, with the same
+ * name and layout, and each link is one session's index. A pane is listed once.
+ *
  * @returns what is wrong, empty when nothing is
  */
 export function stateProblems(state: unknown): string[] {
@@ -72,8 +76,18 @@ export function stateProblems(state: unknown): string[] {
   if (shape.length) return shape
   const { sessions, windows, panes } = state as TmuxState
   const problems: string[] = []
-  const ids = [...sessions, ...windows, ...panes].map((item) => item.id)
+  // A window is one entity however many links it has.
+  const physical = windows.filter((window, position) => windows.findIndex((other) => other.id === window.id) === position)
+  const ids = [...sessions, ...physical, ...panes].map((item) => item.id)
   for (const id of new Set(ids.filter((id, position) => ids.indexOf(id) !== position))) problems.push(`${id} appears twice`)
+  const links = new Set<string>()
+  for (const window of windows) {
+    const link = `${window.session}:${window.index}`
+    if (links.has(link)) problems.push(`session ${window.session} has two windows at index ${window.index}`)
+    links.add(link)
+    const first = physical.find((other) => other.id === window.id)!
+    if (window.name !== first.name || window.layout !== first.layout) problems.push(`window ${window.id} is linked more than once, with a different name or layout in each link`)
+  }
   for (const window of windows) if (!sessions.some((session) => session.id === window.session)) problems.push(`window ${window.id} is in session ${window.session}, which the state lacks`)
   for (const pane of panes) if (!windows.some((window) => window.id === pane.window)) problems.push(`pane ${pane.id} is in window ${pane.window}, which the state lacks`)
   for (const session of sessions) {
@@ -81,7 +95,7 @@ export function stateProblems(state: unknown): string[] {
     if (own.length === 0) problems.push(`session ${session.id} has no window`)
     else if (own.filter((window) => window.active).length !== 1) problems.push(`session ${session.id} must have exactly one active window`)
   }
-  for (const window of windows) {
+  for (const window of physical) {
     const own = panes.filter((pane) => pane.window === window.id)
     if (own.length === 0) { problems.push(`window ${window.id} has no pane`); continue }
     if (own.filter((pane) => pane.active).length !== 1) problems.push(`window ${window.id} must have exactly one active pane`)

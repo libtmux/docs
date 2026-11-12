@@ -293,8 +293,10 @@ describe('the showcase component', () => {
     const { createComponent, renderTemplate } = await import('astro/runtime/server/index.js')
     const { loadAstroTemplate, renderAstroTemplate } = await import('./astro-templates')
     const Code = createComponent((_result: unknown, props: { code: string }) => renderTemplate`<pre>${props.code}</pre>`)
+    // The plain example, which a port shows until its recording is played: the recording is turned away.
+    const corePlayer = await import('../src/lib/core-player')
     const template = await loadAstroTemplate('components/CoreShowcase.astro', {
-      real: ['components/HomeExample.astro'], modules: { 'astro-expressive-code/components': { Code } },
+      real: ['components/HomeExample.astro'], modules: { 'astro-expressive-code/components': { Code }, '../lib/core-player': { ...corePlayer, playableCapability: async () => undefined } },
     })
     const window = new Window()
     try {

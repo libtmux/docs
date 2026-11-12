@@ -92,6 +92,66 @@ describe('finding a call in a Lisp, Erlang or Perl program', () => {
   })
 })
 
+describe('finding a call in an OCaml, Haskell or Clojure program', () => {
+  const lines = (...text: string[]) => text.join('\n')
+  const c = { comment: '//', quotes: '"\'`' }
+
+  it('reads `(* *)` as an OCaml comment that nests, runs over lines and holds strings, and `\'a` as a type variable', () => {
+    const ocaml = lines(
+      'let linked =',
+      '  get',
+      '    (Client.create_session client ~name:"it\'s" (Name.v "a)" (* ) *)',
+      '       ~spawn:(fun (x : \'a) -> x)))',
+      'in',
+      'let pair = Client.pair client (Name.v \'(\' \')\' \'\\\'\' \'"\' "x" (* ) multi',
+      '  (* nested ) *) ) "*)" *)',
+      '  "y")',
+    )
+    expect(statementLines(ocaml, 'Client.create_session', syntaxOf('ocaml'))).toEqual([3, 4])
+    expect(statementLines(ocaml, 'Client.create_session', c), 'C reads `(*` as a bracket and `\'a)` as a string').not.toEqual([3, 4])
+    expect(statementLines(ocaml, 'Client.pair', syntaxOf('ocaml'))).toEqual([6, 8])
+    expect(statementLines(ocaml, 'Client.pair', c)).not.toEqual([6, 8])
+    expect(statementLines(lines('Client.map client (fun (x : \'a) ->', '  x) (* ( *)', 'let g = 1'), 'Client.map', syntaxOf('ocaml'))).toEqual([1, 2])
+    expect(statementLines(lines('Client.map client (fun (x : \'a) ->', '  x) (* ( *)', 'let g = 1'), 'Client.map', c)).toBeUndefined()
+  })
+
+  it('does not count a bracket in an OCaml quoted string', () => {
+    const ocaml = lines('Client.run client {|a ( |} {id|b ( |} |id} (f ())')
+    expect(statementLines(ocaml, 'Client.run', syntaxOf('ocaml'))).toEqual([1, 1])
+    expect(statementLines(ocaml, 'Client.run', c)).toBeUndefined()
+  })
+
+  it('reads `--` and `{- -}` as Haskell comments, except in an operator such as `-->`, and `\'` as a prime in a name', () => {
+    const haskell = lines(
+      'Tmux.open server (Q.x {- ( an',
+      '   (( unmatched {- nested -} -} y)',
+      'Tmux.fold server (foldl\' step 0 xs) -- a ) comment',
+      'Tmux.arrow server (a --> b)',
+      'Tmux.close server (c |-- d)',
+    )
+    expect(statementLines(haskell, 'Tmux.open', syntaxOf('haskell'))).toEqual([1, 2])
+    expect(statementLines(haskell, 'Tmux.open', c), 'C reads the brackets in the comment').not.toEqual([1, 2])
+    expect(statementLines(haskell, 'Tmux.fold', syntaxOf('haskell'))).toEqual([3, 3])
+    expect(statementLines(haskell, 'Tmux.fold', { comment: '--', quotes: '"\'' }), 'with `\'` a quote the prime of foldl\' hides the bracket').not.toEqual([3, 3])
+    expect(statementLines(haskell, 'Tmux.arrow', syntaxOf('haskell'))).toEqual([4, 4])
+    expect(statementLines(haskell, 'Tmux.arrow', { comment: '--', quotes: '"' }), 'a `-->` is not the start of a comment').not.toEqual([4, 4])
+    expect(statementLines(haskell, 'Tmux.close', syntaxOf('haskell'))).toEqual([5, 5])
+    expect(statementLines(lines('Tmux.chr server (f \'(\' \')\' \'\\\'\' \'"\' "--" @\'[Int])'), 'Tmux.chr', syntaxOf('haskell'))).toEqual([1, 1])
+  })
+
+  it('reads a quoted list in Clojure as a form, not a string, and `\\(` as a character', () => {
+    const clojure = lines(
+      '(tm/split-pane! (:tmux/ref pane)',
+      '                {:command \'("/bin/cat")}) ; a ) comment',
+      '(find-char \\( \\) \\" x)',
+    )
+    expect(statementLines(clojure, '(tm/split-pane!', syntaxOf('clojure'))).toEqual([1, 2])
+    expect(statementLines(clojure, '(tm/split-pane!', c), 'C reads the quote as a string that swallows the closing bracket').not.toEqual([1, 2])
+    expect(statementLines(clojure, '(find-char', syntaxOf('clojure'))).toEqual([3, 3])
+    expect(statementLines(clojure, '(find-char', c)).not.toEqual([3, 3])
+  })
+})
+
 describe('the calls each view of the Go program plays', () => {
   it('plays the three calls of the short program and the fourth, Kill, once the program cleans up', async () => {
     const { capability } = await recorded()
@@ -679,6 +739,30 @@ describe('what a call changed in tmux', () => {
     expect(tmuxChanges(streamed.before, streamed.step.tmux).phrases).toEqual(['closed window 1:sh'])
     const killed = stepNamed(go, 'Session.Kill')
     expect(tmuxChanges(killed.before, killed.step.tmux).phrases, 'the session takes its windows with it').toEqual(['closed session libtmux-run'])
+  })
+})
+
+describe('what a call changed in a window linked more than once', () => {
+  const layout = 'a1b2,80x24,0,0,0'
+  const link = (session: string, index: number, over: object = {}) => ({ session, id: '@0', index, name: 'editor', active: false, layout, ...over })
+  const state = (windows: object[], sessions = [{ id: '$0', name: 'demo' }]) => ({ sessions, windows, panes: [{ window: '@0', id: '%0', command: 'cat', left: 0, top: 0, width: 80, height: 24, active: true }] }) as never
+
+  it('names a link made into the same session or another, and one removed, and marks the window\'s label', () => {
+    const one = state([link('$0', 0, { active: true })])
+    const twice = state([link('$0', 0, { active: true }), link('$0', 4)])
+    expect(tmuxChanges(one, twice)).toEqual({ marks: { windows: [], panes: [], labels: ['@0'], sessions: [] }, phrases: ['linked window 4:editor'] })
+    expect(tmuxChanges(twice, one)).toEqual({ marks: { windows: [], panes: [], labels: ['@0'], sessions: [] }, phrases: ['unlinked window 4:editor'] })
+    const sessions = [{ id: '$0', name: 'demo' }, { id: '$1', name: 'other' }]
+    const own = { session: '$1', id: '@1', index: 0, name: 'home', active: true, layout }
+    const crossed = { sessions, windows: [link('$0', 0, { active: true }), own, link('$1', 7)], panes: [{ window: '@0', id: '%0', command: 'cat', left: 0, top: 0, width: 80, height: 24, active: true }, { window: '@1', id: '%1', command: 'cat', left: 0, top: 0, width: 80, height: 24, active: true }] } as never
+    const before = { sessions, windows: [link('$0', 0, { active: true }), own], panes: (crossed as { panes: object[] }).panes } as never
+    expect(tmuxChanges(before, crossed).phrases).toEqual(['linked window other:7:editor'])
+  })
+
+  it('names a rename once, and a window made active in one link', () => {
+    const before = state([link('$0', 0, { active: true }), link('$0', 4)])
+    expect(tmuxChanges(before, state([link('$0', 0, { name: 'api', active: true }), link('$0', 4, { name: 'api' })])).phrases).toEqual(['renamed window 0:editor to 0:api'])
+    expect(tmuxChanges(before, state([link('$0', 0), link('$0', 4, { active: true })])).phrases).toEqual(['selected window 4:editor'])
   })
 })
 
