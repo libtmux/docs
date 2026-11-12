@@ -153,6 +153,28 @@ describe('the player of a program that connects to a server its setup started', 
   })
 })
 
+describe('the real player component for each new port', () => {
+  const names = { lisp: 'Common Lisp', perl: 'Perl', erlang: 'Erlang' } as const
+  it.each(['lisp', 'perl', 'erlang'] as const)('draws %s: a frame and a result for the state before the first call and for each call, and plans each view', async (port) => {
+    const played = (await playableCapability(port, 'typed-graph', shown(port)))!
+    const template = await loadAstroTemplate('components/core/CorePlayer.astro', {
+      real: ['components/HomeExample.astro', 'components/replay/TmuxScreen.astro', 'components/replay/ReplayControls.astro'],
+      modules: { 'astro-expressive-code/components': { Code } },
+    })
+    const window = new Window({ url: `https://libtmux.org/${port}/latest/` })
+    window.document.body.innerHTML = await renderAstroTemplate(template, { props: { port, language: names[port], example: QUICKSTARTS[port]!.complete!, recording: played.recording, capability: played.capability } })
+    const document = window.document as unknown as Document
+    const steps = played.capability.steps
+    expect(document.querySelectorAll('.mcp-frame')).toHaveLength(steps.length + 1)
+    expect(document.querySelectorAll('[data-result]')).toHaveLength(steps.length + 1)
+    const plan = JSON.parse(document.querySelector('[data-core-plan]')!.getAttribute('data-core-plan')!) as Record<string, unknown[]>
+    expect(plan.full, 'the full program holds every call').toHaveLength(steps.length)
+    // The last call's note says what became of the server.
+    const last = [...document.querySelectorAll('.mcp-frame__note')].at(-1)!.textContent!
+    expect(last).toContain(`tmux after ${steps.at(-1)!.label}`)
+  })
+})
+
 describe('the landing page player of the new ports', () => {
   it('replaces the plain example with the player once a port has a sound recording, and keeps it for a port without one', async () => {
     const template = await loadAstroTemplate('components/CoreShowcase.astro', {
