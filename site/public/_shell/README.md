@@ -47,6 +47,19 @@ previously published references. Changes must preserve existing page contracts.
 The script enhances existing navigation without replacing it, and still inserts
 navigation on older pages that have no initial header.
 
+## External links
+
+`external-links.css` draws a glyph after a link that leaves the site. It
+matches `a[data-external-link]`, and skips `a[data-external-link-icon]`, the
+mark on a link that holds an icon and no text. The Astro build writes both
+attributes into every page it emits, so the glyph is in the first layout and no
+text moves when scripts run. The origin of the build and `https://libtmux.org`
+count as the site, so a preview published under a path prefix keeps links to the
+production site unmarked.
+
+`external-links.js` adds the title and description, and marks links that arrive
+after load. It leaves a correct attribute as the build wrote it.
+
 ## Verification
 
 After assembling the site, run:
