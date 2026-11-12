@@ -96,6 +96,9 @@ describe('existing port sidecars', () => {
 })
 
 describe('native export groups', () => {
+  /** Haskell ships a curated sidebar, so the export-group fallback is exercised under a port that has none. */
+  const GROUPS_ONLY = 'native-groups'
+
   const fixture = (): ApiModel => ({
     port: 'haskell', extractor: 'fixture',
     exportGroups: [
@@ -116,7 +119,7 @@ describe('native export groups', () => {
   it('preserves native module, group and declaration order without reparenting', () => {
     const model = fixture()
     const before = structuredClone(model)
-    const actual = navSidecar('haskell', model)!
+    const actual = navSidecar(GROUPS_ONLY, model)!
     expect(actual.buckets.map((bucket) => bucket.label)).toEqual(['Module.Z', 'Module.A'])
     const [first, second] = actual.buckets
     expect(first.children?.map((bucket) => bucket.label)).toEqual(['Types', 'Read values'])
@@ -125,7 +128,7 @@ describe('native export groups', () => {
     expect(actual.assignments[first.id].map((entry) => entry.id)).toEqual(['Module.Z'])
     expect(actual.placement).not.toHaveProperty('Module.Z#v:Value')
     expect(actual.diagnostics).toEqual({ unmatched: [], deadBuckets: [], ambiguous: [], staleUnsettled: [] })
-    expect(navSidecar('haskell', structuredClone(model))).toEqual(actual)
+    expect(navSidecar(GROUPS_ONLY, structuredClone(model))).toEqual(actual)
     expect(model).toEqual(before)
   })
 
@@ -133,7 +136,7 @@ describe('native export groups', () => {
     const model = fixture()
     model.symbols.unshift({ ...symbol('Root', 'module'), apiScope: 'exported',
       references: [{ target: 'Module.Z', kind: 'reference' }, { target: 'Module.A', kind: 'reference' }] })
-    const actual = navSidecar('haskell', model)!
+    const actual = navSidecar(GROUPS_ONLY, model)!
     expect(actual.buckets.map((bucket) => bucket.label)).toEqual(['Root', 'Module.Z', 'Module.A'])
     const root = actual.buckets[0]
     expect(root.children).toEqual([])
@@ -157,7 +160,7 @@ describe('native export groups', () => {
   it('excludes nonpublic declarations that are absent from the native export groups', () => {
     const model = fixture()
     model.symbols.push(symbol('private', 'function', 'Module.Z'), symbol('private.module', 'module'))
-    const actual = navSidecar('haskell', model)!
+    const actual = navSidecar(GROUPS_ONLY, model)!
     expect(actual.placement).not.toHaveProperty('private')
     expect(actual.placement).not.toHaveProperty('private.module')
     expect(actual.diagnostics.unmatched).toEqual([])

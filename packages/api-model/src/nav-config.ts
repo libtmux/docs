@@ -611,6 +611,13 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
       'LibTmux::Entity': 'shared captured-handle base; concrete entity packages own the tmux objects',
     },
   },
+  haskell: {
+    unsettled: {
+      LibTmux: 'umbrella module that re-exports every other module; its exported declarations have their own placements',
+      'LibTmux.Id': 'identity module shared by sessions, windows and panes; each ID type sits with its object',
+      'LibTmux.Value': 'checked values shared by windows, panes and layout; each type sits with its object',
+    },
+  },
   ruby: {
     unsettled: {
       'LibTmux::Entity': 'base of the tmux entity hierarchy; the concrete entity is the subclass',
@@ -816,6 +823,20 @@ const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
     version: ['tmux_version'],
     errors: ['tmux_error'],
   },
+  // Session, Window and Pane are the detached records of `LibTmux.Snapshot`, and
+  // `LibTmux.Server` is the owned handle. The name rules would split that
+  // module's cleanup and recovery family by the words in each name.
+  haskell: {
+    server: [
+      ...['CaptureRecovery', 'CleanupRecovery', 'CleanupStatus', 'MutationOptions', 'MutationRecovery', 'Operation',
+        'Outcome', 'ReadRecovery', 'Stage', 'Status'].map((name) => `LibTmux.Server#t:${name}`),
+      ...['awaitCleanup', 'cleanupFailure', 'cleanupObservation', 'detachCaptureRecovery', 'inspectCaptureRecovery',
+        'inspectCleanup', 'resumeCaptureRecovery', 'resumeCleanup'].map((name) => `LibTmux.Server#v:${name}`),
+      // `serverGeneration` reports it, and a reference is valid for one.
+      'LibTmux.Snapshot#t:Generation',
+    ],
+    snapshots: ['LibTmux.Snapshot#t:TmuxText'],
+  },
   // Elixir's modules are named for what they do rather than for a tmux object.
   elixir: {
     queries: ['Selection', 'Schema', 'Wire'].map((name) => `LibTmux.${name}`),
@@ -876,6 +897,15 @@ const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
 
 /** Free functions and cmdlets need the same discovery-first order as object members. */
 const LANGUAGE_ORDER: Record<string, Record<string, string[]>> = {
+  // Server opens on its module, whose page holds the handle's operations.
+  haskell: {
+    server: ['LibTmux.Server', 'LibTmux.Server#t:Server', 'LibTmux.Server#t:ServerConfig', 'LibTmux.Server#v:serverConfig',
+      'LibTmux.Server#v:withServer', 'LibTmux.Server#v:capture', 'LibTmux.Server#v:serverGeneration'],
+    session: ['LibTmux.Snapshot#t:Session', 'LibTmux.Snapshot#t:SessionRef', 'LibTmux.Id#t:SessionId'],
+    window: ['LibTmux.Snapshot#t:Window', 'LibTmux.Snapshot#t:WindowLink', 'LibTmux.Snapshot#t:WindowRef', 'LibTmux.Id#t:WindowId'],
+    pane: ['LibTmux.Snapshot#t:Pane', 'LibTmux.Snapshot#t:PaneOccurrence', 'LibTmux.Snapshot#t:PaneRef', 'LibTmux.Id#t:PaneId'],
+    client: ['LibTmux.Snapshot#t:Client', 'LibTmux.Snapshot#t:ClientAttachment'],
+  },
   ocaml: { server: ['Libtmux_unix.Client', 'Libtmux_eio.Client', 'Libtmux.Endpoint', 'Libtmux.Source', 'Libtmux.Generation'] },
   julia: Object.fromEntries(Object.entries({
     server: ['Server', 'open_server', 'with_server', 'from_env', 'OwnedServer', 'ServerIdentity'],
@@ -930,7 +960,7 @@ function languageBucket(bucket: Bucket, port: string, root = bucket.id): Bucket 
 }
 
 export const NAV: Record<string, PortNav> = Object.fromEntries(
-  ['perl', 'powershell', 'julia', 'elixir', 'lisp', 'erlang', 'py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'clojure', 'kotlin', 'scala', 'fsharp', 'csharp', 'cxx', 'swift', 'ocaml'].map((port) => [
+  ['perl', 'powershell', 'julia', 'elixir', 'lisp', 'erlang', 'py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'clojure', 'kotlin', 'scala', 'fsharp', 'csharp', 'cxx', 'swift', 'ocaml', 'haskell'].map((port) => [
     port,
     {
       port,

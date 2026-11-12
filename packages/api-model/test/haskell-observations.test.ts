@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { extractHaskellArtifact } from '../src/languages/haskell.ts'
-import { navSidecar } from '../src/nav-sidecar.ts'
+import { exportGroupsNav, navSidecarFor } from '../src/nav-sidecar.ts'
 import { sourceUrl } from '../src/products.ts'
 import { SymbolIndex } from '../src/link.ts'
 import { tokenizeDoc } from '../src/doc/roles.ts'
@@ -41,7 +41,7 @@ describe('native Haskell observation profile', () => {
     )
     expect(root.references!.map((entry) => entry.target).filter((target) => targets.includes(target))).toEqual(targets)
     expect(model.symbols.filter((entry) => entry.parent === root.id)).toEqual([])
-    const nav = navSidecar('haskell', structuredClone(model))!
+    const nav = navSidecarFor('haskell', structuredClone(model), exportGroupsNav(model))
     expect(nav.buckets.map((bucket) => bucket.label)).toEqual(artifact.package.exposedModules)
     expect(nav.assignments[nav.buckets[0].id].map((entry) => entry.id)).toEqual(['LibTmux'])
     expect(nav.diagnostics).toEqual({ unmatched: [], deadBuckets: [], ambiguous: [], staleUnsettled: [] })

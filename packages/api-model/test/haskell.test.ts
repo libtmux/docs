@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { extractHaskellArtifact } from '../src/languages/haskell.ts'
 import { tokenizeDoc } from '../src/doc/roles.ts'
 import { SymbolIndex } from '../src/link.ts'
-import { navSidecar } from '../src/nav-sidecar.ts'
+import { exportGroupsNav, navSidecarFor } from '../src/nav-sidecar.ts'
 import { sourceUrl } from '../src/products.ts'
 
 const artifact = JSON.parse(readFileSync(new URL('./fixtures/haskell-native/artifact.json', import.meta.url), 'utf8'))
@@ -62,7 +62,8 @@ describe('Haddock shared-model adapter', () => {
     const model = extractHaskellArtifact(artifact)
     expect(model.exportGroups).toEqual(artifact.modules.flatMap((module: { name: string; groups: object[] }) =>
       module.groups.map((group) => ({ owner: module.name, ...group }))))
-    const sidecar = navSidecar('haskell', JSON.parse(JSON.stringify(model)))!
+    const stored = JSON.parse(JSON.stringify(model))
+    const sidecar = navSidecarFor('haskell', stored, exportGroupsNav(stored))
     expect(sidecar.buckets.map((bucket) => bucket.label)).toEqual(artifact.package.exposedModules)
     expect(Object.keys(sidecar.placement)).toHaveLength(31)
     expect(sidecar.diagnostics).toEqual({ unmatched: [], deadBuckets: [], ambiguous: [], staleUnsettled: [] })

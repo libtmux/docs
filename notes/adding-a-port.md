@@ -179,12 +179,15 @@ public reexport, without creating private reference pages. Native source text
 and line markers are checked against the committed source.
 
 The stored model retains export groups and ordered module-reexport relations,
-so sidebar regeneration needs no checkout or native toolchain. The reexport
-root has its own row; it does not duplicate the target modules' declarations.
-Field modules without authored groups retain Haddock's default Documentation
-section. An ambiguous native source identifier retains its defining file
-without an invented line. Additional module and declaration forms need native
-fixtures and qualification before the adapter accepts them.
+so sidebar regeneration needs no checkout or native toolchain. The sidebar uses
+the shared Server, Session, Window and Pane buckets: `LibTmux.Server` is the
+Server and the detached records of `LibTmux.Snapshot` are the other objects.
+The reexport root and the modules that span several objects stay outside the
+buckets, and none duplicates its targets' declarations. Field modules without
+authored groups retain Haddock's default Documentation section. An ambiguous
+native source identifier retains its defining file without an invented line.
+Additional module and declaration forms need native fixtures and qualification
+before the adapter accepts them.
 
 Haskell's reader guides use the routes in
 [`port-documentation.ts`](../site/src/lib/port-documentation.ts). Its section

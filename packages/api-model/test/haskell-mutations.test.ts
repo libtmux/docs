@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import artifact from './fixtures/haskell-mutations-native/artifact.json'
 import { extractHaskellArtifact } from '../src/languages/haskell'
 import { SymbolIndex, tokenizeDoc } from '../src/reference'
-import { navSidecar } from '../src/nav-sidecar'
+import { exportGroupsNav, navSidecarFor } from '../src/nav-sidecar'
 
 describe('the native Haskell mutation profile', () => {
   it('preserves checked commands, options and opaque recovery ownership', () => {
@@ -21,7 +21,7 @@ describe('the native Haskell mutation profile', () => {
     })
     expect(symbol('v:MutationAppliedWithErrors').parent).toBe('LibTmux.Server#t:TmuxException')
     expect(model.symbols.some((entry) => entry.id.includes('Internal'))).toBe(false)
-    expect(navSidecar('haskell', structuredClone(model))!.diagnostics)
+    expect(navSidecarFor('haskell', structuredClone(model), exportGroupsNav(model)).diagnostics)
       .toEqual({ unmatched: [], deadBuckets: [], ambiguous: [], staleUnsettled: [] })
   })
 
