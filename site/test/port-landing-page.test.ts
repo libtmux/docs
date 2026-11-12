@@ -39,12 +39,18 @@ const stubs = {
   'components/widgets/McpInstall.astro': '---\nconst { port } = Astro.props\n---\n<div data-mcp-install={port} />',
 }
 
-async function renderHtml(slug: string, modules: Record<string, Record<string, unknown>> = {}) {
-  const template = await loadAstroTemplate('components/PortLanding.astro', {
-    real: REAL,
-    stubs,
-    modules: { 'astro-expressive-code/components': { Code }, ...modules },
-  })
+const loadLanding = (modules: Record<string, Record<string, unknown>> = {}) => loadAstroTemplate('components/PortLanding.astro', {
+  real: REAL,
+  stubs,
+  modules: { 'astro-expressive-code/components': { Code }, ...modules },
+})
+
+// Loading compiles the page and its components, and Node keeps every module it evaluates, so
+// the tests that render with the standard modules share one load.
+let landing: ReturnType<typeof loadLanding> | undefined
+
+async function renderHtml(slug: string, modules?: Record<string, Record<string, unknown>>) {
+  const template = await (modules ? loadLanding(modules) : (landing ??= loadLanding()))
   return renderAstroTemplate(template, { props: { port: PORT_BY_SLUG[slug], version: 'latest' } })
 }
 
@@ -55,9 +61,14 @@ afterEach(async () => {
   await Promise.all(opened.splice(0).map((window) => window.happyDOM.close()))
 })
 
-async function render(slug: string) {
-  const window = new Window()
+const openWindow = (...args: ConstructorParameters<typeof Window>): Window => {
+  const window = new Window(...args)
   opened.push(window)
+  return window
+}
+
+async function render(slug: string) {
+  const window = openWindow()
   window.document.body.innerHTML = await renderHtml(slug)
   return window.document as unknown as Document
 }
@@ -379,7 +390,7 @@ describe('the version root of a port', () => {
         '../lib/documentation-navigation': { getDocumentationSurfaces: async () => [] },
       },
     })
-    const window = new Window()
+    const window = openWindow()
     window.document.body.innerHTML = await renderAstroTemplate(page, { url: `https://libtmux.org/en/${slug}/latest/` })
     return window.document as unknown as Document
   }
@@ -465,7 +476,7 @@ describe('the selector script', () => {
   }
 
   async function mount(url: string, disabled?: (source: string) => string, { slug = 'go', picker = false } = {}) {
-    const window = new Window({ url })
+    const window = openWindow({ url })
     window.document.body.innerHTML = await renderHtml(slug)
     if (picker) window.eval(`(() => {\n${PICKER_CLIENT}\ndefineWorkspacePicker()\n})()`)
     const helpers: { exports: Record<string, unknown> } = { exports: {} }
@@ -605,7 +616,7 @@ describe('the selector script', () => {
     })
 
     it('shows the preset last chosen on the overview, as the overview does', async () => {
-      const window = new Window({ url: `${TS}?product=workspace` })
+      const window = openWindow({ url: `${TS}?product=workspace` })
       window.localStorage.setItem(`${STORAGE_PREFIX}ts`, 'window-index')
       window.document.body.innerHTML = await renderHtml('ts')
       window.eval(`(() => {\n${PICKER_CLIENT}\ndefineWorkspacePicker()\n})()`)
