@@ -91,7 +91,7 @@ describe('reviewed native Haskell usage', () => {
 
   it('accepts a merge commit whose bytes and public model match the profile apart from the revision', async () => {
     const scanned = await scanPort({ ...options, model: modelAt(sameTree) })
-    expect(scanned.symbols.map((symbol) => symbol.id)).toEqual(['LibTmux.Server#v:capture', 'LibTmux.Server#v:withServer'])
+    expect(scanned.symbols.map((symbol: { id: string }) => symbol.id)).toEqual(['LibTmux.Server#v:capture', 'LibTmux.Server#v:withServer'])
   })
 
   it('rejects one changed source byte at a new revision', async () => {
