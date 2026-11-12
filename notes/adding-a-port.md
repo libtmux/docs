@@ -41,13 +41,13 @@ workflow and select their own language.
 in `versions.json` (§4) — pick it once, since changing it later is a URL
 break for every published version.
 
-Mark a product the repository does not ship `excluded` in
-`productAvailability`. A directory with no server or loader is a scaffold, not
-a product. The build then creates no page for it and no picker, switcher,
-manifest, sitemap or landing card lists it. Add a `redirects` entry with an
-empty `target` for a product root that was already public, so its URL leads to
-the language home. Use `unpublished` only for a product that ships from source
-and has a page but no registry package.
+Mark a product the port has not published `excluded` in
+`productAvailability`. A scaffold directory, a guide to another port's server
+and a tool built only from source are not products. The build then creates no
+page for it and no picker, switcher, manifest, sitemap or landing card lists
+it. Add a `redirects` entry with an empty `target` for a product root that was
+already public, so its URL leads to the language home. A product is available
+or excluded; there is no placeholder page for one that is coming.
 
 ### Inventory the port's packages and destinations
 
