@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { statementLines } from './core-statement.ts'
+import { statementLines, syntaxOf } from './core-statement.ts'
 import { stateProblems, type TmuxState } from './mcp-tmux-state.ts'
 
 /**
@@ -103,6 +103,7 @@ export const sha256 = (text: string) => createHash('sha256').update(text).digest
 export function recordingProblems(recording: unknown, { programs }: { programs?: Record<string, string> } = {}): string[] {
   if (!isRecord(recording) || !isRecord(recording.capabilities)) return ['has no capabilities']
   const problems: string[] = []
+  const syntax = syntaxOf(typeof recording.port === 'string' ? recording.port : undefined)
   for (const [id, value] of Object.entries(recording.capabilities)) {
     const at = (text: string) => `${id}: ${text}`
     const capability = value as Partial<CoreCapability>
@@ -125,7 +126,7 @@ export function recordingProblems(recording: unknown, { programs }: { programs?:
       if (!step.label || !step.type) problems.push(here('has no label or no type'))
       if (!('returned' in step)) problems.push(here('records no returned value'))
       if (program !== undefined) {
-        if (!step.anchor || !statementLines(program, step.anchor, '//', step.occurrence)) problems.push(here(`its anchor ${JSON.stringify(step.anchor)} is not on exactly one line of the program`))
+        if (!step.anchor || !statementLines(program, step.anchor, syntax, step.occurrence)) problems.push(here(`its anchor ${JSON.stringify(step.anchor)} is not on exactly one line of the program`))
       } else if (!step.anchor) problems.push(here('has no anchor'))
       // A call shares its line with its other runs only when it says it ran more than once, and the runs count up from one.
       const place = `${step.anchor}#${step.occurrence ?? ''}`

@@ -235,7 +235,7 @@ try {
     record: async () => {
       const exact = run('exact')
       if (normalized(exact.stdout) !== program.expectedOutput) throw new Error(`${only}: the displayed program printed ${JSON.stringify(exact.stdout)}, the page says ${JSON.stringify(program.expectedOutput)}`)
-      const marked = run('marked')
+      const marked = await run('marked')
       if (normalized(marked.stdout) !== normalized(exact.stdout)) throw new Error(`${only}: the marked program printed ${JSON.stringify(marked.stdout)}, the displayed one ${JSON.stringify(exact.stdout)}`)
       if (sequence(exact.entries).join() !== sequence(marked.entries).join()) throw new Error(`${only}: the marked program sent other commands than the displayed one:\n${sequence(exact.entries).join(' ')}\n${sequence(marked.entries).join(' ')}`)
       return { exact, marked, steps: stepsOf(marked) }

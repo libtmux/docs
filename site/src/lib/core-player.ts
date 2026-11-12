@@ -1,4 +1,4 @@
-import { statementLines, type LineRange } from './core-statement.ts'
+import { statementLines, syntaxOf, type LineRange } from './core-statement.ts'
 import type { CoreCapability, CoreCommand, CoreRecording, CoreStep } from './core-recording.ts'
 import { recordingProblems } from './core-recording.ts'
 import { replayFrames, type Frame, type ReplayStep } from './mcp-replay'
@@ -32,10 +32,14 @@ export interface PlayerStep {
   lines: LineRange
 }
 
-/** The steps a view's code makes, in the order the program runs them. A step whose call the view does not hold is not played. */
-export function viewSteps(capability: CoreCapability, code: string): PlayerStep[] {
+/**
+ * The steps a view's code makes, in the order the program runs them. A step whose call the view does not hold is not played.
+ * `port` names the language the code is read in (`syntaxOf`): its comments and quotes are not C's for every port.
+ */
+export function viewSteps(capability: CoreCapability, code: string, port?: string): PlayerStep[] {
+  const syntax = syntaxOf(port)
   return capability.steps.flatMap((step, index): PlayerStep[] => {
-    const lines = statementLines(code, step.anchor, '//', step.occurrence)
+    const lines = statementLines(code, step.anchor, syntax, step.occurrence)
     return lines ? [{ index, lines }] : []
   })
 }
