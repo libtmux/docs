@@ -4,6 +4,8 @@ These Haddock pages and installed interface describe
 [the recorded Haskell source](https://github.com/libtmux/libtmux-haskell/commit/bcd17ddf57ee290bd2bcf385538c028a4306bf29).
 Each consumed source page matches the committed bytes. `provenance.json`
 records public modules, defining origins and source hashes.
+The committed [producer](https://github.com/libtmux/docs/commit/ddc46a3e7dbbafdc4f86b77cddbea8ab0783ab1b)
+and its native input hashes are recorded separately from the library revision.
 
 The creation profile adds options, process modes, historical target references
 and an opaque recovery owner. Public fields on the constructor-hidden

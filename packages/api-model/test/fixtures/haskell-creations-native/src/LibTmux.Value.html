@@ -33,7 +33,7 @@
 </span><span id="line-33"></span><span class="hs-comment">-- are checked separately. Compare dimensions directly or use 'dimensionValue'</span><span>
 </span><span id="line-34"></span><span class="hs-comment">-- with an integer literal.</span><span>
 </span><span id="line-35"></span><span class="hs-keyword">newtype</span><span> </span><span id="Dimension"><span class="annot"><a href="LibTmux.Value.html#Dimension"><span class="hs-identifier hs-var">Dimension</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Dimension"><span class="annot"><a href="LibTmux.Value.html#Dimension"><span class="hs-identifier hs-var">Dimension</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span>
-</span><span id="line-36"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679149510"><span id="local-6989586621679149514"><span class="annot"><span class="annottext">Dimension -&gt; Dimension -&gt; Bool
+</span><span id="line-36"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679146078"><span id="local-6989586621679146082"><span class="annot"><span class="annottext">Dimension -&gt; Dimension -&gt; Bool
 (Dimension -&gt; Dimension -&gt; Bool)
 -&gt; (Dimension -&gt; Dimension -&gt; Bool) -&gt; Eq Dimension
 forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
@@ -41,7 +41,7 @@ $c== :: Dimension -&gt; Dimension -&gt; Bool
 == :: Dimension -&gt; Dimension -&gt; Bool
 $c/= :: Dimension -&gt; Dimension -&gt; Bool
 /= :: Dimension -&gt; Dimension -&gt; Bool
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679149521"><span id="local-6989586621679149524"><span id="local-6989586621679149527"><span id="local-6989586621679149531"><span id="local-6989586621679149534"><span id="local-6989586621679149537"><span id="local-6989586621679149540"><span class="annot"><span class="annottext">Eq Dimension
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679146089"><span id="local-6989586621679146092"><span id="local-6989586621679146095"><span id="local-6989586621679146099"><span id="local-6989586621679146102"><span id="local-6989586621679146105"><span id="local-6989586621679146108"><span class="annot"><span class="annottext">Eq Dimension
 Eq Dimension =&gt;
 (Dimension -&gt; Dimension -&gt; Ordering)
 -&gt; (Dimension -&gt; Dimension -&gt; Bool)
@@ -78,7 +78,7 @@ $cmax :: Dimension -&gt; Dimension -&gt; Dimension
 max :: Dimension -&gt; Dimension -&gt; Dimension
 $cmin :: Dimension -&gt; Dimension -&gt; Dimension
 min :: Dimension -&gt; Dimension -&gt; Dimension
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679149548"><span id="local-6989586621679149554"><span id="local-6989586621679149558"><span class="annot"><span class="annottext">Int -&gt; Dimension -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679146116"><span id="local-6989586621679146122"><span id="local-6989586621679146126"><span class="annot"><span class="annottext">Int -&gt; Dimension -&gt; ShowS
 [Dimension] -&gt; ShowS
 Dimension -&gt; String
 (Int -&gt; Dimension -&gt; ShowS)
@@ -94,7 +94,7 @@ show :: Dimension -&gt; String
 $cshowList :: [Dimension] -&gt; ShowS
 showList :: [Dimension] -&gt; ShowS
 </span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
-</span><span id="line-37"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">newtype</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679149563"><span class="annot"><span class="annottext">Dimension -&gt; ()
+</span><span id="line-37"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">newtype</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679146131"><span class="annot"><span class="annottext">Dimension -&gt; ()
 (Dimension -&gt; ()) -&gt; NFData Dimension
 forall a. (a -&gt; ()) -&gt; NFData a
 $crnf :: Dimension -&gt; ()
@@ -104,7 +104,7 @@ rnf :: Dimension -&gt; ()
 </span><span id="line-39"></span><span class="hs-comment">-- | Nonnegative index of a window link within a session, not a physical window ID.</span><span>
 </span><span id="line-40"></span><span class="hs-comment">-- Construct with 'mkWindowIndex'; read with 'windowIndexValue'.</span><span>
 </span><span id="line-41"></span><span class="hs-keyword">newtype</span><span> </span><span id="WindowIndex"><span class="annot"><a href="LibTmux.Value.html#WindowIndex"><span class="hs-identifier hs-var">WindowIndex</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="WindowIndex"><span class="annot"><a href="LibTmux.Value.html#WindowIndex"><span class="hs-identifier hs-var">WindowIndex</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span>
-</span><span id="line-42"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679149572"><span id="local-6989586621679149575"><span class="annot"><span class="annottext">WindowIndex -&gt; WindowIndex -&gt; Bool
+</span><span id="line-42"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679146140"><span id="local-6989586621679146143"><span class="annot"><span class="annottext">WindowIndex -&gt; WindowIndex -&gt; Bool
 (WindowIndex -&gt; WindowIndex -&gt; Bool)
 -&gt; (WindowIndex -&gt; WindowIndex -&gt; Bool) -&gt; Eq WindowIndex
 forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
@@ -112,7 +112,7 @@ $c== :: WindowIndex -&gt; WindowIndex -&gt; Bool
 == :: WindowIndex -&gt; WindowIndex -&gt; Bool
 $c/= :: WindowIndex -&gt; WindowIndex -&gt; Bool
 /= :: WindowIndex -&gt; WindowIndex -&gt; Bool
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679149581"><span id="local-6989586621679149584"><span id="local-6989586621679149587"><span id="local-6989586621679149591"><span id="local-6989586621679149594"><span id="local-6989586621679149597"><span id="local-6989586621679149600"><span class="annot"><span class="annottext">Eq WindowIndex
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679146149"><span id="local-6989586621679146152"><span id="local-6989586621679146155"><span id="local-6989586621679146159"><span id="local-6989586621679146162"><span id="local-6989586621679146165"><span id="local-6989586621679146168"><span class="annot"><span class="annottext">Eq WindowIndex
 Eq WindowIndex =&gt;
 (WindowIndex -&gt; WindowIndex -&gt; Ordering)
 -&gt; (WindowIndex -&gt; WindowIndex -&gt; Bool)
@@ -149,7 +149,7 @@ $cmax :: WindowIndex -&gt; WindowIndex -&gt; WindowIndex
 max :: WindowIndex -&gt; WindowIndex -&gt; WindowIndex
 $cmin :: WindowIndex -&gt; WindowIndex -&gt; WindowIndex
 min :: WindowIndex -&gt; WindowIndex -&gt; WindowIndex
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679149603"><span id="local-6989586621679149607"><span id="local-6989586621679149611"><span class="annot"><span class="annottext">Int -&gt; WindowIndex -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679146171"><span id="local-6989586621679146175"><span id="local-6989586621679146179"><span class="annot"><span class="annottext">Int -&gt; WindowIndex -&gt; ShowS
 [WindowIndex] -&gt; ShowS
 WindowIndex -&gt; String
 (Int -&gt; WindowIndex -&gt; ShowS)
@@ -165,7 +165,7 @@ show :: WindowIndex -&gt; String
 $cshowList :: [WindowIndex] -&gt; ShowS
 showList :: [WindowIndex] -&gt; ShowS
 </span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
-</span><span id="line-43"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">newtype</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679149614"><span class="annot"><span class="annottext">WindowIndex -&gt; ()
+</span><span id="line-43"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">newtype</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679146182"><span class="annot"><span class="annottext">WindowIndex -&gt; ()
 (WindowIndex -&gt; ()) -&gt; NFData WindowIndex
 forall a. (a -&gt; ()) -&gt; NFData a
 $crnf :: WindowIndex -&gt; ()
@@ -175,7 +175,7 @@ rnf :: WindowIndex -&gt; ()
 </span><span id="line-45"></span><span class="hs-comment">-- | Nonnegative pane index within a window, not a pane ID.</span><span>
 </span><span id="line-46"></span><span class="hs-comment">-- Construct with 'mkPaneIndex'; read with 'paneIndexValue'.</span><span>
 </span><span id="line-47"></span><span class="hs-keyword">newtype</span><span> </span><span id="PaneIndex"><span class="annot"><a href="LibTmux.Value.html#PaneIndex"><span class="hs-identifier hs-var">PaneIndex</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="PaneIndex"><span class="annot"><a href="LibTmux.Value.html#PaneIndex"><span class="hs-identifier hs-var">PaneIndex</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span>
-</span><span id="line-48"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679149620"><span id="local-6989586621679149623"><span class="annot"><span class="annottext">PaneIndex -&gt; PaneIndex -&gt; Bool
+</span><span id="line-48"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679146188"><span id="local-6989586621679146191"><span class="annot"><span class="annottext">PaneIndex -&gt; PaneIndex -&gt; Bool
 (PaneIndex -&gt; PaneIndex -&gt; Bool)
 -&gt; (PaneIndex -&gt; PaneIndex -&gt; Bool) -&gt; Eq PaneIndex
 forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
@@ -183,7 +183,7 @@ $c== :: PaneIndex -&gt; PaneIndex -&gt; Bool
 == :: PaneIndex -&gt; PaneIndex -&gt; Bool
 $c/= :: PaneIndex -&gt; PaneIndex -&gt; Bool
 /= :: PaneIndex -&gt; PaneIndex -&gt; Bool
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679149629"><span id="local-6989586621679149632"><span id="local-6989586621679149635"><span id="local-6989586621679149639"><span id="local-6989586621679149642"><span id="local-6989586621679149645"><span id="local-6989586621679149648"><span class="annot"><span class="annottext">Eq PaneIndex
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679146197"><span id="local-6989586621679146200"><span id="local-6989586621679146203"><span id="local-6989586621679146207"><span id="local-6989586621679146210"><span id="local-6989586621679146213"><span id="local-6989586621679146216"><span class="annot"><span class="annottext">Eq PaneIndex
 Eq PaneIndex =&gt;
 (PaneIndex -&gt; PaneIndex -&gt; Ordering)
 -&gt; (PaneIndex -&gt; PaneIndex -&gt; Bool)
@@ -220,7 +220,7 @@ $cmax :: PaneIndex -&gt; PaneIndex -&gt; PaneIndex
 max :: PaneIndex -&gt; PaneIndex -&gt; PaneIndex
 $cmin :: PaneIndex -&gt; PaneIndex -&gt; PaneIndex
 min :: PaneIndex -&gt; PaneIndex -&gt; PaneIndex
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679149651"><span id="local-6989586621679149655"><span id="local-6989586621679149659"><span class="annot"><span class="annottext">Int -&gt; PaneIndex -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679146219"><span id="local-6989586621679146223"><span id="local-6989586621679146227"><span class="annot"><span class="annottext">Int -&gt; PaneIndex -&gt; ShowS
 [PaneIndex] -&gt; ShowS
 PaneIndex -&gt; String
 (Int -&gt; PaneIndex -&gt; ShowS)
@@ -236,7 +236,7 @@ show :: PaneIndex -&gt; String
 $cshowList :: [PaneIndex] -&gt; ShowS
 showList :: [PaneIndex] -&gt; ShowS
 </span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
-</span><span id="line-49"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">newtype</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679149662"><span class="annot"><span class="annottext">PaneIndex -&gt; ()
+</span><span id="line-49"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">newtype</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679146230"><span class="annot"><span class="annottext">PaneIndex -&gt; ()
 (PaneIndex -&gt; ()) -&gt; NFData PaneIndex
 forall a. (a -&gt; ()) -&gt; NFData a
 $crnf :: PaneIndex -&gt; ()
@@ -247,7 +247,7 @@ rnf :: PaneIndex -&gt; ()
 </span><span id="line-52"></span><span class="hs-keyword">data</span><span> </span><span id="ValueError"><span class="annot"><a href="LibTmux.Value.html#ValueError"><span class="hs-identifier hs-var">ValueError</span></a></span></span><span>
 </span><span id="line-53"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="NonPositiveDimension"><span class="annot"><a href="LibTmux.Value.html#NonPositiveDimension"><span class="hs-identifier hs-var">NonPositiveDimension</span></a></span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span> </span><span class="annot"><span class="hs-comment">-- ^ The supplied dimension was zero or negative.</span></span><span>
 </span><span id="line-54"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="NegativeIndex"><span class="annot"><a href="LibTmux.Value.html#NegativeIndex"><span class="hs-identifier hs-var">NegativeIndex</span></a></span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span> </span><span class="annot"><span class="hs-comment">-- ^ The supplied contextual index was negative.</span></span><span>
-</span><span id="line-55"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679149669"><span id="local-6989586621679149676"><span class="annot"><span class="annottext">ValueError -&gt; ValueError -&gt; Bool
+</span><span id="line-55"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679146237"><span id="local-6989586621679146244"><span class="annot"><span class="annottext">ValueError -&gt; ValueError -&gt; Bool
 (ValueError -&gt; ValueError -&gt; Bool)
 -&gt; (ValueError -&gt; ValueError -&gt; Bool) -&gt; Eq ValueError
 forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
@@ -255,7 +255,7 @@ $c== :: ValueError -&gt; ValueError -&gt; Bool
 == :: ValueError -&gt; ValueError -&gt; Bool
 $c/= :: ValueError -&gt; ValueError -&gt; Bool
 /= :: ValueError -&gt; ValueError -&gt; Bool
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679149680"><span id="local-6989586621679149686"><span id="local-6989586621679149690"><span class="annot"><span class="annottext">Int -&gt; ValueError -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679146248"><span id="local-6989586621679146254"><span id="local-6989586621679146258"><span class="annot"><span class="annottext">Int -&gt; ValueError -&gt; ShowS
 [ValueError] -&gt; ShowS
 ValueError -&gt; String
 (Int -&gt; ValueError -&gt; ShowS)
@@ -275,84 +275,84 @@ showList :: [ValueError] -&gt; ShowS
 </span><span id="line-57"></span><span class="annot"><span class="hs-comment">-- | Construct a positive dimension without applying a command-specific maximum.</span></span><span>
 </span><span id="line-58"></span><span class="annot"><a href="LibTmux.Value.html#mkDimension"><span class="hs-identifier hs-type">mkDimension</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><a href="LibTmux.Value.html#ValueError"><span class="hs-identifier hs-type">ValueError</span></a></span><span> </span><span class="annot"><a href="LibTmux.Value.html#Dimension"><span class="hs-identifier hs-type">Dimension</span></a></span><span>
 </span><span id="line-59"></span><span id="mkDimension"><span class="annot"><span class="annottext">mkDimension :: Integer -&gt; Either ValueError Dimension
-</span><a href="LibTmux.Value.html#mkDimension"><span class="hs-identifier hs-var hs-var">mkDimension</span></a></span></span><span> </span><span id="local-6989586621679149692"><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679149692"><span class="hs-identifier hs-var">value</span></a></span></span><span>
+</span><a href="LibTmux.Value.html#mkDimension"><span class="hs-identifier hs-var hs-var">mkDimension</span></a></span></span><span> </span><span id="local-6989586621679146260"><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621679146260"><span class="hs-identifier hs-var">value</span></a></span></span><span>
 </span><span id="line-60"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679149692"><span class="hs-identifier hs-var">value</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Integer -&gt; Bool
+</span><a href="#local-6989586621679146260"><span class="hs-identifier hs-var">value</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Integer -&gt; Bool
 forall a. Ord a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">&gt;</span></span><span> </span><span class="annot"><span class="annottext">Integer
 </span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Dimension -&gt; Either ValueError Dimension
 forall a b. b -&gt; Either a b
 </span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Integer -&gt; Dimension
 </span><a href="LibTmux.Value.html#Dimension"><span class="hs-identifier hs-var">Dimension</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679149692"><span class="hs-identifier hs-var">value</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679146260"><span class="hs-identifier hs-var">value</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-61"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ValueError -&gt; Either ValueError Dimension
 forall a b. a -&gt; Either a b
 </span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Integer -&gt; ValueError
 </span><a href="LibTmux.Value.html#NonPositiveDimension"><span class="hs-identifier hs-var">NonPositiveDimension</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679149692"><span class="hs-identifier hs-var">value</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679146260"><span class="hs-identifier hs-var">value</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-62"></span><span>
 </span><span id="line-63"></span><span class="annot"><span class="hs-comment">-- | Construct a nonnegative window-link index.</span></span><span>
 </span><span id="line-64"></span><span class="annot"><a href="LibTmux.Value.html#mkWindowIndex"><span class="hs-identifier hs-type">mkWindowIndex</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><a href="LibTmux.Value.html#ValueError"><span class="hs-identifier hs-type">ValueError</span></a></span><span> </span><span class="annot"><a href="LibTmux.Value.html#WindowIndex"><span class="hs-identifier hs-type">WindowIndex</span></a></span><span>
 </span><span id="line-65"></span><span id="mkWindowIndex"><span class="annot"><span class="annottext">mkWindowIndex :: Integer -&gt; Either ValueError WindowIndex
-</span><a href="LibTmux.Value.html#mkWindowIndex"><span class="hs-identifier hs-var hs-var">mkWindowIndex</span></a></span></span><span> </span><span id="local-6989586621679149693"><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679149693"><span class="hs-identifier hs-var">value</span></a></span></span><span>
+</span><a href="LibTmux.Value.html#mkWindowIndex"><span class="hs-identifier hs-var hs-var">mkWindowIndex</span></a></span></span><span> </span><span id="local-6989586621679146261"><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621679146261"><span class="hs-identifier hs-var">value</span></a></span></span><span>
 </span><span id="line-66"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679149693"><span class="hs-identifier hs-var">value</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Integer -&gt; Bool
+</span><a href="#local-6989586621679146261"><span class="hs-identifier hs-var">value</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Integer -&gt; Bool
 forall a. Ord a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">&gt;=</span></span><span> </span><span class="annot"><span class="annottext">Integer
 </span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">WindowIndex -&gt; Either ValueError WindowIndex
 forall a b. b -&gt; Either a b
 </span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Integer -&gt; WindowIndex
 </span><a href="LibTmux.Value.html#WindowIndex"><span class="hs-identifier hs-var">WindowIndex</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679149693"><span class="hs-identifier hs-var">value</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679146261"><span class="hs-identifier hs-var">value</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-67"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ValueError -&gt; Either ValueError WindowIndex
 forall a b. a -&gt; Either a b
 </span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Integer -&gt; ValueError
 </span><a href="LibTmux.Value.html#NegativeIndex"><span class="hs-identifier hs-var">NegativeIndex</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679149693"><span class="hs-identifier hs-var">value</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679146261"><span class="hs-identifier hs-var">value</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-68"></span><span>
 </span><span id="line-69"></span><span class="annot"><span class="hs-comment">-- | Construct a nonnegative pane index.</span></span><span>
 </span><span id="line-70"></span><span class="annot"><a href="LibTmux.Value.html#mkPaneIndex"><span class="hs-identifier hs-type">mkPaneIndex</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><a href="LibTmux.Value.html#ValueError"><span class="hs-identifier hs-type">ValueError</span></a></span><span> </span><span class="annot"><a href="LibTmux.Value.html#PaneIndex"><span class="hs-identifier hs-type">PaneIndex</span></a></span><span>
 </span><span id="line-71"></span><span id="mkPaneIndex"><span class="annot"><span class="annottext">mkPaneIndex :: Integer -&gt; Either ValueError PaneIndex
-</span><a href="LibTmux.Value.html#mkPaneIndex"><span class="hs-identifier hs-var hs-var">mkPaneIndex</span></a></span></span><span> </span><span id="local-6989586621679149694"><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679149694"><span class="hs-identifier hs-var">value</span></a></span></span><span>
+</span><a href="LibTmux.Value.html#mkPaneIndex"><span class="hs-identifier hs-var hs-var">mkPaneIndex</span></a></span></span><span> </span><span id="local-6989586621679146262"><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621679146262"><span class="hs-identifier hs-var">value</span></a></span></span><span>
 </span><span id="line-72"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679149694"><span class="hs-identifier hs-var">value</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Integer -&gt; Bool
+</span><a href="#local-6989586621679146262"><span class="hs-identifier hs-var">value</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Integer -&gt; Bool
 forall a. Ord a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">&gt;=</span></span><span> </span><span class="annot"><span class="annottext">Integer
 </span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">PaneIndex -&gt; Either ValueError PaneIndex
 forall a b. b -&gt; Either a b
 </span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Integer -&gt; PaneIndex
 </span><a href="LibTmux.Value.html#PaneIndex"><span class="hs-identifier hs-var">PaneIndex</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679149694"><span class="hs-identifier hs-var">value</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679146262"><span class="hs-identifier hs-var">value</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-73"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ValueError -&gt; Either ValueError PaneIndex
 forall a b. a -&gt; Either a b
 </span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Integer -&gt; ValueError
 </span><a href="LibTmux.Value.html#NegativeIndex"><span class="hs-identifier hs-var">NegativeIndex</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679149694"><span class="hs-identifier hs-var">value</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679146262"><span class="hs-identifier hs-var">value</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-74"></span><span>
 </span><span id="line-75"></span><span class="annot"><span class="hs-comment">-- | Read a dimension as a mathematical integer, without narrowing conversion.</span></span><span>
 </span><span id="line-76"></span><span class="annot"><a href="LibTmux.Value.html#dimensionValue"><span class="hs-identifier hs-type">dimensionValue</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Value.html#Dimension"><span class="hs-identifier hs-type">Dimension</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span>
 </span><span id="line-77"></span><span id="dimensionValue"><span class="annot"><span class="annottext">dimensionValue :: Dimension -&gt; Integer
-</span><a href="LibTmux.Value.html#dimensionValue"><span class="hs-identifier hs-var hs-var">dimensionValue</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Value.html#Dimension"><span class="hs-identifier hs-type">Dimension</span></a></span><span> </span><span id="local-6989586621679149695"><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679149695"><span class="hs-identifier hs-var">value</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679149695"><span class="hs-identifier hs-var">value</span></a></span><span>
+</span><a href="LibTmux.Value.html#dimensionValue"><span class="hs-identifier hs-var hs-var">dimensionValue</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Value.html#Dimension"><span class="hs-identifier hs-type">Dimension</span></a></span><span> </span><span id="local-6989586621679146263"><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621679146263"><span class="hs-identifier hs-var">value</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621679146263"><span class="hs-identifier hs-var">value</span></a></span><span>
 </span><span id="line-78"></span><span>
 </span><span id="line-79"></span><span class="annot"><span class="hs-comment">-- | Read a window-link index as a mathematical integer.</span></span><span>
 </span><span id="line-80"></span><span class="annot"><a href="LibTmux.Value.html#windowIndexValue"><span class="hs-identifier hs-type">windowIndexValue</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Value.html#WindowIndex"><span class="hs-identifier hs-type">WindowIndex</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span>
 </span><span id="line-81"></span><span id="windowIndexValue"><span class="annot"><span class="annottext">windowIndexValue :: WindowIndex -&gt; Integer
-</span><a href="LibTmux.Value.html#windowIndexValue"><span class="hs-identifier hs-var hs-var">windowIndexValue</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Value.html#WindowIndex"><span class="hs-identifier hs-type">WindowIndex</span></a></span><span> </span><span id="local-6989586621679149696"><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679149696"><span class="hs-identifier hs-var">value</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679149696"><span class="hs-identifier hs-var">value</span></a></span><span>
+</span><a href="LibTmux.Value.html#windowIndexValue"><span class="hs-identifier hs-var hs-var">windowIndexValue</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Value.html#WindowIndex"><span class="hs-identifier hs-type">WindowIndex</span></a></span><span> </span><span id="local-6989586621679146264"><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621679146264"><span class="hs-identifier hs-var">value</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621679146264"><span class="hs-identifier hs-var">value</span></a></span><span>
 </span><span id="line-82"></span><span>
 </span><span id="line-83"></span><span class="annot"><span class="hs-comment">-- | Read a pane index as a mathematical integer.</span></span><span>
 </span><span id="line-84"></span><span class="annot"><a href="LibTmux.Value.html#paneIndexValue"><span class="hs-identifier hs-type">paneIndexValue</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Value.html#PaneIndex"><span class="hs-identifier hs-type">PaneIndex</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span>
 </span><span id="line-85"></span><span id="paneIndexValue"><span class="annot"><span class="annottext">paneIndexValue :: PaneIndex -&gt; Integer
-</span><a href="LibTmux.Value.html#paneIndexValue"><span class="hs-identifier hs-var hs-var">paneIndexValue</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Value.html#PaneIndex"><span class="hs-identifier hs-type">PaneIndex</span></a></span><span> </span><span id="local-6989586621679149697"><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679149697"><span class="hs-identifier hs-var">value</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Integer
-</span><a href="#local-6989586621679149697"><span class="hs-identifier hs-var">value</span></a></span><span>
+</span><a href="LibTmux.Value.html#paneIndexValue"><span class="hs-identifier hs-var hs-var">paneIndexValue</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Value.html#PaneIndex"><span class="hs-identifier hs-type">PaneIndex</span></a></span><span> </span><span id="local-6989586621679146265"><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621679146265"><span class="hs-identifier hs-var">value</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621679146265"><span class="hs-identifier hs-var">value</span></a></span><span>
 </span><span id="line-86"></span></pre></body></html>

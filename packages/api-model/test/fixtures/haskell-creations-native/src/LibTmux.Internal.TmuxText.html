@@ -19,7 +19,7 @@
 </span><span id="line-19"></span><span class="hs-comment">-- String literals use UTF-8; byte constructors also admit non-text data.</span><span>
 </span><span id="line-20"></span><span class="hs-comment">-- Conversion functions are exposed in &quot;LibTmux.Snapshot&quot;.</span><span>
 </span><span id="line-21"></span><span class="hs-keyword">newtype</span><span> </span><span id="TmuxText"><span class="annot"><a href="LibTmux.Internal.TmuxText.html#TmuxText"><span class="hs-identifier hs-var">TmuxText</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="TmuxText"><span class="annot"><a href="LibTmux.Internal.TmuxText.html#TmuxText"><span class="hs-identifier hs-var">TmuxText</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">ShortByteString</span></span><span>
-</span><span id="line-22"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679149387"><span id="local-6989586621679149391"><span class="annot"><span class="annottext">TmuxText -&gt; TmuxText -&gt; Bool
+</span><span id="line-22"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679145955"><span id="local-6989586621679145959"><span class="annot"><span class="annottext">TmuxText -&gt; TmuxText -&gt; Bool
 (TmuxText -&gt; TmuxText -&gt; Bool)
 -&gt; (TmuxText -&gt; TmuxText -&gt; Bool) -&gt; Eq TmuxText
 forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
@@ -27,7 +27,7 @@ $c== :: TmuxText -&gt; TmuxText -&gt; Bool
 == :: TmuxText -&gt; TmuxText -&gt; Bool
 $c/= :: TmuxText -&gt; TmuxText -&gt; Bool
 /= :: TmuxText -&gt; TmuxText -&gt; Bool
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679149398"><span id="local-6989586621679149402"><span id="local-6989586621679149405"><span id="local-6989586621679149409"><span id="local-6989586621679149412"><span id="local-6989586621679149415"><span id="local-6989586621679149418"><span class="annot"><span class="annottext">Eq TmuxText
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679145966"><span id="local-6989586621679145970"><span id="local-6989586621679145973"><span id="local-6989586621679145977"><span id="local-6989586621679145980"><span id="local-6989586621679145983"><span id="local-6989586621679145986"><span class="annot"><span class="annottext">Eq TmuxText
 Eq TmuxText =&gt;
 (TmuxText -&gt; TmuxText -&gt; Ordering)
 -&gt; (TmuxText -&gt; TmuxText -&gt; Bool)
@@ -64,7 +64,7 @@ $cmax :: TmuxText -&gt; TmuxText -&gt; TmuxText
 max :: TmuxText -&gt; TmuxText -&gt; TmuxText
 $cmin :: TmuxText -&gt; TmuxText -&gt; TmuxText
 min :: TmuxText -&gt; TmuxText -&gt; TmuxText
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679149426"><span id="local-6989586621679149432"><span id="local-6989586621679149436"><span class="annot"><span class="annottext">Int -&gt; TmuxText -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679145994"><span id="local-6989586621679146000"><span id="local-6989586621679146004"><span class="annot"><span class="annottext">Int -&gt; TmuxText -&gt; ShowS
 [TmuxText] -&gt; ShowS
 TmuxText -&gt; String
 (Int -&gt; TmuxText -&gt; ShowS)
@@ -80,15 +80,15 @@ showList :: [TmuxText] -&gt; ShowS
 </span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
 </span><span id="line-23"></span><span>
 </span><span id="line-24"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><span class="hs-identifier hs-type">NFData</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.TmuxText.html#TmuxText"><span class="hs-identifier hs-type">TmuxText</span></a></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-25"></span><span>  </span><span id="local-6989586621679149445"><span class="annot"><span class="annottext">rnf :: TmuxText -&gt; ()
-</span><span class="hs-identifier hs-var hs-var hs-var">rnf</span></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.TmuxText.html#TmuxText"><span class="hs-identifier hs-type">TmuxText</span></a></span><span> </span><span id="local-6989586621679149446"><span class="annot"><span class="annottext">ShortByteString
-</span><a href="#local-6989586621679149446"><span class="hs-identifier hs-var">bytes</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ShortByteString -&gt; ()
+</span><span id="line-25"></span><span>  </span><span id="local-6989586621679146013"><span class="annot"><span class="annottext">rnf :: TmuxText -&gt; ()
+</span><span class="hs-identifier hs-var hs-var hs-var">rnf</span></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.TmuxText.html#TmuxText"><span class="hs-identifier hs-type">TmuxText</span></a></span><span> </span><span id="local-6989586621679146014"><span class="annot"><span class="annottext">ShortByteString
+</span><a href="#local-6989586621679146014"><span class="hs-identifier hs-var">bytes</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ShortByteString -&gt; ()
 forall a. NFData a =&gt; a -&gt; ()
 </span><span class="hs-identifier hs-var">rnf</span></span><span> </span><span class="annot"><span class="annottext">ShortByteString
-</span><a href="#local-6989586621679149446"><span class="hs-identifier hs-var">bytes</span></a></span><span>
+</span><a href="#local-6989586621679146014"><span class="hs-identifier hs-var">bytes</span></a></span><span>
 </span><span id="line-26"></span><span>
 </span><span id="line-27"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IsString</span></span><span> </span><span class="annot"><a href="LibTmux.Internal.TmuxText.html#TmuxText"><span class="hs-identifier hs-type">TmuxText</span></a></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-28"></span><span>  </span><span id="local-6989586621679149450"><span class="annot"><span class="annottext">fromString :: String -&gt; TmuxText
+</span><span id="line-28"></span><span>  </span><span id="local-6989586621679146018"><span class="annot"><span class="annottext">fromString :: String -&gt; TmuxText
 </span><span class="hs-identifier hs-var hs-var hs-var">fromString</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; TmuxText
 </span><a href="LibTmux.Internal.TmuxText.html#fromBytes"><span class="hs-identifier hs-var">fromBytes</span></a></span><span> </span><span class="annot"><span class="annottext">(ByteString -&gt; TmuxText)
 -&gt; (String -&gt; ByteString) -&gt; String -&gt; TmuxText
@@ -112,10 +112,10 @@ forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
 </span><span id="line-34"></span><span class="annot"><span class="hs-comment">-- | Return the exact reported bytes in a strict buffer.</span></span><span>
 </span><span id="line-35"></span><span class="annot"><a href="LibTmux.Internal.TmuxText.html#toBytes"><span class="hs-identifier hs-type">toBytes</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.TmuxText.html#TmuxText"><span class="hs-identifier hs-type">TmuxText</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ByteString</span></span><span>
 </span><span id="line-36"></span><span id="toBytes"><span class="annot"><span class="annottext">toBytes :: TmuxText -&gt; ByteString
-</span><a href="LibTmux.Internal.TmuxText.html#toBytes"><span class="hs-identifier hs-var hs-var">toBytes</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.TmuxText.html#TmuxText"><span class="hs-identifier hs-type">TmuxText</span></a></span><span> </span><span id="local-6989586621679149455"><span class="annot"><span class="annottext">ShortByteString
-</span><a href="#local-6989586621679149455"><span class="hs-identifier hs-var">bytes</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ShortByteString -&gt; ByteString
+</span><a href="LibTmux.Internal.TmuxText.html#toBytes"><span class="hs-identifier hs-var hs-var">toBytes</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LibTmux.Internal.TmuxText.html#TmuxText"><span class="hs-identifier hs-type">TmuxText</span></a></span><span> </span><span id="local-6989586621679146023"><span class="annot"><span class="annottext">ShortByteString
+</span><a href="#local-6989586621679146023"><span class="hs-identifier hs-var">bytes</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ShortByteString -&gt; ByteString
 </span><span class="hs-identifier hs-var">Short.fromShort</span></span><span> </span><span class="annot"><span class="annottext">ShortByteString
-</span><a href="#local-6989586621679149455"><span class="hs-identifier hs-var">bytes</span></a></span><span>
+</span><a href="#local-6989586621679146023"><span class="hs-identifier hs-var">bytes</span></a></span><span>
 </span><span id="line-37"></span><span>
 </span><span id="line-38"></span><span class="annot"><span class="hs-comment">-- | Decode as UTF-8; invalid bytes return 'UnicodeException' without replacement.</span></span><span>
 </span><span id="line-39"></span><span class="annot"><a href="LibTmux.Internal.TmuxText.html#decodeUtf8"><span class="hs-identifier hs-type">decodeUtf8</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LibTmux.Internal.TmuxText.html#TmuxText"><span class="hs-identifier hs-type">TmuxText</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">UnicodeException</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
