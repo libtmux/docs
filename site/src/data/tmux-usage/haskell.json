@@ -94,7 +94,7 @@
   ],
   "port": "haskell",
   "repo": "libtmux/libtmux-haskell",
-  "revision": "00b47e6d94b181b5fd94e585be1e9ecefbf93acb",
+  "revision": "663e212622a02aa74a9bdc8ff71e2b45fcb1d4d5",
   "schemaVersion": 1,
   "symbols": {
     "LibTmux.Query#v:fetch": [
