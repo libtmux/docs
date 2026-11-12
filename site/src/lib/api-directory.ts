@@ -56,6 +56,8 @@ const BY_PORT: Record<string, RegExp[]> = {
   lua: [CODE_NAME],
   // YARD: {#session}, {Server.open}, {Selection#where?} and {#initialize Server.new}. A label holds no code span.
   ruby: [/\{(?:#[A-Za-z_]\w*[?!=]?|(?:::)?[A-Z]\w*(?:::[A-Z]\w*)*(?:[#.][A-Za-z_]\w*[?!=]?)?)(?:[ \t]+(?=[\w"'([])[^}\n`]*[^}\s`])?\}/],
+  // Haddock links reach the shell as the reST role the adapter writes: :obj:`name <Module#v:name>`.
+  haskell: [/:obj:`[^`\n]+`/],
   // Documenter: [`name`](@ref), [`name`](@ref Module.name) and [text](@ref).
   julia: [/\[[^\]\n]+\]\(@ref(?:\s[^)\n]*)?\)/],
   // Native help names a cmdlet as a bare word or in a code span.

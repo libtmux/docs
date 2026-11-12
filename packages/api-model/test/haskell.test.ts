@@ -46,7 +46,9 @@ describe('Haddock shared-model adapter', () => {
   it('keeps authored interlinks and examples and adds instance heads with their exact source links', () => {
     const model = extractHaskellArtifact(artifact)
     const module = model.symbols.find((symbol) => symbol.id === 'LibTmux.Id')!
-    expect(module.doc).toEqual(artifact.symbols.find((symbol: { id: string }) => symbol.id === module.id).doc)
+    const authored = artifact.symbols.find((symbol: { id: string }) => symbol.id === module.id).doc
+    expect(module.doc!.summary).toBe(authored.summary)
+    expect(module.doc!.body!.startsWith(`${authored.body}\n\n# What is on here\n\n`)).toBe(true)
     const session = model.symbols.find((symbol) => symbol.id === 'LibTmux.Id#t:SessionId')!
     expect(session.doc!.body).toContain('## Instances\n\n')
     expect(session.doc!.body).toContain('instance [Eq](https://hackage.haskell.org/package/base-4.22.0.0/docs/Data-Eq.html#t:Eq)')
@@ -55,6 +57,18 @@ describe('Haddock shared-model adapter', () => {
     expect(session.references).toContainEqual({ target: session.id, kind: 'type' })
     expect(model.symbols.find((symbol) => symbol.id === 'LibTmux.Id#v:parsePaneId')!.references).toEqual([
       { target: 'LibTmux.Id#t:IdError', kind: 'type' }, { target: 'LibTmux.Id#t:PaneId', kind: 'type' },
+    ])
+  })
+
+  it('appends a directory that lists each export group with its members in native order', () => {
+    const model = extractHaskellArtifact(artifact)
+    const module = model.symbols.find((symbol) => symbol.id === 'LibTmux.Id')!
+    const groups = artifact.modules.find((entry: { name: string }) => entry.name === 'LibTmux.Id').groups as { title: string; members: string[] }[]
+    const nameOf = (id: string) => id.split(/#[tv]:/)[1]
+    const directory = module.doc!.body!.split('# What is on here\n\n')[1]
+    expect(directory.split('\n\n')).toEqual([
+      'Its exports fall into these groups, in export-list order:',
+      ...groups.flatMap((group) => [`**${group.title}**`, group.members.map((id) => `:obj:\`${nameOf(id)} <${id}>\``).join(', ')]),
     ])
   })
 
