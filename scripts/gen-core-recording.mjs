@@ -218,7 +218,7 @@ function stepsOf({ before, entries }) {
         const cut = [described.tmux, described.stdout, described.stderr].some((text) => text.length > LONG)
         return { ...described, tmux: short(described.tmux), stdout: short(described.stdout), stderr: short(described.stderr), ...(cut ? { shortened: true } : {}) }
       }),
-      ...(notifications.length ? { notifications: notifications.map(short) } : {}),
+      ...(notifications.length ? { notifications: notifications.map((line) => short(recipe.redact?.(line) ?? line)) } : {}),
       transient, ...(step.stopsServer ? { stopsServer: true } : {}), tmux: final,
     })
     earlier = final

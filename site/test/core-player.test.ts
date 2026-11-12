@@ -92,6 +92,36 @@ describe('finding a call in a Lisp, Erlang or Perl program', () => {
   })
 })
 
+describe('finding a call in an OCaml program', () => {
+  const lines = (...text: string[]) => text.join('\n')
+  const c = { comment: '//', quotes: '"\'`' }
+
+  it('reads `(* *)` as an OCaml comment that nests, runs over lines and holds strings, and `\'a` as a type variable', () => {
+    const ocaml = lines(
+      'let linked =',
+      '  get',
+      '    (Client.create_session client ~name:"it\'s" (Name.v "a)" (* ) *)',
+      '       ~spawn:(fun (x : \'a) -> x)))',
+      'in',
+      'let pair = Client.pair client (Name.v \'(\' \')\' \'\\\'\' \'"\' "x" (* ) multi',
+      '  (* nested ) *) ) "*)" *)',
+      '  "y")',
+    )
+    expect(statementLines(ocaml, 'Client.create_session', syntaxOf('ocaml'))).toEqual([3, 4])
+    expect(statementLines(ocaml, 'Client.create_session', c), 'C reads `(*` as a bracket and `\'a)` as a string').not.toEqual([3, 4])
+    expect(statementLines(ocaml, 'Client.pair', syntaxOf('ocaml'))).toEqual([6, 8])
+    expect(statementLines(ocaml, 'Client.pair', c)).not.toEqual([6, 8])
+    expect(statementLines(lines('Client.map client (fun (x : \'a) ->', '  x) (* ( *)', 'let g = 1'), 'Client.map', syntaxOf('ocaml'))).toEqual([1, 2])
+    expect(statementLines(lines('Client.map client (fun (x : \'a) ->', '  x) (* ( *)', 'let g = 1'), 'Client.map', c)).toBeUndefined()
+  })
+
+  it('does not count a bracket in an OCaml quoted string', () => {
+    const ocaml = lines('Client.run client {|a ( |} {id|b ( |} |id} (f ())')
+    expect(statementLines(ocaml, 'Client.run', syntaxOf('ocaml'))).toEqual([1, 1])
+    expect(statementLines(ocaml, 'Client.run', c)).toBeUndefined()
+  })
+})
+
 describe('the calls each view of the Go program plays', () => {
   it('plays the three calls of the short program and the fourth, Kill, once the program cleans up', async () => {
     const { capability } = await recorded()

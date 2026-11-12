@@ -1,4 +1,5 @@
-import { readFileSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { statementLines } from '../../../site/src/lib/core-statement.ts'
 import { resolveCheckout } from '../port-checkout.mjs'
@@ -44,6 +45,17 @@ export function capabilitySource(root, port, file) {
   return { code: program.content.replace(/\n$/, ''), file: file.split('/').at(-1), revision: program.revision, repository: program.repository, expectedOutput: output.content }
 }
 
+/**
+ * Run the sandbox's `tmux` shim under bun instead of node when bun is installed. A library that gives each operation
+ * a deadline of a second or two (libtmux-ocaml's `deadline exceeded`) makes several tmux invocations in it, and
+ * node's start-up alone took most of that on a loaded host; bun starts in a tenth of the time.
+ */
+export function fastShim(sandbox) {
+  const script = join(sandbox, 'bin/tmux')
+  const runtime = execFileSync('sh', ['-c', 'command -v bun || command -v node'], { encoding: 'utf8' }).trim()
+  writeFileSync(script, readFileSync(script, 'utf8').replace(/^NODE=.*$/m, `NODE=${JSON.stringify(runtime)}`))
+}
+
 /** Where a port's checkout lives: its environment variable, or the port's own worktree. */
 export const checkoutOf = (port, env) => resolveCheckout(port, { env, order: ['worktree'] })
 
@@ -67,8 +79,14 @@ export function instrumentLines(source, steps, mark, syntax = '//') {
   return lines.join('\n')
 }
 
+/**
+ * A line the recorder added: it ends in `docs:mark`, closed by `*)` in a language whose only comment is `(* *)`
+ * (OCaml).
+ */
+const isMark = (line) => line.endsWith('docs:mark') || line.endsWith('docs:mark *)')
+
 /** The program as displayed, from an instrumented copy of it. */
-export const withoutMarks = (source) => source.split('\n').filter((line) => !line.endsWith('docs:mark')).join('\n')
+export const withoutMarks = (source) => source.split('\n').filter((line) => !isMark(line)).join('\n')
 
 /**
  * The marks a run sent against the step map. A step that repeats may arrive
