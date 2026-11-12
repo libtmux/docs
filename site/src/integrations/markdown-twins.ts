@@ -206,8 +206,12 @@ function renderedPage(html: string, preserveSchemas = false, pathname?: string) 
     for (const child of node.children ?? []) collectHeadings(child, node.tagName === 'section' ? node.properties?.id as string | undefined : undefined)
   }
   collectHeadings(main)
+  // A product's status bar sits under the header, outside `main`. Its twin leads with the same sentence.
+  const status = find(tree, (element) => element.properties?.dataProductNotice !== undefined)
+  if (status) prune(status, origin, undefined, preserveSchemas, url)
   prune(main, origin, heading, preserveSchemas, url)
-  const body = toMarkdown(toMdast(main as never), { extensions: [gfmToMarkdown()] })
+  const content = toMarkdown(toMdast(main as never), { extensions: [gfmToMarkdown()] })
+  const body = status ? `${toMarkdown(toMdast(status as never), { extensions: [gfmToMarkdown()] }).trim()}\n\n${content}` : content
   return { title, url, description, body, headings }
 }
 

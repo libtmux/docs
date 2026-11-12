@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto'
 import { parseFrontmatter } from '@astrojs/markdown-remark'
 import { Window, type Element as DomElement } from 'happy-dom'
 import { describe, expect, it } from 'vitest'
-import { CONCEPT_DESCRIPTION, PORTS, productAvailable, productDescription, productIsConcept, productInDevelopment, productStatus, workspaceOverviewNotice, type Port } from '../src/lib/ports'
+import { CONCEPT_DESCRIPTION, PORTS, hasPackageInstalls, productAvailable, productDescription, productIsConcept, productInDevelopment, productStatus, workspaceInstallGuidance, workspaceOverviewNotice, type Port } from '../src/lib/ports'
 import { proseSources } from '../../scripts/lib/api-destinations.mjs'
 import { REGISTRY } from '../src/lib/registry'
 import { LANG_TO_PORT } from '../src/plugins/remark-port-code.mjs'
@@ -188,6 +188,20 @@ function counterpartRoutes(port: string, path: string): Map<string, readonly str
       return [candidate.slug, [...new Set(offered.map((entry) => path === product && entry.data.aliases?.includes(path) ? path : docsPath(entry)))]] as const
     }).filter(([, routes]) => routes.length))
 }
+
+it('keeps the install guidance out of the status the overview reports', () => {
+  for (const port of PORTS.filter((entry) => productAvailable(entry, 'workspace'))) {
+    const guidance = workspaceInstallGuidance(port)
+    const notice = workspaceOverviewNotice(port)
+    if (!['local', 'published'].includes(port.workspaceCliAvailability!) || !port.workspaceCli) {
+      expect(guidance, `${port.slug} has no command to obtain`).toBeUndefined()
+      continue
+    }
+    expect(guidance, `${port.slug} install guidance`).not.toContain(CONCEPT_DESCRIPTION)
+    expect(notice?.body, `${port.slug} export keeps scope and guidance together`).toBe(productIsConcept(port, 'workspace') ? `${CONCEPT_DESCRIPTION} ${guidance}` : guidance)
+    expect(hasPackageInstalls(port, 'workspace'), `${port.slug} has an install section to hold the guidance`).toBe(true)
+  }
+})
 
 it('advertises workspace loaders with their declared command and development status', () => {
   for (const port of PORTS.filter((entry) => entry.workspaceCli)) {
@@ -443,16 +457,20 @@ it('finds no ancestry in a sidebar that does not mark the page, or that marks an
 })
 
 /**
- * The notice is an `Aside`, the same one the reference and the guides use,
- * so it is a `role=note` rather than a landmark with a name of its own. What
- * matters to a reader is that the page says so before its prose, in a block
- * set apart from it.
+ * A product's status is a dismissible bar under the header, the release bar's
+ * kind of notice, and never an admonition that opens the article.
  */
-function developmentStatus(document: Window['document'], path: string, concept: boolean): void {
-  const notes = [...document.querySelectorAll('[role="note"]')]
-  const status = notes.find((note) => (concept ? /concept example/i : /in development/i).test(note.textContent ?? ''))
-  expect(status, `${path} support scope or development status`).toBeDefined()
-  if (concept) expect(status!.textContent).toContain(CONCEPT_DESCRIPTION)
+function developmentStatus(document: Window['document'], path: string, concept: boolean, product: ProductPage['product']): void {
+  const bars = [...document.querySelectorAll('[data-product-notice]')]
+  expect(bars, `${path} support scope or development status`).toHaveLength(1)
+  const bar = bars[0]!
+  expect(bar.getAttribute('data-product-notice'), `${path} status`).toBe(`${product}-${concept ? 'concept' : 'in-development'}`)
+  expect(bar.closest('main, [data-pagefind-body]'), `${path} status sits outside the page body`).toBeNull()
+  expect(bar.querySelector('button[data-product-notice-dismiss]'), `${path} status is dismissible`).not.toBeNull()
+  if (concept) expect(bar.textContent).toContain(CONCEPT_DESCRIPTION)
+  const notes = [...document.querySelectorAll('main [role="note"]')]
+    .filter((note) => /^\s*(?:Workspace Manager|MCP)\s+(?:concept example|is in development)/i.test(note.textContent ?? ''))
+  expect(notes, `${path} opens with no status admonition`).toHaveLength(0)
 }
 
 async function redirectsTo(path: string, target: string): Promise<void> {
@@ -723,7 +741,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
   it.each(PORTS.filter((port) => !port.parentLibrary))('$name distinguishes unfinished products and groups workspace internals', async (port) => {
     for (const page of pages().filter((entry) => entry.port === port.slug)) await inspect(page.path, (document) => {
       if (productIsConcept(port, page.product) || productInDevelopment(port, page.product))
-        developmentStatus(document, page.path, productIsConcept(port, page.product))
+        developmentStatus(document, page.path, productIsConcept(port, page.product), page.product)
       const picker = document.querySelector('[data-surface-picker]')
       if (!productAvailable(port, page.product)) {
         expect(document.querySelector('article')!.textContent, `${page.path} availability`).toMatch(/not\s+published|no\s+published/i)
@@ -808,18 +826,20 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
           `${page.path} Internals remains reachable in the picker`).toBe(true)
       }
       if (page.product === 'workspace' && port.workspaceCli && productInDevelopment(port, 'workspace') && !page.section) {
-        const status = [...document.querySelectorAll('[role="note"]')]
-          .map((note) => note.textContent ?? '')
-          .find((text) => /concept example/i.test(text))
-        expect(status, `${page.path} concept scope`).toBeDefined()
+        // The scope is in the bar; how to obtain the command is in the install section, which the article keeps.
+        expect(document.querySelector('[data-product-notice]')?.getAttribute('data-product-notice'), `${page.path} concept scope`).toBe('workspace-concept')
         const article = document.querySelector('article')!.textContent
+        const install: string[] = []
+        for (let node = document.querySelector('article h2#install')?.nextElementSibling; node && node.tagName !== 'H2'; node = node.nextElementSibling) install.push(node.textContent ?? '')
+        const guidance = workspaceInstallGuidance(port)!
+        expect(install.join(' ').replace(/\s+/g, ' '), `${page.path} install guidance`).toContain(guidance.replaceAll('`', ''))
         if (port.workspaceCliAvailability === 'local') {
           expect(article, `${page.path} source installation`).toContain(port.workspaceCliRun
             ? 'from a source checkout; the installation guide lists the setup'
             : 'from the source revision in the installation guide')
         }
         expect(article, `${page.path} native CLI`).toContain(port.workspaceCli.split(/\s+/)[0])
-        expect(article.match(/concept example/gi), `${page.path} states scope once`).toHaveLength(1)
+        expect(article.match(/concept example/gi), `${page.path} states scope in the bar only`).toBeNull()
         const links = [...document.querySelectorAll('article a[href]')]
         const installation = documentsFor(page.port).has('workspace/guides/installation') ? 'guides/installation' : 'source-guide'
         expect(links.some((link) => new URL(link.getAttribute('href')!, urlFor(page.path)).pathname === urlFor(`${page.port}/${page.version}/workspace/${installation}/`).pathname), `${page.path} native installation`).toBe(true)
@@ -868,12 +888,12 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
               item: new URL(item.url!, 'https://libtmux.org').href,
             })))
         }
-        if (concept || productInDevelopment(port, page.product)) developmentStatus(document, samplePath, concept)
+        if (concept || productInDevelopment(port, page.product)) developmentStatus(document, samplePath, concept, page.product)
       })
       if (page.product !== 'mcp') continue
       const toolsPath = `${page.port}/${page.version}/mcp/tools/`
       const tools = await inspect(toolsPath, (document) => {
-        developmentStatus(document, toolsPath, concept)
+        developmentStatus(document, toolsPath, concept, 'mcp')
         return [...document.querySelectorAll('.api-index-card[id] > .api-index-card__link[href]')].map((link) => link.getAttribute('href')!)
       })
       expect(tools.length, `${toolsPath} protocol tools`).toBeGreaterThan(0)
@@ -883,7 +903,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
       }
       const toolPath = new URL(tools[0], urlFor(toolsPath)).pathname.slice(SITE_PREFIX.length + 1)
       await inspect(toolPath, (document) => {
-        developmentStatus(document, toolPath, concept)
+        developmentStatus(document, toolPath, concept, 'mcp')
         const input = [...document.querySelectorAll('details')]
           .find((detail) => detail.querySelector('summary')?.textContent === 'Input schema')
         expect(input, `${toolPath} input schema`).toBeDefined()

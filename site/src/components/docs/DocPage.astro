@@ -2,8 +2,9 @@
 import { getCollection, render, type CollectionEntry } from 'astro:content'
 import DocsLayout from '../../layouts/DocsLayout.astro'
 import { docsPath, proseHref, tmuxProsePath } from '../../lib/docs-paths'
-import { PORT_BY_SLUG, hasPackageInstalls, productApiPath, productAvailable, referenceUrl } from '../../lib/ports'
+import { PORT_BY_SLUG, hasPackageInstalls, productApiPath, productAvailable, referenceUrl, workspaceInstallGuidance } from '../../lib/ports'
 import DocCard from '../DocCard.astro'
+import ProseText from '../ProseText.astro'
 import CoreHome from '../CoreHome.astro'
 import { coreHomeHeadings } from '../../lib/core-home'
 import PortLinks from '../PortLinks.astro'
@@ -119,6 +120,8 @@ const isWorkspaceOverview = entry.data.product === 'workspace'
   && pagePath === 'workspace'
   && productIsAvailable
   && Boolean(port && hasPackageInstalls(PORT_BY_SLUG[port], 'workspace'))
+// How to obtain the command belongs beside the install picker, not in the page's status bar.
+const workspaceInstall = isWorkspaceOverview && port ? workspaceInstallGuidance(PORT_BY_SLUG[port]) : undefined
 const hasWorkspaceGuide = isWorkspaceOverview && all.some((page) => page.data.port === port
   && page.data.product === 'workspace' && docsPath(page) === 'workspace/source-guide')
 
@@ -288,6 +291,7 @@ const productIntro = isProductOverview && port && coreHome
     <>
       <h2 id="install">Install</h2>
       <p>Install the workspace package separately from the core library.</p>
+      {workspaceInstall && <ProseText text={workspaceInstall} port={port} />}
       <div class="not-prose">
         <PackageInstall ports={[port]} packageId="workspace" />
       </div>

@@ -4,7 +4,6 @@ import { parsePythonDoc } from '@libtmux/api-model/reference'
 import DocsLayout from '../../layouts/DocsLayout.astro'
 import ApiBadge from '../api/ApiBadge.astro'
 import { apiGlossaryHref } from '../../lib/api-glossary'
-import ProductNotice from '../ProductNotice.astro'
 import ApiPageContents from '../api/ApiPageContents.astro'
 import SymbolName from '../api/SymbolName.astro'
 import McpSchemaFields from './McpSchema.astro'
@@ -99,7 +98,7 @@ const summaries = new Map(await Promise.all(entries.map(async (entry) => [entry.
 ---
 <DocsLayout title={object ? title : `${info.name} MCP ${title}`} description={object ? plainSummary(object.description, port) : introductions[section]}
   inventoryId={`protocol:${object?.id ?? section}`}
-  port={port} version={version} pagePath={path} pageSource={pageSource} pagePorts={pagePorts}
+  port={port} statusProduct="mcp" version={version} pagePath={path} pageSource={pageSource} pagePorts={pagePorts}
   breadcrumbs={breadcrumbs} markdown="rendered" tableOfContents={false} indexNavigation={false} bare>
   <div class:list={['api-reference-layout grid', object && 'api-reference-layout--symbol']}>
     <div class="api-reference-content min-w-0">
@@ -108,7 +107,6 @@ const summaries = new Map(await Promise.all(entries.map(async (entry) => [entry.
         <h1 class="scroll-mt-24 text-2xl font-semibold tracking-tight">{object ? <code><SymbolName name={title} /></code> : title}</h1>
         {!object && <p class="mt-3">{introductions[section]}</p>}
       </header>
-      <ProductNotice port={port} product="mcp" />
       {object ? <>
         <nav class="api-section-links" aria-label="Reference sections" data-pagefind-ignore="all">{sections.map((entry, i) => <a href={`#${encodeURIComponent(entry.id)}`} data-api-section-link aria-current={i === 0 ? 'location' : undefined}>{entry.label}</a>)}</nav>
         <dl class="py gp-sphinx-api-container" data-inventory-owner={object.id} data-inventory-anchor={object.id}>

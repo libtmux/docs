@@ -4,6 +4,7 @@ import { dirname, join } from 'node:path'
 import { afterEach, expect, it, vi } from 'vitest'
 import { fromHtml } from 'hast-util-from-html'
 import { markdownTwins, writeMcpExports } from '../src/integrations/markdown-twins'
+import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 import { markdownDocument } from '../src/lib/markdown-twins'
 import { MCP_REFERENCE, mcpReferenceRoutes, renderToolDescription } from '../src/lib/mcp-reference'
 
@@ -20,7 +21,7 @@ const schema = { type: 'object', properties: { nested: {
 const escape = (text: string) => text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('"', '&quot;')
 const base = '/preview/en/go/v9-proof/'
 
-function fixture(run: (out: string, routes: ReturnType<typeof mcpReferenceRoutes>) => void, prose = '<p>The nested selection is required.</p>') {
+function fixture(run: (out: string, routes: ReturnType<typeof mcpReferenceRoutes>) => void, prose = '<p>The nested selection is required.</p>', beforeMain = '') {
   const out = mkdtempSync(join(tmpdir(), 'libtmux-mcp-exports-'))
   const write = (path: string, text: string) => { mkdirSync(dirname(path), { recursive: true }); writeFileSync(path, text) }
   const routes = mcpReferenceRoutes('go', {}, 'v9-proof')
@@ -34,7 +35,7 @@ function fixture(run: (out: string, routes: ReturnType<typeof mcpReferenceRoutes
 <link rel="canonical" href="https://libtmux.org/en/go/v0.46.2/${route.path}/">
 <link rel="alternate" type="text/markdown" data-twin="rendered" href="${base}${route.path}.md">
 <meta name="description" content="Resolved Go contract for ${route.toolName ?? 'catalog'}">
-</head><body><main><h1>${route.toolName ?? 'Go MCP tools'}</h1>
+</head><body>${beforeMain}<main><h1>${route.toolName ?? 'Go MCP tools'}</h1>
 <p>Resolved Go contract for ${route.toolName ?? 'catalog'}.</p>
 <p><a href="../">All tools</a> <a href="../${route.toolName ?? 'tools'}.json">JSON</a>
 ${source ? `<a href="https://github.com/${source.repo}/blob/${source.revision}/${source.file}">Source</a>` : ''}</p>
@@ -84,6 +85,25 @@ it.each(['en', 'ja'])('adds every selected-port MCP contract when the requested 
     expect(full).not.toContain('/py/')
     expect(full).not.toContain('/v0.46.2/')
   })
+})
+
+it('leads a protocol page twin with the status bar the page draws under its header, as it led with the admonition before', async () => {
+  const bar = await renderAstroTemplate(await loadAstroTemplate('components/ProductNotice.astro'), { props: { port: 'go', product: 'mcp' } })
+  expect(bar).toContain('data-product-notice="mcp-concept"')
+  fixture((out, routes) => {
+    vi.stubEnv('LIBTMUX_DOCS_PORT', 'go')
+    vi.stubEnv('LIBTMUX_DOCS_VERSION', 'v9-proof')
+    writeMcpExports(out, base, routes)
+    for (const { path } of routes) {
+      const twin = readFileSync(join(out, `${path}.md`), 'utf8')
+      const status = twin.indexOf('**Concept example** A working example of the core library. It can change without notice.')
+      expect(status, path).toBeGreaterThan(twin.indexOf('# '))
+      expect(status, `${path} precedes the page's prose`).toBeLessThan(twin.lastIndexOf('Resolved Go contract'))
+      expect(twin, path).toMatch(/\[What concept means\]\(https:\/\/libtmux\.org\/[^)]*#concept-and-alpha\)/)
+      expect(twin, `${path} has no dismiss control`).not.toContain('Dismiss')
+      expect(twin.match(/Concept example/g), `${path} states the status once`).toHaveLength(1)
+    }
+  }, undefined, bar)
 })
 
 it('exports a tmux name in a description as a plain link, with no badge glyph or role text', async () => {
