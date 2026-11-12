@@ -60,6 +60,27 @@ const QUERY_ORIGINS = [...QUERY_MODULES,
 const MUTATION_ORIGINS = [...QUERY_ORIGINS, 'LibTmux.Internal.Mutation']
 const VERSION = /^(?:0|[1-9]\d*)(?:\.(?:0|[1-9]\d*))+$/
 
+/** The shell reads fewer than three bold-led rows as prose, so a smaller export list gets no directory. */
+const DIRECTORY_MIN_GROUPS = 3
+
+/**
+ * A module's export groups in the shape the shell folds into a capability
+ * directory: a bold row title, then a paragraph that holds only references.
+ * Haddock groups carry a title and no guidance, so each row is its names.
+ */
+export function exportDirectory(groups: { title: string; members: string[] }[], byId: Map<string, { name: string }>): string | undefined {
+  if (groups.length < DIRECTORY_MIN_GROUPS) return undefined
+  const rows = groups.map((group) => {
+    const names = group.members.map((id) => {
+      const member = byId.get(id)
+      check(member, `export group ${group.title} names unknown declaration ${id}`)
+      return `:obj:\`${member.name} <${id}>\``
+    })
+    return `**${group.title.replaceAll('*', '')}**\n\n${names.join(', ')}`
+  })
+  return ['# What is on here', 'Its exports fall into these groups, in export-list order:', ...rows].join('\n\n')
+}
+
 function check(condition: unknown, reason: string): asserts condition {
   if (!condition) throw new Error(`Invalid Haskell documentation artifact: ${reason}`)
 }
@@ -248,6 +269,10 @@ export function extractHaskellArtifact(input: unknown, expectedRevision?: string
         doc = { summary: doc?.summary ?? '', body: [doc?.body, '## Reexports',
           reexports.map((item) => `- :obj:\`${item.module} <${item.module}>\``).join('\n')].filter(Boolean).join('\n\n') }
       }
+    }
+    if (native.kind === 'module') {
+      const directory = exportDirectory(artifact.modules.find((module) => module.name === native.id)!.groups, byId)
+      if (directory) doc = { summary: doc?.summary ?? '', body: [doc?.body, directory].filter(Boolean).join('\n\n') }
     }
     if (native.instances !== undefined) {
       check(native.kind === 'typealias' && Array.isArray(native.instances), `instances on a non-type ${native.id}`)

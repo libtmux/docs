@@ -21,14 +21,13 @@ it.each(['', ...PORTS.map((port) => port.slug)])('exports declared product avail
     expect(actual.products.map((entry: { slug: string }) => entry.slug)).toEqual(products)
     const areas = documentationAreas(source.slug).filter((area) => !area.product || !productExcluded(source, area.product))
     expect(actual.documentation).toEqual(areas.map((area) => expect.objectContaining({
-      id: area.id, kind: area.kind, availability: area.kind === 'unavailable' ? 'unpublished' : 'available',
+      id: area.id, kind: area.kind, availability: 'available',
     })))
     for (const product of products) {
       const metadata = actual.products.find((entry: { slug: string }) => entry.slug === product)
-      const availability = source.productAvailability?.[product] ?? 'available'
-      expect(metadata.availability, `${source.slug} ${product}`).toBe(availability)
-      expect(metadata.reference).toEqual(availability === 'available' ? expect.any(String) : null)
-      if (product === 'mcp') expect(metadata.protocol).toEqual(availability === 'available' ? expect.any(String) : null)
+      expect(metadata.availability, `${source.slug} ${product}`).toBe('available')
+      expect(metadata.reference).toEqual(expect.any(String))
+      if (product === 'mcp') expect(metadata.protocol).toEqual(expect.any(String))
       expect(metadata.url).toMatch(new RegExp(`/${source.slug}/latest/${product}/$`))
     }
   }

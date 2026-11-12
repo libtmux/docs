@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { Window, type Element } from 'happy-dom'
 import { afterEach, describe, expect, it } from 'vitest'
 import { installExternalLinks } from '../public/_shell/external-links.js'
+import { markExternalLinks } from '../src/integrations/external-links'
 import { loadAstroTemplate, renderAstroTemplate, withoutScope } from './astro-templates'
 
 /**
@@ -15,12 +16,16 @@ const DECORATED = css.match(/^(a\[data-external-link\][^{]*?)::after\s*\{/m)![1]
 const disposals: (() => void)[] = []
 afterEach(() => disposals.splice(0).forEach((dispose) => dispose()))
 
-async function footer(extra = '') {
+async function renderedFooter() {
   const template = await loadAstroTemplate('components/SiteFooter.astro')
-  const win = new Window({ url: 'https://libtmux.org/en/scala/latest/' })
-  win.document.body.innerHTML = withoutScope(await renderAstroTemplate(template, {
+  return withoutScope(await renderAstroTemplate(template, {
     props: { locale: 'en', llmsRoot: '/en/scala/latest/', githubUrl: 'https://github.com/libtmux/libtmux-scala' },
-  })) + extra
+  }))
+}
+
+async function footer(extra = '') {
+  const win = new Window({ url: 'https://libtmux.org/en/scala/latest/' })
+  win.document.body.innerHTML = await renderedFooter() + extra
   disposals.push(installExternalLinks(win as unknown as typeof window), () => { void win.happyDOM.abort() })
   return win.document
 }
@@ -47,6 +52,15 @@ describe('the footer external links', () => {
     expect(github!.textContent!.trim()).toBe('')
     // Every external destination in the footer is icon-only, so the glyph appears on none of them.
     expect([...document.querySelectorAll('footer a')].filter((link) => link.matches(DECORATED))).toEqual([])
+  })
+
+  it('carries the icon-only marker in the built HTML, before any script runs', async () => {
+    const win = new Window({ url: 'https://libtmux.org/en/scala/latest/' })
+    win.document.write(markExternalLinks(`<!doctype html><html><head></head><body>${await renderedFooter()}</body></html>`))
+    const links = [...win.document.querySelectorAll('footer a[data-external-link]')]
+    expect(links.map((link) => link.getAttribute('data-external-link'))).toEqual(['github.com'])
+    expect(links[0]!.hasAttribute('data-external-link-icon')).toBe(true)
+    await win.happyDOM.abort()
   })
 
   it('names the icon link, and keeps the destination in its description', async () => {

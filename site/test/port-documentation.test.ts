@@ -3,9 +3,7 @@ import { documentationAreas, documentationCards, documentationNavigation, source
 
 describe('port documentation domains', () => {
   it('maps the public Haskell observation, query and fixture guides to their reader paths', () => {
-    expect(documentationAreas('haskell').map(({ id, kind }) => ({ id, kind }))).toEqual([
-      { id: 'core', kind: 'core' }, { id: 'workspace', kind: 'unavailable' }, { id: 'mcp', kind: 'unavailable' },
-    ])
+    expect(documentationAreas('haskell').map(({ id, kind }) => ({ id, kind }))).toEqual([{ id: 'core', kind: 'core' }])
     expect(stagedSectionsFor('haskell')).toEqual(['guides'])
     expect(sourceGuidesFor('haskell').map(({ sourcePath, route }) => [sourcePath, route])).toEqual([
       ['docs/README.md', 'guides/getting-started'],
@@ -31,8 +29,6 @@ describe('port documentation domains', () => {
     expect(documentationAreas('lua').map(({ id, kind, package: packageId, product }) => ({ id, kind, package: packageId, product }))).toEqual([
       { id: 'core', kind: 'core', package: 'core', product: undefined },
       { id: 'runtime', kind: 'runtime', package: undefined, product: undefined },
-      { id: 'mcp', kind: 'unavailable', package: undefined, product: 'mcp' },
-      { id: 'workspace', kind: 'unavailable', package: undefined, product: 'workspace' },
     ])
   })
 

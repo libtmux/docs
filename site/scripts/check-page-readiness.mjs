@@ -1,4 +1,5 @@
 import { newCheckContext, newCheckPage } from './browser-context.mjs'
+import { markExternalLinks } from '../src/integrations/external-links.ts'
 import assert from 'node:assert/strict'
 import pixelmatch from 'pixelmatch'
 import { PNG } from 'pngjs'
@@ -304,6 +305,63 @@ export async function checkRequiredAppearance(browser, base) {
     assert.match(await legacy.locator('a').evaluate((link) => getComputedStyle(link, '::after').maskImage), /external-link\.svg/)
   } finally { await legacy.close() }
   console.log('Appearance: held font/module/effect keep the page readable and the API tree hidden, first complete fonts/icons/dotted links, stable geometry, failure and Reload PASS')
+}
+
+/**
+ * The external-link glyph is in the first layout, and nothing adds it afterwards.
+ *
+ * `astro build` writes `data-external-link` into the HTML. The dev server does not run that step, so the
+ * built page here is the dev server's own HTML through the build's function. Each external text link is read
+ * when the parser finishes, before any script of the page has run, and again once the page is ready. A link
+ * whose glyph arrives with a script reads `content: none` the first time and a drawn glyph the second. The
+ * page as the dev server serves it must show that difference, or the check could not notice it.
+ */
+export async function checkExternalLinkFirstPaint(browser, base) {
+  const results = {}
+  for (const built of [true, false]) {
+    const context = await newCheckContext(browser, base, { reducedMotion: 'reduce' })
+    await context.addInitScript(() => {
+      // Registered before the page's own listeners, so this read precedes the runtime's decoration.
+      window.__readExternalLinks = () => [...document.querySelectorAll('a[href]')]
+        .filter((link) => /^https?:\/\//i.test(link.getAttribute('href')) && new URL(link.href).origin !== location.origin
+          && !link.querySelector('svg, img, picture, canvas'))
+        .map((link) => {
+          const glyph = getComputedStyle(link, '::after')
+          return { href: link.getAttribute('href'), marked: link.hasAttribute('data-external-link'),
+            content: glyph.content, display: glyph.display, width: glyph.width }
+        })
+      document.addEventListener('readystatechange', () => {
+        if (document.readyState !== 'loading' && !window.__firstExternalLinks) window.__firstExternalLinks = window.__readExternalLinks()
+      })
+    })
+    const page = await context.newPage()
+    page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
+    try {
+      await page.route(`${base}/`, async (route) => {
+        const response = await route.fetch()
+        const html = await response.text()
+        const body = built ? markExternalLinks(html, 'https://libtmux.org') : html
+        await route.fulfill({ response, body, headers: { ...response.headers(), 'content-length': String(Buffer.byteLength(body)) } })
+      })
+      await page.goto(`${base}/`)
+      await page.locator('html[data-page-readiness="ready"]').waitFor({ state: 'attached' })
+      const { first, last } = await page.evaluate(() => ({ first: window.__firstExternalLinks, last: window.__readExternalLinks() }))
+      assert(first?.length > 0, `${built ? 'built' : 'unmarked'} page: the home page has external text links`)
+      assert.deepEqual(last.map((link) => link.href), first.map((link) => link.href), 'The same links are read both times')
+      results[built ? 'built' : 'unmarked'] = { first, last }
+    } finally { await context.close() }
+  }
+  const drawn = (link) => link.content !== 'none' && link.display === 'inline-block'
+  const { built, unmarked } = results
+  const late = (state) => state.first.filter((link, index) => drawn(state.last[index]) && !drawn(link))
+  assert(built.last.some(drawn), 'The page draws a glyph on an external text link')
+  assert(built.first.every((link) => link.marked || !drawn(built.last[built.first.indexOf(link)])), 'Every glyph link is marked in the HTML')
+  assert.deepEqual(late(built), [], 'No external link gains its glyph after the parser finishes')
+  assert.deepEqual(built.first.map(({ marked, ...glyph }) => glyph), built.last.map(({ marked, ...glyph }) => glyph),
+    'The glyph box is the same size at the first read and when the page is ready')
+  // Negative control: a page whose marker comes only from the script gains its glyph afterwards.
+  assert(late(unmarked).length > 0, 'The unmarked page shows a glyph arriving after the parser finishes, so the check can fail')
+  console.log(`External-link glyph: ${built.first.filter(drawn).length} links drawn in the first layout with no later change; unmarked page gains ${late(unmarked).length} afterwards PASS`)
 }
 
 /**

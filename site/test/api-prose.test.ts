@@ -210,6 +210,7 @@ const SYNTAXES: { port: string; syntax: string; refs: [string, string, string]; 
   { port: 'julia', syntax: 'Documenter @ref targets', label: 'Buffers', refs: ['[`new_session`](@ref LibTmux.new_session)', '[`snapshot`](@ref "Snapshots")', '[Server](@ref)'] },
   { port: 'powershell', syntax: 'cmdlet names', label: 'Buffers', refs: ['Get-TmuxSession', 'LibTmux\\Get-TmuxWindow', 'Wait-TmuxPaneText'] },
   { port: 'powershell', syntax: 'code spans', label: 'Buffers', refs: ['`ConvertTo-TmuxQueryJson`', '`Get-TmuxPane`', '`LibTmux.Server`'] },
+  { port: 'haskell', syntax: 'reST object roles', label: 'Buffers', refs: [':obj:`Server <LibTmux.Server#t:Server>`', ':obj:`withServer <LibTmux.Server#v:withServer>`', ':obj:`capture <LibTmux.Server#v:capture>`'] },
 ]
 
 describe.each(SYNTAXES)('a capability directory in $port\'s $syntax', ({ port, refs, label }) => {
@@ -293,6 +294,32 @@ describe('a capability directory in python reads the roles the tokenizer resolve
     const ref = `:${role}:\`libtmux.Server.kill\``
     const read = groupDirectory(parseApiProse(run(ref)), 'py').some((block) => block.kind === 'directory')
     expect(read, ref).toBe(tokenizeDoc(ref, 'py').every((span) => span.kind === 'ref'))
+  })
+})
+
+describe('a Haskell module\'s export groups', () => {
+  const model = API_MODELS.haskell
+  const grouped = model.symbols.filter((symbol) => symbol.kind === 'module' &&
+    model.exportGroups!.filter((group) => group.owner === symbol.id).length >= 3)
+
+  it('fold into the directory other ports show, one row per group in export-list order', () => {
+    expect(grouped.map((symbol) => symbol.id)).toContain('LibTmux.Server')
+    for (const module of grouped) {
+      const groups = model.exportGroups!.filter((group) => group.owner === module.id)
+      const blocks = groupDirectory(parseApiProse(module.doc!.body!), 'haskell')
+      const directory = blocks.find((block) => block.kind === 'directory')
+      if (directory?.kind !== 'directory') throw new Error(`${module.id} has no directory`)
+      expect(directory.rows.map((row) => row.title), module.id).toEqual(groups.map((group) => group.title))
+      expect(directory.rows.map((row) => row.groups.flatMap((entry) => entry.refs).length), module.id)
+        .toEqual(groups.map((group) => group.members.length))
+      expect(blocks.some((block) => block.kind === 'rubric' && block.text === 'What is on here'), module.id).toBe(true)
+    }
+  })
+
+  it('leave a module with fewer than three groups without one', () => {
+    for (const module of model.symbols.filter((symbol) => symbol.kind === 'module' && !grouped.includes(symbol))) {
+      expect(module.doc?.body ?? '', module.id).not.toContain('What is on here')
+    }
   })
 })
 

@@ -63,7 +63,6 @@ export const LINKS: Record<string, ExpectedLinks> = {
     rows: [
       ['source', 'libtmux_erlang', 'apps/libtmux_erlang', 'https://github.com/libtmux/libtmux-erlang/tree/master/apps/libtmux_erlang', ['libtmux_erlang']],
       ['source', 'libtmux-erlang', 'libtmux/libtmux-erlang', 'https://github.com/libtmux/libtmux-erlang', ['repository']],
-      ['source', 'libtmux_erlang_workspace', 'apps/libtmux_erlang_workspace', 'https://github.com/libtmux/libtmux-erlang/tree/master/apps/libtmux_erlang_workspace', ['libtmux_erlang_workspace']],
     ],
   },
   py: {

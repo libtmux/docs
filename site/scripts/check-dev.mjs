@@ -13,6 +13,7 @@ import { checkApiAnchorArrival, checkApiExampleOwnership, checkApiNavigation, ch
 import { checkReferencePreferences, checkGlobalHeader, checkHeaderLinksFail, checkHeaderLinksRender, checkHeaderLinksRenderFail } from './check-reference-preferences.mjs'
 import { checkHeaderMenuSections, checkHeaderMenuSectionsFail } from './check-header-menu-sections.mjs'
 import { checkStatusBadges, checkStatusBadgesFail } from './check-status-badges.mjs'
+import { checkProductNotice, checkProductNoticeFail } from './check-product-notice.mjs'
 import { checkHomeLauncher } from './check-home-launcher.mjs'
 import { checkHomeTaskReset } from './check-home-task-reset.mjs'
 import { checkColorScheme } from './check-color-scheme.mjs'
@@ -21,7 +22,7 @@ import { checkHomeExampleOptions } from './check-home-example-options.mjs'
 import { checkDevSample, checkRowPermalinks } from './check-dev-sample.mjs'
 import { checkDeclarationControlAlignment, checkDeclarationControlsLevel, checkMemberBodyInsets, checkNativeSignatureGeometry, checkNativeSignatureLinks } from './check-native-layout.mjs'
 import { checkBadgeCentring, checkChipGrowth, checkMentionDensity, checkUsageChips } from './check-badge-centring.mjs'
-import { checkBlockLinksUndecorated, checkKindBadgeLinks, checkKindBadgeLinksFail, checkRequiredAppearance, checkTmuxReferencePreviews, checkTmuxReferencePreviewsFail, checkWebAnalytics, checkWebAnalyticsTransitions } from './check-page-readiness.mjs'
+import { checkBlockLinksUndecorated, checkKindBadgeLinks, checkKindBadgeLinksFail, checkExternalLinkFirstPaint, checkRequiredAppearance, checkTmuxReferencePreviews, checkTmuxReferencePreviewsFail, checkWebAnalytics, checkWebAnalyticsTransitions } from './check-page-readiness.mjs'
 import { checkTypeParameters } from './check-type-parameters.mjs'
 import { checkTmuxKeys, TMUX_KEY_PAGES } from './check-tmux-keys.mjs'
 import { checkSidebarDemo } from './check-sidebar-demo.mjs'
@@ -43,6 +44,7 @@ const referencePreferencesOnly = process.argv.includes('--reference-preferences'
 const globalHeaderOnly = process.argv.includes('--global-header')
 const headerMenuSectionsOnly = process.argv.includes('--header-menu-sections')
 const statusBadgesOnly = process.argv.includes('--status-badges')
+const productNoticeOnly = process.argv.includes('--product-notice')
 const badgeCentringOnly = process.argv.includes('--badge-centring')
 const referencePreviewsOnly = process.argv.includes('--reference-previews')
 const homeLauncherOnly = process.argv.includes('--home-launcher')
@@ -797,10 +799,11 @@ try {
     : apiStickyOnly || permalinkRevealOnly ? '/swift/latest/reference/server/'
     : badgeCentringOnly ? '/py/v0.46.2/guides/attaching-to-tmux/'
     : referencePreviewsOnly ? '/cxx/latest/reference/libtmux-server-panes/'
+    : productNoticeOnly ? '/ocaml/latest/workspace/'
     : documentationNavigationOnly || headerMenuSectionsOnly || statusBadgesOnly ? '/py/latest/' : apiSignaturesOnly ? '/api-signature-probe/'
     : apiNavigationOnly ? '/lua/latest/reference/libtmux-server/'
     : typeParametersOnly ? '/ts/latest/reference/selection-selection-where/' : '/tmux/concepts/server-session-window-pane/'
-  const fullRun = ![homeLauncherOnly, homeControlsOnly, keywordHelpOnly, apiSignaturesOnly, referenceLayoutOnly, globalHeaderOnly, headerMenuSectionsOnly, statusBadgesOnly, badgeCentringOnly, referencePreviewsOnly,
+  const fullRun = ![homeLauncherOnly, homeControlsOnly, keywordHelpOnly, apiSignaturesOnly, referenceLayoutOnly, globalHeaderOnly, headerMenuSectionsOnly, statusBadgesOnly, productNoticeOnly, badgeCentringOnly, referencePreviewsOnly,
     referencePreferencesOnly, documentationNavigationOnly, guideRedirectOnly, sidebarDemoOnly, apiNavigationOnly, apiAnchorsOnly, typeParametersOnly, permalinkRevealOnly, requiredAppearanceOnly].some(Boolean)
   const setupPages = sampleOnly ? [firstPage, '/demo/widgets/pickers/', ...TMUX_KEY_PAGES]
     : [firstPage, ...(fullRun ? TMUX_KEY_PAGES : [])]
@@ -860,6 +863,9 @@ try {
   } else if (statusBadgesOnly) {
     await retryReload(() => checkStatusBadges(browser, base))
     await checkStatusBadgesFail(browser, base)
+  } else if (productNoticeOnly) {
+    await retryReload(() => checkProductNotice(browser, base))
+    await checkProductNoticeFail(browser, base)
   } else if (badgeCentringOnly) {
     await retryReload(() => checkBadgeCentring(browser, base))
     await checkMentionDensity(browser, base)
@@ -906,8 +912,10 @@ try {
     await retryReload(() => checkTypeParameters(browser, base))
   } else if (requiredAppearanceOnly) {
     await retryReload(() => checkRequiredAppearance(browser, base))
+    await retryReload(() => checkExternalLinkFirstPaint(browser, base))
   } else {
     await retryReload(() => checkRequiredAppearance(browser, base))
+    await retryReload(() => checkExternalLinkFirstPaint(browser, base))
     await retryReload(() => checkTmuxKeys(browser, base))
     await checkWebAnalytics(browser, base)
     await checkWebAnalyticsTransitions(browser, base)
@@ -948,6 +956,8 @@ try {
       .then(() => checkHeaderMenuSectionsFail(browser, base)))
     const statusBadges = schedule(() => checkStatusBadges(browser, base)
       .then(() => checkStatusBadgesFail(browser, base)))
+    const productNotice = schedule(() => retryReload(() => checkProductNotice(browser, base))
+      .then(() => checkProductNoticeFail(browser, base)))
     const homeLauncher = schedule(() => checkHomeLauncher(browser, base))
     const documentationNavigation = schedule(() => retryReload(() => checkDocumentationNavigation(browser, base)))
     const apiNavigationPage = await newCheckPage(browser, base, { reducedMotion: 'reduce' })
@@ -1269,7 +1279,7 @@ try {
     console.log('Fresh Astro + browser: prose, workspace, MCP tools, API equivalents, 390–1600px header and dark hue PASS')
     await page.close()
     const failures = (await Promise.all([
-      navigation, apiExamples, reference, preferences, globalHeader, headerMenuSections, statusBadges, apiNavigation,
+      navigation, apiExamples, reference, preferences, globalHeader, headerMenuSections, statusBadges, productNotice, apiNavigation,
       clipboard, documentationNavigation, homeLauncher, apiAnchors, permalinkReveal, apiSticky, typeParameters, kindBadges, badgeCentring, blockLinks, referencePreviews,
     ])).filter(Boolean)
     if (failures.length) throw new AggregateError(failures, 'Browser checks failed')

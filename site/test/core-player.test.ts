@@ -4,7 +4,7 @@ import { Window } from 'happy-dom'
 import { ModuleKind, ScriptTarget, transpileModule } from 'typescript'
 import { afterEach, describe, expect, it } from 'vitest'
 import { capabilityExample, coreFrames, coreRecordingFor, paneActivity, playableCapability, stepChanges, stepNote, tmuxChanges, viewSteps, visibleCommands } from '../src/lib/core-player'
-import { statementLines } from '../src/lib/core-statement'
+import { statementLines, syntaxOf } from '../src/lib/core-statement'
 import { HOME_VIEWS, QUICKSTARTS, homeProgram } from '../src/lib/quickstarts'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 
@@ -32,6 +32,123 @@ describe('finding a call in a program', () => {
 
   it('reads a statement with no parenthesis as its own line', () => {
     expect(statementLines('a := 1\nb := 2', 'b := 2')).toEqual([2, 2])
+  })
+})
+
+describe('finding a call in a Lisp, Erlang or Perl program', () => {
+  const lines = (...text: string[]) => text.join('\n')
+  const c = { comment: '//', quotes: '"\'`' }
+
+  it('reads a quoted list in Lisp as a form, not a string, and `;` as a comment', () => {
+    const lisp = lines(
+      '(let* ((right (observed-value',
+      '               (libtmux:split-pane',
+      '                client left :command \'("/bin/cat"))))',
+      '       (pane (find id panes :key #\'libtmux:id :test #\'string=)))',
+      '  ; a ) in a comment',
+      '  (libtmux:kill-server client))',
+    )
+    expect(statementLines(lisp, '(libtmux:split-pane', syntaxOf('lisp'))).toEqual([2, 3])
+    expect(statementLines(lisp, '(libtmux:kill-server', syntaxOf('lisp'))).toEqual([6, 6])
+    expect(statementLines(lisp, '(libtmux:split-pane', c), 'C reads the quote as a string that swallows the closing brackets').not.toEqual([2, 3])
+  })
+
+  it('does not count a bracket in a Lisp character literal', () => {
+    const lisp = lines('(find #\\) (list #\\( #\\"', '            #\\;))', '(next)')
+    expect(statementLines(lisp, '(find', syntaxOf('lisp'))).toEqual([1, 2])
+  })
+
+  it('reads `%` as an Erlang comment and `\'` as an atom, and does not count `$)` or `$"`', () => {
+    const erlang = lines(
+      '    {ok, A} = tmux_x:create(S, #{c => $), % a ) comment',
+      "                                 name => 'a b)'}),",
+      '    {ok, B} = tmux_x:split(A, $", $\\n, "z"),',
+      '    ok.',
+    )
+    expect(statementLines(erlang, 'tmux_x:create(', syntaxOf('erlang'))).toEqual([1, 2])
+    expect(statementLines(erlang, 'tmux_x:split(', syntaxOf('erlang'))).toEqual([3, 3])
+    expect(statementLines(erlang, 'tmux_x:create(', c), 'C reads `$)` as the bracket that closes the call').not.toEqual([1, 2])
+  })
+
+  it('reads `#` as a Perl comment, except in `$#array`, and `$\'` as a variable', () => {
+    const perl = lines(
+      '    my $last = $server->mark($#items);',
+      "    $server->name('it)s', $'); # a ) comment",
+      '    $server->next(',
+      '        size => 1, # a ( comment',
+      '    );',
+    )
+    expect(statementLines(perl, '$server->mark(', syntaxOf('perl'))).toEqual([1, 1])
+    expect(statementLines(perl, '$server->name(', syntaxOf('perl'))).toEqual([2, 2])
+    expect(statementLines(perl, '$server->next(', syntaxOf('perl'))).toEqual([3, 5])
+    const bare = { comment: '#', quotes: '"\'' }
+    expect(statementLines(perl, '$server->mark(', bare), 'without the `$` rule the `#` of `$#items` hides the closing bracket').not.toEqual([1, 1])
+  })
+
+  it('keeps C\'s rules for a port that has none of its own', () => {
+    const go = lines('x := f("a)") // (', 'y := g()')
+    expect(statementLines(go, 'f(', syntaxOf('go'))).toEqual(statementLines(go, 'f('))
+    expect(syntaxOf(undefined)).toEqual(syntaxOf('go'))
+  })
+})
+
+describe('finding a call in an OCaml, Haskell or Clojure program', () => {
+  const lines = (...text: string[]) => text.join('\n')
+  const c = { comment: '//', quotes: '"\'`' }
+
+  it('reads `(* *)` as an OCaml comment that nests, runs over lines and holds strings, and `\'a` as a type variable', () => {
+    const ocaml = lines(
+      'let linked =',
+      '  get',
+      '    (Client.create_session client ~name:"it\'s" (Name.v "a)" (* ) *)',
+      '       ~spawn:(fun (x : \'a) -> x)))',
+      'in',
+      'let pair = Client.pair client (Name.v \'(\' \')\' \'\\\'\' \'"\' "x" (* ) multi',
+      '  (* nested ) *) ) "*)" *)',
+      '  "y")',
+    )
+    expect(statementLines(ocaml, 'Client.create_session', syntaxOf('ocaml'))).toEqual([3, 4])
+    expect(statementLines(ocaml, 'Client.create_session', c), 'C reads `(*` as a bracket and `\'a)` as a string').not.toEqual([3, 4])
+    expect(statementLines(ocaml, 'Client.pair', syntaxOf('ocaml'))).toEqual([6, 8])
+    expect(statementLines(ocaml, 'Client.pair', c)).not.toEqual([6, 8])
+    expect(statementLines(lines('Client.map client (fun (x : \'a) ->', '  x) (* ( *)', 'let g = 1'), 'Client.map', syntaxOf('ocaml'))).toEqual([1, 2])
+    expect(statementLines(lines('Client.map client (fun (x : \'a) ->', '  x) (* ( *)', 'let g = 1'), 'Client.map', c)).toBeUndefined()
+  })
+
+  it('does not count a bracket in an OCaml quoted string', () => {
+    const ocaml = lines('Client.run client {|a ( |} {id|b ( |} |id} (f ())')
+    expect(statementLines(ocaml, 'Client.run', syntaxOf('ocaml'))).toEqual([1, 1])
+    expect(statementLines(ocaml, 'Client.run', c)).toBeUndefined()
+  })
+
+  it('reads `--` and `{- -}` as Haskell comments, except in an operator such as `-->`, and `\'` as a prime in a name', () => {
+    const haskell = lines(
+      'Tmux.open server (Q.x {- ( an',
+      '   (( unmatched {- nested -} -} y)',
+      'Tmux.fold server (foldl\' step 0 xs) -- a ) comment',
+      'Tmux.arrow server (a --> b)',
+      'Tmux.close server (c |-- d)',
+    )
+    expect(statementLines(haskell, 'Tmux.open', syntaxOf('haskell'))).toEqual([1, 2])
+    expect(statementLines(haskell, 'Tmux.open', c), 'C reads the brackets in the comment').not.toEqual([1, 2])
+    expect(statementLines(haskell, 'Tmux.fold', syntaxOf('haskell'))).toEqual([3, 3])
+    expect(statementLines(haskell, 'Tmux.fold', { comment: '--', quotes: '"\'' }), 'with `\'` a quote the prime of foldl\' hides the bracket').not.toEqual([3, 3])
+    expect(statementLines(haskell, 'Tmux.arrow', syntaxOf('haskell'))).toEqual([4, 4])
+    expect(statementLines(haskell, 'Tmux.arrow', { comment: '--', quotes: '"' }), 'a `-->` is not the start of a comment').not.toEqual([4, 4])
+    expect(statementLines(haskell, 'Tmux.close', syntaxOf('haskell'))).toEqual([5, 5])
+    expect(statementLines(lines('Tmux.chr server (f \'(\' \')\' \'\\\'\' \'"\' "--" @\'[Int])'), 'Tmux.chr', syntaxOf('haskell'))).toEqual([1, 1])
+  })
+
+  it('reads a quoted list in Clojure as a form, not a string, and `\\(` as a character', () => {
+    const clojure = lines(
+      '(tm/split-pane! (:tmux/ref pane)',
+      '                {:command \'("/bin/cat")}) ; a ) comment',
+      '(find-char \\( \\) \\" x)',
+    )
+    expect(statementLines(clojure, '(tm/split-pane!', syntaxOf('clojure'))).toEqual([1, 2])
+    expect(statementLines(clojure, '(tm/split-pane!', c), 'C reads the quote as a string that swallows the closing bracket').not.toEqual([1, 2])
+    expect(statementLines(clojure, '(find-char', syntaxOf('clojure'))).toEqual([3, 3])
+    expect(statementLines(clojure, '(find-char', c)).not.toEqual([3, 3])
   })
 })
 
@@ -622,6 +739,30 @@ describe('what a call changed in tmux', () => {
     expect(tmuxChanges(streamed.before, streamed.step.tmux).phrases).toEqual(['closed window 1:sh'])
     const killed = stepNamed(go, 'Session.Kill')
     expect(tmuxChanges(killed.before, killed.step.tmux).phrases, 'the session takes its windows with it').toEqual(['closed session libtmux-run'])
+  })
+})
+
+describe('what a call changed in a window linked more than once', () => {
+  const layout = 'a1b2,80x24,0,0,0'
+  const link = (session: string, index: number, over: object = {}) => ({ session, id: '@0', index, name: 'editor', active: false, layout, ...over })
+  const state = (windows: object[], sessions = [{ id: '$0', name: 'demo' }]) => ({ sessions, windows, panes: [{ window: '@0', id: '%0', command: 'cat', left: 0, top: 0, width: 80, height: 24, active: true }] }) as never
+
+  it('names a link made into the same session or another, and one removed, and marks the window\'s label', () => {
+    const one = state([link('$0', 0, { active: true })])
+    const twice = state([link('$0', 0, { active: true }), link('$0', 4)])
+    expect(tmuxChanges(one, twice)).toEqual({ marks: { windows: [], panes: [], labels: ['@0'], sessions: [] }, phrases: ['linked window 4:editor'] })
+    expect(tmuxChanges(twice, one)).toEqual({ marks: { windows: [], panes: [], labels: ['@0'], sessions: [] }, phrases: ['unlinked window 4:editor'] })
+    const sessions = [{ id: '$0', name: 'demo' }, { id: '$1', name: 'other' }]
+    const own = { session: '$1', id: '@1', index: 0, name: 'home', active: true, layout }
+    const crossed = { sessions, windows: [link('$0', 0, { active: true }), own, link('$1', 7)], panes: [{ window: '@0', id: '%0', command: 'cat', left: 0, top: 0, width: 80, height: 24, active: true }, { window: '@1', id: '%1', command: 'cat', left: 0, top: 0, width: 80, height: 24, active: true }] } as never
+    const before = { sessions, windows: [link('$0', 0, { active: true }), own], panes: (crossed as { panes: object[] }).panes } as never
+    expect(tmuxChanges(before, crossed).phrases).toEqual(['linked window other:7:editor'])
+  })
+
+  it('names a rename once, and a window made active in one link', () => {
+    const before = state([link('$0', 0, { active: true }), link('$0', 4)])
+    expect(tmuxChanges(before, state([link('$0', 0, { name: 'api', active: true }), link('$0', 4, { name: 'api' })])).phrases).toEqual(['renamed window 0:editor to 0:api'])
+    expect(tmuxChanges(before, state([link('$0', 0), link('$0', 4, { active: true })])).phrases).toEqual(['selected window 4:editor'])
   })
 })
 

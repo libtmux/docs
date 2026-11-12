@@ -41,6 +41,14 @@ workflow and select their own language.
 in `versions.json` (§4) — pick it once, since changing it later is a URL
 break for every published version.
 
+Mark a product the port has not published `excluded` in
+`productAvailability`. A scaffold directory, a guide to another port's server
+and a tool built only from source are not products. The build then creates no
+page for it and no picker, switcher, manifest, sitemap or landing card lists
+it. Add a `redirects` entry with an empty `target` for a product root that was
+already public, so its URL leads to the language home. A product is available
+or excluded; there is no placeholder page for one that is coming.
+
 ### Inventory the port's packages and destinations
 
 The header links a port's repository and package host and lists every other
@@ -179,12 +187,16 @@ public reexport, without creating private reference pages. Native source text
 and line markers are checked against the committed source.
 
 The stored model retains export groups and ordered module-reexport relations,
-so sidebar regeneration needs no checkout or native toolchain. The reexport
-root has its own row; it does not duplicate the target modules' declarations.
-Field modules without authored groups retain Haddock's default Documentation
-section. An ambiguous native source identifier retains its defining file
-without an invented line. Additional module and declaration forms need native
-fixtures and qualification before the adapter accepts them.
+so sidebar regeneration needs no checkout or native toolchain. The sidebar uses
+the shared Server, Session, Window and Pane buckets: `LibTmux.Server` is the
+Server and the detached records of `LibTmux.Snapshot` are the other objects.
+The reexport root and the modules that span several objects stay outside the
+buckets, and none duplicates its targets' declarations. Each module with three
+or more export groups lists them in a directory on its page. Field modules
+without authored groups retain Haddock's default Documentation section. An
+ambiguous native source identifier retains its defining file without an
+invented line. Additional module and declaration forms need native fixtures and
+qualification before the adapter accepts them.
 
 Haskell's reader guides use the routes in
 [`port-documentation.ts`](../site/src/lib/port-documentation.ts). Its section
@@ -223,7 +235,7 @@ attribution; ambiguous or widely shared helpers need further qualification.
 
 The queued native capture path uses a separate
 [reviewed source profile](../scripts/tmux-usage/haskell-native.json).
-Qualification checks the exact revision, the complete library and C-source
+Qualification checks the repository, the complete library and C-source
 inventory, each file's digest, every public callable or field classification,
 the full API model and native build metadata, and the
 [reviewed claims](../scripts/tmux-usage/claims.json). Its parser indexes
@@ -231,11 +243,22 @@ declaration bounds for the shared evidence audit; it does not infer queued
 execution from function names. A changed source, public export or claim fails
 qualification until the profile is reviewed again.
 
+The profile's `revision` is the commit it was reviewed at. Another commit
+qualifies when its inventory and every file digest match, and its model equals
+the reviewed model once the commit's own id, in the `revision` fields and the
+`blob/<revision>/` source links, reads as the reviewed id. A merge commit or a
+change outside `src/`, `internal/`, `cbits/`, `.tool-versions`,
+`cabal.project` and the cabal file therefore needs no new review. A model that
+also cites the reviewed id or a third id fails. The reviewed claims carry no
+`revision` pin, so they hold at the model's revision.
+
 Set `LIBTMUX_DOCS_PORT=haskell` and bind `LIBTMUX_DOCS_SOURCE_SHA` and
 `LIBTMUX_DOCS_SOURCE_REF` to the selected commit when regenerating this model.
 Qualify native command usage against that generated model. An unselected
 authoring build can cite the public default branch and produce a different
-full-model digest.
+full-model digest. The digest also reads key order, so write `haskell.json`
+with `gen-api-model.mjs` from the exporter's artifact; a hand-patched copy
+with the same data digests differently.
 
 Capture selects `ReadSnapshot`, whose fixed queue reaches the native spawner.
 It sends `display-message` and `if-shell`; `list-clients` runs when sessions

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import artifact from './fixtures/haskell-query-native/artifact.json'
 import { extractHaskellArtifact } from '../src/languages/haskell'
 import { SymbolIndex, tokenizeDoc } from '../src/reference'
-import { navSidecar } from '../src/nav-sidecar'
+import { exportGroupsNav, navSidecarFor } from '../src/nav-sidecar'
 
 describe('the native Haskell query profile', () => {
   it('preserves every native signature, type parameter and defining source', () => {
@@ -31,7 +31,7 @@ describe('the native Haskell query profile', () => {
     expect(token.signatures[0].raw).toBe('width :: Field Pane Dimension')
     expect(observed.kind).toBe('property')
     expect(observed.parent).toBe('LibTmux.Snapshot#t:Pane')
-    const nav = navSidecar('haskell', structuredClone(model))!
+    const nav = navSidecarFor('haskell', structuredClone(model), exportGroupsNav(model))
     expect(nav.buckets.map((bucket) => bucket.label)).toEqual(artifact.package.exposedModules)
     expect(nav.diagnostics).toEqual({ unmatched: [], deadBuckets: [], ambiguous: [], staleUnsettled: [] })
   })

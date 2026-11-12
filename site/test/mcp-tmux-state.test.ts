@@ -47,6 +47,24 @@ describe('a tmux state', () => {
     expect(stateProblems(state).join('\n')).toMatch(message)
   })
 
+  it('accepts a window linked into two sessions, and into one session twice, each link listed with its session and index', () => {
+    const linked = oneState()
+    linked.sessions.push({ id: '$1', name: 'other' })
+    linked.windows.push(window({ id: '@1', session: '$1', name: 'home', layout: 'a1b2,80x24,0,0,1' }), window({ session: '$1', index: 7, active: false }), window({ index: 4, active: false }))
+    linked.panes.push(pane({ id: '%1', window: '@1' }))
+    expect(stateProblems(linked)).toEqual([])
+  })
+
+  it.each([
+    ['two links at one index', (state: any) => { state.windows.push(window({ active: false })) }, /session \$0 has two windows at index 0/],
+    ['two links that disagree about the window', (state: any) => { state.windows.push(window({ index: 4, active: false, name: 'other' })) }, /window @0 is linked more than once, with a different name or layout in each link/],
+    ['a window that is two panes', (state: any) => { state.windows.push(window({ index: 4, active: false })); state.panes.push(pane()) }, /%0 appears twice/],
+  ])('refuses %s', (_name, damage, message) => {
+    const state = oneState()
+    damage(state)
+    expect(stateProblems(state).join('\n')).toMatch(message)
+  })
+
   it('reads either spelling of the layout tmux reports', () => {
     const json = '{"V":2,"L":{"t":"h","w":80,"h":24,"x":0,"y":0,"c":[{"t":"p","w":40,"h":24,"x":0,"y":0,"I":"%0"},{"t":"p","w":39,"h":24,"x":41,"y":0,"I":"%1"}]}}'
     const state = splitState()
@@ -126,6 +144,21 @@ describe('reading a tmux server', () => {
       panes: [pane({ width: 40, active: false }), pane({ id: '%1', left: 41, width: 39 })],
     })
     expect(stateProblems(recordedState(state))).toEqual([])
+  })
+
+  it('reads a window linked twice as two links of one window, and its pane as one pane', () => {
+    const linked = [
+      'S|$0|checks',
+      'W|$0|@0|0|sh|1|a1b2,80x24,0,0,0|1',
+      'W|$0|@0|4|sh|0|a1b2,80x24,0,0,0|1',
+      'P|@0|%0|sh|0|0|80|24|1',
+      'P|@0|%0|sh|0|0|80|24|1',
+    ].join('\n')
+    const state = parseListings(linked)
+    expect((state.windows as { index: number }[]).map((each) => each.index)).toEqual([0, 4])
+    expect(state.panes).toEqual([pane()])
+    expect(stateProblems(recordedState(state))).toEqual([])
+    expect(() => parseListings(`${linked}\nP|@0|%0|cat|0|0|80|24|1`)).toThrow(/pane %0 is listed twice, differently/)
   })
 
   it.each([

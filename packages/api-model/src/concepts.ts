@@ -3944,6 +3944,7 @@ for (const [id, concept] of Object.entries(CONCEPTS)) {
 // FETCH-SNAPSHOT performs acquisition; SESSIONS, WINDOWS, PANES and CLIENTS
 // only traverse the retained observation.
 const LISP_CONCEPTS: Record<string, { symbol: string; note?: string }> = {
+  server: { symbol: 'libtmux:client', note: '`client` is a connection scope with one external-operation lease. Closing it cancels owned work and leaves the tmux daemon alive; `daemon` owns a daemon the library started.' },
   session: { symbol: 'libtmux:session/type', note: '`session` is an immutable captured entity. The same name also has a relation accessor with a distinct public identity.' },
   window: { symbol: 'libtmux:window/type', note: '`window` is a physical captured window. `window-link` preserves each session placement.' },
   pane: { symbol: 'libtmux:pane', note: '`pane` is an immutable captured physical pane.' },
@@ -3961,6 +3962,34 @@ for (const [id, binding] of Object.entries(LISP_CONCEPTS)) {
   if (!concept) throw new Error(`concepts: Common Lisp maps unknown concept ${id}`)
   concept.symbols.lisp = binding.symbol
   if (binding.note) (concept.notes ??= {}).lisp = binding.note
+}
+// Haskell's Server is an owned handle whose operations are functions of its
+// module. Session, Window and Pane are the detached records of Snapshot, and
+// each operation takes the generation-bound reference for one.
+const HASKELL_CONCEPTS: Record<string, { symbol: string; note: string; variants: string[] }> = {
+  server: {
+    symbol: 'LibTmux.Server', variants: ['LibTmux.Server#t:Server'],
+    note: '`LibTmux.Server` owns the `Server` handle. `withServer` adopts an existing socket for the length of a callback and releases its own resources afterwards without sending `kill-server`. Operations such as `capture` and `renameSession` are functions of this module that take the handle.',
+  },
+  session: {
+    symbol: 'LibTmux.Snapshot#t:Session', variants: ['LibTmux.Snapshot#t:SessionRef'],
+    note: '`Session` is a detached physical session. `WindowLink` records each placement of a window in it, and operations take a generation-bound `SessionRef`.',
+  },
+  window: {
+    symbol: 'LibTmux.Snapshot#t:Window', variants: ['LibTmux.Snapshot#t:WindowRef'],
+    note: '`Window` is a detached physical window, independent of its session placements. `WindowLink` records each session, index and window binding, and operations take a generation-bound `WindowRef`.',
+  },
+  pane: {
+    symbol: 'LibTmux.Snapshot#t:Pane', variants: ['LibTmux.Snapshot#t:PaneRef'],
+    note: '`Pane` is a detached physical pane. `PaneOccurrence` keeps the window placement it was seen in, and operations take a generation-bound `PaneRef`.',
+  },
+}
+for (const [id, binding] of Object.entries(HASKELL_CONCEPTS)) {
+  const concept = CONCEPTS[id]
+  if (!concept) throw new Error(`concepts: Haskell maps unknown concept ${id}`)
+  concept.symbols.haskell = binding.symbol
+  ;(concept.notes ??= {}).haskell = binding.note
+  ;(concept.variants ??= {}).haskell = binding.variants
 }
 const ERLANG_CONCEPTS: Record<string, { symbol: string; note?: string }> = {
   server: { symbol: 'tmux_server', note: '`open/1` observes an existing daemon and starts an endpoint owner. Domain rows remain immutable values.' },

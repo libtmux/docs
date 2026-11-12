@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { statementLines } from './core-statement.ts'
+import { statementLines, syntaxOf } from './core-statement.ts'
 import { stateProblems, type TmuxState } from './mcp-tmux-state.ts'
 
 /**
@@ -52,6 +52,8 @@ export interface CoreStep {
   notifications?: string[]
   /** Windows tmux held while the call ran and no longer holds when it returned. */
   transient: { window: string; name: string }[]
+  /** Set on a call that ended the server without sending a tmux command: whoever owns the daemon stopped it by its process id. */
+  stopsServer?: true
   /** The recording's tmux server once the call had returned. */
   tmux: TmuxState
 }
@@ -94,7 +96,8 @@ export const sha256 = (text: string) => createHash('sha256').update(text).digest
  * Every state is one tmux can be in (`stateProblems`). Every step names a call
  * that is on exactly one line of the program, once, and has the commands that
  * call sent. A state that differs from the one before it needs a command that
- * can change tmux, so a state read late or from another server is caught. The
+ * can change tmux, or a step that says its owner stopped the daemon by its
+ * process id, so a state read late or from another server is caught. The
  * ids a call returned are in tmux after it or in the commands it sent.
  *
  * With `programs` (the displayed program by capability), the recording must
@@ -103,6 +106,7 @@ export const sha256 = (text: string) => createHash('sha256').update(text).digest
 export function recordingProblems(recording: unknown, { programs }: { programs?: Record<string, string> } = {}): string[] {
   if (!isRecord(recording) || !isRecord(recording.capabilities)) return ['has no capabilities']
   const problems: string[] = []
+  const syntax = syntaxOf(typeof recording.port === 'string' ? recording.port : undefined)
   for (const [id, value] of Object.entries(recording.capabilities)) {
     const at = (text: string) => `${id}: ${text}`
     const capability = value as Partial<CoreCapability>
@@ -125,7 +129,7 @@ export function recordingProblems(recording: unknown, { programs }: { programs?:
       if (!step.label || !step.type) problems.push(here('has no label or no type'))
       if (!('returned' in step)) problems.push(here('records no returned value'))
       if (program !== undefined) {
-        if (!step.anchor || !statementLines(program, step.anchor, '//', step.occurrence)) problems.push(here(`its anchor ${JSON.stringify(step.anchor)} is not on exactly one line of the program`))
+        if (!step.anchor || !statementLines(program, step.anchor, syntax, step.occurrence)) problems.push(here(`its anchor ${JSON.stringify(step.anchor)} is not on exactly one line of the program`))
       } else if (!step.anchor) problems.push(here('has no anchor'))
       // A call shares its line with its other runs only when it says it ran more than once, and the runs count up from one.
       const place = `${step.anchor}#${step.occurrence ?? ''}`
@@ -142,7 +146,10 @@ export function recordingProblems(recording: unknown, { programs }: { programs?:
       state.forEach((problem) => problems.push(here(`its state: ${problem}`)))
       if (state.length > 0) return
       const changed = stateKey(step.tmux) !== stateKey(previous)
-      if (changed && !step.commands.some((command) => command.role === 'command' && command.mutates)) problems.push(here('tmux changed, but no command the call sent can change it'))
+      // A call that stops the daemon by its process id sends no command; it must say so, and leave no session.
+      const stopped = step.stopsServer === true && step.tmux.sessions.length === 0 && previous.sessions.length > 0
+      if (step.stopsServer !== undefined && !stopped) problems.push(here('says it stopped the server, but the server was not running before it or still holds a session'))
+      if (changed && !stopped && !step.commands.some((command) => command.role === 'command' && command.mutates)) problems.push(here('tmux changed, but no command the call sent can change it'))
       const named = new Set([...idsIn(step.tmux), ...idsIn(step.commands.map((command) => command.tmux))])
       for (const returned of idsIn(step.returned)) if (!named.has(returned)) problems.push(here(`it returned ${returned}, which tmux does not hold after the call and no command of the call names`))
       previous = step.tmux

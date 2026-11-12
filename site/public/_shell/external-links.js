@@ -31,7 +31,8 @@ export function installExternalLinks(win = window) {
     })
     const original = originals.get(link)
     const destination = `View on ${url.hostname}`
-    link.setAttribute('data-external-link', url.hostname)
+    // The build writes both attributes into the HTML; a correct one is left as it is.
+    if (link.getAttribute('data-external-link') !== url.hostname) link.setAttribute('data-external-link', url.hostname)
     link.toggleAttribute('data-external-link-icon', iconOnly(link))
     link.setAttribute('title', original.title ? `${destination} — ${original.title}` : destination)
     link.setAttribute('aria-description', [original['aria-description'], `External site: ${url.hostname}`].filter(Boolean).join('. '))

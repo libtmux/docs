@@ -3,7 +3,7 @@ import { hostname, userInfo } from 'node:os'
 import { describe, expect, it } from 'vitest'
 import { RECIPES as GO_RECIPES, instrumentGo, withoutMarks } from '../../scripts/lib/core-recipes/go.mjs'
 import { matchMarks } from '../../scripts/lib/core-recipes/common.mjs'
-import { ControlReader, commandCount, describeInvocation, isControlInvocation, shimScript, splitCommandLine, splitInvocation } from '../../scripts/lib/core-trace.mjs'
+import { ControlReader, commandCount, describeInvocation, isControlInvocation, isQuiet, shimScript, splitCommandLine, splitInvocation } from '../../scripts/lib/core-trace.mjs'
 import { leaks } from '../../scripts/lib/mcp-transcript-checks.mjs'
 import { recordingProblems, sha256, type CoreRecording } from '../src/lib/core-recording'
 import { statementLines } from '../src/lib/core-statement'
@@ -104,6 +104,19 @@ describe('the Go recording of the landing page program', () => {
 
     it('does not accept the unchanged recording by mistake: the faults above start from one that passes', () => {
       expect(problems(clone())).toEqual([])
+    })
+
+    it('lets a call stop the server without a command only when it says so, and the server was running and is gone', () => {
+      const silent = (recording: CoreRecording) => { const step = capability(recording).steps.at(-1)!; step.commands = []; return step }
+      const stopped = clone()
+      silent(stopped).stopsServer = true
+      expect(problems(stopped)).toEqual([])
+      const unsaid = clone()
+      silent(unsaid)
+      expect(problems(unsaid).join('\n')).toMatch(/tmux changed, but no command the call sent can change it/)
+      const wrong = clone()
+      capability(wrong).steps[1]!.stopsServer = true
+      expect(problems(wrong).join('\n')).toMatch(/says it stopped the server, but the server was not running before it or still holds a session/)
     })
 
     it('a recording is not played for a program that has since changed', () => {
@@ -296,6 +309,12 @@ describe('the control client the shim passes through', () => {
     expect(isControlInvocation(['-LCache', 'list-sessions'])).toBe(false)
     expect(isControlInvocation(['-L', 'C', 'list-sessions'])).toBe(false)
     expect(isControlInvocation(['-V'])).toBe(false)
+  })
+
+  it('reads tmux again after a command that can change it, and not after a query or a capture', () => {
+    for (const words of ['list-sessions -F x', 'display-message -p marker', 'show-hooks -g', 'capture-pane -b b -t %0']) expect(isQuiet(splitCommandLine(words)), words).toBe(true)
+    // A guard holds another command, and a buffer command or a rename changes what a server holds.
+    for (const words of ['if-shell -F c "new-window" g', 'run-shell x', 'new-window -d', 'rename-window x', 'delete-buffer -b b']) expect(isQuiet(splitCommandLine(words)), words).toBe(false)
   })
 
   it('becomes the real tmux for a control client, with the program\'s input kept on a descriptor a background job can read', () => {

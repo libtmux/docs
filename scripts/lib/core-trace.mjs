@@ -1,7 +1,7 @@
-import { appendFileSync, closeSync, createReadStream, createWriteStream, mkdtempSync, openSync, readFileSync, realpathSync, rmSync } from 'node:fs'
+import { appendFileSync, closeSync, createReadStream, createWriteStream, existsSync, mkdtempSync, openSync, readFileSync, realpathSync, rmSync } from 'node:fs'
 import { spawnSync } from 'node:child_process'
 import { constants } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { readTmuxState, recordedState, runTmux, settledState } from './mcp-tmux-state.mjs'
 import { UnsettledPaneError } from './mcp-transcript-checks.mjs'
 
@@ -162,6 +162,28 @@ export class ControlReader {
 export const commandCount = (words) => (words[0] === '%if' ? 0 : splitInvocation(words).commands.length)
 
 /**
+ * Whether a command cannot change what a server holds (its sessions, windows and panes): a listing, a query, a
+ * capture. The reply to one needs no read of tmux, which costs two tmux invocations and, in a control client's
+ * stream, time a library may not have: libtmux-ocaml gives a wait 0.5 seconds for about twenty commands. A guard
+ * (`if-shell`, `run-shell`) holds another command and is not quiet.
+ */
+export const isQuiet = (command) => command[0].startsWith('list-') || ['display-message', 'show-options', 'show-option', 'show-environment', 'show-hooks', 'show-messages', 'show-buffer', 'capture-pane', 'has-session'].includes(command[0])
+
+/** The file in which a control client's input reader tells its output reader which commands are quiet, one JSON line per line sent. */
+const quietFile = (directory) => join(directory, 'quiet')
+
+/** Whether the reply with this sequence number answers a quiet command, as the input reader recorded it. */
+function quietReply(directory, seq) {
+  const file = quietFile(directory)
+  if (!existsSync(file)) return false
+  for (const line of readFileSync(file, 'utf8').split('\n').filter(Boolean)) {
+    const sent = JSON.parse(line)
+    if (seq >= sent.seq && seq < sent.seq + sent.quiet.length) return sent.quiet[seq - sent.seq]
+  }
+  return false
+}
+
+/**
  * What stands in for `tmux` in the program's PATH. A control client must keep
  * the process id the program started, because libtmux-go finds its own client
  * by it, so a control invocation does not run inside the shim: the script logs
@@ -211,8 +233,11 @@ export function controlIn(client, fifo, argv, env = process.env) {
   process.stdin.on('data', (chunk) => {
     for (const { line } of lines.feed(chunk)) {
       const text = line.toString('utf8').replace(/\r?\n$/, '')
-      const count = commandCount(splitCommandLine(text))
+      const words = splitCommandLine(text)
+      const count = commandCount(words)
       append(env, { type: 'send', client, seq, count, at: Date.now(), line: text })
+      // Before tmux can answer: the reader of the replies looks the command up to see whether its reply needs the state read.
+      if (count > 0) appendFileSync(quietFile(dirname(fifo)), `${JSON.stringify({ seq, quiet: splitInvocation(words).commands.map(isQuiet) })}\n`)
       seq += count
     }
     out.write(chunk)
@@ -228,6 +253,8 @@ export function controlIn(client, fifo, argv, env = process.env) {
  */
 export async function controlOut(client, fifo, directory, env = process.env) {
   const read = reader(env)
+  // The state this client's last reply read: a reply to a command that changes none of it carries that state again.
+  let last
   const output = new ControlReader()
   const pass = (line) => new Promise((done) => { process.stdout.write(line, () => done()) })
   process.stdout.on('error', () => {})
@@ -238,8 +265,10 @@ export async function controlOut(client, fifo, directory, env = process.env) {
       if (event?.kind === 'reply') {
         let after
         let stateError
-        try { after = recordedState(read()) } catch (error) { stateError = error.message }
-        append(env, { type: 'reply', client, seq: seq++, at: Date.now(), exit: event.exit, stdout: event.text ? `${event.text}\n` : '', after, ...(stateError ? { stateError } : {}) })
+        const answered = seq++
+        if (last && quietReply(directory, answered)) after = last
+        else try { after = last = recordedState(read()) } catch (error) { stateError = error.message }
+        append(env, { type: 'reply', client, seq: answered, at: Date.now(), exit: event.exit, stdout: event.text ? `${event.text}\n` : '', after, ...(stateError ? { stateError } : {}) })
       }
       await pass(line)
     }

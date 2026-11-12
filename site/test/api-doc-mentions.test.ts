@@ -472,6 +472,8 @@ describe('a capability directory in each port\'s syntax', () => {
       ['[`new_session`](@ref LibTmux.new_session)', '[`snapshot`](@ref)', '[Server](@ref)'], ['new_session', 'snapshot', 'Server']],
     ['powershell', [declare('LibTmux.Server', 'class', 'Server'), declare('LibTmux\\Get-TmuxPane', 'function', 'Get-TmuxPane'), declare('LibTmux\\Get-TmuxSession', 'function', 'Get-TmuxSession')],
       ['Get-TmuxPane', '`Get-TmuxSession`', 'LibTmux.Server'], ['Get-TmuxPane', 'Get-TmuxSession', 'LibTmux.Server']],
+    ['haskell', [declare('LibTmux.Server', 'module', 'LibTmux.Server'), declare('LibTmux.Server#t:Server', 'typealias', 'Server', 'LibTmux.Server'), declare('LibTmux.Server#v:withServer', 'function', 'withServer', 'LibTmux.Server'), declare('LibTmux.Server#v:capture', 'function', 'capture', 'LibTmux.Server')],
+      [':obj:`Server <LibTmux.Server#t:Server>`', ':obj:`withServer <LibTmux.Server#v:withServer>`', ':obj:`capture <LibTmux.Server#v:capture>`'], ['Server', 'withServer', 'capture']],
   ]
 
   it.each(ports)('%s draws its directory with a linked chip for every reference', async (port, symbols, refs, expected) => {

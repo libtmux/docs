@@ -31,7 +31,7 @@ it('titles a page in the manifest as its Markdown twin titles it', async () => {
   expect(checked.map((entry) => entry.title)).toEqual(['Rust-based tmux workspace manager', 'tmux MCP, built in Rust'])
 })
 
-it('omits excluded products while preserving unpublished overviews in agent manifests', async () => {
+it('lists no product or documentation area for a product a port does not ship', async () => {
   entries.splice(0, entries.length)
   vi.stubEnv('LIBTMUX_DOCS_VERSION', 'latest')
   for (const scope of ['', 'lisp', 'lua']) {
@@ -46,22 +46,22 @@ it('omits excluded products while preserving unpublished overviews in agent mani
     }
     if (scope !== 'lisp') {
       const lua = json.ports.find((port: { slug: string }) => port.slug === 'lua')
-      expect(lua.products.find((product: { slug: string }) => product.slug === 'mcp')).toMatchObject({
-        availability: 'unpublished', reference: null, protocol: null,
-        url: expect.stringMatching(/\/lua\/latest\/mcp\/$/),
-      })
+      expect(lua.products).toEqual([])
+      const areas = lua.documentation.map((area: { id: string }) => area.id)
+      expect(areas).not.toContain('mcp')
+      expect(areas).not.toContain('workspace')
     }
   }
 })
 
-it('omits Erlang MCP from the agent manifest while retaining unavailable workspace metadata', async () => {
+it('lists no product for Erlang in the agent manifest', async () => {
   entries.splice(0, entries.length)
   vi.stubEnv('LIBTMUX_DOCS_PORT', 'erlang')
   vi.stubEnv('LIBTMUX_DOCS_VERSION', 'master')
   const json = await (await manifest({ site: new URL('https://libtmux.org') } as Parameters<typeof manifest>[0])).json()
   expect(json.ports).toHaveLength(1)
   expect(json.ports[0].slug).toBe('erlang')
-  expect(json.ports[0].products).toEqual([expect.objectContaining({ slug: 'workspace', availability: 'unpublished', cli: null, reference: null })])
-  expect(json.ports[0].documentation.map((entry: { id: string }) => entry.id)).toEqual(['core', 'workspace'])
-  expect(json.pages.some((entry: { url: string }) => new URL(entry.url).pathname.includes('/mcp/'))).toBe(false)
+  expect(json.ports[0].products).toEqual([])
+  expect(json.ports[0].documentation.map((entry: { id: string }) => entry.id)).toEqual(['core'])
+  expect(json.pages.some((entry: { url: string }) => /\/(mcp|workspace)\//.test(new URL(entry.url).pathname))).toBe(false)
 })

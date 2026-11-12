@@ -60,8 +60,12 @@ export interface PortPackage {
   installs?: readonly InstallCommand[]
 }
 
-/** An `unpublished` product has pages that are not released yet; an `excluded` one has no pages at all. */
-export type ProductAvailability = 'available' | 'unpublished' | 'excluded'
+/**
+ * `excluded` marks a product the port has not published: the site builds no
+ * page for it, lists it nowhere and links to none. A product is available or
+ * it is excluded; there is no placeholder in between.
+ */
+export type ProductAvailability = 'available' | 'excluded'
 
 /**
  * One way to add a port's package to a project.
@@ -526,7 +530,7 @@ const CORE_PORTS: readonly Port[] = [
     name: 'Lua',
     language: 'Lua',
     packageName: 'libtmux',
-    productAvailability: { workspace: 'unpublished', mcp: 'unpublished' },
+    productAvailability: { workspace: 'excluded', mcp: 'excluded' },
     repo: 'libtmux/libtmux-lua',
     docsDispatch: { workflow: 'docs.yml' },
     checkout: '~/work/libtmux/libtmux-lua',
@@ -588,7 +592,7 @@ const CORE_PORTS: readonly Port[] = [
     renderer: 'astro',
     publishesOwnTree: true,
     generator: 'PowerShell command metadata, manifests, PlatyPS and C# source',
-    productAvailability: { mcp: 'unpublished' },
+    productAvailability: { mcp: 'excluded' },
     productDescriptions: { workspace: 'Read, validate, plan and load workspace files with the LibTmux.Workspace cmdlets.' },
     packages: [{
       id: 'workspace', name: 'LibTmux.Workspace',
@@ -672,7 +676,7 @@ const CORE_PORTS: readonly Port[] = [
     packageName: 'libtmux_erlang',
     repo: 'libtmux/libtmux-erlang',
     docsDispatch: { workflow: 'docs.yml' },
-    productAvailability: { workspace: 'unpublished', mcp: 'excluded' },
+    productAvailability: { workspace: 'excluded', mcp: 'excluded' },
     checkout: '~/work/libtmux/libtmux-erlang',
     worktree: '~/work/libtmux/libtmux-erlang-docs-site',
     source: { path: 'apps/libtmux_erlang', ref: 'master' },
@@ -697,7 +701,7 @@ const CORE_PORTS: readonly Port[] = [
     name: 'Elixir',
     language: 'Elixir',
     packageName: 'libtmux',
-    productAvailability: { workspace: 'unpublished', mcp: 'unpublished' },
+    productAvailability: { workspace: 'excluded', mcp: 'excluded' },
     repo: 'libtmux/libtmux-elixir',
     docsDispatch: { workflow: 'docs.yml' },
     checkout: '~/work/libtmux/libtmux-elixir',
@@ -755,7 +759,7 @@ const CORE_PORTS: readonly Port[] = [
     renderer: 'astro',
     generator: 'Configured Haddock public interfaces',
     publishesOwnTree: true,
-    productAvailability: { workspace: 'unpublished', mcp: 'excluded' },
+    productAvailability: { workspace: 'excluded', mcp: 'excluded' },
     packages: [{ id: 'core', name: 'libtmux-haskell', source: { path: 'src', ref: 'master' }, require: 'LibTmux' }],
     installs: [{
       label: 'Cabal', lang: 'text', filename: 'cabal.project',
@@ -1655,17 +1659,12 @@ export const PICKER_GROUP_SUMMARY: Readonly<Record<PickerGroup, string>> = {
   core: 'API reference and guides', mcp: 'Tools for connected assistants', workspace: 'Repeatable development environments',
 }
 
-/** Whether a port includes a product, including its unpublished overview. */
-export function productIncluded(port: Port, product: DocProduct): boolean {
-  return !port.parentLibrary && port.productAvailability?.[product] !== 'excluded'
-}
-
-/** Whether a companion product has a published implementation for a port. */
+/** Whether a companion product is published for a port, so the site has pages for it. */
 export function productAvailable(port: Port, product: DocProduct): boolean {
-  return !port.parentLibrary && port.productAvailability?.[product] !== 'unpublished' && !productExcluded(port, product)
+  return !port.parentLibrary && !productExcluded(port, product)
 }
 
-/** Whether a port has no page for a companion product, as opposed to one that is only unpublished. */
+/** Whether a port declares it has not published a companion product, as opposed to a wrapper library that has none. */
 export function productExcluded(port: Port, product: DocProduct): boolean {
   return port.productAvailability?.[product] === 'excluded'
 }
@@ -1697,30 +1696,35 @@ export function productInDevelopment(port: Port, product: DocProduct): boolean {
   return product === 'mcp' || port.workspaceCliAvailability !== 'released'
 }
 
-/** Workspace overview support scope and installation prerequisites. */
+/**
+ * How a port's workspace command is obtained, for the overview's install
+ * section. Undefined when the port has no workspace CLI to build or pin.
+ */
+export function workspaceInstallGuidance(port: Port): string | undefined {
+  if (!productAvailable(port, 'workspace') || !port.workspaceCli) return undefined
+  const command = port.workspaceCliRun ?? port.workspaceCli.split(/\s+/)[0]
+  if (port.workspaceCliAvailability === 'published') {
+    return `The \`${command}\` CLI is published to ${port.registry?.name ?? 'the package registry'}, `
+      + 'numbered 0.1.N. Pin its version when automation depends on its output.'
+  }
+  if (port.workspaceCliAvailability !== 'local') return undefined
+  const cliPackage = port.packages?.find((pkg) => pkg.executable === command || pkg.executable === port.workspaceCli)
+  return (port.workspaceCliRun
+    ? `Run \`${command}\` from a source checkout; the installation guide lists the setup. `
+    : `Build \`${command}\` from the source revision in the installation guide. `)
+    + (cliPackage ? `The \`${cliPackage.name}\` package supplies this command. ` : '')
+    + 'Follow the workspace guide for its configuration format.'
+}
+
+/** The overview's support scope with its install guidance, as one paragraph for the Markdown and LLM exports. */
 export function workspaceOverviewNotice(port: Port): { title: string; body: string } | undefined {
   if (!productAvailable(port, 'workspace')) return undefined
   const concept = productConceptNotice(port, 'workspace')
-  if (!port.workspaceCli) return concept
-  const title = concept?.title ?? `Workspace Manager for ${port.name} is in development.`
-  const scope = concept ? `${concept.body} ` : ''
-  const command = port.workspaceCliRun ?? port.workspaceCli.split(/\s+/)[0]
-  if (port.workspaceCliAvailability === 'published') {
-    return {
-      title,
-      body: scope + `The \`${command}\` CLI is published to ${port.registry?.name ?? 'the package registry'}, `
-        + 'numbered 0.1.N. Pin its version when automation depends on its output.',
-    }
-  }
-  if (port.workspaceCliAvailability !== 'local') return concept
-  const cliPackage = port.packages?.find((pkg) => pkg.executable === command || pkg.executable === port.workspaceCli)
+  const guidance = workspaceInstallGuidance(port)
+  if (!guidance) return concept
   return {
-    title,
-    body: scope + (port.workspaceCliRun
-      ? `Run \`${command}\` from a source checkout; the installation guide lists the setup. `
-      : `Build \`${command}\` from the source revision in the installation guide. `)
-      + (cliPackage ? `The \`${cliPackage.name}\` package supplies this command. ` : '')
-      + 'Follow the workspace guide for its configuration format.',
+    title: concept?.title ?? `Workspace Manager for ${port.name} is in development.`,
+    body: (concept ? `${concept.body} ` : '') + guidance,
   }
 }
 

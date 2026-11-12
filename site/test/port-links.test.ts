@@ -41,7 +41,6 @@ function cases(): Case[] {
   }
   add('ts mcp v1.2.3', { port: bySlug('ts'), product: 'mcp', version: 'v1.2.3' })
   add('py workspace v1.2.3', { port: bySlug('py'), product: 'workspace', version: 'v1.2.3' })
-  add('lua mcp (no package)', { port: bySlug('lua'), product: 'mcp', version: 'latest' })
   add('kotlin workspace v1.2.3 (no package)', { port: bySlug('kotlin'), product: 'workspace', version: 'v1.2.3' })
   add('tmux project', { project: TMUX })
   return all

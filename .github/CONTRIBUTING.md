@@ -218,6 +218,20 @@ requires the gate to notice, by the problem it names:
 $ node site/scripts/check-dev.mjs --badge-centring
 ```
 
+A Workspace Manager or MCP page reports its status in a dismissible bar under
+the header, beside the release bar, and never as an admonition in the article.
+The product notice gate reads the bar on an OCaml, Java, Rust and Python page for
+its badge, sentence and position, then requires Dismiss to hide it and store the
+choice, a later visit to paint without it before any bundled script runs, a
+client-routed page to keep it hidden, another product's bar and the release bar to
+stay, and the bar to show without JavaScript. Two controls, an admonition in the
+article and a bar that stays after Dismiss, must fail the gate by the problem
+each names:
+
+```console
+$ node site/scripts/check-dev.mjs --product-notice
+```
+
 A port's header links its repository, package host and API reference, and
 lists every other package in a searchable Packages disclosure. The header gate
 shows one copy of them at each width, from the narrowest phone to a wide

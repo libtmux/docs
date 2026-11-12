@@ -25,7 +25,9 @@ const isAvailable = (entry: InventoryEntry) => entry.status === 'published' || e
   || (entry.status === 'configured-unpublished' && !entry.package && !entry.api)
 const available = (slug: string) => entries(slug).filter(isAvailable)
 const distributions = (slug: string) => available(slug).filter((entry) => !entry.within && entry.kind !== 'source')
+/** A distribution recorded as `planned` is declared by a manifest but unpublished, so the inventory keeps it off every link. */
 const declared = (slug: string) => manifests[slug]!.distributions.map((entry) => entry.name)
+  .filter((name) => !entries(slug).some((entry) => entry.status === 'planned' && entry.coordinate === name))
 const GO = 'github.com/libtmux/libtmux-go'
 
 describe('port inventory', () => {

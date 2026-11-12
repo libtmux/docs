@@ -1117,6 +1117,8 @@ while IFS='|' read -r slug name versioned renderer generator checkout ecosystem_
       mkdir -p "$port_out/api"
       cp -a "$ref_outdir/." "$port_out/api/"
       node "$script_dir/brand-native-pages.mjs" "$port_out/api" "$slug" "$LIBTMUX_DOCS_PORT_ROOT"
+      # Astro marks its own pages as it builds them; native pages need the same marker in their HTML.
+      node "$script_dir/mark-external-links.mjs" "$port_out/api" "$site_origin"
     elif [ "$ref_status" = "skipped" ]; then
       mkdir -p "$port_out/api"
       write_reference_redirect "$slug" "$version" "$port_out/api/index.html"

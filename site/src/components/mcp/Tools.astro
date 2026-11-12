@@ -1,6 +1,5 @@
 ---
 import { ALL_TRANSLATED } from '../../i18n/resolve'
-import Aside from '../Aside.astro'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import { PORTS, PORT_BY_SLUG, portPageUrl, productAvailable } from '../../lib/ports'
 import { buildTarget } from '../../lib/versions'
@@ -74,16 +73,11 @@ const spread = Math.round((ranked[0].n / ranked[ranked.length - 1].n) * 10) / 10
       names</strong>. Of these, <strong>{everywhere.length}</strong> are
       registered in every port, and {soleOwner} in only one.
     </p>
-    <Aside type="caution" title="All of these MCP servers are in development">
-      <p class="mb-0 max-w-3xl">
-        A registered tool is not a stability guarantee; follow its link for
-        the port's current contract.
-      </p>
-    </Aside>
     <p class="mt-3 max-w-3xl text-sm opacity-80">
-      The table uses tool registrations extracted from each port's source.
-      The extraction checks the Python names against the
-      {data.referenceDocumented} tools documented by libtmux-mcp.
+      A registered tool is not a stability guarantee; follow its link for the
+      port's current contract. The table uses tool registrations extracted
+      from each port's source. The extraction checks the Python names against
+      the {data.referenceDocumented} tools documented by libtmux-mcp.
     </p>
 
     <h2 class="mt-10 text-xl font-semibold">Names and platform limits</h2>

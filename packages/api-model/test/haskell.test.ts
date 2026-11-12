@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { extractHaskellArtifact } from '../src/languages/haskell.ts'
 import { tokenizeDoc } from '../src/doc/roles.ts'
 import { SymbolIndex } from '../src/link.ts'
-import { navSidecar } from '../src/nav-sidecar.ts'
+import { exportGroupsNav, navSidecarFor } from '../src/nav-sidecar.ts'
 import { sourceUrl } from '../src/products.ts'
 
 const artifact = JSON.parse(readFileSync(new URL('./fixtures/haskell-native/artifact.json', import.meta.url), 'utf8'))
@@ -46,7 +46,9 @@ describe('Haddock shared-model adapter', () => {
   it('keeps authored interlinks and examples and adds instance heads with their exact source links', () => {
     const model = extractHaskellArtifact(artifact)
     const module = model.symbols.find((symbol) => symbol.id === 'LibTmux.Id')!
-    expect(module.doc).toEqual(artifact.symbols.find((symbol: { id: string }) => symbol.id === module.id).doc)
+    const authored = artifact.symbols.find((symbol: { id: string }) => symbol.id === module.id).doc
+    expect(module.doc!.summary).toBe(authored.summary)
+    expect(module.doc!.body!.startsWith(`${authored.body}\n\n# What is on here\n\n`)).toBe(true)
     const session = model.symbols.find((symbol) => symbol.id === 'LibTmux.Id#t:SessionId')!
     expect(session.doc!.body).toContain('## Instances\n\n')
     expect(session.doc!.body).toContain('instance [Eq](https://hackage.haskell.org/package/base-4.22.0.0/docs/Data-Eq.html#t:Eq)')
@@ -58,11 +60,24 @@ describe('Haddock shared-model adapter', () => {
     ])
   })
 
+  it('appends a directory that lists each export group with its members in native order', () => {
+    const model = extractHaskellArtifact(artifact)
+    const module = model.symbols.find((symbol) => symbol.id === 'LibTmux.Id')!
+    const groups = artifact.modules.find((entry: { name: string }) => entry.name === 'LibTmux.Id').groups as { title: string; members: string[] }[]
+    const nameOf = (id: string) => id.split(/#[tv]:/)[1]
+    const directory = module.doc!.body!.split('# What is on here\n\n')[1]
+    expect(directory.split('\n\n')).toEqual([
+      'Its exports fall into these groups, in export-list order:',
+      ...groups.flatMap((group) => [`**${group.title}**`, group.members.map((id) => `:obj:\`${nameOf(id)} <${id}>\``).join(', ')]),
+    ])
+  })
+
   it('regenerates complete native navigation from the stored model alone', () => {
     const model = extractHaskellArtifact(artifact)
     expect(model.exportGroups).toEqual(artifact.modules.flatMap((module: { name: string; groups: object[] }) =>
       module.groups.map((group) => ({ owner: module.name, ...group }))))
-    const sidecar = navSidecar('haskell', JSON.parse(JSON.stringify(model)))!
+    const stored = JSON.parse(JSON.stringify(model))
+    const sidecar = navSidecarFor('haskell', stored, exportGroupsNav(stored))
     expect(sidecar.buckets.map((bucket) => bucket.label)).toEqual(artifact.package.exposedModules)
     expect(Object.keys(sidecar.placement)).toHaveLength(31)
     expect(sidecar.diagnostics).toEqual({ unmatched: [], deadBuckets: [], ambiguous: [], staleUnsettled: [] })

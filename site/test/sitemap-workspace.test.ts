@@ -67,10 +67,17 @@ describe('tmux manual sitemap routes', () => {
 
 describe('canonical workspace sitemap routes', () => {
   it.each([
-    ['powershell/latest/mcp/', 'powershell/latest/guides/mcp/'],
+    ['powershell/latest/mcp/', 'powershell/latest/'],
+    ['powershell/latest/guides/mcp/', 'powershell/latest/'],
+    ['erlang/latest/workspace/', 'erlang/latest/'],
     ['julia/latest/guides/api-overview/', 'julia/latest/reference/'],
     ['ruby/latest/guides/source/core/', 'ruby/latest/guides/core/'],
     ['lua/latest/guides/source/overview/', 'lua/latest/guides/overview/'],
+    ['lua/latest/mcp/', 'lua/latest/'],
+    ['lua/latest/workspace/', 'lua/latest/'],
+    ['elixir/latest/mcp/', 'elixir/latest/'],
+    ['elixir/latest/workspace/', 'elixir/latest/'],
+    ['haskell/latest/workspace/', 'haskell/latest/'],
   ])('excludes the source-guide alias %s while retaining %s', (alias, canonical) => {
     expect(sitemapOptions.filter!(`https://libtmux.org/en/${alias}`)).toBe(false)
     expect(sitemapOptions.filter!(`https://libtmux.org/en/${canonical}`)).toBe(true)
@@ -108,8 +115,8 @@ describe('canonical workspace sitemap routes', () => {
     const run = async (name: keyof typeof hooks, value: unknown) => {
       await (hooks[name] as (input: unknown) => unknown)(value)
     }
-    const kept = ['ts/latest/workspace/guides/', 'go/latest/workspace/examples/', 'py/v0.46.2/workspace/guides/', 'ruby/latest/workspace/topics/', 'powershell/latest/guides/mcp/', 'julia/latest/reference/']
-    const omitted = ['ts/latest/workspace/topics/', 'go/latest/workspace/api/builder/', 'lua/latest/workspace/guides/', 'kotlin/latest/workspace/examples/', 'powershell/latest/mcp/', 'julia/latest/guides/api-overview/']
+    const kept = ['ts/latest/workspace/guides/', 'go/latest/workspace/examples/', 'py/v0.46.2/workspace/guides/', 'ruby/latest/workspace/topics/', 'powershell/latest/', 'julia/latest/reference/']
+    const omitted = ['ts/latest/workspace/topics/', 'go/latest/workspace/api/builder/', 'lua/latest/workspace/guides/', 'kotlin/latest/workspace/examples/', 'powershell/latest/mcp/', 'powershell/latest/guides/mcp/', 'julia/latest/guides/api-overview/']
     try {
       await run('astro:config:done', { config: { site: 'https://libtmux.org', base: '/en/', trailingSlash: 'always', build: { format: 'directory' } } })
       await run('astro:routes:resolved', { routes: [] })
