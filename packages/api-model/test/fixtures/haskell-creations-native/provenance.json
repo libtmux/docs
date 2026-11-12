@@ -1,0 +1,173 @@
+{
+  "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29",
+  "modules": [
+    "LibTmux",
+    "LibTmux.Creation",
+    "LibTmux.Id",
+    "LibTmux.Query",
+    "LibTmux.Query.Client",
+    "LibTmux.Query.ClientAttachment",
+    "LibTmux.Query.Link",
+    "LibTmux.Query.Occurrence",
+    "LibTmux.Query.Pane",
+    "LibTmux.Query.ServerInfo",
+    "LibTmux.Query.Session",
+    "LibTmux.Query.Window",
+    "LibTmux.Server",
+    "LibTmux.Snapshot",
+    "LibTmux.Snapshot.Fixture",
+    "LibTmux.Value",
+    "LibTmux.Version"
+  ],
+  "origins": [
+    "LibTmux",
+    "LibTmux.Creation",
+    "LibTmux.Id",
+    "LibTmux.Query",
+    "LibTmux.Query.Client",
+    "LibTmux.Query.ClientAttachment",
+    "LibTmux.Query.Link",
+    "LibTmux.Query.Occurrence",
+    "LibTmux.Query.Pane",
+    "LibTmux.Query.ServerInfo",
+    "LibTmux.Query.Session",
+    "LibTmux.Query.Window",
+    "LibTmux.Server",
+    "LibTmux.Snapshot",
+    "LibTmux.Snapshot.Fixture",
+    "LibTmux.Value",
+    "LibTmux.Version",
+    "LibTmux.Internal.Capture",
+    "LibTmux.Internal.Field",
+    "LibTmux.Internal.Graph",
+    "LibTmux.Internal.Query",
+    "LibTmux.Internal.Runtime",
+    "LibTmux.Internal.Scheduler",
+    "LibTmux.Internal.Scope",
+    "LibTmux.Internal.TmuxText",
+    "LibTmux.Internal.Mutation",
+    "LibTmux.Internal.Creation"
+  ],
+  "sourceFiles": [
+    {
+      "path": ".tool-versions",
+      "sha256": "13c8a19b336b86a161f4d5ea74347960e884e2c0887d399fe752d84eecfd35e7"
+    },
+    {
+      "path": "cabal.project",
+      "sha256": "a12fcbb12429d0702f22fb57aed20d3a00ca5a7262862d11ba48055f6507d15d"
+    },
+    {
+      "path": "libtmux-haskell.cabal",
+      "sha256": "a794dc015599286cdf7cb8cb56320e86f777f28a9d11b2374fa92afc48a131e1"
+    },
+    {
+      "path": "src/LibTmux.hs",
+      "sha256": "38fb168b503a2cd419e013481c7c1ad32121faf4e6ff05dced653616017948b7"
+    },
+    {
+      "path": "src/LibTmux/Creation.hs",
+      "sha256": "e3187844f7cc5c3c87d77c6299f9cbccc57753fd683a15717c962dc33aafa916"
+    },
+    {
+      "path": "src/LibTmux/Id.hs",
+      "sha256": "3456edf88bf412e8769e5c96cc5d35b7b118ea3bd3786f167c9002f9804fb3b7"
+    },
+    {
+      "path": "src/LibTmux/Query.hs",
+      "sha256": "43c7b3854e6a7183b383a54216923d31225fa7f42271459f5cdb824bf2c9835c"
+    },
+    {
+      "path": "src/LibTmux/Query/Client.hs",
+      "sha256": "323e70a2657ee88e9405e1f05cf0cb285ac05239a1f9966bbfc8046c8c0bb050"
+    },
+    {
+      "path": "src/LibTmux/Query/ClientAttachment.hs",
+      "sha256": "c5c544c04de75b2af264ec156d198fdac3fea4e34a64d79b538ea03d0c711dea"
+    },
+    {
+      "path": "src/LibTmux/Query/Link.hs",
+      "sha256": "13b994e13f3e97a4e7df8fde5baaf4081c24a2d85ddba488367c7c1a8e5e2bae"
+    },
+    {
+      "path": "src/LibTmux/Query/Occurrence.hs",
+      "sha256": "5d52a00a8c7c219525cf44e86ee9ab03f2028a75665909a0ec6545e7f1545a9c"
+    },
+    {
+      "path": "src/LibTmux/Query/Pane.hs",
+      "sha256": "f6139bc34220eb1e891e567fb1e6c21097ee2bab937440a469be97282cb0280f"
+    },
+    {
+      "path": "src/LibTmux/Query/ServerInfo.hs",
+      "sha256": "9fc7ae60cee0028a5299c587a1383ef1db57d90cfd938483dcda1b04c902c105"
+    },
+    {
+      "path": "src/LibTmux/Query/Session.hs",
+      "sha256": "e11148b360cc19465cc346eda1f9141f8c64e55e3bb5c68fb653d559d78bec5b"
+    },
+    {
+      "path": "src/LibTmux/Query/Window.hs",
+      "sha256": "7d92de6a8214c059dbb35f5e5f3216c3b25afed3b9263ec1601e50bbaa1a23b1"
+    },
+    {
+      "path": "src/LibTmux/Server.hs",
+      "sha256": "335b62a0bc99dd6208b53eb3bf30c1b5019486545efcb0dd39e5128083802c01"
+    },
+    {
+      "path": "src/LibTmux/Snapshot.hs",
+      "sha256": "cddfee4e757f1dd4b35ee9f099fa796c86213ea7ff50a4727ddf198d26aaa2a1"
+    },
+    {
+      "path": "src/LibTmux/Snapshot/Fixture.hs",
+      "sha256": "b1b53369587d2ea963a97ba2b34ce963233130c4e47581292510613e7819a919"
+    },
+    {
+      "path": "src/LibTmux/Value.hs",
+      "sha256": "e199c3d0bbf08a159daa35bb4ae9a5d2ad4761117d375f292dd8b250bb459e55"
+    },
+    {
+      "path": "src/LibTmux/Version.hs",
+      "sha256": "301f0640ab26f5fdf2361cd47929808debceb1fe5893b188c9a3c0e1dc6ddd7b"
+    },
+    {
+      "path": "internal/LibTmux/Internal/Capture.hs",
+      "sha256": "21de3d6173114a0a872e8f20ca50fadbfba8af4c4d2a923dd3ad5d3b3321a6b3"
+    },
+    {
+      "path": "internal/LibTmux/Internal/Field.hs",
+      "sha256": "231b792d490fabb7a15aa35655eca04eecf27c403020907dec32edff459466da"
+    },
+    {
+      "path": "internal/LibTmux/Internal/Graph.hs",
+      "sha256": "ec5c4f489d1f2269da0a645e45266b0bdb797f4245418975fd9dd5b96f754a68"
+    },
+    {
+      "path": "internal/LibTmux/Internal/Query.hs",
+      "sha256": "ebf60049d2972df5fec0c36dfe7f363386a93f2aa621dcf659f335a87f32c905"
+    },
+    {
+      "path": "internal/LibTmux/Internal/Runtime.hs",
+      "sha256": "896af185c1b84bfa9a8613b7d5332faa66982016cd2ccd11c0367a45647573e0"
+    },
+    {
+      "path": "internal/LibTmux/Internal/Scheduler.hs",
+      "sha256": "d97dd8c431a84c41ab947baac096e757cf498ebb0747b0e311fa7a73eee927b1"
+    },
+    {
+      "path": "internal/LibTmux/Internal/Scope.hs",
+      "sha256": "a71bd0b7066a4269bd5ec59ebe98c2b115af8e44fe173a21a8abade80b17a423"
+    },
+    {
+      "path": "internal/LibTmux/Internal/TmuxText.hs",
+      "sha256": "5c58645aa089c306cf68f69c4b209eba78f915320547c0d1b8bdfb003b086dd8"
+    },
+    {
+      "path": "internal/LibTmux/Internal/Mutation.hs",
+      "sha256": "770a3184c82e071509a8814286684d2db71cd0df160ae4110953d7888f755a4c"
+    },
+    {
+      "path": "internal/LibTmux/Internal/Creation.hs",
+      "sha256": "3c6df9a21857807629a0202d7fc32073ab2858e28c90e58d2fb965d947793263"
+    }
+  ]
+}
