@@ -28,6 +28,8 @@ const NO_SERVER = /no server running|no sessions|server exited unexpectedly|erro
 /**
  * Parse what the three tagged listings printed. A field count that is not the
  * expected one means a name held the separator, and nothing is guessed. A
+ * window linked more than once is listed once per link, and its panes with it: a
+ * pane listed again, the same, is one pane. A
  * window also carries `automaticName`, whether tmux still renames it after its
  * pane's program; `settledState` reads it and leaves it out of the state it
  * returns (`recordedState`).
@@ -47,7 +49,13 @@ export function parseListings(output) {
     if (fields.length !== expected.length) fail(line, `expected ${expected.length} fields, found ${fields.length}`)
     if (tag === 'S') state.sessions.push({ id: fields[0], name: fields[1] })
     else if (tag === 'W') state.windows.push({ session: fields[0], id: fields[1], index: number(fields[2]), name: fields[3], active: flag(fields[4]), layout: fields[5], automaticName: flag(fields[6]) })
-    else state.panes.push({ window: fields[0], id: fields[1], command: fields[2], left: number(fields[3]), top: number(fields[4]), width: number(fields[5]), height: number(fields[6]), active: flag(fields[7]) })
+    else {
+      const pane = { window: fields[0], id: fields[1], command: fields[2], left: number(fields[3]), top: number(fields[4]), width: number(fields[5]), height: number(fields[6]), active: flag(fields[7]) }
+      // `list-panes -a` lists a pane once for each link of its window; the repeats are the same pane.
+      const known = state.panes.find((other) => other.id === pane.id)
+      if (!known) state.panes.push(pane)
+      else if (JSON.stringify(known) !== JSON.stringify(pane)) fail(line, `pane ${pane.id} is listed twice, differently`)
+    }
   }
   return state
 }

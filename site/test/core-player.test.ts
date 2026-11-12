@@ -682,6 +682,30 @@ describe('what a call changed in tmux', () => {
   })
 })
 
+describe('what a call changed in a window linked more than once', () => {
+  const layout = 'a1b2,80x24,0,0,0'
+  const link = (session: string, index: number, over: object = {}) => ({ session, id: '@0', index, name: 'editor', active: false, layout, ...over })
+  const state = (windows: object[], sessions = [{ id: '$0', name: 'demo' }]) => ({ sessions, windows, panes: [{ window: '@0', id: '%0', command: 'cat', left: 0, top: 0, width: 80, height: 24, active: true }] }) as never
+
+  it('names a link made into the same session or another, and one removed, and marks the window\'s label', () => {
+    const one = state([link('$0', 0, { active: true })])
+    const twice = state([link('$0', 0, { active: true }), link('$0', 4)])
+    expect(tmuxChanges(one, twice)).toEqual({ marks: { windows: [], panes: [], labels: ['@0'], sessions: [] }, phrases: ['linked window 4:editor'] })
+    expect(tmuxChanges(twice, one)).toEqual({ marks: { windows: [], panes: [], labels: ['@0'], sessions: [] }, phrases: ['unlinked window 4:editor'] })
+    const sessions = [{ id: '$0', name: 'demo' }, { id: '$1', name: 'other' }]
+    const own = { session: '$1', id: '@1', index: 0, name: 'home', active: true, layout }
+    const crossed = { sessions, windows: [link('$0', 0, { active: true }), own, link('$1', 7)], panes: [{ window: '@0', id: '%0', command: 'cat', left: 0, top: 0, width: 80, height: 24, active: true }, { window: '@1', id: '%1', command: 'cat', left: 0, top: 0, width: 80, height: 24, active: true }] } as never
+    const before = { sessions, windows: [link('$0', 0, { active: true }), own], panes: (crossed as { panes: object[] }).panes } as never
+    expect(tmuxChanges(before, crossed).phrases).toEqual(['linked window other:7:editor'])
+  })
+
+  it('names a rename once, and a window made active in one link', () => {
+    const before = state([link('$0', 0, { active: true }), link('$0', 4)])
+    expect(tmuxChanges(before, state([link('$0', 0, { name: 'api', active: true }), link('$0', 4, { name: 'api' })])).phrases).toEqual(['renamed window 0:editor to 0:api'])
+    expect(tmuxChanges(before, state([link('$0', 0), link('$0', 4, { active: true })])).phrases).toEqual(['selected window 4:editor'])
+  })
+})
+
 describe('what a call did to its panes\' contents', () => {
   it('reads the keys a call sent and the text tmux returned for a pane', async () => {
     const lua = await quickstartOf('lua')

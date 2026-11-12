@@ -152,14 +152,19 @@ export interface TmuxMarks { windows: string[]; panes: string[]; labels: string[
  * marks the drawing puts on what changed, and the changes as the note words
  * them: a pane or window made active is a selection, which is what an
  * attached client would see move. A window that arrives with its session, or a pane with its window,
- * is part of that addition rather than a change of its own.
+ * is part of that addition rather than a change of its own. A window linked
+ * more than once is one window with several links: a link made or removed is
+ * named as that, and a window's name and panes are read once.
  */
 export function tmuxChanges(before: TmuxState, after: TmuxState): { marks: TmuxMarks; phrases: string[] } {
   const byId = <T extends { id: string }>(items: readonly T[]) => new Map(items.map((item) => [item.id, item]))
-  const [sessionsBefore, windowsBefore, panesBefore] = [byId(before.sessions), byId(before.windows), byId(before.panes)]
-  const [sessionsAfter, windowsAfter] = [byId(after.sessions), byId(after.windows)]
+  // A window is listed once per link; its first link stands for it where only the window matters.
+  const physical = (windows: readonly TmuxWindow[]) => byId(windows.filter((window, position) => windows.findIndex((other) => other.id === window.id) === position))
+  const [sessionsBefore, panesBefore] = [byId(before.sessions), byId(before.panes)]
+  const [sessionsAfter, windowsBefore, windowsAfter] = [byId(after.sessions), physical(before.windows), physical(after.windows)]
   const several = Math.max(before.sessions.length, after.sessions.length) > 1
   const label = (window: TmuxWindow) => `${several ? `${(sessionsAfter.get(window.session) ?? sessionsBefore.get(window.session))?.name}:` : ''}${window.index}:${window.name}`
+  const sameLink = (a: TmuxWindow, b: TmuxWindow) => a.session === b.session && a.index === b.index
   const marks: TmuxMarks = { windows: [], panes: [], labels: [], sessions: [] }
   const phrases: string[] = []
   for (const session of after.sessions) {
@@ -171,12 +176,22 @@ export function tmuxChanges(before: TmuxState, after: TmuxState): { marks: TmuxM
     }
   }
   for (const session of before.sessions) if (!sessionsAfter.has(session.id)) phrases.push(`closed session ${session.name}`)
-  for (const window of after.windows) {
+  for (const window of windowsAfter.values()) {
     const was = windowsBefore.get(window.id)
     marks.windows.push(...(was ? [] : [window.id]))
     if (!was) { if (sessionsBefore.has(window.session)) phrases.push(`added window ${label(window)}`); continue }
-    if (was.name !== window.name || was.index !== window.index) { phrases.push(`renamed window ${was.index}:${was.name} to ${label(window)}`); marks.labels.push(window.id) }
-    if (window.active && !was.active) { phrases.push(`selected window ${label(window)}`); marks.labels.push(window.id) }
+    const [links, linked] = [after.windows.filter((link) => link.id === window.id), before.windows.filter((link) => link.id === window.id)]
+    if (links.length === 1 && linked.length === 1) {
+      if (was.name !== window.name || was.index !== window.index) { phrases.push(`renamed window ${was.index}:${was.name} to ${label(window)}`); marks.labels.push(window.id) }
+      if (window.active && !was.active) { phrases.push(`selected window ${label(window)}`); marks.labels.push(window.id) }
+    } else {
+      if (was.name !== window.name) { phrases.push(`renamed window ${was.index}:${was.name} to ${label(window)}`); marks.labels.push(window.id) }
+      for (const link of links) {
+        const old = linked.find((other) => sameLink(other, link))
+        if (!old) { phrases.push(`linked window ${label(link)}`); marks.labels.push(window.id) } else if (link.active && !old.active) { phrases.push(`selected window ${label(link)}`); marks.labels.push(window.id) }
+      }
+      for (const old of linked) if (!links.some((link) => sameLink(link, old)) && sessionsAfter.has(old.session)) { phrases.push(`unlinked window ${label(old)}`); marks.labels.push(window.id) }
+    }
     const panes = after.panes.filter((pane) => pane.window === window.id)
     const added = panes.filter((pane) => !panesBefore.has(pane.id))
     for (const pane of added) phrases.push(`added pane ${pane.id} to window ${label(window)}`)
@@ -192,7 +207,7 @@ export function tmuxChanges(before: TmuxState, after: TmuxState): { marks: TmuxM
       return !old || old.command !== pane.command || (pane.active && !old.active) || resized
     }).map((pane) => pane.id))
   }
-  for (const window of before.windows) if (!windowsAfter.has(window.id) && sessionsAfter.has(window.session)) phrases.push(`closed window ${label(window)}`)
+  for (const window of windowsBefore.values()) if (!windowsAfter.has(window.id) && sessionsAfter.has(window.session)) phrases.push(`closed window ${label(window)}`)
   const panesAfter = byId(after.panes)
   for (const pane of before.panes) if (!panesAfter.has(pane.id) && windowsAfter.has(pane.window)) phrases.push(`closed pane ${pane.id}`)
   marks.labels = [...new Set(marks.labels)]
