@@ -155,7 +155,7 @@ describe('reading a tmux server', () => {
       'P|@0|%0|sh|0|0|80|24|1',
     ].join('\n')
     const state = parseListings(linked)
-    expect(state.windows.map((each: { index: number }) => each.index)).toEqual([0, 4])
+    expect((state.windows as { index: number }[]).map((each) => each.index)).toEqual([0, 4])
     expect(state.panes).toEqual([pane()])
     expect(stateProblems(recordedState(state))).toEqual([])
     expect(() => parseListings(`${linked}\nP|@0|%0|cat|0|0|80|24|1`)).toThrow(/pane %0 is listed twice, differently/)
