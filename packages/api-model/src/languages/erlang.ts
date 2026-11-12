@@ -181,8 +181,7 @@ export function extractErlang(input: unknown, expectedRevision?: string): ApiMod
     ...location, repo: artifact.source.repository, revision: artifact.source.revision,
     extractedRevision: artifact.source.revision,
   })
-  const common = { package: artifact.package.name,
-    product: artifact.package.name === 'libtmux_erlang_workspace' ? 'workspace' as const : 'core' as const }
+  const common = { package: artifact.package.name, product: 'core' as const }
   const symbols: ApiSymbol[] = []
   for (const module of artifact.modules) {
     const owner = module.display_name

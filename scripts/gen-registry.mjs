@@ -275,18 +275,16 @@ const PROBES = {
     return generalVersions(body, port)
   },
   async erlang() {
-    const packages = {}
-    for (const name of ['libtmux_erlang', 'libtmux_erlang_workspace']) {
-      const { status, body } = await getJson(`https://hex.pm/api/packages/${name}`)
-      if (status === 404) { packages[name] = null; continue }
-      if (status !== 200) throw new Error(`Hex ${name}: HTTP ${status}`)
-      if (!Array.isArray(body?.releases) || body.releases.some((release) => typeof release.version !== 'string')) {
-        throw new Error(`Hex ${name}: invalid releases`)
-      }
-      const retired = new Set(Object.keys(body?.retirements ?? {}))
-      packages[name] = body.releases.map((release) => release.version).filter((version) => !retired.has(version))
+    const name = 'libtmux_erlang'
+    const { status, body } = await getJson(`https://hex.pm/api/packages/${name}`)
+    if (status === 404) return { versions: null, packages: { [name]: null } }
+    if (status !== 200) throw new Error(`Hex ${name}: HTTP ${status}`)
+    if (!Array.isArray(body?.releases) || body.releases.some((release) => typeof release.version !== 'string')) {
+      throw new Error(`Hex ${name}: invalid releases`)
     }
-    return { versions: packages.libtmux_erlang, packages }
+    const retired = new Set(Object.keys(body?.retirements ?? {}))
+    const versions = body.releases.map((release) => release.version).filter((version) => !retired.has(version))
+    return { versions, packages: { [name]: versions } }
   },
   async elixir() {
     // Hex lists every release and the retirements beside them. A retired

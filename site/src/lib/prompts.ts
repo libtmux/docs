@@ -527,8 +527,8 @@ export function portParts(args: {
     unavailable['session-supervisor'] = 'Elixir has no published workspace product or reconciliation API. Document the missing product and stop; do not advertise scaffold packages as usable.'
   }
   if (port.slug === 'erlang') {
-    unavailable['session-freezer'] = 'Erlang has no published workspace package or loader. Document the missing product and stop; do not call an unpublished escript or invent freeze and restore APIs.'
-    unavailable['session-supervisor'] = 'Erlang has no published workspace product or reconciliation API. Document the missing product and stop; do not advertise unpublished modules as usable.'
+    unavailable['session-freezer'] = 'Erlang has no workspace package or loader. Document the missing product and stop; do not invent freeze and restore APIs.'
+    unavailable['session-supervisor'] = 'Erlang has no workspace product or reconciliation API. Document the missing product and stop; do not advertise one as usable.'
   }
   if (port.slug === 'lua') {
     unavailable['session-freezer'] = 'Lua has no published workspace package or loader. Document the missing product and stop; do not call the scaffold or invent freeze and restore APIs.'

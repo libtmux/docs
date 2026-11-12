@@ -3250,6 +3250,13 @@
   },
   {
    "port": "erlang",
+   "symbol": "tmux_hook:get/3",
+   "page": "/erlang/latest/guides/options/",
+   "title": "Read and change scoped options",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
    "symbol": "tmux_hook:run/2",
    "page": "/erlang/latest/guides/hooks/",
    "title": "Register a hook and await its effect",
@@ -3264,10 +3271,24 @@
   },
   {
    "port": "erlang",
+   "symbol": "tmux_hook:set/3",
+   "page": "/erlang/latest/guides/options/",
+   "title": "Read and change scoped options",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
    "symbol": "tmux_identity",
    "page": "/erlang/latest/guides/api-documentation/",
    "title": "Native API documentation",
    "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_identity:fingerprint/1",
+   "page": "/erlang/latest/concepts/object-graph/",
+   "title": "Object graph",
+   "section": "concepts"
   },
   {
    "port": "erlang",
@@ -3419,6 +3440,13 @@
   {
    "port": "erlang",
    "symbol": "tmux_option:describe/2",
+   "page": "/erlang/latest/guides/options/",
+   "title": "Read and change scoped options",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_option:get_many/3",
    "page": "/erlang/latest/guides/options/",
    "title": "Read and change scoped options",
    "section": "guides"
@@ -3772,6 +3800,13 @@
    "page": "/erlang/latest/guides/api-documentation/",
    "title": "Native API documentation",
    "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_snapshot:metadata/1",
+   "page": "/erlang/latest/concepts/object-graph/",
+   "title": "Object graph",
+   "section": "concepts"
   },
   {
    "port": "erlang",

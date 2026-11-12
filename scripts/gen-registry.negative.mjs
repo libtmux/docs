@@ -113,7 +113,6 @@ for (const [name, mutate] of mutations) {
     const hex = 'https://hex.pm/api/packages/libtmux'
     const hackage = 'https://hackage.haskell.org/package/libtmux-haskell.json'
     const erlangHex = 'https://hex.pm/api/packages/libtmux_erlang'
-    const erlangWorkspaceHex = 'https://hex.pm/api/packages/libtmux_erlang_workspace'
     const core = gallery('LibTmux')
     const workspace = gallery('LibTmux.Workspace')
     const next = `${core}&$skip=1`
@@ -127,7 +126,6 @@ for (const [name, mutate] of mutations) {
       [hackage]: { body: JSON.stringify({ '0.1.0.0': 'normal', '0.1.0.2': 'normal', '0.1.0.10': 'normal' }) },
       'https://api.github.com/repos/libtmux/libtmux-erlang/tags?per_page=100': { body: '[]' },
       [erlangHex]: { status: 404, body: '{"status":404}' },
-      [erlangWorkspaceHex]: { status: 404, body: '{"status":404}' },
       'https://api.github.com/repos/libtmux/libtmux-powershell/tags?per_page=100': {
         body: JSON.stringify(['v0.1.0-alpha2', 'v0.1.0-alpha3', 'v0.1.0-alpha4', 'v1.0.0'].map((name) => ({ name }))),
       },
@@ -199,13 +197,14 @@ for (const [name, mutate] of mutations) {
     check('a package Hex does not carry is unpublished',
       unlisted.ports.elixir?.status === 'unpublished' && unlisted.ports.elixir?.version === null, `${JSON.stringify(unlisted.ports.elixir)} ${unlisted.error}`)
     check('an unavailable existing port retains its newer published entry', same(result.ports.csharp, baseline.ports.csharp), result.error)
-    check('missing Erlang packages have explicit unpublished core and workspace entries',
+    check('a missing Erlang package has an explicit unpublished entry',
       result.ports.erlang?.status === 'unpublished'
-      && result.ports.erlang?.packages?.libtmux_erlang_workspace?.status === 'unpublished', result.error)
+      && result.ports.erlang?.packages?.libtmux_erlang?.status === 'unpublished'
+      && !('libtmux_erlang_workspace' in result.ports.erlang.packages), result.error)
     const publishedErlang = { status: 'prerelease', version: '0.1.0-alpha.1', release: null, tag: 'v0.1.0-alpha.1' }
     writeFileSync(join(dir, 'published.json'), JSON.stringify({ ...baseline, ports: { ...baseline.ports, erlang: publishedErlang } }))
-    for (const [url, status] of [[erlangHex, 403], [erlangWorkspaceHex, 503]]) {
-      const unavailable = invoke({ ...replies, [url]: { status, body: '{"error":"unavailable"}' } })
+    for (const status of [403, 503]) {
+      const unavailable = invoke({ ...replies, [erlangHex]: { status, body: '{"error":"unavailable"}' } })
       check(`Erlang HTTP ${status} preserves the published baseline`,
         same(unavailable.ports.erlang, publishedErlang), `${JSON.stringify(unavailable.ports.erlang)} ${unavailable.error}`)
     }

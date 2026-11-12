@@ -11,7 +11,7 @@ const page = (path: string) => readFileSync(new URL(`../src/content/docs/ports/$
 // Each index lists every program its port's tests run and links the source at
 // the revision of the API model, so a moved pin fails here until the links follow.
 const INDEXES = [
-  { path: 'erlang/examples/index.md', repo: 'libtmux-erlang', revision: erlangModel.revision, programs: 16 },
+  { path: 'erlang/examples/index.md', repo: 'libtmux-erlang', revision: erlangModel.revision, programs: 15 },
   { path: 'lisp/examples/index.md', repo: 'libtmux-lisp', revision: lispModel.revision, programs: 6 + 4 },
   { path: 'clojure/examples.md', repo: 'libtmux-java', revision: clojureModel.revision, programs: 13 },
   { path: 'haskell/examples/index.md', repo: 'libtmux-haskell', revision: haskellModel.revision, programs: 6 },
