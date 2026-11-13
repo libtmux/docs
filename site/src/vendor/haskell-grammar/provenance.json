@@ -1,0 +1,32 @@
+{
+  "name": "Haskell TextMate grammar",
+  "asset": "haskell.YAML-tmLanguage",
+  "sourceUrl": "https://raw.githubusercontent.com/haskell/vscode-haskell-syntax-highlighting/36c48222a4b6d09ff7b7747fbf7f06f14a1d3046/syntaxes/haskell.YAML-tmLanguage",
+  "resolvedUrl": "https://raw.githubusercontent.com/haskell/vscode-haskell-syntax-highlighting/36c48222a4b6d09ff7b7747fbf7f06f14a1d3046/syntaxes/haskell.YAML-tmLanguage",
+  "sourcePage": "https://github.com/haskell/vscode-haskell-syntax-highlighting/blob/36c48222a4b6d09ff7b7747fbf7f06f14a1d3046/syntaxes/haskell.YAML-tmLanguage",
+  "retrievedAt": "2026-11-13T02:57:12+00:00",
+  "sha256": "d3c831f3e14b61a15e38f499a25a0989ac07ed3c20bd6be33aa1f2ff76b0e289",
+  "gitBlobSha1": "642d9ebb42eeb755463112f05dfee50915b1f1cc",
+  "copyright": "Copyright (c) 2017 Justus Adam",
+  "license": {
+    "name": "BSD-3-Clause",
+    "urls": [
+      "https://raw.githubusercontent.com/haskell/vscode-haskell-syntax-highlighting/36c48222a4b6d09ff7b7747fbf7f06f14a1d3046/LICENSE"
+    ],
+    "notes": "The repository's package.json and GitHub license detection both report BSD-3-Clause. The repository carries no NOTICE file.",
+    "localCopy": {
+      "file": "LICENSE.txt",
+      "sourceUrl": "https://raw.githubusercontent.com/haskell/vscode-haskell-syntax-highlighting/36c48222a4b6d09ff7b7747fbf7f06f14a1d3046/LICENSE",
+      "retrievedAt": "2026-11-13T02:57:12+00:00",
+      "sha256": "450dadd223bec8ff5eb70165bdc047e8271ec65c2c90bff22eeac5623e33a565"
+    }
+  },
+  "modifications": "None. The downloaded YAML bytes are preserved. haskell.tmLanguage.json is the same document converted to JSON for Shiki.",
+  "upstreamRevision": "36c48222a4b6d09ff7b7747fbf7f06f14a1d3046",
+  "upstreamCommitDate": "2026-11-07T11:43:07+00:00",
+  "derivedCopy": {
+    "file": "haskell.tmLanguage.json",
+    "sha256": "5604f3c95d88c799a472717809a54580e3dcb309012856608e1a265abbe1c79a",
+    "conversion": "JSON.stringify(YAML.parse(source), null, 2) with yaml 2.9.1, by site/scripts/vendor-haskell-grammar.mjs"
+  }
+}

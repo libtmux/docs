@@ -129,11 +129,21 @@ describe('the workspace showcase data source', () => {
     expect(shows(windowOf(['echo $HOME']), 'env-variables')).toBe(false)
   })
 
-  it('has no entry for a port whose tests give no document it can quote', () => {
+  it('shows Java and Swift only documents a test loads through the command, never a copy of tmuxp\'s files', () => {
     for (const port of ['java', 'swift']) {
-      expect(productAvailable(PORT_BY_SLUG[port]!, 'workspace')).toBe(true)
-      expect(workspaceShowcase(port), port).toBeUndefined()
+      expect(productAvailable(PORT_BY_SLUG[port]!, 'workspace'), port).toBe(true)
+      const showcase = workspaceShowcase(port)!
+      expect(showcase.examples.length, port).toBeGreaterThan(0)
+      for (const example of showcase.examples) {
+        expect(example.tmuxp, `${port} ${example.topic}`).toBeUndefined()
+        // A document quoted from a test or a README, run through the command or the loader it calls.
+        expect(example.source.lines, `${port} ${example.topic}`).toBeDefined()
+        expect(example.tests.every((test) => test.via === 'cli' || test.via === 'loader'), `${port} ${example.topic}`).toBe(true)
+      }
     }
+    // Swift's command has a loader of its own, so the fixtures only `Workspace.decode` reads stay out.
+    expect(workspaceShowcase('swift')!.examples.map((example) => example.source.path)).toEqual(['Tests/TmuxWorkspaceCLITests/WorkspaceCLITests.swift'])
+    expect(workspaceShowcase('no-such-port')).toBeUndefined()
   })
 
   it('lists the classics in the order the generator uses', () => {
@@ -163,7 +173,7 @@ describe('the example a landing page opens on', () => {
     }))
     expect(topics).toEqual({
       py: 'main-horizontal', ts: 'three-pane', rs: 'three-pane', go: 'environment', cxx: 'three-pane',
-      csharp: 'two-pane', ruby: 'tiled', julia: 'three-pane', powershell: 'main-horizontal',
+      csharp: 'two-pane', ruby: 'tiled', julia: 'three-pane', powershell: 'main-horizontal', java: 'two-pane', swift: 'start-directory',
     })
   })
 
@@ -215,7 +225,6 @@ describe('what each port supports of tmuxp\'s examples', () => {
   it('is recorded for every port that ships a workspace manager, shown or not', () => {
     expect(portSupport('not-a-port')).toBeUndefined()
     expect(supportedPorts().sort()).toEqual(Object.keys(SOURCES).sort())
-    expect(supportedPorts().length).toBeGreaterThan(Object.keys(data.ports).filter((port) => data.ports[port]!.examples.length).length)
     for (const [port, block] of blocks) {
       expect(Object.keys(block.support.presets), port).toEqual(names)
       // The table a port shows is the committed one, and a port with nothing to show offers no showcase.
@@ -428,8 +437,7 @@ describe('a workspace overview with no tested files', () => {
     expect(page).toMatch(/isWorkspaceOverview && !workspaceExamples && !hasWorkspaceGuide && \(\s*<p[^>]*data-workspace-coming>Tested example workspace files for this port are coming\.<\/p>/)
     // Missing showcase files do not imply that a port lacks a native guide.
     const empty = Object.entries(data.ports).filter(([, block]) => block.examples.length === 0).map(([port]) => port)
-    expect(empty.length).toBeGreaterThan(0)
-    for (const port of empty) expect(workspaceShowcase(port), port).toBeUndefined()
+    for (const port of [...empty, 'no-such-port']) expect(workspaceShowcase(port), port).toBeUndefined()
     for (const port of Object.keys(data.ports).filter((name) => !empty.includes(name))) expect(workspaceShowcase(port), port).toBeDefined()
   })
 })

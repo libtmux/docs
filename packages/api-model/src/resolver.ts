@@ -93,6 +93,39 @@ export const DEFAULT_TEMPLATES: UrlTemplate[] = [
 ]
 
 /**
+ * The namespace segment that marks a package as the mirror of another, per port.
+ *
+ * Perl's `LibTmux::Async::Server` carries every `LibTmux::Server` method with a future for a result. A bare `capture_pane`
+ * is the original's unless its sentence says it is about the mirror, so the mirror gives way when its original is a
+ * candidate too. A port is listed only when its mirror is a whole package that repeats the original's names.
+ */
+const MIRROR_NAMESPACES: Record<string, string> = { perl: 'Async' }
+
+/**
+ * Ports whose bare member name goes to the declaration when subclasses inherit copies of it.
+ *
+ * Perl's `Selection` subclasses each list `where` and `grep`, and only `Selection` writes them. Python's and Lua's
+ * inherited fields are the same shape, but a bare `pane_id` there is also a tmux format token and a bare `argv` an English
+ * word for a table key, so those ports keep refusing until their prose has been read for it.
+ */
+const DECLARATION_OVER_INHERITED: ReadonlySet<string> = new Set(['perl'])
+
+/** The number of arguments in an Erlang call's argument text, or undefined when counting commas would be a guess. */
+function erlangArity(args: string): number | undefined {
+  if (!args.trim()) return 0
+  // A fun, a case or a binary carries commas and arrows of its own.
+  if (/->|\b(?:fun|begin|case|if|receive|try|end)\b|<<|["'$]/.test(args)) return undefined
+  let depth = 0
+  let arity = 1
+  for (const ch of args) {
+    if ('([{'.includes(ch)) depth++
+    else if (')]}'.includes(ch)) depth--
+    else if (ch === ',' && depth === 0) arity++
+  }
+  return depth === 0 ? arity : undefined
+}
+
+/**
  * Text that looks like a call but is not a symbol reference.
  *
  * Excluding these gained three points where the cleverest idea tried in the
@@ -159,6 +192,8 @@ interface Row {
 export class Resolver {
   private readonly byMember = new Map<string, Row[]>()
   private readonly byQualified = new Map<string, Row>()
+  /** Clojure namespaces by the last segment of their name, key `port segment`: what `data` in `data/windows` can stand for. */
+  private readonly namespaceTails = new Map<string, string[]>()
   /**
    * Module names per port: key `port dotted-name`, value the name as written.
    *
@@ -218,6 +253,10 @@ export class Resolver {
           const list = this.byMember.get(key) ?? []
           list.push(row)
           this.byMember.set(key, list)
+        }
+        if (model.port === 'clojure' && symbol.kind === 'module') {
+          const tail = `${model.port} ${symbol.name.split('.').at(-1)}`
+          this.namespaceTails.set(tail, [...(this.namespaceTails.get(tail) ?? []), symbol.name])
         }
         const key = model.port + ' ' + qualified
         if (model.port === 'java' && symbol.id.endsWith('()')) {
@@ -287,14 +326,22 @@ export class Resolver {
     return kept.length ? kept : rows
   }
 
-  /** Resolve one mention within one port. */
-  resolve(port: string, text: string, product?: ApiProduct): Resolution {
+  /**
+   * Resolve one mention within one port.
+   *
+   * `scope.mirrored` says the sentence is about a mirrored package (see `MIRROR_NAMESPACES`), so a bare name stays with
+   * both the original and its mirror.
+   */
+  resolve(port: string, text: string, product?: ApiProduct, scope: { mirrored?: boolean } = {}): Resolution {
     const why = notASymbol(text, port)
     if (why) return { how: 'not-a-symbol', why }
 
     // Selector labels distinguish Swift methods from same-named properties.
     const exact = this.byQualified.get(port + ' ' + text.trim())
     if (exact) return { how: 'module', symbol: exact.symbol, port }
+
+    const written = this.writtenForm(port, text.trim(), product)
+    if (written) return written
 
     if (port === 'java' && text.trim().endsWith('()')) {
       const name = text.trim().slice(0, -2)
@@ -418,8 +465,71 @@ export class Resolver {
     // A known qualified external name wins over an unrelated local tail.
     // AutoCloseable.close must not become Observation.close.
     if (local.length === 1) return { how: 'unique', symbol: local[0].symbol, port }
+    if (local.length > 1 && parts.length === 1) {
+      const narrowed = this.original(port, Resolver.declared(port, local), scope.mirrored)
+      if (narrowed.length === 1) return { how: 'unique', symbol: narrowed[0].symbol, port }
+    }
     if (local.length > 1) return { how: 'ambiguous', candidates: local.length }
     return { how: 'no-symbol' }
+  }
+
+  /**
+   * A declaration beats the copies a subclass inherits from it, as it does in a doc comment's link: a link lands where the
+   * method is written, not on one of its subclasses. Two declarations of one name are still two.
+   */
+  private static declared(port: string, rows: Row[]): Row[] {
+    if (!DECLARATION_OVER_INHERITED.has(port)) return rows
+    const declared = rows.filter((row) => !row.symbol.inheritedFrom)
+    return declared.length ? declared : rows
+  }
+
+  /** The original of a mirrored package's members: the candidates that are not another candidate with the mirror's segment inserted. */
+  private original(port: string, rows: Row[], mirrored = false): Row[] {
+    const mirror = MIRROR_NAMESPACES[port]
+    if (!mirror || mirrored || rows.length < 2) return rows
+    const path = (row: Row) => toPath(row.qualified, port)
+    const originals = new Set(rows.map((row) => path(row).join('.')))
+    const kept = rows.filter((row) => !path(row).includes(mirror) || !originals.has(path(row).filter((segment) => segment !== mirror).join('.')))
+    return kept.length ? kept : rows
+  }
+
+  /**
+   * A reference as the port's own prose writes it, where the spelling is not a dotted path to a member.
+   *
+   * - Erlang's `tmux_query:pushdown(true, Query)` is a call of `pushdown/2`: the arguments written give the arity, and a
+   *   function and its arity are exactly one symbol. A call whose arguments cannot be counted names nothing.
+   * - Clojure's `data/windows` names a var through the alias of its namespace. Aliases are the author's, so only the
+   *   convention that an alias is the last segment of the namespace it stands for is read, and only when one namespace
+   *   has that segment and defines the var. `Instant/now` is a Java static call and stays what it was.
+   * - Common Lisp's `sessions snapshot` is the call `(sessions snapshot)` without its parentheses: the accessor is the
+   *   function of that name, and a type of the same name is not what is called.
+   */
+  private writtenForm(port: string, text: string, product?: ApiProduct): Resolution | undefined {
+    if (port === 'erlang') {
+      const call = /^(?:([a-z][\w@]*):)?([a-z][\w@]*)\((.*)\)$/s.exec(text)
+      const arity = call && erlangArity(call[3]!)
+      if (!call || arity === undefined) return undefined
+      const row = call[1]
+        ? this.byQualified.get(`${port} ${call[1]}:${call[2]}/${arity}`)
+        : (() => {
+            const rows = this.members(port, `${call[2]}/${arity}`)
+            return rows.length === 1 ? rows[0] : undefined
+          })()
+      return row ? { how: 'module', symbol: row.symbol, port } : undefined
+    }
+    if (port === 'clojure') {
+      const var_ = /^([a-z][\w-]*)\/(\S+)$/.exec(text)
+      const namespaces = var_ ? this.namespaceTails.get(`${port} ${var_[1]}`) : undefined
+      const row = namespaces?.length === 1 ? this.byQualified.get(`${port} ${namespaces[0]}/${var_![2]}`) : undefined
+      return row ? { how: 'module', symbol: row.symbol, port } : undefined
+    }
+    if (port === 'lisp') {
+      const call = /^([a-z][a-z0-9-]*)\s+[a-z][a-z0-9-]*$/.exec(text)
+      if (!call) return undefined
+      const callables = Resolver.preferProduct(this.members(port, call[1]!).filter((row) => row.symbol.kind === 'function'), product)
+      return callables.length === 1 ? { how: 'unique', symbol: callables[0]!.symbol, port } : undefined
+    }
+    return undefined
   }
 
   /** Every port that declares a symbol of this name — the cross-port axis. */

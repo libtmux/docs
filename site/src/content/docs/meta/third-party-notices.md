@@ -93,6 +93,16 @@ Doxygen-generated HTML is published. Running a GPL program over your own input
 does not place its licence on the output, and libtmux does not distribute
 Doxygen or any modified version of it.
 
+## Syntax highlighting
+
+Haskell code is highlighted with a copy of the TextMate grammar from the
+[Haskell syntax-highlighting extension](https://github.com/haskell/vscode-haskell-syntax-highlighting).
+Copyright © 2017 Justus Adam, licensed under
+[BSD-3-Clause](https://github.com/haskell/vscode-haskell-syntax-highlighting/blob/36c48222a4b6d09ff7b7747fbf7f06f14a1d3046/LICENSE).
+The grammar is unchanged apart from conversion to JSON; the site's repository
+keeps it with the license text and a source record in
+`site/src/vendor/haskell-grammar/`.
+
 ## Reference hosting
 
 The [PyPI blocks logo](https://pypi.org/trademarks/) is a trademark of the
