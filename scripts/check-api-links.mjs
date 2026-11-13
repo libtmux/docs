@@ -198,7 +198,8 @@ for (const file of targets) {
     // exists to agree with the build; applying one fewer of them made it
     // report 124 where the build reported 61, which is the disagreement it
     // was written to prevent.
-    if (notASymbol(text, portFromSentence(before ?? '') ?? pagePort) || !looksLikeApiMention(text)) { tally.notASymbol++; continue }
+    const spanPort = portFromSentence(before ?? '') ?? pagePort
+    if (notASymbol(text, spanPort) || !looksLikeApiMention(text, spanPort)) { tally.notASymbol++; continue }
 
 
     const decisions = (pagePort ? [pagePort] : PORTS)

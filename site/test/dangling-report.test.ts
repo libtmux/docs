@@ -155,6 +155,26 @@ describe('the build\'s dangling report', () => {
         `https://github.com/libtmux/libtmux-haskell/blob/${haskellModel.revision}/${path}`),
     ]) expect(code).toContain(`href="${destination}"`)
   })
+
+  it('links the names the Perl, Clojure, Erlang and Lisp guides write in their own spellings, and still leaves an OCaml runtime twin plain', async () => {
+    const own = join(directory, 'spellings.jsonl')
+    vi.stubEnv('LIBTMUX_DOCS_DANGLING_REPORT', own)
+    const html = async (port: string, text: string) => {
+      vi.stubEnv('LIBTMUX_DOCS_PORT', port)
+      return (await (await processor).render(text, { frontmatter: { port } })).code
+    }
+    const perl = await html('perl', 'Use `where({...})` to filter, then `capture_pane` and `send_text` on the server.')
+    for (const page of ['libtmux-selection-where/', 'libtmux-server-capture_pane/', 'libtmux-server-send_text/']) expect(perl).toContain(page)
+    const clojure = await html('clojure', '`data/same-entity?` compares identity, as `same-entity?` does; `data/windows` traverses it.')
+    for (const page of ['libtmux-data-same-entity/', 'libtmux-data-windows/']) expect(clojure).toContain(page)
+    const erlang = await html('erlang', 'Enable it with `tmux_query:pushdown(true, Query)`, read `to_list/1`, or call `pushdown(false, Q)`.')
+    for (const page of ['tmux_query-pushdown-2/', 'tmux_select-to_list-1/']) expect(erlang).toContain(page)
+    const lisp = await html('lisp', '| Accessor | Result |\n| --- | --- |\n| `sessions snapshot` | Sessions |\n| `window pane` | The window |')
+    for (const page of ['libtmux-sessions/', 'libtmux-window-function/']) expect(lisp).toContain(page)
+    // Controls: the Eio and Unix clients both define these, and `get/3` is two Erlang modules' name.
+    expect(await html('ocaml', 'Retain the handle, then `Client.await` it and `poll` the subscription.')).not.toContain('api-mention')
+    expect(await html('erlang', 'Read `get/3`.')).not.toContain('api-mention')
+  })
 })
 
 /**

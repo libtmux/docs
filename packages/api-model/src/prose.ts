@@ -131,18 +131,24 @@ export function hrefFor(port: string, _model: ApiModel, symbol: ApiSymbol): stri
  * and prose fragments. Widening the candidate set costs nothing when the
  * resolver is the thing that decides.
  */
-export function looksLikeApiMention(text: string): boolean {
+export function looksLikeApiMention(text: string, port?: string): boolean {
   const t = text.trim()
   if (!t || t.length > 80) return false
+  // Common Lisp writes a call as its accessor and the object, `sessions snapshot`, with no parentheses around it.
+  if (port === 'lisp' && /^[a-z][a-z0-9-]*\s+[a-z][a-z0-9-]*$/.test(t)) return true
   // Two words with no call is prose, not a symbol — "go generate ./tmux".
   if (/\s/.test(t) && !/\(/.test(t)) return false
   if (/\(/.test(t)) return true
   if (/[.:]|->/.test(t)) return true
   if (/^[A-Z][A-Za-z0-9_]*$/.test(t)) return true
   if (/^(?:[\w.]+\\)?[A-Z][A-Za-z]+-[A-Za-z][\w]*$/.test(t)) return true
-  // `wait_for`, `capture_pane`, `activeWindow`: an identifier, admitted as a
+  // Clojure's `data/windows`: the alias of a namespace, a slash and the var.
+  if (port === 'clojure' && /^[a-z][\w.-]*\/[a-z][\w*+!?<>=-]*$/.test(t)) return true
+  // Erlang names a function with its arity, `to_list/1`.
+  if (port === 'erlang' && /^[a-z_]\w*\/\d+$/.test(t)) return true
+  // `wait_for`, `capture_pane`, `activeWindow`, `same-entity?`: an identifier, admitted as a
   // candidate for the resolver to accept or reject.
-  return /^@?[a-z_][A-Za-z0-9_-]*!?$/.test(t)
+  return /^@?[a-z_][A-Za-z0-9_-]*[!?]?$/.test(t)
 }
 
 /**
@@ -313,7 +319,8 @@ export function decideMention(
   resolver: Resolver,
   models: Record<string, ApiModel>,
 ): MentionDecision {
-  if (!looksLikeApiMention(text)) return { kind: 'skip', why: 'not a mention' }
+  const said = ctx.before ? portFromSentence(ctx.before) : undefined
+  if (!looksLikeApiMention(text, said ?? ctx.pagePort)) return { kind: 'skip', why: 'not a mention' }
   const never = neverLinks(text)
   if (never) return { kind: 'skip', why: never }
   // Tools.deps names a package with a slash; only registered coordinates are packages, not vars.
@@ -346,7 +353,8 @@ export function decideMention(
     return undefined
   }
 
-  const said = ctx.before ? portFromSentence(ctx.before) : undefined
+  // The sentence says which variant of a mirrored API it is about when it names it: an async `capture_pane` is not the synchronous one.
+  const scope = { mirrored: /\basync/i.test((ctx.before ?? '').split(/(?<=[.!?])\s+(?=[A-Z])/).pop() ?? '') }
   // A port that already goes to the named language (Scala to Java) stays itself: the sentence is about its wrappers. It answers first,
   // with its own symbols and its curated names; what only the language's inventory has is the language's, and the sentence says so.
   const reached = Boolean(said && ctx.pagePort && said !== ctx.pagePort && PLATFORM_REACH[ctx.pagePort]?.includes(said))
@@ -357,7 +365,7 @@ export function decideMention(
     if (!port || !models[port]) continue
     // The language of a build that the page does not name is where the page is read: it owns the library's symbols, not the language's.
     const unsaid = port === ctx.pagePort && port !== named && ctx.languageSaid === false && !isLikelyReference(text)
-    const res = resolver.resolve(port, text, ctx.product)
+    const res = resolver.resolve(port, text, ctx.product, scope)
     ambiguous ||= res.how === 'ambiguous'
     tried.push(`${port}:${res.how}`)
     // The page port answers with a symbol or a curated name, which the resolver files under the port's own name. A hit in any other
@@ -385,7 +393,7 @@ export function decideMention(
   // Nothing said which language. One claimant is an answer; several are not.
   const claims: { port: string; decision: MentionDecision }[] = []
   for (const port of Object.keys(models)) {
-    const res = resolver.resolve(port, text, ctx.product)
+    const res = resolver.resolve(port, text, ctx.product, scope)
     tried.push(`${port}:${res.how}`)
     const hit = link(port, res)
     if (hit) claims.push({ port, decision: hit })
