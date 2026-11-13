@@ -445,7 +445,7 @@ function collectProse(found, { root, models, inventories }) {
     const body = source.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, '')
     const spans = codeSpans(fromMarkdown(body))
     for (const { text, before } of spans) {
-      if (!looksLikeApiMention(text) || notASymbol(text)) continue
+      if (!looksLikeApiMention(text, own) || notASymbol(text)) continue
       for (const pagePort of own ? [own] : [undefined, ...Object.keys(models)]) {
         const decision = decideMention(text, { pagePort, product, before, languageSaid: Boolean(own) }, resolver, models)
         if (decision.kind === 'link' && /^https?:\/\//i.test(decision.href)) note(found, decision.href, { port: decision.port, name: claimedName(text), source: 'prose' })

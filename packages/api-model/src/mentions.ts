@@ -67,7 +67,7 @@ export function tableMentions(
     for (const cell of cells.slice(1)) {
       for (const m of cell.matchAll(/`([^`]+)`/g)) {
         const text = m[1].trim()
-        if (text && looksLikeApiMention(text)) out.push({ port, text, line: i + 1 })
+        if (text && looksLikeApiMention(text, port)) out.push({ port, text, line: i + 1 })
       }
     }
   }

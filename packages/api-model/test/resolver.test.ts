@@ -5,7 +5,7 @@ import { beforeAll, describe, expect, it } from 'vitest'
 import { readInventory } from '../src/inventory.ts'
 import type { ApiModel, ApiSymbol } from '../src/model.ts'
 import { Resolver, notASymbol, toPath } from '../src/resolver.ts'
-import { portFromSentence } from '../src/prose.ts'
+import { decideMention, looksLikeApiMention, portFromSentence } from '../src/prose.ts'
 
 /**
  * The resolver, against the corpus it exists for.
@@ -191,5 +191,140 @@ describe('mention paths by port', () => {
     expect(toPath('t:Server', 'ts')).toEqual(['t', 'Server'])
     expect(resolver.resolve('ts', 'HTTP')).toMatchObject({ symbol: { id: 'HTTP' } })
     expect(resolver.resolve('ts', 'HTTP/2')).toEqual({ how: 'no-symbol' })
+  })
+})
+
+describe('names the Perl, Clojure, Erlang and Lisp guides write in their own spellings', () => {
+  const sym = (id: string, name: string, kind: ApiSymbol['kind'], parent?: string, extra: Partial<ApiSymbol> = {}): ApiSymbol => ({
+    id, name, kind, parent, modifiers: [], signatures: [], source: { file: 'lib', line: 1 }, ...extra,
+  })
+  const model = (port: string, symbols: ApiSymbol[]) => ({ port, extractor: 'test', symbols }) as ApiModel
+  const perl = model('perl', [
+    sym('LibTmux::Selection', 'Selection', 'class'),
+    sym('LibTmux::Selection::where', 'where', 'method', 'LibTmux::Selection'),
+    sym('LibTmux::PaneSelection', 'PaneSelection', 'class'),
+    sym('LibTmux::PaneSelection::where', 'where', 'method', 'LibTmux::PaneSelection', { inheritedFrom: 'LibTmux::Selection' }),
+    sym('LibTmux::Server', 'Server', 'class'),
+    sym('LibTmux::Server::capture_pane', 'capture_pane', 'method', 'LibTmux::Server'),
+    sym('LibTmux::Server::execute', 'execute', 'method', 'LibTmux::Server'),
+    sym('LibTmux::Server::count', 'count', 'method', 'LibTmux::Server'),
+    sym('LibTmux::Snapshot', 'Snapshot', 'class'),
+    sym('LibTmux::Snapshot::count', 'count', 'method', 'LibTmux::Snapshot'),
+    sym('LibTmux::Async::Server', 'Server', 'class'),
+    sym('LibTmux::Async::Server::capture_pane', 'capture_pane', 'method', 'LibTmux::Async::Server'),
+    sym('LibTmux::Async::Server::execute', 'execute', 'method', 'LibTmux::Async::Server'),
+    sym('LibTmux::Async::Server::close', 'close', 'method', 'LibTmux::Async::Server'),
+    sym('LibTmux::Async::Transport', 'Transport', 'class'),
+    sym('LibTmux::Async::Transport::execute', 'execute', 'method', 'LibTmux::Async::Transport'),
+    sym('LibTmux::Async::Transport::close', 'close', 'method', 'LibTmux::Async::Transport'),
+  ])
+  // Python shapes its fields the same way, and keeps refusing the bare name.
+  const py = model('py', [
+    sym('libtmux.neo.Obj', 'Obj', 'class'),
+    sym('libtmux.neo.Obj.pane_id', 'pane_id', 'attribute', 'libtmux.neo.Obj'),
+    sym('libtmux.Pane', 'Pane', 'class'),
+    sym('libtmux.Pane.pane_id', 'pane_id', 'attribute', 'libtmux.Pane', { inheritedFrom: 'libtmux.neo.Obj' }),
+  ])
+  const clojure = model('clojure', [
+    sym('libtmux.data', 'libtmux.data', 'module', undefined, { namespace: 'libtmux.data' }),
+    sym('libtmux.data/windows', 'windows', 'function', 'libtmux.data'),
+    sym('libtmux.data/same-entity?', 'same-entity?', 'function', 'libtmux.data'),
+    sym('libtmux.core', 'libtmux.core', 'module', undefined, { namespace: 'libtmux.core' }),
+    sym('libtmux.core/snapshot!', 'snapshot!', 'function', 'libtmux.core'),
+    sym('libtmux.extra.core', 'libtmux.extra.core', 'module', undefined, { namespace: 'libtmux.extra.core' }),
+    sym('libtmux.extra.core/other', 'other', 'function', 'libtmux.extra.core'),
+    sym('libtmux.other', 'libtmux.other', 'module', undefined, { namespace: 'libtmux.other' }),
+    sym('libtmux.other/now', 'now', 'function', 'libtmux.other'),
+  ])
+  const erlang = model('erlang', [
+    sym('tmux_query', 'tmux_query', 'module'),
+    sym('tmux_query:pushdown/2', 'pushdown/2', 'function', 'tmux_query'),
+    sym('tmux_select', 'tmux_select', 'module'),
+    sym('tmux_select:to_list/1', 'to_list/1', 'function', 'tmux_select'),
+    sym('tmux_hook:get/3', 'get/3', 'function', 'tmux_hook'),
+    sym('tmux_option:get/3', 'get/3', 'function', 'tmux_option'),
+  ])
+  const lisp = model('lisp', [
+    sym('libtmux:sessions', 'sessions', 'function'),
+    sym('libtmux:window/function', 'window', 'function'),
+    sym('libtmux:window/type', 'window', 'class'),
+    sym('libtmux:pane', 'pane', 'class'),
+  ])
+  // The Eio and Unix clients define every operation twice, and the guides do not choose between them.
+  const ocaml = model('ocaml', [
+    sym('Libtmux_eio.Client.await', 'await', 'function', 'Libtmux_eio.Client'),
+    sym('Libtmux_unix.Client.await', 'await', 'function', 'Libtmux_unix.Client'),
+    sym('Libtmux_eio.Subscription.poll', 'poll', 'function', 'Libtmux_eio.Subscription'),
+    sym('Libtmux_unix.Subscription.poll', 'poll', 'function', 'Libtmux_unix.Subscription'),
+  ])
+  const models = { perl, py, clojure, erlang, lisp, ocaml } as Record<string, ApiModel>
+  const resolver = new Resolver(Object.values(models))
+  const decide = (pagePort: string, text: string, before = '') => decideMention(text, { pagePort, before }, resolver, models)
+  const linked = (pagePort: string, text: string, before = '') => {
+    const decision = decide(pagePort, text, before)
+    return decision.kind === 'link' ? decision.href : decision.kind
+  }
+
+  it('sends a Perl name to the declaration its subclasses inherit, and keeps two declarations apart', () => {
+    expect(resolver.resolve('perl', 'where')).toMatchObject({ how: 'unique', symbol: { id: 'LibTmux::Selection::where' } })
+    expect(linked('perl', 'where({...})')).toBe('/reference/perl/libtmux-selection-where/')
+    // Controls: a receiver still reaches its own inherited copy, two declarations stay two, and Python's inherited field
+    // keeps refusing because its bare name is also a tmux format token.
+    expect(resolver.resolve('perl', 'PaneSelection->where')).toMatchObject({ how: 'scoped', symbol: { id: 'LibTmux::PaneSelection::where' } })
+    expect(resolver.resolve('perl', 'count')).toEqual({ how: 'ambiguous', candidates: 2 })
+    expect(resolver.resolve('py', 'pane_id')).toEqual({ how: 'ambiguous', candidates: 2 })
+  })
+
+  it('sends a Perl name to the original of an async mirror unless the sentence is about the mirror', () => {
+    expect(linked('perl', 'capture_pane')).toBe('/reference/perl/libtmux-server-capture_pane/')
+    expect(linked('perl', 'capture_pane', 'The async client returns a future from ')).toBe('skip')
+    // Controls: a mirror with no original, and a name a mirror shares with a second, unrelated class.
+    expect(resolver.resolve('perl', 'close').how).toBe('ambiguous')
+    expect(resolver.resolve('perl', 'execute').how).toBe('ambiguous')
+  })
+
+  it('reads a Clojure predicate and an aliased var, and refuses an alias it cannot place', () => {
+    expect(linked('clojure', 'same-entity?')).toBe('/reference/clojure/libtmux-data-same-entity/')
+    expect(linked('clojure', 'data/same-entity?')).toBe('/reference/clojure/libtmux-data-same-entity/')
+    expect(linked('clojure', 'data/windows')).toBe('/reference/clojure/libtmux-data-windows/')
+    // Controls: two namespaces end in `core`, so the alias is not one; the namespace lacks the var; a Java static call.
+    expect(decide('clojure', 'core/snapshot!').kind).not.toBe('link')
+    expect(resolver.resolve('clojure', 'data/missing')).toEqual({ how: 'no-symbol' })
+    expect(resolver.resolve('clojure', 'Instant/now')).not.toHaveProperty('symbol')
+    expect(resolver.resolve('clojure', 'tm/windows')).not.toHaveProperty('symbol')
+    // The spelling is a candidate for a Clojure page only.
+    expect(looksLikeApiMention('data/windows', 'clojure')).toBe(true)
+    expect(looksLikeApiMention('data/windows')).toBe(false)
+    expect(looksLikeApiMention('same-entity?')).toBe(true)
+  })
+
+  it('reads an Erlang call by its arity, and a function written with its arity', () => {
+    expect(linked('erlang', 'tmux_query:pushdown(true, Query)')).toBe('/reference/erlang/tmux_query-pushdown-2/')
+    expect(linked('erlang', 'pushdown(false, Q)')).toBe('/reference/erlang/tmux_query-pushdown-2/')
+    expect(linked('erlang', 'to_list/1')).toBe('/reference/erlang/tmux_select-to_list-1/')
+    expect(linked('erlang', 'tmux_query:pushdown(#{a => [1, 2]}, Q)')).toBe('/reference/erlang/tmux_query-pushdown-2/')
+    // Controls: the wrong arity, a call whose arguments cannot be counted, a name two modules share, another module's call,
+    // and the arity spelling in a port that does not write it.
+    expect(linked('erlang', 'tmux_query:pushdown(true)')).not.toContain('pushdown')
+    expect(linked('erlang', 'tmux_query:pushdown(fun(X) -> X end, Q)')).not.toContain('pushdown')
+    expect(linked('erlang', 'get/3')).not.toContain('get-3')
+    expect(linked('erlang', 'maps:get(a, M, none)')).not.toContain('get-3')
+    expect(looksLikeApiMention('to_list/1', 'ts')).toBe(false)
+  })
+
+  it('reads a Lisp call written as its accessor and object, and calls the function, not the type', () => {
+    expect(linked('lisp', 'sessions snapshot')).toBe('/reference/lisp/libtmux-sessions/')
+    expect(linked('lisp', 'window pane')).toBe('/reference/lisp/libtmux-window-function/')
+    // Controls: a class is not called, a keyword argument is not an object, prose in code font names no function, and
+    // two words are prose on a page of another port.
+    expect(linked('lisp', 'pane window')).toBe('unresolved')
+    expect(linked('lisp', 'new-window :index')).toBe('skip')
+    expect(decide('lisp', 'go generate').kind).not.toBe('link')
+    expect(linked('py', 'sessions snapshot')).toBe('skip')
+  })
+
+  it('leaves a name the Eio and Unix clients both define unlinked, because no sentence chooses a runtime', () => {
+    for (const text of ['Client.await', 'poll']) expect(decide('ocaml', text).kind, text).toBe('skip')
+    expect(resolver.resolve('ocaml', 'Libtmux_eio.Client.await')).toMatchObject({ how: 'module', symbol: { id: 'Libtmux_eio.Client.await' } })
   })
 })
