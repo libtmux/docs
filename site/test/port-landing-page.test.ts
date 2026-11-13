@@ -5,6 +5,7 @@ import { createComponent, renderTemplate } from 'astro/runtime/server/index.js'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { EXAMPLES, mcpShowcase } from '../src/lib/mcp-showcase'
 import { citedTest, landingExample, offersPicker, presetOptions, revisionUrl, supportedPorts, TOPICS, VIA, workspaceShowcase } from '../src/lib/workspace-showcase'
+import * as showcaseLibrary from '../src/lib/workspace-showcase'
 import { loadCommand } from '../src/lib/workspace-links'
 import { STORAGE_PREFIX } from '../src/lib/workspace-picker'
 import { landingExcerpt, landingProducts, type CachedSource, type LandingExcerpt, type LandingTable } from '../src/lib/port-landing'
@@ -171,9 +172,9 @@ describe('the landing page markup', () => {
   const claimed = (slug: string, example: ReturnType<typeof landingExample>) => (citedTest(example).via === 'cli' ? loadCommand(slug)?.program : undefined)
 
   it('covers every port that has a showcase, as one file or as a picker', () => {
-    // Every port with a showcase now loads tmuxp's catalog, so none shows one file.
-    expect(SINGLE.sort()).toEqual([])
-    expect(PICKER.sort()).toEqual(['csharp', 'cxx', 'go', 'julia', 'powershell', 'py', 'rs', 'ruby', 'ts'])
+    // Swift's tests load one document through the command; every other port shows several.
+    expect(SINGLE.sort()).toEqual(['swift'])
+    expect(PICKER.sort()).toEqual(['csharp', 'cxx', 'go', 'java', 'julia', 'powershell', 'py', 'rs', 'ruby', 'ts'])
   })
 
   it('shows a port with one tested workspace file as that file alone: the panes it builds, its command and its evidence', async () => {
@@ -327,9 +328,24 @@ describe('the landing page markup', () => {
     expect(landingExample({ examples: [file('shorthand', 'library'), file('two-pane', 'cli')] } as never).topic).toBe('two-pane')
   })
 
+  it('shows the Workspace Manager tab of Java and Swift with a tested file, not only the install box and links', async () => {
+    for (const [slug, opening] of [['java', 'two-pane'], ['swift', 'start-directory']] as const) {
+      const document = await render(slug)
+      const showcase = workspaceShowcase(slug)!
+      const body = document.querySelector('[data-landing-panel="workspace"] [data-landing-example="workspace"]')
+      expect(body, `${slug} has a workspace file on its tab`).not.toBeNull()
+      expect(landingExample(showcase).topic, slug).toBe(opening)
+      expect(body!.querySelectorAll('.ws-config__panel--yaml'), `${slug} one copy of each file`).toHaveLength(showcase.examples.length)
+      expect(body!.querySelectorAll('svg.gp-tmux-layout').length, `${slug} drawn windows`).toBeGreaterThan(0)
+      expect([...body!.querySelectorAll('pre')].map((pre) => pre.textContent), `${slug} names the command a test runs`).toContain('tmux-workspace load workspace.yaml')
+    }
+  })
+
   it('shows the install and links, no workspace file, for a port with none tested', async () => {
-    const document = await render('java')
-    const panel = document.querySelector('[data-landing-panel="workspace"]')!
+    // Every port that ships a workspace manager now has a tested file, so this renders Java as though it had none.
+    const window = openWindow()
+    window.document.body.innerHTML = await renderHtml('java', { '../lib/workspace-showcase': { ...showcaseLibrary, workspaceShowcase: () => undefined } })
+    const panel = window.document.querySelector('[data-landing-panel="workspace"]')!
     expect(panel.querySelector('[data-landing-example]')).toBeNull()
     expect(panel.querySelector('[data-package-install]')).not.toBeNull()
     expect(panel.querySelector('a[href="/java/latest/workspace/"]')).not.toBeNull()
