@@ -759,6 +759,12 @@ const firstChecked = evidence.destinations.findIndex((record) => record.ok && re
 const firstIdentified = evidence.destinations.findIndex((record) => record.ok && record.identity && record.terminal?.some((entry) => entry.at === 'identity'))
 const firstRead = evidence.destinations.findIndex((record) => record.ok && !record.identity && record.terminal?.some((entry) => !entry.key))
 const unverifiable = { ok: false, unverifiable: 'the host blocks the request (403)', status: 403, terminal: undefined, identity: undefined, fragment: undefined }
+const hostsLargestFirst = [...Map.groupBy(evidence.destinations, (record) => record.host)].sort((a, b) => b[1].length - a[1].length)
+// Every request to the n largest hosts blocked, as a runner a host refuses sees it.
+const blockHosts = (n) => (copy) => {
+  const hosts = new Set(hostsLargestFirst.slice(0, n).map(([host]) => host))
+  for (const record of copy.destinations) if (hosts.has(record.host)) Object.assign(record, unverifiable)
+}
 
 const drives = [
   { name: 'control: the committed evidence', mutate: () => {}, status: 0 },
@@ -780,6 +786,9 @@ const drives = [
   { name: 'a symbol recorded as found where the verifier never looks', mutate: (copy) => { copy.destinations[firstChecked].terminal[0].at = 'heading' }, expect: /found "heading", which the verifier never reports/ },
   { name: 'an unverifiable record that gives a reason of its own', mutate: (copy) => { Object.assign(copy.destinations[firstChecked], { ...unverifiable, unverifiable: 'n/a' }) }, expect: /is unverifiable for "n\/a", which is no reason the verifier gives/ },
   { name: 'every destination unverifiable, so nothing was checked', mutate: (copy) => { for (const record of copy.destinations) Object.assign(record, unverifiable) }, expect: /destinations are unverifiable, more than the \d+ a blocked or throttled host explains/ },
+  { name: 'one host that answers nothing is a blocked host, however many links it has', mutate: blockHosts(1), status: 0 },
+  { name: 'a host that answers some requests and blocks half is counted', mutate: (copy) => { let n = 0; for (const record of copy.destinations) if (record.host === hostsLargestFirst[0][0] && n++ % 2 === 0) Object.assign(record, unverifiable) }, expect: /destinations are unverifiable, more than the \d+ a blocked or throttled host explains/ },
+  { name: 'three large hosts that answer nothing is more than a host or two', mutate: blockHosts(3), expect: /destinations are unverifiable, more than the \d+ a blocked or throttled host explains/ },
   { name: 'a few destinations unverifiable is unresolved, not a failure', mutate: (copy) => { for (const record of copy.destinations.slice(0, 5)) Object.assign(record, unverifiable) }, status: 0 },
   { name: 'every unverifiable destination is printed, not a count', mutate: (copy) => { for (const record of copy.destinations.slice(0, 30)) Object.assign(record, unverifiable) }, status: 0, printed: { pattern: /unresolved: https:/g, count: 30 } },
   { name: 'a reviewed link whose record lost the heading it was compared at', mutate: (copy) => { delete copy.destinations.find((record) => record.url === 'https://doc.rust-lang.org/reference/items/structs.html').heading }, expect: /as a reviewed link without the heading it was compared at/ },
