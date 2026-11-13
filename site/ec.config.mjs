@@ -5,6 +5,7 @@ import { tmuxUsage } from './src/lib/tmux-usage.mjs'
 import { tmuxShell } from './src/lib/tmux-shell.mjs'
 import { tmuxConfig } from './src/lib/tmux-config.mjs'
 import { properties } from './src/lib/properties.mjs'
+import { haskell } from './src/lib/haskell.mjs'
 import bash from 'shiki/langs/bash.mjs'
 
 /**
@@ -28,7 +29,7 @@ export default defineEcConfig({
     )
   },
   plugins: [shellPrompt(), copyReadiness()],
-  shiki: { langs: [tmuxUsage, ...bash, tmuxShell, tmuxConfig, properties],
+  shiki: { langs: [tmuxUsage, ...bash, tmuxShell, tmuxConfig, properties, ...haskell],
     langAlias: { dune: 'lisp', sbt: 'scala', tmux: 'tmux-config', properties: properties.name } },
   useDarkModeMediaQuery: false,
   themeCssSelector: (theme) =>

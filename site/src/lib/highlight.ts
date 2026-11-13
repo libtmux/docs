@@ -9,6 +9,7 @@ import { tmuxUsage } from './tmux-usage.mjs'
 import { tmuxShell } from './tmux-shell.mjs'
 import { tmuxConfig } from './tmux-config.mjs'
 import { properties } from './properties.mjs'
+import { haskell } from './haskell.mjs'
 
 /**
  * Syntax highlighting for the examples in doc comments.
@@ -31,7 +32,7 @@ const LANGS = [
   // fragment, a Package.swift dependency and a CMakeLists block. Three of the
   // eight ports cannot be installed from a command line at all, so without
   // these their only install instructions render as flat grey.
-  'kotlin', 'scala', 'fsharp', 'csharp', 'xml', 'swift', 'cmake', 'toml', 'nix', 'powershell', 'julia', 'elixir', 'erlang', 'haskell', 'ini',
+  'kotlin', 'scala', 'fsharp', 'csharp', 'xml', 'swift', 'cmake', 'toml', 'nix', 'powershell', 'julia', 'elixir', 'erlang', 'ini',
 ] as const
 
 /**
@@ -69,7 +70,7 @@ async function highlighter(): Promise<Highlighter> {
   instance ??= createRenderer(ecConfig).then(({ ec }) => createHighlighter({
     // Include Expressive Code's contrast correction as well as its custom scopes.
     themes: ec.themes.map(({ name, type, settings, colors, fg, bg }) => ({ name, type, settings, colors, fg, bg })),
-    langs: [...LANGS, tmuxUsage, tmuxShell, tmuxConfig, properties],
+    langs: [...LANGS, tmuxUsage, tmuxShell, tmuxConfig, properties, ...haskell],
   }))
   return instance
 }
