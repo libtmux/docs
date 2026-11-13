@@ -107,6 +107,13 @@
   },
   {
    "port": "clojure",
+   "symbol": "libtmux.core/error-summary",
+   "page": "/clojure/latest/guides/captures-and-effects/",
+   "title": "Captures, effects and streams",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
    "symbol": "libtmux.core/new-session!",
    "page": "/clojure/latest/guides/captures-and-effects/",
    "title": "Captures, effects and streams",
@@ -226,6 +233,20 @@
   },
   {
    "port": "clojure",
+   "symbol": "libtmux.data/active-pane",
+   "page": "/clojure/latest/guides/captured-values/",
+   "title": "Captured values",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.data/active-window",
+   "page": "/clojure/latest/guides/captured-values/",
+   "title": "Captured values",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
    "symbol": "libtmux.data/data",
    "page": "/clojure/latest/concepts/server-session-window-pane/",
    "title": "Server, session, window, pane",
@@ -233,10 +254,38 @@
   },
   {
    "port": "clojure",
+   "symbol": "libtmux.data/data",
+   "page": "/clojure/latest/guides/captured-values/",
+   "title": "Captured values",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.data/data",
+   "page": "/clojure/latest/guides/captures-and-effects/",
+   "title": "Captures, effects and streams",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.data/data",
+   "page": "/clojure/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
    "symbol": "libtmux.data/exactly-one",
    "page": "/clojure/latest/concepts/server-session-window-pane/",
    "title": "Server, session, window, pane",
    "section": "concepts"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.data/exactly-one",
+   "page": "/clojure/latest/guides/captures-and-effects/",
+   "title": "Captures, effects and streams",
+   "section": "guides"
   },
   {
    "port": "clojure",
@@ -254,10 +303,38 @@
   },
   {
    "port": "clojure",
+   "symbol": "libtmux.data/one-or-none",
+   "page": "/clojure/latest/guides/captures-and-effects/",
+   "title": "Captures, effects and streams",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
    "symbol": "libtmux.data/panes",
    "page": "/clojure/latest/concepts/server-session-window-pane/",
    "title": "Server, session, window, pane",
    "section": "concepts"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.data/panes",
+   "page": "/clojure/latest/guides/captured-values/",
+   "title": "Captured values",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.data/panes",
+   "page": "/clojure/latest/guides/captures-and-effects/",
+   "title": "Captures, effects and streams",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.data/panes",
+   "page": "/clojure/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "clojure",
@@ -268,6 +345,20 @@
   },
   {
    "port": "clojure",
+   "symbol": "libtmux.data/same-entity?",
+   "page": "/clojure/latest/guides/captured-values/",
+   "title": "Captured values",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.data/same-entity?",
+   "page": "/clojure/latest/guides/captures-and-effects/",
+   "title": "Captures, effects and streams",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
    "symbol": "libtmux.data/same-link?",
    "page": "/clojure/latest/concepts/server-session-window-pane/",
    "title": "Server, session, window, pane",
@@ -275,10 +366,45 @@
   },
   {
    "port": "clojure",
+   "symbol": "libtmux.data/same-link?",
+   "page": "/clojure/latest/guides/captured-values/",
+   "title": "Captured values",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.data/same-link?",
+   "page": "/clojure/latest/guides/captures-and-effects/",
+   "title": "Captures, effects and streams",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
    "symbol": "libtmux.data/windows",
    "page": "/clojure/latest/concepts/server-session-window-pane/",
    "title": "Server, session, window, pane",
    "section": "concepts"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.data/windows",
+   "page": "/clojure/latest/guides/captured-values/",
+   "title": "Captured values",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.data/windows",
+   "page": "/clojure/latest/guides/captures-and-effects/",
+   "title": "Captures, effects and streams",
+   "section": "guides"
+  },
+  {
+   "port": "clojure",
+   "symbol": "libtmux.data/windows",
+   "page": "/clojure/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "csharp",
@@ -3089,6 +3215,20 @@
   },
   {
    "port": "erlang",
+   "symbol": "tmux_buffer:delete/2",
+   "page": "/erlang/latest/guides/buffers/",
+   "title": "Preserve byte buffers and paste deliberately",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_buffer:list/1",
+   "page": "/erlang/latest/guides/buffers/",
+   "title": "Preserve byte buffers and paste deliberately",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
    "symbol": "tmux_buffer:load/3",
    "page": "/erlang/latest/guides/buffers/",
    "title": "Preserve byte buffers and paste deliberately",
@@ -3097,6 +3237,20 @@
   {
    "port": "erlang",
    "symbol": "tmux_buffer:paste/3",
+   "page": "/erlang/latest/guides/buffers/",
+   "title": "Preserve byte buffers and paste deliberately",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_buffer:show/2",
+   "page": "/erlang/latest/guides/buffers/",
+   "title": "Preserve byte buffers and paste deliberately",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_buffer:show/3",
    "page": "/erlang/latest/guides/buffers/",
    "title": "Preserve byte buffers and paste deliberately",
    "section": "guides"
@@ -3243,9 +3397,37 @@
   },
   {
    "port": "erlang",
+   "symbol": "tmux_filter:from_wire/2",
+   "page": "/erlang/latest/concepts/queries/",
+   "title": "Selections and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_filter:to_wire/1",
+   "page": "/erlang/latest/concepts/queries/",
+   "title": "Selections and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "erlang",
    "symbol": "tmux_hook",
    "page": "/erlang/latest/guides/api-documentation/",
    "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_hook:append/3",
+   "page": "/erlang/latest/guides/hooks/",
+   "title": "Register a hook and await its effect",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_hook:clear/2",
+   "page": "/erlang/latest/guides/hooks/",
+   "title": "Register a hook and await its effect",
    "section": "guides"
   },
   {
@@ -3397,6 +3579,20 @@
   },
   {
    "port": "erlang",
+   "symbol": "tmux_operation:await_started/2",
+   "page": "/erlang/latest/guides/operations/",
+   "title": "Owned operations",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_operation:await/2",
+   "page": "/erlang/latest/guides/operations/",
+   "title": "Owned operations",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
    "symbol": "tmux_operation:await/2",
    "page": "/erlang/latest/topics/diagnostics/",
    "title": "Diagnostics",
@@ -3435,6 +3631,13 @@
    "symbol": "tmux_option",
    "page": "/erlang/latest/guides/api-documentation/",
    "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_option:catalogue/1",
+   "page": "/erlang/latest/guides/options/",
+   "title": "Read and change scoped options",
    "section": "guides"
   },
   {
@@ -3580,6 +3783,27 @@
   {
    "port": "erlang",
    "symbol": "tmux_query:explain/1",
+   "page": "/erlang/latest/concepts/architecture/",
+   "title": "Architecture decisions",
+   "section": "concepts"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_query:explain/1",
+   "page": "/erlang/latest/concepts/queries/",
+   "title": "Selections and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_query:fetch/2",
+   "page": "/erlang/latest/concepts/architecture/",
+   "title": "Architecture decisions",
+   "section": "concepts"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_query:pushdown/2",
    "page": "/erlang/latest/concepts/queries/",
    "title": "Selections and queries",
    "section": "concepts"
@@ -3628,10 +3852,24 @@
   },
   {
    "port": "erlang",
+   "symbol": "tmux_select:fold/3",
+   "page": "/erlang/latest/concepts/queries/",
+   "title": "Selections and queries",
+   "section": "concepts"
+  },
+  {
+   "port": "erlang",
    "symbol": "tmux_select:one/1",
    "page": "/erlang/latest/guides/api-documentation/",
    "title": "Native API documentation",
    "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_select:to_list/1",
+   "page": "/erlang/latest/concepts/queries/",
+   "title": "Selections and queries",
+   "section": "concepts"
   },
   {
    "port": "erlang",
@@ -3692,6 +3930,13 @@
   {
    "port": "erlang",
    "symbol": "tmux_server:open/1",
+   "page": "/erlang/latest/guides/installation/",
+   "title": "Installation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server:open/1",
    "page": "/erlang/latest/topics/ownership/",
    "title": "Ownership and identity",
    "section": "topics"
@@ -3702,6 +3947,13 @@
    "page": "/erlang/latest/guides/panes/",
    "title": "Isolate and rejoin a running pane",
    "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server:snapshot/2",
+   "page": "/erlang/latest/concepts/architecture/",
+   "title": "Architecture decisions",
+   "section": "concepts"
   },
   {
    "port": "erlang",
@@ -3856,6 +4108,27 @@
    "page": "/erlang/latest/guides/panes/",
    "title": "Isolate and rejoin a running pane",
    "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_window_link:link/3",
+   "page": "/erlang/latest/concepts/object-graph/",
+   "title": "Object graph",
+   "section": "concepts"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_window_link:select/1",
+   "page": "/erlang/latest/concepts/object-graph/",
+   "title": "Object graph",
+   "section": "concepts"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_window_link:unlink/2",
+   "page": "/erlang/latest/concepts/object-graph/",
+   "title": "Object graph",
+   "section": "concepts"
   },
   {
    "port": "erlang",
@@ -9998,6 +10271,13 @@
   },
   {
    "port": "lisp",
+   "symbol": "libtmux:session/function",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
    "symbol": "libtmux:sessions",
    "page": "/lisp/latest/concepts/captures/",
    "title": "Captures and identity",
@@ -10230,6 +10510,13 @@
   {
    "port": "lisp",
    "symbol": "libtmux:window-links",
+   "page": "/lisp/latest/concepts/captures/",
+   "title": "Captures and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:window/function",
    "page": "/lisp/latest/concepts/captures/",
    "title": "Captures and identity",
    "section": "concepts"
@@ -12182,6 +12469,13 @@
   },
   {
    "port": "perl",
+   "symbol": "LibTmux::Entity::to_record",
+   "page": "/perl/latest/concepts/graph/",
+   "title": "Snapshot graph and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "perl",
    "symbol": "LibTmux::Filter",
    "page": "/perl/latest/guides/filtering/",
    "title": "Filtering",
@@ -12196,7 +12490,168 @@
   },
   {
    "port": "perl",
+   "symbol": "LibTmux::Selection::exists",
+   "page": "/perl/latest/guides/filtering/",
+   "title": "Filtering",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Selection::first",
+   "page": "/perl/latest/guides/filtering/",
+   "title": "Filtering",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Selection::grep",
+   "page": "/perl/latest/examples/programs/",
+   "title": "Runnable programs",
+   "section": "examples"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Selection::grep",
+   "page": "/perl/latest/guides/filtering/",
+   "title": "Filtering",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Selection::iterator",
+   "page": "/perl/latest/guides/filtering/",
+   "title": "Filtering",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Selection::one",
+   "page": "/perl/latest/concepts/graph/",
+   "title": "Snapshot graph and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Selection::one_or_undef",
+   "page": "/perl/latest/topics/errors/",
+   "title": "Errors and recovery",
+   "section": "topics"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Selection::to_array",
+   "page": "/perl/latest/guides/filtering/",
+   "title": "Filtering",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Selection::where",
+   "page": "/perl/latest/examples/programs/",
+   "title": "Runnable programs",
+   "section": "examples"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Selection::where",
+   "page": "/perl/latest/guides/filtering/",
+   "title": "Filtering",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
    "symbol": "LibTmux::Server",
+   "page": "/perl/latest/examples/orchestration/",
+   "title": "Create sessions, windows, and panes",
+   "section": "examples"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server::attach_argv",
+   "page": "/perl/latest/examples/orchestration/",
+   "title": "Create sessions, windows, and panes",
+   "section": "examples"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server::batch",
+   "page": "/perl/latest/examples/orchestration/",
+   "title": "Create sessions, windows, and panes",
+   "section": "examples"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server::capture_pane",
+   "page": "/perl/latest/examples/orchestration/",
+   "title": "Create sessions, windows, and panes",
+   "section": "examples"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server::cmd",
+   "page": "/perl/latest/examples/orchestration/",
+   "title": "Create sessions, windows, and panes",
+   "section": "examples"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server::detach_client",
+   "page": "/perl/latest/examples/orchestration/",
+   "title": "Create sessions, windows, and panes",
+   "section": "examples"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server::explain_panes",
+   "page": "/perl/latest/topics/query-planning/",
+   "title": "Live query planning",
+   "section": "topics"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server::get_option",
+   "page": "/perl/latest/examples/orchestration/",
+   "title": "Create sessions, windows, and panes",
+   "section": "examples"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server::listings",
+   "page": "/perl/latest/concepts/graph/",
+   "title": "Snapshot graph and identity",
+   "section": "concepts"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server::query_panes",
+   "page": "/perl/latest/topics/query-planning/",
+   "title": "Live query planning",
+   "section": "topics"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server::send_keys",
+   "page": "/perl/latest/examples/orchestration/",
+   "title": "Create sessions, windows, and panes",
+   "section": "examples"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server::send_text",
+   "page": "/perl/latest/examples/orchestration/",
+   "title": "Create sessions, windows, and panes",
+   "section": "examples"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server::set_option",
+   "page": "/perl/latest/examples/orchestration/",
+   "title": "Create sessions, windows, and panes",
+   "section": "examples"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server::unset_option",
    "page": "/perl/latest/examples/orchestration/",
    "title": "Create sessions, windows, and panes",
    "section": "examples"
@@ -15746,6 +16201,13 @@
   {
    "port": "ruby",
    "symbol": "LibTmux::Cancellation#cancel",
+   "page": "/ruby/latest/topics/errors-and-exceptions/",
+   "title": "Ownership and errors",
+   "section": "topics"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Cancellation#cancelled?",
    "page": "/ruby/latest/topics/errors-and-exceptions/",
    "title": "Ownership and errors",
    "section": "topics"
