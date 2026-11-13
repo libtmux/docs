@@ -633,7 +633,10 @@ goes in `TYPE_ALIASES`, and a package that two spellings share in
 `NAME_ALIASES`. `--check` also fails a record that contradicts itself (a pass
 with a 404, a failure field or a redirect), an unverifiable record that gives a
 reason of its own, and a run that left more than a few destinations
-unverifiable, because that run checked nothing.
+unverifiable, because that run checked nothing. A host that answered none of
+its requests counts as one blocked host, however many links it has, up to
+`MAX_BLOCKED_HOSTS` of them: a CI runner a host refuses leaves all of that
+host's links open.
 `scripts/verify-api-destinations.negative.mjs` plants a wrong fragment, a wrong
 page, a symbol the page does not document, a word that merely contains the
 symbol, a wrong package or namespace, a wrong kind, operand count or parameter

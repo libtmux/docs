@@ -148,7 +148,7 @@ export function addressOf(url) {
     return { path: [...namespace, last, ...member], exact: false, fragment: fragment ? (member.length ? 'member' : 'heading') : 'none', type: last }
   }
 
-  if (host === 'gofastmcp.com' && dirs[0] === 'python-sdk') {
+  if (host === 'gofastmcp.com' && dirs.join('/') === 'docs/python-sdk') {
     // One page per module, named by its dotted path with hyphens; its anchors are the module's names.
     const module = stem.split('-')
     const member = fragment && /^[A-Za-z_]\w*$/.test(fragment) ? [fragment] : []

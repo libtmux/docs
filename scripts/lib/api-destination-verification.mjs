@@ -489,6 +489,13 @@ export function unprovenSymbols(destination, record) {
 /** The share of destinations a run may leave unverifiable before the evidence stops counting as a check. */
 export const MAX_UNVERIFIABLE_SHARE = 0.05
 
+/**
+ * The hosts that may answer none of a run's requests without the run ceasing to be a check.
+ * Their destinations are not counted against `MAX_UNVERIFIABLE_SHARE`, because a host that blocks
+ * a runner blocks all of its links, however many the site makes to it.
+ */
+export const MAX_BLOCKED_HOSTS = 2
+
 /** Where the verifier reports finding a symbol. */
 const FOUND_AT = new Set(['identity', 'review', 'fragment', 'title', 'address', 'listed', 'section'])
 
@@ -702,10 +709,21 @@ export function checkApiEvidence(destinations, evidence, { today = new Date(), r
     }
   }
   // A host or two that blocks a request leaves a few destinations open. Most of them open is a run that
-  // asked nothing, and passing it would be passing a check that checked nothing.
-  const open = [...wanted.keys()].filter((url) => records.get(url)?.unverifiable).length
+  // asked nothing, and passing it would be passing a check that checked nothing. A host that answers none
+  // of its requests is one blocked host whatever its share of the links; the smallest are the ones set
+  // aside, so a large host that blocks the run is still counted.
+  const hosts = new Map()
+  for (const destination of wanted.values()) {
+    const tally = hosts.get(destination.host) ?? { total: 0, open: 0 }
+    tally.total += 1
+    if (records.get(destination.url)?.unverifiable) tally.open += 1
+    hosts.set(destination.host, tally)
+  }
+  const blocked = [...hosts.values()].filter((tally) => tally.open === tally.total).sort((a, b) => a.total - b.total).slice(0, MAX_BLOCKED_HOSTS)
+  const setAside = blocked.reduce((sum, tally) => sum + tally.total, 0)
+  const open = [...hosts.values()].reduce((sum, tally) => sum + tally.open, 0) - setAside
   const allowed = Math.floor(wanted.size * MAX_UNVERIFIABLE_SHARE)
-  if (open > allowed) problems.push(`${open} of ${wanted.size} destinations are unverifiable, more than the ${allowed} a blocked or throttled host explains: run node scripts/verify-api-destinations.mjs when the hosts answer`)
+  if (open > allowed) problems.push(`${open} of ${wanted.size} destinations are unverifiable, more than the ${allowed} a blocked or throttled host explains${setAside ? `, not counting the ${setAside} of the ${blocked.length} host${blocked.length === 1 ? '' : 's'} that answered none` : ''}: run node scripts/verify-api-destinations.mjs when the hosts answer`)
   if (unverifiableInventories > 1) problems.push(`${unverifiableInventories} of ${Object.keys(INVENTORY_SOURCES).length} inventories are unverifiable: run node scripts/verify-api-destinations.mjs --inventories when the hosts answer`)
   for (const record of evidence.destinations) {
     if (!wanted.has(record.url) && !record.crawled) problems.push(`${record.url} is in the evidence but no source generates it: run node scripts/verify-api-destinations.mjs`)
