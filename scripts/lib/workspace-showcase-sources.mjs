@@ -162,6 +162,12 @@ const tmuxpCatalog = (directory, tests, { skip = [], prefix = '' } = {}) => TMUX
   return citing.length ? [{ topic, also, source: file(`${directory}/${prefix}${name}.yaml`), tests: citing }] : []
 })
 
+const JAVA_CLI_TESTS = 'libtmux-workspace-cli/src/test/java/io/github/libtmux/workspace/cli'
+
+/** A Java text block that a test writes to a file, from its opening line to the closing quotes. */
+const JAVA_DOCUMENT = 'Files.writeString(source, """\n'
+const JAVA_DOCUMENT_END = '""");'
+
 /** @type {Record<string, { checkout?: string, examples: object[] }>} */
 export const SOURCES = {
   py: {
@@ -238,11 +244,94 @@ export const SOURCES = {
     ],
   },
 
-  // These ports ship a workspace manager whose tests give no document that can be quoted.
   // TypeScript is filled in below, from the fixtures its tests load.
   ts: { examples: [] },
-  java: { examples: [] },
-  swift: { examples: [] },
+
+  // The README's example is newer than the revision the API model records, so Java is read at a pin.
+  // Every other test below exists at the model's revision too.
+  java: {
+    revision: 'ac3bad80622b4f67253d437b5cce60303c43c389',
+    modelRevision: 'a0ecbc16da00140e2520462d478a2af470878272',
+    examples: [
+      {
+        topic: 'two-pane', also: [],
+        source: inside('libtmux-workspace-cli/README.md', '```yaml\n', '```'),
+        tests: [{
+          path: `${JAVA_CLI_TESTS}/ReadmeExamplesTest.java`, name: 'theLoadAndFreezeExamplesRunAsWritten',
+          needles: ['libtmux-workspace-cli/README.md', '```yaml'], via: 'cli',
+          checks: 'Reads this block from the README, runs the README\'s load and freeze commands on it against a real tmux server, and checks that load ends with a completed event with status ok, that the session dev exists and that freeze returns dev with two panes in its first window.',
+        }],
+      },
+      {
+        topic: 'environment', also: [],
+        source: inside(`${JAVA_CLI_TESTS}/ExecutionTest.java`, JAVA_DOCUMENT, JAVA_DOCUMENT_END, { after: 'void booleanOptionsUseTmuxValuesWhileEnvironmentRemainsText' }),
+        note: 'YAML booleans: tmux options take them as `on` and `off`, while `environment` keeps the text `true`.',
+        tests: [{
+          path: `${JAVA_CLI_TESTS}/ExecutionTest.java`, name: 'booleanOptionsUseTmuxValuesWhileEnvironmentRemainsText', via: 'cli',
+          checks: 'Runs load on a real tmux server and checks the session, global and window options tmux reports, and that the session environment holds FLAG=true.',
+        }],
+      },
+      {
+        topic: 'focus-window-and-panes', also: ['three-pane'],
+        source: inside(`${JAVA_CLI_TESTS}/ExecutionTest.java`, JAVA_DOCUMENT, JAVA_DOCUMENT_END, { after: 'void aWindowWithNoDeclaredFocusIsLeftOnItsLastPane' }),
+        tests: [{
+          path: `${JAVA_CLI_TESTS}/ExecutionTest.java`, name: 'aWindowWithNoDeclaredFocusIsLeftOnItsLastPane', via: 'cli',
+          checks: 'Runs load on a real tmux server and checks the active pane of each window: the last pane where no focus is declared, the first where focus: true is.',
+        }],
+      },
+      {
+        topic: 'options', also: ['two-pane'],
+        source: inside(`${JAVA_CLI_TESTS}/ExecutionTest.java`, JAVA_DOCUMENT, JAVA_DOCUMENT_END, { after: 'void aWindowOptionUnderSessionOptionsReachesEveryWindow' }),
+        tests: [{
+          path: `${JAVA_CLI_TESTS}/ExecutionTest.java`, name: 'aWindowOptionUnderSessionOptionsReachesEveryWindow', via: 'cli',
+          checks: 'Runs load on a real tmux server and checks that pane-base-index, listed under the session\'s options, numbers the panes of both windows from 1, and that default-shell is set on the session.',
+        }],
+      },
+      {
+        topic: 'pane-shell', also: [],
+        source: inside(`${JAVA_CLI_TESTS}/ExecutionTest.java`, JAVA_DOCUMENT, JAVA_DOCUMENT_END, { after: 'panes: [\'printed\']' }),
+        tests: [{
+          path: `${JAVA_CLI_TESTS}/ExecutionTest.java`, name: 'blankPanesAndExplicitLaunchersSkipReadinessQueries', via: 'cli',
+          checks: 'Runs load on a real tmux server and checks that no readiness query reaches tmux for a pane that names its shell, and that the pane runs cat.',
+        }],
+      },
+      {
+        topic: 'skip-send-pane-level', also: [],
+        source: inside(`${JAVA_CLI_TESTS}/MainTest.java`, JAVA_DOCUMENT, JAVA_DOCUMENT_END, { after: 'void paneCommandDefaultsCarryUntilAnExplicitOverride' }),
+        tests: [{
+          path: `${JAVA_CLI_TESTS}/MainTest.java`, name: 'paneCommandDefaultsCarryUntilAnExplicitOverride', via: 'loader',
+          checks: 'Reads the file with WorkspacePlan.read, which the load command calls, and checks each command\'s enter flag and its sleep_before and sleep_after delays: the pane\'s values apply until a command sets its own.',
+        }],
+      },
+      {
+        topic: 'window-index', also: ['two-pane', 'environment'],
+        source: inside(`${JAVA_CLI_TESTS}/ExecutionTest.java`, JAVA_DOCUMENT, JAVA_DOCUMENT_END, { after: 'void coldLoadCaptureAndReusePreserveIndexedTopology' }),
+        note: 'The second window merges the first with a YAML anchor, then sets its own name, index and panes.',
+        tests: [{
+          path: `${JAVA_CLI_TESTS}/ExecutionTest.java`, name: 'coldLoadCaptureAndReusePreserveIndexedTopology', via: 'cli',
+          checks: 'Runs load, freeze and load again on a real tmux server and checks the window indexes (0 and 4), the window and pane counts, that freeze keeps index 4 and that loading the frozen file restores the same indexes and pane counts.',
+        }],
+      },
+    ],
+  },
+
+  // Swift's command reads a file with a loader of its own, so the fixtures only `Workspace.decode` reads stay out.
+  swift: {
+    examples: [
+      {
+        topic: 'start-directory', also: [],
+        source: inside(
+          'Tests/TmuxWorkspaceCLITests/WorkspaceCLITests.swift', '"""\n', '""".utf8',
+          { after: 'let missing = root.appendingPathComponent("missing.yaml")' },
+        ),
+        note: 'The directory does not exist: the load still succeeds, and warns that tmux will fall back to `$HOME`.',
+        tests: [{
+          path: 'Tests/TmuxWorkspaceCLITests/WorkspaceCLITests.swift', name: 'startDirectorySemantics', via: 'cli',
+          checks: 'Runs load on a real tmux server and checks that it exits 0 and warns, naming the missing directory, that tmux will fall back to $HOME.',
+        }],
+      },
+    ],
+  },
 
   rs: {
     examples: [

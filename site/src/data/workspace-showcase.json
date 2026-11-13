@@ -862,7 +862,7 @@
     },
     "java": {
       "repo": "libtmux/libtmux-java",
-      "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+      "revision": "ac3bad80622b4f67253d437b5cce60303c43c389",
       "support": {
         "presets": {
           "2-pane-synchronized": {
@@ -871,7 +871,7 @@
           },
           "2-pane-vertical": {
             "supported": "yes",
-            "tested": "missing"
+            "tested": "other"
           },
           "3-pane": {
             "supported": "yes",
@@ -921,7 +921,7 @@
           },
           "session-environment": {
             "supported": "yes",
-            "tested": "missing"
+            "tested": "other"
           },
           "shorthands": {
             "supported": "yes",
@@ -961,7 +961,178 @@
           }
         }
       },
-      "examples": []
+      "examples": [
+        {
+          "topic": "two-pane",
+          "also": [],
+          "source": {
+            "path": "libtmux-workspace-cli/README.md",
+            "lines": [
+              63,
+              70
+            ]
+          },
+          "yaml": "session_name: dev\nwindows:\n  - window_name: editor\n    window_index: 0\n    layout: even-horizontal\n    panes:\n      - null\n      - shell_command: echo ready",
+          "sha256": "4727b59ad66793d16a0a4a7709b97bec635a6311173564e6317cc5329721185c",
+          "json": "{\n  \"session_name\": \"dev\",\n  \"windows\": [\n    {\n      \"window_name\": \"editor\",\n      \"window_index\": 0,\n      \"layout\": \"even-horizontal\",\n      \"panes\": [\n        null,\n        {\n          \"shell_command\": \"echo ready\"\n        }\n      ]\n    }\n  ]\n}",
+          "tests": [
+            {
+              "path": "libtmux-workspace-cli/src/test/java/io/github/libtmux/workspace/cli/ReadmeExamplesTest.java",
+              "name": "theLoadAndFreezeExamplesRunAsWritten",
+              "line": 70,
+              "via": "cli",
+              "checks": "Reads this block from the README, runs the README's load and freeze commands on it against a real tmux server, and checks that load ends with a completed event with status ok, that the session dev exists and that freeze returns dev with two panes in its first window."
+            }
+          ]
+        },
+        {
+          "topic": "environment",
+          "also": [],
+          "source": {
+            "path": "libtmux-workspace-cli/src/test/java/io/github/libtmux/workspace/cli/ExecutionTest.java",
+            "lines": [
+              1623,
+              1634
+            ]
+          },
+          "note": "YAML booleans: tmux options take them as `on` and `off`, while `environment` keeps the text `true`.",
+          "yaml": "session_name: booleans\noptions:\n  renumber-windows: true\nglobal_options:\n  mouse: false\nenvironment:\n  FLAG: true\nwindows:\n  - options:\n      remain-on-exit: true\n    options_after:\n      synchronize-panes: false",
+          "sha256": "61a8b47469bba601e4dda2a4931f8eb76cbbe8d5dddbb30327803662450c0353",
+          "json": "{\n  \"session_name\": \"booleans\",\n  \"options\": {\n    \"renumber-windows\": true\n  },\n  \"global_options\": {\n    \"mouse\": false\n  },\n  \"environment\": {\n    \"FLAG\": true\n  },\n  \"windows\": [\n    {\n      \"options\": {\n        \"remain-on-exit\": true\n      },\n      \"options_after\": {\n        \"synchronize-panes\": false\n      }\n    }\n  ]\n}",
+          "tests": [
+            {
+              "path": "libtmux-workspace-cli/src/test/java/io/github/libtmux/workspace/cli/ExecutionTest.java",
+              "name": "booleanOptionsUseTmuxValuesWhileEnvironmentRemainsText",
+              "line": 1619,
+              "via": "cli",
+              "checks": "Runs load on a real tmux server and checks the session, global and window options tmux reports, and that the session environment holds FLAG=true."
+            }
+          ]
+        },
+        {
+          "topic": "focus-window-and-panes",
+          "also": [
+            "three-pane"
+          ],
+          "source": {
+            "path": "libtmux-workspace-cli/src/test/java/io/github/libtmux/workspace/cli/ExecutionTest.java",
+            "lines": [
+              2315,
+              2324
+            ]
+          },
+          "yaml": "session_name: focus\nwindows:\n  - window_name: implicit\n    panes: [null, null, null]\n  - window_name: declared\n    panes:\n      - shell_command: null\n        focus: true\n      - null\n      - null",
+          "sha256": "76f9522e48b95359b34370c2b14e3a73224a2b3e2666d837074d91c57b9b7f5d",
+          "json": "{\n  \"session_name\": \"focus\",\n  \"windows\": [\n    {\n      \"window_name\": \"implicit\",\n      \"panes\": [\n        null,\n        null,\n        null\n      ]\n    },\n    {\n      \"window_name\": \"declared\",\n      \"panes\": [\n        {\n          \"shell_command\": null,\n          \"focus\": true\n        },\n        null,\n        null\n      ]\n    }\n  ]\n}",
+          "tests": [
+            {
+              "path": "libtmux-workspace-cli/src/test/java/io/github/libtmux/workspace/cli/ExecutionTest.java",
+              "name": "aWindowWithNoDeclaredFocusIsLeftOnItsLastPane",
+              "line": 2311,
+              "via": "cli",
+              "checks": "Runs load on a real tmux server and checks the active pane of each window: the last pane where no focus is declared, the first where focus: true is."
+            }
+          ]
+        },
+        {
+          "topic": "options",
+          "also": [
+            "two-pane"
+          ],
+          "source": {
+            "path": "libtmux-workspace-cli/src/test/java/io/github/libtmux/workspace/cli/ExecutionTest.java",
+            "lines": [
+              2158,
+              2166
+            ]
+          },
+          "yaml": "session_name: pbi\noptions:\n  pane-base-index: 1\n  default-shell: /bin/sh\nwindows:\n  - window_name: one\n    panes: [null, null]\n  - window_name: two\n    panes: [null, null]",
+          "sha256": "6f4fba80a673e26ea6c2d3ab0ccbcdce1a3fc4a3f84402151f9f32cb5577b3c5",
+          "json": "{\n  \"session_name\": \"pbi\",\n  \"options\": {\n    \"pane-base-index\": 1,\n    \"default-shell\": \"/bin/sh\"\n  },\n  \"windows\": [\n    {\n      \"window_name\": \"one\",\n      \"panes\": [\n        null,\n        null\n      ]\n    },\n    {\n      \"window_name\": \"two\",\n      \"panes\": [\n        null,\n        null\n      ]\n    }\n  ]\n}",
+          "tests": [
+            {
+              "path": "libtmux-workspace-cli/src/test/java/io/github/libtmux/workspace/cli/ExecutionTest.java",
+              "name": "aWindowOptionUnderSessionOptionsReachesEveryWindow",
+              "line": 2154,
+              "via": "cli",
+              "checks": "Runs load on a real tmux server and checks that pane-base-index, listed under the session's options, numbers the panes of both windows from 1, and that default-shell is set on the session."
+            }
+          ]
+        },
+        {
+          "topic": "pane-shell",
+          "also": [],
+          "source": {
+            "path": "libtmux-workspace-cli/src/test/java/io/github/libtmux/workspace/cli/ExecutionTest.java",
+            "lines": [
+              843,
+              849
+            ]
+          },
+          "yaml": "session_name: launched\nworkspace_builder_options:\n  pane_readiness: always\nwindows:\n  - panes:\n      - shell: /bin/cat\n        shell_command: printed",
+          "sha256": "c463cb6a3e47b45fe74ba84bb2baf6f856311847950e6313b001c9baf525ed6d",
+          "json": "{\n  \"session_name\": \"launched\",\n  \"workspace_builder_options\": {\n    \"pane_readiness\": \"always\"\n  },\n  \"windows\": [\n    {\n      \"panes\": [\n        {\n          \"shell\": \"/bin/cat\",\n          \"shell_command\": \"printed\"\n        }\n      ]\n    }\n  ]\n}",
+          "tests": [
+            {
+              "path": "libtmux-workspace-cli/src/test/java/io/github/libtmux/workspace/cli/ExecutionTest.java",
+              "name": "blankPanesAndExplicitLaunchersSkipReadinessQueries",
+              "line": 791,
+              "via": "cli",
+              "checks": "Runs load on a real tmux server and checks that no readiness query reaches tmux for a pane that names its shell, and that the pane runs cat."
+            }
+          ]
+        },
+        {
+          "topic": "skip-send-pane-level",
+          "also": [],
+          "source": {
+            "path": "libtmux-workspace-cli/src/test/java/io/github/libtmux/workspace/cli/MainTest.java",
+            "lines": [
+              1060,
+              1073
+            ]
+          },
+          "yaml": "session_name: defaults\nwindows:\n  - panes:\n      - enter: false\n        sleep_before: 0.02\n        sleep_after: 0.03\n        shell_command:\n          - first\n          - cmd: second\n            sleep_before: null\n          - cmd: third\n            enter: true\n            sleep_after: 0\n          - fourth",
+          "sha256": "e5ac83970aa26dd4feb0a04bea326a21827ba531b1c5d7235b2deaaba966027b",
+          "json": "{\n  \"session_name\": \"defaults\",\n  \"windows\": [\n    {\n      \"panes\": [\n        {\n          \"enter\": false,\n          \"sleep_before\": 0.02,\n          \"sleep_after\": 0.03,\n          \"shell_command\": [\n            \"first\",\n            {\n              \"cmd\": \"second\",\n              \"sleep_before\": null\n            },\n            {\n              \"cmd\": \"third\",\n              \"enter\": true,\n              \"sleep_after\": 0\n            },\n            \"fourth\"\n          ]\n        }\n      ]\n    }\n  ]\n}",
+          "tests": [
+            {
+              "path": "libtmux-workspace-cli/src/test/java/io/github/libtmux/workspace/cli/MainTest.java",
+              "name": "paneCommandDefaultsCarryUntilAnExplicitOverride",
+              "line": 1057,
+              "via": "loader",
+              "checks": "Reads the file with WorkspacePlan.read, which the load command calls, and checks each command's enter flag and its sleep_before and sleep_after delays: the pane's values apply until a command sets its own."
+            }
+          ]
+        },
+        {
+          "topic": "window-index",
+          "also": [
+            "two-pane",
+            "environment"
+          ],
+          "source": {
+            "path": "libtmux-workspace-cli/src/test/java/io/github/libtmux/workspace/cli/ExecutionTest.java",
+            "lines": [
+              2646,
+              2660
+            ]
+          },
+          "note": "The second window merges the first with a YAML anchor, then sets its own name, index and panes.",
+          "yaml": "session_name: native-java\noptions:\n  default-shell: /bin/sh\nenvironment:\n  WORKSPACE_TEST: inherited\nwindows:\n  - &main\n    window_name: main\n    window_index: 0\n    layout: even-horizontal\n    panes: [null, null]\n  - <<: *main\n    window_name: other\n    window_index: 4\n    panes: [null]",
+          "sha256": "de650e64b09f9ab87598b5d767393707333f0492c9d1c76e33e2c31a06120dc2",
+          "json": "{\n  \"session_name\": \"native-java\",\n  \"options\": {\n    \"default-shell\": \"/bin/sh\"\n  },\n  \"environment\": {\n    \"WORKSPACE_TEST\": \"inherited\"\n  },\n  \"windows\": [\n    {\n      \"window_name\": \"main\",\n      \"window_index\": 0,\n      \"layout\": \"even-horizontal\",\n      \"panes\": [\n        null,\n        null\n      ]\n    },\n    {\n      \"window_name\": \"other\",\n      \"window_index\": 4,\n      \"layout\": \"even-horizontal\",\n      \"panes\": [\n        null\n      ]\n    }\n  ]\n}",
+          "tests": [
+            {
+              "path": "libtmux-workspace-cli/src/test/java/io/github/libtmux/workspace/cli/ExecutionTest.java",
+              "name": "coldLoadCaptureAndReusePreserveIndexedTopology",
+              "line": 2642,
+              "via": "cli",
+              "checks": "Runs load, freeze and load again on a real tmux server and checks the window indexes (0 and 4), the window and pane counts, that freeze keeps index 4 and that loading the frozen file restores the same indexes and pane counts."
+            }
+          ]
+        }
+      ]
     },
     "swift": {
       "repo": "libtmux/libtmux-swift",
@@ -1069,7 +1240,7 @@
           },
           "start-directory": {
             "supported": "yes",
-            "tested": "missing"
+            "tested": "other"
           },
           "suppress-history": {
             "supported": "yes",
@@ -1081,7 +1252,32 @@
           }
         }
       },
-      "examples": []
+      "examples": [
+        {
+          "topic": "start-directory",
+          "also": [],
+          "source": {
+            "path": "Tests/TmuxWorkspaceCLITests/WorkspaceCLITests.swift",
+            "lines": [
+              2099,
+              2103
+            ]
+          },
+          "note": "The directory does not exist: the load still succeeds, and warns that tmux will fall back to `$HOME`.",
+          "yaml": "session_name: missingdir\nstart_directory: /nonexistent/definitely/not/here\nwindows:\n  - panes:\n      - ~",
+          "sha256": "0b1f682bb8a42dacdfa3a5880f4ea8417fa742418b1d446518236cb7f5f09633",
+          "json": "{\n  \"session_name\": \"missingdir\",\n  \"start_directory\": \"/nonexistent/definitely/not/here\",\n  \"windows\": [\n    {\n      \"panes\": [\n        null\n      ]\n    }\n  ]\n}",
+          "tests": [
+            {
+              "path": "Tests/TmuxWorkspaceCLITests/WorkspaceCLITests.swift",
+              "name": "startDirectorySemantics",
+              "line": 2064,
+              "via": "cli",
+              "checks": "Runs load on a real tmux server and checks that it exits 0 and warns, naming the missing directory, that tmux will fall back to $HOME."
+            }
+          ]
+        }
+      ]
     },
     "rs": {
       "repo": "libtmux/libtmux-rs",
