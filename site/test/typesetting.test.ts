@@ -75,3 +75,26 @@ describe('section index', () => {
     expect(introBeforeCards('Intro.', 0)).toBe(false)
   })
 })
+
+describe('tables', () => {
+  it('scrolls inside a bordered box with a fade at the clipped edge', () => {
+    const table = rule('.prose :where(table)')
+    expect(table['overflow-x']).toBe('auto')
+    expect(table.border).toContain('1px solid')
+    // Two covers that follow the content and two shadows that stay put.
+    expect(table.background?.match(/\blocal\b/g)).toHaveLength(2)
+    expect(table.background?.match(/\bscroll\b/g)).toHaveLength(2)
+  })
+
+  it('keeps mono cells at 13px or more and gives inline code body weight with a narrow chip', () => {
+    expect(rule('.prose :where(td code, th code)')['font-size']).toBe('max(0.8125rem, 0.9em)')
+    // Nested at-rules from the `dark:` variants keep this one out of the flat lookup above, so read the block's text.
+    const start = css.indexOf('.prose code:not(pre code) {')
+    expect(start).toBeGreaterThan(-1)
+    const code = css.slice(start, css.indexOf('\n  }\n', start))
+    expect(code).toMatch(/font-size: 0\.875em/)
+    expect(code).toMatch(/padding: 0\.125rem 0\.1875rem/)
+    expect(code).toMatch(/font-weight: var\(--font-weight-normal\)|font-weight: 400/)
+    expect(code).not.toMatch(/font-weight: var\(--font-weight-medium\)/)
+  })
+})

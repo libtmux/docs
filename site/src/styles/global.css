@@ -885,6 +885,27 @@ html[data-theme="purple"][data-theme-mode="dark"] {
     overflow-x: auto;
     border-collapse: collapse;
     font-size: 0.9em;
+    /* A table wider than its column scrolls inside a bordered box, and the
+       clipped edge says so: a fade on the side that has more. The two
+       `local` gradients are the page ground and cover the `scroll` shadows
+       once the box has been scrolled to that end, so only an edge with
+       hidden content shows its shadow (15-typesetting.md, Tables). */
+    border: 1px solid var(--color-background-border);
+    border-radius: 0.25rem;
+    background:
+      linear-gradient(to right, var(--background-color) 30%, transparent) left center / 2rem 100% no-repeat local,
+      linear-gradient(to left, var(--background-color) 30%, transparent) right center / 2rem 100% no-repeat local,
+      linear-gradient(to right, var(--table-edge-shadow, rgb(0 0 0 / 0.16)), transparent) left center / 0.75rem 100% no-repeat scroll,
+      linear-gradient(to left, var(--table-edge-shadow, rgb(0 0 0 / 0.16)), transparent) right center / 0.75rem 100% no-repeat scroll;
+  }
+
+  html[data-theme-mode='dark'] .prose :where(table) {
+    --table-edge-shadow: rgb(255 255 255 / 0.18);
+  }
+
+  .prose :where(table:focus-visible) {
+    outline: 2px solid var(--focus-ring-color, var(--theme-primary));
+    outline-offset: 2px;
   }
 
   .prose :where(th) {
@@ -917,7 +938,9 @@ html[data-theme="purple"][data-theme-mode="dark"] {
     border: 1px solid var(--color-background-border);
     border-radius: 0.2em;
     padding: 0.1em 0.3em;
-    font-size: 0.9em;
+    /* Mono cells keep at least 13px: a package name is never set smaller than
+       the table text around it. */
+    font-size: max(0.8125rem, 0.9em);
   }
 
   .prose :where(tbody tr:hover) {
