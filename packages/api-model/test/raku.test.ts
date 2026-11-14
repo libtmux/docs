@@ -111,6 +111,31 @@ describe.runIf(existsSync(rakuModel))('code spans in Raku descriptions', () => {
     expect(linked('`capabilities`', 'LibTmux::Model::Snapshot')).toEqual(['LibTmux::Model::Snapshot.capabilities'])
   })
 
+  it('resolve a bare name from the class being described and from a module\'s own class, and from no other class', () => {
+    // `bell`, `x` and `status` are tmux format names on the Catalogue page and `outcome` is what a command reports on the
+    // Command page; WindowLink, Pane, Capabilities and Report declare members of those names, and none is described there.
+    for (const [name, context] of [['bell', 'LibTmux::Catalogue'], ['x', 'LibTmux::Catalogue'], ['status', 'LibTmux::Catalogue'], ['outcome', 'LibTmux::Command']]) {
+      expect(index.resolve(name!, 'any', at(context!)), `${name} on ${context}`).toBeUndefined()
+      expect(linked(`\`${name}\``, context!), `${name} on ${context}`).toEqual([])
+    }
+    // LibTmux::Selection is a module whose own class is Selection::Selection, which declares these.
+    for (const name of ['where', 'filter', 'first', 'map']) {
+      expect(index.resolve(name, 'any', at('LibTmux::Selection'))?.symbol?.id, name).toBe(`LibTmux::Selection::Selection.${name}`)
+      expect(linked(`\`${name}\``, 'LibTmux::Selection'), name).toEqual([`LibTmux::Selection::Selection.${name}`])
+    }
+    // Another module's page names no member of Selection. A plain word names no member of a class that is merely declared in the
+    // module being described: Model's `reset` is a shell command and not `PaneRef.reset`. An identifier does, as it names one declaration.
+    for (const [name, context] of [['where', 'LibTmux::Query'], ['where', 'LibTmux'], ['reset', 'LibTmux::Model']]) {
+      expect(index.resolve(name!, 'any', at(context!)), `${name} on ${context}`).toBeUndefined()
+    }
+    for (const name of ['ACCEPTS', 'to-json']) {
+      expect(index.resolve(name, 'any', at('LibTmux::Query'))?.symbol?.id, name).toBe(`LibTmux::Query::Filter.${name}`)
+    }
+    expect(index.resolve('start', 'any', at('LibTmux::Server'))?.symbol?.id).toBe('LibTmux::Server.start')
+    // A qualified name says which class it means, from any page.
+    expect(index.resolve('LibTmux::Model::WindowLink.bell', 'any', at('LibTmux::Catalogue'))?.symbol?.id).toBe('LibTmux::Model::WindowLink.bell')
+  })
+
   it('keep what names no member as plain code, and a doubled span as a literal', () => {
     for (const text of ['`TMUX`', '`:parse-only`', '`$snapshot.clients`', '`` start ``']) {
       expect(linked(text, 'LibTmux::Server'), text).toEqual([])
