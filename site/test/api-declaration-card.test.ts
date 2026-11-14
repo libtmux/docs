@@ -1,3 +1,4 @@
+import type { HTMLElement } from 'happy-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { SymbolIndex, type ApiSymbol } from '@libtmux/api-model/reference'
 import { API_MODELS } from '../src/lib/api-models'
@@ -31,7 +32,7 @@ describe('the declaration card (Signature, adoption steps 2 and 36)', () => {
   it('keeps every modifier in the tab, before Source', async () => {
     const symbol = { ...symbolOf(go, 'tmux.Pane.Capture'), modifiers: ['async', 'static'] } as ApiSymbol
     const tab = (await entry(symbol)).querySelector('.api-corner')!
-    const word = (child: Element) => child.querySelector('.api-leg__wl, .api-badge__label')?.textContent?.trim()
+    const word = (child: HTMLElement) => child.querySelector('.api-leg__wl, .api-badge__label')?.textContent?.trim()
     expect([...tab.children].map(word)).toEqual(['method', 'async', 'static', 'source'])
   })
 

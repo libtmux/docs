@@ -1,3 +1,4 @@
+import type { Document } from 'happy-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { SymbolIndex, type ApiSymbol } from '@libtmux/api-model/reference'
 import { API_MODELS } from '../src/lib/api-models'
@@ -10,7 +11,7 @@ afterEach(closeWindows)
  * The order of an entry against the design system (ParameterList; adoption step 6).
  */
 describe('the entry order (ParameterList, adoption step 6)', () => {
-  const order = (document: Window['document']) => [...document.querySelectorAll('dd > *')]
+  const order = (document: Document) => [...document.querySelectorAll('dd > *')]
     .flatMap((node) => {
       const label = node.querySelector(':scope > h2.rubric')?.firstChild?.textContent
         ?? [...node.querySelectorAll('dl.field-list > dt')].map((dt) => dt.textContent)
