@@ -2,7 +2,7 @@
 port: raku
 route: core
 title: tmux client library for Raku
-description: "tmux client library for Raku. Control tmux, connect to and create servers, navigate sessions, windows, and panes, send keys, capture pane contents"
+description: "tmux client library for Raku. Control tmux, connect to and create servers, navigate sessions, windows, and panes, send keys, watch for changes via control mode, capture pane contents"
 cards:
   - label: Getting started
     href: ../guides/getting-started/
