@@ -4952,6 +4952,33 @@
       ]
     },
     {
+      "url": "https://hex.pm/packages/libtmux_erlang",
+      "kinds": [
+        "package"
+      ],
+      "host": "hex",
+      "ok": true,
+      "status": 200,
+      "requested": "https://hex.pm/packages/libtmux_erlang",
+      "identity": "libtmux_erlang",
+      "version": "0.0.1",
+      "repository": "libtmux/libtmux-erlang",
+      "versionChecks": [
+        {
+          "version": "0.0.1",
+          "source": "libtmux/libtmux-erlang:apps/libtmux_erlang/src/libtmux_erlang.app.src",
+          "ports": [
+            "erlang"
+          ],
+          "check": "confirmed"
+        }
+      ],
+      "checkedAt": "2026-11-14",
+      "entries": [
+        "erlang:libtmux_erlang"
+      ]
+    },
+    {
       "url": "https://hex.pm/packages/libtmux_mcp",
       "kinds": [
         "package"

@@ -150,7 +150,12 @@ describe('prerelease notice ownership', () => {
     expect(html).toContain('libtmux-haskell has not been released. Its API may change during development.')
     expect(html).toContain('>Unreleased</strong>')
     expect(html).not.toContain('libtmux is released')
-    const tagged = await render('/en/julia/latest/core/', 'core', 'julia')
+    // A git tag is not a release where no registry carries the package.
+    const julia = await render('/en/julia/latest/core/', 'core', 'julia')
+    expect(julia).toContain('LibTmux has not been released. Its API may change during development.')
+    expect(julia).not.toContain('libtmux is released')
+    // C++ resolves its releases from tags, so its tag is one.
+    const tagged = await render('/en/cxx/latest/core/', 'core', 'cxx')
     expect(tagged).toContain('libtmux is released')
     expect(tagged).not.toContain('has not been released')
   })

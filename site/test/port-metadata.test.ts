@@ -34,7 +34,7 @@ describe('Haskell port metadata', () => {
     expect(installCommand(haskell, { status: 'unpublished', version: null, release: null, tag: null }).code)
       .toContain('location: https://github.com/libtmux/libtmux-haskell')
     expect(INVENTORY.haskell.map((entry) => [entry.id, entry.status])).toEqual([
-      ['libtmux-haskell', 'published'], ['repository', 'published'], ['libtmux-haskell-workspace', 'planned'],
+      ['libtmux-haskell', 'configured-unpublished'], ['repository', 'published'], ['libtmux-haskell-workspace', 'planned'],
     ])
     const workspace = INVENTORY.haskell[2]
     expect(workspace.path).toBeUndefined()
@@ -70,7 +70,10 @@ describe('Ruby port metadata', () => {
       'libtmux-mcp',
       'libtmux-workspace',
     ])
-    expect(Object.values(registry.ports.ruby.packages).every((entry) => entry.version === '0.1.0')).toBe(true)
+    // The four gems release together, so each carries the core's version, whatever it is today.
+    const gems = Object.values(registry.ports.ruby.packages)
+    expect(gems.every((entry) => entry.status === 'release' && entry.version === registry.ports.ruby.version)).toBe(true)
+    expect(registry.ports.ruby.version).toMatch(/^\d+\.\d+\.\d+$/)
   })
 
   it('offers install or build instructions for each available workspace app', () => {
@@ -104,12 +107,10 @@ describe('Lua port metadata', () => {
       registry: { name: 'LuaRocks', icon: 'luarocks' },
       productAvailability: { mcp: 'excluded', workspace: 'excluded' },
     })
-    expect(registry.ports.lua).toMatchObject({
-      status: 'release',
-      version: '0.1.0-1',
-      release: '0.1.0-1',
-      tag: 'v0.1.0',
-    })
+    // LuaRocks names a release `<version>-<revision>`; the tag names the version alone.
+    const { version } = registry.ports.lua
+    expect(version).toMatch(/^\d+\.\d+\.\d+-\d+$/)
+    expect(registry.ports.lua).toMatchObject({ status: 'release', release: version, tag: `v${version!.replace(/-\d+$/, '')}` })
   })
 })
 

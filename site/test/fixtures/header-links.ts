@@ -67,11 +67,13 @@ export const LINKS: Record<string, ExpectedLinks> = {
     ],
   },
   erlang: {
-    actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-erlang/apps/libtmux_erlang', 'https://github.com/libtmux/libtmux-erlang/tree/master/apps/libtmux_erlang']],
+    actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-erlang/apps/libtmux_erlang', 'https://github.com/libtmux/libtmux-erlang/tree/master/apps/libtmux_erlang'],
+      ['package', 'Hex', 'Hex: libtmux_erlang package', 'https://hex.pm/packages/libtmux_erlang']],
     indexed: true,
     rows: [
       ['source', 'libtmux_erlang', 'apps/libtmux_erlang', 'https://github.com/libtmux/libtmux-erlang/tree/master/apps/libtmux_erlang', ['libtmux_erlang']],
       ['source', 'libtmux-erlang', 'libtmux/libtmux-erlang', 'https://github.com/libtmux/libtmux-erlang', ['repository']],
+      ['package', 'libtmux_erlang', 'Hex', 'https://hex.pm/packages/libtmux_erlang', ['libtmux_erlang']],
     ],
   },
   py: {

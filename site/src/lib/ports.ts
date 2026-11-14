@@ -382,6 +382,16 @@ const ERLANG_SOURCE_INSTALL = `{deps, [
 const ERLANG_GIT_INSTALL: InstallForm = {
   code: ERLANG_SOURCE_INSTALL.replaceAll('{revision}', '"master"'), lang: 'erlang',
 }
+// An exact pin, as the package README gives: the API is still developing.
+const ERLANG_HEX_INSTALL: InstallForm = { code: '{deps, [{libtmux_erlang, "{version}"}]}.', lang: 'erlang' }
+
+const JULIA_GIT_INSTALL: InstallForm = {
+  code: 'using Pkg\nPkg.add(PackageSpec(url="https://github.com/libtmux/libtmux-julia.git", rev="master"))', lang: 'julia',
+}
+
+const HASKELL_GIT_INSTALL: InstallForm = {
+  code: 'packages: .\n\nsource-repository-package\n  type: git\n  location: https://github.com/libtmux/libtmux-haskell\n  tag: master', lang: 'text',
+}
 
 const CORE_PORTS: readonly Port[] = [
   {
@@ -660,10 +670,10 @@ const CORE_PORTS: readonly Port[] = [
       note: 'Run in Julia with tmux on PATH. The package is not registered in General, so this installs from Git; Manifest.toml records the package tree hash.' }],
     initProject: { code: 'using Pkg\nPkg.activate(".")', lang: 'julia' },
     installForms: {
-      release: { code: 'using Pkg\nPkg.add("LibTmux")', lang: 'julia' },
-      prerelease: { code: 'using Pkg\nPkg.add(PackageSpec(name="LibTmux", version="{version}"))', lang: 'julia' },
-      // Unselected source installs follow the default branch.
-      git: { code: 'using Pkg\nPkg.add(PackageSpec(url="https://github.com/libtmux/libtmux-julia.git", rev="master"))', lang: 'julia' },
+      // General does not carry LibTmux, so every form installs from Git. Unselected source installs follow the default branch.
+      release: JULIA_GIT_INSTALL,
+      prerelease: JULIA_GIT_INSTALL,
+      git: JULIA_GIT_INSTALL,
     },
     installNote: 'Requires Julia 1.13.1 and tmux 3.3a or newer. JSON layouts require tmux 3.8. Companion packages install from the same revision as the core.',
   },
@@ -686,13 +696,20 @@ const CORE_PORTS: readonly Port[] = [
     renderer: 'astro',
     publishesOwnTree: true,
     generator: 'OTP documentation chunks and native typespecs',
-    installs: [{ label: 'rebar.config', filename: 'rebar.config', lang: 'erlang',
-      code: ERLANG_SOURCE_INSTALL,
-      additionalBlocks: [{ lang: 'console', code: 'rebar3 compile' }],
-      note: 'Merge this deps entry into rebar.config. Requires Erlang/OTP 29.1.2, Rebar3 3.28.0, Linux, tmux 3.3a–3.8, make and a C11 compiler. Commit rebar.lock to retain the resolved Git revision. The application is unreleased; no Hex package is advertised.' }],
+    installs: [
+      { label: 'Rebar3 (Hex)', filename: 'rebar.config', lang: 'erlang',
+        code: ERLANG_HEX_INSTALL.code,
+        additionalBlocks: [{ lang: 'console', code: 'rebar3 compile' }],
+        note: 'Merge this deps entry into rebar.config. Requires Erlang/OTP 29.1.2, Rebar3 3.28.0, Linux, tmux 3.3a–3.8, make and a C11 compiler. The API is still developing, so the entry pins an exact version. Commit rebar.lock to retain the resolved package checksum.' },
+      { label: 'Rebar3 (Git)', filename: 'rebar.config', lang: 'erlang',
+        code: ERLANG_SOURCE_INSTALL,
+        additionalBlocks: [{ lang: 'console', code: 'rebar3 compile' }],
+        note: 'Installs the documented source revision instead of the Hex release. Merge this deps entry into rebar.config. Commit rebar.lock to retain the resolved Git revision.' },
+    ],
+    registry: { name: 'Hex', url: 'https://hex.pm/packages/libtmux_erlang', icon: 'hex' },
     initProject: { code: 'rebar3 new lib tmux_example && cd tmux_example', lang: 'console' },
-    installForms: { release: ERLANG_GIT_INSTALL, prerelease: ERLANG_GIT_INSTALL, git: ERLANG_GIT_INSTALL },
-    installNote: 'Add libtmux_erlang to your application dependencies and start it with application:ensure_all_started/1. Native records are experimental in OTP 29. The Git subdirectory selects the core application from its umbrella repository.',
+    installForms: { release: ERLANG_HEX_INSTALL, prerelease: ERLANG_HEX_INSTALL, git: ERLANG_GIT_INSTALL },
+    installNote: 'Add libtmux_erlang to your application dependencies and start it with application:ensure_all_started/1. Native records are experimental in OTP 29. The Git alternative selects the core application from its umbrella repository with a subdirectory.',
   },
   {
     slug: 'elixir',
@@ -769,9 +786,10 @@ const CORE_PORTS: readonly Port[] = [
     }],
     initProject: { lang: 'console', code: 'cabal init --non-interactive --exe --language=GHC2024 --dependency="base >=4.22 && <4.23, libtmux-haskell ^>=0.1.0.0"' },
     installForms: {
-      release: { lang: 'text', code: 'build-depends: libtmux-haskell ^>={version}' },
-      prerelease: { lang: 'text', code: 'build-depends: libtmux-haskell =={version}' },
-      git: { lang: 'text', code: 'packages: .\n\nsource-repository-package\n  type: git\n  location: https://github.com/libtmux/libtmux-haskell\n  tag: master' },
+      // Hackage does not carry libtmux-haskell, so every form installs from Git.
+      release: HASKELL_GIT_INSTALL,
+      prerelease: HASKELL_GIT_INSTALL,
+      git: HASKELL_GIT_INSTALL,
     },
     installNote: 'The source provides scoped Server handles, detached snapshots, typed queries, checked renames and pane titles, and validated offline fixtures. Creation, events and workspace tooling remain in development; MCP is excluded.',
   },

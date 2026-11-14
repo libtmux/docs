@@ -232,6 +232,11 @@ const cpan = (dist: string, module: string): Located & Pick<InventoryEntry, 'api
   package: { host: 'metacpan', url: `https://metacpan.org/dist/${dist}` },
   api: { host: 'metacpan', url: `https://metacpan.org/pod/${module}` },
 })
+/** A Hex package whose owner has published no HexDocs, so only the package page is real. */
+const hexRelease = (name: string): Located => ({
+  coordinate: name,
+  package: { host: 'hex', url: `https://hex.pm/packages/${name}` },
+})
 const MAVEN_GROUP = 'io.github.libtmux'
 const central = (artifact: string): Located => ({
   coordinate: `${MAVEN_GROUP}:${artifact}`,
@@ -248,6 +253,14 @@ const spiTarget = (target: string): Pick<InventoryEntry, 'api'> => ({
   api: { host: 'swift-package-index', url: `${SPI}/documentation/${target.toLowerCase()}`, tool: 'DocC' },
 })
 
+/**
+ * An entry installed from public Git because no registry carries it. Its source
+ * is linked and nothing else: `published` means a registry release, which this
+ * entry does not have.
+ */
+const fromGit = (build: ReturnType<typeof family>, note: string) =>
+  (draft: Draft & { repo?: string }): InventoryEntry => build({ status: 'configured-unpublished', sourceAvailable: true, note, ...draft })
+
 const PY = 'tmux-python/libtmux'
 const py = family(PY)
 const tmuxp = family('tmux-python/tmuxp')
@@ -256,9 +269,12 @@ const ruby = family('libtmux/libtmux-ruby')
 const lua = family('libtmux/libtmux-lua')
 const powershell = family('libtmux/libtmux-powershell')
 const julia = family('libtmux/libtmux-julia')
+const juliaSource = fromGit(julia, 'Installs from Git; the General registry does not carry it.')
 const elixir = family('libtmux/libtmux-elixir', 'main')
 const haskell = family('libtmux/libtmux-haskell')
+const haskellSource = fromGit(haskell, 'Installs from source; Hackage does not carry it.')
 const lisp = family('libtmux/libtmux-lisp')
+const lispSource = fromGit(lisp, 'Installs from source; Quicklisp does not carry it.')
 const erlang = family('libtmux/libtmux-erlang')
 const ts = family('libtmux/libtmux-ts')
 const rs = family('libtmux/libtmux-rs')
@@ -268,6 +284,7 @@ const dotnet = family('libtmux/libtmux-dotnet')
 const cxx = family('libtmux/libtmux-cxx')
 const swift = family('libtmux/libtmux-swift')
 const perl = family('libtmux/libtmux-perl')
+const ocaml = fromGit(family('libtmux/libtmux-ocaml'), 'Installs from source; the opam repository does not carry it.')
 
 export type DestinationKind = 'source' | 'package' | 'api'
 
@@ -312,18 +329,12 @@ const GO = 'github.com/libtmux/libtmux-go'
  */
 export const INVENTORY: Readonly<Record<string, readonly InventoryEntry[]>> = {
   ocaml: [
-    { id: 'libtmux', kind: 'library', product: 'core', unit: 'opam package', label: 'libtmux', coordinate: 'libtmux',
-      aliases: ['Libtmux'], repo: 'libtmux/libtmux-ocaml', ref: 'master', path: 'lib', status: 'published' },
-    { id: 'libtmux-unix', kind: 'companion', product: 'core', unit: 'opam package', label: 'libtmux-unix', coordinate: 'libtmux-unix',
-      aliases: ['Libtmux_unix'], repo: 'libtmux/libtmux-ocaml', ref: 'master', path: 'unix', status: 'published' },
-    { id: 'libtmux-eio', kind: 'companion', product: 'core', unit: 'opam package', label: 'libtmux-eio', coordinate: 'libtmux-eio',
-      aliases: ['Libtmux_eio'], repo: 'libtmux/libtmux-ocaml', ref: 'master', path: 'eio', status: 'published' },
-    { id: 'libtmux-json', kind: 'companion', product: 'core', unit: 'opam package', label: 'libtmux-json', coordinate: 'libtmux-json',
-      aliases: ['Libtmux_json'], repo: 'libtmux/libtmux-ocaml', ref: 'master', path: 'json', status: 'published' },
-    { id: 'libtmux-workspace', kind: 'companion', product: 'workspace', unit: 'opam package', label: 'libtmux-workspace', coordinate: 'libtmux-workspace',
-      aliases: ['Libtmux_workspace'], repo: 'libtmux/libtmux-ocaml', ref: 'master', path: 'workspace', status: 'published' },
-    { id: 'libtmux-workspace-cli', kind: 'cli', product: 'workspace', unit: 'opam package', label: 'libtmux-workspace-cli', coordinate: 'libtmux-workspace-cli',
-      aliases: ['tmux-workspace'], repo: 'libtmux/libtmux-ocaml', ref: 'master', path: 'cli', status: 'published' },
+    ocaml({ id: 'libtmux', kind: 'library', product: 'core', unit: 'opam package', label: 'libtmux', aliases: ['Libtmux'], path: 'lib' }),
+    ocaml({ id: 'libtmux-unix', kind: 'companion', product: 'core', unit: 'opam package', label: 'libtmux-unix', aliases: ['Libtmux_unix'], path: 'unix' }),
+    ocaml({ id: 'libtmux-eio', kind: 'companion', product: 'core', unit: 'opam package', label: 'libtmux-eio', aliases: ['Libtmux_eio'], path: 'eio' }),
+    ocaml({ id: 'libtmux-json', kind: 'companion', product: 'core', unit: 'opam package', label: 'libtmux-json', aliases: ['Libtmux_json'], path: 'json' }),
+    ocaml({ id: 'libtmux-workspace', kind: 'companion', product: 'workspace', unit: 'opam package', label: 'libtmux-workspace', aliases: ['Libtmux_workspace'], path: 'workspace' }),
+    ocaml({ id: 'libtmux-workspace-cli', kind: 'cli', product: 'workspace', unit: 'opam package', label: 'libtmux-workspace-cli', aliases: ['tmux-workspace'], path: 'cli' }),
   ],
   perl: [
     perl({ id: 'LibTmux', kind: 'library', product: 'core', unit: 'distribution', label: 'LibTmux', ...cpan('LibTmux', 'LibTmux'),
@@ -384,24 +395,25 @@ export const INVENTORY: Readonly<Record<string, readonly InventoryEntry[]>> = {
   ],
   julia: [
     // None of the three packages is registered in General; they install from the repository by URL and subdirectory.
-    julia({ id: 'LibTmux', kind: 'library', product: 'core', unit: 'package', label: 'LibTmux', path: 'src', aliases: ['using LibTmux'] }),
+    juliaSource({ id: 'LibTmux', kind: 'library', product: 'core', unit: 'package', label: 'LibTmux', path: 'src', aliases: ['using LibTmux'] }),
     julia({ id: 'repository', kind: 'source', product: 'core', label: 'libtmux-julia', coordinate: 'libtmux/libtmux-julia' }),
     // Defined in src/criteria.jl and loaded with LibTmux.
-    julia({ id: 'LibTmux.Filters', kind: 'module', product: 'core', unit: 'module', within: 'LibTmux', label: 'LibTmux.Filters',
+    juliaSource({ id: 'LibTmux.Filters', kind: 'module', product: 'core', unit: 'module', within: 'LibTmux', label: 'LibTmux.Filters',
       path: 'src/criteria.jl', file: true, aliases: ['using LibTmux.Filters'] }),
     // Package extensions, loaded when JSON or Tables is; each is a file of ext/.
-    julia({ id: 'LibTmuxJSONExt', kind: 'module', product: 'core', unit: 'extension', within: 'LibTmux', label: 'LibTmuxJSONExt',
+    juliaSource({ id: 'LibTmuxJSONExt', kind: 'module', product: 'core', unit: 'extension', within: 'LibTmux', label: 'LibTmuxJSONExt',
       path: 'ext/LibTmuxJSONExt.jl', file: true, aliases: ['JSON'] }),
-    julia({ id: 'LibTmuxTablesExt', kind: 'module', product: 'core', unit: 'extension', within: 'LibTmux', label: 'LibTmuxTablesExt',
+    juliaSource({ id: 'LibTmuxTablesExt', kind: 'module', product: 'core', unit: 'extension', within: 'LibTmux', label: 'LibTmuxTablesExt',
       path: 'ext/LibTmuxTablesExt.jl', file: true, aliases: ['Tables'] }),
-    julia({ id: 'LibTmuxMCP', kind: 'mcp-server', product: 'mcp', unit: 'package', label: 'LibTmuxMCP', path: 'packages/LibTmuxMCP',
+    juliaSource({ id: 'LibTmuxMCP', kind: 'mcp-server', product: 'mcp', unit: 'package', label: 'LibTmuxMCP', path: 'packages/LibTmuxMCP',
       aliases: ['using LibTmuxMCP', 'libtmux-mcp'] }),
-    julia({ id: 'LibTmuxWorkspace', kind: 'companion', product: 'workspace', unit: 'package', label: 'LibTmuxWorkspace',
+    juliaSource({ id: 'LibTmuxWorkspace', kind: 'companion', product: 'workspace', unit: 'package', label: 'LibTmuxWorkspace',
       path: 'packages/LibTmuxWorkspace', aliases: ['using LibTmuxWorkspace', 'libtmux-workspace'] }),
   ],
   erlang: [
-    erlang({ id: 'libtmux_erlang', kind: 'library', product: 'core', label: 'libtmux_erlang', path: 'apps/libtmux_erlang',
-      aliases: ['Erlang/OTP', 'Rebar3'], note: 'Installs from Git with Rebar3 git_subdir; no Hex release.' }),
+    // Hex has no documentation for the package (docs_html_url is null), so no HexDocs reference is linked.
+    erlang({ id: 'libtmux_erlang', kind: 'library', product: 'core', label: 'libtmux_erlang', ...hexRelease('libtmux_erlang'),
+      path: 'apps/libtmux_erlang', aliases: ['Erlang/OTP', 'Rebar3'] }),
     erlang({ id: 'repository', kind: 'source', product: 'core', label: 'libtmux-erlang', coordinate: 'libtmux/libtmux-erlang' }),
   ],
   elixir: [
@@ -417,7 +429,7 @@ export const INVENTORY: Readonly<Record<string, readonly InventoryEntry[]>> = {
       unavailable: [{ kind: 'package', host: 'hex', url: 'https://hex.pm/packages/libtmux_workspace', reason: 'not published' }] }),
   ],
   haskell: [
-    haskell({ id: 'libtmux-haskell', kind: 'library', product: 'core', unit: 'Cabal package', label: 'libtmux-haskell', path: 'src',
+    haskellSource({ id: 'libtmux-haskell', kind: 'library', product: 'core', unit: 'Cabal package', label: 'libtmux-haskell', path: 'src',
       aliases: ['LibTmux', 'LibTmux.Server', 'LibTmux.Snapshot', 'LibTmux.Query', 'LibTmux.Snapshot.Fixture', 'LibTmux.Id', 'LibTmux.Value', 'LibTmux.Version'], note: 'Available from source; not published on Hackage.',
       unavailable: [{ kind: 'package', host: 'Hackage', url: 'https://hackage.haskell.org/package/libtmux-haskell', reason: 'not published' }] }),
     haskell({ id: 'repository', kind: 'source', product: 'core', label: 'libtmux-haskell', coordinate: 'libtmux/libtmux-haskell' }),
@@ -425,23 +437,23 @@ export const INVENTORY: Readonly<Record<string, readonly InventoryEntry[]>> = {
       note: 'Planned workspace library and CLI; no package or executable is implemented.' }),
   ],
   lisp: [
-    lisp({ id: 'libtmux', kind: 'library', product: 'core', unit: 'source distribution', label: 'libtmux',
+    lispSource({ id: 'libtmux', kind: 'library', product: 'core', unit: 'source distribution', label: 'libtmux',
       path: 'src', aliases: ['libtmux'], note: 'The 0.1.0 ASDF systems are source-installed and unreleased.' }),
     lisp({ id: 'repository', kind: 'source', product: 'core', label: 'libtmux-lisp', coordinate: 'libtmux/libtmux-lisp' }),
-    lisp({ id: 'libtmux/query', kind: 'companion', product: 'core', unit: 'ASDF system', within: 'libtmux',
+    lispSource({ id: 'libtmux/query', kind: 'companion', product: 'core', unit: 'ASDF system', within: 'libtmux',
       label: 'libtmux/query', path: 'libtmux.asd', file: true, aliases: ['libtmux.query'] }),
-    lisp({ id: 'libtmux/regex', kind: 'companion', product: 'core', unit: 'ASDF system', within: 'libtmux',
+    lispSource({ id: 'libtmux/regex', kind: 'companion', product: 'core', unit: 'ASDF system', within: 'libtmux',
       label: 'libtmux/regex', path: 'libtmux.asd', file: true, aliases: ['libtmux.regex'] }),
-    lisp({ id: 'libtmux/json', kind: 'companion', product: 'core', unit: 'ASDF system', within: 'libtmux',
+    lispSource({ id: 'libtmux/json', kind: 'companion', product: 'core', unit: 'ASDF system', within: 'libtmux',
       label: 'libtmux/json', path: 'libtmux.asd', file: true, aliases: ['libtmux.json'] }),
-    lisp({ id: 'libtmux/control', kind: 'companion', product: 'core', unit: 'ASDF system', within: 'libtmux',
+    lispSource({ id: 'libtmux/control', kind: 'companion', product: 'core', unit: 'ASDF system', within: 'libtmux',
       label: 'libtmux/control', path: 'libtmux.asd', file: true, aliases: ['libtmux.control'] }),
-    lisp({ id: 'libtmux/workspace', kind: 'companion', product: 'workspace', unit: 'ASDF system', within: 'libtmux',
+    lispSource({ id: 'libtmux/workspace', kind: 'companion', product: 'workspace', unit: 'ASDF system', within: 'libtmux',
       label: 'libtmux/workspace', path: 'src/workspace.lisp', file: true,
       aliases: ['libtmux.workspace', '(asdf:load-system "libtmux/workspace")'] }),
-    lisp({ id: 'libtmux/workspace/cli', kind: 'companion', product: 'workspace', unit: 'ASDF system', within: 'libtmux',
+    lispSource({ id: 'libtmux/workspace/cli', kind: 'companion', product: 'workspace', unit: 'ASDF system', within: 'libtmux',
       label: 'libtmux/workspace/cli', path: 'src/workspace-cli.lisp', file: true, aliases: ['libtmux.workspace.cli'] }),
-    lisp({ id: 'workspace-command', kind: 'cli', product: 'workspace', unit: 'script', within: 'libtmux',
+    lispSource({ id: 'workspace-command', kind: 'cli', product: 'workspace', unit: 'script', within: 'libtmux',
       label: 'libtmux-workspace', coordinate: 'mise exec -- tools/lisp.sh tools/workspace-cli.lisp',
       path: 'bin/libtmux-workspace', file: true, aliases: ['libtmux-workspace', 'tools/workspace-cli.lisp'] }),
   ],

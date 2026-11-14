@@ -29,6 +29,13 @@
  * rather than in a hand-typed string that goes stale the next time anyone
  * publishes. `ports.ts` owns the spellings; this owns the state.
  *
+ * A git tag is not a release. A port whose core package the inventory
+ * (`site/src/lib/port-inventory.ts`) does not mark `published` installs from
+ * source, so an unpublished entry for it is written `maturity: "unreleased"`
+ * whatever tag the repository carries, and every badge, notice and prompt reads
+ * it as unreleased. Swift and C++ are `published`: SwiftPM and their own vcpkg
+ * registry resolve a release from its tag, so the tag still names their stage.
+ *
  * Offline, or behind a rate limit, every probe falls back to the committed
  * file rather than writing a worse one. Same discipline as gen-versions.mjs's
  * seed: a build with no network reproduces the last known-good answer instead
@@ -58,6 +65,7 @@ const siteLib = join(repoRoot, 'site', 'src', 'lib')
 const DEFAULT_OUT = join(repoRoot, 'site', 'src', 'data', 'registry.json')
 
 const { PORTS } = await import(`file://${join(siteLib, 'ports.ts')}`)
+const { INVENTORY } = await import(`file://${join(siteLib, 'port-inventory.ts')}`)
 const { comparePackageVersions, newestPublishedTag, packageVersionIsPrerelease, parseTag, releaseTag } = await import(
   `file://${join(siteLib, 'versions.ts')}`
 )
@@ -539,6 +547,17 @@ for (const port of PORTS) {
     )
   }
   ports[port.slug] = entry
+}
+
+/*
+ * Applied to every entry, including one kept from the baseline after a failed
+ * probe, so a stale copy cannot reintroduce a release the port does not have.
+ */
+for (const [slug, entry] of Object.entries(ports)) {
+  const core = INVENTORY[slug]?.find((candidate) => candidate.kind === 'library')
+  if (entry.status !== 'unpublished' || !core || core.status === 'published') continue
+  const { packages, ...rest } = entry
+  ports[slug] = { ...rest, maturity: 'unreleased', ...(packages && { packages }) }
 }
 
 const payload = {
