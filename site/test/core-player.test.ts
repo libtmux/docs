@@ -701,21 +701,47 @@ describe('the player component', () => {
     expect([made.textContent, made.getAttribute('href')]).toEqual(['Session.NewWindow', '/go/latest/reference/tmux-session-newwindow/'])
   })
 
-  it('numbers a call in the gutter of its first line, names it, and marks no other line', async () => {
+  it('hangs a numbered marker for each call in a rail beside the code, names it, and marks no line of the code (record 0055)', async () => {
     const { document, capability } = await mount({ run: true })
     const view = viewSteps(capability, code('concise'))
-    const markers = [...document.querySelectorAll<HTMLElement>('[data-home-view="concise"] .core-step')]
+    const pre = document.querySelector('[data-home-view="concise"] pre')!
+    const rail = pre.previousElementSibling as HTMLElement
+    expect(rail.classList.contains('core-hang'), 'the rail sits right before the code').toBe(true)
+    expect(rail.parentElement, 'a sibling of the pre, so the pre\'s overflow cannot clip it').toBe(pre.parentElement)
+    expect(pre.contains(rail)).toBe(false)
+    const markers = [...rail.querySelectorAll<HTMLElement>('.core-step')]
     expect(markers.map((marker) => marker.dataset.n)).toEqual(view.map((_, position) => String(position + 1)))
-    const lines = [...document.querySelectorAll('[data-home-view="concise"] .ec-line')]
+    expect(markers.map((marker) => marker.dataset.line), 'each marker names the line of its call').toEqual(view.map((step) => String(step.lines[0])))
     markers.forEach((marker, position) => {
-      expect(marker.parentElement, 'on the first line of its call').toBe(lines[view[position]!.lines[0] - 1])
       expect(marker.getAttribute('aria-label')).toBe(`Step ${position + 1}: ${capability.steps[view[position]!.index]!.label}`)
       expect(marker.textContent, 'the number is drawn by the stylesheet, so it is in no copied text').toBe('')
+      expect(marker.style.getPropertyValue('--y'), 'placed by transform, so placing it shifts nothing').toMatch(/^-?[\d.]+px$/)
     })
-    expect(lines.filter((line) => line.querySelector('.core-step'))).toHaveLength(view.length)
-    expect(lines.find((line) => line.textContent!.includes('package main'))!.querySelector('.core-step')).toBeNull()
-    // Each view of the program carries its own markers, numbered by that view's calls.
-    expect(document.querySelectorAll('[data-home-view="cleanup"] .core-step')).toHaveLength(viewSteps(capability, code('cleanup')).length)
+    expect(document.querySelectorAll('.ec-line .core-step'), 'no marker takes a column in the code').toHaveLength(0)
+    // Each view of the program carries its own rail, numbered by that view's calls.
+    expect(document.querySelectorAll('[data-home-view="cleanup"] .core-hang .core-step')).toHaveLength(viewSteps(capability, code('cleanup')).length)
+  })
+
+  it('moves the rail with the code\'s vertical scroll and leaves it where it is when the code scrolls sideways', async () => {
+    const { document, win } = await mount({ run: true })
+    const pre = document.querySelector<HTMLElement>('[data-home-view="concise"] pre')!
+    const inner = (pre.previousElementSibling as HTMLElement).firstElementChild as HTMLElement
+    pre.scrollTop = 64
+    pre.dispatchEvent(new win.Event('scroll') as unknown as Event)
+    expect(inner.style.transform).toBe('translateY(-64px)')
+    pre.scrollLeft = 40
+    pre.dispatchEvent(new win.Event('scroll') as unknown as Event)
+    expect(inner.style.transform).toBe('translateY(-64px)')
+  })
+
+  it('hangs the rail inside the code\'s start padding, and outside the frame where a layout sets --code-hang-out: 1', () => {
+    const css = readFileSync(new URL('../src/styles/core-player.css', import.meta.url), 'utf8')
+    expect(css, 'the start padding no longer holds a marker column').not.toMatch(/padding-inline-start: 1\.75rem/)
+    expect(css, 'it widens by the rail only inside').toMatch(/\.ec-line > \.code \{[^}]*padding-inline-start: calc\(1rem \+ \(1 - var\(--code-hang-out, 0\)\) \* 0\.75rem\)/)
+    expect(css).toMatch(/\.core-hang \{[^}]*inset-inline-start: calc\([^;]*var\(--code-hang-out, 0\)/)
+    expect(css, 'inside, the start padding is a strip that sticks to the pre\'s edge while the code scrolls sideways').toMatch(/\.ec-line::before \{[^}]*position: sticky;[^}]*left: 0;[^}]*width: calc\(\(1 - var\(--code-hang-out, 0\)\) \* 1\.75rem\)/)
+    expect(css, 'the card stops clipping so a rail outside it shows').toMatch(/\.home-example-player:has\(\.core-hang\) \{[^}]*overflow: visible/)
+    expect(css, 'the code rounds its own corner in the card\'s place').toMatch(/\.home-example-player:has\(\.core-hang\)[^{]*pre \{[^}]*border-start-start-radius/)
   })
 
   it('turns Expressive Code\'s own copy button off in the program\'s frames, so core-copy is each frame\'s only one', async () => {
