@@ -38,6 +38,9 @@ const VERSION_SERVICES = {
 
 const OFF_ORIGIN = /^https?:\/\/(?:img\.shields\.io|badgen\.net|badge\.fury\.io|(?:www\.)?github\.com\/[^/]+\/[^/]+\/(?:actions\/workflows\/[^/]+|workflows\/[^/]+)\/badge\.svg|github\.com\/[^/]+\/[^/]+\/workflows\/.*\/badge\.svg)/i
 
+/** An `<img>` with its source, and the `<a>` around it when it is a link: groups are the opening tag, quote, source and closing tag. */
+const HTML_IMAGE = /(<a\b[^>]*>\s*)?<img\b[^>]*?\bsrc=(["'])([^"']+)\2[^>]*>(\s*<\/a>)?/gi
+
 export function isOffOriginBadge(url) {
   return OFF_ORIGIN.test(url)
 }
@@ -114,7 +117,24 @@ export function readRegistry() {
 export function localizeBadges(content, port, registry) {
   const files = new Map()
   const edits = []
+  const publish = (spec) => {
+    const svg = makeBadge({ label: spec.label, message: spec.message, color: spec.color })
+    const name = `${BADGE_DIRECTORY}/${createHash('sha256').update(svg).digest('hex').slice(0, 12)}.svg`
+    files.set(name, svg)
+    return name
+  }
   const visit = (node, parent) => {
+    if (node.type === 'html') {
+      // A README written as HTML, as the Erlang one is for ex_doc, holds `<a><img></a>` badges.
+      const value = node.value.replace(HTML_IMAGE, (image, open, quote, url, close) => {
+        if (!isOffOriginBadge(url)) return image
+        const spec = badgeSpec(url, { port, registry })
+        if (!spec) return open && close ? '' : (open ?? '')
+        return image.replace(`src=${quote}${url}${quote}`, `src=${quote}/${publish(spec)}${quote}`)
+      })
+      if (value !== node.value) edits.push({ start: node.position.start.offset, end: node.position.end.offset, text: value })
+      return
+    }
     if (node.type === 'image' && isOffOriginBadge(node.url)) {
       const spec = badgeSpec(node.url, { port, registry })
       const droppable = parent?.type === 'link' && parent.children.length === 1 ? parent : node
@@ -122,9 +142,7 @@ export function localizeBadges(content, port, registry) {
         edits.push({ start: droppable.position.start.offset, end: droppable.position.end.offset, text: '' })
         return
       }
-      const svg = makeBadge({ label: spec.label, message: spec.message, color: spec.color })
-      const name = `${BADGE_DIRECTORY}/${createHash('sha256').update(svg).digest('hex').slice(0, 12)}.svg`
-      files.set(name, svg)
+      const name = publish(spec)
       node.url = `/${name}`
       node.alt = node.alt || `${spec.label}: ${spec.message}`
       edits.push({ start: node.position.start.offset, end: node.position.end.offset, text: toMarkdown(node).trimEnd() })

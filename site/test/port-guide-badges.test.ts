@@ -100,11 +100,26 @@ describe('localizeBadges', () => {
     expect(content).toBe(' after')
   })
 
+  it('renders and drops the badges of a README written as HTML', () => {
+    const { content, files } = localizeBadges([
+      '<p>',
+      '  <a href="https://github.com/o/r/actions/workflows/ci.yml"><img src="https://github.com/o/r/actions/workflows/ci.yml/badge.svg" alt="checks"></a>',
+      '  <a href="https://libtmux.org/"><img src="https://img.shields.io/badge/docs-libtmux.org-0b7285" alt="docs"></a>',
+      '</p>',
+    ].join('\n'), 'ruby', registry)
+    expect(content).not.toContain('actions/workflows')
+    expect(content).toMatch(/<a href="https:\/\/libtmux\.org\/"><img src="\/badges\/[0-9a-f]{12}\.svg" alt="docs"><\/a>/)
+    expect(findOffOriginBadges(content)).toEqual([])
+    expect([...files.values()]).toHaveLength(1)
+    expect([...files.values()][0]).toContain('aria-label="docs: libtmux.org"')
+  })
+
   it('refuses a badge it cannot render rather than hotlinking it', () => {
     expect(() => localizeBadges('![x](https://img.shields.io/github/stars/o/r)', 'ruby', registry)).toThrow(/unsupported badge/)
     expect(() => localizeBadges('![x](https://img.shields.io/hexpm/dt/libtmux)', 'elixir', { ports: { elixir: { version: '0.1.0' } } })).toThrow(/unsupported badge/)
     expect(() => localizeBadges('![x](https://img.shields.io/maven-central/v/libtmux)', 'kotlin', { ports: { kotlin: { version: '0.1.0' } } })).toThrow(/unsupported badge/)
     expect(() => localizeBadges('![x](https://img.shields.io/gem/v/missing)', 'ruby', registry)).toThrow(/registry data does not carry/)
+    expect(() => localizeBadges('<img src="https://img.shields.io/github/stars/o/r">', 'ruby', registry)).toThrow(/unsupported badge/)
   })
 })
 

@@ -520,6 +520,26 @@ describe('staged port guide links', () => {
     expect(overview).toContain('<div align="center">\n\nA later centered block.\n\n</div>')
   })
 
+  it('extracts a centered title written as HTML and serves its badges locally', () => {
+    const header = [
+      '<div align="center">', '', '<h1>libtmux for Erlang</h1>', '',
+      '<p>', '  <a href="https://libtmux.org/en/erlang/"><img src="https://img.shields.io/badge/docs-libtmux.org-0b7285" alt="libtmux.org"></a>', '</p>', '',
+      '</div>', '', 'Drive tmux from Erlang.', '',
+    ].join('\n')
+    const guides = Object.keys(stagedRoutesFor('erlang')).map((path) => ({
+      path, content: path === 'README.md' ? header : '# Guide\n\nbody\n',
+    }))
+    const files = stagedPortGuides('erlang', {
+      source: { repository: 'libtmux/libtmux-erlang', revision: '0123456789abcdef' },
+      guides,
+    })
+    const overview = files.get('erlang/guides/getting-started/index.md')!
+    expect(overview).not.toContain('<h1>')
+    expect(overview).toContain('Drive tmux from Erlang.')
+    expect(overview).toMatch(/<img src="\/badges\/[0-9a-f]{12}\.svg" alt="libtmux\.org">/)
+    expect(overview).not.toContain('img.shields.io')
+  })
+
   it('stages canonical routes with aliases and reader domain metadata', () => {
     const guides = Object.keys(stagedRoutesFor('ruby')).map((path) => ({ path, content: '# Guide\n\nbody\n' }))
     const files = stagedPortGuides('ruby', {
