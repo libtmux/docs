@@ -443,13 +443,16 @@ describe('a release a library refuses to send on', () => {
       expect(use('go', symbol, 'run-shell'), symbol).toBeUndefined()
     }
     // What carries run-shell besides the method that is run-shell is a lookup or a snapshot, whose own step is the probe, said so and not listed on the command's page.
-    const probers = Object.entries(TMUX_USAGE.go.symbols).filter(([symbol, entries]) => !/Server\.RunShell$|Running\.Kill$/.test(symbol) && entries.some((entry) => entry.command === 'run-shell'))
+    // WaitForText is the exception: each read it makes sends `run-shell -C` itself, to ask the pane's liveness beside its screen.
+    const probers = Object.entries(TMUX_USAGE.go.symbols).filter(([symbol, entries]) => !/Server\.RunShell$|Running\.Kill$|Pane\.WaitForText$/.test(symbol) && entries.some((entry) => entry.command === 'run-shell'))
     expect(probers.length).toBeGreaterThan(10)
     for (const [symbol, entries] of probers) {
       const entry = entries.find((candidate) => candidate.command === 'run-shell')!
       expect(entry.when, symbol).toBe('the Server has no daemon identity')
       expect(entry.reviewed || entry.via, symbol).toBeTruthy()
     }
+    expect(use('go', 'tmux.Pane.WaitForText', 'run-shell')).toMatchObject({ scope: null })
+    expect(use('go', 'tmux.Pane.WaitForText', 'run-shell')?.when).toBeUndefined()
     expect(tmuxUsage('run-shell')!.groups.flatMap((group) => group.ports).filter((entry) => entry.port === 'go').flatMap((entry) => entry.links.map((link) => link.label))).toEqual(expect.arrayContaining(['Server.RunShell']))
     expect(tmuxUsage('run-shell')!.groups.flatMap((group) => group.ports).filter((entry) => entry.port === 'go').flatMap((entry) => entry.links.map((link) => link.label))).not.toContain('Server.Session')
   })

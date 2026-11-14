@@ -1,7 +1,7 @@
 {
  "port": "go",
  "repo": "libtmux/libtmux-go",
- "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+ "revision": "3997274373dcc5b30435ecdc8ced2ceba7d2e11f",
  "symbols": {
   "tmux.Client.ResolveAttachment": {
    "behavior": {
@@ -81,85 +81,98 @@
      "text": "A bound handle never reconnects or falls back to a tmux subprocess after that connection closes.",
      "source": {
       "file": "tmux/connection.go",
-      "line": 82
+      "line": 78
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "transport": {
-     "line": 82,
+     "line": 78,
      "text": "owned by a [Connection]. A bound handle never reconnects or falls back to a"
     }
    }
   },
   "tmux.Session.OpenControl": {
    "behavior": {
+    "transport": {
+     "text": "Acquisition requires tmux 3.7 before any control client is started.",
+     "source": {
+      "file": "tmux/connection.go",
+      "line": 84
+     },
+     "origin": "doc comment"
+    },
     "cleanup": {
      "text": "The returned connection owns its lanes and must be closed.",
      "source": {
       "file": "tmux/connection.go",
-      "line": 87
+      "line": 83
      },
      "origin": "doc comment"
     },
     "requires": {
-     "tmux": "3.6",
+     "tmux": "3.7",
      "source": {
       "file": "tmux/connection.go",
-      "line": 88
+      "line": 84
      }
     }
    },
    "evidence": {
+    "transport": {
+     "line": 84,
+     "text": "bound to a connection cannot be rebound. Acquisition requires tmux 3.7"
+    },
     "cleanup": {
-     "line": 87,
+     "line": 83,
      "text": "The returned connection owns its lanes and must be closed. A receiver already"
     },
     "requires": {
-     "line": 88,
-     "text": "bound to a connection cannot be rebound. Before tmux 3.6, destroying the"
+     "line": 84,
+     "text": "bound to a connection cannot be rebound. Acquisition requires tmux 3.7"
     }
    }
   },
   "tmux.Server.NewSessionConnection": {
    "behavior": {
     "errors": {
-     "text": "If tmux reports a valid session ID before later setup fails, the returned partial session retains that ID and server.",
+     "text": "An attachment failure can return that partial session.",
      "source": {
       "file": "tmux/connection.go",
-      "line": 121
+      "line": 124
+     },
+     "origin": "doc comment"
+    },
+    "transport": {
+     "text": "With a live daemon, its creating control client is the first lane. Cold startup first creates a detached session, then pins and attaches to its qualified socket.",
+     "source": {
+      "file": "tmux/connection.go",
+      "line": 122
      },
      "origin": "doc comment"
     },
     "cleanup": {
-     "text": "Cleanup closes the attached creator, so tmux policy may make the partial session no longer live.",
+     "text": "Cleanup closes owned clients; tmux policy decides whether the session lives.",
      "source": {
       "file": "tmux/connection.go",
-      "line": 123
+      "line": 125
      },
      "origin": "doc comment"
-    },
-    "requires": {
-     "tmux": "3.6",
-     "source": {
-      "file": "tmux/connection.go",
-      "line": 124
-     }
     }
    },
    "evidence": {
     "errors": {
-     "line": 121,
-     "text": "it creates an attached session. If tmux reports a valid session ID before"
+     "line": 124,
+     "text": "qualified socket. An attachment failure can return that partial session."
+    },
+    "transport": {
+     "line": 122,
+     "text": "or newer. With a live daemon, its creating control client is the first lane."
     },
     "cleanup": {
-     "line": 123,
-     "text": "Cleanup closes the attached creator, so tmux policy may make the partial"
-    },
-    "requires": {
-     "line": 124,
-     "text": "session no longer live. Before tmux 3.6, destroying the created session"
+     "line": 125,
+     "text": "Cleanup closes owned clients; tmux policy decides whether the session lives."
     }
    }
   },
@@ -169,14 +182,14 @@
      "text": "An alias may produce zero or multiple frames; a %error frame remains result data through [ControlCommandResult.Failed].",
      "source": {
       "file": "tmux/connection.go",
-      "line": 364
+      "line": 373
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "errors": {
-     "line": 364,
+     "line": 373,
      "text": "every reply frame in order. An alias may produce zero or multiple frames; a"
     }
    }
@@ -271,7 +284,7 @@
      "text": "Reads block until the pane writes, ctx ends, or the observation closes.",
      "source": {
       "file": "tmux/control_observation.go",
-      "line": 448
+      "line": 437
      },
      "origin": "doc comment"
     },
@@ -279,18 +292,18 @@
      "text": "A malformed notification on the connection is skipped, as [PaneObservation.Notifications] skips it; every other error ends the stream.",
      "source": {
       "file": "tmux/control_observation.go",
-      "line": 455
+      "line": 444
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "boundedBy": {
-     "line": 448,
+     "line": 437,
      "text": "any other pane on the connection. Reads block until the pane writes, ctx"
     },
     "errors": {
-     "line": 455,
+     "line": 444,
      "text": "A malformed notification on the connection is skipped, as"
     }
    }
@@ -301,14 +314,14 @@
      "text": "Malformed notifications yield their error and iteration continues; every other error ends the loop after being yielded.",
      "source": {
       "file": "tmux/control_observation.go",
-      "line": 491
+      "line": 480
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "errors": {
-     "line": 491,
+     "line": 480,
      "text": "exactly one iterator or direct read may run at a time. Malformed"
     }
    }
@@ -340,6 +353,35 @@
     "errors": {
      "line": 122,
      "text": "context error while the client drains through the boundary before reuse. A"
+    }
+   }
+  },
+  "tmux.Server.OpenControl": {
+   "behavior": {
+    "transport": {
+     "text": "Acquisition requires tmux 3.7 and a filesystem that can hard-link the selected Unix socket into a private directory.",
+     "source": {
+      "file": "tmux/control_startup.go",
+      "line": 34
+     },
+     "origin": "doc comment"
+    },
+    "requires": {
+     "tmux": "3.7",
+     "source": {
+      "file": "tmux/control_startup.go",
+      "line": 34
+     }
+    }
+   },
+   "evidence": {
+    "transport": {
+     "line": 34,
+     "text": "configured server selector. Acquisition requires tmux 3.7 and a filesystem"
+    },
+    "requires": {
+     "line": 34,
+     "text": "configured server selector. Acquisition requires tmux 3.7 and a filesystem"
     }
    }
   },
@@ -1637,14 +1679,14 @@
      "text": "It does not change the receiver's transport or expose control commands.",
      "source": {
       "file": "tmux/notification_stream.go",
-      "line": 270
+      "line": 269
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "transport": {
-     "line": 270,
+     "line": 269,
      "text": "receiver. It does not change the receiver's transport or expose control"
     }
    }
@@ -1655,7 +1697,7 @@
      "text": "Concurrent calls are serialized: each notification goes to exactly one call, and a call waiting its turn returns when ctx ends.",
      "source": {
       "file": "tmux/notification_stream.go",
-      "line": 279
+      "line": 278
      },
      "origin": "doc comment"
     },
@@ -1663,18 +1705,18 @@
      "text": "A stream that has ended reports why: see [NotificationStream] for the errors to match. A caller that wants to treat every end alike writes errors.Is(err, [ErrControlClosed]).",
      "source": {
       "file": "tmux/notification_stream.go",
-      "line": 283
+      "line": 282
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "boundedBy": {
-     "line": 279,
+     "line": 278,
      "text": "Next returns the next ordered control-mode notification. Concurrent calls are"
     },
     "errors": {
-     "line": 283,
+     "line": 282,
      "text": "A stream that has ended reports why: see [NotificationStream] for the errors"
     }
    }
@@ -1685,14 +1727,14 @@
      "text": "Malformed notifications yield their error and iteration continues; every other error ends the loop after being yielded.",
      "source": {
       "file": "tmux/notification_stream.go",
-      "line": 296
+      "line": 295
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "errors": {
-     "line": 296,
+     "line": 295,
      "text": "several iterators or direct calls are serialized. Malformed notifications yield"
     }
    }
@@ -3498,7 +3540,7 @@
      "text": "This is a point-in-time capture rather than a stream; the zero request reads the visible screen.",
      "source": {
       "file": "tmux/pane_capture.go",
-      "line": 116
+      "line": 119
      },
      "origin": "doc comment"
     },
@@ -3506,7 +3548,7 @@
      "text": "Transport and context failures return any partial stdout with the error.",
      "source": {
       "file": "tmux/pane_capture.go",
-      "line": 121
+      "line": 124
      },
      "origin": "doc comment"
     },
@@ -3514,15 +3556,15 @@
      "text": "It returns a caller-owned slice.",
      "source": {
       "file": "tmux/pane_capture.go",
-      "line": 113
+      "line": 114
      },
      "origin": "doc comment"
     },
     "errors": {
-     "text": "A completed nonzero exit or stderr becomes a [CommandError]; any stdout tmux still printed is returned alongside it.",
+     "text": "Completed stderr becomes a [CommandError]; any stdout tmux still printed is returned alongside it. A nonzero exit with empty stderr is not an error, as for every command (see the package documentation), and its stdout is returned.",
      "source": {
       "file": "tmux/pane_capture.go",
-      "line": 113
+      "line": 114
      },
      "origin": "doc comment"
     },
@@ -3530,7 +3572,7 @@
      "text": "Printed captures cannot safely cross a control connection, so [Pane.Capture] and [Pane.CaptureBytes] use a subprocess or reject a connection.",
      "source": {
       "file": "tmux/pane_capture.go",
-      "line": 169
+      "line": 172
      },
      "origin": "curated",
      "via": "CaptureToFile"
@@ -3538,23 +3580,23 @@
    },
    "evidence": {
     "completion": {
-     "line": 116,
+     "line": 119,
      "text": "This is a point-in-time capture rather than a stream; the zero request reads"
     },
     "boundedBy": {
-     "line": 121,
+     "line": 124,
      "text": "Invalid positions fail before execution. Transport and context failures return"
     },
     "ownership": {
-     "line": 113,
-     "text": "It returns a caller-owned slice. A completed nonzero exit or stderr becomes"
+     "line": 114,
+     "text": "It returns a caller-owned slice. Completed stderr becomes a [CommandError];"
     },
     "errors": {
-     "line": 113,
-     "text": "It returns a caller-owned slice. A completed nonzero exit or stderr becomes"
+     "line": 114,
+     "text": "It returns a caller-owned slice. Completed stderr becomes a [CommandError];"
     },
     "transport": {
-     "line": 169,
+     "line": 172,
      "text": "Printed captures cannot safely cross a control connection, so [Pane.Capture]"
     }
    }
@@ -3565,14 +3607,14 @@
      "text": "Its validation and failure behavior match [Pane.Capture], including returning partial bytes with transport or context errors.",
      "source": {
       "file": "tmux/pane_capture.go",
-      "line": 135
+      "line": 138
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "boundedBy": {
-     "line": 135,
+     "line": 138,
      "text": "Its validation and failure behavior match [Pane.Capture], including returning"
     }
    }
@@ -3583,7 +3625,7 @@
      "text": "Transport and context errors are delivery-ambiguous: the buffer may already have changed.",
      "source": {
       "file": "tmux/pane_capture.go",
-      "line": 150
+      "line": 153
      },
      "origin": "doc comment"
     },
@@ -3591,49 +3633,49 @@
      "text": "The buffer is owned by tmux and no printed output is returned.",
      "source": {
       "file": "tmux/pane_capture.go",
-      "line": 146
+      "line": 149
      },
      "origin": "doc comment"
     },
     "errors": {
-     "text": "A completed nonzero exit or stderr becomes a [CommandError].",
+     "text": "Completed stderr becomes a [CommandError]; a nonzero exit with empty stderr is not an error.",
      "source": {
       "file": "tmux/pane_capture.go",
-      "line": 147
+      "line": 150
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "boundedBy": {
-     "line": 150,
+     "line": 153,
      "text": "Invalid requests fail before execution. Transport and context errors are"
     },
     "ownership": {
-     "line": 146,
+     "line": 149,
      "text": "into the nonempty named tmux buffer. The buffer is owned by tmux and no"
     },
     "errors": {
-     "line": 147,
-     "text": "printed output is returned. A completed nonzero exit or stderr becomes a"
+     "line": 150,
+     "text": "printed output is returned. Completed stderr becomes a [CommandError]; a"
     }
    }
   },
   "tmux.Pane.CaptureToFile": {
    "behavior": {
-    "completion": {
-     "text": "The scratch tmux buffer is deleted before return when possible.",
+    "boundedBy": {
+     "text": "The scratch tmux buffer is staged, saved, and deleted in one tmux command list, so a cancellation cannot land between those steps.",
      "source": {
       "file": "tmux/pane_capture.go",
-      "line": 176
+      "line": 183
      },
      "origin": "doc comment"
     },
     "errors": {
-     "text": "Capture, save, and file-read failures return an error with no lines; buffer cleanup is best effort.",
+     "text": "If the capture fails, the file this call created is removed, except when ctx ended first.",
      "source": {
       "file": "tmux/pane_capture.go",
-      "line": 178
+      "line": 181
      },
      "origin": "doc comment"
     },
@@ -3641,7 +3683,7 @@
      "text": "Printed captures cannot safely cross a control connection, so [Pane.Capture] and [Pane.CaptureBytes] use a subprocess or reject a connection.",
      "source": {
       "file": "tmux/pane_capture.go",
-      "line": 169
+      "line": 172
      },
      "origin": "doc comment"
     },
@@ -3649,27 +3691,38 @@
      "text": "CaptureToFile stages through a scratch buffer so capture, save, and cleanup can all use the connection's command lanes.",
      "source": {
       "file": "tmux/pane_capture.go",
-      "line": 170
+      "line": 173
      },
      "origin": "doc comment"
+    },
+    "requires": {
+     "tmux": "3.4",
+     "source": {
+      "file": "tmux/pane_capture.go",
+      "line": 195
+     }
     }
    },
    "evidence": {
-    "completion": {
-     "line": 176,
-     "text": "paths. The scratch tmux buffer is deleted before return when possible."
+    "boundedBy": {
+     "line": 183,
+     "text": "paths. The scratch tmux buffer is staged, saved, and deleted in one tmux"
     },
     "errors": {
-     "line": 178,
-     "text": "Validation and version gating match [Pane.Capture]. Capture, save, and"
+     "line": 181,
+     "text": "directory p's Server was built in. If the capture fails, the file this call"
     },
     "transport": {
-     "line": 169,
+     "line": 172,
      "text": "Printed captures cannot safely cross a control connection, so [Pane.Capture]"
     },
     "cleanup": {
-     "line": 170,
+     "line": 173,
      "text": "and [Pane.CaptureBytes] use a subprocess or reject a connection. CaptureToFile"
+    },
+    "requires": {
+     "line": 195,
+     "text": "Safe named-buffer cleanup requires tmux 3.4 before staging. Other version"
     }
    }
   },
@@ -3679,15 +3732,15 @@
      "text": "Cancellation does not prove destination received the complete screen, and a copy failure takes precedence over a completed command's exit status because it means destination never saw everything tmux sent.",
      "source": {
       "file": "tmux/pane_capture.go",
-      "line": 381
+      "line": 450
      },
      "origin": "doc comment"
     },
     "errors": {
-     "text": "A completed nonzero exit becomes a redacted command error, because CaptureTo returns no bytes for the caller to inspect.",
+     "text": "Completed stderr becomes a redacted command error, because CaptureTo returns no bytes for the caller to inspect; a nonzero exit with empty stderr is not an error, as for every command.",
      "source": {
       "file": "tmux/pane_capture.go",
-      "line": 380
+      "line": 448
      },
      "origin": "doc comment"
     },
@@ -3695,22 +3748,22 @@
      "text": "Printed captures always use a subprocess, so a [Connection]-bound Pane returns [ErrConnectionRequiresProcess]; [Pane.CaptureToFile] stages through a tmux buffer and runs over a connection.",
      "source": {
       "file": "tmux/pane_capture.go",
-      "line": 384
+      "line": 453
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "boundedBy": {
-     "line": 381,
-     "text": "returns no bytes for the caller to inspect. Cancellation does not prove"
+     "line": 450,
+     "text": "is not an error, as for every command. Cancellation does not prove"
     },
     "errors": {
-     "line": 380,
-     "text": "A completed nonzero exit becomes a redacted command error, because CaptureTo"
+     "line": 448,
+     "text": "Completed stderr becomes a redacted command error, because CaptureTo"
     },
     "transport": {
-     "line": 384,
+     "line": 453,
      "text": "destination never saw everything tmux sent. Printed captures always use a"
     }
    }
@@ -3883,7 +3936,7 @@
      "text": "Transport and context errors are delivery-ambiguous, including between Command and Enter.",
      "source": {
       "file": "tmux/pane_input.go",
-      "line": 137
+      "line": 138
      },
      "origin": "doc comment"
     },
@@ -3897,8 +3950,8 @@
    },
    "evidence": {
     "boundedBy": {
-     "line": 137,
-     "text": "caller's secret, so only tmux's exit code is retained. Transport and"
+     "line": 138,
+     "text": "mutation (see the package documentation). Transport and context errors are"
     },
     "requires": {
      "line": 133,
@@ -3912,14 +3965,14 @@
      "text": "A write returns once tmux has taken the keys, before the pane's program has read them; the program interprets what arrives.",
      "source": {
       "file": "tmux/pane_input.go",
-      "line": 256
+      "line": 279
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 256,
+     "line": 279,
      "text": "A write returns once tmux has taken the keys, before the pane's program has"
     }
    }
@@ -3927,18 +3980,18 @@
   "tmux.Pane.Enter": {
    "behavior": {
     "errors": {
-     "text": "A completed nonzero exit or stderr becomes a redacted [CommandError]; transport errors are delivery-ambiguous.",
+     "text": "Transport errors are delivery-ambiguous.",
      "source": {
       "file": "tmux/pane_input.go",
-      "line": 319
+      "line": 344
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "errors": {
-     "line": 319,
-     "text": "Enter sends the Enter key to the receiver's exact linked pane. A completed"
+     "line": 344,
+     "text": "for every mutation. Transport errors are delivery-ambiguous."
     }
    }
   },
@@ -3948,14 +4001,14 @@
      "text": "Unsupported PrefixKey values fail before execution. A completed command produces a [CommandError] only when tmux writes stderr; the library-created error retains only the exit code.",
      "source": {
       "file": "tmux/pane_input.go",
-      "line": 367
+      "line": 390
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "errors": {
-     "line": 367,
+     "line": 390,
      "text": "Unsupported PrefixKey values fail before execution. A completed command"
     }
    }
@@ -3966,14 +4019,14 @@
      "text": "A transport error may leave the text delivered without Enter.",
      "source": {
       "file": "tmux/pane_input.go",
-      "line": 457
+      "line": 481
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "errors": {
-     "line": 457,
+     "line": 481,
      "text": "A transport error may leave the text delivered without Enter."
     }
    }
@@ -3984,14 +4037,14 @@
      "text": "Transport errors are delivery-ambiguous.",
      "source": {
       "file": "tmux/pane_input.go",
-      "line": 466
+      "line": 490
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "errors": {
-     "line": 466,
+     "line": 490,
      "text": "nonzero exits without stderr are ignored. Transport errors are"
     }
    }
@@ -4085,7 +4138,7 @@
      "text": "Cancellation cannot dismiss an accepted popup, which may remain visible.",
      "source": {
       "file": "tmux/pane_popup.go",
-      "line": 140
+      "line": 141
      },
      "origin": "doc comment"
     },
@@ -4093,7 +4146,7 @@
      "text": "Invalid fields fail before display.",
      "source": {
       "file": "tmux/pane_popup.go",
-      "line": 139
+      "line": 140
      },
      "origin": "doc comment"
     },
@@ -4101,21 +4154,21 @@
      "tmux": "3.6",
      "source": {
       "file": "tmux/pane_popup.go",
-      "line": 129
+      "line": 130
      }
     }
    },
    "evidence": {
     "boundedBy": {
-     "line": 140,
+     "line": 141,
      "text": "[CommandError]; nonzero exits without stderr are ignored. Cancellation cannot"
     },
     "errors": {
-     "line": 139,
+     "line": 140,
      "text": "Invalid fields fail before display. Only stderr produces a redacted"
     },
     "requires": {
-     "line": 129,
+     "line": 130,
      "text": "CloseOnAnyKey and NoKeys require tmux 3.6. Unsupported fields follow"
     }
    }
@@ -4126,14 +4179,14 @@
      "text": "The process may be restarted before refresh fails; in that case Respawn returns the original receiver and the refresh error. Earlier failures return zero.",
      "source": {
       "file": "tmux/pane_process.go",
-      "line": 53
+      "line": 55
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "errors": {
-     "line": 53,
+     "line": 55,
      "text": "different linked-session or winlink context. The process may be restarted"
     }
    }
@@ -4144,7 +4197,7 @@
      "text": "DeleteAfter requests deletion after tmux processes an existing buffer; an exited target or missing named buffer fails before deletion, while deletion after disabled pane input does not prove byte delivery.",
      "source": {
       "file": "tmux/pane_process.go",
-      "line": 126
+      "line": 128
      },
      "origin": "doc comment"
     },
@@ -4152,17 +4205,17 @@
      "tmux": "3.7",
      "source": {
       "file": "tmux/pane_process.go",
-      "line": 130
+      "line": 132
      }
     }
    },
    "evidence": {
     "errors": {
-     "line": 126,
+     "line": 128,
      "text": "pane. DeleteAfter requests deletion after tmux processes an existing buffer;"
     },
     "requires": {
-     "line": 130,
+     "line": 132,
      "text": "NoVis requires tmux 3.7 and follows [UnsupportedPolicy]; older versions"
     }
    }
@@ -4214,6 +4267,48 @@
     }
    }
   },
+  "tmux.Pane.WaitForText": {
+   "behavior": {
+    "completion": {
+     "text": "It polls on every supported tmux release and never opens a control client; [PaneObservation.WaitFor] is the push-based wait for tmux 3.7 and newer.",
+     "source": {
+      "file": "tmux/pane_text_wait.go",
+      "line": 117
+     },
+     "origin": "doc comment"
+    },
+    "boundedBy": {
+     "text": "A deadline or cancel returns ctx.Err, with the text of the last complete read.",
+     "source": {
+      "file": "tmux/pane_text_wait.go",
+      "line": 145
+     },
+     "origin": "doc comment"
+    },
+    "errors": {
+     "text": "A read that answers with neither the pane's report nor a recognised error asks the server whether it is still running, and a server that is not returns [ServerGone].",
+     "source": {
+      "file": "tmux/pane_text_wait.go",
+      "line": 143
+     },
+     "origin": "doc comment"
+    }
+   },
+   "evidence": {
+    "completion": {
+     "line": 117,
+     "text": "the pane or server ends, or ctx ends. It polls on every supported tmux"
+    },
+    "boundedBy": {
+     "line": 145,
+     "text": "still running, and a server that is not returns [ServerGone]. A deadline or cancel returns"
+    },
+    "errors": {
+     "line": 143,
+     "text": "ends first returns a [*PaneEndedError]. A read that answers with neither"
+    }
+   }
+  },
   "tmux.PaneObservation.WaitFor": {
    "behavior": {
     "errors": {
@@ -4238,27 +4333,27 @@
      "text": "Preview catches them before a non-atomic run can partially mutate tmux.",
      "source": {
       "file": "tmux/plan.go",
-      "line": 344
+      "line": 508
      },
      "origin": "doc comment"
     },
     "errors": {
-     "text": "Other render failures return the entries completed before the error.",
+     "text": "Such an operation is still rendered against a placeholder target and checked, so a request tmux of that version would refuse, or an unsupported flag under the default fail policy, is an error here too; only its arguments are left out, because they depend on an ID that does not exist yet.",
      "source": {
       "file": "tmux/plan.go",
-      "line": 344
+      "line": 503
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "mutation": {
-     "line": 344,
-     "text": "Other render failures return the entries completed before the error. Preview"
+     "line": 508,
+     "text": "Render failures return the entries completed before the error. Preview"
     },
     "errors": {
-     "line": 344,
-     "text": "Other render failures return the entries completed before the error. Preview"
+     "line": 503,
+     "text": "Such an operation is still rendered against a placeholder target and checked,"
     }
    }
   },
@@ -4268,14 +4363,14 @@
      "text": "Run stops at the first failed or indeterminate dispatch; later operations are [OpSkipped].",
      "source": {
       "file": "tmux/plan.go",
-      "line": 449
+      "line": 647
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "errors": {
-     "line": 449,
+     "line": 647,
      "text": "[Plan.Explain] reports the grouping. Run stops at the first failed or"
     }
    }
@@ -4286,14 +4381,14 @@
      "text": "Successful execution produces planner-independent results, but every operation in a failed grouped dispatch is [OpIndeterminate].",
      "source": {
       "file": "tmux/plan.go",
-      "line": 458
+      "line": 656
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "errors": {
-     "line": 458,
+     "line": 656,
      "text": "RunWith runs the plan with planner deciding dispatch grouping. Successful"
     }
    }
@@ -4483,14 +4578,14 @@
      "text": "The returned slice is owned by the caller; an invalid server returns nil.",
      "source": {
       "file": "tmux/server.go",
-      "line": 240
+      "line": 268
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "ownership": {
-     "line": 240,
+     "line": 268,
      "text": "snapshot. The returned slice is owned by the caller; an invalid server"
     }
    }
@@ -4501,7 +4596,7 @@
      "text": "Cancellation cannot prove whether a mutation reached tmux.",
      "source": {
       "file": "tmux/server.go",
-      "line": 260
+      "line": 288
      },
      "origin": "doc comment"
     },
@@ -4509,19 +4604,31 @@
      "text": "A completed nonzero exit remains a result; validation and transport failures return errors.",
      "source": {
       "file": "tmux/server.go",
-      "line": 258
+      "line": 286
+     },
+     "origin": "doc comment"
+    },
+    "transport": {
+     "text": "The subprocess path also follows tmux's trailing-semicolon and escaping rules; typed operations keep values literal across bindings.",
+     "source": {
+      "file": "tmux/server.go",
+      "line": 299
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "boundedBy": {
-     "line": 260,
+     "line": 288,
      "text": "return errors. Cancellation cannot prove whether a mutation reached tmux."
     },
     "errors": {
-     "line": 258,
+     "line": 286,
      "text": "Cmd executes raw tmux arguments and returns caller-owned result slices. A"
+    },
+    "transport": {
+     "line": 299,
+     "text": "A standalone \";\" separates commands across bindings. The subprocess path"
     }
    }
   },
@@ -4531,14 +4638,14 @@
      "text": "Only an absent server reports false without an error: a socket that exists but cannot be reached, such as one the process may not read, is a question that could not be answered and is returned as an error. Use [Server.CheckAlive] where an absent server is itself the failure.",
      "source": {
       "file": "tmux/server.go",
-      "line": 351
+      "line": 380
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "errors": {
-     "line": 351,
+     "line": 380,
      "text": "Only an absent server reports false without an error: a socket that exists"
     }
    }
@@ -4549,7 +4656,7 @@
      "text": "Cancellation and transport failures are returned directly.",
      "source": {
       "file": "tmux/server.go",
-      "line": 371
+      "line": 400
      },
      "origin": "doc comment"
     },
@@ -4557,18 +4664,18 @@
      "text": "Use [Server.IsAlive] where an absent server is an answer rather than a failure.",
      "source": {
       "file": "tmux/server.go",
-      "line": 371
+      "line": 400
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "boundedBy": {
-     "line": 371,
+     "line": 400,
      "text": "alive. Cancellation and transport failures are returned directly. Use"
     },
     "errors": {
-     "line": 371,
+     "line": 400,
      "text": "alive. Cancellation and transport failures are returned directly. Use"
     }
    }
@@ -4633,7 +4740,7 @@
      "text": "Cancellation does not prove that tmux did not store data.",
      "source": {
       "file": "tmux/server_buffers.go",
-      "line": 88
+      "line": 90
      },
      "origin": "doc comment"
     },
@@ -4641,18 +4748,18 @@
      "text": "It mutates the selected paste buffer; completed stderr is reported as a redacted command error because Data may be secret.",
      "source": {
       "file": "tmux/server_buffers.go",
-      "line": 86
+      "line": 88
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "boundedBy": {
-     "line": 88,
+     "line": 90,
      "text": "redacted command error because Data may be secret. Cancellation does not"
     },
     "errors": {
-     "line": 86,
+     "line": 88,
      "text": "SetBuffer stores or appends exact string data without refreshing models. It"
     }
    }
@@ -4663,7 +4770,7 @@
      "text": "The returned string is owned by the caller; nil Name selects tmux's most recent buffer.",
      "source": {
       "file": "tmux/server_buffers.go",
-      "line": 116
+      "line": 118
      },
      "origin": "doc comment"
     },
@@ -4671,18 +4778,18 @@
      "text": "Completed stderr is an error.",
      "source": {
       "file": "tmux/server_buffers.go",
-      "line": 117
+      "line": 119
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "ownership": {
-     "line": 116,
+     "line": 118,
      "text": "The returned string is owned by the caller; nil Name selects tmux's most"
     },
     "errors": {
-     "line": 117,
+     "line": 119,
      "text": "recent buffer. Completed stderr is an error."
     }
    }
@@ -4693,14 +4800,14 @@
      "text": "Completed stderr returns a redacted command error and a nil byte slice.",
      "source": {
       "file": "tmux/server_buffers.go",
-      "line": 128
+      "line": 130
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "errors": {
-     "line": 128,
+     "line": 130,
      "text": "trailing newlines. Nil Name selects tmux's most recent buffer. Completed"
     }
    }
@@ -4711,15 +4818,33 @@
      "text": "Cancellation does not prove that tmux did not delete the buffer.",
      "source": {
       "file": "tmux/server_buffers.go",
-      "line": 156
+      "line": 158
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "boundedBy": {
-     "line": 156,
+     "line": 158,
      "text": "Cancellation does not prove that tmux did not delete the buffer."
+    }
+   }
+  },
+  "tmux.Server.SaveBuffer": {
+   "behavior": {
+    "boundedBy": {
+     "text": "If the save fails, the file this call created is removed, except when ctx ended first, because cancellation does not prove tmux did not write it.",
+     "source": {
+      "file": "tmux/server_buffers.go",
+      "line": 181
+     },
+     "origin": "doc comment"
+    }
+   },
+   "evidence": {
+    "boundedBy": {
+     "line": 181,
+     "text": "built in. If the save fails, the file this call created is removed, except"
     }
    }
   },
@@ -4729,14 +4854,14 @@
      "text": "It mutates tmux's destination buffer.",
      "source": {
       "file": "tmux/server_buffers.go",
-      "line": 195
+      "line": 248
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "mutation": {
-     "line": 195,
+     "line": 248,
      "text": "[Server.SourceFile]'s current-user expansion and lexical normalization. It"
     }
    }
@@ -4747,7 +4872,7 @@
      "text": "A copy failure after tmux exits zero means the buffer holds only the prefix that reached tmux, and cancellation does not prove tmux stored nothing. A source that blocks regardless of cancellation does not hold the call, and is still being read when it returns.",
      "source": {
       "file": "tmux/server_buffers.go",
-      "line": 221
+      "line": 274
      },
      "origin": "doc comment"
     },
@@ -4755,18 +4880,18 @@
      "text": "A [Connection]-bound Server returns [ErrConnectionRequiresProcess]: tmux offers no stdin to a control client, so use [Server.LoadBuffer] and a path over a connection.",
      "source": {
       "file": "tmux/server_buffers.go",
-      "line": 224
+      "line": 277
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "boundedBy": {
-     "line": 221,
+     "line": 274,
      "text": "A copy failure after tmux exits zero means the buffer holds only the prefix"
     },
     "transport": {
-     "line": 224,
+     "line": 277,
      "text": "still being read when it returns. A [Connection]-bound Server returns"
     }
    }
@@ -4777,7 +4902,7 @@
      "text": "Cancellation does not prove destination received a complete buffer, and a copy failure takes precedence over a completed command's exit status because it means destination never saw everything tmux sent. A destination that blocks regardless of cancellation does not hold the call.",
      "source": {
       "file": "tmux/server_buffers.go",
-      "line": 252
+      "line": 305
      },
      "origin": "doc comment"
     },
@@ -4785,18 +4910,18 @@
      "text": "A [Connection]-bound Server returns [ErrConnectionRequiresProcess]: tmux offers no stdout to a control client, so use [Server.SaveBuffer] and a path over a connection.",
      "source": {
       "file": "tmux/server_buffers.go",
-      "line": 255
+      "line": 308
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "boundedBy": {
-     "line": 252,
+     "line": 305,
      "text": "Cancellation does not prove destination received a complete buffer, and a"
     },
     "transport": {
-     "line": 255,
+     "line": 308,
      "text": "blocks regardless of cancellation does not hold the call. A"
     }
    }
@@ -4807,14 +4932,14 @@
      "text": "A command or transport failure is returned rather than answered with no rows; context cancellation still returns its context error.",
      "source": {
       "file": "tmux/server_buffers.go",
-      "line": 279
+      "line": 332
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "boundedBy": {
-     "line": 279,
+     "line": 332,
      "text": "ListBuffers returns an owned snapshot of live tmux buffer rows. A command or"
     }
    }
@@ -4825,14 +4950,14 @@
      "text": "List returns an owned snapshot, and reports a completed or transport failure rather than answering with no entries; mutation completed stderr is an error.",
      "source": {
       "file": "tmux/server_clients.go",
-      "line": 61
+      "line": 62
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "errors": {
-     "line": 61,
+     "line": 62,
      "text": "on every supported tmux. List returns an"
     }
    }
@@ -4843,14 +4968,14 @@
      "text": "Cancellation does not prove the server did not lock a client.",
      "source": {
       "file": "tmux/server_clients.go",
-      "line": 138
+      "line": 139
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "boundedBy": {
-     "line": 138,
+     "line": 139,
      "text": "LockServer locks every attached client on the tmux server. Cancellation does"
     }
    }
@@ -4858,17 +4983,17 @@
   "tmux.Server.RefreshClient": {
    "behavior": {
     "requires": {
-     "tmux": "3.4",
+     "tmux": "3.6a",
      "source": {
       "file": "tmux/server_clients.go",
-      "line": 145
+      "line": 146
      }
     }
    },
    "evidence": {
     "requires": {
-     "line": 145,
-     "text": "RequestClipboard requires tmux 3.4 and follows [UnsupportedPolicy]."
+     "line": 146,
+     "text": "RequestClipboard requires tmux 3.6a and follows [UnsupportedPolicy]."
     }
    }
   },
@@ -4878,14 +5003,14 @@
      "text": "Cancellation does not prove the target client was not locked.",
      "source": {
       "file": "tmux/server_clients.go",
-      "line": 179
+      "line": 181
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "boundedBy": {
-     "line": 179,
+     "line": 181,
      "text": "Cancellation does not prove the target client was not locked."
     }
    }
@@ -4896,14 +5021,14 @@
      "text": "Cancellation does not prove suspension did not occur.",
      "source": {
       "file": "tmux/server_clients.go",
-      "line": 193
+      "line": 195
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "boundedBy": {
-     "line": 193,
+     "line": 195,
      "text": "Cancellation does not prove suspension did not occur."
     }
    }
@@ -4914,14 +5039,14 @@
      "text": "A completed stderr result is an error; cancellation does not prove delivery or detachment did not occur.",
      "source": {
       "file": "tmux/server_clients.go",
-      "line": 207
+      "line": 209
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "boundedBy": {
-     "line": 207,
+     "line": 209,
      "text": "A completed stderr result is an error; cancellation does not prove delivery"
     }
    }
@@ -4932,14 +5057,14 @@
      "text": "Cancellation does not prove every client was detached.",
      "source": {
       "file": "tmux/server_clients.go",
-      "line": 233
+      "line": 235
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "boundedBy": {
-     "line": 233,
+     "line": 235,
      "text": "Cancellation does not prove every client was detached."
     }
    }
@@ -4950,14 +5075,14 @@
      "text": "TargetSession is a validated session name rather than a stable identity; cancellation does not prove the switch did not occur.",
      "source": {
       "file": "tmux/server_clients.go",
-      "line": 260
+      "line": 262
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "boundedBy": {
-     "line": 260,
+     "line": 262,
      "text": "SwitchClient switches tmux's current client to targetSession. TargetSession"
     }
    }
@@ -4968,14 +5093,14 @@
      "text": "Cancellation does not prove that tmux did not lock a client.",
      "source": {
       "file": "tmux/server_clients.go",
-      "line": 283
+      "line": 285
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "boundedBy": {
-     "line": 283,
+     "line": 285,
      "text": "stable ID. Cancellation does not prove that tmux did not lock a client."
     }
    }
@@ -4986,7 +5111,7 @@
      "text": "A completed stderr result is an error; context cancellation can be observed with [errors.Is] but does not establish that tmux did not start the job.",
      "source": {
       "file": "tmux/server_exec.go",
-      "line": 155
+      "line": 157
      },
      "origin": "doc comment"
     },
@@ -4994,19 +5119,30 @@
      "text": "A foreground command that tmux ends with success is checked against the server, as in [Server.WaitFor], and returns an error matching [ErrNoServer] when the server exited under it.",
      "source": {
       "file": "tmux/server_exec.go",
-      "line": 167
+      "line": 169
      },
      "origin": "doc comment"
+    },
+    "requires": {
+     "tmux": "3.5",
+     "source": {
+      "file": "tmux/server_exec.go",
+      "line": 152
+     }
     }
    },
    "evidence": {
     "boundedBy": {
-     "line": 155,
+     "line": 157,
      "text": "Unsupported optional flags follow [UnsupportedPolicy]. A completed stderr"
     },
     "errors": {
-     "line": 167,
+     "line": 169,
      "text": "A foreground command that tmux ends with success is checked against the"
+    },
+    "requires": {
+     "line": 152,
+     "text": "slice. Captured foreground shell jobs require tmux 3.5 before execution;"
     }
    }
   },
@@ -5016,7 +5152,7 @@
      "text": "It changes only that server-side channel state; cancellation can interrupt the client wait but cannot prove a preceding signal or lock did not take effect.",
      "source": {
       "file": "tmux/server_exec.go",
-      "line": 269
+      "line": 279
      },
      "origin": "doc comment"
     },
@@ -5024,7 +5160,7 @@
      "text": "A wait or lock that tmux ends that way is checked against the server and returns an error matching [ErrNoServer] when the server is gone.",
      "source": {
       "file": "tmux/server_exec.go",
-      "line": 281
+      "line": 291
      },
      "origin": "doc comment"
     },
@@ -5032,7 +5168,7 @@
      "text": "On a [Connection]-bound server a wait or lock runs on a control client opened for that call and closed when it ends, so canceling it, or a peer never signaling, leaves every lane free.",
      "source": {
       "file": "tmux/server_exec.go",
-      "line": 275
+      "line": 285
      },
      "origin": "doc comment"
     },
@@ -5040,25 +5176,25 @@
      "tmux": "3.8",
      "source": {
       "file": "tmux/server_exec.go",
-      "line": 272
+      "line": 282
      }
     }
    },
    "evidence": {
     "boundedBy": {
-     "line": 269,
+     "line": 279,
      "text": "WaitFor waits for, signals, locks, or unlocks a named tmux channel. It"
     },
     "errors": {
-     "line": 281,
+     "line": 291,
      "text": "as a signal. A wait or lock that tmux ends that way is checked against the"
     },
     "transport": {
-     "line": 275,
+     "line": 285,
      "text": "On a [Connection]-bound server a wait or lock runs on a control client opened"
     },
     "requires": {
-     "line": 272,
+     "line": 282,
      "text": "effect. See [WaitForModeLock]: before tmux 3.8, abandoning a lock wait costs"
     }
    }
@@ -5069,7 +5205,7 @@
      "text": "A completed stderr result is an error; cancellation can interrupt delivery without proving that tmux did not execute a branch.",
      "source": {
       "file": "tmux/server_exec.go",
-      "line": 378
+      "line": 388
      },
      "origin": "doc comment"
     },
@@ -5077,18 +5213,18 @@
      "text": "On a [Connection]-bound server a foreground request runs on a control client of its own, as [Server.RunShell] does, and a server that exited under it is reported the same way.",
      "source": {
       "file": "tmux/server_exec.go",
-      "line": 381
+      "line": 391
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "boundedBy": {
-     "line": 378,
+     "line": 388,
      "text": "present, when it fails. A completed stderr result is an error; cancellation"
     },
     "transport": {
-     "line": 381,
+     "line": 391,
      "text": "On a [Connection]-bound server a foreground request runs on a control client"
     }
    }
@@ -5099,14 +5235,14 @@
      "text": "It can mutate tmux configuration; completed stderr is an error, and cancellation does not prove that parsing or sourcing did not occur.",
      "source": {
       "file": "tmux/server_exec.go",
-      "line": 443
+      "line": 453
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "boundedBy": {
-     "line": 443,
+     "line": 453,
      "text": "relative path naming a file called \"-\" remains file data. It can mutate"
     }
    }
@@ -5364,18 +5500,18 @@
   "tmux.NewServer": {
    "behavior": {
     "transport": {
-     "text": "Empty socket selectors use the endpoint selected by the frozen environment.",
+     "text": "Empty socket selectors use the endpoint the frozen environment selects, as [ServerOptions] describes.",
      "source": {
       "file": "tmux/server_options.go",
-      "line": 95
+      "line": 103
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "transport": {
-     "line": 95,
-     "text": "tmux. Empty socket selectors use the endpoint selected by the frozen"
+     "line": 103,
+     "text": "tmux. Empty socket selectors use the endpoint the frozen environment"
     }
    }
   },
@@ -5385,14 +5521,14 @@
      "text": "Empty clears explicit socket selectors and leaves endpoint selection to tmux.",
      "source": {
       "file": "tmux/server_options.go",
-      "line": 102
+      "line": 110
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "transport": {
-     "line": 102,
+     "line": 110,
      "text": "executable, environment, working directory, and server-option policy. Empty"
     }
    }
@@ -5637,7 +5773,7 @@
      "text": "A command that never exits holds Run until ctx ends.",
      "source": {
       "file": "tmux/session_run.go",
-      "line": 111
+      "line": 117
      },
      "origin": "doc comment"
     },
@@ -5645,7 +5781,7 @@
      "text": "tmux runs command as default-shell -c command, so it is written in the language of the session's default-shell option, which tmux takes from $SHELL when it starts the server: under fish, echo $((1+2)) is an error.",
      "source": {
       "file": "tmux/session_run.go",
-      "line": 102
+      "line": 108
      },
      "origin": "doc comment"
     },
@@ -5653,22 +5789,22 @@
      "text": "On a session bound to a [Connection], Run works as it does elsewhere: the wait uses a control client of its own rather than a lane, so one lane is enough, and the final screen is read through a scratch tmux buffer and a temporary file that tmux writes and this process reads.",
      "source": {
       "file": "tmux/session_run.go",
-      "line": 118
+      "line": 124
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "boundedBy": {
-     "line": 111,
+     "line": 117,
      "text": "binary on the command's PATH and returns as the process exits. A command that never"
     },
     "errors": {
-     "line": 102,
+     "line": 108,
      "text": "tmux runs command as default-shell -c command, so it is written in the"
     },
     "transport": {
-     "line": 118,
+     "line": 124,
      "text": "On a session bound to a [Connection], Run works as it does elsewhere: the"
     }
    }
@@ -5679,7 +5815,7 @@
      "text": "The returned [Running] reports the pane it runs in and blocks on demand: [Running.Wait] waits for the exit status and screen [Session.Run] would have returned, and [Running.Kill] stops the command.",
      "source": {
       "file": "tmux/session_run.go",
-      "line": 137
+      "line": 143
      },
      "origin": "doc comment"
     },
@@ -5687,7 +5823,7 @@
      "text": "[Running.Wait] stops a pipe Start installed once the outcome is read, whether or not Keep leaves the window itself in place.",
      "source": {
       "file": "tmux/session_run.go",
-      "line": 144
+      "line": 150
      },
      "origin": "doc comment"
     },
@@ -5695,7 +5831,7 @@
      "text": "Before tmux 3.7, Start attempts to install an output pipe running cat unless the pane already has a pipe; a failed attempt only forfeits that compatibility help.",
      "source": {
       "file": "tmux/session_run.go",
-      "line": 142
+      "line": 148
      },
      "origin": "doc comment"
     },
@@ -5703,7 +5839,7 @@
      "text": "A session bound to a [Connection] can Start: [Running.Wait] holds a control client of its own, not a lane, so [Running.Kill] and every other command stay available while it waits.",
      "source": {
       "file": "tmux/session_run.go",
-      "line": 149
+      "line": 155
      },
      "origin": "doc comment"
     },
@@ -5711,29 +5847,29 @@
      "tmux": "3.7",
      "source": {
       "file": "tmux/session_run.go",
-      "line": 142
+      "line": 148
      }
     }
    },
    "evidence": {
     "completion": {
-     "line": 137,
+     "line": 143,
      "text": "under way, without waiting for it to finish. The returned [Running] reports"
     },
     "mutation": {
-     "line": 144,
+     "line": 150,
      "text": "compatibility help. [Running.Wait] stops a pipe Start installed once the"
     },
     "errors": {
-     "line": 142,
+     "line": 148,
      "text": "Before tmux 3.7, Start attempts to install an output pipe running cat"
     },
     "transport": {
-     "line": 149,
+     "line": 155,
      "text": "A session bound to a [Connection] can Start: [Running.Wait] holds a control"
     },
     "requires": {
-     "line": 142,
+     "line": 148,
      "text": "Before tmux 3.7, Start attempts to install an output pipe running cat"
     }
    }
@@ -5744,7 +5880,7 @@
      "text": "The outcome is read once, as soon as any call sees the command end, on a context no caller's cancellation reaches, because from then on it belongs to every caller. A call whose context ends first reports that context and leaves the window alone; a later call gets the outcome.",
      "source": {
       "file": "tmux/session_run.go",
-      "line": 272
+      "line": 278
      },
      "origin": "doc comment"
     },
@@ -5752,7 +5888,7 @@
      "text": "A command whose process tmux never reaps has no outcome to report, and Wait ends with [ErrOutcomeUnrecorded] rather than the zero status that would make a failed command look successful.",
      "source": {
       "file": "tmux/session_run.go",
-      "line": 267
+      "line": 273
      },
      "origin": "doc comment"
     },
@@ -5760,22 +5896,22 @@
      "text": "On a [Connection]-bound session the wait holds a control client of its own rather than a lane, and ending it closes that client.",
      "source": {
       "file": "tmux/session_run.go",
-      "line": 277
+      "line": 283
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "boundedBy": {
-     "line": 272,
+     "line": 278,
      "text": "same completion. The outcome is read once, as soon as any call sees the"
     },
     "errors": {
-     "line": 267,
+     "line": 273,
      "text": "set. A command whose process tmux never reaps has no outcome to report, and"
     },
     "transport": {
-     "line": 277,
+     "line": 283,
      "text": "On a [Connection]-bound session the wait holds a control client of its own"
     }
    }
@@ -5786,14 +5922,14 @@
      "text": "Streaming needs a control client, which a [Connection]-bound value does not have, so it returns [ErrConnectionRequiresProcess] there before waiting and leaves the command running; Wait alone does not.",
      "source": {
       "file": "tmux/session_run.go",
-      "line": 607
+      "line": 613
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "transport": {
-     "line": 607,
+     "line": 613,
      "text": "showed. Streaming needs a control client, which a [Connection]-bound value"
     }
    }
@@ -5804,14 +5940,14 @@
      "text": "It does not wait for the process to stop; call Wait to observe the resulting status or signal.",
      "source": {
       "file": "tmux/session_run.go",
-      "line": 653
+      "line": 659
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 653,
+     "line": 659,
      "text": "command. It does not wait for the process to stop; call Wait to observe the"
     }
    }
@@ -5852,15 +5988,15 @@
      "text": "It does not start tmux or require the selected socket to exist.",
      "source": {
       "file": "tmux/socket_selection.go",
-      "line": 23
+      "line": 52
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "transport": {
-     "line": 23,
-     "text": "snapshotted by [NewServer]. It does not start tmux or require the selected"
+     "line": 52,
+     "text": "itself from TMUX or its default socket. It does not start tmux or require"
     }
    }
   },
@@ -5942,14 +6078,14 @@
      "text": "A transport or context error can be delivery-ambiguous; the void result cannot carry partial state and no rollback is attempted.",
      "source": {
       "file": "tmux/window_layout.go",
-      "line": 321
+      "line": 322
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "boundedBy": {
-     "line": 321,
+     "line": 322,
      "text": "It changes pane geometry without selecting or refreshing the window. A"
     }
    }
@@ -5960,14 +6096,14 @@
      "text": "A transport or context error can be delivery-ambiguous; the void result cannot carry partial state and no rollback is attempted.",
      "source": {
       "file": "tmux/window_layout.go",
-      "line": 339
+      "line": 340
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "boundedBy": {
-     "line": 339,
+     "line": 340,
      "text": "window. A transport or context error can be delivery-ambiguous; the void"
     }
    }
@@ -6293,10 +6429,10 @@
   "tmuxtest.NewControlMode": {
    "behavior": {
     "errors": {
-     "text": "Validation or startup failures call [testing.TB.Fatal]. ctx bounds startup and registration only, not the returned client's lifetime.",
+     "text": "Validation or startup failures call [testing.TB.Fatal].",
      "source": {
       "file": "tmux/tmuxtest/control.go",
-      "line": 47
+      "line": 48
      },
      "origin": "doc comment"
     },
@@ -6304,18 +6440,18 @@
      "text": "The client pins the server's frozen effective socket path.",
      "source": {
       "file": "tmux/tmuxtest/control.go",
-      "line": 46
+      "line": 47
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "errors": {
-     "line": 47,
+     "line": 48,
      "text": "effective socket path. Validation or startup failures call [testing.TB.Fatal]."
     },
     "transport": {
-     "line": 46,
+     "line": 47,
      "text": "validates that session belongs to server. The client pins the server's frozen"
     }
    }
@@ -6326,14 +6462,14 @@
      "text": "If ctx ends after shutdown starts, shutdown continues and a later call may wait for completion; an already-ended ctx does not start shutdown.",
      "source": {
       "file": "tmux/tmuxtest/control.go",
-      "line": 71
+      "line": 74
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "boundedBy": {
-     "line": 71,
+     "line": 74,
      "text": "calls join the same shutdown. If ctx ends after shutdown starts, shutdown"
     }
    }
@@ -6344,15 +6480,51 @@
      "text": "It returns ctx errors while waiting for output.",
      "source": {
       "file": "tmux/tmuxtest/control.go",
-      "line": 105
+      "line": 108
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "errors": {
-     "line": 105,
+     "line": 108,
      "text": "It returns ctx errors while waiting for output."
+    }
+   }
+  },
+  "tmuxtest.RequireVersion": {
+   "behavior": {
+    "errors": {
+     "text": "Other version-check failures fail the test.",
+     "source": {
+      "file": "tmux/tmuxtest/harness.go",
+      "line": 124
+     },
+     "origin": "doc comment"
+    }
+   },
+   "evidence": {
+    "errors": {
+     "line": 124,
+     "text": "the executable that would start it, is older than minimum. Other version-check"
+    }
+   }
+  },
+  "tmuxtest.Main": {
+   "behavior": {
+    "cleanup": {
+     "text": "Such a server is a test's leak: Main reports how many it found, without naming a path, and returns 1 even when every test passed.",
+     "source": {
+      "file": "tmux/tmuxtest/harness.go",
+      "line": 280
+     },
+     "origin": "doc comment"
+    }
+   },
+   "evidence": {
+    "cleanup": {
+     "line": 280,
+     "text": "server still answering on one with kill-server. Such a server is a test's"
     }
    }
   },
@@ -6362,7 +6534,7 @@
      "text": "Startup uses ctx and the harness timeout, whichever ends first.",
      "source": {
       "file": "tmux/tmuxtest/harness.go",
-      "line": 307
+      "line": 365
      },
      "origin": "doc comment"
     },
@@ -6370,7 +6542,7 @@
      "text": "It registers bounded cleanup with t; setup failures call [testing.TB.Fatal].",
      "source": {
       "file": "tmux/tmuxtest/harness.go",
-      "line": 307
+      "line": 365
      },
      "origin": "doc comment"
     },
@@ -6378,22 +6550,22 @@
      "text": "The context does not govern later server cleanup or daemon lifetime.",
      "source": {
       "file": "tmux/tmuxtest/harness.go",
-      "line": 308
+      "line": 366
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "boundedBy": {
-     "line": 307,
+     "line": 365,
      "text": "Startup uses ctx and the harness timeout, whichever ends first. It registers"
     },
     "errors": {
-     "line": 307,
+     "line": 365,
      "text": "Startup uses ctx and the harness timeout, whichever ends first. It registers"
     },
     "cleanup": {
-     "line": 308,
+     "line": 366,
      "text": "bounded cleanup with t; setup failures call [testing.TB.Fatal]. The context"
     }
    }
@@ -6404,7 +6576,7 @@
      "text": "Initial startup uses ctx and the harness timeout, whichever ends first.",
      "source": {
       "file": "tmux/tmuxtest/harness.go",
-      "line": 318
+      "line": 376
      },
      "origin": "doc comment"
     },
@@ -6412,7 +6584,7 @@
      "text": "It registers bounded cleanup with t; setup failures call [testing.TB.Fatal].",
      "source": {
       "file": "tmux/tmuxtest/harness.go",
-      "line": 320
+      "line": 378
      },
      "origin": "doc comment"
     },
@@ -6420,22 +6592,22 @@
      "text": "The context does not govern later cleanup or daemon lifetime.",
      "source": {
       "file": "tmux/tmuxtest/harness.go",
-      "line": 321
+      "line": 379
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "boundedBy": {
-     "line": 318,
+     "line": 376,
      "text": "options. Initial startup uses ctx and the harness timeout, whichever ends"
     },
     "errors": {
-     "line": 320,
+     "line": 378,
      "text": "or a later tmux command starts it. It registers bounded cleanup with t; setup"
     },
     "cleanup": {
-     "line": 321,
+     "line": 379,
      "text": "failures call [testing.TB.Fatal]. The context does not govern later cleanup"
     }
    }
@@ -6823,7 +6995,7 @@
      "origin": "doc comment"
     },
     "transport": {
-     "text": "Build creates the session and an attached control connection in one process, uses that connection for the build, and closes it before returning.",
+     "text": "Build uses subprocess operations below tmux 3.7. On qualified newer daemons, it owns a control connection during the build and closes it before return.",
      "source": {
       "file": "workspace/builder.go",
       "line": 37
@@ -6838,7 +7010,7 @@
     },
     "transport": {
      "line": 37,
-     "text": "Build creates the session and an attached control connection in one process,"
+     "text": "Build uses subprocess operations below tmux 3.7. On qualified newer daemons,"
     }
    }
   },
@@ -6848,7 +7020,7 @@
      "text": "A failure leaves completed mutations in tmux.",
      "source": {
       "file": "workspace/builder.go",
-      "line": 85
+      "line": 99
      },
      "origin": "doc comment"
     },
@@ -6856,18 +7028,18 @@
      "text": "BuildInto uses the session's existing server and transport; it neither creates a session nor opens or owns a connection.",
      "source": {
       "file": "workspace/builder.go",
-      "line": 82
+      "line": 96
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "errors": {
-     "line": 85,
+     "line": 99,
      "text": "BuildInto is not atomic. A failure leaves completed mutations in tmux."
     },
     "transport": {
-     "line": 82,
+     "line": 96,
      "text": "BuildInto uses the session's existing server and transport; it neither"
     }
    }

@@ -140,7 +140,7 @@
       "to": "=}",
       "ci": {
         "workflow": ".github/workflows/tests.yml",
-        "command": "go test -race -count=1"
+        "command": "scripts/test-module.sh"
       }
     },
     "workspace": {
@@ -156,7 +156,7 @@
       ],
       "ci": {
         "workflow": ".github/workflows/tests.yml",
-        "command": "go test -race -count=1"
+        "command": "scripts/test-module.sh"
       }
     }
   },

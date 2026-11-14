@@ -297,28 +297,28 @@
     },
     "go": {
       "repo": "libtmux/libtmux-go",
-      "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+      "revision": "3997274373dcc5b30435ecdc8ced2ceba7d2e11f",
       "distributions": [
         {
           "name": "github.com/libtmux/libtmux-go",
-          "version": "0.0.1-alpha.11",
+          "version": "0.1.3",
           "manifest": "go.mod",
           "repo": "libtmux/libtmux-go",
-          "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151"
+          "revision": "3997274373dcc5b30435ecdc8ced2ceba7d2e11f"
         },
         {
           "name": "github.com/libtmux/libtmux-go/mcp",
-          "version": "0.0.1-alpha.14",
+          "version": "0.1.3",
           "manifest": "mcp/go.mod",
           "repo": "libtmux/libtmux-go",
-          "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151"
+          "revision": "3997274373dcc5b30435ecdc8ced2ceba7d2e11f"
         },
         {
           "name": "github.com/libtmux/libtmux-go/workspace",
-          "version": "0.0.1-alpha.11",
+          "version": "0.1.3",
           "manifest": "workspace/go.mod",
           "repo": "libtmux/libtmux-go",
-          "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151"
+          "revision": "3997274373dcc5b30435ecdc8ced2ceba7d2e11f"
         }
       ],
       "units": [

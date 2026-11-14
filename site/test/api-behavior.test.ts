@@ -31,10 +31,10 @@ describe('behaviour facts on the model', () => {
   it('state, for Go Pane.Capture, what its doc comment says with the line each sentence stands on', () => {
     const { behavior } = symbolOf('go', 'tmux.Pane.Capture')
     expect(Object.keys(behavior!)).toEqual(['completion', 'boundedBy', 'ownership', 'errors', 'transport'])
-    expect(behavior!.completion).toMatchObject({ source: { file: 'tmux/pane_capture.go', line: 116 }, origin: 'doc comment' })
-    expect(behavior!.ownership).toMatchObject({ text: 'It returns a caller-owned slice.', source: { line: 113 } })
-    expect(behavior!.boundedBy!.source.line).toBe(121)
-    expect(behavior!.transport).toMatchObject({ origin: 'curated', via: 'CaptureToFile', source: { line: 169 } })
+    expect(behavior!.completion).toMatchObject({ source: { file: 'tmux/pane_capture.go', line: 119 }, origin: 'doc comment' })
+    expect(behavior!.ownership).toMatchObject({ text: 'It returns a caller-owned slice.', source: { line: 114 } })
+    expect(behavior!.boundedBy!.source.line).toBe(124)
+    expect(behavior!.transport).toMatchObject({ origin: 'curated', via: 'CaptureToFile', source: { line: 172 } })
     // Each fact is the sentence its recorded evidence line begins, so no fact is a paraphrase.
     const evidence = (goSidecar.symbols as Record<string, { evidence: Record<string, { line: number; text: string }> }>)['tmux.Pane.Capture'].evidence
     for (const [row, record] of Object.entries(evidence)) {
@@ -78,11 +78,11 @@ describe('the rendered facts', () => {
     expect([...document.querySelectorAll('[data-row]')].map((row) => row.getAttribute('data-row'))).toEqual(['completion', 'boundedBy', 'ownership', 'errors', 'transport'])
     expect([...document.querySelectorAll('dt')].map((cell) => cell.textContent)).toEqual(['Completion', 'Bounded by', 'Ownership', 'Errors', 'Transport'])
     expect([...document.querySelectorAll('.api-behavior__src')].map((cite) => cite.textContent)).toEqual([
-      'doc comment · pane_capture.go:116', 'doc comment · :121', 'doc comment · :113', 'doc comment · :113', 'CaptureToFile doc · :169',
+      'doc comment · pane_capture.go:119', 'doc comment · :124', 'doc comment · :114', 'doc comment · :114', 'CaptureToFile doc · :172',
     ])
     // A citation opens the line on the site's own page for the pinned file, with the symbol it came from.
-    expect(document.querySelector('[data-row=errors] a.api-behavior__src')!.getAttribute('href')).toMatch(/\/sources\/tmux\/pane_capture\.go\/\?from=tmux-pane-capture#L113$/)
-    expect(document.querySelector('[data-row=errors] a.api-behavior__src')!.getAttribute('href')).toBe(sourcePageHref('go', 'tmux/pane_capture.go', 113, 'tmux-pane-capture'))
+    expect(document.querySelector('[data-row=errors] a.api-behavior__src')!.getAttribute('href')).toMatch(/\/sources\/tmux\/pane_capture\.go\/\?from=tmux-pane-capture#L114$/)
+    expect(document.querySelector('[data-row=errors] a.api-behavior__src')!.getAttribute('href')).toBe(sourcePageHref('go', 'tmux/pane_capture.go', 114, 'tmux-pane-capture'))
     // The error type in the sentence is a cross-reference, not plain text.
     expect(document.querySelector('[data-row=errors] dd a:not(.api-behavior__src)')!.textContent).toContain('CommandError')
   })
