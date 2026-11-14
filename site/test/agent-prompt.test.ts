@@ -29,6 +29,7 @@ describe('the language control', () => {
     expect([...menu.querySelectorAll('[data-lang-option]')].map((option) => option.getAttribute('data-lang-option'))).toEqual(PORTS.map((port) => port.slug))
     expect(menu.querySelector('input[type="search"]')).not.toBeNull()
     expect(menu.querySelector('summary')!.getAttribute('aria-label')).toMatch(/^Programming language: /)
+    expect(controls.firstElementChild!.getAttribute('aria-label'), 'the control is named for what it chooses').toBe('Programming language')
     expect(menu.querySelector('nav')!.getAttribute('aria-label')).toBe('Programming languages')
     expect(menu.querySelectorAll('[aria-current="true"]')).toHaveLength(1)
   })

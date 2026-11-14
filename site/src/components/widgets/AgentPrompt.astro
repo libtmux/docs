@@ -171,8 +171,8 @@ const activePortRules = items
   <div class="lm-agent-prompt__controls">
     {
       showLanguageTabs && items.length > 1 && (
-        <div class="lm-agent-prompt__lang" data-lang-picker>
-          <span class="lm-agent-prompt__label">Language</span>
+        <div class="lm-agent-prompt__lang" data-lang-picker role="group" aria-label="Programming language">
+          <span class="lm-agent-prompt__label">Programming language</span>
           {/* Without script the prompt is the default language's and nothing here changes it, so the control is the name alone. */}
           <span class="lm-agent-prompt__lang-static" data-lang-static>{initialPort.name}</span>
           <div class="lm-agent-prompt__lang-picker" data-lang-enhanced hidden>
