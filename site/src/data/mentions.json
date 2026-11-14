@@ -9509,6 +9509,13 @@
   {
    "port": "lisp",
    "symbol": "libtmux:capture-pane",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:capture-pane",
    "page": "/lisp/latest/guides/operations/",
    "title": "Explicit operations",
    "section": "guides"
@@ -9560,6 +9567,13 @@
    "symbol": "libtmux:client",
    "page": "/lisp/latest/guides/attaching-to-tmux/",
    "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:client",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
    "section": "guides"
   },
   {
@@ -9616,6 +9630,13 @@
    "symbol": "libtmux:command-cancelled",
    "page": "/lisp/latest/guides/tutorial/",
    "title": "REPL tutorial",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:command-outcome",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
    "section": "guides"
   },
   {
@@ -9880,6 +9901,13 @@
   {
    "port": "lisp",
    "symbol": "libtmux:kill-pane",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:kill-pane",
    "page": "/lisp/latest/guides/operations/",
    "title": "Explicit operations",
    "section": "guides"
@@ -9922,8 +9950,22 @@
   {
    "port": "lisp",
    "symbol": "libtmux:kill-session",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:kill-session",
    "page": "/lisp/latest/guides/operations/",
    "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:kill-window",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
    "section": "guides"
   },
   {
@@ -10050,6 +10092,13 @@
    "symbol": "libtmux:new-session",
    "page": "/lisp/latest/guides/attaching-to-tmux/",
    "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:new-session",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
    "section": "guides"
   },
   {
@@ -10237,8 +10286,22 @@
   {
    "port": "lisp",
    "symbol": "libtmux:resize-pane",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:resize-pane",
    "page": "/lisp/latest/guides/operations/",
    "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:resize-window",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
    "section": "guides"
   },
   {
@@ -10363,6 +10426,13 @@
   {
    "port": "lisp",
    "symbol": "libtmux:send-text",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:send-text",
    "page": "/lisp/latest/guides/operations/",
    "title": "Explicit operations",
    "section": "guides"
@@ -10412,8 +10482,22 @@
   {
    "port": "lisp",
    "symbol": "libtmux:set-hook",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:set-hook",
    "page": "/lisp/latest/guides/operations/",
    "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:set-option",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
    "section": "guides"
   },
   {
@@ -10439,9 +10523,23 @@
   },
   {
    "port": "lisp",
+   "symbol": "libtmux:show-hooks",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
    "symbol": "libtmux:show-hooks-text",
    "page": "/lisp/latest/guides/operations/",
    "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:show-options",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
    "section": "guides"
   },
   {
@@ -10477,6 +10575,13 @@
    "symbol": "libtmux:stale-target",
    "page": "/lisp/latest/guides/operations/",
    "title": "Explicit operations",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux:stop-daemon",
+   "page": "/lisp/latest/guides/tutorial/",
+   "title": "REPL tutorial",
    "section": "guides"
   },
   {
@@ -10656,6 +10761,13 @@
   },
   {
    "port": "lisp",
+   "symbol": "libtmux:with-client",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
    "symbol": "libtmux.control:await-request",
    "page": "/lisp/latest/guides/getting-started/",
    "title": "Getting started",
@@ -10671,6 +10783,20 @@
   {
    "port": "lisp",
    "symbol": "libtmux.control:submit-command",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.control:with-connection",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.control:with-reconnection",
    "page": "/lisp/latest/guides/getting-started/",
    "title": "Getting started",
    "section": "guides"
@@ -10706,6 +10832,13 @@
   {
    "port": "lisp",
    "symbol": "libtmux.json:read-filter",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.json:read-filter",
    "page": "/lisp/latest/topics/query-interchange/",
    "title": "Query interchange",
    "section": "topics"
@@ -10736,6 +10869,13 @@
    "symbol": "libtmux.query:ambiguous-match",
    "page": "/lisp/latest/guides/queries/",
    "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:compile-filter",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
    "section": "guides"
   },
   {
@@ -10778,6 +10918,13 @@
    "symbol": "libtmux.query:invalid-query-target",
    "page": "/lisp/latest/guides/queries/",
    "title": "Native queries",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.query:items",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
    "section": "guides"
   },
   {
@@ -10867,6 +11014,13 @@
   {
    "port": "lisp",
    "symbol": "libtmux.workspace",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace",
    "page": "/lisp/latest/workspace/source-guide/",
    "title": "Workspace guide",
    "section": "workspace"
@@ -10874,9 +11028,23 @@
   {
    "port": "lisp",
    "symbol": "libtmux.workspace:apply-workspace",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:apply-workspace",
    "page": "/lisp/latest/workspace/legacy-guide/",
    "title": "Legacy workspace topology guide",
    "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:fetch-workspace-state",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "lisp",
@@ -10905,6 +11073,13 @@
    "page": "/lisp/latest/workspace/source-guide/",
    "title": "Workspace guide",
    "section": "workspace"
+  },
+  {
+   "port": "lisp",
+   "symbol": "libtmux.workspace:make-workspace",
+   "page": "/lisp/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "lisp",
