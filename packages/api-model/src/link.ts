@@ -803,6 +803,8 @@ export class SymbolIndex {
       return { href: `${this.hrefFor(owner).split('#')[0]}#${encodeURIComponent(docSectionId(owner, section))}`, external: false, symbol: owner }
     }
     if (this.lang === 'erlang') return this.resolveErlang(target, role, context)
+    // A Raku call names its method before the parenthesis, whatever the arguments or adverbs: `has-session(:name)`.
+    if (this.lang === 'raku') target = target.replace(/^([A-Za-z_][\w-]*(?:(?:::|\.)[A-Za-z_][\w-]*)*)\(.*\)$/s, '$1')
     const relative = target.startsWith('.')
     const goType = this.lang === 'go' && role === 'class'
     if (this.lang === 'ruby') {

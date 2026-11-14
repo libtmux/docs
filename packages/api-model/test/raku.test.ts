@@ -96,6 +96,14 @@ describe.runIf(existsSync(rakuModel))('code spans in Raku descriptions', () => {
     }
   })
 
+  it('link a call to the method it names, with its adverbs', () => {
+    expect(linked('` has-session(:name) ` and `has-session(:id)` and `from-env(:environment(%*ENV))` and `start()`', 'LibTmux::Server'))
+      .toEqual(['LibTmux::Server.has-session', 'LibTmux::Server.has-session', 'LibTmux::Server.from-env', 'LibTmux::Server.start'])
+    expect(linked('`LibTmux::Server.has-session(:name)`', 'LibTmux::Batch')).toEqual(['LibTmux::Server.has-session'])
+    // A call on a variable, or of a name nothing declares, names no member.
+    expect(linked('`$server.has-session(:name)` and `nothing-here(:x)`', 'LibTmux::Server')).toEqual([])
+  })
+
   it('send a name several classes declare to the class being described first', () => {
     // `capabilities` is declared on Server, Snapshot and Observation.
     expect(linked('`capabilities`', 'LibTmux::Server')).toEqual(['LibTmux::Server.capabilities'])
