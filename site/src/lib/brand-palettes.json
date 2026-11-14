@@ -570,5 +570,31 @@
       "solid": "#1c523f",
       "onSolid": "#ffffff"
     }
+  },
+  "raku": {
+    "name": "Raku",
+    "color": "#0000fb",
+    "light": {
+      "background": "#fafbfc",
+      "surface": "#f3f5f7",
+      "hover": "#e9edf1",
+      "border": "#d6dce3",
+      "text": "#202830",
+      "muted": "#53606d",
+      "link": "#0000b0",
+      "solid": "#0000b0",
+      "onSolid": "#ffffff"
+    },
+    "dark": {
+      "background": "#15191d",
+      "surface": "#1c2229",
+      "hover": "#29323d",
+      "border": "#3e4a57",
+      "text": "#e7edf3",
+      "muted": "#b7c1cd",
+      "link": "#8c8cfd",
+      "solid": "#0000b0",
+      "onSolid": "#ffffff"
+    }
   }
 }
