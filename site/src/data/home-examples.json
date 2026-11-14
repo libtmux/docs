@@ -796,8 +796,8 @@
   "erlang": {
     "lang": "erlang",
     "sourceRepository": "libtmux/libtmux-erlang",
-    "sourceRevision": "e858027b2b204c3e621b1f74e9419c9b71e3f2f5",
-    "sourceTree": "0e5cf4b98920e44500a7ae8f3be5d8a88fae443f",
+    "sourceRevision": "539c7297ceae65a1cf683e0836eae0a1ccd34d64",
+    "sourceTree": "418f84b74d1be2f7e961d7392a5d66e8e0c47e6d",
     "program": "src/readme_demo.erl",
     "excerpt": {
       "startLine": 1,
@@ -814,7 +814,7 @@
       {
         "name": "rebar.config",
         "lang": "erlang",
-        "code": "{minimum_otp_vsn, \"29.1.2\"}.\n{erl_opts, [debug_info, warnings_as_errors]}.\n{deps, [\n    {libtmux_erlang, {git_subdir,\n        \"https://github.com/libtmux/libtmux-erlang.git\",\n        {ref, \"e858027b2b204c3e621b1f74e9419c9b71e3f2f5\"}, \"apps/libtmux_erlang\"}}\n]}.\n"
+        "code": "{minimum_otp_vsn, \"29.1.2\"}.\n{erl_opts, [debug_info, warnings_as_errors]}.\n{deps, [\n    {libtmux_erlang, \"~> 0.0.1\"}\n]}.\n"
       },
       {
         "name": "src/tmux_example.app.src",
@@ -822,10 +822,10 @@
         "code": "{application, tmux_example, [\n    {vsn, \"0.1.0\"},\n    {applications, [kernel, stdlib, libtmux_erlang]},\n    {modules, []}\n]}.\n"
       }
     ],
-    "prerequisites": "Linux, tmux 3.3a–3.8, Erlang/OTP 29.1.2, Rebar3 3.28.0, Git, make and a C11 compiler. Save the displayed files in an empty project directory.",
+    "prerequisites": "Linux, tmux 3.3a–3.8, Erlang/OTP 29.1.2, Rebar3 3.28.0, make, a C11 compiler and access to hex.pm. Save the displayed files in an empty project directory.",
     "commands": [
       "rebar3 compile",
-      "env \\\n    -u TMUX \\\n    -u TMUX_PANE \\\n    erl \\\n    -noshell \\\n    -pa _build/default/lib/tmux_example/ebin \\\n    -pa _build/default/lib/libtmux_erlang/apps/libtmux_erlang/ebin \\\n    -eval '\n        {ok, _} = application:ensure_all_started(libtmux_erlang),\n        Tmux = unicode:characters_to_binary(os:find_executable(\"tmux\")),\n        Stats = readme_demo:run(Tmux),\n        io:format(\"~B session, ~B windows, ~B panes; ~B matches~n\", [\n            maps:get(sessions, Stats), maps:get(windows, Stats),\n            maps:get(panes, Stats), maps:get(matched_panes, Stats)]),\n        halt().'"
+      "env \\\n    -u TMUX \\\n    -u TMUX_PANE \\\n    erl \\\n    -noshell \\\n    -pa _build/default/lib/tmux_example/ebin \\\n    -pa _build/default/lib/libtmux_erlang/ebin \\\n    -eval '\n        {ok, _} = application:ensure_all_started(libtmux_erlang),\n        Tmux = unicode:characters_to_binary(os:find_executable(\"tmux\")),\n        Stats = readme_demo:run(Tmux),\n        io:format(\"~B session, ~B windows, ~B panes; ~B matches~n\", [\n            maps:get(sessions, Stats), maps:get(windows, Stats),\n            maps:get(panes, Stats), maps:get(matched_panes, Stats)]),\n        halt().'"
     ],
     "expectedOutput": "1 session, 2 windows, 3 panes; 2 matches\n",
     "variants": {
