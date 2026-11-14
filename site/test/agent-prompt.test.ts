@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { Window } from 'happy-dom'
 import { loadAstroTemplate, renderAstroTemplate, withoutScope } from './astro-templates'
@@ -38,6 +39,15 @@ describe('the language control', () => {
     expect(picker.querySelector<HTMLElement>('[data-lang-enhanced]')!.hidden).toBe(true)
     expect(picker.querySelector('[data-lang-static]')!.textContent).toBe(picker.querySelector('[data-lang-current]')!.textContent)
     expect(document.querySelector('.lm-agent-prompt__panel[data-default] [data-prompt-text]')!.textContent, 'the default prompt is complete').toContain('Set up libtmux')
+  })
+
+  it('draws the stand-in name at the picker\'s size, so script drawing the picker moves nothing below it', () => {
+    const source = readFileSync(new URL('../src/components/widgets/AgentPrompt.astro', import.meta.url), 'utf8')
+    const rule = (selector: string) => new RegExp(`${selector.replace(/[.[\]]/g, '\\$&')} \\{([^}]*)\\}`).exec(source)?.[1] ?? ''
+    expect(rule('.lm-agent-prompt__lang-static')).toMatch(/width: 11rem;/)
+    expect(rule('.lm-agent-prompt__lang-static')).toMatch(/min-height: 2\.25rem;/)
+    expect(rule('.lm-agent-prompt__lang-picker')).toMatch(/width: 11rem;/)
+    expect(rule('.lm-agent-prompt__lang-picker .doc-picker > summary')).toMatch(/min-height: 2\.25rem;/)
   })
 
   it('is left out where the page supplies a language picker of its own', async () => {
