@@ -12749,6 +12749,13 @@
   },
   {
    "port": "perl",
+   "symbol": "LibTmux::Async::Server",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
    "symbol": "LibTmux::Entity::to_record",
    "page": "/perl/latest/concepts/graph/",
    "title": "Snapshot graph and identity",
@@ -12770,10 +12777,31 @@
   },
   {
    "port": "perl",
+   "symbol": "LibTmux::Operation::catch",
+   "page": "/perl/latest/topics/errors/",
+   "title": "Errors and recovery",
+   "section": "topics"
+  },
+  {
+   "port": "perl",
    "symbol": "LibTmux::Pane::cursor_shape",
    "page": "/perl/latest/concepts/fields/",
    "title": "Entity fields",
    "section": "concepts"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::PaneSelection",
+   "page": "/perl/latest/topics/query-planning/",
+   "title": "Live query planning",
+   "section": "topics"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::QueryPlan",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "perl",
@@ -12795,6 +12823,13 @@
    "page": "/perl/latest/examples/programs/",
    "title": "Runnable programs",
    "section": "examples"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Selection::first",
+   "page": "/perl/latest/guides/async/",
+   "title": "Optional async execution",
+   "section": "guides"
   },
   {
    "port": "perl",
@@ -12861,13 +12896,6 @@
   },
   {
    "port": "perl",
-   "symbol": "LibTmux::Selection::to_array",
-   "page": "/perl/latest/guides/getting-started/",
-   "title": "Getting started",
-   "section": "guides"
-  },
-  {
-   "port": "perl",
    "symbol": "LibTmux::Selection::where",
    "page": "/perl/latest/guides/filtering/",
    "title": "Filtering",
@@ -12879,6 +12907,13 @@
    "page": "/perl/latest/guides/getting-started/",
    "title": "Getting started",
    "section": "guides"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server",
+   "page": "/perl/latest/examples/orchestration/",
+   "title": "Create sessions, windows, and panes",
+   "section": "examples"
   },
   {
    "port": "perl",
@@ -12903,6 +12938,20 @@
   },
   {
    "port": "perl",
+   "symbol": "LibTmux::Server::batch",
+   "page": "/perl/latest/guides/async/",
+   "title": "Optional async execution",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server::batch",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
    "symbol": "LibTmux::Server::capture_pane",
    "page": "/perl/latest/examples/orchestration/",
    "title": "Create sessions, windows, and panes",
@@ -12924,10 +12973,24 @@
   },
   {
    "port": "perl",
+   "symbol": "LibTmux::Server::cmd",
+   "page": "/perl/latest/topics/compatibility/",
+   "title": "Linux and tmux compatibility",
+   "section": "topics"
+  },
+  {
+   "port": "perl",
    "symbol": "LibTmux::Server::detach_client",
    "page": "/perl/latest/examples/orchestration/",
    "title": "Create sessions, windows, and panes",
    "section": "examples"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server::explain_panes",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "perl",
@@ -12942,6 +13005,41 @@
    "page": "/perl/latest/examples/orchestration/",
    "title": "Create sessions, windows, and panes",
    "section": "examples"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server::get_option",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server::kill_pane",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server::kill_server",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server::kill_session",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server::kill_window",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "perl",
@@ -12974,8 +13072,22 @@
   {
    "port": "perl",
    "symbol": "LibTmux::Server::query_panes",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server::query_panes",
    "page": "/perl/latest/topics/query-planning/",
    "title": "Live query planning",
+   "section": "topics"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server::select_layout",
+   "page": "/perl/latest/topics/compatibility/",
+   "title": "Linux and tmux compatibility",
    "section": "topics"
   },
   {
@@ -13008,10 +13120,31 @@
   },
   {
    "port": "perl",
+   "symbol": "LibTmux::Server::set_hook",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
    "symbol": "LibTmux::Server::set_option",
    "page": "/perl/latest/examples/orchestration/",
    "title": "Create sessions, windows, and panes",
    "section": "examples"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server::set_option",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server::show_hooks",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "perl",
@@ -13036,6 +13169,13 @@
   },
   {
    "port": "perl",
+   "symbol": "LibTmux::Snapshot",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
    "symbol": "LibTmux::Snapshot::windows",
    "page": "/perl/latest/concepts/graph/",
    "title": "Snapshot graph and identity",
@@ -13047,6 +13187,27 @@
    "page": "/perl/latest/concepts/graph/",
    "title": "Snapshot graph and identity",
    "section": "concepts"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::WindowLink",
+   "page": "/perl/latest/examples/orchestration/",
+   "title": "Create sessions, windows, and panes",
+   "section": "examples"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Workspace",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Workspace::load",
+   "page": "/perl/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
   },
   {
    "port": "perl",
