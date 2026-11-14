@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { API_MODELS } from '../src/lib/api-models'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
-import { tokenizeDoc } from '@libtmux/api-model/reference'
+import { SymbolIndex, tokenizeDoc } from '@libtmux/api-model/reference'
 import { parseApiProse } from '@libtmux/api-model/reference'
 import { groupDirectory } from '../src/lib/api-directory'
 import { parseXmlDoc } from '../../packages/api-model/src/doc/csharp'
@@ -413,21 +413,36 @@ describe('a Haskell module\'s export groups', () => {
   })
 })
 
-describe('the capability directory of Erlang, OCaml and Common Lisp', () => {
+describe('the capability directory of Erlang, OCaml, Common Lisp, Raku, Perl and Clojure', () => {
   // The shell folds whatever prose the pinned model carries, so a model pinned before the native docs gained their
   // directory has a correct reader and no table.
-  const OWNERS = [
+  const OWNERS: { port: string; id: string; rows: number; refs?: number }[] = [
     { port: 'erlang', id: 'tmux_server', rows: 8 },
     { port: 'ocaml', id: 'Libtmux_unix.Client', rows: 8 },
     { port: 'lisp', id: 'libtmux:client', rows: 8 },
+    { port: 'raku', id: 'LibTmux::Server', rows: 7, refs: 46 },
+    { port: 'perl', id: 'LibTmux::Server', rows: 10, refs: 43 },
+    { port: 'clojure', id: 'libtmux.core/open!', rows: 9, refs: 62 },
   ]
 
-  it.each(OWNERS)('is on the pinned $port model, in $rows rows on $id', ({ port, id, rows }) => {
+  it.each(OWNERS)('is on the pinned $port model, in $rows rows on $id', ({ port, id, rows, refs }) => {
     const owner = API_MODELS[port].symbols.find((symbol) => symbol.id === id)
     const directory = groupDirectory(parseApiProse(owner?.doc?.body ?? ''), port).find((block) => block.kind === 'directory')
     if (directory?.kind !== 'directory') throw new Error(`${port} ${id} has no directory`)
     expect(directory.rows).toHaveLength(rows)
     for (const row of directory.rows) expect(row.groups.flatMap((group) => group.refs).length, row.title).toBeGreaterThan(0)
+    if (refs) expect(directory.rows.flatMap((row) => row.groups.flatMap((group) => group.refs))).toHaveLength(refs)
+  })
+
+  it('fences the Raku Server\'s code and links the methods its description names', () => {
+    const { symbols } = API_MODELS.raku
+    const server = symbols.find((symbol) => symbol.id === 'LibTmux::Server')!
+    const blocks = parseApiProse(server.doc?.body ?? '')
+    expect(blocks.filter((block) => block.kind === 'code' && block.lang === 'raku').length).toBeGreaterThan(0)
+    const index = new SymbolIndex(symbols, (symbol) => `/reference/${symbol.id}/`, 'raku')
+    const linked = new Set(blocks.flatMap((block) => block.kind === 'p' ? index.docSpans(block.text, server) : [])
+      .flatMap((span) => span.kind === 'ref' && span.link?.symbol ? [span.link.symbol.id] : []))
+    for (const name of ['start', 'attach', 'run-batch', 'from-env']) expect(linked, name).toContain(`LibTmux::Server.${name}`)
   })
 
   it('lists the Common Lisp client\'s operations as members of its class', () => {
