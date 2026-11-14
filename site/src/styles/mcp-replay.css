@@ -740,6 +740,15 @@ html:not([data-js]) .mcp-replay__controls {
   margin-inline: 0.5rem;
 }
 
+/*
+ * The solid brand colours are dark in both themes, and against the dark surface none of the 23 palettes reaches the
+ * 3:1 a progress mark needs (the Ruby solid measures 1.03:1, the best are about 2.5:1), so the played line and the
+ * marks would not show. In the dark theme the rail takes the link colour, which every palette keeps at 7.3:1 or more.
+ */
+html[data-theme-mode='dark'] .mcp-replay__rail {
+  --mcp-accent: var(--color-link, currentColor);
+}
+
 .mcp-replay__track {
   overflow-x: auto;
   overflow-y: hidden;

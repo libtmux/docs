@@ -488,6 +488,7 @@ describe('the replay component', () => {
 
     it('takes the rail from the port\'s solid brand colour, and keeps its marks clear of the track\'s edge', () => {
       expect(rule(css, '.mcp-replay__rail')).toMatch(/--mcp-accent: var\(--brand-solid, /)
+      expect(rule(css, "html[data-theme-mode='dark'] .mcp-replay__rail"), 'the dark theme\'s brand solids are too dark for a progress mark').toMatch(/--mcp-accent: var\(--color-link, /)
       expect(rule(css, '.mcp-replay__track')).toMatch(/height: 2\.125rem;/)
       expect(rule(css, '.mcp-replay__line')).toMatch(/inset-inline: 1rem;/)
     })
