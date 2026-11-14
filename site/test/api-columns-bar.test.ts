@@ -30,8 +30,8 @@ describe('the reference view switch', () => {
 
   it('holds the configuration row hidden until the columns view shows, with every prop', async () => {
     const { document } = await render(go)
-    const row = document.querySelector<HTMLElement>('[data-cfg-row]')!
-    expect(row.hidden).toBe(true)
+    const row = document.querySelector('[data-cfg-row]')!
+    expect(row.hasAttribute('hidden')).toBe(true)
     expect([...row.querySelectorAll('[data-cfg]')].map((el) => el.getAttribute('data-cfg'))).toEqual(['search', 'paginate', 'pageSize', 'virtual', 'filterAt'])
     expect([...row.querySelectorAll('[data-cfg-layout]')].map((el) => el.getAttribute('data-cfg-layout'))).toEqual(['columns', 'single'])
     expect([...row.querySelectorAll('[data-cfg="pageSize"] option')].map((o) => o.textContent)).toEqual(['10', '25', '50', '100'])
