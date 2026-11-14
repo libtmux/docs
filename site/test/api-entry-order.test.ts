@@ -6,6 +6,8 @@ import { closeWindows, complete, css, entry, go, page, symbolOf } from './api-pa
 
 vi.mock('astro:content', () => ({ getCollection: async () => [] }))
 afterEach(closeWindows)
+// The first test of a cold run compiles the real templates and loads the API models.
+vi.setConfig({ testTimeout: 60_000 })
 
 /**
  * The order of an entry against the design system (ParameterList; adoption step 6).

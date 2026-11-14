@@ -6,6 +6,8 @@ import { closeWindows, go, symbolOf, windows } from './api-page-fixtures'
 
 vi.mock('astro:content', () => ({ getCollection: async () => [] }))
 afterEach(closeWindows)
+// The first test of a cold run compiles the real templates and loads the API models.
+vi.setConfig({ testTimeout: 60_000 })
 
 /**
  * The breadcrumb of an API page against the design system (Breadcrumb, record 0021).
