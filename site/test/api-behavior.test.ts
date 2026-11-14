@@ -6,6 +6,7 @@ import goSidecar from '../src/data/api/go.behavior.json'
 import rsSidecar from '../src/data/api/rs.behavior.json'
 import { API_MODELS, indexFor } from '../src/lib/api-models'
 import { attachBehavior, type BehaviorSidecar } from '../src/lib/api-behavior'
+import { sourcePageHref } from '../src/lib/api-source-pages'
 import { loadAstroTemplate, withoutScope } from './astro-templates'
 
 const windows: Window[] = []
@@ -65,7 +66,7 @@ describe('the rendered facts', () => {
     win.document.body.innerHTML = withoutScope(await container.renderToString(template as never, {
       request: new Request('https://libtmux.org/en/go/latest/reference/tmux-pane-capture/'),
       props: {
-        symbol, index: indexFor(API_MODELS[port], () => '/'),
+        symbol, port, index: indexFor(API_MODELS[port], () => '/'),
         sourceUrl: (entry: ApiSymbol) => `https://example.invalid/${entry.source.file}#L${entry.source.line}`,
       },
     }))
@@ -79,7 +80,9 @@ describe('the rendered facts', () => {
     expect([...document.querySelectorAll('.api-behavior__src')].map((cite) => cite.textContent)).toEqual([
       'doc comment · pane_capture.go:116', 'doc comment · :121', 'doc comment · :113', 'doc comment · :113', 'CaptureToFile doc · :169',
     ])
-    expect(document.querySelector('[data-row=errors] a.api-behavior__src')!.getAttribute('href')).toBe('https://example.invalid/tmux/pane_capture.go#L113')
+    // A citation opens the line on the site's own page for the pinned file, with the symbol it came from.
+    expect(document.querySelector('[data-row=errors] a.api-behavior__src')!.getAttribute('href')).toMatch(/\/sources\/tmux\/pane_capture\.go\/\?from=tmux-pane-capture#L113$/)
+    expect(document.querySelector('[data-row=errors] a.api-behavior__src')!.getAttribute('href')).toBe(sourcePageHref('go', 'tmux/pane_capture.go', 113, 'tmux-pane-capture'))
     // The error type in the sentence is a cross-reference, not plain text.
     expect(document.querySelector('[data-row=errors] dd a:not(.api-behavior__src)')!.textContent).toContain('CommandError')
   })
@@ -90,5 +93,20 @@ describe('the rendered facts', () => {
     const rust = await render(symbolOf('rs', 'pane.Pane.capture'), 'rs')
     expect([...rust.querySelectorAll('[data-row]')].map((row) => row.getAttribute('data-row'))).toEqual(['completion', 'errors'])
     expect(rust.querySelector('[data-row=completion] .api-behavior__src')!.textContent).toMatch(/^signature · observe\.rs:\d+$/)
+  })
+})
+
+describe('a citation to a file the site holds no copy of', () => {
+  it('opens the line on GitHub at the pinned revision instead', async () => {
+    const symbol = { ...symbolOf('go', 'tmux.Pane.Capture'), behavior: { errors: { text: 'It fails.', source: { file: 'tmux/not_cached.go', line: 4 }, origin: 'doc comment' as const } } }
+    const template = await loadAstroTemplate('components/api/BehaviorFacts.astro', { real: ['components/api/ApiDoc.astro'] })
+    const container = await experimental_AstroContainer.create({ astroConfig: { site: 'https://libtmux.org' } } as never)
+    const win = new Window()
+    windows.push(win)
+    win.document.body.innerHTML = withoutScope(await container.renderToString(template as never, {
+      request: new Request('https://libtmux.org/'),
+      props: { symbol, port: 'go', index: indexFor(API_MODELS.go, () => '/'), sourceUrl: (entry: ApiSymbol) => `https://example.invalid/${entry.source.file}#L${entry.source.line}` },
+    }))
+    expect(win.document.querySelector('a.api-behavior__src')!.getAttribute('href')).toBe('https://example.invalid/tmux/not_cached.go#L4')
   })
 })

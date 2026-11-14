@@ -9,14 +9,19 @@
  */
 import type { ApiSymbol, SymbolIndex } from '@libtmux/api-model'
 import ApiDoc from './ApiDoc.astro'
+import { sourcePageHref } from '../../lib/api-source-pages'
 
 interface Props {
   symbol: ApiSymbol
   index: SymbolIndex
-  /** The link a citation opens: the line at the pinned revision, on the site or on GitHub. */
+  port?: string
+  /** The link a citation opens when the site has no pinned copy of the file: the line on GitHub at the pinned revision. */
   sourceUrl?: (symbol: ApiSymbol) => string | undefined
 }
-const { symbol, index, sourceUrl } = Astro.props as Props
+const { symbol, index, port, sourceUrl } = Astro.props as Props
+/** A citation opens the line on the site's own source page, and on GitHub where the site holds no copy of the file. */
+const hrefFor = (file: string, line: number) => (port ? sourcePageHref(port, file, line, symbol.slug) : undefined)
+  ?? sourceUrl?.({ ...symbol, source: { ...symbol.source, file, line } })
 const behavior = symbol.behavior
 const LABELS = {
   completion: 'Completion', boundedBy: 'Bounded by', returns: 'Returns', ownership: 'Ownership', mutation: 'Mutation',
@@ -32,12 +37,12 @@ const rows = behavior ? ORDER.flatMap((row) => {
   const place = seen.has(fact.source.file) ? `:${fact.source.line}` : `${base(fact.source.file)}:${fact.source.line}`
   seen.add(fact.source.file)
   const kind = fact.origin === 'doc comment' ? 'doc comment' : fact.origin === 'signature' ? 'signature' : fact.via ? `${fact.via} doc` : 'curated'
-  return [{ row, label: LABELS[row], fact, citation: `${kind} · ${place}`, href: sourceUrl?.({ ...symbol, source: { ...symbol.source, file: fact.source.file, line: fact.source.line } }) }]
+  return [{ row, label: LABELS[row], fact, citation: `${kind} · ${place}`, href: hrefFor(fact.source.file, fact.source.line) }]
 }) : []
 const requires = behavior?.requires
 const requiresRow = requires?.tmux ? {
   text: `Needs tmux ${requires.tmux}.`, citation: `doc comment · ${seen.has(requires.source.file) ? '' : base(requires.source.file)}:${requires.source.line}`,
-  href: sourceUrl?.({ ...symbol, source: { ...symbol.source, file: requires.source.file, line: requires.source.line } }),
+  href: hrefFor(requires.source.file, requires.source.line),
 } : undefined
 ---
 {(rows.length > 0 || requiresRow) && <div class="api-behavior"><dl class="api-behavior__grid" aria-label={`Behaviour of ${symbol.name}`}>

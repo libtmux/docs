@@ -149,6 +149,14 @@ node scripts/gen-api-behavior.mjs --check
 step 'behaviour facts (negative)'
 node scripts/gen-api-behavior.negative.mjs
 
+# Source pages and the source pane show pinned copies of the files each API model cites; the cache is committed
+# with a digest per file, and the check compares it against the models' revisions.
+step 'api sources'
+node scripts/gen-api-sources.mjs --check
+
+step 'api sources (negative)'
+node scripts/gen-api-sources.negative.mjs
+
 # The workspace showcase quotes configurations a port's own tests load, read
 # at the revision its API model records. Without the checkouts this verifies
 # the committed bytes against their digests and the sources they describe.
