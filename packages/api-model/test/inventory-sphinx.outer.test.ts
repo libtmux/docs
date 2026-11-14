@@ -10,7 +10,7 @@ import type { ApiModel } from '../src/model.ts'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const DATA = join(here, '../../../site/src/data/api')
-const PORTS = ['py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift', 'perl'] as const
+const PORTS = ['py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'csharp', 'cxx', 'swift', 'perl', 'raku'] as const
 const load = (port: string): ApiModel => JSON.parse(readFileSync(join(DATA, `${port}.json`), 'utf8'))
 
 describe('Sphinx itself can read every inventory we write', () => {
