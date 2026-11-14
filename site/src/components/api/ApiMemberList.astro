@@ -20,18 +20,51 @@ interface Props {
   mixed?: boolean
   /** Ids a member's inline entry used to carry, kept as anchors where the list replaces that entry. */
   anchorsFor?: (symbol: ApiSymbol) => string[]
+  /**
+   * A collection longer than the list budget scrolls in a box of its own with a search and group chips above it
+   * (MemberCollection, record 0056). `region` names the box, `owner` the type the search covers, and `searchHref`
+   * is the search of the whole API that an empty result links to.
+   */
+  budget?: { region: string; owner: string; searchHref: string }
 }
-const { groups, showGroups, index, hrefFor, anchorsFor, language, mixed = true } = Astro.props
+const { groups, showGroups, index, hrefFor, anchorsFor, language, mixed = true, budget } = Astro.props
+const kindOf = (member: ApiSymbol) => nativeKind(member, language)
+const all = groups.flatMap((group) => group.members)
+const kinds = [...new Set(all.map(kindOf))]
+const plural = (kind: string) => {
+  const word = kind.endsWith('y') ? `${kind.slice(0, -1)}ies` : `${kind}s`
+  return `${word[0]!.toUpperCase()}${word.slice(1)}`
+}
+// A box is a plain element and a flat list is not wrapped at all, so both draw the same groups.
+const Box = budget ? 'div' : Fragment
+const box = budget ? { class: 'api-member-budget', role: 'region', tabindex: 0, 'aria-label': budget.region } : {}
 ---
-{groups.map((group) => <section id={showGroups ? undefined : group.id} class:list={['api-member-group', !showGroups && 'api-member-group--single']} aria-labelledby={showGroups ? group.id : 'api-members'}>
+{budget && <div class="api-member-tools" data-member-tools data-pagefind-ignore>
+  <label class="api-member-search">
+    <span class="sr-only">Filter members of {budget.owner}</span>
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="7" cy="7" r="4.5" /><path d="m10.5 10.5 3 3" /></svg>
+    <input type="search" placeholder={`Filter members of ${budget.owner}`} autocomplete="off" spellcheck="false" data-member-q />
+  </label>
+  {showGroups && <div class="api-member-chips" role="group" aria-label="Member group" data-member-groups>
+    <button type="button" aria-pressed="true" data-v="">All <span>{all.length}</span></button>
+    {groups.map((group) => <button type="button" aria-pressed="false" data-v={group.id}>{group.label} <span>{group.members.length}</span></button>)}
+  </div>}
+  {mixed && kinds.length > 1 && <div class="api-member-chips" role="group" aria-label="Member kind" data-member-kinds>
+    <button type="button" aria-pressed="true" data-v="">All <span>{all.length}</span></button>
+    {kinds.map((kind) => <button type="button" aria-pressed="false" data-v={kind}>{plural(kind)} <span>{all.filter((member) => kindOf(member) === kind).length}</span></button>)}
+  </div>}
+  <p class="sr-only" role="status" data-member-status></p>
+</div>}
+<Box {...box}>
+{groups.map((group) => <section id={showGroups ? undefined : group.id} class:list={['api-member-group', !showGroups && 'api-member-group--single']} aria-labelledby={showGroups ? group.id : 'api-members'} data-member-group={group.id}>
   {showGroups && <h3 id={group.id}>{group.label}<span class="api-section-count">{group.members.length}</span><a class="api-heading-link" href={`#${group.id}`} aria-label={`Link to ${group.label}`}>#</a></h3>}
   <ul class="api-member-list mt-3">
     {group.members.map((m) => (
-      <li>
+      <li data-member-kind={kindOf(m)}>
         {anchorsFor?.(m).map((id) => <span id={id} class="sr-only" />)}
-        <span><ApiBadge label={nativeKind(m, language)} variant="kind" value={nativeKind(m, language)} compact preview={false} /><a class="api-member-link" href={hrefFor(m)}>{m.name}</a>{m.type && <span class="api-member-type">: <ApiType type={m.type} index={index} context={m} /></span>}</span>
+        <span><ApiBadge label={kindOf(m)} variant="kind" value={kindOf(m)} compact preview={false} /><a class="api-member-link" href={hrefFor(m)}>{m.name}</a>{m.type && <span class="api-member-type">: <ApiType type={m.type} index={index} context={m} /></span>}</span>
         {(mixed || m.inheritedFrom) && <span class="api-member-badges">
-          {mixed && <ApiBadge label={nativeKind(m, language)} variant="kind" value={nativeKind(m, language)} plain />}
+          {mixed && <ApiBadge label={kindOf(m)} variant="kind" value={kindOf(m)} plain />}
           {m.inheritedFrom && <a class="api-badge api-badge--mod" href={apiGlossaryHref('inherited', Astro.url.pathname)} title={`Inherited from ${m.inheritedFrom}`} aria-description={`Inherited from ${m.inheritedFrom}`} data-preview-context={`Inherited from ${m.inheritedFrom}.`}><span class="api-badge__label">inherited</span></a>}
         </span>}
         {m.doc?.summary && (
@@ -43,3 +76,129 @@ const { groups, showGroups, index, hrefFor, anchorsFor, language, mixed = true }
     ))}
   </ul>
 </section>)}
+{budget && <p class="api-member-empty" data-member-empty hidden>No members of {budget.owner} match <span data-member-empty-q></span>. The filter searches only this type. <a href={budget.searchHref}>Search the whole API</a>.</p>}
+</Box>
+
+<script>
+  import { countLabel, highlightRanges, matchesQuery, queryWords, tally, type MemberRow } from '../../lib/member-filter'
+
+  type Row = MemberRow & { item: HTMLElement; section: HTMLElement }
+
+  // The text a mark replaces is rebuilt from the same text nodes, so a query never changes what a row says.
+  function unmark(element: Element) {
+    for (const mark of element.querySelectorAll('mark')) mark.replaceWith(...mark.childNodes)
+    element.normalize()
+  }
+
+  function mark(element: Element, words: string[]) {
+    const nodes: Text[] = []
+    // 4 is NodeFilter.SHOW_TEXT.
+    const walker = document.createTreeWalker(element, 4)
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) nodes.push(node as Text)
+    for (const node of nodes) {
+      const ranges = highlightRanges(node.data, words)
+      if (ranges.length === 0) continue
+      const parts = document.createDocumentFragment()
+      let at = 0
+      for (const [start, end] of ranges) {
+        parts.append(node.data.slice(at, start))
+        const hit = document.createElement('mark')
+        hit.textContent = node.data.slice(start, end)
+        parts.append(hit)
+        at = end
+      }
+      parts.append(node.data.slice(at))
+      node.replaceWith(parts)
+    }
+  }
+
+  // The controls show from the first paint of a page with script (`html[data-js]`), so binding moves nothing; a page without it has none.
+  function bind(tools: HTMLElement) {
+    const root = tools.closest<HTMLElement>('.api-members') ?? tools.parentElement!
+    const box = root.querySelector<HTMLElement>('.api-member-budget')
+    const input = tools.querySelector<HTMLInputElement>('[data-member-q]')
+    if (!box || !input) return
+    const groupChips = tools.querySelector<HTMLElement>('[data-member-groups]')
+    const kindChips = tools.querySelector<HTMLElement>('[data-member-kinds]')
+    const status = tools.querySelector<HTMLElement>('[data-member-status]')
+    const empty = box.querySelector<HTMLElement>('[data-member-empty]')
+    const heading = root.querySelector<HTMLElement>(':scope > h2 .api-section-count')
+    const noun = /^\d+ (.+)$/.exec(heading?.textContent ?? '')?.[1] ?? 'members'
+    const sections = [...box.querySelectorAll<HTMLElement>('.api-member-group')]
+    const rows: Row[] = sections.flatMap((section) => [...section.querySelectorAll<HTMLElement>(':scope > ul > li')].map((item) => ({
+      item, section, group: section.dataset.memberGroup ?? '', kind: item.dataset.memberKind ?? '',
+      text: `${item.querySelector('.api-member-link')?.textContent ?? ''} ${item.querySelector('.api-member-summary')?.textContent ?? ''}`,
+    })))
+    let group = ''
+    let kind = ''
+
+    const paint = (chips: HTMLElement | null, counts: Record<string, number>, all: number, pressed: string) => {
+      for (const chip of chips?.querySelectorAll<HTMLButtonElement>('button') ?? []) {
+        const value = chip.dataset.v ?? ''
+        const figure = value === '' ? all : counts[value] ?? 0
+        chip.querySelector('span')!.textContent = String(figure)
+        chip.setAttribute('aria-pressed', String(value === pressed))
+        // A group with no match is out of reach; All is always there to go back to.
+        chip.disabled = value !== '' && figure === 0
+      }
+    }
+
+    const apply = () => {
+      const query = input.value.trim()
+      const words = queryWords(query)
+      let shown = 0
+      for (const row of rows) {
+        const visible = matchesQuery(row.text, words) && (!group || row.group === group) && (!kind || row.kind === kind)
+        row.item.hidden = !visible
+        if (visible) shown += 1
+        for (const part of row.item.querySelectorAll('.api-member-link, .api-member-summary')) {
+          unmark(part)
+          if (visible && words.length > 0) mark(part, words)
+        }
+      }
+      for (const section of sections) {
+        const left = rows.filter((row) => row.section === section && !row.item.hidden).length
+        section.hidden = left === 0
+        const count = section.querySelector(':scope > h3 > .api-section-count')
+        if (count) count.textContent = String(left)
+      }
+      const counts = tally(rows, words, group, kind)
+      paint(groupChips, counts.groups, Object.values(counts.groups).reduce((sum, figure) => sum + figure, 0), group)
+      paint(kindChips, counts.kinds, Object.values(counts.kinds).reduce((sum, figure) => sum + figure, 0), kind)
+      const label = countLabel(shown, rows.length, noun)
+      if (heading) heading.textContent = label
+      if (status) status.textContent = label
+      if (empty) {
+        empty.hidden = shown > 0
+        const said = empty.querySelector('[data-member-empty-q]')
+        if (said) said.textContent = `“${query}”`
+      }
+      box.scrollTop = 0
+    }
+
+    input.addEventListener('input', apply)
+    groupChips?.addEventListener('click', (event) => {
+      const chip = (event.target as Element).closest<HTMLButtonElement>('button')
+      if (!chip || chip.disabled) return
+      group = chip.dataset.v ?? ''
+      apply()
+    })
+    kindChips?.addEventListener('click', (event) => {
+      const chip = (event.target as Element).closest<HTMLButtonElement>('button')
+      if (!chip || chip.disabled) return
+      kind = chip.dataset.v ?? ''
+      apply()
+    })
+    // Typed before the script bound is searched now.
+    if (input.value) apply()
+  }
+
+  function mount() {
+    for (const tools of document.querySelectorAll<HTMLElement>('[data-member-tools]:not([data-ready])')) {
+      tools.setAttribute('data-ready', '')
+      bind(tools)
+    }
+  }
+  mount()
+  document.addEventListener('astro:after-swap', mount)
+</script>

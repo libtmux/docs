@@ -28,7 +28,7 @@ import { pagePortsFor } from '../../lib/page-ports-for'
 import { pageBreadcrumbs } from '../../lib/sidebar'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import { apiInventoryIdentity } from '../../lib/inventory-targets'
-import { withRoot } from '../../lib/site-root'
+import { withPortRoot, withRoot } from '../../lib/site-root'
 import { API_MODELS, API_NAV, PORT_NAME, symbolIndexLetter, indexFor, isMemberOwner, ownersOf, pageSlug, topLevelTypesOf } from '../../lib/api-models'
 import { PORT_BY_SLUG, referenceUrl } from '../../lib/ports'
 import { productApiHref } from '../../lib/product-api'
@@ -820,9 +820,8 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                 <h2 class="api-section-heading text-lg font-semibold" id="api-members">{aliasedMembers ? <>Members of <a class="api-members-target" href={hrefFor(aliasedMembers)}><code>{aliasedMembers.name}</code></a></> : membersLabel}<span class="api-section-count">{shown.length} {countNoun}</span><a class="api-heading-link" href="#api-members" aria-label={`Link to ${membersLabel}`}>#</a></h2>
                 {tableColumns ? <ApiScalarMembers owner={owner} members={listed} index={index} hrefFor={hrefFor} columns={tableColumns} label={tableHeading} payloads={payloads} repeated={rowsRepeat(tableColumns)} />
                   : budgeted ? <>
-                    <div class="api-member-budget" role="region" tabindex="0" aria-label={aliasedMembers ? membersLabel : `${membersLabel} of ${owner.name}`}>
-                      <ApiMemberList groups={memberGroups} showGroups={showMemberGroups} index={index} hrefFor={hrefFor} language={language} mixed={mixedKinds} />
-                    </div>
+                    <ApiMemberList groups={memberGroups} showGroups={showMemberGroups} index={index} hrefFor={hrefFor} language={language} mixed={mixedKinds}
+                      budget={{ region: aliasedMembers ? membersLabel : `${membersLabel} of ${owner.name}`, owner: aliasedMembers?.name ?? owner.name, searchHref: port ? withPortRoot(`/${port}/${version}/search/`) : withRoot('/search/') }} />
                     <p class="api-collection-note">Order: the accessors that walk the hierarchy, the operations the ports share, then the rest.</p>
                   </>
                   : <ApiMemberList groups={memberGroups} showGroups={showMemberGroups} index={index} hrefFor={hrefFor} language={language} mixed={mixedKinds} />}
