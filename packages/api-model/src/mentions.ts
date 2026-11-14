@@ -96,6 +96,7 @@ const FENCE_PORT: Record<string, string> = {
   elixir: 'elixir', ex: 'elixir', exs: 'elixir',
   perl: 'perl', pl: 'perl', pm: 'perl',
   lisp: 'lisp', 'common-lisp': 'lisp',
+  raku: 'raku',
 }
 
 /** A symbol that a link on a page names. */

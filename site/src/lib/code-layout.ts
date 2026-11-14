@@ -327,6 +327,17 @@ export async function apiSignatureLayouts(symbol: ApiSymbol, language?: string):
         failures: await codeWidthFailures(signature.raw, 'api'), syntax: signature.nativeSyntax }] as const
     })))
   }
+  if (language === 'raku' && symbol.signatures.length) {
+    // The compiler's declaration text and the adapter's reference spans must agree byte for byte.
+    return new Map(await Promise.all(symbol.signatures.map(async (signature) => {
+      if (!signature.raw) throw new Error(`Missing native Raku declaration: ${symbol.id}`)
+      if (signature.nativeSpans?.map((span) => span.text).join('') !== signature.raw) {
+        throw new Error(`Unavailable native Raku spans: ${symbol.id}`)
+      }
+      return [signature, { text: signature.raw, limit: CODE_COLUMNS.api, nativeSpans: signature.nativeSpans,
+        failures: await codeWidthFailures(signature.raw, 'api'), syntax: signature.nativeSyntax }] as const
+    })))
+  }
   if (supportsErlangSignatures(symbol, language)) {
     return new Map(await Promise.all(symbol.signatures.map(async (signature) => {
       const text = signature.raw!

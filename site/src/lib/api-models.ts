@@ -1,5 +1,7 @@
 import perlModel from '../data/api/perl.json'
 import perlNav from '../data/api/perl.nav.json'
+import rakuModel from '../data/api/raku.json'
+import rakuNav from '../data/api/raku.nav.json'
 import { conceptsFor, isMemberOwner, OWNER_KINDS, parameterId, parentInventory, sourceUrl, SymbolIndex, type ApiModel, type ApiModelBase, type ApiSymbol, type InventoryEntry } from '@libtmux/api-model/reference'
 import mentionIndex from '../data/mentions.json'
 import domInv from '../data/inventories/dom.entries.json'
@@ -67,6 +69,7 @@ import clojureNav from '../data/api/clojure.nav.json'
  */
 export const API_MODELS: Record<string, ApiModel> = {
   perl: perlModel as unknown as ApiModel,
+  raku: rakuModel as unknown as ApiModel,
   erlang: erlangModel as unknown as ApiModel,
   powershell: powershellModel as unknown as ApiModel,
   julia: juliaModel as unknown as ApiModel,
@@ -136,6 +139,7 @@ export interface PortNavData {
  */
 export const API_NAV: Record<string, PortNavData> = {
   perl: perlNav as unknown as PortNavData,
+  raku: rakuNav as unknown as PortNavData,
   erlang: erlangNav as unknown as PortNavData,
   powershell: powershellNav as unknown as PortNavData,
   julia: juliaNav as unknown as PortNavData,
@@ -163,6 +167,7 @@ export { isMemberOwner, OWNER_KINDS } from '@libtmux/api-model/reference'
 
 export const PORT_NAME: Record<string, string> = {
   perl: 'Perl',
+  raku: 'Raku',
   erlang: 'Erlang',
   powershell: 'PowerShell',
   julia: 'Julia',

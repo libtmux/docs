@@ -19,6 +19,7 @@ export const PORT_NAME: Record<string, string> = {
   ocaml: 'OCaml',
   py: 'Python',
   perl: 'Perl',
+  raku: 'Raku',
   ts: 'TypeScript',
   rs: 'Rust',
   go: 'Go',

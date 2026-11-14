@@ -166,6 +166,21 @@ describe('native export groups', () => {
     expect(actual.diagnostics.unmatched).toEqual([])
   })
 
+  it('places a nested exported module in its own module bucket exactly once', () => {
+    const model = fixture()
+    model.symbols.push(
+      { ...symbol('Module.Z.Inner', 'module', 'Module.Z'), apiScope: 'exported' },
+      { ...symbol('Module.Z.Inner.value', 'function', 'Module.Z.Inner'), apiScope: 'exported' },
+    )
+    model.exportGroups![0].members.push('Module.Z.Inner')
+    model.exportGroups!.push({ owner: 'Module.Z.Inner', title: 'Values', members: ['Module.Z.Inner.value'] })
+    const before = structuredClone(model)
+    const actual = navSidecar(GROUPS_ONLY, model)!
+    expect(actual.diagnostics).toEqual({ unmatched: [], deadBuckets: [], ambiguous: [], staleUnsettled: [] })
+    expect(actual.assignments['exports:Module.Z.Inner'].map((entry) => entry.id)).toEqual(['Module.Z.Inner'])
+    expect(model).toEqual(before)
+  })
+
   it.each([
     ['missing direct declaration', (model: ApiModel) => model.exportGroups![1].members.pop()],
     ['duplicate declaration', (model: ApiModel) => model.exportGroups![1].members.push('Module.Z#v:z')],
