@@ -548,4 +548,5 @@ html[data-api-nav] .api-nav__item[aria-expanded='false'] > [role='group']:not([d
 /* Documentation sidebar rows are not tree rows but share the class; they reach the same touch target. */
 @media (pointer: coarse), (width < 30rem) {
   .api-nav__row { min-height: var(--touch-target); }
+  .api-nav__search input, .api-nav__filters button { min-height: var(--touch-target); }
 }
