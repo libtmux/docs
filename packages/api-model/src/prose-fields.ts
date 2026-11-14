@@ -133,7 +133,7 @@ export const RENDERED_TEXTS: Record<string, string> = {
   'r.doc': '.signatures[].raises[].doc',
   'fact.value': 'commandFacts and parameterBindingFacts',
   'parameterBindingText(p)!': 'parameterBindingText',
-  'e.note': 'conceptNotes',
+  'row.note': 'conceptNotes',
   'cell.note': 'conceptNotes',
   'block.text': 'ApiProse blocks',
   'item.text': 'ApiProse blocks',

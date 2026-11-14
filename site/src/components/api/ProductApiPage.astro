@@ -57,7 +57,7 @@ const tmuxSections = apiTmuxSections(model.port, symbol, alternativesFor(symbol)
   {symbol.apiScope === 'supporting' && <p>This type appears in public signatures. It is not a package entry point.</p>}
   <ApiEntry symbol={symbol} index={index} port={model.port} alternativesFor={alternativesFor} heading linkRows={false} sourceUrl={(entry) => sourceUrl(model, entry)}
     alternate={(entry) => alternateDocs(model, entry, version)} />
-  <ApiTmuxSections sections={tmuxSections} />
+  <ApiTmuxSections sections={tmuxSections} port={model.port} />
   {table && <div class="api-field-table mt-8">
     <h2 class="api-section-heading text-lg font-semibold" id={table.id}>{table.label}<span class="api-section-count">{table.rows.length}</span><a class="api-heading-link" href={`#${table.id}`} aria-label={`Link to ${table.label}`}>#</a></h2>
     <ApiScalarMembers owner={symbol} members={table.rows} index={index} hrefFor={hrefFor} columns={table.columns} label={table.label} payloads={payloads} repeated={table.columns === 'variants' || (table.columns === 'fields' && fieldsRepeated(model.port))} />

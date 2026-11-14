@@ -2,8 +2,6 @@
 import { boundLabel, parameterId, qualifiedNameOf, typeParameterId, typeParameterList, type ApiSymbol, type SymbolIndex, type SymbolKind } from '@libtmux/api-model/reference'
 import { apiInventoryAttributes } from '../../lib/inventory-targets'
 import { API_MODELS, mentionsOf, referenceAlternatives } from '../../lib/api-models'
-import { productApiIndex } from '../../lib/product-api'
-import { defaultVersionFor } from '../../lib/versions'
 import { SITE_ROOT } from '../../lib/site-root'
 import { proseHref } from '../../lib/docs-paths'
 import { Code } from 'astro-expressive-code/components'
@@ -11,6 +9,8 @@ import { codeLang } from '../../lib/highlight'
 import Aside from '../Aside.astro'
 import ApiBadge from './ApiBadge.astro'
 import ApiDoc from './ApiDoc.astro'
+import EquivalentsTable from './EquivalentsTable.astro'
+import { equivalentsFor } from '../../lib/api-equivalents'
 import ApiProse from './ApiProse.astro'
 import ApiType from './ApiType.astro'
 import { asideFor } from '../../lib/aside'
@@ -125,28 +125,7 @@ const signatureTargets = (nativeSignatures ? nativeEntries : symbol.signatures).
 const DOMAIN: Record<string, string> = { py: 'py', ts: 'js', cxx: 'cpp', c: 'c' }
 const domain = language ? (DOMAIN[language] ?? 'std') : 'py'
 
-/**
- * An absent reason, split so its backticked symbol names render as code.
- *
- * The reason names symbols in another port, the way the rest of the
- * reference writes them, and rendering the string as-is printed the
- * backticks. `ApiDoc` is the wrong tool: it resolves a name against the
- * page's own port, and these names are deliberately from another one.
- *
- * A frontmatter function rather than an expression in the template. A regex
- * literal in the markup body parses as JSX, and `astro check` read the `<`
- * that never came as an unclosed tag through to the end of the file.
- */
-const absentParts = (text?: string) => (text ?? '').split(/`([^`]+)`/)
-
-const elsewhere = port && linkRows ? (alternativesFor?.(symbol) ?? referenceAlternatives(port, anchor)).map((group) => ({
-  ...group,
-  ports: group.ports.filter((entry) => entry.port !== port).map((entry) => {
-    const target = entry.publicId ? API_MODELS[entry.port]?.symbols.find((symbol) =>
-      (symbol.publicId ?? symbol.id) === entry.publicId) : undefined
-    return { ...entry, qualifiedName: target ? qualifiedNameOf(target) : entry.publicId }
-  }),
-})) : []
+const elsewhere = port && linkRows ? equivalentsFor(port, symbol, alternativesFor?.(symbol)) : []
 
 const inheritedHref = symbol.inheritedFrom
   ? index.resolve(symbol.inheritedFrom, 'class')?.href
@@ -755,41 +734,7 @@ const hasBody =
       )
     }
 
-    {
-      elsewhere.map((c) => (
-        <details class="api-elsewhere">
-          <summary>
-            In other ports <span class="api-elsewhere-label">{c.label}</span>
-          </summary>
-          <ul>
-            {c.ports.map((e) => (
-              <li>
-                <span class="api-elsewhere-port">{e.name}</span>
-                <div class="api-elsewhere-value">
-                  {e.href ? (
-                    <a href={e.href}>
-                      {e.kind && <ApiBadge label={e.kind} value={e.kind} variant="kind" compact preview={false} />}
-                      <code>{e.qualifiedName}</code>
-                    </a>
-                  ) : e.publicId ? (
-                    <code>{e.qualifiedName}</code>
-                  ) : (
-                    <span class="api-elsewhere-absent">
-                      {absentParts(e.absent).map((part, i) =>
-                        i % 2 ? <code>{part}</code> : part,
-                      )}
-                    </span>
-                  )}
-                  {e.note && API_MODELS[e.port] && <p class="api-elsewhere-note">
-                    <ApiDoc text={e.note} index={productApiIndex(API_MODELS[e.port], defaultVersionFor(e.port))} />
-                  </p>}
-                </div>
-              </li>
-            ))}
-          </ul>
-        </details>
-      ))
-    }
+    {elsewhere.length > 0 && <EquivalentsTable groups={elsewhere} port={port!} level={3} />}
   </dd>
   )}
 </dl>
