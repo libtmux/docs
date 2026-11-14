@@ -248,6 +248,40 @@ const typeChips = kind ? catalogTypeCounts(tmuxCatalogEntries(version, kind)) : 
     </div>
     {entry && <ApiPageContents sections={sections} related={[]} />}
   </main>
+<script>
+  // The filter appears with JavaScript. Without it every row is on the page, in order.
+  function mount() {
+    for (const filter of document.querySelectorAll<HTMLElement>('[data-catalog-filter]')) {
+      if (filter.dataset.ready) continue
+      filter.dataset.ready = ''
+      filter.hidden = false
+      const input = filter.querySelector<HTMLInputElement>('[data-catalog-q]')
+      const chips = [...filter.querySelectorAll<HTMLButtonElement>('[data-catalog-type]')]
+      const count = filter.querySelector<HTMLElement>('[data-catalog-count]')
+      const rows = [...document.querySelectorAll<HTMLElement>('[data-catalog-row]')]
+      const empty = document.querySelector<HTMLElement>('[data-catalog-empty]')
+      const apply = () => {
+        const q = (input?.value ?? '').trim().toLowerCase()
+        const type = chips.find((chip) => chip.getAttribute('aria-pressed') === 'true')?.dataset.catalogType ?? ''
+        let shown = 0
+        for (const row of rows) {
+          const match = (!q || (row.dataset.name ?? '').includes(q) || (row.dataset.summary ?? '').includes(q)) && (!type || row.dataset.type === type)
+          row.hidden = !match
+          if (match) shown += 1
+        }
+        for (const group of document.querySelectorAll<HTMLElement>('[data-catalog-group]')) {
+          group.hidden = !group.querySelector('[data-catalog-row]:not([hidden])')
+        }
+        if (count) count.textContent = shown === rows.length ? `${rows.length} entries` : `${shown} of ${rows.length} entries`
+        if (empty) empty.hidden = shown > 0
+      }
+      input?.addEventListener('input', apply)
+      for (const chip of chips) chip.addEventListener('click', () => { for (const other of chips) other.setAttribute('aria-pressed', String(other === chip)); apply() })
+    }
+  }
+  mount()
+  document.addEventListener('astro:after-swap', mount)
+</script>
 </BaseLayout>
 <style>
   /* Kind pages: scope groups as comparison tables on one column grid (Name 15rem, Type 6.5rem, Default 9.5rem, Summary the rest),
@@ -310,38 +344,3 @@ const typeChips = kind ? catalogTypeCounts(tmuxCatalogEntries(version, kind)) : 
   .tmux-manual :global(dd) { margin-left: 1rem; }
   .tmux-manual :global(.Pp) { margin-block: 1em; }
 </style>
-
-<script>
-  // The filter appears with JavaScript. Without it every row is on the page, in order.
-  function mount() {
-    for (const filter of document.querySelectorAll<HTMLElement>('[data-catalog-filter]')) {
-      if (filter.dataset.ready) continue
-      filter.dataset.ready = ''
-      filter.hidden = false
-      const input = filter.querySelector<HTMLInputElement>('[data-catalog-q]')
-      const chips = [...filter.querySelectorAll<HTMLButtonElement>('[data-catalog-type]')]
-      const count = filter.querySelector<HTMLElement>('[data-catalog-count]')
-      const rows = [...document.querySelectorAll<HTMLElement>('[data-catalog-row]')]
-      const empty = document.querySelector<HTMLElement>('[data-catalog-empty]')
-      const apply = () => {
-        const q = (input?.value ?? '').trim().toLowerCase()
-        const type = chips.find((chip) => chip.getAttribute('aria-pressed') === 'true')?.dataset.catalogType ?? ''
-        let shown = 0
-        for (const row of rows) {
-          const match = (!q || (row.dataset.name ?? '').includes(q) || (row.dataset.summary ?? '').includes(q)) && (!type || row.dataset.type === type)
-          row.hidden = !match
-          if (match) shown += 1
-        }
-        for (const group of document.querySelectorAll<HTMLElement>('[data-catalog-group]')) {
-          group.hidden = !group.querySelector('[data-catalog-row]:not([hidden])')
-        }
-        if (count) count.textContent = shown === rows.length ? `${rows.length} entries` : `${shown} of ${rows.length} entries`
-        if (empty) empty.hidden = shown > 0
-      }
-      input?.addEventListener('input', apply)
-      for (const chip of chips) chip.addEventListener('click', () => { for (const other of chips) other.setAttribute('aria-pressed', String(other === chip)); apply() })
-    }
-  }
-  mount()
-  document.addEventListener('astro:after-swap', mount)
-</script>
