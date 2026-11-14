@@ -323,11 +323,11 @@ describe('the player component', () => {
   // The page's script imports the shared player; the stand-in `require` hands it the player's own source, evaluated beside it.
   const script = `var exports = {};\nvar playerExports = {};\n(function (exports) {\n${commonjs(readFileSync(new URL('../src/lib/replay-player.ts', import.meta.url), 'utf8'))}\n})(playerExports);\nvar require = function (name) { if (/replay-player$/.test(name)) return playerExports; throw new Error('unexpected import ' + name) };\n${commonjs(/<script>([\s\S]*?)<\/script>/.exec(component)![1]!)}`
 
-  async function mount({ run = false, reduced = true, autoplay = false, intersect = false }: { run?: boolean; reduced?: boolean; autoplay?: boolean; intersect?: boolean } = {}) {
+  async function mount({ run = false, reduced = true, autoplay = false, intersect = false, single = false }: { run?: boolean; reduced?: boolean; autoplay?: boolean; intersect?: boolean; single?: boolean } = {}) {
     const { recording, capability } = await recorded()
     const win = new Window({ url: 'https://libtmux.org/go/latest/' })
     windows.push(win)
-    win.document.body.innerHTML = await renderAstroTemplate(await template, { props: { port: 'go', language: 'Go', example, recording, capability, autoplay } })
+    win.document.body.innerHTML = await renderAstroTemplate(await template, { props: { port: 'go', language: 'Go', example: single ? { ...example, singleView: 'This program has one view.' } : example, recording, capability, autoplay } })
     const document = win.document as unknown as Document
     let reveal = () => {}
     // Binding is the page's script running after the markup has been drawn.
@@ -717,6 +717,14 @@ describe('the player component', () => {
     expect(lines.find((line) => line.textContent!.includes('package main'))!.querySelector('.core-step')).toBeNull()
     // Each view of the program carries its own markers, numbered by that view's calls.
     expect(document.querySelectorAll('[data-home-view="cleanup"] .core-step')).toHaveLength(viewSteps(capability, code('cleanup')).length)
+  })
+
+  it('marks and numbers the calls of a program that has a single view, which is its full one', async () => {
+    const { document, capability } = await mount({ run: true, single: true })
+    expect([...document.querySelectorAll('[data-home-view]')].map((view) => view.getAttribute('data-home-view'))).toEqual(['full'])
+    const calls = viewSteps(capability, code('full'))
+    expect(document.querySelectorAll('[data-home-view="full"] .core-step')).toHaveLength(calls.length)
+    expect(lit(document, 'full'), 'the first call is current').toEqual(Array.from({ length: calls[0]!.lines[1] - calls[0]!.lines[0] + 1 }, (_, offset) => calls[0]!.lines[0] + offset))
   })
 
   it('gives calls that share a line one marker, which goes to the first of them', async () => {

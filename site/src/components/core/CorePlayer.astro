@@ -160,7 +160,9 @@ const tips = steps.map((step, index) => ({ call: step.label, text: noteParts(ind
     // A touch screen fires mouseenter on a tap and never mouseleave, so only a pointer that can hover previews.
     const canHover = window.matchMedia?.('(hover: hover)').matches ?? true
     // The program the reader sees depends on the two choices above it, which another script owns; read them whenever they matter.
-    const viewName = () => (errors?.checked ? (cleanup?.checked ? 'full' : 'errors') : (cleanup?.checked ? 'cleanup' : 'concise'))
+    // A program of a single view (`HomeExample`'s `singleView`) draws its one view, the full one, whatever the choices say.
+    const single = root.hasAttribute('data-single-view')
+    const viewName = () => (single ? 'full' : errors?.checked ? (cleanup?.checked ? 'full' : 'errors') : (cleanup?.checked ? 'cleanup' : 'concise'))
     const placed = () => plan[viewName()]!
     const codeLines = (view: string) => [...root.querySelectorAll<HTMLElement>(`[data-home-view="${view}"] .ec-line`)]
 
