@@ -959,6 +959,49 @@ html[data-theme="purple"][data-theme-mode="dark"] {
 }
 
 /*
+ * Japanese text (15-typesetting.md, PageLocale). IBM Plex Sans has no Japanese
+ * glyphs, so an unnamed fallback can land on a Mincho serif. The reader's own
+ * Japanese sans faces come first, named explicitly: Hiragino on macOS and iOS,
+ * Yu Gothic and Meiryo on Windows, Noto Sans CJK on Linux and Android, then
+ * IBM Plex Sans. No web font: IBM Plex Sans JP would add megabytes per weight
+ * for one translated locale (decided 2026-11-14). `lang` is on the page root,
+ * so the browser also picks the Japanese glyph variants.
+ *
+ * No Latin tracking (`letter-spacing: 0`), line height 1.85, about 40
+ * characters a line, and phrase-aware breaks where the browser supports
+ * `word-break: auto-phrase`, with strict line-breaking rules. Code, command
+ * names and API names stay in the Latin mono face.
+ */
+@layer components {
+  :lang(ja) {
+    font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', 'Yu Gothic', Meiryo, 'Noto Sans CJK JP', 'Noto Sans JP', var(--font-sans);
+    letter-spacing: 0;
+    word-break: auto-phrase;
+    line-break: strict;
+  }
+
+  :lang(ja) :where(code, kbd, pre, samp) {
+    font-family: var(--font-mono);
+  }
+
+  :lang(ja) :where(h1, h2, h3, h4, .doc-card h3) {
+    text-wrap: balance;
+  }
+}
+
+/* In `utilities`, where the typography plugin's own measure and leading live. */
+@layer utilities {
+  :lang(ja) .prose :where(p, ul, ol, dl, blockquote),
+  :lang(ja) .locale-notice {
+    max-width: 40em;
+  }
+
+  :lang(ja) .prose :where(p, li, dd, blockquote) {
+    line-height: 1.85;
+  }
+}
+
+/*
  * The prerelease bar, and the rule that keeps it from flashing.
  *
  * `display: none` on a document attribute rather than on a class the bar

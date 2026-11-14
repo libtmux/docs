@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { introBeforeCards } from '../src/lib/section-index'
 import { siteCss } from './site-css'
@@ -96,5 +97,51 @@ describe('tables', () => {
     expect(code).toMatch(/padding: 0\.125rem 0\.1875rem/)
     expect(code).toMatch(/font-weight: var\(--font-weight-normal\)|font-weight: 400/)
     expect(code).not.toMatch(/font-weight: var\(--font-weight-medium\)/)
+  })
+})
+
+describe('Japanese', () => {
+  const ja = rule(':lang(ja)')
+  const stack = ja['font-family']!.split(',').map((face) => face.trim().replace(/^'|'$/g, ''))
+
+  it('names the reader\'s own Japanese sans faces before IBM Plex Sans and ships no web font', () => {
+    expect(stack.slice(0, 7)).toEqual(['Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', 'Yu Gothic', 'Meiryo', 'Noto Sans CJK JP', 'Noto Sans JP'])
+    expect(stack[7]).toBe('var(--font-sans)')
+    expect(css).not.toMatch(/@font-face[^}]*(Noto Sans JP|Plex Sans JP)/)
+    // A Mincho face must never be named.
+    expect(stack.join(' ')).not.toMatch(/Mincho|Serif/i)
+  })
+
+  it('drops Latin tracking and breaks at phrases', () => {
+    expect(ja['letter-spacing']).toBe('0')
+    expect(ja['word-break']).toBe('auto-phrase')
+    expect(ja['line-break']).toBe('strict')
+  })
+
+  it('sets about 40 characters a line at 1.85 leading, and keeps code in the Latin mono face', () => {
+    expect(rule(':lang(ja) .prose :where(p, ul, ol, dl, blockquote)')['max-width']).toBe('40em')
+    expect(rule(':lang(ja) .prose :where(p, li, dd, blockquote)')['line-height']).toBe('1.85')
+    expect(rule(':lang(ja) :where(code, kbd, pre, samp)')['font-family']).toBe('var(--font-mono)')
+  })
+})
+
+describe('the Japanese page', () => {
+  it('writes lang on the root, so :lang(ja) reaches every element on /ja/ pages', () => {
+    const layout = readFileSync(new URL('../src/layouts/BaseLayout.astro', import.meta.url), 'utf8')
+    expect(layout).toMatch(/<html lang=\{locale\}/)
+  })
+
+  it('wraps the machine-translation notice so it keeps the Japanese measure', () => {
+    const page = readFileSync(new URL('../src/components/docs/DocPage.astro', import.meta.url), 'utf8')
+    expect(page).toMatch(/class="locale-notice /)
+    expect(css).toContain('.locale-notice')
+  })
+})
+
+describe('the checks above can fail', () => {
+  it('sees a stylesheet that loses its Japanese rule or its table cue', async () => {
+    const without = await siteCss(['prose'], (source) => source.replace(':lang(ja) {', ':lang(xx) {').replace('no-repeat local', 'no-repeat scroll'))
+    expect(without).not.toContain(':lang(ja) {\n    font-family')
+    expect(without.match(/\blocal\b/g)?.length ?? 0).toBeLessThan(css.match(/\blocal\b/g)!.length)
   })
 })
