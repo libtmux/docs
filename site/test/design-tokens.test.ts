@@ -264,6 +264,10 @@ describe('the current row', () => {
     expect(source('components/docs/SidebarSection.astro')).toMatch(/> summary \{\s*background: var\(--current-row-bg\);\s*color: var\(--theme-primary\);\s*font-weight: 600;/)
   })
 
+  it('draws no accent bar at the start edge of the MCP install prerequisite block', () => {
+    expect(source('components/widgets/mcp-install.css')).not.toMatch(/border-left:\s*3px solid var\(--lm-mcp-install-accent\)/)
+  })
+
   it('draws no start-edge bar on a current row', () => {
     const outline = source('components/TableOfContents/TableOfContentsList.astro')
     expect(outline).not.toMatch(/aria-current='true'\]::before/)

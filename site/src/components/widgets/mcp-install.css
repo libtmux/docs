@@ -237,11 +237,8 @@ html[data-theme-mode='dark'] .lm-mcp-install {
   border-color: var(--lm-mcp-install-accent);
 }
 
-/* Prereq accent: blue left-border on the `pip install` prerequisite block. */
+/* The `pip install` prerequisite block sits above the snippet; no accent bar marks its start edge. */
 .lm-mcp-install__code--prereq {
-  border-left: 3px solid var(--lm-mcp-install-accent);
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
   margin: 0 0 0.6rem 0;
 }
 
