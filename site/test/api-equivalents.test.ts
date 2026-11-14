@@ -58,7 +58,7 @@ describe('a concept that records nothing for some ports', () => {
   const alternatives = referenceAlternatives('go', 'tmux.Pane.Capture').map((entry) => ({
     ...entry,
     ports: entry.ports.map((port) => port.port === 'raku' || port.port === 'haskell' ? { ...port, publicId: undefined, href: undefined, kind: undefined, absent: undefined } : port),
-  }))
+  })) as unknown as ReturnType<typeof referenceAlternatives>
 
   it('lists them as unmapped, never as absent', () => {
     const [entry] = equivalentsFor('go', capture, alternatives)
