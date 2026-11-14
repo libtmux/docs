@@ -19,6 +19,7 @@ import { PORT_BY_SLUG } from '../src/lib/ports'
 const SOURCE_ONLY: Record<string, { registryInstall: RegExp; source?: string }> = {
   julia: { registryInstall: /Pkg\.add\("LibTmux"\)|PackageSpec\(name=/, source: 'libtmux/libtmux-julia.git' },
   ocaml: { registryInstall: /\bopam\s+(?:install|pin\s+add)\s+libtmux/ },
+  lisp: { registryInstall: /ql:quickload|ros\s+install|qlot\s+add\s+libtmux/ },
 }
 
 /** Every command a reader or a prompt can be handed for a port's core package. */

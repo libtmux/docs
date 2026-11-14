@@ -255,6 +255,7 @@ const juliaSource = fromGit(julia, 'Installs from Git; the General registry does
 const elixir = family('libtmux/libtmux-elixir', 'main')
 const haskell = family('libtmux/libtmux-haskell')
 const lisp = family('libtmux/libtmux-lisp')
+const lispSource = fromGit(lisp, 'Installs from source; Quicklisp does not carry it.')
 const erlang = family('libtmux/libtmux-erlang')
 const ts = family('libtmux/libtmux-ts')
 const rs = family('libtmux/libtmux-rs')
@@ -409,23 +410,23 @@ export const INVENTORY: Readonly<Record<string, readonly InventoryEntry[]>> = {
       note: 'Planned workspace library and CLI; no package or executable is implemented.' }),
   ],
   lisp: [
-    lisp({ id: 'libtmux', kind: 'library', product: 'core', unit: 'source distribution', label: 'libtmux',
+    lispSource({ id: 'libtmux', kind: 'library', product: 'core', unit: 'source distribution', label: 'libtmux',
       path: 'src', aliases: ['libtmux'], note: 'The 0.1.0 ASDF systems are source-installed and unreleased.' }),
     lisp({ id: 'repository', kind: 'source', product: 'core', label: 'libtmux-lisp', coordinate: 'libtmux/libtmux-lisp' }),
-    lisp({ id: 'libtmux/query', kind: 'companion', product: 'core', unit: 'ASDF system', within: 'libtmux',
+    lispSource({ id: 'libtmux/query', kind: 'companion', product: 'core', unit: 'ASDF system', within: 'libtmux',
       label: 'libtmux/query', path: 'libtmux.asd', file: true, aliases: ['libtmux.query'] }),
-    lisp({ id: 'libtmux/regex', kind: 'companion', product: 'core', unit: 'ASDF system', within: 'libtmux',
+    lispSource({ id: 'libtmux/regex', kind: 'companion', product: 'core', unit: 'ASDF system', within: 'libtmux',
       label: 'libtmux/regex', path: 'libtmux.asd', file: true, aliases: ['libtmux.regex'] }),
-    lisp({ id: 'libtmux/json', kind: 'companion', product: 'core', unit: 'ASDF system', within: 'libtmux',
+    lispSource({ id: 'libtmux/json', kind: 'companion', product: 'core', unit: 'ASDF system', within: 'libtmux',
       label: 'libtmux/json', path: 'libtmux.asd', file: true, aliases: ['libtmux.json'] }),
-    lisp({ id: 'libtmux/control', kind: 'companion', product: 'core', unit: 'ASDF system', within: 'libtmux',
+    lispSource({ id: 'libtmux/control', kind: 'companion', product: 'core', unit: 'ASDF system', within: 'libtmux',
       label: 'libtmux/control', path: 'libtmux.asd', file: true, aliases: ['libtmux.control'] }),
-    lisp({ id: 'libtmux/workspace', kind: 'companion', product: 'workspace', unit: 'ASDF system', within: 'libtmux',
+    lispSource({ id: 'libtmux/workspace', kind: 'companion', product: 'workspace', unit: 'ASDF system', within: 'libtmux',
       label: 'libtmux/workspace', path: 'src/workspace.lisp', file: true,
       aliases: ['libtmux.workspace', '(asdf:load-system "libtmux/workspace")'] }),
-    lisp({ id: 'libtmux/workspace/cli', kind: 'companion', product: 'workspace', unit: 'ASDF system', within: 'libtmux',
+    lispSource({ id: 'libtmux/workspace/cli', kind: 'companion', product: 'workspace', unit: 'ASDF system', within: 'libtmux',
       label: 'libtmux/workspace/cli', path: 'src/workspace-cli.lisp', file: true, aliases: ['libtmux.workspace.cli'] }),
-    lisp({ id: 'workspace-command', kind: 'cli', product: 'workspace', unit: 'script', within: 'libtmux',
+    lispSource({ id: 'workspace-command', kind: 'cli', product: 'workspace', unit: 'script', within: 'libtmux',
       label: 'libtmux-workspace', coordinate: 'mise exec -- tools/lisp.sh tools/workspace-cli.lisp',
       path: 'bin/libtmux-workspace', file: true, aliases: ['libtmux-workspace', 'tools/workspace-cli.lisp'] }),
   ],
