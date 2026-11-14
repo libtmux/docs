@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { declarationRange, declarationsIn, sourceLanguage } from '../src/lib/source-declarations'
+import { declarationRange, declarationsIn, sourceLanguage, sourceMarkdown } from '../src/lib/source-declarations'
 import { pinnedSource } from '../src/lib/api-source-pages'
 
 const range = (text: string, line: number, language: string) => declarationRange(text, line, language)
@@ -61,5 +61,13 @@ describe('declarationsIn', () => {
   it('chooses the language from the extension', () => {
     expect([sourceLanguage('a/b.go'), sourceLanguage('x.rakumod'), sourceLanguage('Makefile'), sourceLanguage('x.PS1')])
       .toEqual(['go', 'raku', 'text', 'powershell'])
+  })
+})
+
+describe('sourceMarkdown', () => {
+  it('writes the file in a fence longer than any run of backticks inside it', () => {
+    const origin = { repo: 'a/b', revision: 'f'.repeat(40) }
+    expect(sourceMarkdown({ file: 'x/a.go', content: 'package a\n', origin })).toBe('# x/a.go\n\na/b@ffffffffffff\n\n```go\npackage a\n```\n')
+    expect(sourceMarkdown({ file: 'NOTES', content: 'a ```` b\n' })).toBe('# NOTES\n\n`````\na ```` b\n`````\n')
   })
 })

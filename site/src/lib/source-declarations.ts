@@ -290,3 +290,11 @@ export function sourceIndex(port: string, model: Pick<ApiModel, 'port' | 'symbol
   }
   return index
 }
+
+/** The page's Markdown twin: the file in a fenced block, long enough to hold any backticks the file has. */
+export function sourceMarkdown({ file, content, origin }: Pick<SourcePageProps, 'file' | 'content' | 'origin'>): string {
+  const language = sourceLanguage(file)
+  const fence = '`'.repeat(Math.max(3, ...(content.match(/`+/g) ?? []).map((run) => run.length + 1)))
+  const provenance = origin ? `${origin.repo}@${origin.revision.slice(0, 12)}\n\n` : ''
+  return `# ${file}\n\n${provenance}${fence}${language === 'text' ? '' : language}\n${content.replace(/\n$/, '')}\n${fence}\n`
+}
