@@ -8,6 +8,7 @@
 @import "tailwindcss" source("../");
 @import "./gp-sphinx-tokens.css";
 @import "./brand.css";
+@import "./tokens.css";
 @import "./api-kinds.css";
 @import "./kind-marks.css";
 @import "./api-headings.css";
@@ -187,9 +188,9 @@
   --theme-text: var(--color-emerald-text);
 
   /* Button size variables */
-  --button-height-sm: 2rem; /* 32px */
-  --button-height-md: 2.5rem; /* 40px */
-  --button-height-lg: 3.5rem; /* 56px - Increased for more prominent hero buttons */
+  --button-height-sm: var(--control-sm);
+  --button-height-md: var(--control-md);
+  --button-height-lg: var(--control-lg);
   --button-height: var(--button-height-md);
 
   /* Focus styling */
@@ -208,7 +209,7 @@
   --button-bg-secondary-hover: color-mix(in oklab, var(--theme-primary), white 90%);
 
 
-  --input-border: oklch(0.8 0 0);
+  --input-border: var(--control-border);
   --input-bg: white;
   --input-text: black;
   --input-focus-ring: color-mix(in oklab, var(--theme-primary), transparent 70%);
@@ -379,7 +380,6 @@ html[data-theme-mode="dark"] {
   --button-bg-secondary-hover: color-mix(in oklab, var(--theme-primary), white 90%);
   --button-bg-secondary-active: color-mix(in oklab, var(--theme-primary), white 85%);
 
-  --input-border: oklch(0.3 0 0);
   --input-bg: color-mix(in oklab, var(--background-color), black 5%);
   --input-text: white;
 }
