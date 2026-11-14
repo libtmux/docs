@@ -14,6 +14,8 @@ import { lineNumbers, parseLines, requestedCap, roleLabel } from '../lib/code-fr
  *   shows and offers the rest. Copy always copies every line, and print
  *   shows every line.
  *
+ * The numbers, the label and the cap bar are chrome, so search skips them.
+ *
  * `lib/code-frame.mjs` defines the info string and the rules; this draws them.
  */
 
@@ -99,7 +101,7 @@ export function codeFrame() {
         // A frame whose rows the lines do not describe has no numbers at all; a blank row between ranges has an empty cell.
         if (!numbered.get(codeBlock)?.length) return
         const cell = h('div.ln', { 'aria-hidden': 'true' }, number === undefined ? [] : [String(number)])
-        renderData.lineAst.children.unshift(h('div.gutter', [cell]))
+        renderData.lineAst.children.unshift(h('div.gutter', { 'data-pagefind-ignore': '' }, [cell]))
       },
       postprocessRenderedBlock: ({ codeBlock, renderData }) => {
         const figure = select('figure.frame', renderData.blockAst)
@@ -111,7 +113,7 @@ export function codeFrame() {
         const label = roleLabel(role, ranges)
         const header = select('figcaption.header', figure)
         if (label && header && select('.title', header)?.children.length) {
-          header.children.push(h('span.role', [h('b', label.name), ...(label.detail ? [` · ${label.detail}`] : [])]))
+          header.children.push(h('span.role', { 'data-pagefind-ignore': '' }, [h('b', label.name), ...(label.detail ? [` \u00b7 ${label.detail}`] : [])]))
           figure.properties.dataRole = role
         }
 
@@ -128,7 +130,7 @@ export function codeFrame() {
         figure.properties.dataCap = String(cap)
         figure.properties.style = [figure.properties.style, `--cap-lines: ${cap}`].filter(Boolean).join(';')
         pre.properties.id = id
-        const bar = h('div.cap', [
+        const bar = h('div.cap', { 'data-pagefind-ignore': '' }, [
           h('span.cap-count', `${cap} of ${total} lines`),
           h('button', {
             type: 'button', disabled: true, 'data-cap-pending': '', 'data-cap-toggle': '', 'data-total': String(total),

@@ -98,13 +98,13 @@ describe('Expressive Code frames', () => {
       const header = select('figcaption.header', ast)!
       expect(select('.title', header)!.children).toEqual([{ type: 'text', value: 'main.go' }])
       const role = select('.role', header)!
-      expect(toHtml(role)).toBe('<span class="role"><b>Excerpt</b> · lines 59–61</span>')
+      expect(toHtml(role)).toBe('<span class="role" data-pagefind-ignore=""><b>Excerpt</b> · lines 59–61</span>')
       expect(select('figure.frame', ast)!.properties.dataRole).toBe('excerpt')
     })
 
     it('says Complete program, with no line numbers: a program is for copying', async () => {
       const ast = await rendered(go(5), 'title="main.go" frame="code" role="program"')
-      expect(toHtml(select('.role', ast)!)).toBe('<span class="role"><b>Complete program</b></span>')
+      expect(toHtml(select('.role', ast)!)).toBe('<span class="role" data-pagefind-ignore=""><b>Complete program</b></span>')
       expect(select('figure.frame', ast)!.properties.dataRole).toBe('program')
       expect(selectAll('.gutter', ast)).toHaveLength(0)
     })
@@ -129,6 +129,7 @@ describe('Expressive Code frames', () => {
       const ast = await rendered(code, 'title="main.go" frame="code" role="excerpt" lines="59-61"')
       expect(selectAll('.ec-line .gutter .ln', ast).map((ln) => toHtml(ln.children))).toEqual(['59', '60', '61'])
       expect(selectAll('.ln', ast).every((ln) => ln.properties.ariaHidden === 'true')).toBe(true)
+      expect(selectAll('.gutter', ast).every((gutter) => gutter.properties.dataPagefindIgnore === ''), 'search skips the numbers').toBe(true)
       expect(select('.copy button[data-code]', ast)!.properties.dataCode).toBe(code.replace(/\n/g, '\x7f'))
     })
 
@@ -156,6 +157,7 @@ describe('Expressive Code frames', () => {
       const figure = select('figure.frame', ast)!
       expect(figure.properties.dataCap).toBe('16')
       const bar = select('.cap', ast)!
+      expect(bar.properties.dataPagefindIgnore, 'search skips the bar').toBe('')
       expect(toHtml(select('.cap-count', bar)!)).toBe('<span class="cap-count">16 of 86 lines</span>')
       const button = select('button', bar)!
       expect(toHtml(button.children)).toBe('Show all 86 lines')
