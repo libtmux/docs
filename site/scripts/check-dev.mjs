@@ -765,7 +765,7 @@ async function checkReferenceAndHeroes(browser, base) {
     }, 'Java manifest records source identity alongside its stable declaration URL')
     await page.goto(`${base}/kotlin/latest/reference/io-github-libtmux-kotlin-server/`)
     // The equivalent is a row of the In other ports table: the target's source name in code, led by its decorative kind badge.
-    const javaEquivalent = page.locator('section:has(> #api-other-ports) .tmux-usage a[href$="/java/latest/reference/io-github-libtmux-server-server/"]')
+    const javaEquivalent = page.locator('section:has(> #api-other-ports) .api-eq-table .api-elsewhere-value a[href$="/java/latest/reference/io-github-libtmux-server-server/"]')
     const assertJavaEquivalent = async () => {
       assert.equal(await javaEquivalent.count(), 1, 'The In other ports table links the Java equivalent')
       assert.equal(await javaEquivalent.locator(':scope > code').count(), 1, 'The Java equivalent names its target in code')
@@ -1130,8 +1130,7 @@ try {
       assert(response?.ok(), `${path}: HTTP ${response?.status()}`)
       await page.evaluate(() => document.fonts.ready)
       // A product page's own equivalents are a table that is always open; its members are linked rows with none.
-      await page.locator('.api-elsewhere').evaluateAll((entries) => entries.forEach((entry) => { entry.open = true }))
-      assert(await page.locator('section:has(> #api-other-ports) .tmux-usage table').count() > 0, `${path}: no equivalents were open to measure`)
+      assert(await page.locator('section:has(> #api-other-ports) .api-eq-table').count() > 0, `${path}: no equivalents were open to measure`)
       for (const width of [1440, 768, 390]) {
         await page.setViewportSize({ width, height: 1000 })
         const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)

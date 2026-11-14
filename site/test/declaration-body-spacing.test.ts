@@ -26,7 +26,7 @@ function margin(element: Element, side: 'Top' | 'Bottom') {
 const description = '<div class="gp-sphinx-api-description"><h2 class="rubric">Description</h2><p>Prose.</p></div>'
 const parameters = '<div class="gp-sphinx-api-parameters"><dl class="field-list simple"><dt>Parameters</dt><dd><ul class="simple api-parameters"><li><p class="api-parameter-heading">name</p></li></ul></dd></dl></div>'
 const examples = '<div class="gp-sphinx-api-examples"><h2 class="rubric">Examples</h2><div class="gp-sphinx-api-example"><div class="expressive-code"><pre>server.sessions()</pre></div></div></div>'
-const elsewhere = '<details class="api-elsewhere"><summary>In other ports</summary><ul><li>Go</li></ul></details>'
+const elsewhere = '<section class="api-equivalents"><h3>In other ports</h3><div class="api-eq-wrap"><table class="api-eq-table"><tbody><tr><th scope="row">Go</th></tr></tbody></table></div></section>'
 const mentions = '<p class="gp-sphinx-api-mentions">Discussed in <a href="#guide">Guide</a></p>'
 
 it('trims the first and last child of a body and of the wrappers inside it', () => {
@@ -63,7 +63,6 @@ it('preserves spacing between siblings and inside later sections', () => {
   expect(margin(last!, 'Bottom')).toBe('8px')
   expect(margin(body!.querySelector('.gp-sphinx-api-examples > .rubric')!, 'Top')).toBe('16px')
   expect(margin(body!.querySelector('.gp-sphinx-api-mentions')!, 'Top')).toBe('8px')
-  expect(margin(body!.querySelector('.api-elsewhere')!, 'Top')).toBe('8px')
 })
 
 it('keeps the divider and heading gap of a field list that follows other content', () => {

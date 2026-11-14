@@ -137,50 +137,10 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
 .api-source { font-size: 0.72rem; opacity: 0.55; }
 .api-source:hover { opacity: 0.9; }
 
-/* The cross-language block: collapsed by default, because a reader on a
-   Python page is usually reading Python. It is an answer waiting for the
-   question "what is this called in Go", not something to read past. */
-.api-elsewhere {
-  margin-top: 0.5rem;
-  font-size: 0.8125rem;
-}
-.api-elsewhere > summary {
-  cursor: pointer;
-  opacity: 0.7;
-}
-.api-elsewhere > summary:hover {
-  opacity: 1;
-}
-.api-elsewhere-label {
-  margin-left: 0.5rem;
-  opacity: 0.7;
-}
-.api-elsewhere ul {
-  margin: 0.5rem 0 0;
-  padding-left: 0;
-  list-style: none;
-}
-.api-elsewhere li {
-  display: grid;
-  grid-template-columns: minmax(0, 8rem) minmax(0, 1fr);
-  gap: 0.5rem;
-  padding: 0.125rem 0;
-}
-.api-elsewhere-port {
-  opacity: 0.6;
-}
+/* A cell of the "In other ports" table: the equivalent a port names for this declaration. */
 .api-elsewhere-value { min-width: 0; overflow-wrap: anywhere; }
 .api-elsewhere-value > a { display: inline-flex; align-items: baseline; gap: .3rem; }
 .api-elsewhere-note { margin: .3rem 0 .5rem; line-height: 1.5; }
-/*
- * Dimmed, not italic. The 0.6 opacity already reads as an aside, and the
- * italic was the only thing on a reference entry that opened with IBM Plex
- * Sans italic — one more font file fetched during first paint for a
- * distinction the opacity had already made.
- */
-.api-elsewhere-absent {
-  opacity: 0.6;
-}
 
 /* A method that sends a tmux command names the flag and the C function behind it. */
 .tmux-send { margin-inline-start: 0.25rem; }
@@ -492,13 +452,6 @@ a.api-member-link[data-link-preview]:not(:hover, :focus-visible) { text-decorati
 .api-parameter-resources code { font-size: inherit; }
 .api-overview kbd { font: 0.875em var(--font-mono, ui-monospace, monospace); padding: 0.1em 0.35em; border: 1px solid var(--color-edge); border-bottom-width: 2px; border-radius: 0.25rem; background: var(--color-surface); }
 
-.api-definition-langs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0 0.75rem;
-}
-.api-definition-langs .api-kind-word { margin-inline-start: .3em; }
-
 @container (max-width: 36rem) {
   .api-definition {
     grid-template-columns: 1fr;
@@ -527,13 +480,6 @@ a.api-member-link[data-link-preview]:not(:hover, :focus-visible) { text-decorati
   color: var(--theme-primary);
   cursor: pointer;
   text-decoration: underline;
-}
-
-/* A language with no mapped counterpart: shown, so its absence is a fact
-   rather than a gap in a list that varies page to page. */
-.api-lang-absent {
-  opacity: 0.4;
-  cursor: not-allowed;
 }
 
 /*

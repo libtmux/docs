@@ -2,15 +2,17 @@
 import { boundLabel, parameterId, qualifiedNameOf, typeParameterId, typeParameterList, type ApiSymbol, type SymbolIndex, type SymbolKind } from '@libtmux/api-model/reference'
 import { apiInventoryAttributes } from '../../lib/inventory-targets'
 import { API_MODELS, mentionsOf, referenceAlternatives } from '../../lib/api-models'
-import { productApiIndex } from '../../lib/product-api'
-import { defaultVersionFor } from '../../lib/versions'
 import { SITE_ROOT } from '../../lib/site-root'
 import { proseHref } from '../../lib/docs-paths'
 import { Code } from 'astro-expressive-code/components'
 import { codeLang } from '../../lib/highlight'
 import Aside from '../Aside.astro'
 import ApiBadge from './ApiBadge.astro'
+import SourceButton from './SourceButton.astro'
 import ApiDoc from './ApiDoc.astro'
+import EquivalentsTable from './EquivalentsTable.astro'
+import BehaviorFacts from './BehaviorFacts.astro'
+import { equivalentsFor } from '../../lib/api-equivalents'
 import ApiProse from './ApiProse.astro'
 import ApiType from './ApiType.astro'
 import { asideFor } from '../../lib/aside'
@@ -125,28 +127,7 @@ const signatureTargets = (nativeSignatures ? nativeEntries : symbol.signatures).
 const DOMAIN: Record<string, string> = { py: 'py', ts: 'js', cxx: 'cpp', c: 'c' }
 const domain = language ? (DOMAIN[language] ?? 'std') : 'py'
 
-/**
- * An absent reason, split so its backticked symbol names render as code.
- *
- * The reason names symbols in another port, the way the rest of the
- * reference writes them, and rendering the string as-is printed the
- * backticks. `ApiDoc` is the wrong tool: it resolves a name against the
- * page's own port, and these names are deliberately from another one.
- *
- * A frontmatter function rather than an expression in the template. A regex
- * literal in the markup body parses as JSX, and `astro check` read the `<`
- * that never came as an unclosed tag through to the end of the file.
- */
-const absentParts = (text?: string) => (text ?? '').split(/`([^`]+)`/)
-
-const elsewhere = port && linkRows ? (alternativesFor?.(symbol) ?? referenceAlternatives(port, anchor)).map((group) => ({
-  ...group,
-  ports: group.ports.filter((entry) => entry.port !== port).map((entry) => {
-    const target = entry.publicId ? API_MODELS[entry.port]?.symbols.find((symbol) =>
-      (symbol.publicId ?? symbol.id) === entry.publicId) : undefined
-    return { ...entry, qualifiedName: target ? qualifiedNameOf(target) : entry.publicId }
-  }),
-})) : []
+const elsewhere = port && linkRows ? equivalentsFor(port, symbol, alternativesFor?.(symbol)) : []
 
 const inheritedHref = symbol.inheritedFrom
   ? index.resolve(symbol.inheritedFrom, 'class')?.href
@@ -276,6 +257,7 @@ const hasBody =
   Boolean(symbol.publicOwner && symbol.publicOwner !== symbol.id) ||
   Boolean(showSummary && symbol.doc?.summary) ||
   Boolean(symbol.doc?.body) ||
+  Boolean(symbol.behavior) ||
   Boolean(symbol.doc?.deprecated) ||
   Boolean(symbol.command) ||
   methods.length > 0 ||
@@ -375,14 +357,13 @@ const hasBody =
         * The kind, the modifiers and where the code lives share one corner tab,
         * flush in the card's bottom-right corner (design system: Card,
         * Signature). It takes no width from the signature, and the page is this
-        * entry, so its URL is the permalink and there is no `¶`. Source is the
-        * pinned GitHub line until the page carries a source pane.
+        * entry, so its URL is the permalink and there is no `¶`. Source is a
+        * badge in the tab: it opens the pinned source beside the page where the
+        * site holds a copy, and is the pinned GitHub line otherwise.
         */}
       <div class="gp-sphinx-api-layout-right api-corner" role="group" aria-label={`${symbol.name}: kind and source`}>
         {badges.map((b) => <ApiBadge label={b.label} variant={b.variant} value={b.value} />)}
-        {source && (
-          <a class="api-badge api-leg api-leg--action api-source-anchor" href={source} rel="nofollow noopener" aria-label={`Source of ${qualifiedName} on GitHub at the pinned revision`}><span class="api-leg__m" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="m5.5 4.5-3.5 3.5 3.5 3.5M10.5 4.5l3.5 3.5-3.5 3.5" /></svg></span><span class="api-leg__w"><span class="api-leg__wl">source</span></span></a>
-        )}
+        {source && <SourceButton symbol={symbol} port={port} href={source} />}
         {alternate && (
           <a class="api-badge api-leg api-leg--action api-source-anchor api-alternate-anchor" href={alternate.href} rel="noopener" title={alternate.title} aria-label={alternate.title}
             data-alternate-docs={alternate.kind} data-alternate-observation={alternate.differs ? 'release' : 'source'}><span class="api-leg__m" aria-hidden="true">&#8599;</span><span class="api-leg__w"><span class="api-leg__wl">{alternate.label}</span></span></a>
@@ -393,6 +374,8 @@ const hasBody =
 
   {hasBody && (
   <dd>
+    {/* What the call promises sits under the declaration, edge to edge, ahead of everything else the entry says. */}
+    <BehaviorFacts symbol={symbol} index={index} port={port} sourceUrl={sourceUrl} />
     {/* The replacement is named under the declaration, not after the examples. */}
     {
       symbol.doc?.deprecated && (
@@ -706,41 +689,7 @@ const hasBody =
       )
     }
 
-    {
-      elsewhere.map((c) => (
-        <details class="api-elsewhere">
-          <summary>
-            In other ports <span class="api-elsewhere-label">{c.label}</span>
-          </summary>
-          <ul>
-            {c.ports.map((e) => (
-              <li>
-                <span class="api-elsewhere-port">{e.name}</span>
-                <div class="api-elsewhere-value">
-                  {e.href ? (
-                    <a href={e.href}>
-                      {e.kind && <ApiBadge label={e.kind} value={e.kind} variant="kind" compact preview={false} />}
-                      <code>{e.qualifiedName}</code>
-                    </a>
-                  ) : e.publicId ? (
-                    <code>{e.qualifiedName}</code>
-                  ) : (
-                    <span class="api-elsewhere-absent">
-                      {absentParts(e.absent).map((part, i) =>
-                        i % 2 ? <code>{part}</code> : part,
-                      )}
-                    </span>
-                  )}
-                  {e.note && API_MODELS[e.port] && <p class="api-elsewhere-note">
-                    <ApiDoc text={e.note} index={productApiIndex(API_MODELS[e.port], defaultVersionFor(e.port))} />
-                  </p>}
-                </div>
-              </li>
-            ))}
-          </ul>
-        </details>
-      ))
-    }
+    {elsewhere.length > 0 && <EquivalentsTable groups={elsewhere} port={port!} id={`${anchor}-other-ports`} level={3} />}
   </dd>
   )}
 </dl>

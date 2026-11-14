@@ -68,7 +68,7 @@ describe('the expressions the components render as prose', () => {
   })
 
   it('stand for a field of the table or for a text the model builds', () => {
-    const built = new Set(['commandFacts and parameterBindingFacts', 'parameterBindingText', 'conceptNotes', 'ApiProse blocks'])
+    const built = new Set(['commandFacts and parameterBindingFacts', 'parameterBindingText', 'conceptNotes', 'behaviorFacts', 'ApiProse blocks'])
     for (const [expression, meaning] of Object.entries(RENDERED_TEXTS)) expect(meaning in PROSE_FIELDS || built.has(meaning), expression).toBe(true)
   })
 
@@ -109,10 +109,11 @@ describe('the code that links prose', () => {
     'src/components/api/ApiScalarMembers.astro': 'passes the index to ApiDoc',
     'src/components/api/ApiSignatureParameters.astro': 'passes the index to ApiType',
     'src/components/api/ApiType.astro': 'links a type: linkType, which the collector calls on every signature',
+    'src/components/api/BehaviorFacts.astro': 'passes the index to ApiDoc',
+    'src/components/api/EquivalentsTable.astro': 'builds the index each port\'s equivalent notes render with',
     'src/components/api/ProductApiPage.astro': 'builds the index the page renders with',
     'src/lib/api-models.ts': 'builds the index (createApiIndex)',
     'src/lib/api-sections.ts': 'reads which symbols a signature names, to list related types; links nothing',
-    'src/lib/api-tmux-sections.ts': 'builds the index each port\'s equivalent notes render with; links nothing itself',
     'src/lib/code-layout.ts': 'links the types of a signature (linkType)',
     'src/lib/link-preview.ts': 'a hover card names only the references that resolve to a page of this site; any other link is text on the card',
     'src/lib/mcp-preview.ts': 'tokenizes MCP tool text, which names no library symbol',

@@ -5,6 +5,7 @@ import { aliasMembersTarget, aliasTarget, boundLabel, pageMembersOf, memberSigna
 import mentions from '../data/mentions.json'
 import { PORT_NAME } from './api-models'
 import { apiTmuxSections, type ApiTmuxSection } from './api-tmux-sections'
+import { genericAbsenceSentence, unmappedSentence } from './api-equivalents'
 import { aliasDeclaration, apiErrorsLabel, apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMemberGroups, apiMethodDetails, anonymousDeclarationLabel, hasFieldMembers, hasScalarMembers, memberTable, nativeSignatureText, parameterBindingText, signatureMultiline, signatureParameterText, usesNativeSignatures, variantPayloads, type VariantPayload } from './api-sections'
 import type { ResolvedUsage } from './tmux-reference'
 import { tmuxCommandMentions, tmuxMentionMarkdown } from './tmux-links'
@@ -193,12 +194,17 @@ function tmuxSectionMarkdown(section: ApiTmuxSection): string[] {
     out.length = 2
     const cell = (text: string) => text.replaceAll('|', '\\|').replaceAll('\n', ' ')
     for (const group of section.groups) {
-      out.push(group.label, '', `| Language | ${group.table.groups[0].heading} |`, '| --- | --- |')
-      for (const row of group.table.groups[0].ports) {
-        const links = row.links.map((entry) => `${link(entry.label, entry.href)}${entry.kind ? ` (${entry.kind})` : ''}`)
-        out.push(`| ${row.name} | ${cell([...links, row.note].filter(Boolean).join(row.links.length && row.note ? '. ' : ''))} |`)
+      out.push(group.label, '', `| Port | API | Differs from ${group.rows[0].name} |`, '| --- | --- | --- |')
+      for (const row of group.rows) {
+        const api = row.href && !row.current ? `${link(row.qualifiedName ?? '', row.href)}${row.kind ? ` (${row.kind})` : ''}` : inlineCode(row.qualifiedName ?? '')
+        const differs = row.current ? 'This page' : [...row.chips, row.note].filter(Boolean).join('. ') || 'None recorded in the model'
+        out.push(`| ${row.name} | ${cell([api, row.summary].filter(Boolean).join('. '))} | ${cell(differs)} |`)
       }
-      out.push('', ...(group.table.absent ? [group.table.absent, ''] : []))
+      out.push('')
+      for (const row of group.absent) out.push(`No ${row.name} equivalent. ${row.reason}`, '')
+      const generic = genericAbsenceSentence(group.genericAbsent)
+      const unmapped = unmappedSentence(group.unmapped)
+      out.push(...(generic ? [generic, ''] : []), ...(unmapped ? [`Not mapped: ${unmapped}`, ''] : []))
     }
   }
   while (out.at(-1) === '') out.pop()

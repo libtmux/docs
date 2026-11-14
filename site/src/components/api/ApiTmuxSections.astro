@@ -5,19 +5,16 @@
  * Items use the chip lists of the tmux usage tables (`TmuxUsage.astro`): an intro sentence, then each entry with its
  * kind badge. `apiTmuxSections` derives the sections, and the Markdown export writes the same ones.
  */
-import TmuxUsage from '../tmux/TmuxUsage.astro'
 import ApiBadge from './ApiBadge.astro'
+import EquivalentsTable from './EquivalentsTable.astro'
+import RelationshipCollection from './RelationshipCollection.astro'
 import type { ApiTmuxSection, CApiItem } from '../../lib/api-tmux-sections'
 
-interface Props { sections: ApiTmuxSection[] }
-const { sections } = Astro.props as Props
-// An intro names the symbol in backticks, which render as code here and stay as Markdown in the export.
-const introParts = (text: string) => text.split(/`([^`]+)`/)
+interface Props { sections: ApiTmuxSection[]; /** The page's own port, which names the equivalents' differences column. */ port: string }
+const { sections, port } = Astro.props as Props
 const flagOf = (scope: { flag: string; target?: string }) => scope.flag || scope.target ? `-${scope.flag || scope.target}` : ''
 ---
-{sections.map((section) => <section class="api-tmux-section mt-8" aria-labelledby={section.id}>
-  <h2 class="api-section-heading text-lg font-semibold" id={section.id}>{section.label}<a class="api-heading-link" href={`#${section.id}`} aria-label={`Link to ${section.label}`}>#</a></h2>
-  {section.type !== 'ports' && <p>{introParts(section.intro).map((part, i) => i % 2 ? <code>{part}</code> : part)}</p>}
+{sections.map((section) => section.type === 'ports' ? <EquivalentsTable groups={section.groups} port={port} id={section.id} /> : <RelationshipCollection class="api-tmux-section" id={section.id} label={section.label} kind="task material" why={section.intro}>
   {section.type === 'commands' && <div class="tmux-usage"><span class="tmux-usage__links">
     {section.items.map((item) => <span class="tmux-usage__item">
       <a href={item.href}><code>{item.command}</code></a>
@@ -51,8 +48,4 @@ const flagOf = (scope: { flag: string; target?: string }) => scope.flag || scope
       <dd><ul class="api-guides-list">{group.items.map((item) => <li><a href={item.href}>{item.title}</a></li>)}</ul></dd>
     </div>)}
   </dl> : <ul class="api-guides-list">{section.groups.flatMap((group) => group.items).map((item) => <li><a href={item.href}>{item.title}</a></li>)}</ul>)}
-  {section.type === 'ports' && section.groups.map((group) => <>
-    <p>{group.label}</p>
-    <TmuxUsage usage={group.table} />
-  </>)}
-</section>)}
+</RelationshipCollection>)}

@@ -219,7 +219,7 @@ describe('the rendered related lists', () => {
    * A page as its own components draw it. Only what a page shows beside the related section is real, as a harness that
    * renders a reference page lists it: the section is part of `ApiReference`, so no child has to be named for it to appear.
    */
-  const PAGE_COMPONENTS = ['components/api/ApiPageContents.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro', 'components/api/ApiRelationships.astro']
+  const PAGE_COMPONENTS = ['components/api/ApiPageContents.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro', 'components/api/ApiRelationships.astro', 'components/api/RelationshipCollection.astro']
 
   /** One related list as the reader sees it: the label and title of each link, and the label's markup. */
   function shown(root: Document, selector: string) {

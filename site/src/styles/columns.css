@@ -1,0 +1,153 @@
+/*
+ * MillerColumns: cascading lists with the path kept on the left.
+ *
+ * The stage fills its frame; `lib/columns/bands.ts` picks the layout from the
+ * stage's width, so every rule here is about one band's pieces: a column, a
+ * spine, the page pane, the single column's head, the phone stack. Colours
+ * come from the site's tokens; `--control-border` and `--touch-target` are the
+ * design system's and carry fallbacks until the site defines them.
+ */
+
+.miller { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.75rem; min-width: 0; }
+.miller[hidden] { display: none; }
+.miller__stage, .miller__stage *, .miller__stage *::before, .miller__stage *::after { box-sizing: border-box; }
+
+/* The viewport holds the stage; a stage wider than the frame is scaled down to fit. */
+.miller__viewport { overflow: hidden; border: 1px solid var(--color-edge); border-radius: var(--radius-md, 0.375rem); background: var(--color-background-secondary); }
+.miller__stage { display: flex; flex-direction: column; min-width: 0; margin-inline: auto; background: var(--background-color); box-shadow: 0 0 0 1px var(--color-edge); color: var(--text-color); }
+
+.miller__btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; min-height: 1.75rem; padding: 0 0.5rem; border: 0; border-radius: var(--radius-md, 0.375rem); background: transparent; color: var(--color-link); font: 500 0.8125rem/1 var(--font-sans); cursor: pointer; }
+.miller__btn:hover { background: var(--color-surface-hover); }
+.miller__btn:disabled { opacity: 0.45; cursor: default; background: none; }
+.miller__btn[aria-pressed='true'] { background: var(--color-surface-hover); color: var(--text-color); }
+
+.miller__top { display: flex; align-items: center; gap: 0.75rem; min-height: 2.5rem; padding: 0.25rem 0.75rem; border-bottom: 1px solid var(--color-edge); font: 400 0.8125rem/1.4 var(--font-sans); }
+.miller__top .miller__btn { margin-inline-start: auto; }
+.miller__addr { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--font-mono); font-size: 0.75rem; }
+.miller__trail { display: flex; align-items: center; min-width: 0; margin: 0; padding: 0; list-style: none; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
+.miller__trail li { display: flex; align-items: center; }
+.miller__trail li + li::before { content: '/'; margin: 0 0.375rem; color: var(--color-foreground-muted); }
+.miller__trail a { color: var(--color-link); text-decoration: none; }
+.miller__trail a:hover { text-decoration: underline; }
+.miller__trail [aria-current] { font-weight: 600; }
+
+.miller__body { display: flex; flex: 1; min-height: 0; }
+.miller__body.is-centered { justify-content: center; }
+.miller__body.is-centered .miller__strip { flex: 0 1 auto; }
+.miller__strip { position: relative; display: flex; flex: 1 1 auto; min-width: 0; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: thin; }
+.miller__col { position: relative; flex: none; display: flex; flex-direction: column; min-height: 0; border-inline-end: 1px solid var(--color-edge); scroll-snap-align: start; }
+.miller__colhead { margin: 0; padding: 0.625rem 0.875rem 0.25rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--color-foreground-muted); font: 600 0.75rem/1rem var(--font-sans); }
+.miller__list { flex: 1; min-height: 0; margin: 0; padding: 0 0.375rem 0.5rem; overflow-y: auto; overscroll-behavior: contain; list-style: none; }
+.miller__row { display: flex; align-items: center; gap: 0.5rem; min-height: 2rem; padding: 0.25rem 0.5rem; border-radius: 0.375rem; color: var(--text-color); font: 400 0.875rem/1.25rem var(--font-sans); cursor: pointer; }
+.miller__row:hover { background: var(--color-surface-hover); }
+/* The current row keeps a tint and weight; never a start-edge bar. */
+.miller__row[aria-selected='true'], .miller__ti[aria-selected='true'] > .miller__row { background: var(--color-surface); font-weight: 600; }
+.miller__col.is-active .miller__row[aria-selected='true'], .miller__ti[aria-selected='true'] > .miller__row { background: color-mix(in srgb, var(--theme-accent) 18%, transparent); }
+.miller__row:focus { outline: none; }
+.miller__row:focus-visible, .miller__ti:focus-visible > .miller__row { outline: 2px solid var(--focus-ring-color); outline-offset: -2px; }
+.miller__label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.miller__chev { flex: none; color: var(--color-foreground-muted); }
+.miller__count { flex: none; color: var(--color-foreground-muted); font: 400 0.75rem/1 var(--font-sans); font-variant-numeric: tabular-nums; }
+.miller__group { padding: 0.625rem 0.5rem 0.125rem; color: var(--color-foreground-muted); font: 600 0.6875rem/1rem var(--font-sans); }
+.miller__grip { position: absolute; z-index: 1; inset-block: 0; inset-inline-end: -3px; width: 6px; cursor: col-resize; touch-action: none; }
+.miller__grip:hover, .miller__grip:focus-visible { outline: none; background: color-mix(in srgb, var(--color-link) 40%, transparent); }
+.miller__pane > .miller__grip { inset-inline: -3px auto; }
+
+/* Spine tabs: a folded ancestor column, labelled with what is selected there. */
+.miller__spines { display: flex; flex: none; }
+.miller__spine { display: flex; align-items: flex-start; justify-content: center; width: 36px; padding: 0.75rem 0; border: 0; border-inline-end: 1px solid var(--color-edge); background: var(--color-background-secondary); color: var(--color-foreground-muted); font: 500 0.75rem/1 var(--font-sans); cursor: pointer; }
+.miller__spine span { max-height: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; writing-mode: vertical-rl; transform: rotate(180deg); }
+.miller__spine:hover { background: var(--color-surface-hover); color: var(--text-color); }
+.miller__spine:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: -2px; }
+
+/* The preview (B, D, G), the content pane (C), the inspector, and the detail of E and F. */
+.miller__preview { flex: 1 0 auto; min-width: 0; padding: 1.25rem 1.5rem; overflow-y: auto; background: var(--color-background-secondary); scroll-snap-align: start; }
+.miller__pane { position: relative; display: flex; flex: none; flex-direction: column; min-width: 0; border-inline-start: 1px solid var(--color-edge); }
+.miller__panehead { display: flex; align-items: center; gap: 0.25rem; min-height: 2.5rem; padding: 0.25rem 0.5rem 0.25rem 1rem; border-bottom: 1px solid var(--color-edge); }
+.miller__panekind { flex: 1; min-width: 0; color: var(--color-foreground-muted); font: 400 0.75rem/1rem var(--font-sans); }
+.miller__close { width: 28px; padding: 0; }
+.miller__panebody, .miller__detail { flex: 1; min-height: 0; min-width: 0; padding: 1.25rem 1.5rem 2rem; overflow-y: auto; overscroll-behavior: contain; }
+.miller__panebody .miller__doc, .miller__detail .miller__doc { max-width: 75ch; }
+.miller__preview .miller__doc { max-width: 65ch; }
+.miller__inspector { flex: none; padding: 1rem; border-inline-start: 1px solid var(--color-edge); background: var(--color-background-secondary); overflow-y: auto; }
+.miller__facts { display: grid; grid-template-columns: max-content 1fr; gap: 0.25rem 1rem; margin: 0.5rem 0 1rem; font: 400 0.8125rem/1.4 var(--font-sans); }
+.miller__facts dt { color: var(--color-foreground-muted); }
+.miller__facts dd { margin: 0; }
+
+.miller__doc { font: 400 0.9375rem/1.55 var(--font-sans); color: var(--text-color); }
+.miller__where { margin: 0 0 0.75rem; color: var(--color-foreground-muted); font-size: 0.8125rem; }
+.miller__where a { color: var(--color-link); text-decoration: none; }
+.miller__where a:hover { text-decoration: underline; }
+.miller__kind { display: flex; align-items: center; gap: 0.5rem; margin: 0 0 0.25rem; color: var(--color-foreground-muted); font-size: 0.8125rem; }
+.miller__title { margin: 0 0 0.5rem; font: 600 1.5rem/1.25 var(--font-sans); letter-spacing: -0.01em; outline: none; overflow-wrap: anywhere; }
+h2.miller__title { font-size: 1.25rem; }
+.miller__lede { margin: 0 0 0.75rem; }
+.miller__url { margin: 0 0 1rem; color: var(--color-foreground-muted); font: 400 0.75rem/1.4 var(--font-mono); overflow-wrap: anywhere; }
+.miller__sub { margin: 1.25rem 0 0.375rem; font: 600 0.875rem/1.4 var(--font-sans); }
+.miller__peek { display: grid; gap: 0.125rem; margin: 0; padding: 0; list-style: none; font-size: 0.875rem; }
+.miller__peek li { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
+.miller__peek a { color: var(--color-link); text-decoration: none; }
+.miller__more { margin: 0.375rem 0 0; color: var(--color-foreground-muted); font-size: 0.8125rem; }
+.miller__actions { margin: 1rem 0 0; }
+
+/* The tree (E): siblings at every open depth. */
+.miller__tree { flex: none; padding: 0.5rem 0.375rem; overflow: auto; border-inline-end: 1px solid var(--color-edge); }
+.miller__tree ul { margin: 0; padding: 0; list-style: none; }
+.miller__ti { outline: none; }
+.miller__ti > .miller__row { padding-inline-start: calc(0.25rem + var(--depth, 0) * 1rem); }
+.miller__twisty { display: inline-flex; flex: none; width: 1rem; justify-content: center; }
+.miller__twisty .miller__chev { transition: transform 0.12s ease; }
+.miller__ti[aria-expanded='true'] > .miller__row .miller__chev { transform: rotate(90deg); }
+
+/* Phones: one screen at a time, with Back and the trail. */
+.miller__stackbar { display: flex; align-items: center; gap: 0.5rem; min-height: 2.75rem; padding: 0.25rem 0.75rem; border-bottom: 1px solid var(--color-edge); font: 400 0.8125rem/1.4 var(--font-sans); }
+.miller__back { display: inline-flex; flex: none; align-items: center; gap: 0.125rem; max-width: 45%; min-height: 2.25rem; padding: 0 0.25rem 0 0; border: 0; background: none; color: var(--color-link); font: 500 0.9375rem/1 var(--font-sans); cursor: pointer; }
+.miller__back span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.miller__stackbar .miller__trail { flex: 1; color: var(--color-foreground-muted); }
+.miller__screen { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.miller__screentitle { margin: 0; padding: 0.875rem 1rem 0.375rem; font: 600 1.125rem/1.3 var(--font-sans); }
+.miller__stackbar .miller__screentitle { padding: 0; font-size: 0.9375rem; }
+.miller__list--touch .miller__row { min-height: var(--touch-target, 2.75rem); padding: 0.5rem 0.75rem; font-size: 0.9375rem; }
+.miller__sheet { padding: 1rem 1rem 2rem; }
+
+/* Single column (F): the sidebar head's up row, a Back button, then one level. */
+.miller__shead { display: grid; gap: 0.125rem; margin: 0; padding: 0.5rem 0.875rem; border-bottom: 1px solid var(--color-edge); }
+.miller__fnav { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; min-width: 0; }
+.miller__up { display: inline-flex; align-items: center; gap: 0.35rem; min-width: 0; min-height: 1.75rem; margin-inline-start: -0.375rem; padding: 0 0.5rem 0 0.375rem; border-radius: var(--radius-md, 0.375rem); color: var(--color-foreground-muted); font: 500 0.8125rem/1 var(--font-sans); text-decoration: none; }
+.miller__up span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.miller__up svg { flex: none; }
+a.miller__up:hover { background: var(--color-surface-hover); color: var(--color-link); }
+a.miller__up:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 1px; }
+.miller__fnav-off { opacity: 0.45; }
+.miller__fback { flex: none; min-height: 1.625rem; padding: 0 0.375rem; }
+.miller__scope { display: flex; align-items: center; gap: 0.5rem; min-height: 2rem; }
+.miller__scopetitle { display: block; min-width: 0; margin: 0; color: var(--text-color); font: 600 0.9375rem/1.3 var(--font-sans); text-decoration: none; overflow-wrap: anywhere; }
+.miller__scopetitle:hover { color: var(--color-link); }
+.miller__scopetitle code { background: none; border: 0; padding: 0; font: 600 0.875rem/1.3 var(--font-mono); }
+.miller__scope .miller__ctool { margin-inline-start: auto; }
+.miller__single .miller__list { padding-top: 0.25rem; }
+
+/* Column tools: a filter inside each column, its own pager and virtual rows. */
+.miller__colhead--g { display: flex; align-items: center; gap: 0.25rem; padding-inline-end: 0.375rem; }
+.miller__colhead--g > span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.miller__ctool { display: inline-grid; place-items: center; flex: none; width: 24px; height: 24px; border: 0; border-radius: 0.25rem; background: none; color: var(--color-foreground-muted); cursor: pointer; }
+.miller__ctool:hover, .miller__ctool[aria-pressed='true'] { background: var(--color-surface-hover); color: var(--text-color); }
+.miller__ctool:focus-visible, .miller__pager button:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 1px; }
+.miller__cfilter { display: flex; align-items: center; gap: 0.375rem; margin: 0.125rem 0.5rem 0.375rem; }
+.miller__cinput { flex: 1; min-width: 0; height: 28px; padding: 0 0.5rem; border: 1px solid var(--control-border, #718294); border-radius: var(--radius-md, 0.375rem); background: var(--background-color); color: var(--text-color); font: 400 0.8125rem/1 var(--font-sans); }
+.miller__cinput:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 0; }
+.miller__cmeta { flex: none; color: var(--color-foreground-muted); font: 400 0.6875rem/1 var(--font-sans); font-variant-numeric: tabular-nums; }
+.miller__col--g .miller__cfilter:last-child, .miller__col--g .miller__list + .miller__cfilter { margin: 0.375rem 0.5rem; }
+.miller__list--virtual { padding-top: 0; padding-bottom: 0; }
+.miller__list--virtual .miller__row, .miller__list--virtual .miller__group { height: 32px; min-height: 32px; }
+.miller__vspace { list-style: none; pointer-events: none; }
+.miller__list--virtual .miller__group { display: flex; align-items: flex-end; padding-top: 0; padding-bottom: 0.25rem; }
+.miller__cempty { margin: 0.5rem 0.875rem; color: var(--color-foreground-muted); font: 400 0.8125rem/1.4 var(--font-sans); }
+.miller__pager { display: flex; align-items: center; justify-content: space-between; gap: 0.25rem; min-height: 2.25rem; padding: 0.25rem 0.5rem; border-top: 1px solid var(--color-edge); color: var(--color-foreground-muted); font: 400 0.75rem/1 var(--font-sans); font-variant-numeric: tabular-nums; }
+.miller__pager button { width: 28px; height: 26px; border: 1px solid var(--control-border, #718294); border-radius: var(--radius-md, 0.375rem); background: var(--background-color); color: var(--text-color); font: 600 0.875rem/1 var(--font-sans); cursor: pointer; }
+.miller__pager button:disabled { opacity: 0.4; cursor: default; }
+
+@media (prefers-reduced-motion: reduce) {
+  .miller__twisty .miller__chev { transition: none; }
+  .miller__strip { scroll-behavior: auto; }
+}

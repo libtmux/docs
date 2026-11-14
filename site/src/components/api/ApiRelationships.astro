@@ -1,10 +1,13 @@
 ---
 import type { ApiModelBase, ApiSymbol } from '@libtmux/api-model'
-import { qualifiedNameOf } from '@libtmux/api-model/reference'
+import { docSummaryText, qualifiedNameOf } from '@libtmux/api-model/reference'
 import type { ApiRelationshipPath, ApiRelationshipSection } from '../../lib/api-relationships'
 import { apiCallSource } from '../../lib/api-relationships'
 import ApiBadge from './ApiBadge.astro'
+import RelationshipCollection from './RelationshipCollection.astro'
 import { nativeKind } from '../../lib/api-labels'
+import { PORT_NAME } from '../../lib/api-models'
+import { lacksCallEdges, referencedBy, sameOwnerMembers } from '../../lib/api-collections'
 
 interface Props {
   owner?: ApiSymbol
@@ -17,14 +20,49 @@ const { owner, model, sections = [], paths = [], hrefFor } = Astro.props
 const callers = sections.find((section) => section.id === 'api-called-by')
 const calls = sections.find((section) => section.id === 'api-calls')
 const sides = [callers, calls]
+const port = model && 'port' in model ? model.port : undefined
+const portName = port ? PORT_NAME[port] ?? port : undefined
+// A model that records declarations and no calls says so, so a missing section is not read as a missing caller.
+const noCallEdges = Boolean(owner && model && port && lacksCallEdges(model, owner, sections))
+const sameOwner = owner && model && port ? sameOwnerMembers(model, owner) : undefined
+const reachedBy = owner && model && !callers ? referencedBy(model, owner) : []
+const summaryOf = (symbol: ApiSymbol) => symbol.doc?.summary ? docSummaryText(symbol.doc.summary, port) : undefined
+// The source version the calls were read from, for the limit line.
+const version = model ? [model && 'project' in model ? String(model.project) : undefined, model.revision?.slice(0, 7)].filter(Boolean).join(' ') : ''
+/** One sentence for each list under the neighbourhood: what its entries are to this declaration. */
+const whyOf: Record<string, ((name: string) => string) | undefined> = {
+  'api-called-by': (name) => `Declarations that call \`${name}\` directly.`,
+  'api-calls': (name) => `Declarations \`${name}\` calls directly.`,
+  'api-function-references': (name) => `Functions \`${name}\` takes as a pointer or callback. It does not call them.`,
+  'api-referenced-by': (name) => `Declarations that take \`${name}\` as a pointer or callback: a reference, not a call.`,
+  'api-referenced-declarations': (name) => `Types and data \`${name}\` names in its declaration.`,
+}
 const callSource = (section: ApiRelationshipSection, symbol: ApiSymbol) => !model || !owner ? undefined
   : section.id === 'api-calls' ? apiCallSource(model, owner, symbol)
     : section.id === 'api-called-by' ? apiCallSource(model, symbol, owner) : undefined
 ---
 
-{owner && (callers || calls) && <section class="api-call-network mt-8" aria-labelledby="api-call-network">
-  <h2 class="api-section-heading text-lg font-semibold" id="api-call-network">Call neighborhood<a class="api-heading-link" href="#api-call-network" aria-label="Link to Call neighborhood">#</a></h2>
-  <p class="text-sm opacity-75">Recorded direct calls in this source version. Callback references appear separately below.</p>
+{sameOwner && <RelationshipCollection id="api-same-owner" label="Same owner" kind="containment"
+  count={`${sameOwner.siblings.length} of ${sameOwner.total} shown`}
+  why={`Other members of \`${qualifiedNameOf(sameOwner.parent)}\` whose names share \`${owner!.name}\`. They sit on the same type; that does not make them behave alike.`}>
+  <ul class="api-collection__rows api-collection__rows--cols">{sameOwner.siblings.map((symbol) => <li><a class="api-collection__row" href={hrefFor(symbol)}>
+    <ApiBadge label={nativeKind(symbol, port)} variant="kind" value={nativeKind(symbol, port)} compact preview={false} />
+    <span class="api-collection__name">{symbol.name}</span>
+    <span class:list={['api-collection__sum', { sparse: !summaryOf(symbol) }]}>{summaryOf(symbol) ?? 'No summary in source.'}</span>
+  </a></li>)}</ul>
+  <p class="api-collection__limit"><a href={hrefFor(sameOwner.parent)}>All {sameOwner.total} members of {sameOwner.parent.name}</a></p>
+</RelationshipCollection>}
+
+{noCallEdges && <RelationshipCollection id="api-recorded-calls" label="Recorded calls" kind="source calls">
+  <div class="api-collection__state">
+    <strong>No call edges in the {portName} model.</strong>
+    <p>The {portName} reference records declarations, not calls, so this page shows no callers or callees. That is a limit of the extracted data, not a statement that nothing calls <code>{qualifiedNameOf(owner!)}</code>.</p>
+  </div>
+</RelationshipCollection>}
+
+{owner && (callers || calls) && <RelationshipCollection id="api-call-network" label="Call neighborhood" kind="source calls"
+  why="Direct calls this declaration makes and receives, as recorded from the source."
+  limit={`Direct calls recorded in this source version${version ? ` (${version})` : ''}. Callback references appear separately below.${owner.doc?.summary ? '' : ` Documentation here is sparse: the model has no summary for \`${owner.name}\`.`}`}>
   <div class="api-call-network__columns">
     {sides.map((side, i) => <>
       {i === 1 && <div class="api-call-network__current">
@@ -37,15 +75,13 @@ const callSource = (section: ApiRelationshipSection, symbol: ApiSymbol) => !mode
         {side ? <>
           <ul>{side.items.slice(0, 5).map((symbol) => <li><a href={hrefFor(symbol)} title={qualifiedNameOf(symbol)}>{symbol.name}</a></li>)}</ul>
           {side.items.length > 5 && <a class="api-call-network__more" href={`#${side.id}`}>All {side.items.length} {i === 0 ? 'callers' : 'calls'} ↓</a>}
-        </> : <p class="text-sm opacity-70">None recorded</p>}
+        </> : i === 0 && reachedBy.length ? <p class="api-call-network__none">None recorded. Reached through {reachedBy.slice(0, 3).map((symbol, j) => <>{j > 0 && (j === Math.min(reachedBy.length, 3) - 1 ? ' and ' : ', ')}<code>{symbol.name}</code></>)}{reachedBy.length > 3 && ` and ${reachedBy.length - 3} more`}, which reference it as a function pointer (a reference, not a call).</p> : <p class="api-call-network__none">None recorded.</p>}
       </div>
     </>)}
   </div>
-</section>}
+</RelationshipCollection>}
 
-{paths.length > 0 && <section class="api-source-paths mt-8" aria-labelledby="api-source-paths">
-  <h2 class="api-section-heading text-lg font-semibold" id="api-source-paths">Paths through the source<a class="api-heading-link" href="#api-source-paths" aria-label="Link to Paths through the source">#</a></h2>
-  <p class="text-sm opacity-75">Follow these functions to explore a task. Arrows show source relationships.</p>
+{paths.length > 0 && <RelationshipCollection id="api-source-paths" label="Paths through the source" kind="source calls" why="Follow these functions to explore a task. Arrows show source relationships.">
   {paths.map((path) => <div class="api-source-path">
     <h3 class="text-sm font-semibold">{path.title}</h3>
     <ol>{path.symbols.map((symbol, i) => <li>
@@ -53,10 +89,11 @@ const callSource = (section: ApiRelationshipSection, symbol: ApiSymbol) => !mode
       <a href={hrefFor(symbol)} aria-current={owner?.id === symbol.id ? 'page' : undefined} title={qualifiedNameOf(symbol)}>{symbol.name}</a>
     </li>)}</ol>
   </div>)}
-</section>}
+</RelationshipCollection>}
 
-{sections.map((section) => <section class="mt-8" aria-labelledby={section.id}>
-  <h2 class="api-section-heading text-lg font-semibold" id={section.id}>{section.label}<a class="api-heading-link" href={`#${section.id}`} aria-label={`Link to ${section.label}`}>#</a></h2>
+{sections.map((section) => <RelationshipCollection id={section.id} label={section.label}
+  kind={section.id === 'api-called-by' || section.id === 'api-calls' ? 'source calls' : section.id === 'api-referenced-declarations' ? 'type references' : 'references'}
+  count={String(section.items.length)} why={whyOf[section.id]?.(owner?.name ?? '')}>
   <ul class="api-member-list mt-3">
     {section.items.map((symbol) => <li>
       <span><ApiBadge label={nativeKind(symbol, model?.port)} variant="kind" value={nativeKind(symbol, model?.port)} compact preview={false} /><a class="api-member-link" href={hrefFor(symbol)}>{qualifiedNameOf(symbol)}</a></span>
@@ -64,9 +101,10 @@ const callSource = (section: ApiRelationshipSection, symbol: ApiSymbol) => !mode
       {callSource(section, symbol) && <a class="text-xs" href={callSource(section, symbol)}>Call site ↗</a>}
     </li>)}
   </ul>
-</section>)}
+</RelationshipCollection>)}
 
 <style>
+  .api-call-network__none { margin: 0; font-size: .875rem; opacity: .7; }
   .api-call-network__columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: .75rem; margin-top: 1rem; }
   .api-call-network__side { min-width: 0; }
   .api-call-network__side h3 { font-size: .8rem; font-weight: 600; margin: 0 0 .5rem; }

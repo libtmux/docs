@@ -1,0 +1,54 @@
+---
+/**
+ * The panel workspace over the concepts the Go reference shares with every
+ * port. The address carries the artboard and pointer, and reads a layout
+ * template and a locator.
+ */
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import { buildTarget } from '../../../lib/versions'
+import { workspaceConcepts } from '../../../lib/panels/concept-data'
+import { TEMPLATE_NAMES } from '../../../lib/panels/state'
+import { BOARDS } from './panel-workspace'
+import '../../../styles/columns-trial.css'
+import '../../../styles/panels.css'
+
+const version = buildTarget(process.env).version
+const concepts = workspaceConcepts()
+// The index holds a Map; the browser rebuilds it from the list and the ports.
+const data = JSON.stringify({ list: concepts.list, ports: concepts.ports }).replaceAll('<', '\\u003c')
+---
+<BaseLayout title="Panels" description="Linked, dockable panels over the concepts every libtmux port shares." pagePath="reference/trial/panels"
+  portSlug="go" version={version} noindex searchable={false} documentationLayout="reference" markdown="rendered">
+  <div class="pw columns-trial" data-panels-trial>
+    <h1>Panels</h1>
+    <div class="pw__bar">
+      <span>Artboard <span class="pw__scroll"><span class="pw__seg" role="group" aria-label="Artboard">
+        {BOARDS.map(([id, label]) => <button type="button" data-pick-board={id}>{id === 'fit' ? label : `${id.toUpperCase()} ${label}`}</button>)}
+      </span></span></span>
+      <button type="button" class="pw__btn" data-rotate>Rotate</button>
+      <label>Width <input type="range" min="320" max="3440" step="4" data-width-slider aria-label="Stage width in pixels" /></label>
+      <span>Pointer <span class="pw__seg" role="group" aria-label="Pointer">
+        <button type="button" data-pick-pointer="hover">Hover</button><button type="button" data-pick-pointer="touch">Touch</button>
+      </span></span>
+      <span>Layout <span class="pw__seg" role="group" aria-label="Layout template">
+        {Object.entries(TEMPLATE_NAMES).map(([key, label]) => <button type="button" data-pick-template={key}>{label}</button>)}
+      </span></span>
+    </div>
+    <p class="pw__what">Go and Python panels in link set A follow one concept, such as <code>capture-pane</code>. All ports follows set A and never drives it. Notes is unlinked. A preview of Rust's equivalent is pinned. Hover a port link for a preview, press <kbd>/</kbd> for the command bar.</p>
+    <div class="pw__viewport" data-viewport><div class="pw__stage" data-stage></div></div>
+    <p class="pw__status" data-status></p>
+    <details class="pw__state"><summary>Workspace state: the layout every tier renders</summary><pre data-state></pre></details>
+    <div class="sr-only" data-live aria-live="polite"></div>
+    <script type="application/json" id="pw-concepts" set:html={data}></script>
+    <script>
+      import { mountPanelsTrial } from './trial-panels'
+
+      const start = () => {
+        const root = document.querySelector<HTMLElement>('[data-panels-trial]')
+        if (root && !root.dataset.mounted) { root.dataset.mounted = ''; mountPanelsTrial(root) }
+      }
+      start()
+      document.addEventListener('astro:page-load', start)
+    </script>
+  </div>
+</BaseLayout>

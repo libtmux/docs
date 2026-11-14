@@ -229,9 +229,10 @@ describe('the alternate documentation link on an API entry', () => {
     .replace(/\s*\{badges\.map\([^\n]*\n/, '\n')
   const entry = async (props: Record<string, unknown>) => {
     const template = await loadAstroTemplate('components/api/ApiEntry.astro', {
-      stubs: { 'components/api/ApiEntry.astro': `---\nconst { source, alternate } = Astro.props\nconst symbol = { name: 'new' }\nconst qualifiedName = 'LibTmux::Server::new'\n---\n${cluster}` },
+      real: ['components/api/SourceButton.astro'],
+      stubs: { 'components/api/ApiEntry.astro': `---\nimport SourceButton from './SourceButton.astro'\nconst { source, alternate, symbol, port } = Astro.props\n---\n${cluster}` },
     })
-    return withoutScope(await renderAstroTemplate(template, { props }))
+    return withoutScope(await renderAstroTemplate(template, { props: { symbol, ...props } }))
   }
   const links = (html: string) => {
     const win = new Window()
@@ -243,7 +244,7 @@ describe('the alternate documentation link on an API entry', () => {
 
   it('is the cluster the component renders, in the corner tab after the kind', () => {
     expect(cluster).toMatch(/^<div class="gp-sphinx-api-layout-right api-corner"/)
-    expect(cluster).toContain('{source && (')
+    expect(cluster).toContain('{source && <SourceButton symbol={symbol} port={port} href={source} />}')
     expect(cluster).toContain('href={alternate.href}')
     expect(entrySource).toContain('alternate?: (symbol: ApiSymbol) => ApiAlternate | undefined')
     for (const file of ['ApiReference', 'ProductApiPage']) {
@@ -261,6 +262,19 @@ describe('the alternate documentation link on an API entry', () => {
     // A page that documents other source says so in the markup too.
     const other = await entry({ source: 'https://example.test/source', alternate: { ...alternate, differs: true } })
     expect(other).toContain('data-alternate-observation="release"')
+  })
+
+  it('offers the source pane only for a declaration whose file has a pinned copy', async () => {
+    const chip = await entry({ source: 'https://example.test/source', port: 'perl' })
+    expect(chip).toContain('api-source-button')
+    expect(chip).toContain(`data-source-slug="${symbol.slug}"`)
+    expect(chip).toContain('href="https://example.test/source"')
+    const uncached = await entry({ source: 'https://example.test/source', port: 'perl', symbol: { ...symbol, source: { ...symbol.source, file: 'lib/Nowhere.pm' } } })
+    expect(uncached).not.toContain('api-source-button')
+    expect(uncached).not.toContain('data-source-open')
+    // The tab holds a Source badge that is the GitHub link, never a bracketed `[source]`.
+    expect(links(uncached)).toEqual([['https://example.test/source', 'source']])
+    expect(uncached).not.toContain('[source]')
   })
 
   it('renders nothing where there is no alternate, and keeps the source link alone', async () => {

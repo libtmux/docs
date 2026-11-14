@@ -20,7 +20,7 @@ export const symbolOf = (model: typeof go, id: string) => model.symbols.find((sy
 
 export const options = {
   real: ['components/api/ApiEntry.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro', 'components/api/ApiMemberList.astro',
-    'components/api/ApiPageContents.astro', 'components/api/ApiSignatureParameters.astro'],
+    'components/api/ApiPageContents.astro', 'components/api/ApiSignatureParameters.astro', 'components/api/SourceButton.astro'],
   stubs: {
     'components/api/ApiType.astro': '---\nconst { type } = Astro.props\n---\n<span data-type>{type}</span>',
     'components/api/ApiDoc.astro': '---\nconst { text } = Astro.props\n---\n<span data-doc>{text}</span>',

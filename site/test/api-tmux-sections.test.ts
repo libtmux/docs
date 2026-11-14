@@ -8,6 +8,7 @@ import { API_MODELS, PORT_NAME } from '../src/lib/api-models'
 import { PORTS } from '../src/lib/ports'
 import { productApiAlternatives } from '../src/lib/product-api'
 import { apiTmuxSections, type ApiTmuxSection } from '../src/lib/api-tmux-sections'
+import { genericAbsenceSentence } from '../src/lib/api-equivalents'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
 import { TMUX_USAGE, tmuxScopes } from '../src/lib/tmux-library-usage'
 import { tmuxManualUrl } from '../src/lib/tmux-manual-data'
@@ -23,16 +24,16 @@ const symbolOf = (port: string, id: string) => API_MODELS[port].symbols.find((en
 const sendKeys = symbolOf('ts', 'pane.Pane.sendKeys')
 const sections = (port: string, symbol: ApiSymbol) => apiTmuxSections(port, symbol)
 
-const COMPONENTS = ['components/api/ApiTmuxSections.astro', 'components/tmux/TmuxUsage.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro', 'components/api/ApiDoc.astro']
+const COMPONENTS = ['components/api/ApiTmuxSections.astro', 'components/api/EquivalentsTable.astro', 'components/api/RelationshipCollection.astro', 'components/tmux/TmuxUsage.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro', 'components/api/ApiDoc.astro']
 
 /** The sections of one symbol as the reader's page draws them. */
-async function html(list: ApiTmuxSection[]): Promise<Document> {
+async function html(list: ApiTmuxSection[], port = 'ts'): Promise<Document> {
   const template = await loadAstroTemplate('components/api/ApiTmuxSections.astro', { real: COMPONENTS })
   const container = await experimental_AstroContainer.create({ astroConfig: { site: 'https://libtmux.org' } } as never)
   const win = new Window()
   windows.push(win)
   win.document.body.innerHTML = withoutScope(await container.renderToString(template as never, {
-    request: new Request('https://libtmux.org/'), props: { sections: list },
+    request: new Request('https://libtmux.org/'), props: { sections: list, port },
   }))
   return win.document
 }
@@ -66,42 +67,44 @@ describe('the sections of pane.Pane.sendKeys', () => {
     expect(ports.type === 'ports' && ports.groups.map((group) => group.label)).toEqual(conceptsFor('ts', 'pane.Pane.sendKeys').map((concept) => concept.label))
     if (ports.type !== 'ports') throw new Error('not ports')
     const others = Object.keys(API_MODELS).filter((port) => port !== 'ts')
-    let linked = 0
-    let rendered = 0
+    const siteOrder = (a: string, b: string) => PORTS.findIndex((entry) => entry.slug === a) - PORTS.findIndex((entry) => entry.slug === b)
+    let mapped = 0
     for (const [i, concept] of conceptsFor('ts', 'pane.Pane.sendKeys').entries()) {
-      const table = ports.groups[i].table
-      const rows = table.groups[0].ports
-      // Only a reason that says something stays a row; the sentence the concept table writes for every unmapped language does not.
+      const group = ports.groups[i]
+      // The page's own row leads; every other port the concept maps follows in site order.
+      expect(group.rows[0]).toMatchObject({ port: 'ts', current: true })
+      expect(group.rows.slice(1).map((row) => row.port)).toEqual(others.filter((port) => concept.symbols[port]).sort(siteOrder))
+      expect(group.mappedCount).toBe(group.rows.length - 1)
+      // Only a reason that says something is a block of its own; the sentence the concept table writes for every unmapped language is one line.
       const reasoned = (port: string) => !concept.symbols[port] && concept.absent?.[port] && !/^No source-verified .+ equivalent is recorded for this operation\.$/.test(concept.absent[port])
-      const absent = others.filter((port) => !concept.symbols[port] && !reasoned(port))
-      expect(rows.filter((row) => !row.links.length).map((row) => row.port).sort()).toEqual(others.filter((port) => reasoned(port)).sort())
-      for (const row of rows.filter((row) => !row.links.length && !concept.symbols[row.port])) expect(row.note).toBe(concept.absent![row.port])
-      expect(absent.every((port) => !rows.some((row) => row.port === port))).toBe(true)
-      const names = absent.sort((a, b) => PORTS.findIndex((entry) => entry.slug === a) - PORTS.findIndex((entry) => entry.slug === b)).map((port) => PORT_NAME[port])
-      expect(table.absent).toBe(names.length ? `No equivalent is recorded in ${new Intl.ListFormat('en-GB', { type: 'disjunction' }).format(names)}.` : null)
-      rendered += rows.length
-      linked += rows.filter((row) => row.links.length).length
+      expect(group.absent.map((row) => row.port).sort()).toEqual(others.filter((port) => reasoned(port)).sort())
+      for (const row of group.absent) expect(row.reason).toBe(concept.absent![row.port])
+      const silent = others.filter((port) => !concept.symbols[port] && !reasoned(port)).sort(siteOrder).map((port) => PORT_NAME[port])
+      expect(genericAbsenceSentence(group.genericAbsent)).toBe(group.genericAbsent.length ? `No equivalent is recorded in ${new Intl.ListFormat('en-GB', { type: 'disjunction' }).format(group.genericAbsent)}.` : null)
+      // A language with a generic sentence and one with no entry at all are told apart: unmapped is not absence.
+      expect([...group.genericAbsent, ...group.unmapped].sort()).toEqual([...silent].sort())
+      expect(group.unmapped.every((name) => !Object.entries(concept.absent ?? {}).some(([port, text]) => PORT_NAME[port] === name && text))).toBe(true)
+      mapped += group.mappedCount
     }
-    expect(linked).toBeGreaterThan(0)
-    // The count is the rows the tables draw, reasons included, and not the languages of the closing sentences.
-    expect(ports.count).toBe(rendered)
-    expect(rendered).toBeGreaterThan(linked)
-  })
+    expect(mapped).toBeGreaterThan(0)
+    // The count is the mapped ports the tables draw.
+    expect(ports.count).toBe(mapped)  })
 
   it('draw each list with its heading link, kind badges and every row', async () => {
     const list = sections('ts', sendKeys)
     const document = await html(list)
-    const headings = [...document.querySelectorAll('section.api-tmux-section > h2.api-section-heading')]
+    const headings = [...document.querySelectorAll('section.api-tmux-section > h2.api-section-heading, section.api-equivalents > h2.api-section-heading')]
     expect(headings.map((heading) => heading.id)).toEqual(list.map((section) => section.id))
     for (const heading of headings) expect(heading.querySelector(`a.api-heading-link[href="#${heading.id}"]`)).not.toBeNull()
     const cApi = document.querySelector('#api-tmux-c-api')!.closest('section')!
     const chips = [...cApi.querySelectorAll('a:not(.api-heading-link)')]
     expect(chips.map((a) => a.querySelector('code')!.textContent)).toEqual(['cmd_send_keys_entry', 'cmd_send_keys_exec'])
     for (const chip of chips) expect(chip.querySelector('.api-nav__kind')?.textContent).toBeTruthy()
-    // Other ports: the Language | Equivalent table, with the concept as its intro.
+    // Other ports: one Port | API | Differs table with the page's own row marked, and no disclosure.
     const ports = document.querySelector('#api-other-ports')!.closest('section')!
-    expect(ports.querySelector('table th')!.textContent).toBe('Language')
-    expect(ports.querySelectorAll('tbody tr').length).toBeGreaterThan(0)
+    expect([...ports.querySelectorAll('thead th')].map((cell) => cell.textContent)).toEqual(['Port', 'API', 'Differs from TypeScript'])
+    expect(ports.querySelectorAll('tbody tr').length).toBeGreaterThan(1)
+    expect(ports.querySelector('tbody tr[aria-current]')!.textContent).toContain('This page')
     expect(ports.querySelector('details')).toBeNull()
   })
 })
@@ -218,15 +221,14 @@ describe('the wording of the sections', () => {
     expect(concept.absent!.java).toContain('no direct equivalent')
     const ports = sections('ts', sendKeys).find((section) => section.type === 'ports')
     if (ports?.type !== 'ports') throw new Error('no ports')
-    const table = ports.groups.find((group) => group.label === concept.label)!.table
-    const rows = table.groups[0].ports
-    expect(rows.find((row) => row.port === 'java')!.note).toBe(concept.absent!.java)
+    const group = ports.groups.find((entry) => entry.label === concept.label)!
+    expect(group.absent.find((row) => row.port === 'java')!.reason).toBe(concept.absent!.java)
     const generic = ['powershell', 'julia', 'elixir', 'fsharp']
     for (const port of generic) {
       expect(concept.absent![port]).toMatch(/^No source-verified/)
-      expect(rows.some((row) => row.port === port), port).toBe(false)
+      expect(group.rows.some((row) => row.port === port) || group.absent.some((row) => row.port === port), port).toBe(false)
     }
-    expect(table.absent).toBe('No equivalent is recorded in PowerShell, Julia, Elixir or F#.')
+    expect(genericAbsenceSentence(group.genericAbsent)).toBe('No equivalent is recorded in PowerShell, Julia, Elixir or F#.')
   })
 })
 
@@ -260,11 +262,14 @@ describe('the HTML and the Markdown of pane.Pane.sendKeys', () => {
     const element = document.getElementById('api-other-ports')!.closest('section')!
     const body = markdown().find((chunk) => chunk.heading === 'In other ports')!.body
     const rows = [...element.querySelectorAll('tbody tr')]
-    const lines = body.split('\n').filter((line) => line.startsWith('| ') && !line.startsWith('| Language') && !line.startsWith('| ---'))
+    const lines = body.split('\n').filter((line) => line.startsWith('| ') && !line.startsWith('| Port') && !line.startsWith('| ---'))
     expect(lines.map((line) => line.split(' | ')[0].slice(2))).toEqual(rows.map((row) => row.querySelector('th')!.textContent))
     for (const [i, row] of rows.entries()) {
       const link = row.querySelector('td a')
-      if (link) expect(lines[i]).toContain(`](${link.getAttribute('href')})`)
+      // The page's own row links to the page it is on; the Markdown names it in code.
+      if (link && !row.hasAttribute('aria-current')) expect(lines[i]).toContain(`](${link.getAttribute('href')})`)
+      // Each row's chips are in the Markdown row too.
+      for (const chip of row.querySelectorAll('.api-eq-diff')) expect(lines[i]).toContain(chip.textContent!)
     }
   })
 })
@@ -321,7 +326,7 @@ describe('the reference page of pane.Pane.sendKeys', () => {
     expect(section('api-tmux-command').querySelectorAll('.tmux-usage__item').length).toBe(wanted[0].count)
     expect(new Set([...section('api-tmux-c-api').querySelectorAll('a:not(.api-heading-link)')].map((a) => a.getAttribute('href'))).size).toBe(wanted[1].count)
     expect(section('api-guides').querySelectorAll('.api-guides-list a').length).toBe(wanted[2].count)
-    expect(section('api-other-ports').querySelectorAll('tbody tr').length).toBe(wanted[3].count)
+    expect(section('api-other-ports').querySelectorAll('tbody tr:not([aria-current])').length).toBe(wanted[3].count)
   })
 
   it('counts the source-path steps the tmux C API section draws', async () => {
@@ -345,7 +350,7 @@ describe('the reference page of pane.Pane.sendKeys', () => {
 describe('the rows under a declaration', () => {
   async function entry(props: Record<string, unknown>) {
     const template = await loadAstroTemplate('components/api/ApiEntry.astro', {
-      real: ['components/api/ApiBadge.astro', 'components/api/ApiDoc.astro'],
+      real: ['components/api/ApiBadge.astro', 'components/api/ApiDoc.astro', 'components/api/EquivalentsTable.astro', 'components/api/RelationshipCollection.astro', 'components/api/SymbolName.astro'],
       modules: { 'astro-expressive-code/components': { Code: Object.assign(() => '', { isAstroComponentFactory: true }) } },
     })
     const container = await experimental_AstroContainer.create({ astroConfig: { site: 'https://libtmux.org' } } as never)
@@ -361,10 +366,10 @@ describe('the rows under a declaration', () => {
   it('moves to the sections for the page\'s own symbol, and stays with a member listed on an aggregate page', async () => {
     const own = await entry({ linkRows: false })
     expect(own.querySelector('.gp-sphinx-api-mentions')).toBeNull()
-    expect(own.querySelector('.api-elsewhere')).toBeNull()
+    expect(own.querySelector('.api-equivalents')).toBeNull()
     const member = await entry({ member: true })
     expect([...member.querySelectorAll('.gp-sphinx-api-mentions-label')].map((label) => label.textContent)).toEqual(['tmux command', 'Discussed in'])
-    expect(member.querySelector('.api-elsewhere')).not.toBeNull()
+    expect(member.querySelector('.api-equivalents')).not.toBeNull()
   })
 })
 
@@ -472,11 +477,11 @@ describe('the degree-1 functions', () => {
 })
 
 describe('a note in a table of other ports', () => {
-  it('is the concept\'s note, resolved against the index of the port it names', () => {
+  it('is the concept\'s note, with the row it belongs to', () => {
     // The first symbol whose table has a row with both a link and a note.
     let found: { port: string; symbol: ApiSymbol; rows: ReturnType<typeof noted> } | undefined
     const noted = (list: ApiTmuxSection[]) => list.flatMap((section) => section.type === 'ports' ? section.groups : [])
-      .flatMap((group) => group.table.groups[0].ports).filter((row) => row.links.length && row.note)
+      .flatMap((group) => group.rows).filter((row) => row.href && !row.current && row.note)
     search: for (const [port, model] of Object.entries(API_MODELS)) {
       for (const symbol of model.symbols) {
         const rows = noted(sections(port, symbol))
@@ -485,17 +490,14 @@ describe('a note in a table of other ports', () => {
     }
     expect(found, 'a symbol with a noted equivalent').toBeDefined()
     const { port, symbol, rows } = found!
-    for (const row of rows) {
-      expect(row.noteIndex, row.port).toBeDefined()
-      expect(conceptsFor(port, symbol.publicId ?? symbol.id).map((concept) => concept.notes?.[row.port])).toContain(row.note)
-    }
+    for (const row of rows) expect(conceptsFor(port, symbol.publicId ?? symbol.id).map((concept) => concept.notes?.[row.port])).toContain(row.note)
   })
 
   it('is plain text for a reason, with its backticks as code', async () => {
-    const java = sections('ts', sendKeys).flatMap((section) => section.type === 'ports' ? section.groups : []).flatMap((group) => group.table.groups[0].ports).find((row) => row.port === 'java')!
-    expect(java.noteIndex).toBeUndefined()
+    const java = sections('ts', sendKeys).flatMap((section) => section.type === 'ports' ? section.groups : []).flatMap((group) => group.absent).find((row) => row.port === 'java')!
+    expect(java.reason).toContain('`Pane.paste`')
     const document = await html(sections('ts', sendKeys))
-    expect(document.querySelector('tr[data-port="java"] .tmux-usage__note code')!.textContent).toBe('Pane.paste')
+    expect(document.querySelector('.api-eq-state code')!.textContent).toBe('Pane.paste')
   })
 })
 
@@ -505,7 +507,7 @@ describe('a product page', () => {
   const defaults = { ts: '9.9.9' }
   const alternatives = productApiAlternatives(API_MODELS.py, symbol, 'latest', defaults)
   const linked = (list: ApiTmuxSection[]) => list.flatMap((section) => section.type === 'ports'
-    ? section.groups.flatMap((group) => group.table.groups[0].ports.flatMap((row) => row.links.map((link) => link.href))) : [])
+    ? section.groups.flatMap((group) => group.rows.filter((row) => row.href && !row.current).map((row) => row.href!)) : [])
 
   it('writes the equivalents its HTML links, by the same version rule', () => {
     const page = linked(apiTmuxSections('py', symbol, alternatives))

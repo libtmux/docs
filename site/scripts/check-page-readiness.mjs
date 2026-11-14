@@ -400,7 +400,7 @@ const SIDEBAR_BADGE_LINKS = [
 /** An equivalent in another port, in the In other ports table of a symbol's page. */
 const EQUIVALENT_BADGE_LINK = {
   label: 'API equivalent', path: '/py/v0.46.2/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/',
-  badges: 'section:has(> #api-other-ports) .tmux-usage a > .api-nav__kind', gap: false, sample: true,
+  badges: 'section:has(> #api-other-ports) .api-eq-table .api-elsewhere-value a > .api-nav__kind', gap: false, sample: true,
 }
 const BADGE_LINKS = [
   { label: 'prose link', path: '/rs/latest/concepts/server-session-window-pane/', badges: 'p a > .api-link-kind', line: true, fixtures: true, sample: true },
