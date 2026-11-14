@@ -48,7 +48,7 @@ describe('the menu sidebar on protocol reference pages', () => {
     for (const sidebar of sidebars) {
       const context = sidebar.parentElement!.querySelector('.section-context')!
       expect([...context.children].map((child) => child.textContent)).toEqual(['MCP', MCP_SECTIONS[section]])
-      expect(sidebar.querySelector('input[type="search"][data-section-search]')?.getAttribute('placeholder')).toBe('Find page')
+      expect(sidebar.querySelector('input[type="search"][data-section-search]')?.getAttribute('placeholder')).toBe('Filter this section')
       expect(sidebar.querySelector('nav')?.getAttribute('aria-label')).toBe(`MCP: ${MCP_SECTIONS[section]}`)
     }
   })

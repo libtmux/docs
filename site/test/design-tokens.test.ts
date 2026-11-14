@@ -270,3 +270,52 @@ describe('the current row', () => {
     expect(outline).not.toMatch(/rgb\(/)
   })
 })
+
+describe('pickers, touch targets, focus and labels', () => {
+  const source = (path: string) => readFileSync(new URL(`../src/${path}`, import.meta.url), 'utf8')
+
+  it('gives every picker panel one inset: boxes on the padding, text and icons .5rem inside', () => {
+    const picker = source('styles/documentation-picker.css')
+    expect(picker).toContain('--picker-inset: .5rem;')
+    for (const rule of ['.doc-picker-title', '.doc-picker-option', '.header-picker__heading', '.header-picker__footer']) {
+      const start = picker.indexOf(`${rule} {`)
+      expect(start, rule).toBeGreaterThan(-1)
+      expect(picker.slice(start, picker.indexOf('}', start)), rule).toContain('var(--picker-inset)')
+    }
+    expect(picker).not.toContain('.header-picker__group > .header-picker__option')
+    expect(source('components/docs/SurfacePicker.astro')).not.toMatch(/\.surface-picker-footer \{[^}]*margin:[^;]*-\.75rem/)
+  })
+
+  it('sets the port picker at 32rem with 20px marks and one-line details', () => {
+    const switcher = source('components/PagePortSwitcher.astro')
+    expect(switcher).toContain('.port-picker-panel { --picker-width: 32rem; }')
+    expect(switcher).toMatch(/\.port-artwork \{[^}]*width: 1\.25rem; height: 1\.25rem;/)
+    expect(switcher).toContain('white-space: nowrap')
+    expect(switcher).not.toMatch(/width="26"|size=\{26\}/)
+  })
+
+  it('lifts rows to the touch target below the phone breakpoint', () => {
+    for (const file of ['styles/api-tree.css', 'styles/documentation-picker.css']) {
+      expect(source(file), file).toMatch(/@media [^{]*width < 30rem\)[^{]*\{[^@]*var\(--touch-target\)/)
+    }
+  })
+
+  it('shows every focusable control the one ring, with no other colour for the tree', () => {
+    expect(source('styles/global.css')).toMatch(/:where\(.*\):focus-visible \{\s*outline: 2px solid var\(--focus-ring-color\);\s*outline-offset: 2px;/)
+    expect(source('styles/api-tree.css')).not.toMatch(/outline: 2px solid var\(--color-link\)/)
+  })
+
+  it('names the two language controls for what they choose', () => {
+    expect(source('components/PagePortSwitcher.astro')).toContain('choose a programming language or tmux documentation')
+    expect(source('components/widgets/AgentPrompt.astro')).toContain('aria-label="Programming language"')
+    expect(source('components/LocaleSwitcher.astro')).toContain("t(locale, 'i18n.translationLanguage')")
+    expect(source('i18n/ui.ts')).toContain("'i18n.translationLanguage': 'Translation language'")
+    for (const file of ['components/PagePortSwitcher.astro', 'components/LocaleSwitcher.astro', 'components/widgets/AgentPrompt.astro']) {
+      expect(source(file), file).not.toMatch(/aria-label="Language"|>Language</)
+    }
+  })
+
+  it('says what the sidebar filter filters', () => {
+    expect(source('components/docs/Sidebar.astro')).toContain('placeholder="Filter this section"')
+  })
+})

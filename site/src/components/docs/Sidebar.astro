@@ -43,8 +43,8 @@ const navigationScope = selected?.section.href ?? `tree:${createHash('sha256').u
 {selected && <p class="section-context"><span>{selected.surface.label}</span><a href={selected.section.href}>{selected.section.label}</a></p>}
 <div data-section-navigation data-section-scope={navigationScope}>
   <label class="section-search" data-section-search-label hidden>
-    <span class="sr-only">Find a page in {selected?.section.label ?? 'documentation'}</span>
-    <input type="search" autocomplete="off" placeholder="Find page" data-section-search />
+    <span class="sr-only">Filter this section: {selected?.section.label ?? 'documentation'}</span>
+    <input type="search" autocomplete="off" placeholder="Filter this section" data-section-search />
   </label>
   <nav aria-label={selected ? `${selected.surface.label}: ${selected.section.label}` : 'Documentation'} class="sidebar-nav">
   {

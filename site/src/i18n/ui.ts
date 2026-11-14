@@ -21,7 +21,8 @@ export const ui = {
     'i18n.unreviewed': 'Machine translation, not yet reviewed by a native speaker.',
     'i18n.readEnglish': 'Read the English original',
     'i18n.available': 'Available translations',
-    'i18n.findLanguage': 'Find language…',
+    'i18n.translationLanguage': 'Translation language',
+    'i18n.findLanguage': 'Find a translation language…',
     'i18n.noMatchingLanguages': 'No matching languages.',
     'i18n.coverage': 'Translation coverage',
     'i18n.coverageIntro':
@@ -50,6 +51,7 @@ export const ui = {
     'i18n.unreviewed': '機械翻訳です。ネイティブによるレビューは未了です。',
     'i18n.readEnglish': '英語の原文を読む',
     'i18n.available': '利用できる言語',
+    'i18n.translationLanguage': '翻訳言語',
     'i18n.findLanguage': '言語を検索…',
     'i18n.noMatchingLanguages': '一致する言語がありません。',
     'i18n.coverage': '翻訳の進捗',
