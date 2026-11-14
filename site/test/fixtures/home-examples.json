@@ -1678,8 +1678,8 @@
       "port": "perl",
       "page": "home",
       "sourceRepository": "libtmux/libtmux-perl",
-      "sourceRevision": "36b978c5eb6aa33873229046037e7d26136ca2cf",
-      "sourceTree": "269782d0ba1403af082abe05736ade4e31b5aa53",
+      "sourceRevision": "a1cab0324b600a5df6e34b92590b5c3bd8f79c69",
+      "sourceTree": "ce5106dc71b51d688816194599e27a62db5a10e2",
       "files": [
         {
           "name": "examples/quickstart.pl",
@@ -1688,14 +1688,16 @@
         },
         {
           "name": "scripts/lib/LibTmuxFixture.pm",
-          "sha256": "6b17d71a3bb2251d7512d5872bc60791fb0f4b1c0557a6d47e6799aaeabed94e",
-          "clipboardSha256": "50c57a617a04dfe553cbbcfd726f1f6a24e8e8cb77ca171aec86cd0f534f3667"
+          "sha256": "234be617ad56c89e3a41c97c8ce84ec1b198a444e06dea9950d0da54f07f3fd6",
+          "clipboardSha256": "6caf21d81a772ac1f567e77b641e04c430906da2b896844961db2a4237ff08b8"
         }
       ],
       "shellRecipe": [
+        "cpm install \\\n    --global \\\n    'LibTmux~>= 0.003'",
         "perl examples/quickstart.pl"
       ],
       "expectedOutputs": [
+        [],
         [
           "session demo",
           "  window 0:editor: %0 %1",
@@ -1728,8 +1730,8 @@
             },
             {
               "name": "scripts/lib/LibTmuxFixture.pm",
-              "sha256": "6b17d71a3bb2251d7512d5872bc60791fb0f4b1c0557a6d47e6799aaeabed94e",
-              "clipboardSha256": "50c57a617a04dfe553cbbcfd726f1f6a24e8e8cb77ca171aec86cd0f534f3667"
+              "sha256": "234be617ad56c89e3a41c97c8ce84ec1b198a444e06dea9950d0da54f07f3fd6",
+              "clipboardSha256": "6caf21d81a772ac1f567e77b641e04c430906da2b896844961db2a4237ff08b8"
             }
           ],
           "excerptSha256": "0f56b6c69c9f65059b161e876346d5c164fd2463371f00fb5cf1df23de43936e"
@@ -1743,8 +1745,8 @@
             },
             {
               "name": "scripts/lib/LibTmuxFixture.pm",
-              "sha256": "6b17d71a3bb2251d7512d5872bc60791fb0f4b1c0557a6d47e6799aaeabed94e",
-              "clipboardSha256": "50c57a617a04dfe553cbbcfd726f1f6a24e8e8cb77ca171aec86cd0f534f3667"
+              "sha256": "234be617ad56c89e3a41c97c8ce84ec1b198a444e06dea9950d0da54f07f3fd6",
+              "clipboardSha256": "6caf21d81a772ac1f567e77b641e04c430906da2b896844961db2a4237ff08b8"
             }
           ],
           "excerptSha256": "1b06fe564ac4ab43baac37aeb5473fe3a5434c1d3bc78c4c5e9570910b463fc6"
@@ -1758,8 +1760,8 @@
             },
             {
               "name": "scripts/lib/LibTmuxFixture.pm",
-              "sha256": "6b17d71a3bb2251d7512d5872bc60791fb0f4b1c0557a6d47e6799aaeabed94e",
-              "clipboardSha256": "50c57a617a04dfe553cbbcfd726f1f6a24e8e8cb77ca171aec86cd0f534f3667"
+              "sha256": "234be617ad56c89e3a41c97c8ce84ec1b198a444e06dea9950d0da54f07f3fd6",
+              "clipboardSha256": "6caf21d81a772ac1f567e77b641e04c430906da2b896844961db2a4237ff08b8"
             }
           ],
           "excerptSha256": "29d2e40a82a47781c8673f3de385a9d106e598dac819a35202c10b1b4205a7dd"
