@@ -19,17 +19,19 @@ describe('sidebar-derived breadcrumbs', () => {
     const symbol = model.symbols.find((entry) => entry.id === 'io.github.libtmux.scaladsl.generated.PaneFields.active')!
     const crumbs = await pageBreadcrumbs('PaneFields.active', `reference/${symbol.slug}`, 'latest', 'scala')
     const base = referenceUrl(PORT_BY_SLUG.scala, 'latest')
-    expect(crumbs.map((entry) => entry.name)).toEqual(['Scala', 'API reference', 'Queries', 'Fields', 'PaneFields', 'active'])
-    expect(crumbs[2].url).toBe(`${base}#section-queries`)
-    expect(crumbs[3].url).toBe(`${base}#section-queries-fields`)
-    expect(crumbs[4].url).toBe(`${base}io-github-libtmux-scaladsl-generated-panefields/`)
+    // Port / Product / Section / Page: the product is named, as the MCP and Workspace Manager trails name theirs.
+    expect(crumbs.map((entry) => entry.name)).toEqual(['Scala', 'Core Library', 'API reference', 'Queries', 'Fields', 'PaneFields', 'active'])
+    expect(crumbs[1].url).toBe('/scala/latest/core/')
+    expect(crumbs[3].url).toBe(`${base}#section-queries`)
+    expect(crumbs[4].url).toBe(`${base}#section-queries-fields`)
+    expect(crumbs[5].url).toBe(`${base}io-github-libtmux-scaladsl-generated-panefields/`)
     expect(crumbs.at(-1)?.url).toBe(`${base}${symbol.slug}/`)
   })
 
   it('uses a cmdlet’s own sidebar placement rather than its unrelated module', async () => {
     const symbol = API_MODELS.powershell.symbols.find((entry) => entry.name === 'Get-TmuxPane')!
     const crumbs = await pageBreadcrumbs(symbol.name, `reference/${symbol.slug}`, 'latest', 'powershell')
-    expect(crumbs.map((entry) => entry.name)).toEqual(['PowerShell', 'API reference', 'Pane', 'Get-TmuxPane'])
+    expect(crumbs.map((entry) => entry.name)).toEqual(['PowerShell', 'Core Library', 'API reference', 'Pane', 'Get-TmuxPane'])
   })
 
   it.each(['rs', 'cxx', 'kotlin'])('names the %s Core Library home by its short label, not its heading', async (slug) => {
@@ -41,7 +43,7 @@ describe('sidebar-derived breadcrumbs', () => {
   it('uses a canonical Julia function placement instead of a contextual shortcut', async () => {
     const symbol = API_MODELS.julia.symbols.find((entry) => entry.id === 'LibTmux.snapshot')!
     const crumbs = await pageBreadcrumbs(symbol.name, `reference/${symbol.slug}`, 'latest', 'julia')
-    expect(crumbs.map((entry) => entry.name)).toEqual(['Julia', 'API reference', 'Snapshots', 'snapshot'])
+    expect(crumbs.map((entry) => entry.name)).toEqual(['Julia', 'Core Library', 'API reference', 'Snapshots', 'snapshot'])
   })
 
   it('includes the native C reference category and owning declaration', () => {

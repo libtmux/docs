@@ -1,3 +1,4 @@
+import { Window } from 'happy-dom'
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
@@ -221,20 +222,28 @@ describe('reading a release from the MetaCPAN API', () => {
 })
 
 describe('the alternate documentation link on an API entry', () => {
-  // ApiEntry's imports need the Astro build, so the link cluster is compiled from its own source rather than loaded whole.
+  // ApiEntry's imports need the Astro build, so the corner tab is compiled from its own source rather than loaded whole.
   const entrySource = readFileSync(new URL('../src/components/api/ApiEntry.astro', import.meta.url), 'utf8')
-  const cluster = entrySource.slice(entrySource.indexOf('(source || alternate) && ('), entrySource.indexOf('\n        }\n        <a class="headerlink"'))
+  const cluster = entrySource.slice(entrySource.indexOf('<div class="gp-sphinx-api-layout-right api-corner"'), entrySource.indexOf('\n    </div>\n  </dt>'))
+    // The kind and modifier badges are the card's own; this cluster is the links after them.
+    .replace(/\s*\{badges\.map\([^\n]*\n/, '\n')
   const entry = async (props: Record<string, unknown>) => {
     const template = await loadAstroTemplate('components/api/ApiEntry.astro', {
-      stubs: { 'components/api/ApiEntry.astro': `---\nconst { source, alternate } = Astro.props\n---\n{${cluster}}` },
+      stubs: { 'components/api/ApiEntry.astro': `---\nconst { source, alternate } = Astro.props\nconst symbol = { name: 'new' }\nconst qualifiedName = 'LibTmux::Server::new'\n---\n${cluster}` },
     })
     return withoutScope(await renderAstroTemplate(template, { props }))
+  }
+  const links = (html: string) => {
+    const win = new Window()
+    win.document.body.innerHTML = html
+    return [...win.document.querySelectorAll('a.api-source-anchor')].map((link) => [link.getAttribute('href'), link.querySelector('.api-leg__wl')?.textContent])
   }
   const model = API_MODELS.perl!
   const symbol = model.symbols.find((candidate) => candidate.id === 'LibTmux::Server::new')!
 
-  it('is the cluster the component renders, beside the permalink', () => {
-    expect(cluster).toMatch(/^\(source \|\| alternate\) && \(/)
+  it('is the cluster the component renders, in the corner tab after the kind', () => {
+    expect(cluster).toMatch(/^<div class="gp-sphinx-api-layout-right api-corner"/)
+    expect(cluster).toContain('{source && (')
     expect(cluster).toContain('href={alternate.href}')
     expect(entrySource).toContain('alternate?: (symbol: ApiSymbol) => ApiAlternate | undefined')
     for (const file of ['ApiReference', 'ProductApiPage']) {
@@ -245,8 +254,7 @@ describe('the alternate documentation link on an API entry', () => {
   it('renders the POD action beside the source link, with its release in the accessible name', async () => {
     const alternate = podLink(model, symbol)!
     const html = await entry({ source: 'https://example.test/source', alternate })
-    const anchors = [...html.matchAll(/<a class="api-source-anchor[^"]*" href="([^"]+)"[^>]*>([^<]+)<\/a>/g)].map((match) => [match[1], match[2]])
-    expect(anchors).toEqual([['https://example.test/source', 'source'], [alternate.href, alternate.label]])
+    expect(links(html)).toEqual([['https://example.test/source', 'source'], [alternate.href, alternate.label]])
     expect(html).toContain(`aria-label="${alternate.title}"`)
     expect(html).toContain('data-alternate-docs="metacpan-pod"')
     expect(html).toContain('data-alternate-observation="source"')
@@ -258,7 +266,7 @@ describe('the alternate documentation link on an API entry', () => {
   it('renders nothing where there is no alternate, and keeps the source link alone', async () => {
     const html = await entry({ source: 'https://example.test/source' })
     expect(html).not.toContain('data-alternate-docs')
-    expect(html).toContain('>source</a>')
-    expect(await entry({})).not.toContain('gp-sphinx-api-source-link')
+    expect(links(html)).toEqual([['https://example.test/source', 'source']])
+    expect(links(await entry({}))).toEqual([])
   })
 })

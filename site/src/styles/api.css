@@ -60,6 +60,8 @@
 }
 .api-signature-parameters--multiline { white-space: pre-wrap; }
 .api-signature-parameters .sig-param { font-style: normal; }
+/* A run of repeated stub flags, named once; the implementation and the Parameters list show each. */
+.api-signature-parameters .api-signature-summary { color: var(--color-foreground-secondary); font-weight: 400; }
 .api-signature-parameters .api-parameter-name { color: inherit; text-decoration: none; }
 .api-signature-parameters .api-parameter-name:hover { text-decoration: underline; }
 .api-signature-parameters .api-parameter-name:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
@@ -358,16 +360,32 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
   font-weight: 600;
 }
 
+/*
+ * One loud thing per row, and only on demand (MemberCollection, record 0034): the name is body text in mono 600; hovering or
+ * focusing it turns it the link colour with an underline and fills its outline kind mark. A list of 175 names is not 175 links
+ * in the link colour competing with the marks' hues.
+ */
 .api-member-link {
   min-width: 0;
+  color: var(--text-color);
   font-family: var(--font-ibm-plex-mono, ui-monospace, monospace);
   font-weight: 600;
   text-decoration: none;
   overflow-wrap: anywhere;
 }
 
-.api-member-link:hover {
+.api-member-link:is(:hover, :focus-visible) {
+  color: var(--color-link);
   text-decoration: underline;
+  text-underline-offset: 3px;
+}
+/* At rest a name is plain text: the link-preview dots the shell draws under every previewable link are the loud thing record 0034 removes. */
+a.api-member-link[data-link-preview]:not(:hover, :focus-visible) { text-decoration-line: none; }
+.api-member-list li:is(:hover, :focus-within) > span:first-child > .api-nav__kind {
+  background: var(--mk-act-bg, var(--mk-fill, var(--mk-bg)));
+  color: var(--mk-act-fg, var(--mk-fg));
+  border-color: var(--mk-hue, currentColor);
+  box-shadow: var(--mk-act-ring, none);
 }
 
 .api-member-badges {
@@ -427,7 +445,20 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
 .api-command-parameters .api-parameter-heading { display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.4rem; }
 .api-parameter-signature { min-width: 0; }
 /* A parameter reads as its signature does: the name and the type names take their inks, and what surrounds them recedes. */
-.api-parameters:not(.mcp-parameters) .api-parameter-signature strong code { color: var(--api-ink-name); }
+/* The name is code: mono 14/22 at 600 (`param-name`), not a sans label, and not a chip. */
+.api-parameters:not(.mcp-parameters) .api-parameter-signature strong code {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--api-ink-name);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.375rem;
+}
+/* A recorded default sits under the description, quiet: the name and type above are the contract, this is what omitting it gets. */
+.api-parameter-default { margin: 0.1rem 0 0; color: var(--color-muted); font-size: 0.75rem; line-height: 1.5; }
+.api-parameter-default code { padding: 0; border: 0; background: none; font-size: inherit; }
 .api-parameters:not(.mcp-parameters) .api-type { color: var(--color-muted); }
 .api-parameters:not(.mcp-parameters) .api-type .api-type-link { color: var(--api-ink-type); }
 .api-parameters .api-parameter-heading { margin-bottom: 0.4rem; }
@@ -811,6 +842,61 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout > .
 dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout > .gp-sphinx-api-layout-right > :is(.gp-sphinx-api-slot, .api-badge) {
   align-self: center;
 }
+/*
+ * The corner tab (design system: Card, Signature; adoption steps 2 and 36). The kind, the modifiers and Source share one tab,
+ * flush in the declaration card's bottom-right corner. It is a gutter tab: 15px high, one pixel thinner than the 1rem it sits in,
+ * which is the header's .5rem bottom padding and the last code line's leading, so it takes no width from the signature and
+ * no height from the card. Each badge keeps its own tab shape with 4px between; the corner one follows the card's inner
+ * radius, and squares off when a body follows the header because the card has no corner there. The page is the entry, so
+ * its URL is the permalink and there is no `¶`.
+ */
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header {
+  --corner-h: calc(1rem - 1px);
+  --tab-r: calc(0.5rem - 1px);
+}
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout > .api-corner {
+  position: absolute;
+  z-index: 1;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 0.25rem;
+  order: 0;
+  max-width: 100%;
+  margin: 0;
+  white-space: nowrap;
+}
+/* Tripled so the modifier's own box (`.api-badge.api-badge--mod.api-badge--mod`) cannot make the tab taller than its gutter. */
+.api-corner > .api-badge.api-badge.api-badge {
+  --leg-h: var(--corner-h);
+  box-sizing: border-box;
+  height: var(--corner-h);
+  margin: 0;
+  border-radius: var(--tab-r) 0 0 0;
+  border-bottom-color: transparent;
+  font-size: 0.75rem;
+}
+.api-corner > .api-badge--mod.api-badge--mod.api-badge--mod { padding-inline: 0.35rem; font-size: 0.7421875rem; }
+.api-corner > .api-badge.api-badge.api-badge:last-child { border-bottom-right-radius: var(--tab-r); border-right-color: transparent; }
+/* A header with a body below has no card corner at its bottom-right. */
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:not(:only-child) > .gp-sphinx-api-layout > .api-corner > .api-badge.api-badge.api-badge:last-child { border-bottom-right-radius: 0; }
+.api-corner > :focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: -2px; }
+/* A formatted signature carries .25rem of its own under its last line; any other gets the same, so the tab sits in the leading and never meets a glyph. */
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout > .gp-sphinx-api-layout-left:not(:has(.api-native-signature--formatted)) { padding-block-end: 0.25rem; }
+/* Source and the other ecosystem reference are buttons in the legend chip's box, in the link palette. */
+.api-leg--action {
+  --mk-bg: var(--background-color);
+  --mk-fg: var(--color-link);
+  --mk-hue: var(--color-link);
+  cursor: pointer;
+}
+.api-leg--action:hover { --mk-bg: var(--color-surface-hover); }
+.api-leg--action[aria-expanded="true"] { --mk-bg: color-mix(in srgb, var(--color-link) 12%, var(--background-color)); }
+.api-leg--action .api-leg__m svg { display: block; }
+/* The badge says where it goes; the external-link glyph the shell appends would be a second statement of it. */
+.api-corner > a.api-leg--action[data-external-link]::after { content: none; display: none; }
 .api-native-signature {
   display: block;
   font-family: var(--font-mono, ui-monospace, monospace);
@@ -904,14 +990,15 @@ html:has(:is(.api-reference-layout--symbol, .api-reference-layout--glossary)):no
 .api-glossary-contents > summary { cursor: pointer; padding-block: 0.375rem; font-size: 0.875rem; }
 .api-glossary-contents > summary:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
 @media (min-width: 85rem) {
-  :is(.api-reference-layout--symbol, .api-reference-layout--glossary):has(> .api-nav-column) {
+  /* A symbol page has its section bar and no third column; only the glossary, which has no bar, keeps the outline beside it. */
+  .api-reference-layout--glossary:has(> .api-nav-column) {
     grid-template-columns: 16rem minmax(0, 1fr) 14rem;
   }
   :is(.api-reference-layout--symbol, .api-reference-layout--glossary) > .api-reference-content {
     padding-inline: 2.25rem;
     padding-bottom: 3rem;
   }
-  .api-page-contents {
+  .api-page-contents:has(> aside) {
     display: block;
     min-width: 0;
     padding: 4.5rem 0.5rem 2rem 0;
@@ -964,11 +1051,15 @@ html:has(:is(.api-reference-layout--symbol, .api-reference-layout--glossary)):no
 .api-reference-heading {
   margin-block: 1rem 1.25rem;
 }
-.api-reference-heading h1 {
-  margin-block: 0.5rem 0.375rem;
+.api-reference-heading h1 { margin-block: 0.5rem 0.375rem; }
+/* The one page title, 32/38 at 600 (`page-title`), for every reference page: a reader moving from a guide to an API page sees one size. */
+.api-reference-title {
   font-family: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
-  font-size: clamp(1.8rem, 2.4vw, 2.5rem);
-  line-height: 1.2;
+  font-size: 2rem;
+  line-height: 2.375rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
 }
 .api-reference-eyebrow {
   display: flex;
@@ -978,8 +1069,6 @@ html:has(:is(.api-reference-layout--symbol, .api-reference-layout--glossary)):no
   color: var(--color-muted);
   font-size: 0.8125rem;
 }
-/* The version is a grey modifier chip, on the legend chip's box, at the row's far edge. */
-.api-reference-version { margin-left: auto; }
 .api-reference-relationships {
   display: flex;
   flex-wrap: wrap;
@@ -1025,7 +1114,8 @@ dl.py.gp-sphinx-api-container > dd > .gp-sphinx-api-parameters:last-child > dl.f
 .api-reference-summary {
   max-width: 76ch;
   margin-block: 1rem 0;
-  line-height: 1.75;
+  font-size: 1rem;
+  line-height: 1.75rem;
 }
 .api-qualified-name {
   position: relative;
@@ -1357,7 +1447,8 @@ a.api-doc-link[data-api-kind]:not(.api-mention--chip):hover { text-decoration-st
   color: var(--api-kind-ink-lit, var(--color-link));
   background: color-mix(in srgb, var(--api-kind-ink, var(--color-link)) 10%, var(--color-inline-code-background));
 }
-@container (max-width: 44rem) {
+/* Two columns from 52rem, stacked below (ApiDirectory). */
+@container (width < 52rem) {
   .api-directory__row { grid-template-columns: minmax(0, 1fr); grid-template-areas: 'title' 'guidance' 'members'; grid-template-rows: auto; row-gap: .6rem; }
   .api-directory__label { width: auto; min-width: 5rem; }
   .api-directory__group { flex-wrap: wrap; }
@@ -1409,3 +1500,65 @@ a.api-doc-link.is-cross-lit:not(.api-mention--chip):not(:has(.api-literal--link)
 @media (forced-colors: active) {
   .is-cross-lit { outline: 2px solid Highlight; }
 }
+
+/*
+ * The measure and the type scale of an API reference page (15-typesetting). An entry is capped at `measure-reference` so a
+ * signature and its tables are not stretched across a 1265px column. The title is 32/38 at 600 (`.api-reference-title`),
+ * a section 24/32 and a subsection 18/26; an entry keeps its own type (signatures, badges, the 16/24 rubric).
+ */
+.api-reference-layout--symbol > .api-reference-content {
+  box-sizing: content-box;
+  max-width: var(--measure-reference, 100ch);
+}
+/* Section headings that stand alone. The Members and Fields bars are panels and keep the panel scale. */
+.api-reference-content > h2.api-section-heading,
+.api-reference-content > section > h2.api-section-heading {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.api-reference-content .prose h2 { margin-block: 2.5rem 0.75rem; font-size: 1.5rem; line-height: 2rem; font-weight: 600; letter-spacing: -0.01em; }
+.api-reference-content .prose h3,
+.api-source-path h3 { font-size: 1.125rem; line-height: 1.625rem; font-weight: 600; }
+.api-reference-content .prose h3 { margin-block: 1.75rem 0.5rem; }
+.api-reference-content .prose h3 code { font-size: 1rem; }
+/* Prose reads at `measure-prose`; grids, tables and code keep the column. */
+.api-reference-layout--glossary .api-reference-content .prose > :is(p, ul, ol) { max-width: var(--measure-prose, 72ch); }
+
+/*
+ * A member collection longer than `list-budget` keeps its place in the page and scrolls inside its own bordered box, so a type
+ * of 175 methods does not push everything after it down the page (MemberCollection). The heading and the count stay above it.
+ * One border: the box draws it, and the group bars and rows inside draw only their dividers.
+ */
+.api-member-budget {
+  max-block-size: var(--list-budget, 28rem);
+  margin-top: 0.75rem;
+  border: 1px solid var(--color-edge);
+  border-radius: var(--api-member-radius);
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-muted) transparent;
+}
+.api-member-budget:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
+.api-member-budget .api-member-group { margin-block: 0; }
+.api-member-budget .api-member-list { margin-top: 0; border: 0; border-radius: 0; }
+.api-member-budget > .api-member-group > h3 {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border: 0;
+  border-bottom: 1px solid var(--color-edge);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--background-color), var(--text-color) 6%);
+  overflow-wrap: anywhere;
+}
+.api-member-budget > .api-member-group + .api-member-group > h3 { border-top: 1px solid var(--color-edge); }
+/* The count beside a collection's heading is muted text ("175 members"), not a box. */
+.api-members > h2 > .api-section-count,
+.api-field-table > h2 > .api-section-count { padding: 0; background: none; font-variant-numeric: tabular-nums; }
+.api-collection-note { margin: 0.5rem 0 0; color: var(--color-muted); font-size: 0.75rem; line-height: 1.5; }
+@media print { .api-member-budget { max-block-size: none; overflow: visible; } }

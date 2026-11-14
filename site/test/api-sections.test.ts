@@ -80,7 +80,7 @@ describe('reference page navigation', () => {
     expect(parameterBindingText(id)).toContain('ValidateNotNullOrEmpty()')
     expect(parameterBindingFacts(id)).toContainEqual({ label: 'Validation', value: '[`ValidateNotNullOrEmpty()`](https://learn.microsoft.com/dotnet/api/system.management.automation.validatenotnulloremptyattribute?view=powershellsdk-7.4.0)' })
     expect(apiEntrySections(pane, 'powershell').map((entry) => entry.label)).toEqual([
-      'Description', 'Command details', 'Examples', 'Parameters', 'Returns',
+      'Description', 'Command details', 'Parameters', 'Returns', 'Examples',
     ])
     const control = model.symbols.find((entry) => entry.name === 'Connect-TmuxControl')!
     expect(apiCommandFacts(control).find((entry) => entry.label === 'Confirmation')?.value).toContain('`-WhatIf` and `-Confirm`')

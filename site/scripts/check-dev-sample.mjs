@@ -256,8 +256,9 @@ export async function checkDevSample(browser, base) {
       if (path === 'api-example-probe/') {
         const declaration = page.locator('dt.gp-sphinx-api-header').first()
         const identity = await declaration.getAttribute('id')
-        assert.equal(await declaration.locator('a.headerlink').getAttribute('href'), `#${identity}`,
-          'A declaration permalink lands on its signature bar')
+        assert.equal(await declaration.locator('a.headerlink').count(), 0, 'The page is the entry, so its header draws no permalink')
+        assert.equal(await page.evaluate((id) => document.getElementById(id)?.matches('dt.gp-sphinx-api-header'), identity), true,
+          'The declaration id lands on its signature bar')
         assert.equal(await declaration.locator(':scope > .section-anchor-alias').getAttribute('id'), `${identity}.declaration`,
           'The previous declaration fragment remains available')
         const equivalents = page.locator('section:has(> #api-other-ports) .tmux-usage a')

@@ -38,7 +38,7 @@ describe('a type page with a table of fields', () => {
     }))
     return win.document
   }
-  const contents = (document: Window['document']) => [...document.querySelectorAll('nav[aria-label="On this page"] a')].map((link) => [link.getAttribute('href'), link.textContent])
+  const contents = (document: Window['document']) => [...document.querySelectorAll('nav.api-section-links a')].map((link) => [link.getAttribute('href'), link.firstChild?.textContent])
 
   // C# rows repeat what each property's own page draws; Go and Rust rows are the only place a type page draws theirs.
   it.each([['csharp', 'LibTmux.TmuxCommand', 'Properties', true], ['go', 'tmux.SessionFilter', 'Fields', false]] as const)(

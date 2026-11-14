@@ -6,7 +6,8 @@ import ApiMemberList from './ApiMemberList.astro'
 import ApiScalarMembers from './ApiScalarMembers.astro'
 import ApiTmuxSections from './ApiTmuxSections.astro'
 import mentionsData from '../../data/mentions.json'
-import { apiEntryFields, apiEntrySections, apiMemberGroups, fieldsRepeated, memberTable, variantPayloads } from '../../lib/api-sections'
+import { apiEntryFields, apiEntrySections, apiMemberGroups, fieldsRepeated, memberCollectionFacts, memberTable, variantPayloads } from '../../lib/api-sections'
+import { nativeKind } from '../../lib/api-labels'
 import { apiTmuxSections } from '../../lib/api-tmux-sections'
 import { productApiAlternatives, productApiHref, productApiIndex } from '../../lib/product-api'
 import { DOC_PRODUCTS, PORT_BY_SLUG, portPageUrl, productApiPath, type DocProduct } from '../../lib/ports'
@@ -28,6 +29,7 @@ const listed = table ? table.rest : members
 const groups = apiMemberGroups(listed, memberSignals(model.port, mentionsData.mentions))
 const showGroups = groups.length > 1
 const membersHeading = table ? 'Other members' : 'Members'
+const memberFacts = memberCollectionFacts(listed, 'Members', (member) => nativeKind(member, model.port))
 // The ids a member's inline entry carried stay as anchors, so links to them keep landing here.
 const anchorsFor = (member: ApiSymbol) => [...new Set([
   member.publicId ?? member.id,
@@ -64,8 +66,10 @@ const tmuxSections = apiTmuxSections(model.port, symbol, alternativesFor(symbol)
   </div>}
   {table && <div class="sr-only">{table.rows.flatMap(anchorsFor).map((id) => <span id={id} />)}</div>}
   {listed.length > 0 && <div class="api-members mt-8">
-    <h2 class="api-section-heading text-lg font-semibold" id="api-members">{membersHeading}<span class="api-section-count">{listed.length}</span><a class="api-heading-link" href="#api-members" aria-label={`Link to ${membersHeading}`}>#</a></h2>
-    <ApiMemberList groups={groups} showGroups={showGroups} index={index} hrefFor={hrefFor} anchorsFor={anchorsFor} />
+    <h2 class="api-section-heading text-lg font-semibold" id="api-members">{membersHeading}<span class="api-section-count">{listed.length} members</span><a class="api-heading-link" href="#api-members" aria-label={`Link to ${membersHeading}`}>#</a></h2>
+    {memberFacts.budgeted
+      ? <div class="api-member-budget" role="region" tabindex="0" aria-label={`${membersHeading} of ${symbol.name}`}><ApiMemberList groups={groups} showGroups={showGroups} index={index} hrefFor={hrefFor} anchorsFor={anchorsFor} mixed={memberFacts.mixed} /></div>
+      : <ApiMemberList groups={groups} showGroups={showGroups} index={index} hrefFor={hrefFor} anchorsFor={anchorsFor} mixed={memberFacts.mixed} />}
   </div>}
   </div>
 

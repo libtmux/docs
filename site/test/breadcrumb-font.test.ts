@@ -6,9 +6,9 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { loadAstroTemplate, renderAstroTemplate, withoutScope } from './astro-templates'
 
 /**
- * The breadcrumb trail is set in the shell's sans-serif face wherever it appears: the root shell and every port outlet draw it
- * through one component, nothing in it or around it changes the family, and the native outlets name the same face as the shell.
- * A symbol crumb keeps its break points as plain text, not as a code face.
+ * The breadcrumb trail is set in the shell's sans-serif face wherever it appears, and an owner or the page itself is code
+ * (design system, Breadcrumb): nothing in it or around it changes the family except that code, and the native outlets name
+ * the same face as the shell. A symbol crumb keeps its break points inside the code.
  */
 const SRC = fileURLToPath(new URL('../src/', import.meta.url))
 const read = (path: string) => readFileSync(new URL(path, import.meta.url), 'utf8')
@@ -32,24 +32,25 @@ async function trail() {
 }
 
 describe('the breadcrumb trail', () => {
-  it('draws a linked, a group and a current symbol crumb as plain text in the inherited face', async () => {
+  it('draws a linked and a group crumb as plain text in the inherited face, and a symbol crumb as code', async () => {
     const document = await trail()
     const crumbs = [...document.querySelectorAll('nav[aria-label="Breadcrumb"] [data-breadcrumb-item]')]
     expect(crumbs.map((crumb) => [crumb.tagName, crumb.hasAttribute('href'), crumb.getAttribute('aria-current')])).toEqual([
       ['A', true, null], ['SPAN', false, null], ['A', true, null], ['SPAN', false, 'page'],
     ])
-    // The symbol crumb breaks where a name breaks, and is otherwise text.
-    expect(crumbs[3]!.innerHTML).toContain('<wbr>')
-    expect(crumbs[3]!.innerHTML.replaceAll('<wbr>', '')).toBe('LibTmux.Server#list_sessions')
-    expect([...crumbs[3]!.children].map((child) => child.tagName)).toEqual(Array(crumbs[3]!.children.length).fill('WBR'))
+    // The symbol crumb breaks where a name breaks, inside its code.
+    const code = crumbs[3]!.querySelector('code.crumb-code')!
+    expect(code.innerHTML).toContain('<wbr>')
+    expect(code.innerHTML.replaceAll('<wbr>', '')).toBe('LibTmux.Server#list_sessions')
+    expect([...code.children].map((child) => child.tagName)).toEqual(Array(code.children.length).fill('WBR'))
     for (const crumb of crumbs) {
       for (let node: Element | null = crumb; node && node.tagName !== 'BODY'; node = node.parentElement) {
-        expect(node.tagName, `${crumb.textContent} sits in ${node.tagName}`).not.toMatch(/^(CODE|KBD|SAMP|PRE|TT)$/)
         expect(node.getAttribute('class') ?? '', crumb.textContent!).not.toMatch(/(^|\s)font-(?!sans\b)[^\s]*/)
         expect(node.hasAttribute('style'), crumb.textContent!).toBe(false)
       }
-      expect(crumb.querySelector('code, kbd, samp, pre, tt'), crumb.textContent!).toBeNull()
     }
+    // Only a symbol is code; a product, a section label and a group stay in the face around them.
+    expect(crumbs.map((crumb) => crumb.querySelector('code') !== null)).toEqual([false, false, true, true])
   })
 
   it('has one implementation, so the root shell and each port outlet draw the same trail', () => {

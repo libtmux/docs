@@ -5,7 +5,7 @@ import { aliasMembersTarget, aliasTarget, boundLabel, pageMembersOf, memberSigna
 import mentions from '../data/mentions.json'
 import { PORT_NAME } from './api-models'
 import { apiTmuxSections, type ApiTmuxSection } from './api-tmux-sections'
-import { aliasDeclaration, apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMemberGroups, apiMethodDetails, anonymousDeclarationLabel, hasFieldMembers, hasScalarMembers, memberTable, nativeSignatureText, parameterBindingText, signatureMultiline, signatureParameterText, usesNativeSignatures, variantPayloads, type VariantPayload } from './api-sections'
+import { aliasDeclaration, apiErrorsLabel, apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMemberGroups, apiMethodDetails, anonymousDeclarationLabel, hasFieldMembers, hasScalarMembers, memberTable, nativeSignatureText, parameterBindingText, signatureMultiline, signatureParameterText, usesNativeSignatures, variantPayloads, type VariantPayload } from './api-sections'
 import type { ResolvedUsage } from './tmux-reference'
 import { tmuxCommandMentions, tmuxMentionMarkdown } from './tmux-links'
 import { productApiIndex } from './product-api'
@@ -286,6 +286,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
     if (links.size) out.push(`Signature types: ${[...links.values()].map((link) => `[${inlineCode(link.text)}](${link.href})`).join(', ')}.`, '')
   }
 
+  if (symbol.doc?.deprecated) out.push('## Deprecated', '', symbol.doc.deprecated, '')
   if (symbol.doc?.summary) out.push(prose(symbol.doc.summary), '')
   if (symbol.doc?.body) out.push(prose(symbol.doc.body), '')
   if (symbol.command) {
@@ -317,27 +318,6 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
     }
   }
 
-  if (symbol.doc?.examples?.length) {
-    out.push('## Examples', '')
-    for (const ex of symbol.doc.examples) {
-      if (ex.intro) out.push(ex.intro, '')
-      if (ex.sourceUrl) out.push(`[Source example](${ex.sourceUrl}).`, '')
-      out.push(fencedCode(ex.code, ex.lang), '')
-      if (ex.outro) out.push(ex.outro, '')
-    }
-  }
-
-  if (symbol.doc?.references?.length) {
-    out.push('## References', '')
-    for (const reference of symbol.doc.references) out.push(`- [${reference.name}] ${reference.text}`)
-    out.push('')
-  }
-  if (symbol.doc?.deprecated) out.push('## Deprecated', '', symbol.doc.deprecated, '')
-  if (symbol.doc?.changed) out.push('## Changed', '', symbol.doc.changed, '')
-  for (const note of symbol.doc?.admonitions ?? []) {
-    out.push(`> **${note.kind}:** ${note.text.replaceAll('\n', '\n> ')}`, '')
-  }
-
   const { params, returns, raises, typeParameters } = apiEntryFields(symbol, language)
   const overloads = (labels: string[]) => labels.length ? ` (for ${labels.map(inlineCode).join('; ')})` : ''
   const inheritedTypeParameters = index?.inheritedTypeParameters(symbol) ?? []
@@ -364,7 +344,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
       const blockDoc = ['julia', 'ts'].includes(language ?? '') && p.doc?.includes('\n')
       out.push(`- ${inlineCode(p.name + (p.optional ? '?' : ''))}${p.type ? ` (${inlineCode(p.type.replaceAll('\n', ' '))})` : ''}${p.doc && !blockDoc ? `: ${p.doc}` : ''}${p.since ? ` (added ${p.since})` : ''}${p.deprecated ? ` (deprecated ${p.deprecated})` : ''}${overloads(p.overloads)}`)
       if (blockDoc) out.push('', ...p.doc!.split('\n').map((line) => `  ${line}`), '')
-      if (['julia', 'ts'].includes(language ?? '') && p.default !== undefined) out.push(`  Default: ${inlineCode(p.default)}.`)
+      if (p.default !== undefined && p.default !== '...') out.push(`  Default: ${inlineCode(p.default)}.`)
       const binding = parameterBindingText(p)
       if (binding) out.push(`  ${binding}`)
     }
@@ -377,13 +357,33 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   }
 
   if (raises.length) {
-    out.push('## Raises', '')
+    out.push(`## ${apiErrorsLabel(language)}`, '')
     for (const r of raises) {
       const href = index?.resolve(r.type, 'class', symbol)?.href
       const label = inlineCode(r.type)
       out.push(`- ${href ? `[${label}](${href})` : label}${r.doc ? `: ${r.doc}` : ''}${overloads(r.overloads)}`)
     }
     out.push('')
+  }
+
+  if (symbol.doc?.examples?.length) {
+    out.push('## Examples', '')
+    for (const ex of symbol.doc.examples) {
+      if (ex.intro) out.push(ex.intro, '')
+      if (ex.sourceUrl) out.push(`[Source example](${ex.sourceUrl}).`, '')
+      out.push(fencedCode(ex.code, ex.lang), '')
+      if (ex.outro) out.push(ex.outro, '')
+    }
+  }
+
+  if (symbol.doc?.references?.length) {
+    out.push('## References', '')
+    for (const reference of symbol.doc.references) out.push(`- [${reference.name}] ${reference.text}`)
+    out.push('')
+  }
+  if (symbol.doc?.changed) out.push('## Changed', '', symbol.doc.changed, '')
+  for (const note of symbol.doc?.admonitions ?? []) {
+    out.push(`> **${note.kind}:** ${note.text.replaceAll('\n', '\n> ')}`, '')
   }
 
   const signals = memberSignals(port ?? '', mentions.mentions)
