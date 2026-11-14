@@ -108,6 +108,19 @@ describe('the menu sidebar on protocol reference pages', () => {
     expect(document.querySelector('.api-reference-content')?.closest('[data-pagefind-ignore]')).toBeNull()
   })
 
+  it('draws the object header as every declaration header: one corner tab, no version badge, no pilcrow', async () => {
+    const document = await page('rs', 'tools', first('rs', 'tools'))
+    const tab = document.querySelector('dt.gp-sphinx-api-header > .gp-sphinx-api-layout > .api-corner')!
+    expect(tab, 'kind and Source share the corner tab').not.toBeNull()
+    expect([...tab.children].map((child) => child.classList.contains('api-leg--action'))).toEqual([false, true])
+    expect(tab.querySelector('a.api-leg--action')?.getAttribute('href')).toMatch(/^https:\/\/github\.com\//)
+    // The object is the page's entry; the type definitions below it are entries of their own and keep their permalinks.
+    expect(document.querySelector('dl.gp-sphinx-api-container:not(.mcp-type-definition) > dt.gp-sphinx-api-header a.headerlink')).toBeNull()
+    expect(document.querySelector('.api-reference-version')).toBeNull()
+    expect(document.querySelector('.api-reference-eyebrow')?.getAttribute('data-pagefind-ignore')).toBe('all')
+    expect(document.querySelector('h1.api-reference-title')?.getAttribute('data-pagefind-weight')).toBe('10')
+  })
+
   it('leaves the sidebar of every other documentation page indexed', async () => {
     const layout = await loadAstroTemplate('layouts/DocsLayout.astro', options)
     const window = new Window()
