@@ -4,13 +4,14 @@ import BaseLayout from '../layouts/BaseLayout.astro'
 import SearchPanel from '../components/SearchPanel.astro'
 import PageToolbar from '../components/PageToolbar.astro'
 import { withPortRoot, withRoot } from '../lib/site-root'
-import { PORT_BY_SLUG } from '../lib/ports'
+import { PORT_BY_SLUG, portPageUrl, referenceUrl } from '../lib/ports'
 import { buildTarget } from '../lib/versions'
 
 const port = PORT_BY_SLUG[process.env.LIBTMUX_DOCS_PORT ?? '']
 
 const version = buildTarget(process.env).version
 const searchHref = port ? withPortRoot(`/${port.slug}/${version}/search/`) : withRoot('/search/')
+const fallbackLinks = port ? [{ label: `${port.name} API index`, href: referenceUrl(port, version) }, { label: `${port.name} guides`, href: portPageUrl(port, version, 'guides') }] : undefined
 const breadcrumbs = [{ name: 'libtmux', url: withRoot('/') }, { name: 'Search', url: searchHref }]
 
 /**
@@ -37,7 +38,7 @@ const breadcrumbs = [{ name: 'libtmux', url: withRoot('/') }, { name: 'Search', 
     <PageToolbar breadcrumbs={breadcrumbs} />
     <h1 class="text-3xl font-semibold tracking-tight">Search</h1>
     <div class="mt-8">
-      <SearchPanel initialPort={port?.name} />
+      <SearchPanel initialPort={port?.name} url fallbackLinks={fallbackLinks} />
     </div>
   </main>
 </BaseLayout>

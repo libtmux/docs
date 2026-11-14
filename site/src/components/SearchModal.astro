@@ -1,7 +1,7 @@
 ---
 import SearchPanel from './SearchPanel.astro'
 import { withPortRoot, withRoot } from '../lib/site-root'
-import { PORT_BY_SLUG } from '../lib/ports'
+import { PORT_BY_SLUG, portPageUrl, referenceUrl } from '../lib/ports'
 
 interface Props {
   port?: string
@@ -18,10 +18,13 @@ const { port, version } = Astro.props
  * works, which is why it is a link and not a button.
  */
 const searchHref = port ? withPortRoot(`/${port}/${version}/search/`) : withRoot('/search/')
+const meta = port ? PORT_BY_SLUG[port] : undefined
+// When the index does not load, the reader can still browse the port.
+const fallbackLinks = meta ? [{ label: `${meta.name} API index`, href: referenceUrl(meta, version) }, { label: `${meta.name} guides`, href: portPageUrl(meta, version, 'guides') }] : undefined
 ---
 
 <dialog id="search-modal" class="search-modal" aria-label="Search" data-search-href={searchHref}>
-  <SearchPanel modal initialPort={port ? PORT_BY_SLUG[port]?.name : undefined} />
+  <SearchPanel modal initialPort={meta?.name} fallbackLinks={fallbackLinks} />
 </dialog>
 
 <style>
@@ -49,6 +52,9 @@ const searchHref = port ? withPortRoot(`/${port}/${version}/search/`) : withRoot
 </style>
 
 <script>
+  import { SEARCH_STATE_EVENT } from '../lib/search-panel'
+  import { readSnapshot } from '../lib/search-state'
+
   let controller: AbortController | undefined
   function bindSearchModal() {
     controller?.abort()
@@ -72,12 +78,23 @@ const searchHref = port ? withPortRoot(`/${port}/${version}/search/`) : withRoot
     // indistinguishable from a real link and gets reported as broken on every
     // page. That goes for prose about it too, which is why this comment
     // describes the selector instead of showing one.
+    const searchLinks: HTMLAnchorElement[] = []
     for (const link of document.querySelectorAll('a')) {
       const target = link.getAttribute('href')
       if (target === searchHref || target === `${searchHref}#`) {
         link.addEventListener('click', open, { signal })
+        searchLinks.push(link)
       }
     }
+
+    // A modified click opens the search page, which should open on this query.
+    dialog.addEventListener(SEARCH_STATE_EVENT, (event) => {
+      const query = (event as CustomEvent<{ query: string }>).detail.query
+      for (const link of searchLinks) link.href = `${searchHref}${query}`
+    }, { signal })
+
+    // Back from a result returns to the dialog as it was left.
+    if (readSnapshot(history.state)?.open) open()
 
     document.addEventListener('keydown', (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {

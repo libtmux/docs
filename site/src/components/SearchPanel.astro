@@ -28,9 +28,13 @@ interface Props {
   initialPort?: string
   /** Search a small built-in index instead of Pagefind's, for the demo. */
   mock?: boolean
+  /** Keep the query, scope and facets in the address: the search page does, the dialog does not. */
+  url?: boolean
+  /** Where the index-failure message points: the API index and the guides. */
+  fallbackLinks?: { label: string; href: string }[]
 }
 
-const { modal = false, subResults, initialQuery, initialPort, mock = false } = Astro.props as Props
+const { modal = false, subResults, initialQuery, initialPort, mock = false, url = false, fallbackLinks } = Astro.props as Props
 // A breadcrumb names a port as the site does, not by its slug.
 const segmentNames =
   subResults === 'breadcrumbs' ? JSON.stringify(Object.fromEntries(PORTS.map((port) => [port.slug, port.name]))) : undefined
@@ -43,6 +47,8 @@ const segmentNames =
   data-sub-results={subResults}
   data-initial-query={initialQuery}
   data-initial-port={initialPort}
+  data-url={url ? '' : undefined}
+  data-fallback-links={fallbackLinks?.length ? JSON.stringify(fallbackLinks) : undefined}
   data-mock={mock ? '' : undefined}
   data-segment-names={segmentNames}
 >
@@ -56,16 +62,37 @@ const segmentNames =
       type="search"
       autocomplete="off"
       spellcheck="false"
-      placeholder={initialPort ? `Search ${initialPort} documentation` : 'Search the documentation'}
+      placeholder={initialPort ? `Search ${initialPort} docs and API` : 'Search the documentation'}
       aria-label="Search"
     />
     {modal && <kbd class="search-panel__hint">Esc</kbd>}
   </div>
 
+  {initialPort && (
+    <div class="search-panel__scope" role="group" aria-label="Search scope">
+      <span class="search-panel__scope-label">Search in</span>
+      <div class="search-panel__seg">
+        <button type="button" data-scope="port" aria-pressed="true">{initialPort} docs and API</button>
+        <button type="button" data-scope="reference" aria-pressed="false">{initialPort} API only</button>
+        <button type="button" data-scope="all" aria-pressed="false">All languages</button>
+      </div>
+    </div>
+  )}
+
   <div class="search-panel__body">
-    <aside class="search-panel__filters" hidden>
-      <p class="search-panel__filters-title">Port</p>
-      <div class="search-panel__filter-list"></div>
+    <aside class="search-panel__filters" aria-label="Filters" hidden>
+      <div class="search-panel__facet search-panel__facet--section" hidden>
+        <p class="search-panel__filters-title">Section</p>
+        <div class="search-panel__filter-list search-panel__section-list"></div>
+      </div>
+      <div class="search-panel__facet search-panel__facet--kind" hidden>
+        <p class="search-panel__filters-title">Kind</p>
+        <div class="search-panel__filter-list search-panel__kind-list"></div>
+      </div>
+      <div class="search-panel__facet search-panel__facet--port">
+        <p class="search-panel__filters-title">Port</p>
+        <div class="search-panel__filter-list"></div>
+      </div>
     </aside>
     <div class="search-panel__results" role="listbox" aria-label="Search results">
       <p class="search-panel__status">Type to search.</p>
@@ -190,9 +217,114 @@ const segmentNames =
     font-size: 0.875rem;
   }
 
+  /* 13px, so a count is as legible as the label beside it. */
   .search-panel__filter-count {
     margin-left: auto;
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
+    color: var(--color-foreground-muted);
+  }
+
+  .search-panel__facet + .search-panel__facet {
+    margin-top: 1rem;
+  }
+
+  .search-panel__facet[hidden] {
+    display: none;
+  }
+
+  /* The scope is the first decision, so it sits under the field. */
+  .search-panel__scope {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    font-size: 0.8125rem;
+    color: var(--color-foreground-muted);
+  }
+
+  .search-panel__seg {
+    display: inline-flex;
+    flex-wrap: wrap;
+    border: 1px solid var(--control-border, var(--color-background-border));
+    border-radius: var(--radius-md, 0.375rem);
+    overflow: hidden;
+  }
+
+  .search-panel__seg button {
+    min-height: 1.75rem;
+    padding: 0 0.75rem;
+    border: 0;
+    background: transparent;
+    color: var(--text-color);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .search-panel__seg button + button {
+    border-left: 1px solid var(--color-background-border);
+  }
+
+  .search-panel__seg button[aria-pressed='true'] {
+    background: color-mix(in oklab, var(--theme-primary) 10%, transparent);
+    color: var(--theme-primary);
+    font-weight: 600;
+  }
+
+  .search-panel__seg button:focus-visible,
+  .search-panel__clear:focus-visible,
+  .search-panel__widen:focus-visible,
+  .search-panel__failure button:focus-visible {
+    outline: 2px solid var(--focus-ring-color, var(--theme-primary));
+    outline-offset: 2px;
+  }
+
+  .search-panel__clear,
+  .search-panel__widen,
+  .search-panel__failure button {
+    margin-left: 0.5rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--color-link);
+    font: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  .search-panel__widen {
+    display: block;
+    margin: 0.25rem 0 0;
+  }
+
+  .search-panel__failure {
+    padding: 1rem;
+    border: 1px solid var(--color-background-border);
+    border-radius: var(--radius-md, 0.375rem);
+    background: var(--color-background-secondary);
+  }
+
+  .search-panel__failure p {
+    margin: 0.25rem 0 0.75rem;
+    color: var(--color-foreground-muted);
+  }
+
+  .search-panel__failure-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+  }
+
+  .search-panel__failure-actions button {
+    margin: 0;
+  }
+
+  .search-panel__failure-actions a {
+    color: var(--color-link);
+  }
+
+  .search-panel__owner {
+    font-weight: 400;
     color: var(--color-foreground-muted);
   }
 
@@ -256,7 +388,8 @@ const segmentNames =
     gap: 0.15rem 0.85rem;
     margin-top: 0.35rem;
     font-family: var(--font-mono);
-    font-size: 0.7rem;
+    font-size: 0.75rem;
+    line-height: 1.125rem;
     color: var(--color-foreground-muted);
   }
 
@@ -378,14 +511,17 @@ const segmentNames =
       subResults: root.dataset.subResults as SubResultsDisplay | undefined,
       initialQuery: root.dataset.initialQuery,
       initialPort: root.dataset.initialPort,
+      url: root.dataset.url !== undefined,
+      fallbackLinks: root.dataset.fallbackLinks ? (JSON.parse(root.dataset.fallbackLinks) as { label: string; href: string }[]) : undefined,
       mock,
       segmentNames: root.dataset.segmentNames ? (JSON.parse(root.dataset.segmentNames) as Record<string, string>) : undefined,
     })
     const dialog = root.closest('dialog')
     if (dialog) {
       handle.focus()
+      // Closing keeps the query: reopening finds it where it was, and it goes
+      // only when the page changes and a new dialog arrives with it.
       dialog.addEventListener('search-modal:open', () => handle.focus())
-      dialog.addEventListener('close', () => handle.clear())
     }
     await handle.ready
   }
