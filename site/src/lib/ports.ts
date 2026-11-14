@@ -1156,7 +1156,7 @@ const CORE_PORTS: readonly Port[] = [
         label: 'Gradle',
         lang: 'kotlin',
         code: `dependencies {
-    implementation(platform("io.github.libtmux:libtmux-bom:0.1.0"))
+    implementation(platform("io.github.libtmux:libtmux-bom:{version}"))
 
     implementation("io.github.libtmux:libtmux")
     testImplementation("io.github.libtmux:libtmux-junit5")
@@ -1378,9 +1378,9 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
         lang: 'swift',
         code: `.package(
     url: "https://github.com/libtmux/libtmux-swift.git",
-    from: "0.1.0"
+    from: "{version}"
 )`,
-        note: 'A range from 0.1.0 up to the next major version. Any 0.1.N release may change the API, so pin `exact:` instead to avoid a break.',
+        note: 'A range from this release up to the next major version. Any 0.1.N release may change the API, so pin `exact:` instead to avoid a break.',
       },
     ],
     // SwiftPM resolves from the repository itself, so the repository is the
