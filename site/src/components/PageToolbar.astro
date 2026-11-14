@@ -13,18 +13,34 @@ interface Props {
   editLabel?: string
 }
 const { breadcrumbs, pagePorts = [], port, editHref, editLabel } = Astro.props
+const last = breadcrumbs.length - 1
+/*
+ * On a phone the trail keeps its first crumb and its last two; the rest fold into one "…" that links to the nearest index
+ * and names what it hides, so the trail is one line, not two. The folded crumbs stay in the markup for every other width.
+ */
+const folded = breadcrumbs.length > 3 ? breadcrumbs.slice(1, -2) : []
+const foldedUntil = folded.length
+const nearestIndex = [...folded].reverse().find((item) => item.url)?.url
 ---
 
 <div class="not-prose mb-4 flex items-center gap-x-4" data-page-toolbar data-pagefind-ignore="all">
   <nav aria-label="Breadcrumb" class="min-w-0 flex-1 text-sm text-muted">
     <ol class="flex flex-wrap gap-x-2 gap-y-1">
-      {breadcrumbs.map((item, i) => <li class="min-w-0 max-w-full wrap-anywhere">
-        {i > 0 && <span aria-hidden="true" class="me-2">/</span>}
-        {i === breadcrumbs.length - 1
-          ? <span data-breadcrumb-item aria-current="page">{item.symbol ? <SymbolName name={item.name} /> : item.name}</span>
-          : item.url ? <a data-breadcrumb-item class="hover:underline" href={item.url}>{item.symbol ? <SymbolName name={item.name} /> : item.name}</a>
-          : <span data-breadcrumb-item>{item.symbol ? <SymbolName name={item.name} /> : item.name}</span>}
-      </li>)}
+      {breadcrumbs.map((item, i) => <Fragment>
+        {foldedUntil > 0 && i === last - 1 && <li class="crumb-collapsed min-w-0">
+          <span aria-hidden="true" class="me-2">/</span>
+          {nearestIndex
+            ? <a class="hover:underline" href={nearestIndex} aria-label={folded.map((crumb) => crumb.name).join(', ')}>…</a>
+            : <span aria-label={folded.map((crumb) => crumb.name).join(', ')}>…</span>}
+        </li>}
+        <li class:list={['min-w-0 max-w-full wrap-anywhere', i > 0 && i <= foldedUntil && 'crumb-mid']}>
+          {i > 0 && <span aria-hidden="true" class="me-2">/</span>}
+          {i === last
+            ? <span data-breadcrumb-item aria-current="page">{item.symbol ? <code class="crumb-code"><SymbolName name={item.name} /></code> : item.name}</span>
+            : item.url ? <a data-breadcrumb-item class="hover:underline" href={item.url}>{item.symbol ? <code class="crumb-code"><SymbolName name={item.name} /></code> : item.name}</a>
+            : <span data-breadcrumb-item>{item.symbol ? <code class="crumb-code"><SymbolName name={item.name} /></code> : item.name}</span>}
+        </li>
+      </Fragment>)}
     </ol>
   </nav>
   <div class="page-toolbar-controls ml-auto flex shrink-0 items-center gap-2">
@@ -34,3 +50,13 @@ const { breadcrumbs, pagePorts = [], port, editHref, editLabel } = Astro.props
     <PageActions editHref={editHref} editLabel={editLabel} />
   </div>
 </div>
+
+<style>
+  /* The trail is muted throughout, and an owner or the page is code: a reader tells a type from the sidebar bucket that shares its name. */
+  .crumb-code { padding: 0; border: 0; background: none; font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.8125rem; font-weight: 400; color: inherit; }
+  .crumb-collapsed { display: none; }
+  @media (width < 30rem) {
+    .crumb-mid { display: none; }
+    .crumb-collapsed { display: block; }
+  }
+</style>

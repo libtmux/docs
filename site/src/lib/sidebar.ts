@@ -97,7 +97,9 @@ export async function pageBreadcrumbs(title: string, path: string, version: stri
   const items: BreadcrumbItem[] = [{ name: language?.name ?? (tmux ? 'tmux' : 'Documentation'), url: url(tmux ? 'tmux' : '') }]
   const model = port ? API_MODELS[port] : undefined
   const symbol = path.startsWith('reference/') ? model?.symbols.find((entry) => entry.slug === path.slice('reference/'.length)) : undefined
+  // Port / Product / Section / Page: the core library's reference names its product like every other trail does.
   if (symbol && model && API_NAV[port!]) return [...items,
+    { name: 'Core Library', url: url('core') },
     { name: 'API reference', url: url('reference') },
     ...referenceBreadcrumbs(model, API_NAV[port!], navTree(port!), symbol, url('reference'), (entry) => productApiHref(model, entry, version)),
   ]
