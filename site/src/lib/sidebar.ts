@@ -103,6 +103,8 @@ export async function pageBreadcrumbs(title: string, path: string, version: stri
     { name: 'API reference', url: url('reference') },
     ...referenceBreadcrumbs(model, API_NAV[port!], navTree(port!), symbol, url('reference'), (entry) => productApiHref(model, entry, version)),
   ]
+  // The reference index and the glossary are the core library's, and name that product as the symbol pages do.
+  if (port && /^reference(?:\/|$)/.test(path)) items.push({ name: 'Core Library', url: url('core') })
   const entries = docsEntriesAvailable(await getCollection('docs', (entry) => !entry.data.port || entry.data.port === port), port)
   const parts = path.split('/').filter(Boolean)
   for (let i = tmux ? 2 : 1; i < parts.length; i++) {

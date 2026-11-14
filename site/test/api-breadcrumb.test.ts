@@ -58,5 +58,10 @@ describe('the breadcrumb (Breadcrumb, record 0021)', () => {
     expect(new Set(crumbs.map((crumb) => crumb.name)).size, 'no label repeats').toBe(crumbs.length)
     expect(crumbs[1]!.url).toMatch(/\/go\/latest\/core\/$/)
   })
+
+  it('names the product on the reference index and the glossary too', async () => {
+    expect((await pageBreadcrumbs('API reference', 'reference', 'latest', 'go')).map((crumb) => crumb.name)).toEqual(['Go', 'Core Library', 'API reference'])
+    expect((await pageBreadcrumbs('API glossary', 'reference/glossary', 'latest', 'go')).map((crumb) => crumb.name)).toEqual(['Go', 'Core Library', 'API reference', 'API glossary'])
+  })
 })
 
