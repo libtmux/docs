@@ -866,7 +866,8 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout > .
   margin: 0;
   white-space: nowrap;
 }
-.api-corner > :is(.api-badge, .api-leg) {
+/* Tripled so the modifier's own box (`.api-badge.api-badge--mod.api-badge--mod`) cannot make the tab taller than its gutter. */
+.api-corner > .api-badge.api-badge.api-badge {
   --leg-h: var(--corner-h);
   box-sizing: border-box;
   height: var(--corner-h);
@@ -875,10 +876,10 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout > .
   border-bottom-color: transparent;
   font-size: 0.75rem;
 }
-.api-corner > .api-badge--mod.api-badge--mod { padding-inline: 0.35rem; font-size: 0.7421875rem; }
-.api-corner > :last-child { border-bottom-right-radius: var(--tab-r); border-right-color: transparent; }
+.api-corner > .api-badge--mod.api-badge--mod.api-badge--mod { padding-inline: 0.35rem; font-size: 0.7421875rem; }
+.api-corner > .api-badge.api-badge.api-badge:last-child { border-bottom-right-radius: var(--tab-r); border-right-color: transparent; }
 /* A header with a body below has no card corner at its bottom-right. */
-dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:not(:only-child) > .gp-sphinx-api-layout > .api-corner > :last-child { border-bottom-right-radius: 0; }
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:not(:only-child) > .gp-sphinx-api-layout > .api-corner > .api-badge.api-badge.api-badge:last-child { border-bottom-right-radius: 0; }
 .api-corner > :focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: -2px; }
 /* A formatted signature carries .25rem of its own under its last line; any other gets the same, so the tab sits in the leading and never meets a glyph. */
 dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout > .gp-sphinx-api-layout-left:not(:has(.api-native-signature--formatted)) { padding-block-end: 0.25rem; }
