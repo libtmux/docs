@@ -9,6 +9,7 @@ import ApiScalarMembers from './ApiScalarMembers.astro'
 import ApiMemberList from './ApiMemberList.astro'
 import ApiRelationships from './ApiRelationships.astro'
 import RelationshipCollection from './RelationshipCollection.astro'
+import ApiIndexHead from './ApiIndexHead.astro'
 import { apiRelationshipSections, type ApiRelationshipPath } from '../../lib/api-relationships'
 import { lacksCallEdges, sameOwnerMembers } from '../../lib/api-collections'
 import ApiBadge from '../../components/api/ApiBadge.astro'
@@ -541,6 +542,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                 ? 'Browse the LibTmux cmdlets by the tmux objects and operations they control. Each command includes syntax, parameter sets, pipeline types, and examples.'
                 : `Browse the ${label} types and operations for working with tmux. Start with the core objects below, or search for a type or member.`}
             </p>
+            {port && !source && <ApiIndexHead port={port} base={refBase} />}
             {paths.length > 0 && <ApiRelationships paths={paths} hrefFor={hrefFor} />}
             {sections.map((mod) => (
               /*
