@@ -30,6 +30,7 @@ export async function checkNativeSignatureGeometry(header) {
     }
     const row = element.querySelector(':scope > .gp-sphinx-api-layout')
     return {
+      corner: Boolean(row?.querySelector(':scope > .gp-sphinx-api-layout-right')?.classList.contains('api-corner')),
       header: read(element), row: read(row),
       code: read(row?.querySelector(':scope > .gp-sphinx-api-layout-left')),
       controls: read(row?.querySelector(':scope > .gp-sphinx-api-layout-right')),
@@ -45,7 +46,7 @@ export async function checkNativeSignatureGeometry(header) {
   })
   const contained = (inner, outer) => inner.left >= outer.left - tolerance && inner.right <= outer.right + tolerance
     && inner.top >= outer.top - tolerance && inner.bottom <= outer.bottom + tolerance
-  for (const [name, region] of Object.entries(geometry)) {
+  for (const [name, region] of Object.entries(geometry).filter(([name]) => name !== 'corner')) {
     assert(region, `Native signature ${name} region is present`)
     assert(Object.values(region.insets).every(Number.isFinite)
       && [region.left, region.right, region.top, region.bottom, region.width, region.height].every(Number.isFinite)
@@ -56,6 +57,19 @@ export async function checkNativeSignatureGeometry(header) {
   const { row, code, controls, firstSignature } = geometry
   const headerContent = content(geometry.header)
   const rowContent = content(row)
+  if (geometry.corner) {
+    // The corner tab is the header's own corner: flush on the bottom-right padding edge, out of the row, so it takes no
+    // width from the signature and no height from the card. Its text never meets the signature's (checkCornerClear).
+    const box = geometry.header
+    assert(contained(row, headerContent), 'Native signature row is contained in the padded header')
+    assert(near(code.width, rowContent.right - rowContent.left), 'Native signature uses the whole row: the corner tab takes no width')
+    assert(controls.right <= box.right + tolerance && controls.right >= box.right - box.insets.right - 1 - tolerance
+      && controls.bottom <= box.bottom + tolerance && controls.bottom >= box.bottom - box.insets.bottom - 1 - tolerance,
+    'Native signature corner tab sits flush in the header\'s bottom-right corner')
+    assert(controls.height > 0 && controls.height < 16, 'Native signature corner tab is a gutter tab, under 16px high')
+    await checkNativeSignatureLines(header)
+    return { ...geometry, mode: 'corner', availableCodeWidth: code.width }
+  }
   assert(contained(row, headerContent), 'Native signature row is contained in the padded header')
   assert(near(row.left, headerContent.left) && near(row.right, headerContent.right),
     'Native signature row uses the available header width')
@@ -134,7 +148,8 @@ export async function measureDeclarationControls(header) {
     const groupBox = group.getBoundingClientRect()
     return {
       id: element.getAttribute('data-symbol-id') ?? element.id,
-      mode: groupBox.top < codeBox.bottom - 1 && groupBox.bottom > codeBox.top + 1 ? 'beside' : 'stacked',
+      mode: group.classList.contains('api-corner') ? 'corner'
+        : groupBox.top < codeBox.bottom - 1 && groupBox.bottom > codeBox.top + 1 ? 'beside' : 'stacked',
       line: { top, height, centre: top + height / 2 }, controls,
     }
   })
@@ -150,6 +165,12 @@ export function assertDeclarationControlsLevel(measurement, label, tolerance = L
   const { mode, line, controls } = measurement
   assert(Number.isFinite(line.centre) && controls.every((control) => Number.isFinite(control.centre)),
     `${label}: first line and controls have measurable centres`)
+  if (mode === 'corner') {
+    // A corner tab is not beside a line: its badges share the tab's one row.
+    const spread = Math.max(...controls.map((control) => control.centre)) - Math.min(...controls.map((control) => control.centre))
+    assert(spread <= tolerance, `${label}: corner tab badges share their row centre, spread ${spread.toFixed(2)}px`)
+    return
+  }
   if (mode === 'beside') {
     for (const control of controls) {
       const offset = control.centre - line.centre
@@ -213,10 +234,10 @@ export async function checkDeclarationControlAlignment(browser, base, widths = [
         await page.setViewportSize({ width, height: 1000 })
         for (let index = 0; index < count; index++) {
           const measurement = await checkDeclarationControlsLevel(headers.nth(index), `${label} #${index + 1} at ${width}px`)
-          if (measurement.mode === 'beside') beside.set(width, beside.get(width) + 1)
+          if (measurement.mode === 'beside' || measurement.mode === 'corner') beside.set(width, beside.get(width) + 1)
           measured.push({ label, width, index, ...measurement })
           if (width === widths[0] && index === 0) {
-            assert.equal(measurement.mode, 'beside', `${label}: desktop controls sit beside the first line`)
+            assert(['beside', 'corner'].includes(measurement.mode), `${label}: desktop controls sit beside the first line or in the corner tab`)
           }
         }
       }
@@ -228,6 +249,38 @@ export async function checkDeclarationControlAlignment(browser, base, widths = [
     await page.close()
   }
   return { beside, measured }
+}
+
+/**
+ * A corner tab never covers the signature: no painted glyph of the declaration meets the tab's box. A glyph's box runs from
+ * ascent to descent, and the tab sits in the leading below the last line, so the boxes are compared shrunk to the glyphs'
+ * own height, not to the line.
+ */
+export async function checkCornerClear(header, label) {
+  const overlap = await header.evaluate((element) => {
+    const document = element.ownerDocument
+    const tab = element.querySelector('.api-corner')
+    const code = element.querySelector('.gp-sphinx-api-layout-left')
+    if (!tab?.checkVisibility() || !code) return null
+    const box = tab.getBoundingClientRect()
+    const walker = document.createTreeWalker(code, document.defaultView.NodeFilter.SHOW_TEXT)
+    let worst = 0
+    for (let node; (node = walker.nextNode());) {
+      if (!node.textContent.trim() || node.parentElement.closest('[popover]') || !node.parentElement.checkVisibility()) continue
+      const range = document.createRange()
+      range.selectNodeContents(node)
+      for (const rect of range.getClientRects()) {
+        if (!rect.width || !rect.height) continue
+        // The painted glyphs, 1px inside the font's box on each side.
+        const horizontal = Math.min(rect.right, box.right) - Math.max(rect.left, box.left)
+        const vertical = Math.min(rect.bottom - 1, box.bottom) - Math.max(rect.top + 1, box.top)
+        if (horizontal > 0 && vertical > 0) worst = Math.max(worst, Math.min(horizontal, vertical))
+      }
+    }
+    return worst
+  })
+  if (overlap !== null) assert(overlap <= 2, `${label}: the corner tab covers ${overlap.toFixed(1)}px of the signature`)
+  return overlap
 }
 
 /** A formatter's logical line must occupy one painted row, even when it scrolls. */

@@ -238,31 +238,6 @@ const badges = [
 const value = (symbol as { value?: string }).value
 const alias = aliasDeclaration(symbol, language)
 
-/**
- * A signature long enough to hide behind a summary.
- *
- * Ten parameters is gp-sphinx's own default and it is the right shape of
- * threshold: 44 of this estate's 5,641 signatures reach it, which is the
- * handful where the parameter list stops being a signature and starts being
- * a wall. Folding at three would hide 717 signatures that read fine.
- *
- * A `<details>` rather than gp-sphinx's button and hidden panel. It is the
- * same affordance with keyboard and screen-reader behaviour built in, it
- * works with scripting off, and a browser opens it by itself when a fragment
- * points inside — which is the case their `expandForHash` exists to handle.
- */
-const FOLD_THRESHOLD = 10
-/**
- * Decided per signature, not per symbol.
- *
- * An overload set has one entry and several signatures with different
- * parameter counts. Taking the last one's length and applying it to all of
- * them folded eight short signatures that read fine — 44 folds across 36
- * entries, where the two counts should have matched.
- */
-const folds = (sig: { params: unknown[] }) => sig.params.length >= FOLD_THRESHOLD
-const foldable = symbol.signatures.some(folds)
-
 const { params, returns, raises, typeParameters } = apiEntryFields(symbol, language)
 const methods = apiMethodDetails(symbol, language)
 const overloadTargets = new Map(methods.map((method) => [method.overloadLabel, method.id]))
@@ -331,7 +306,6 @@ const hasBody =
     data-objtype={kind}
     data-badge-count={String(badges.length)}
     data-has-badges={String(badges.length > 0)}
-    data-has-fold={String(foldable)}
     data-has-source={String(Boolean(source))}
     data-signature-expanded="false"
   >
@@ -380,22 +354,7 @@ const hasBody =
             symbol.signatures.map((sig, i) => (
               <>
                 <span {...signatureTargets[i]} class="section-anchor-alias" />
-                {folds(sig) ? (
-                  <details class="gp-sphinx-api-fold">
-                    <summary class="gp-sphinx-api-signature-toggle">
-                      <span class="sig-paren">(</span>
-                      <span class="gp-sphinx-api-signature-preview">
-                        {sig.params.length} parameters
-                      </span>
-                      <span class="sig-paren">)</span>
-                    </summary>
-                    <span class="gp-sphinx-api-signature-expanded">
-                      <ApiSignatureParameters signature={sig} symbol={symbol} index={index} language={language} layout={pythonLayouts?.get(sig)} />
-                    </span>
-                  </details>
-                ) : (
-                  <ApiSignatureParameters signature={sig} symbol={symbol} index={index} language={language} layout={pythonLayouts?.get(sig)} />
-                )}
+                <ApiSignatureParameters signature={sig} symbol={symbol} index={index} language={language} layout={pythonLayouts?.get(sig)} />
                 {sig.returns && (
                   <span class="sig-return">
                     <span class="sig-return-icon">{language === 'ts' ? ':' : '→'}</span>{' '}
@@ -412,34 +371,22 @@ const hasBody =
           </>}
         </span>
       </div>
-      <div class="gp-sphinx-api-layout-right">
-        <span class="gp-sphinx-api-slot gp-sphinx-api-slot--badges">
-          {badges.map((b) => <ApiBadge label={b.label} variant={b.variant} value={b.value} />)}
-        </span>
-        {
-          /*
-           * The brackets are punctuation, not part of the link.
-           *
-           * `[source]` was one anchor, so hovering underlined the brackets
-           * too and the click target included them. gp-sphinx's own viewcode
-           * link is the whole thing, which is the one place this deliberately
-           * differs — see notes/gp-sphinx-parity.md.
-           *
-           * The wrapper keeps the layout classes so the vendored rule making
-           * this an inline-flex item in the header row still applies; only
-           * the anchor inside it is new.
-           */
-          (source || alternate) && (
-            <span class="gp-sphinx-api-source-link viewcode-link">
-              {source && <span class="pre">[<a class="api-source-anchor" href={source}>source</a>]</span>}
-              {alternate && (
-                <span class="pre api-alternate-link" data-alternate-docs={alternate.kind} data-alternate-observation={alternate.differs ? 'release' : 'source'}>[<a
-                  class="api-source-anchor api-alternate-anchor" href={alternate.href} rel="noopener" title={alternate.title} aria-label={alternate.title}>{alternate.label}</a>]</span>
-              )}
-            </span>
-          )
-        }
-        <a class="headerlink" href={`#${anchor}`} title={`Permalink to ${symbol.name}`}>&#182;</a>
+      {/*
+        * The kind, the modifiers and where the code lives share one corner tab,
+        * flush in the card's bottom-right corner (design system: Card,
+        * Signature). It takes no width from the signature, and the page is this
+        * entry, so its URL is the permalink and there is no `¶`. Source is the
+        * pinned GitHub line until the page carries a source pane.
+        */}
+      <div class="gp-sphinx-api-layout-right api-corner" role="group" aria-label={`${symbol.name}: kind and source`}>
+        {badges.map((b) => <ApiBadge label={b.label} variant={b.variant} value={b.value} />)}
+        {source && (
+          <a class="api-badge api-leg api-leg--action api-source-anchor" href={source} rel="nofollow noopener" aria-label={`Source of ${qualifiedName} on GitHub at the pinned revision`}><span class="api-leg__m" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="m5.5 4.5-3.5 3.5 3.5 3.5M10.5 4.5l3.5 3.5-3.5 3.5" /></svg></span><span class="api-leg__w"><span class="api-leg__wl">source</span></span></a>
+        )}
+        {alternate && (
+          <a class="api-badge api-leg api-leg--action api-source-anchor api-alternate-anchor" href={alternate.href} rel="noopener" title={alternate.title} aria-label={alternate.title}
+            data-alternate-docs={alternate.kind} data-alternate-observation={alternate.differs ? 'release' : 'source'}><span class="api-leg__m" aria-hidden="true">&#8599;</span><span class="api-leg__w"><span class="api-leg__wl">{alternate.label}</span></span></a>
+        )}
       </div>
     </div>
   </dt>

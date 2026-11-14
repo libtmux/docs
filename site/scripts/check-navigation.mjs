@@ -659,8 +659,8 @@ export async function checkApiAnchorArrival(browser, base) {
         const response = await page.goto(path, { waitUntil: 'load' })
         assert(response?.ok(), `${path}: HTTP ${response?.status()}`)
         const declaration = page.locator('dt.gp-sphinx-api-header').first()
-        const href = await declaration.locator('a.headerlink').getAttribute('href')
-        const identity = href.slice(1)
+        // The page is the entry, so its header draws no permalink: its id is the fragment.
+        const identity = await declaration.getAttribute('id')
         const idleColor = await declaration.evaluate((element) => getComputedStyle(element).backgroundColor)
         assert.equal(await declaration.getAttribute('id'), identity, `${path}: the symbol link reaches its declaration`)
         for (const fragment of [identity, `${identity}.declaration`]) {

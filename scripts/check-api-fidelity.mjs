@@ -134,8 +134,9 @@ for (const port of PORTS) {
     responsive += (html.match(/gp-sphinx-api-layout--responsive/g) ?? []).length
   }
 
-  // Retained port builds may still carry paired desktop and mobile layouts.
-  const expected = entries * 2 - responsive
+  // Retained port builds may still carry paired desktop and mobile layouts, each with its own permalink. A responsive entry is the
+  // whole page, so its URL is the permalink and it draws none; the id check above is what proves the fragment lands.
+  const expected = (entries - responsive) * 2
   if (permalinks !== expected) {
     failures.push(`${port}: ${permalinks} permalinks for ${entries} entries, expected ${expected}`)
   }
@@ -170,4 +171,4 @@ if (failures.length) {
   for (const f of failures) console.error(`  ${f}`)
   process.exit(1)
 }
-console.log('\nevery entry carries a permalink, its hooks and a responsive layout')
+console.log('\nevery entry carries its hooks, an id its URL reaches and a responsive layout')

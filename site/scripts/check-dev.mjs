@@ -20,7 +20,7 @@ import { checkColorScheme } from './check-color-scheme.mjs'
 import { checkLanguageIconScheme } from './check-language-icon-scheme.mjs'
 import { checkHomeExampleOptions } from './check-home-example-options.mjs'
 import { checkDevSample, checkRowPermalinks } from './check-dev-sample.mjs'
-import { checkDeclarationControlAlignment, checkDeclarationControlsLevel, checkMemberBodyInsets, checkNativeSignatureGeometry, checkNativeSignatureLinks } from './check-native-layout.mjs'
+import { checkCornerClear, checkDeclarationControlAlignment, checkDeclarationControlsLevel, checkMemberBodyInsets, checkNativeSignatureGeometry, checkNativeSignatureLinks } from './check-native-layout.mjs'
 import { checkBadgeCentring, checkChipGrowth, checkMentionDensity, checkUsageChips } from './check-badge-centring.mjs'
 import { checkBlockLinksUndecorated, checkKindBadgeLinks, checkKindBadgeLinksFail, checkExternalLinkFirstPaint, checkRequiredAppearance, checkTmuxReferencePreviews, checkTmuxReferencePreviewsFail, checkWebAnalytics, checkWebAnalyticsTransitions } from './check-page-readiness.mjs'
 import { checkTypeParameters } from './check-type-parameters.mjs'
@@ -375,12 +375,14 @@ async function checkSignatureLayouts(browser, base) {
       await page.emulateMedia({ colorScheme })
       for (const width of [1440, 803, 390]) {
         await page.setViewportSize({ width, height: 900 })
-        const code = await module.locator('.gp-sphinx-api-layout-left').boundingBox()
+        const header = await module.boundingBox()
         const toolbar = await module.locator('.gp-sphinx-api-layout-right').boundingBox()
-        assert(Math.abs(code.y + code.height / 2 - toolbar.y - toolbar.height / 2) < 2,
-          `${colorScheme}/${width}px: module declaration and toolbar share a row`)
-        assert(code.x + code.width <= toolbar.x, `${colorScheme}/${width}px: declaration does not overlap controls`)
-        assert((await module.boundingBox()).height < 50, `${colorScheme}/${width}px: short module header stays compact`)
+        // Kind and source share a corner tab over the header's bottom padding; it takes neither width nor height from it.
+        assert(toolbar.x >= header.x && toolbar.x + toolbar.width <= header.x + header.width + 1
+          && toolbar.y >= header.y && toolbar.y + toolbar.height <= header.y + header.height + 1,
+        `${colorScheme}/${width}px: module corner tab sits inside its header`)
+        await checkCornerClear(module, `${colorScheme}/${width}px: module declaration`)
+        assert(header.height < 50, `${colorScheme}/${width}px: short module header stays compact`)
       }
     }
     await page.goto(`${base}/fsharp/latest/reference/libtmux-fsharp-server-tryfindclient/`, { waitUntil: 'load' })
@@ -428,18 +430,15 @@ async function checkSignatureLayouts(browser, base) {
       await page.emulateMedia({ colorScheme })
       for (const width of apiSignaturesOnly ? [1920, 1440, 803, 768, 390, 320] : [803, 390]) {
         await page.setViewportSize({ width, height: 1000 })
-        const code = await kotlin.locator('.gp-sphinx-api-layout-left').boundingBox()
+        const header = await kotlin.boundingBox()
         const toolbar = await kotlin.locator('.gp-sphinx-api-layout-right').boundingBox()
         if (width === 803 || width === 1920) {
-          const level = await checkDeclarationControlsLevel(kotlin, `${colorScheme}/${width}px: toolbar shares the declaration's first line`)
-          assert.equal(level.mode, 'beside', `${colorScheme}/${width}px: toolbar shares the declaration's first row when it fits`)
-          assert(code.x + code.width <= toolbar.x,
-            `${colorScheme}/${width}px: declaration leaves room for its toolbar`)
+          const level = await checkDeclarationControlsLevel(kotlin, `${colorScheme}/${width}px: corner tab badges share a row`)
+          assert.equal(level.mode, 'corner', `${colorScheme}/${width}px: kind and source share the declaration's corner tab`)
         }
-        if (width <= 390) {
-          assert(toolbar.y >= code.y + code.height,
-            `${colorScheme}/${width}px: toolbar follows the full-width signature`)
-        }
+        assert(toolbar.x >= header.x && toolbar.x + toolbar.width <= header.x + header.width + 1,
+          `${colorScheme}/${width}px: the corner tab stays inside the header`)
+        await checkCornerClear(kotlin, `${colorScheme}/${width}px: Kotlin declaration`)
         assert(toolbar.height < 30, `${colorScheme}/${width}px: badges and links stay in one compact row`)
         assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
           `${colorScheme}/${width}px: declaration and toolbar fit without clipping`)
@@ -447,7 +446,7 @@ async function checkSignatureLayouts(browser, base) {
     }
     console.log('Native browse layout: compact F# modules and linked Kotlin function cards work without JavaScript')
     const { measured } = await checkDeclarationControlAlignment(browser, base)
-    console.log(`Declaration controls: ${measured.length} sampled headers keep their controls level with the first signature line at 1440/768/500/390px`)
+    console.log(`Declaration controls: ${measured.length} sampled headers keep their controls level, beside the first line or in the corner tab, at 1440/768/500/390px`)
   } finally {
     await page.close()
   }

@@ -20,8 +20,10 @@ const escape = (value: string) => value.replaceAll('&', '&amp;').replaceAll('"',
 function entry(model: ApiModel, symbol: ApiSymbol, linked = true, declaration = false, responsive = false): string {
   const id = escape(`${symbol.publicId ?? symbol.id}${declaration ? '.declaration' : ''}`)
   const source = linked ? sourceUrl(model, symbol) : undefined
-  const links = `<a class="headerlink" href="#${id}">¶</a>${source ? `<a href="${escape(source)}">source</a>` : ''}`
-  const layout = responsive ? `<span class="gp-sphinx-api-layout--responsive">${links}</span>`
+  const sourceLink = source ? `<a href="${escape(source)}">source</a>` : ''
+  const links = `<a class="headerlink" href="#${id}">¶</a>${sourceLink}`
+  // A responsive entry is the whole page, so its URL is the permalink and its header draws none; a paired one draws one in each layout.
+  const layout = responsive ? `<span class="gp-sphinx-api-layout--responsive">${sourceLink}</span>`
     : `<span class="gp-sphinx-api-layout--desktop">${links}</span><span class="gp-sphinx-api-layout--mobile">${links}</span>`
   return `<dl><dt class="gp-sphinx-api-header" id="${id}" data-symbol-id="${escape(symbol.id)}" data-domain="std" data-objtype="${symbol.kind}" data-badge-count="0" data-has-badges="false" data-has-source="${Boolean(source)}" data-signature-expanded="true">${layout}</dt><dd>Reference fixture</dd></dl>`
 }
@@ -50,13 +52,22 @@ describe('API source fidelity gate', () => {
     expect(result.status, result.stderr).toBe(0)
   })
 
-  it('rejects a missing permalink in a responsive header', () => {
-    const path = fixture(true)
+  it('rejects a missing permalink in a paired header', () => {
+    const path = fixture()
     const file = join(path, 'py/latest/reference/sample/index.html')
     writeFileSync(file, readFileSync(file, 'utf8').replace(/<a class="headerlink"[^>]*>.*?<\/a>/, ''))
     const result = audit(path)
     expect(result.status).toBe(1)
-    expect(result.stderr).toContain('py: 0 permalinks for 1 entries, expected 1')
+    expect(result.stderr).toContain('py: 1 permalinks for 1 entries, expected 2')
+  })
+
+  it('rejects a permalink in a responsive header, whose page is the entry', () => {
+    const path = fixture(true)
+    const file = join(path, 'py/latest/reference/sample/index.html')
+    writeFileSync(file, readFileSync(file, 'utf8').replace('<span class="gp-sphinx-api-layout--responsive">', '<span class="gp-sphinx-api-layout--responsive"><a class="headerlink" href="#x">¶</a>'))
+    const result = audit(path)
+    expect(result.status).toBe(1)
+    expect(result.stderr).toContain('py: 1 permalinks for 1 entries, expected 0')
   })
 
   it('exempts a graph-proven inherited Swift entry without inventing a link', () => {

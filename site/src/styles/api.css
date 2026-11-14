@@ -824,6 +824,60 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout > .
 dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout > .gp-sphinx-api-layout-right > :is(.gp-sphinx-api-slot, .api-badge) {
   align-self: center;
 }
+/*
+ * The corner tab (design system: Card, Signature; adoption steps 2 and 36). The kind, the modifiers and Source share one tab,
+ * flush in the declaration card's bottom-right corner. It is a gutter tab: 15px high, one pixel thinner than the 1rem it sits in,
+ * which is the header's .5rem bottom padding and the last code line's leading, so it takes no width from the signature and
+ * no height from the card. Each badge keeps its own tab shape with 4px between; the corner one follows the card's inner
+ * radius, and squares off when a body follows the header because the card has no corner there. The page is the entry, so
+ * its URL is the permalink and there is no `¶`.
+ */
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header {
+  --corner-h: calc(1rem - 1px);
+  --tab-r: calc(0.5rem - 1px);
+}
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout > .api-corner {
+  position: absolute;
+  z-index: 1;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 0.25rem;
+  order: 0;
+  max-width: 100%;
+  margin: 0;
+  white-space: nowrap;
+}
+.api-corner > :is(.api-badge, .api-leg) {
+  --leg-h: var(--corner-h);
+  box-sizing: border-box;
+  height: var(--corner-h);
+  margin: 0;
+  border-radius: var(--tab-r) 0 0 0;
+  border-bottom-color: transparent;
+  font-size: 0.75rem;
+}
+.api-corner > .api-badge--mod.api-badge--mod { padding-inline: 0.35rem; font-size: 0.7421875rem; }
+.api-corner > :last-child { border-bottom-right-radius: var(--tab-r); border-right-color: transparent; }
+/* A header with a body below has no card corner at its bottom-right. */
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:not(:only-child) > .gp-sphinx-api-layout > .api-corner > :last-child { border-bottom-right-radius: 0; }
+.api-corner > :focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: -2px; }
+/* A formatted signature carries .25rem of its own under its last line; any other gets the same, so the tab sits in the leading and never meets a glyph. */
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout > .gp-sphinx-api-layout-left:not(:has(.api-native-signature--formatted)) { padding-block-end: 0.25rem; }
+/* Source and the other ecosystem reference are buttons in the legend chip's box, in the link palette. */
+.api-leg--action {
+  --mk-bg: var(--background-color);
+  --mk-fg: var(--color-link);
+  --mk-hue: var(--color-link);
+  cursor: pointer;
+}
+.api-leg--action:hover { --mk-bg: var(--color-surface-hover); }
+.api-leg--action[aria-expanded="true"] { --mk-bg: color-mix(in srgb, var(--color-link) 12%, var(--background-color)); }
+.api-leg--action .api-leg__m svg { display: block; }
+/* The badge says where it goes; the external-link glyph the shell appends would be a second statement of it. */
+.api-corner > a.api-leg--action[data-external-link]::after { content: none; display: none; }
 .api-native-signature {
   display: block;
   font-family: var(--font-mono, ui-monospace, monospace);
