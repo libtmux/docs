@@ -1,0 +1,16 @@
+/* The all-variants page around MillerColumns: the toolbar, the column props and the status line. */
+.columns-trial { display: grid; gap: 0.75rem; max-width: 100rem; margin-inline: auto; padding: 1.5rem 1rem 2rem; }
+.columns-trial h1 { margin: 0; font: 600 2rem/2.375rem var(--font-sans); }
+.columns-trial__what { margin: 0; max-width: 75ch; font: 400 0.875rem/1.5 var(--font-sans); }
+.columns-trial__bar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; font: 400 0.8125rem/1.4 var(--font-sans); }
+.columns-trial__bar > span { display: flex; align-items: center; gap: 0.5rem; min-width: 0; max-width: 100%; color: var(--color-foreground-muted); }
+.columns-trial__scroll { min-width: 0; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+.columns-trial__scroll .api-columns__seg { white-space: nowrap; }
+.columns-trial__scroll b { font-weight: 600; color: var(--color-foreground-muted); }
+.columns-trial__props { display: flex; flex-wrap: wrap; align-items: center; gap: 0.375rem 1rem; padding: 0.5rem 0.75rem; border: 1px dashed var(--color-edge); border-radius: var(--radius-md, 0.375rem); font: 400 0.8125rem/1.4 var(--font-sans); }
+.columns-trial__props[hidden] { display: none; }
+.columns-trial__props label { display: inline-flex; align-items: center; gap: 0.375rem; }
+.columns-trial__props select { padding: 0.125rem 0.25rem; border: 1px solid var(--control-border, #718294); border-radius: var(--radius-md, 0.375rem); background: var(--background-color); color: var(--text-color); font: inherit; }
+.columns-trial__props code { flex-basis: 100%; color: var(--color-foreground-muted); font: 400 0.75rem/1.4 var(--font-mono); overflow-wrap: anywhere; }
+.columns-trial__status { margin: 0; font: 400 0.8125rem/1.5 var(--font-sans); }
+.columns-trial :is(button, select, input):focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
