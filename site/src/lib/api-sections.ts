@@ -373,7 +373,13 @@ export function apiInheritedTypeParameters(symbol: ApiSymbol, index?: SymbolInde
   return index?.inheritedTypeParameters(symbol) ?? []
 }
 
-/** Only sections that the declaration actually renders, in reading order. */
+/** "Errors" everywhere; Python keeps "Raises" because the language says so. */
+export const apiErrorsLabel = (port?: string) => port === 'py' ? 'Raises' : 'Errors'
+
+/**
+ * Only sections that the declaration actually renders, in reading order: the contract (type parameters, parameters,
+ * returns, errors), then the examples and references that illustrate it.
+ */
 export function apiEntrySections(symbol: ApiSymbol, port?: string, index?: SymbolIndex): ApiSection[] {
   const anchor = symbol.publicId ?? symbol.id
   const fields = apiEntryFields(symbol, port)
@@ -381,14 +387,14 @@ export function apiEntrySections(symbol: ApiSymbol, port?: string, index?: Symbo
   if (symbol.doc?.body) sections.push({ id: `${anchor}.description`, label: 'Description' })
   if (symbol.command) sections.push({ id: `${anchor}.command`, label: 'Command details' })
   if (apiMethodDetails(symbol, port).length) sections.push({ id: `${anchor}.methods`, label: 'Methods' })
-  if (symbol.doc?.examples?.length) sections.push({ id: `${anchor}.examples`, label: 'Examples' })
-  if (symbol.doc?.references?.length) sections.push({ id: `${anchor}.references`, label: 'References' })
   if (fields.typeParameters.length || apiInheritedTypeParameters(symbol, index).length) {
     sections.push({ id: `${anchor}.type-parameters`, label: 'Type parameters' })
   }
   if (fields.params.length) sections.push({ id: `${anchor}.parameters`, label: 'Parameters' })
   if (fields.returns.length) sections.push({ id: `${anchor}.returns`, label: 'Returns' })
-  if (fields.raises.length) sections.push({ id: `${anchor}.errors`, label: 'Errors' })
+  if (fields.raises.length) sections.push({ id: `${anchor}.errors`, label: apiErrorsLabel(port) })
+  if (symbol.doc?.examples?.length) sections.push({ id: `${anchor}.examples`, label: 'Examples' })
+  if (symbol.doc?.references?.length) sections.push({ id: `${anchor}.references`, label: 'References' })
   return sections
 }
 

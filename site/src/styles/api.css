@@ -427,7 +427,20 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
 .api-command-parameters .api-parameter-heading { display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.4rem; }
 .api-parameter-signature { min-width: 0; }
 /* A parameter reads as its signature does: the name and the type names take their inks, and what surrounds them recedes. */
-.api-parameters:not(.mcp-parameters) .api-parameter-signature strong code { color: var(--api-ink-name); }
+/* The name is code: mono 14/22 at 600 (`param-name`), not a sans label, and not a chip. */
+.api-parameters:not(.mcp-parameters) .api-parameter-signature strong code {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--api-ink-name);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.375rem;
+}
+/* A recorded default sits under the description, quiet: the name and type above are the contract, this is what omitting it gets. */
+.api-parameter-default { margin: 0.1rem 0 0; color: var(--color-muted); font-size: 0.75rem; line-height: 1.5; }
+.api-parameter-default code { padding: 0; border: 0; background: none; font-size: inherit; }
 .api-parameters:not(.mcp-parameters) .api-type { color: var(--color-muted); }
 .api-parameters:not(.mcp-parameters) .api-type .api-type-link { color: var(--api-ink-type); }
 .api-parameters .api-parameter-heading { margin-bottom: 0.4rem; }
