@@ -18,6 +18,9 @@ import { formatLines, lineNumbers, parseLines, rangeFragment, requestedCap, role
  *   shows and offers the rest. Copy always copies every line, and print
  *   shows every line.
  *
+ * - `copy="off"` removes the frame's own Copy button, for a component that draws
+ *   one of its own, so a frame has one copy control.
+ *
  * The numbers, the label and the cap bar are chrome, so search skips them.
  *
  * `lib/code-frame.mjs` defines the info string and the rules; this draws them.
@@ -181,6 +184,12 @@ export function codeFrame() {
         if (!figure || !pre) return
         const role = codeBlock.metaOptions.getString('role')
         const ranges = parseLines(codeBlock.metaOptions.getString('lines'))
+
+        // A component that draws its own Copy turns the frame's off, so the frame has one.
+        if (codeBlock.metaOptions.getString('copy') === 'off') {
+          const at = figure.children.indexOf(select('.copy', figure))
+          if (at !== -1) figure.children.splice(at, 1)
+        }
 
         const label = roleLabel(role, ranges)
         const header = select('figcaption.header', figure)

@@ -242,6 +242,15 @@ describe('Expressive Code frames', () => {
     })
   })
 
+  describe('copy button', () => {
+    it('is on every frame unless the fence turns it off for a component that brings its own', async () => {
+      expect(select('.copy button[data-code]', await rendered(go(3), 'frame="none"'))).toBeDefined()
+      const off = await rendered(go(3), 'frame="none" copy="off"')
+      expect(select('.copy', off), 'one copy control per frame').toBeUndefined()
+      expect(select('pre', off)).toBeDefined()
+    })
+  })
+
   describe('height', () => {
     it('caps a long frame, says how many lines it shows and offers the rest', async () => {
       const code = go(86)

@@ -310,7 +310,7 @@ describe('what a step shows of the commands it sent', () => {
 })
 
 /** What the page's code block draws, for a test: each line in the element Expressive Code gives it. */
-const Code = createComponent((_result: unknown, props: { code: string; lang: string }) => renderTemplate`<div class="expressive-code"><pre data-lang="${props.lang}"><code>${props.code.split('\n').map((line) => renderTemplate`<div class="ec-line"><div class="code">${line}</div></div>`)}</code></pre></div>`)
+const Code = createComponent((_result: unknown, props: { code: string; lang: string; meta?: string }) => renderTemplate`<div class="expressive-code" data-meta="${props.meta ?? ''}"><pre data-lang="${props.lang}"><code>${props.code.split('\n').map((line) => renderTemplate`<div class="ec-line"><div class="code">${line}</div></div>`)}</code></pre></div>`)
 const PARTS = ['components/HomeExample.astro', 'components/replay/TmuxScreen.astro', 'components/replay/ReplayControls.astro']
 
 describe('the player component', () => {
@@ -718,6 +718,17 @@ describe('the player component', () => {
     expect(document.querySelectorAll('[data-home-view="cleanup"] .core-step')).toHaveLength(viewSteps(capability, code('cleanup')).length)
   })
 
+  it('turns Expressive Code\'s own copy button off in the program\'s frames, so core-copy is each frame\'s only one', async () => {
+    const { document } = await mount({ run: true })
+    const frames = [...document.querySelectorAll<HTMLElement>('[data-home-view] .expressive-code')]
+    expect(frames).toHaveLength(4)
+    for (const frame of frames) {
+      expect(frame.getAttribute('data-meta'), 'the fence asks for no frame copy button').toMatch(/\bcopy="off"/)
+      expect(frame.querySelectorAll('.copy, .core-copy')).toHaveLength(1)
+      expect(frame.querySelector('.copy'), 'no Expressive Code button beside it').toBeNull()
+    }
+  })
+
   it('marks and numbers the calls of a program that has a single view, which is its full one', async () => {
     const { document, capability } = await mount({ run: true, single: true })
     expect([...document.querySelectorAll('[data-home-view]')].map((view) => view.getAttribute('data-home-view'))).toEqual(['full'])
@@ -1092,6 +1103,11 @@ describe('the variant toggles of the other hosts of HomeExample', () => {
     const document = await render({ heading: false })
     expect(document.querySelector('.home-example-heading'), 'a block with no title and no hint has no empty row above it').toBeNull()
     expect((await render({})).querySelector('.home-example-heading h2')!.textContent).toBe('Start with Go')
+  })
+
+  it('keeps the frame\'s own copy button on the programs that no player draws over', async () => {
+    const document = await render({})
+    for (const frame of document.querySelectorAll('[data-home-view] .expressive-code')) expect(frame.getAttribute('data-meta')).toBe('')
   })
 
   it('draws no toolbar for a program with one view', async () => {
