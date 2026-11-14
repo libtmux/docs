@@ -4,7 +4,7 @@
       "port": "go",
       "page": "ports/go/reference/tmux-server-sessions",
       "symbol": "tmux.Server.Sessions",
-      "sourceRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+      "sourceRevision": "3997274373dcc5b30435ecdc8ced2ceba7d2e11f",
       "files": [
         {
           "name": "example_test.go",
@@ -28,14 +28,14 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "Each displayed test file runs in a new directory after its displayed go mod init and go get of github.com/libtmux/libtmux-go@latest (v0.0.1-alpha.13 on 2026-10-25); go test checks the Output comment and cleanup on a private socket. All 9 programs passed on tmux 3.3a and 3.7c.",
+      "verificationScope": "Each displayed test file runs in a new directory after its displayed go mod init and go get of github.com/libtmux/libtmux-go@latest (v0.1.3 on 2026-11-07); go test checks the Output comment and cleanup on a private socket. All 9 programs passed on tmux 3.3a and 3.7c.",
       "sourceFile": "tmux/api_server_sessions_example_test.go"
     },
     {
       "port": "go",
       "page": "ports/go/reference/tmux-server-windows",
       "symbol": "tmux.Server.Windows",
-      "sourceRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+      "sourceRevision": "3997274373dcc5b30435ecdc8ced2ceba7d2e11f",
       "files": [
         {
           "name": "example_test.go",
@@ -59,14 +59,14 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "Each displayed test file runs in a new directory after its displayed go mod init and go get of github.com/libtmux/libtmux-go@latest (v0.0.1-alpha.13 on 2026-10-25); go test checks the Output comment and cleanup on a private socket. All 9 programs passed on tmux 3.3a and 3.7c.",
+      "verificationScope": "Each displayed test file runs in a new directory after its displayed go mod init and go get of github.com/libtmux/libtmux-go@latest (v0.1.3 on 2026-11-07); go test checks the Output comment and cleanup on a private socket. All 9 programs passed on tmux 3.3a and 3.7c.",
       "sourceFile": "tmux/api_server_windows_example_test.go"
     },
     {
       "port": "go",
       "page": "ports/go/reference/tmux-server-panes",
       "symbol": "tmux.Server.Panes",
-      "sourceRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+      "sourceRevision": "3997274373dcc5b30435ecdc8ced2ceba7d2e11f",
       "files": [
         {
           "name": "example_test.go",
@@ -90,14 +90,14 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "Each displayed test file runs in a new directory after its displayed go mod init and go get of github.com/libtmux/libtmux-go@latest (v0.0.1-alpha.13 on 2026-10-25); go test checks the Output comment and cleanup on a private socket. All 9 programs passed on tmux 3.3a and 3.7c.",
+      "verificationScope": "Each displayed test file runs in a new directory after its displayed go mod init and go get of github.com/libtmux/libtmux-go@latest (v0.1.3 on 2026-11-07); go test checks the Output comment and cleanup on a private socket. All 9 programs passed on tmux 3.3a and 3.7c.",
       "sourceFile": "tmux/api_server_panes_example_test.go"
     },
     {
       "port": "go",
       "page": "ports/go/reference/tmux-pane-capture",
       "symbol": "tmux.Pane.Capture",
-      "sourceRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+      "sourceRevision": "3997274373dcc5b30435ecdc8ced2ceba7d2e11f",
       "files": [
         {
           "name": "example_test.go",
@@ -121,14 +121,14 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "Each displayed test file runs in a new directory after its displayed go mod init and go get of github.com/libtmux/libtmux-go@latest (v0.0.1-alpha.13 on 2026-10-25); go test checks the Output comment and cleanup on a private socket. All 9 programs passed on tmux 3.3a and 3.7c.",
+      "verificationScope": "Each displayed test file runs in a new directory after its displayed go mod init and go get of github.com/libtmux/libtmux-go@latest (v0.1.3 on 2026-11-07); go test checks the Output comment and cleanup on a private socket. All 9 programs passed on tmux 3.3a and 3.7c.",
       "sourceFile": "tmux/api_pane_capture_example_test.go"
     },
     {
       "port": "go",
       "page": "ports/go/reference/tmux-pane-sendkeys",
       "symbol": "tmux.Pane.SendKeys",
-      "sourceRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+      "sourceRevision": "3997274373dcc5b30435ecdc8ced2ceba7d2e11f",
       "files": [
         {
           "name": "example_test.go",
@@ -152,14 +152,14 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "Each displayed test file runs in a new directory after its displayed go mod init and go get of github.com/libtmux/libtmux-go@latest (v0.0.1-alpha.13 on 2026-10-25); go test checks the Output comment and cleanup on a private socket. All 9 programs passed on tmux 3.3a and 3.7c.",
+      "verificationScope": "Each displayed test file runs in a new directory after its displayed go mod init and go get of github.com/libtmux/libtmux-go@latest (v0.1.3 on 2026-11-07); go test checks the Output comment and cleanup on a private socket. All 9 programs passed on tmux 3.3a and 3.7c.",
       "sourceFile": "tmux/api_pane_send_keys_example_test.go"
     },
     {
       "port": "go",
       "page": "ports/go/reference/tmux-server-searchsessions",
       "symbol": "tmux.Server.SearchSessions",
-      "sourceRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+      "sourceRevision": "3997274373dcc5b30435ecdc8ced2ceba7d2e11f",
       "files": [
         {
           "name": "example_test.go",
@@ -183,14 +183,14 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "Each displayed test file runs in a new directory after its displayed go mod init and go get of github.com/libtmux/libtmux-go@latest (v0.0.1-alpha.13 on 2026-10-25); go test checks the Output comment and cleanup on a private socket. All 9 programs passed on tmux 3.3a and 3.7c.",
+      "verificationScope": "Each displayed test file runs in a new directory after its displayed go mod init and go get of github.com/libtmux/libtmux-go@latest (v0.1.3 on 2026-11-07); go test checks the Output comment and cleanup on a private socket. All 9 programs passed on tmux 3.3a and 3.7c.",
       "sourceFile": "tmux/api_server_search_sessions_example_test.go"
     },
     {
       "port": "go",
       "page": "ports/go/reference/tmux-newserver",
       "symbol": "tmux.NewServer",
-      "sourceRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+      "sourceRevision": "3997274373dcc5b30435ecdc8ced2ceba7d2e11f",
       "files": [
         {
           "name": "example_test.go",
@@ -214,14 +214,14 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "Each displayed test file runs in a new directory after its displayed go mod init and go get of github.com/libtmux/libtmux-go@latest (v0.0.1-alpha.13 on 2026-10-25); go test checks the Output comment and cleanup on a private socket. All 9 programs passed on tmux 3.3a and 3.7c.",
+      "verificationScope": "Each displayed test file runs in a new directory after its displayed go mod init and go get of github.com/libtmux/libtmux-go@latest (v0.1.3 on 2026-11-07); go test checks the Output comment and cleanup on a private socket. All 9 programs passed on tmux 3.3a and 3.7c.",
       "sourceFile": "tmux/api_new_server_example_test.go"
     },
     {
       "port": "go",
       "page": "ports/go/reference/tmux-server-newsession",
       "symbol": "tmux.Server.NewSession",
-      "sourceRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+      "sourceRevision": "3997274373dcc5b30435ecdc8ced2ceba7d2e11f",
       "files": [
         {
           "name": "example_test.go",
@@ -245,14 +245,14 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "Each displayed test file runs in a new directory after its displayed go mod init and go get of github.com/libtmux/libtmux-go@latest (v0.0.1-alpha.13 on 2026-10-25); go test checks the Output comment and cleanup on a private socket. All 9 programs passed on tmux 3.3a and 3.7c.",
+      "verificationScope": "Each displayed test file runs in a new directory after its displayed go mod init and go get of github.com/libtmux/libtmux-go@latest (v0.1.3 on 2026-11-07); go test checks the Output comment and cleanup on a private socket. All 9 programs passed on tmux 3.3a and 3.7c.",
       "sourceFile": "tmux/api_server_new_session_example_test.go"
     },
     {
       "port": "go",
       "page": "ports/go/reference/tmux-session-newwindow",
       "symbol": "tmux.Session.NewWindow",
-      "sourceRevision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+      "sourceRevision": "3997274373dcc5b30435ecdc8ced2ceba7d2e11f",
       "files": [
         {
           "name": "example_test.go",
@@ -276,7 +276,7 @@
         "3.3a",
         "3.7c"
       ],
-      "verificationScope": "Each displayed test file runs in a new directory after its displayed go mod init and go get of github.com/libtmux/libtmux-go@latest (v0.0.1-alpha.13 on 2026-10-25); go test checks the Output comment and cleanup on a private socket. All 9 programs passed on tmux 3.3a and 3.7c.",
+      "verificationScope": "Each displayed test file runs in a new directory after its displayed go mod init and go get of github.com/libtmux/libtmux-go@latest (v0.1.3 on 2026-11-07); go test checks the Output comment and cleanup on a private socket. All 9 programs passed on tmux 3.3a and 3.7c.",
       "sourceFile": "tmux/api_session_new_window_example_test.go"
     },
     {

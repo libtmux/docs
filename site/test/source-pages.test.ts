@@ -14,7 +14,7 @@ describe('source page routes', () => {
     const capture = routes.find((route) => route.params.path === 'tmux/pane_capture.go')!
     expect(capture.props.origin).toEqual({ repo: model.repo, revision: model.revision })
     const method = capture.props.declarations.find((declaration) => declaration.id === 'tmux.Pane.Capture')!
-    expect(method).toMatchObject({ title: 'Pane.Capture', kind: 'method', line: 123, from: 112, to: 129 })
+    expect(method).toMatchObject({ title: 'Pane.Capture', kind: 'method', line: 126, from: 113, to: 132 })
   })
 
   it('gives every cited file of a port a page, so a link to it never dangles', () => {
@@ -43,7 +43,7 @@ describe('source page routes', () => {
 describe('the pane\'s symbol index and source control', () => {
   it('maps a symbol slug to its file, range, heading and kind', () => {
     const index = sourceIndex('go', API_MODELS.go!)
-    expect(index['tmux-pane-capture']).toEqual(['tmux/pane_capture.go', 123, 112, 129, 'Pane.Capture', 'method'])
+    expect(index['tmux-pane-capture']).toEqual(['tmux/pane_capture.go', 126, 113, 132, 'Pane.Capture', 'method'])
     // Every symbol the Go model cites a file for is indexed, so a reload or a followed type can open it.
     const cited = API_MODELS.go!.symbols.filter((symbol) => symbol.slug && symbol.source?.file && symbol.source.line)
     expect(Object.keys(index).length).toBe(new Set(cited.map((symbol) => symbol.slug)).size)

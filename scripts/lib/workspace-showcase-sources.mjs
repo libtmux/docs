@@ -421,11 +421,7 @@ export const SOURCES = {
     ],
   },
 
-  // The revision a pin names carries the catalog; `modelRevision` is the API
-  // model's revision it was chosen against. Remove the pin when the model catches up.
   go: {
-    revision: 'a0592f87f33974f502aafd1e6c1eb2dde839d356',
-    modelRevision: '2de249b600d65218ee8b8fdc07c6b2b919242151',
     examples: [...tmuxpCatalog('workspace/testdata/tmuxp', [
       {
         path: 'workspace/workspace_test.go', name: 'TestEveryTmuxpExampleParses', find: 'func TestEveryTmuxpExampleParses',
@@ -433,9 +429,9 @@ export const SOURCES = {
         checks: 'Parses every fixture in the directory with workspace.Parse.',
       },
       {
-        path: 'workspace/internal/cli/document_test.go', name: 'TestEveryTmuxpExampleNormalizes', find: 'func TestEveryTmuxpExampleNormalizes',
-        needles: ['testdata'], via: 'loader',
-        checks: 'Reads every fixture in the directory with the loader the load command calls.',
+        path: 'workspace/internal/cli/tmuxp_structure_test.go', name: 'TestEveryTmuxpExampleMatchesTheStructureTmuxpBuilds',
+        find: 'func TestEveryTmuxpExampleMatchesTheStructureTmuxpBuilds', needles: ['testdata'], via: 'loader',
+        checks: 'Reads every fixture in the directory with the loader the load command calls, and compares the plan with the structure tmuxp\'s own loader builds from it.',
       },
     ], {
       // `environment` keeps the curated example below, which runs load on a real tmux server.

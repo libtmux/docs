@@ -31,8 +31,10 @@ whole run 30 seconds, so a wait that never matches ends with
 validates a `tmux.ServerOptions` and does not start tmux.
 `ServerOptions.SocketName` selects a named socket, like `-L`, and
 `ServerOptions.ConfigFile` set to `os.DevNull` keeps your tmux configuration
-file out, like `-f /dev/null`. The program neither touches nor is changed by
-the tmux you already use. The native step is
+file out, like `-f /dev/null`. Choose a socket name that no other tmux uses,
+because [cleanup](#8-clean-up) ends the server on that socket. With an unused
+name, the program neither touches nor is changed by the tmux you already use.
+The native step is
 [Choose a private socket](/tmux/examples/attach-and-send-keys/#1-choose-a-private-socket).
 The server goes to `run`, so a test can pass in an isolated one.
 

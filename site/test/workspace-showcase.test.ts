@@ -517,7 +517,7 @@ describe('the showcase section', () => {
     // Go's catalog is read by the library's parser and by the loader the load command calls.
     const go = lines(await section('go'))
     expect(go.find((line) => line.includes('TestEveryTmuxpExampleParses'))).toContain('parsed by the library in a test')
-    expect(go.find((line) => line.includes('TestEveryTmuxpExampleNormalizes'))).toContain('loaded by the library in a test')
+    expect(go.find((line) => line.includes('TestEveryTmuxpExampleMatchesTheStructureTmuxpBuilds'))).toContain('loaded by the library in a test')
     // The Rust parity script is a scheduled run, not a test that gates a pull request.
     const rs = lines(await section('rs'))
     expect(rs.filter((line) => line.includes('a scheduled parity run loads it')).length).toBeGreaterThan(0)

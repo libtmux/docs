@@ -696,8 +696,7 @@ describe('the player component', () => {
       ['Session', '/go/latest/reference/tmux-session/'],
     ])
     const waited = document.querySelector(`[data-frame="${(await recorded()).capability.steps.findIndex((step) => step.label === 'Pane.WaitForText') + 1}"] .mcp-frame__note`)!
-    expect(waited.querySelector('a'), 'a call the API model lacks stays text').toBeNull()
-    expect(waited.querySelector('code')!.textContent).toBe('Pane.WaitForText')
+    expect([waited.querySelector('a')!.textContent, waited.querySelector('a')!.getAttribute('href')]).toEqual(['Pane.WaitForText', '/go/latest/reference/tmux-pane-waitfortext/'])
     const made = document.querySelector(`[data-frame="${(await recorded()).capability.steps.findIndex((step) => step.label === 'Session.NewWindow') + 1}"] .mcp-frame__note a`)!
     expect([made.textContent, made.getAttribute('href')]).toEqual(['Session.NewWindow', '/go/latest/reference/tmux-session-newwindow/'])
   })

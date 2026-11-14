@@ -7,8 +7,8 @@ const range = (text: string, line: number, language: string) => declarationRange
 describe('declarationRange', () => {
   it('covers the doc comment, the multi-line signature and the body of a Go method', () => {
     const go = pinnedSource('go', 'tmux/pane_capture.go')!.content
-    // The page the design shows: Pane.Capture is declared on line 123 and spans 112 to 129.
-    expect(range(go, 123, 'go')).toEqual([112, 129])
+    // The page the design shows: Pane.Capture is declared on line 126 and spans 113 to 132.
+    expect(range(go, 126, 'go')).toEqual([113, 132])
   })
 
   it('closes braces by depth, ignoring brackets in strings and comments', () => {
