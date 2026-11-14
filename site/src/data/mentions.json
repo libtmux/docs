@@ -19582,62 +19582,6 @@
    "why": "not defined in the stated port"
   },
   {
-   "port": "perl",
-   "text": "libtmux.where/v1",
-   "page": "/perl/latest/guides/getting-started/",
-   "line": 187,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "perl",
-   "text": "Changes",
-   "page": "/perl/latest/guides/getting-started/",
-   "line": 218,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "perl",
-   "text": "Changes",
-   "page": "/perl/latest/guides/installation/",
-   "line": 59,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "perl",
-   "text": "pane.where.width.-gte",
-   "page": "/perl/latest/topics/errors/",
-   "line": 84,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "raku",
-   "text": "Promise",
-   "page": "/raku/latest/examples/programs/",
-   "line": 28,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "raku",
-   "text": "Supply",
-   "page": "/raku/latest/examples/programs/",
-   "line": 28,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "raku",
-   "text": "Promise",
-   "page": "/raku/latest/guides/getting-started/",
-   "line": 171,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "raku",
-   "text": "Supply",
-   "page": "/raku/latest/guides/getting-started/",
-   "line": 172,
-   "why": "not defined in the stated port"
-  },
-  {
    "port": "ruby",
    "text": "Enumerable",
    "page": "/ruby/latest/guides/getting-started/",
