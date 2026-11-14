@@ -204,9 +204,12 @@ export async function railProblems(page) {
   }))
   const problems = []
   const slack = 0.51
+  // A mark whose letter is an x-height one sits up to a pixel proud of the link's box: the raise that centres its ink on the name's capitals.
+  const markSlack = 1.01
   for (const row of rows) {
     for (const part of ['mark', 'name']) {
-      const inside = row[part].top >= row.chip.top - slack && row[part].bottom <= row.chip.bottom + slack && row[part].left >= row.chip.left - slack && row[part].right <= row.chip.right + slack
+      const room = part === 'mark' ? markSlack : slack
+      const inside = row[part].top >= row.chip.top - room && row[part].bottom <= row.chip.bottom + room && row[part].left >= row.chip.left - room && row[part].right <= row.chip.right + room
       if (!inside) problems.push(`${row.text}: the link's box does not contain its ${part}`)
     }
     // A linked name is a mark and an underline: no border, no surface.

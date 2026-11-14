@@ -176,6 +176,11 @@ describe('the related-links check of the browser gate', () => {
     expect(await rail([{ ...one(0), drawn: true }, one(26)])).toEqual(['mname0: the link draws a box (a border or a surface) around its mark and name'])
   })
 
+  it('lets a mark sit a pixel proud of its link, the raise that centres its ink, and names two', async () => {
+    expect(await rail([{ ...one(0), mark: box(-1, 18, 0, 18) }, one(26)])).toEqual([])
+    expect(await rail([{ ...one(0), mark: box(-2, 18, 0, 18) }, one(26)])).toEqual(["mname0: the link's box does not contain its mark"])
+  })
+
   it('names a name running out of its link and a clipped link', async () => {
     const squeezed: Spec = { chip: box(0, 18, 0, 48), mark: box(0, 18, 0, 18), name: box(3, 12, 24, 100), clipped: true }
     expect(await rail([squeezed, one(26)])).toEqual(["mname0: the link's box does not contain its name", 'mname0: the link clips its content'])
