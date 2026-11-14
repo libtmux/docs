@@ -33,6 +33,7 @@ export function symbolEntries<T extends { type: string }>(entries: T[]): T[] {
 /** Sphinx v2 uses object types in records; roles resolve those types. */
 const DOMAIN: Record<PortSlug, string> = {
   perl: 'std',
+  raku: 'std',
   py: 'py',
   ruby: 'std',
   lua: 'std',

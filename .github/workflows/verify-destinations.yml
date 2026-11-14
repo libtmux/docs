@@ -69,6 +69,14 @@ jobs:
         if: ${{ !cancelled() }}
         run: node scripts/verify-api-destinations.mjs --check --fresh
 
+      # A Perl reference page links to the POD of the latest CPAN release. When
+      # a release lands the record is stale, so this names the distribution
+      # and its old and new release; commit the output of
+      # node scripts/gen-perl-pod.mjs with the change that follows.
+      - name: Check the recorded Perl POD release against MetaCPAN
+        if: ${{ !cancelled() }}
+        run: node scripts/gen-perl-pod.mjs --check
+
       - name: Keep the fresh evidence
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7

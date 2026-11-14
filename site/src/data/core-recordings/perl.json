@@ -2,7 +2,7 @@
   "generated": "scripts/gen-core-recording.mjs",
   "port": "perl",
   "repo": "libtmux/libtmux-perl",
-  "revision": "36b978c5eb6aa33873229046037e7d26136ca2cf",
+  "revision": "a1cab0324b600a5df6e34b92590b5c3bd8f79c69",
   "sandbox": {
     "tmux": "tmux 3.8a",
     "perl": "5.44.0",
@@ -63,7 +63,7 @@
               "tmux": "new-session -d -P -F '#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:socket_path}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pid}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:start_time}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:version}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:session_id}' -s demo -- /usr/bin/perl -e 'exec {$ARGV[0]} @ARGV or exit 127' -- /bin/cat",
               "mutates": true,
               "exit": 0,
-              "stdout": "/tmp/tmp/libtmux-perl-fixture-AbC1/s\t1725070\t1794447747\t3.8a\t$0",
+              "stdout": "/tmp/tmp/libtmux-perl-fixture-AbC1/s\t1881045\t1794633388\t3.8a\t$0",
               "stderr": ""
             },
             {
@@ -79,7 +79,7 @@
               "tmux": "list-sessions -F '#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:session_attached}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:session_created}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:session_id}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:session_name}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:session_path}'",
               "mutates": false,
               "exit": 0,
-              "stdout": "0\t1794447747\t$0\tdemo\t/tmp/marked",
+              "stdout": "0\t1794633388\t$0\tdemo\t/tmp/marked",
               "stderr": ""
             },
             {
@@ -95,7 +95,7 @@
               "tmux": "list-panes -a -F '#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_active}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_current_command}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_current_path}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:cursor_shape}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_dead}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_dead_status}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_height}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_id}\t#{s|\\\\|\\\\\\\\|;s|…",
               "mutates": false,
               "exit": 0,
-              "stdout": "1\tcat\t/tmp/marked\tdefault\t0\t\t24\t%0\t0\t1725072\thost\t80\t$0\t@0\t0",
+              "stdout": "1\tcat\t/tmp/marked\tdefault\t0\t\t24\t%0\t0\t1881046\thost\t80\t$0\t@0\t0",
               "stderr": "",
               "shortened": true
             },
@@ -276,7 +276,7 @@
               "tmux": "split-window -d -P -F '#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:socket_path}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pid}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:start_time}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:version}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_id}' -t %0 -h -- /usr/bin/perl -e 'exec {$ARGV[0]} @ARGV or exit 127' -- /bin/cat",
               "mutates": true,
               "exit": 0,
-              "stdout": "/tmp/tmp/libtmux-perl-fixture-AbC1/s\t1725070\t1794447747\t3.8a\t%1",
+              "stdout": "/tmp/tmp/libtmux-perl-fixture-AbC1/s\t1881045\t1794633388\t3.8a\t%1",
               "stderr": ""
             },
             {
@@ -292,7 +292,7 @@
               "tmux": "list-sessions -F '#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:session_attached}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:session_created}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:session_id}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:session_name}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:session_path}'",
               "mutates": false,
               "exit": 0,
-              "stdout": "0\t1794447747\t$0\tdemo\t/tmp/marked",
+              "stdout": "0\t1794633388\t$0\tdemo\t/tmp/marked",
               "stderr": ""
             },
             {
@@ -308,7 +308,7 @@
               "tmux": "list-panes -a -F '#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_active}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_current_command}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_current_path}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:cursor_shape}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_dead}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_dead_status}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_height}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_id}\t#{s|\\\\|\\\\\\\\|;s|…",
               "mutates": false,
               "exit": 0,
-              "stdout": "1\tcat\t/tmp/marked\tdefault\t0\t\t24\t%0\t0\t1725072\thost\t40\t$0\t@0\t0\n0\tcat\t/tmp/marked\tdefault\t0\t\t24\t%1\t1\t1725719\thost\t39\t$0\t@0\t0",
+              "stdout": "1\tcat\t/tmp/marked\tdefault\t0\t\t24\t%0\t0\t1881046\thost\t40\t$0\t@0\t0\n0\tcat\t/tmp/marked\tdefault\t0\t\t24\t%1\t1\t1881238\thost\t39\t$0\t@0\t0",
               "stderr": "",
               "shortened": true
             },
@@ -394,7 +394,7 @@
               "tmux": "new-window -d -P -F '#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:socket_path}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pid}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:start_time}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:version}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:window_id}' -t $0: -n logs -- /usr/bin/perl -e 'exec {$ARGV[0]} @ARGV or exit 127' -- /bin/cat",
               "mutates": true,
               "exit": 0,
-              "stdout": "/tmp/tmp/libtmux-perl-fixture-AbC1/s\t1725070\t1794447747\t3.8a\t@1",
+              "stdout": "/tmp/tmp/libtmux-perl-fixture-AbC1/s\t1881045\t1794633388\t3.8a\t@1",
               "stderr": ""
             },
             {
@@ -410,7 +410,7 @@
               "tmux": "list-sessions -F '#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:session_attached}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:session_created}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:session_id}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:session_name}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:session_path}'",
               "mutates": false,
               "exit": 0,
-              "stdout": "0\t1794447747\t$0\tdemo\t/tmp/marked",
+              "stdout": "0\t1794633388\t$0\tdemo\t/tmp/marked",
               "stderr": ""
             },
             {
@@ -426,7 +426,7 @@
               "tmux": "list-panes -a -F '#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_active}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_current_command}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_current_path}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:cursor_shape}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_dead}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_dead_status}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_height}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_id}\t#{s|\\\\|\\\\\\\\|;s|…",
               "mutates": false,
               "exit": 0,
-              "stdout": "1\tcat\t/tmp/marked\tdefault\t0\t\t24\t%0\t0\t1725072\thost\t40\t$0\t@0\t0\n0\tcat\t/tmp/marked\tdefault\t0\t\t24\t%1\t1\t1725719\thost\t39\t$0\t@0\t0\n1\tcat\t/tmp/marked\tdefault\t0\t\t24\t%2\t0\t1726003\thost\t80\t$0\t@1\t1",
+              "stdout": "1\tcat\t/tmp/marked\tdefault\t0\t\t24\t%0\t0\t1881046\thost\t40\t$0\t@0\t0\n0\tcat\t/tmp/marked\tdefault\t0\t\t24\t%1\t1\t1881238\thost\t39\t$0\t@0\t0\n1\tcat\t/tmp/marked\tdefault\t0\t\t24\t%2\t0\t1881422\thost\t80\t$0\t@1\t1",
               "stderr": "",
               "shortened": true
             },
@@ -615,7 +615,7 @@
               "tmux": "list-sessions -F '#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:session_attached}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:session_created}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:session_id}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:session_name}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:session_path}'",
               "mutates": false,
               "exit": 0,
-              "stdout": "0\t1794447747\t$0\tdemo\t/tmp/marked",
+              "stdout": "0\t1794633388\t$0\tdemo\t/tmp/marked",
               "stderr": ""
             },
             {
@@ -631,7 +631,7 @@
               "tmux": "list-panes -a -F '#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_active}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_current_command}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_current_path}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:cursor_shape}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_dead}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_dead_status}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_height}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_id}\t#{s|\\\\|\\\\\\\\|;s|…",
               "mutates": false,
               "exit": 0,
-              "stdout": "0\tcat\t/tmp/marked\tdefault\t0\t\t24\t%0\t0\t1725072\thost\t40\t$0\t@0\t0\n1\tcat\t/tmp/marked\tdefault\t0\t\t24\t%1\t1\t1725719\thost\t39\t$0\t@0\t0\n1\tcat\t/tmp/marked\tdefault\t0\t\t24\t%2\t0\t1726003\thost\t80\t$0\t@1\t1",
+              "stdout": "0\tcat\t/tmp/marked\tdefault\t0\t\t24\t%0\t0\t1881046\thost\t40\t$0\t@0\t0\n1\tcat\t/tmp/marked\tdefault\t0\t\t24\t%1\t1\t1881238\thost\t39\t$0\t@0\t0\n1\tcat\t/tmp/marked\tdefault\t0\t\t24\t%2\t0\t1881422\thost\t80\t$0\t@1\t1",
               "stderr": "",
               "shortened": true
             },
@@ -899,7 +899,7 @@
               "tmux": "list-sessions -F '#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:session_attached}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:session_created}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:session_id}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:session_name}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:session_path}'",
               "mutates": false,
               "exit": 0,
-              "stdout": "0\t1794447747\t$0\tdemo\t/tmp/marked",
+              "stdout": "0\t1794633388\t$0\tdemo\t/tmp/marked",
               "stderr": ""
             },
             {
@@ -915,7 +915,7 @@
               "tmux": "list-panes -a -F '#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_active}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_current_command}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_current_path}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:cursor_shape}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_dead}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_dead_status}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_height}\t#{s|\\\\|\\\\\\\\|;s|\t|\\\\t|;s|\n|\\\\n|:pane_id}\t#{s|\\\\|\\\\\\\\|;s|…",
               "mutates": false,
               "exit": 0,
-              "stdout": "0\tcat\t/tmp/marked\tdefault\t0\t\t24\t%0\t0\t1725072\thost\t40\t$0\t@0\t0\n1\tcat\t/tmp/marked\tdefault\t0\t\t24\t%1\t1\t1725719\thost\t39\t$0\t@0\t0\n1\tcat\t/tmp/marked\tdefault\t0\t\t24\t%2\t0\t1726003\thost\t80\t$0\t@1\t1",
+              "stdout": "0\tcat\t/tmp/marked\tdefault\t0\t\t24\t%0\t0\t1881046\thost\t40\t$0\t@0\t0\n1\tcat\t/tmp/marked\tdefault\t0\t\t24\t%1\t1\t1881238\thost\t39\t$0\t@0\t0\n1\tcat\t/tmp/marked\tdefault\t0\t\t24\t%2\t0\t1881422\thost\t80\t$0\t@1\t1",
               "stderr": "",
               "shortened": true
             },

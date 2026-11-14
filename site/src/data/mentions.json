@@ -3782,6 +3782,13 @@
   },
   {
    "port": "erlang",
+   "symbol": "tmux_query",
+   "page": "/erlang/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
    "symbol": "tmux_query:explain/1",
    "page": "/erlang/latest/concepts/architecture/",
    "title": "Architecture decisions",
@@ -3845,6 +3852,13 @@
   },
   {
    "port": "erlang",
+   "symbol": "tmux_select",
+   "page": "/erlang/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
    "symbol": "tmux_select:filter/2",
    "page": "/erlang/latest/concepts/queries/",
    "title": "Selections and queries",
@@ -3876,6 +3890,13 @@
    "symbol": "tmux_server",
    "page": "/erlang/latest/guides/api-documentation/",
    "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server",
+   "page": "/erlang/latest/guides/getting-started/",
+   "title": "Getting started",
    "section": "guides"
   },
   {
@@ -4051,6 +4072,13 @@
    "symbol": "tmux_snapshot",
    "page": "/erlang/latest/guides/api-documentation/",
    "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_snapshot",
+   "page": "/erlang/latest/guides/getting-started/",
+   "title": "Getting started",
    "section": "guides"
   },
   {
@@ -12483,10 +12511,24 @@
   },
   {
    "port": "perl",
+   "symbol": "LibTmux::Filter",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
    "symbol": "LibTmux::Pane::cursor_shape",
    "page": "/perl/latest/concepts/fields/",
    "title": "Entity fields",
    "section": "concepts"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Selection",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "perl",
@@ -12498,6 +12540,13 @@
   {
    "port": "perl",
    "symbol": "LibTmux::Selection::first",
+   "page": "/perl/latest/examples/programs/",
+   "title": "Runnable programs",
+   "section": "examples"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Selection::first",
    "page": "/perl/latest/guides/filtering/",
    "title": "Filtering",
    "section": "guides"
@@ -12505,15 +12554,15 @@
   {
    "port": "perl",
    "symbol": "LibTmux::Selection::grep",
-   "page": "/perl/latest/examples/programs/",
-   "title": "Runnable programs",
-   "section": "examples"
+   "page": "/perl/latest/guides/filtering/",
+   "title": "Filtering",
+   "section": "guides"
   },
   {
    "port": "perl",
    "symbol": "LibTmux::Selection::grep",
-   "page": "/perl/latest/guides/filtering/",
-   "title": "Filtering",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
    "section": "guides"
   },
   {
@@ -12532,6 +12581,20 @@
   },
   {
    "port": "perl",
+   "symbol": "LibTmux::Selection::one",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Selection::one_or_undef",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
    "symbol": "LibTmux::Selection::one_or_undef",
    "page": "/perl/latest/topics/errors/",
    "title": "Errors and recovery",
@@ -12546,10 +12609,10 @@
   },
   {
    "port": "perl",
-   "symbol": "LibTmux::Selection::where",
-   "page": "/perl/latest/examples/programs/",
-   "title": "Runnable programs",
-   "section": "examples"
+   "symbol": "LibTmux::Selection::to_array",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "perl",
@@ -12560,10 +12623,17 @@
   },
   {
    "port": "perl",
+   "symbol": "LibTmux::Selection::where",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
    "symbol": "LibTmux::Server",
-   "page": "/perl/latest/examples/orchestration/",
-   "title": "Create sessions, windows, and panes",
-   "section": "examples"
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "perl",
@@ -12585,6 +12655,13 @@
    "page": "/perl/latest/examples/orchestration/",
    "title": "Create sessions, windows, and panes",
    "section": "examples"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server::capture_pane",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "perl",
@@ -12623,6 +12700,27 @@
   },
   {
    "port": "perl",
+   "symbol": "LibTmux::Server::new_session",
+   "page": "/perl/latest/examples/orchestration/",
+   "title": "Create sessions, windows, and panes",
+   "section": "examples"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server::new_session",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server::new_session",
+   "page": "/perl/latest/guides/installation/",
+   "title": "Installation",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
    "symbol": "LibTmux::Server::query_panes",
    "page": "/perl/latest/topics/query-planning/",
    "title": "Live query planning",
@@ -12637,6 +12735,13 @@
   },
   {
    "port": "perl",
+   "symbol": "LibTmux::Server::send_keys",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
    "symbol": "LibTmux::Server::send_text",
    "page": "/perl/latest/examples/orchestration/",
    "title": "Create sessions, windows, and panes",
@@ -12644,10 +12749,31 @@
   },
   {
    "port": "perl",
+   "symbol": "LibTmux::Server::send_text",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
    "symbol": "LibTmux::Server::set_option",
    "page": "/perl/latest/examples/orchestration/",
    "title": "Create sessions, windows, and panes",
    "section": "examples"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server::snapshot",
+   "page": "/perl/latest/examples/orchestration/",
+   "title": "Create sessions, windows, and panes",
+   "section": "examples"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server::snapshot",
+   "page": "/perl/latest/guides/installation/",
+   "title": "Installation",
+   "section": "guides"
   },
   {
    "port": "perl",
@@ -12721,10 +12847,24 @@
   },
   {
    "port": "perl",
+   "symbol": "LibTmux::X::expected",
+   "page": "/perl/latest/topics/errors/",
+   "title": "Errors and recovery",
+   "section": "topics"
+  },
+  {
+   "port": "perl",
    "symbol": "LibTmux::X::InvalidSelection",
    "page": "/perl/latest/concepts/graph/",
    "title": "Snapshot graph and identity",
    "section": "concepts"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::X::NoServer",
+   "page": "/perl/latest/guides/installation/",
+   "title": "Installation",
+   "section": "guides"
   },
   {
    "port": "perl",
@@ -14468,6 +14608,76 @@
    "page": "/py/latest/workspace/reference/",
    "title": "Python workspace internal API",
    "section": "ports"
+  },
+  {
+   "port": "raku",
+   "symbol": "LibTmux::Capabilities.status",
+   "page": "/raku/latest/examples/programs/",
+   "title": "Runnable programs",
+   "section": "examples"
+  },
+  {
+   "port": "raku",
+   "symbol": "LibTmux::Capabilities.status",
+   "page": "/raku/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "raku",
+   "symbol": "LibTmux::Model::PaneRef.send-keys",
+   "page": "/raku/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "raku",
+   "symbol": "LibTmux::Model::PaneRef.send-text",
+   "page": "/raku/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "raku",
+   "symbol": "LibTmux::Types::Outcome.Complete",
+   "page": "/raku/latest/examples/programs/",
+   "title": "Runnable programs",
+   "section": "examples"
+  },
+  {
+   "port": "raku",
+   "symbol": "LibTmux::Types::Outcome.Complete",
+   "page": "/raku/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "raku",
+   "symbol": "LibTmux::Types::Outcome.Failed",
+   "page": "/raku/latest/examples/programs/",
+   "title": "Runnable programs",
+   "section": "examples"
+  },
+  {
+   "port": "raku",
+   "symbol": "LibTmux::Types::Outcome.Failed",
+   "page": "/raku/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "raku",
+   "symbol": "LibTmux::Types::Outcome.Skipped",
+   "page": "/raku/latest/examples/programs/",
+   "title": "Runnable programs",
+   "section": "examples"
+  },
+  {
+   "port": "raku",
+   "symbol": "LibTmux::Types::Outcome.Skipped",
+   "page": "/raku/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "rs",

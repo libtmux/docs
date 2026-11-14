@@ -24,6 +24,7 @@ import ApiSignatureParameters from './ApiSignatureParameters.astro'
 import { apiSignatureLayouts } from '../../lib/code-layout'
 import { pythonSignatureLayout } from '../../lib/python-code-layout'
 import { nativeKind } from '../../lib/api-labels'
+import type { ApiAlternate } from '../../lib/perl-pod'
 
 /**
  * One documented symbol, in the shape gp-sphinx's stylesheet expects.
@@ -43,6 +44,8 @@ interface Props {
   index: SymbolIndex
   /** Repository blob URL builder, for the source link. */
   sourceUrl?: (symbol: ApiSymbol) => string | undefined
+  /** The same declaration in the ecosystem's own documentation, when the ecosystem hosts it and the host documents it. */
+  alternate?: (symbol: ApiSymbol) => ApiAlternate | undefined
   /** This entry's port. Enables the cross-language block; omit to hide it. */
   port?: string
   /** Declaration syntax, independent of library-port identity. */
@@ -86,7 +89,7 @@ interface Props {
    */
   linkRows?: boolean
 }
-const { symbol, parentKind, index, sourceUrl, port, language = port, manualLinks, catalogLinks, alternativesFor, heading = false, member = false,
+const { symbol, parentKind, index, sourceUrl, alternate: alternateFor, port, language = port, manualLinks, catalogLinks, alternativesFor, heading = false, member = false,
   showSummary = true, showBases = true, legacyId, nameHref, linkRows = true } = Astro.props as Props
 const anchor = symbol.publicId ?? symbol.id
 const inventory = apiInventoryAttributes(symbol, language ?? '', parentKind ?? (symbol.parent ? API_MODELS[port ?? '']?.symbols.find((parent) => parent.id === symbol.parent)?.kind : undefined))
@@ -158,6 +161,7 @@ const inheritedHref = symbol.inheritedFrom
  * entry already says which class that is.
  */
 const source = sourceUrl?.(symbol)
+const alternate = alternateFor?.(symbol)
 
 /** The keyword a declaration of this kind opens with, where one exists. */
 const KEYWORD: Record<string, string> = {
@@ -425,9 +429,13 @@ const hasBody =
            * this an inline-flex item in the header row still applies; only
            * the anchor inside it is new.
            */
-          source && (
+          (source || alternate) && (
             <span class="gp-sphinx-api-source-link viewcode-link">
-              <span class="pre">[<a class="api-source-anchor" href={source}>source</a>]</span>
+              {source && <span class="pre">[<a class="api-source-anchor" href={source}>source</a>]</span>}
+              {alternate && (
+                <span class="pre api-alternate-link" data-alternate-docs={alternate.kind} data-alternate-observation={alternate.differs ? 'release' : 'source'}>[<a
+                  class="api-source-anchor api-alternate-anchor" href={alternate.href} rel="noopener" title={alternate.title} aria-label={alternate.title}>{alternate.label}</a>]</span>
+              )}
             </span>
           )
         }

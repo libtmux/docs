@@ -39,6 +39,8 @@ export interface PackageRegistry {
   url: string
   /** Which mark `components/icons/RegistryIcon.astro` draws. */
   icon: 'pypi' | 'npm' | 'crates' | 'go' | 'maven' | 'nuget' | 'swift' | 'rubygems' | 'luarocks' | 'powershell' | 'hex'
+    | 'cpan'
+    | 'raku-land'
 }
 
 export type PortPackageId = 'core' | 'async' | DocProduct
@@ -381,6 +383,16 @@ const ERLANG_SOURCE_INSTALL = `{deps, [
 const ERLANG_GIT_INSTALL: InstallForm = {
   code: ERLANG_SOURCE_INSTALL.replaceAll('{revision}', '"master"'), lang: 'erlang',
 }
+// An exact pin, as the package README gives: the API is still developing.
+const ERLANG_HEX_INSTALL: InstallForm = { code: '{deps, [{libtmux_erlang, "{version}"}]}.', lang: 'erlang' }
+
+const JULIA_GIT_INSTALL: InstallForm = {
+  code: 'using Pkg\nPkg.add(PackageSpec(url="https://github.com/libtmux/libtmux-julia.git", rev="master"))', lang: 'julia',
+}
+
+const HASKELL_GIT_INSTALL: InstallForm = {
+  code: 'packages: .\n\nsource-repository-package\n  type: git\n  location: https://github.com/libtmux/libtmux-haskell\n  tag: master', lang: 'text',
+}
 
 const CORE_PORTS: readonly Port[] = [
   {
@@ -659,10 +671,10 @@ const CORE_PORTS: readonly Port[] = [
       note: 'Run in Julia with tmux on PATH. The package is not registered in General, so this installs from Git; Manifest.toml records the package tree hash.' }],
     initProject: { code: 'using Pkg\nPkg.activate(".")', lang: 'julia' },
     installForms: {
-      release: { code: 'using Pkg\nPkg.add("LibTmux")', lang: 'julia' },
-      prerelease: { code: 'using Pkg\nPkg.add(PackageSpec(name="LibTmux", version="{version}"))', lang: 'julia' },
-      // Unselected source installs follow the default branch.
-      git: { code: 'using Pkg\nPkg.add(PackageSpec(url="https://github.com/libtmux/libtmux-julia.git", rev="master"))', lang: 'julia' },
+      // General does not carry LibTmux, so every form installs from Git. Unselected source installs follow the default branch.
+      release: JULIA_GIT_INSTALL,
+      prerelease: JULIA_GIT_INSTALL,
+      git: JULIA_GIT_INSTALL,
     },
     installNote: 'Requires Julia 1.13.1 and tmux 3.3a or newer. JSON layouts require tmux 3.8. Companion packages install from the same revision as the core.',
   },
@@ -685,13 +697,20 @@ const CORE_PORTS: readonly Port[] = [
     renderer: 'astro',
     publishesOwnTree: true,
     generator: 'OTP documentation chunks and native typespecs',
-    installs: [{ label: 'rebar.config', filename: 'rebar.config', lang: 'erlang',
-      code: ERLANG_SOURCE_INSTALL,
-      additionalBlocks: [{ lang: 'console', code: 'rebar3 compile' }],
-      note: 'Merge this deps entry into rebar.config. Requires Erlang/OTP 29.1.2, Rebar3 3.28.0, Linux, tmux 3.3a–3.8, make and a C11 compiler. Commit rebar.lock to retain the resolved Git revision. The application is unreleased; no Hex package is advertised.' }],
+    installs: [
+      { label: 'Rebar3 (Hex)', filename: 'rebar.config', lang: 'erlang',
+        code: ERLANG_HEX_INSTALL.code,
+        additionalBlocks: [{ lang: 'console', code: 'rebar3 compile' }],
+        note: 'Merge this deps entry into rebar.config. Requires Erlang/OTP 29.1.2, Rebar3 3.28.0, Linux, tmux 3.3a–3.8, make and a C11 compiler. The API is still developing, so the entry pins an exact version. Commit rebar.lock to retain the resolved package checksum.' },
+      { label: 'Rebar3 (Git)', filename: 'rebar.config', lang: 'erlang',
+        code: ERLANG_SOURCE_INSTALL,
+        additionalBlocks: [{ lang: 'console', code: 'rebar3 compile' }],
+        note: 'Installs the documented source revision instead of the Hex release. Merge this deps entry into rebar.config. Commit rebar.lock to retain the resolved Git revision.' },
+    ],
+    registry: { name: 'Hex', url: 'https://hex.pm/packages/libtmux_erlang', icon: 'hex' },
     initProject: { code: 'rebar3 new lib tmux_example && cd tmux_example', lang: 'console' },
-    installForms: { release: ERLANG_GIT_INSTALL, prerelease: ERLANG_GIT_INSTALL, git: ERLANG_GIT_INSTALL },
-    installNote: 'Add libtmux_erlang to your application dependencies and start it with application:ensure_all_started/1. Native records are experimental in OTP 29. The Git subdirectory selects the core application from its umbrella repository.',
+    installForms: { release: ERLANG_HEX_INSTALL, prerelease: ERLANG_HEX_INSTALL, git: ERLANG_GIT_INSTALL },
+    installNote: 'Add libtmux_erlang to your application dependencies and start it with application:ensure_all_started/1. Native records are experimental in OTP 29. The Git alternative selects the core application from its umbrella repository with a subdirectory.',
   },
   {
     slug: 'elixir',
@@ -768,9 +787,10 @@ const CORE_PORTS: readonly Port[] = [
     }],
     initProject: { lang: 'console', code: 'cabal init --non-interactive --exe --language=GHC2024 --dependency="base >=4.22 && <4.23, libtmux-haskell ^>=0.1.0.0"' },
     installForms: {
-      release: { lang: 'text', code: 'build-depends: libtmux-haskell ^>={version}' },
-      prerelease: { lang: 'text', code: 'build-depends: libtmux-haskell =={version}' },
-      git: { lang: 'text', code: 'packages: .\n\nsource-repository-package\n  type: git\n  location: https://github.com/libtmux/libtmux-haskell\n  tag: master' },
+      // Hackage does not carry libtmux-haskell, so every form installs from Git.
+      release: HASKELL_GIT_INSTALL,
+      prerelease: HASKELL_GIT_INSTALL,
+      git: HASKELL_GIT_INSTALL,
     },
     installNote: 'The source provides scoped Server handles, detached snapshots, typed queries, checked renames and pane titles, and validated offline fixtures. Creation, events and workspace tooling remain in development; MCP is excluded.',
   },
@@ -1411,27 +1431,78 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
     source: { path: 'packages/core', ref: 'master' }, versionedDocs: true,
     docsDispatch: { workflow: 'docs.yml' },
     tagGrammar: 'semver', publishesOwnTree: true,
+    // MetaCPAN renders the POD shipped in each release. This site renders the same documentation and links to it.
+    ecosystemHost: {
+      name: 'MetaCPAN POD',
+      url: 'https://metacpan.org/pod/LibTmux',
+      rationale: 'POD for each module of the published distributions on MetaCPAN.',
+    },
     renderer: 'astro', generator: 'Perl PPI signatures and native POD', referenceKind: 'model',
-    workspaceCli: 'libtmux-workspace load', workspaceCliAvailability: 'local',
+    workspaceCli: 'libtmux-workspace load', workspaceCliAvailability: 'published',
     productAvailability: { workspace: 'available', mcp: 'excluded' },
     packages: [
-      { id: 'core', name: 'LibTmux', require: 'LibTmux::Server', source: { path: 'packages/core', ref: 'master' } },
-      { id: 'async', name: 'LibTmux-Async', require: 'LibTmux::Async::Server', source: { path: 'packages/async', ref: 'master' },
-        installs: [{ label: 'cpm (source)', lang: 'console', code: 'cpm install --global ./packages/async', note: 'From the source checkout after core installation; adds Future and IO::Async with its required Ppoll backend.' }] },
-      { id: 'workspace', name: 'LibTmux-Workspace', require: 'LibTmux::Workspace', executable: 'libtmux-workspace',
-        source: { path: 'packages/workspace', ref: 'master' },
-        installs: [{ label: 'cpm (source)', lang: 'console', code: 'cpm install --global ./packages/workspace', note: 'From the source checkout after core installation. No CPAN release.' }] },
+      { id: 'core', name: 'LibTmux', registry: 'https://metacpan.org/dist/LibTmux', reference: 'https://metacpan.org/pod/LibTmux',
+        require: 'LibTmux::Server', source: { path: 'packages/core', ref: 'master' } },
+      { id: 'async', name: 'LibTmux-Async', registry: 'https://metacpan.org/dist/LibTmux-Async', reference: 'https://metacpan.org/pod/LibTmux::Async',
+        require: 'LibTmux::Async::Server', source: { path: 'packages/async', ref: 'master' },
+        installs: [
+          { label: 'cpm', lang: 'console', code: 'cpm install --global LibTmux::Async',
+            note: 'Adds Future and IO::Async with its required Ppoll backend. The installer resolves the core distribution it depends on.' },
+          { label: 'cpm (source)', lang: 'console', code: 'cpm install --global ./packages/async',
+            note: 'From the source checkout after core installation.' },
+        ] },
+      { id: 'workspace', name: 'LibTmux-Workspace', registry: 'https://metacpan.org/dist/LibTmux-Workspace', reference: 'https://metacpan.org/pod/LibTmux::Workspace',
+        require: 'LibTmux::Workspace', executable: 'libtmux-workspace', source: { path: 'packages/workspace', ref: 'master' },
+        installs: [
+          { label: 'cpm', lang: 'console', code: 'cpm install --global LibTmux::Workspace',
+            note: 'Installs the libtmux-workspace command. The installer resolves the core distribution it depends on.' },
+          { label: 'cpm (source)', lang: 'console', code: 'cpm install --global ./packages/workspace',
+            note: 'From the source checkout after core installation.' },
+        ] },
     ],
-    installs: [{ label: 'cpm (source)', lang: 'console',
-      code: 'git clone https://github.com/libtmux/libtmux-perl.git && \\\n  cd libtmux-perl && \\\n  cpm install --global ./packages/core',
-      note: 'Unpublished development distribution. Requires Perl 5.44.0, Linux x86_64 LP64, and tmux 3.3a or newer.' }],
-    initProject: { lang: 'text', code: 'Create a Perl program using LibTmux::Server; install from the source checkout.' },
+    installs: [
+      { label: 'cpm', lang: 'console', code: 'cpm install --global LibTmux',
+        note: 'Requires Perl 5.44.0, Linux x86_64 LP64, and tmux 3.3a or newer.' },
+      { label: 'cpm (source)', lang: 'console',
+        code: 'git clone https://github.com/libtmux/libtmux-perl.git && \\\n  cd libtmux-perl && \\\n  cpm install --global ./packages/core',
+        note: 'Installs the development tree from Git rather than the CPAN release.' },
+    ],
+    registry: { name: 'MetaCPAN', url: 'https://metacpan.org/dist/LibTmux', icon: 'cpan' },
+    initProject: { lang: 'text', code: 'Create a Perl program using LibTmux::Server; install LibTmux from CPAN.' },
+    // PAUSE indexes releases only, so no resolver skips a prerelease and both forms install the newest indexed release.
     installForms: {
-      release: { lang: 'console', code: 'cpm install --global ./packages/core' },
-      prerelease: { lang: 'console', code: 'cpm install --global ./packages/core' },
+      release: { lang: 'console', code: 'cpm install --global LibTmux' },
+      prerelease: { lang: 'console', code: 'cpm install --global LibTmux' },
       git: { lang: 'console', code: 'git clone https://github.com/libtmux/libtmux-perl.git && \\\n  cd libtmux-perl && \\\n  cpm install --global ./packages/core' },
     },
-    installNote: 'Install core before workspace or optional async. These package names do not identify published CPAN releases.',
+    installNote: 'Workspace and the optional async distribution each depend on core, which the installer resolves. Keep one Perl interpreter and installation prefix for all of them.',
+  },
+  {
+    slug: 'raku', projectName: 'libtmux-raku', logoLanguage: 'raku', shortName: 'Raku',
+    name: 'Raku', language: 'Raku', packageName: 'LibTmux',
+    repo: 'libtmux/libtmux-raku', checkout: '~/work/libtmux/libtmux-raku',
+    worktree: '~/work/libtmux/libtmux-raku-docs-site',
+    source: { path: 'lib', ref: 'master' }, versionedDocs: true,
+    docsDispatch: { workflow: 'docs.yml' },
+    tagGrammar: 'semver', publishesOwnTree: true,
+    renderer: 'astro', generator: 'Rakudo RakuAST and native RakuDoc', referenceKind: 'model',
+    productAvailability: { workspace: 'excluded', mcp: 'excluded' },
+    registry: { name: 'Raku Land', url: 'https://raku.land/zef:libtmux/LibTmux', icon: 'raku-land' },
+    packages: [{ id: 'core', name: 'LibTmux', coordinate: 'LibTmux:auth<zef:libtmux>', require: 'LibTmux', source: { path: 'lib', ref: 'master' } }],
+    installs: [
+      { label: 'zef', lang: 'console', code: "zef install 'LibTmux:auth<zef:libtmux>'",
+        note: 'Requires Linux, Raku 6.d and tmux 3.3a through 3.8. The authority names the Fez publisher, zef:libtmux.' },
+      { label: 'zef (source)', lang: 'console',
+        code: 'git clone https://github.com/libtmux/libtmux-raku.git && \\\n  cd libtmux-raku && \\\n  zef install .',
+        note: 'Install a checkout instead of the published distribution.' },
+    ],
+    initProject: { lang: 'text', code: 'Add "LibTmux:auth<zef:libtmux>" to the depends array of META6.json.' },
+    installForms: {
+      release: { lang: 'console', code: "zef install 'LibTmux:auth<zef:libtmux>'" },
+      prerelease: { lang: 'console', code: "zef install 'LibTmux:ver<{version}>:auth<zef:libtmux>'" },
+      git: { lang: 'console', code: 'git clone --branch {tag} --depth 1 https://github.com/libtmux/libtmux-raku.git && \\\n  cd libtmux-raku && \\\n  zef install .' },
+    },
+    installNote: 'The API is experimental and may change between 0.x releases. CI qualifies Rakudo 2026.09 on Linux with tmux 3.3a and 3.8; other platforms and compiler versions are unverified. Workspace and MCP products are not published.',
   },
 
 ] as const
@@ -1704,8 +1775,8 @@ export function workspaceInstallGuidance(port: Port): string | undefined {
   if (!productAvailable(port, 'workspace') || !port.workspaceCli) return undefined
   const command = port.workspaceCliRun ?? port.workspaceCli.split(/\s+/)[0]
   if (port.workspaceCliAvailability === 'published') {
-    return `The \`${command}\` CLI is published to ${port.registry?.name ?? 'the package registry'}, `
-      + 'numbered 0.1.N. Pin its version when automation depends on its output.'
+    return `The \`${command}\` CLI is published to ${port.registry?.name ?? 'the package registry'}. `
+      + 'Pin its version when automation depends on its output.'
   }
   if (port.workspaceCliAvailability !== 'local') return undefined
   const cliPackage = port.packages?.find((pkg) => pkg.executable === command || pkg.executable === port.workspaceCli)

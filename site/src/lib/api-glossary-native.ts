@@ -24,9 +24,26 @@ const luaAnnotation = (section: string) => `https://luals.github.io/wiki/annotat
 const elixirDocs = (page: string) => `https://elixir.hexdocs.pm/${page}`
 const erlangReference = (page: string) => `https://github.com/erlang/otp/blob/OTP-29.1.2/system/doc/reference_manual/${page}.md`
 const swiftBook = (page: string) => `https://docs.swift.org/latest/documentation/the-swift-programming-language/${page}/`
+const rakuDocs = (page: string) => `https://docs.raku.org/${page}`
 const clhs = (page: string) => `https://www.lispworks.com/documentation/HyperSpec/Body/${page}.htm`
 
 export const NATIVE_API_GLOSSARIES: Record<string, Record<string, Definition>> = {
+  raku: {
+    module: term('A Raku compilation unit that declares packages and exports declarations with is export.', 'Raku modules', rakuDocs('language/modules'), 'The module badge names a namespace. LibTmux re-exports the public declarations of its modules, so use LibTmux gives programs the common names. A distribution and a module are different identities.'),
+    class: term('A Raku class: a package that creates objects with its own attributes and methods.', 'Raku type system', rakuDocs('language/typesystem'), 'A captured model class reads local state. A reference class such as PaneRef names a tmux object and sends commands on request.'),
+    method: term('A Raku method invoked on an object or a type object with a dot.', 'Raku objects', rakuDocs('language/objects'), 'The invocant is implicit. A method that talks to tmux says so in its summary; one that reads a captured snapshot does not. A name ending in -async returns a Promise.'),
+    property: term('A public attribute accessor or a method declared as a field of a captured record.', 'Raku objects', rakuDocs('language/objects'), 'Reading it returns the value the snapshot captured and performs no I/O.'),
+    constant: term('A named Raku value or enumeration member that cannot be reassigned.', 'Raku variables', rakuDocs('language/variables'), 'An enumeration member is also listed under its enum.'),
+    enum: term('A Raku enumeration: a set of named constants of one type.', 'Raku type system', rakuDocs('language/typesystem'), 'Members compare by identity and keep their declared order.'),
+    typealias: term('A Raku subset or type constraint that gives a checked name to a narrower type.', 'Raku type system', rakuDocs('language/typesystem'), 'The constraint runs when a value is bound. It does not create a new class.'),
+    function: term('A Raku sub: a routine called by name with no invocant.', 'Raku functions', rakuDocs('language/functions'), 'A function with a hyphenated name is called as written, such as decode-layout.'),
+    exception: term('A Raku exception class that callers throw, catch with CATCH or try, and inspect by type.', 'Raku exceptions', rakuDocs('language/exceptions'), 'LibTmux exceptions live under X::LibTmux and carry the fields the failure produced.'),
+    trait: term('A Raku trait modifies a declaration with is, does or of.', 'Raku traits', rakuDocs('language/traits'), 'A trait changes how the declaration behaves; it is not a Rust or Java trait.'),
+    inherited: term('A method found through Raku class inheritance.', 'Raku type system', rakuDocs('language/typesystem'), 'The page names the declaring class. A subclass reuses the method and its documented behavior unchanged.'),
+    overload: term('One of several multi declarations that share a name and differ in their signatures.', 'Raku functions', rakuDocs('language/functions'), 'Raku selects the candidate from the argument types at the call. Read each signature for the types it accepts.'),
+    async: term('An operation that returns a Promise and completes on the Raku scheduler.', 'Raku concurrency', rakuDocs('language/concurrency'), 'Await the Promise or consume it with react and whenever. Completion of the Promise and release of its resources are separate; close what the operation owns.'),
+    package: term('The installable Raku distribution supplying this API, identified by name and authority.', 'Raku modules', rakuDocs('language/modules'), 'The distribution LibTmux:auth<zef:libtmux> provides these modules.'),
+  },
   ocaml: {
     package: term('An installable OCaml library package. Its public modules supply the declarations in this reference.', 'OCaml libraries with Dune', 'https://ocaml.org/docs/libraries-dune', 'A package name and an OCaml module path are distinct: libtmux-unix provides Libtmux_unix.'),
     module: term('An OCaml module exposing values, types and nested modules through a signature.', 'OCaml module types', 'https://ocaml.org/manual/5.5/modtypes.html#s:modtypes'),

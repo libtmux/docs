@@ -250,7 +250,7 @@ export function preflightProblems({ port, preflights, readSource }) {
       if (text === undefined) { problems.push(`${label}: ${item.at} is not a line of the pinned source`); continue }
       for (const needle of item.has ?? []) if (!text.includes(needle)) problems.push(`${label}: ${item.at} does not contain ${JSON.stringify(needle)}`)
     }
-    if (!rule.evidence.some((item) => (item.has ?? []).some((needle) => needle.includes(`"${rule.command}"`)))) problems.push(`${label}: no cited line spells the command`)
+    if (!rule.evidence.some((item) => (item.has ?? []).some((needle) => ['"', "'"].some((quote) => needle.includes(`${quote}${rule.command}${quote}`))))) problems.push(`${label}: no cited line spells the command`)
   }
   return problems
 }

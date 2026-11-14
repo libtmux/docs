@@ -62,8 +62,10 @@ export function exportGroupsNav(model: ApiModelBase): NavConfig {
       }
       members.add(id)
     }
-    bucket.children!.push({ id: `${bucket.id}:${bucket.children!.length}`, label: group.title,
-      match: { kind: 'id', is: [...group.members] }, order: [...group.members] })
+    // A module exported by another module already owns a bucket; listing it here too would place it twice.
+    const declarations = group.members.filter((id) => !modules.has(byId.get(id)!.id))
+    if (declarations.length) bucket.children!.push({ id: `${bucket.id}:${bucket.children!.length}`, label: group.title,
+      match: { kind: 'id', is: declarations }, order: declarations })
   }
   for (const symbol of model.symbols) {
     if (symbol.kind === 'module' && publicSymbol(symbol) && !owners.has(symbol.publicId ?? symbol.id)) {

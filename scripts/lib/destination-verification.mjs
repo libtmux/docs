@@ -17,6 +17,8 @@
  */
 
 import { documentedLibrary, entryCandidates, entryDestinations } from '../../site/src/lib/port-inventory.ts'
+import { readPage } from './api-html.mjs'
+import { pageIdentity } from './api-identities.mjs'
 
 export const USER_AGENT = 'libtmux-docs destination check (+https://libtmux.org)'
 
@@ -373,6 +375,64 @@ const VERIFIERS = {
         exact: async (wanted) => { const page = await get(`https://${name}.hexdocs.pm/${wanted}/`); return page.status === 200 && titleOf(page.text) === titled(wanted) } })
       : fail('identity', `title is "${title}", expected the documentation of ${name}`, { status: 200, requested: url })
   },
+
+  async metacpan({ url }, { get }) {
+    const [, kind, name] = /^https:\/\/metacpan\.org\/(dist|pod)\/([^/]+)$/.exec(url) ?? []
+    if (!kind) return fail('identity', `${url} is neither a distribution (/dist/) nor a module's POD (/pod/) page of metacpan.org`)
+    // MetaCPAN answers scripted clients with a challenge page, so its own API names the distribution or module.
+    // The API's `pod` endpoint renders the page's body, so a module's POD is read from its NAME section.
+    const api = (path) => `https://fastapi.metacpan.org/v1/${path}`
+    let dist = name
+    let version
+    if (kind === 'pod') {
+      const requested = api(`module/${name}`)
+      const response = await get(requested, { accept: 'application/json' })
+      const missing = answered(response, requested)
+      if (missing) return missing
+      const module = json(response.text)
+      // Files that declare several packages answer for each; only the one that documents the file has this page.
+      if (module?.documentation !== name) return fail('identity', `MetaCPAN documents "${module?.documentation}" in ${module?.path}, expected "${name}"`, { status: 200, requested })
+      dist = module.distribution
+      version = module.version
+      const rendered = await get(api(`pod/${name}`))
+      const refused = answered(rendered, api(`pod/${name}`))
+      if (refused) return refused
+      const declared = pageIdentity(url, readPage(rendered.text))
+      if (declared?.via !== 'pod' || declared.path.join('::') !== name) return fail('identity', `the POD names "${declared?.path?.join('::') ?? ''}" in its NAME section, expected "${name}"`, { status: 200, requested: api(`pod/${name}`) })
+    }
+    const requested = api(`release/${dist}`)
+    const response = await get(requested, { accept: 'application/json' })
+    const missing = answered(response, requested)
+    if (missing) return missing
+    const release = json(response.text)
+    if (release?.distribution !== dist) return fail('identity', `MetaCPAN names the distribution "${release?.distribution}", expected "${dist}"`, { status: 200, requested })
+    const listing = await get(api(`release/_search?q=distribution:${dist}&size=100`), { accept: 'application/json' })
+    // A developer release and one BackPAN holds are not what `cpm install` resolves.
+    const versions = (json(listing.text)?.hits?.hits ?? []).map((hit) => hit._source)
+      .filter((entry) => entry?.distribution === dist && entry.maturity === 'released' && entry.status !== 'backpan').map((entry) => entry.version)
+    return pass({ status: 200, requested: kind === 'pod' ? api(`module/${name}`) : requested, identity: name, version: version ?? release.version, versions,
+      repository: reposOf([release.resources?.repository?.url, release.resources?.repository?.web, release.resources?.homepage]) })
+  },
+  async 'raku-land'({ url }, { get }) {
+    // Raku Land names a distribution by its Fez authority and its name, and answers 404 for an unknown one.
+    const [, authority, name] = /^https:\/\/raku\.land\/(zef:[^/?#]+)\/([^/?#]+)$/.exec(url) ?? []
+    if (!name) return fail('identity', `${url} is not a distribution page under a zef authority on raku.land`)
+    const response = await get(url)
+    const missing = answered(response, url)
+    if (missing) return missing
+    const title = titleOf(response.text)
+    if (title !== `Raku Land - ${name}`) return fail('identity', `title is "${title}", expected "Raku Land - ${name}"`, { status: 200, requested: url })
+    // The version selector lists every release and marks the one shown.
+    const options = [...response.text.matchAll(/<option\s+value="([^"]+)"([^>]*)>/g)].map(([, value, attributes]) => ({ value, selected: /\bselected\b/.test(attributes) }))
+    const sources = [...response.text.matchAll(/<a\s+href="(https:\/\/github\.com\/[^"/]+\/[^"/]+)"[^>]*>\s*github\.com\/[^<\s]+\s*</g)].map((match) => match[1])
+    return pass({ status: 200, requested: url, identity: `${name}:auth<${authority}>`, version: options.find((option) => option.selected)?.value,
+      versions: options.map((option) => option.value), repository: reposOf(sources),
+      exact: async (wanted) => {
+        const page = await get(`${url}?v=${encodeURIComponent(wanted)}`)
+        return page.status === 200 && titleOf(page.text) === title
+          && [...page.text.matchAll(/<option\s+value="([^"]+)"([^>]*)>/g)].some(([, value, attributes]) => value === wanted && /\bselected\b/.test(attributes))
+      } })
+  },
 }
 
 /**
@@ -390,15 +450,24 @@ const SAMPLES = { 'javadoc-io': 3 }
 export const VERSION_SUPPORT = {
   github: false, pypi: true, npm: true, crates: true, rubygems: true, 'powershell-gallery': true, nuget: true, luarocks: true,
   'maven-central': true, 'swift-package-index': true, 'pkg-go-dev': true, 'docs-rs': true, 'javadoc-io': true, hex: true, hexdocs: true,
+  metacpan: true,
+  'raku-land': true,
 }
+/**
+ * Where a host never lists a kind of version, so a manifest that declares one has not claimed a release. PAUSE
+ * indexes no CPAN developer release (`0.001_001`), and a pinned manifest at a development commit may declare one.
+ */
+export const DEVELOPER_VERSION = { metacpan: /^\d+\.\d+_\d+$/ }
 /** Hosts whose records must name the repository the host reports. */
-export const REPOSITORY_HOSTS = new Set(['pypi', 'npm', 'crates', 'rubygems', 'powershell-gallery', 'nuget', 'luarocks', 'maven-central', 'swift-package-index', 'javadoc-io', 'hex'])
+export const REPOSITORY_HOSTS = new Set(['pypi', 'npm', 'crates', 'rubygems', 'powershell-gallery', 'nuget', 'luarocks', 'maven-central', 'swift-package-index', 'javadoc-io', 'hex', 'metacpan',
+  'raku-land'])
 
 const HOSTNAMES = {
   'pypi.org': 'pypi', 'www.npmjs.com': 'npm', 'crates.io': 'crates', 'rubygems.org': 'rubygems',
   'www.powershellgallery.com': 'powershell-gallery', 'www.nuget.org': 'nuget', 'luarocks.org': 'luarocks',
   'central.sonatype.com': 'maven-central', 'swiftpackageindex.com': 'swift-package-index', 'pkg.go.dev': 'pkg-go-dev',
-  'docs.rs': 'docs-rs', 'javadoc.io': 'javadoc-io', 'github.com': 'github', 'hex.pm': 'hex',
+  'docs.rs': 'docs-rs', 'javadoc.io': 'javadoc-io', 'github.com': 'github', 'hex.pm': 'hex', 'metacpan.org': 'metacpan',
+  'raku.land': 'raku-land',
 }
 /** The host id of a URL; HexDocs serves each package from a subdomain of `hexdocs.pm`. */
 export const hostOf = (url) => {
@@ -419,7 +488,9 @@ async function versionChecks(result, destination) {
   const checks = []
   for (const { version, source, ports } of expected) {
     const base = { version, source, ports }
-    if (typeof result.exact === 'function') checks.push({ ...base, check: (await result.exact(version)) ? 'confirmed' : 'absent' })
+    if (DEVELOPER_VERSION[destination.host]?.test(version)) {
+      checks.push({ ...base, check: 'developer', note: `${version} is a developer version, which ${destination.host} does not list as a release` })
+    } else if (typeof result.exact === 'function') checks.push({ ...base, check: (await result.exact(version)) ? 'confirmed' : 'absent' })
     else if (Array.isArray(result.versions)) checks.push({ ...base, check: result.versions.includes(version) ? 'confirmed' : 'absent' })
     else checks.push({ ...base, check: 'unsupported', note: `${destination.host} does not list versions` })
   }
@@ -632,7 +703,9 @@ export function checkEvidence(inventory, evidence, { manifests, today = new Date
     if (checks.length === 0) problems.push(`${url} says nothing of its version; record why a host cannot confirm one`)
     for (const check of checks) {
       if (check.check === 'absent') problems.push(`${url} does not carry ${check.version}, the version ${check.source} declares for ${check.ports.join(', ')}`)
-      else if (check.check !== 'confirmed' && check.version && VERSION_SUPPORT[destination.host]) {
+      else if (check.check === 'developer') {
+        if (!DEVELOPER_VERSION[destination.host]?.test(check.version ?? '')) problems.push(`${url} records ${check.version} as a developer version, which ${destination.host} does not issue`)
+      } else if (check.check !== 'confirmed' && check.version && VERSION_SUPPORT[destination.host]) {
         problems.push(`${url} could not confirm ${check.version} on ${destination.host}, which lists versions (${check.check}: ${check.note ?? 'no reason given'})`)
       }
     }

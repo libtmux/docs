@@ -20,11 +20,17 @@ export interface ExpectedDestinations {
 const github = (url: string, name: string): ExpectedLink => ({ url, label: `${name} on GitHub` })
 
 export const DESTINATIONS: Record<string, ExpectedDestinations> = {
+  raku: {
+    source: github('https://github.com/libtmux/libtmux-raku/tree/master/lib', 'libtmux-raku/lib'),
+    registry: { name: 'Raku Land', url: 'https://raku.land/zef:libtmux/LibTmux', icon: 'raku-land', label: 'LibTmux on Raku Land' },
+  },
   ocaml: {
     source: github('https://github.com/libtmux/libtmux-ocaml/tree/master/lib', 'libtmux-ocaml/lib'),
   },
   perl: {
     source: github('https://github.com/libtmux/libtmux-perl/tree/master/packages/core', 'libtmux-perl'),
+    registry: { name: 'MetaCPAN', url: 'https://metacpan.org/dist/LibTmux', icon: 'cpan', label: 'LibTmux on MetaCPAN' },
+    api: { name: 'MetaCPAN POD', url: 'https://metacpan.org/pod/LibTmux', label: 'LibTmux API reference on MetaCPAN POD' },
   },
   clojure: {
     source: github('https://github.com/libtmux/libtmux-java/tree/master/libtmux-clojure', 'libtmux-java/libtmux-clojure'),
@@ -50,6 +56,7 @@ export const DESTINATIONS: Record<string, ExpectedDestinations> = {
   },
   erlang: {
     source: github('https://github.com/libtmux/libtmux-erlang/tree/master/apps/libtmux_erlang', 'libtmux-erlang/apps/libtmux_erlang'),
+    registry: { name: 'Hex', url: 'https://hex.pm/packages/libtmux_erlang', icon: 'hex', label: 'libtmux_erlang on Hex' },
   },
   elixir: {
     source: github('https://github.com/libtmux/libtmux-elixir/tree/main/lib', 'libtmux-elixir/lib'),

@@ -7,6 +7,7 @@
  * with the command, because the flags choose the scope tmux lists.
  */
 import { scanPerl } from './tmux-usage-perl.mjs'
+import { scanRaku } from './tmux-usage-raku.mjs'
 import { parserFor } from '../../packages/api-model/src/parser.ts'
 import { receiverOf, scanElixir, scanFSharp, scanJulia, scanLisp } from './tmux-usage-lexical.mjs'
 import { scanHaskell } from './tmux-usage-haskell.mjs'
@@ -15,6 +16,7 @@ import { scanErlang } from './tmux-usage-erlang.mjs'
 
 /** Port to its source reader. PowerShell cmdlets are C#; Julia, F#, Elixir and Erlang use lexical readers. */
 export const GRAMMARS = {
+  raku: 'raku',
   perl: 'perl', py: 'python', ts: 'typescript', rs: 'rust', go: 'go', java: 'java', clojure: 'clojure', kotlin: 'kotlin', scala: 'scala',
   csharp: 'csharp', powershell: 'csharp', cxx: 'cpp', swift: 'swift', ruby: 'ruby', lua: 'lua', julia: 'julia', fsharp: 'fsharp', elixir: 'elixir', ocaml: 'ocaml',
   haskell: 'haskell',
@@ -24,6 +26,7 @@ export const GRAMMARS = {
 
 /** Source extensions per grammar, minus declaration-only files. */
 export const EXTENSIONS = {
+  raku: /\.rakumod$/,
   perl: /\.pm$/, python: /\.py$/, typescript: /(?<!\.d)\.ts$/, rust: /\.rs$/, go: /\.go$/, java: /\.java$/, clojure: /\.clj$/, kotlin: /\.kt$/,
   scala: /\.scala$/, csharp: /\.cs$/, cpp: /\.(?:cpp|cc|cxx|hpp|hh|h)$/, swift: /\.swift$/, ruby: /\.rb$/, lua: /\.lua$/, julia: /\.jl$/, fsharp: /\.fs$/, elixir: /\.ex$/, ocaml: /\.ml$/,
   haskell: /\.l?hs$/,
@@ -622,6 +625,7 @@ export async function scanSource({ grammar, text, commands, known, dispatch, bui
     return false
   }
   if (grammar === 'perl') return scanPerl(text, native, { commands, known })
+  if (grammar === 'raku') return scanRaku(text, native, { commands, known })
   if (grammar === 'julia') return scanJulia(text, { commands, known, dispatch })
   if (grammar === 'elixir') return scanElixir(text, { commands, known, dispatch })
   if (grammar === 'erlang') return scanErlang(text, { commands, known, dispatch, builders, labels })

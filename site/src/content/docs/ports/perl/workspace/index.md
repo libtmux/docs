@@ -15,7 +15,8 @@ APIs. Its `libtmux-workspace` command validates, plans, and loads the
 [libtmux.workspace/v1 JSON format](./source-guide/). Planning performs no tmux I/O. Loading
 creates sessions, windows, and panes, with explicit conflict and repeat policies.
 
-Install core first, then workspace from the same source checkout. These
-packages are not published to CPAN. The [workspace guide](./source-guide/)
-contains the configuration contract and installed CLI commands. The
+Install it from CPAN with `cpm install --global LibTmux::Workspace`; the
+installer resolves the core distribution it depends on. The
+[workspace guide](./source-guide/) contains the configuration contract and
+installed CLI commands. The
 [API reference](./reference/) documents the public loader and report errors.

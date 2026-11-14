@@ -257,11 +257,12 @@ describe('staged port guide links', () => {
     ])
     else if (port === 'clojure') expect(cards[1].label).toBe('Captures, effects and streams')
     else if (port === 'perl' || port === 'erlang') expect(cards[1].label).toBe('Installation')
+    else if (port === 'raku') expect(cards.map((card: { label: string }) => card.label)).toEqual(['Getting started'])
     else if (port !== 'ocaml') expect(cards[1].label).toBe('Attaching to tmux')
     if (port === 'perl') {
       const example = files.get('perl/examples/orchestration/index.md')!
       const body = /^---\n[\s\S]*?\n---\n\n([\s\S]*)$/.exec(example)![1]
-      expect(body).toMatch(/^Constructing `LibTmux::Server`/)
+      expect(body).toMatch(/^## Start with a complete program/)
     }
     for (const section of ['examples', 'topics']) {
       const page = files.get(`${port}/${section}/index.md`)

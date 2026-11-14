@@ -39,6 +39,7 @@ interface Language {
 /** Every port. A language missing here is a failure of this table, and the test requires one entry per port. */
 export const FORMS: Record<string, Language | 'as-written'> = {
   perl: 'as-written',
+  raku: 'as-written',
   py: { qualifier: '.', call: true },
   ts: { qualifier: '.', call: true },
   rs: { qualifier: '::', call: true },
