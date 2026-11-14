@@ -34,7 +34,7 @@ describe('Haskell port metadata', () => {
     expect(installCommand(haskell, { status: 'unpublished', version: null, release: null, tag: null }).code)
       .toContain('location: https://github.com/libtmux/libtmux-haskell')
     expect(INVENTORY.haskell.map((entry) => [entry.id, entry.status])).toEqual([
-      ['libtmux-haskell', 'published'], ['repository', 'published'], ['libtmux-haskell-workspace', 'planned'],
+      ['libtmux-haskell', 'configured-unpublished'], ['repository', 'published'], ['libtmux-haskell-workspace', 'planned'],
     ])
     const workspace = INVENTORY.haskell[2]
     expect(workspace.path).toBeUndefined()

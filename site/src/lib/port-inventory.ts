@@ -254,6 +254,7 @@ const julia = family('libtmux/libtmux-julia')
 const juliaSource = fromGit(julia, 'Installs from Git; the General registry does not carry it.')
 const elixir = family('libtmux/libtmux-elixir', 'main')
 const haskell = family('libtmux/libtmux-haskell')
+const haskellSource = fromGit(haskell, 'Installs from source; Hackage does not carry it.')
 const lisp = family('libtmux/libtmux-lisp')
 const lispSource = fromGit(lisp, 'Installs from source; Quicklisp does not carry it.')
 const erlang = family('libtmux/libtmux-erlang')
@@ -402,7 +403,7 @@ export const INVENTORY: Readonly<Record<string, readonly InventoryEntry[]>> = {
       unavailable: [{ kind: 'package', host: 'hex', url: 'https://hex.pm/packages/libtmux_workspace', reason: 'not published' }] }),
   ],
   haskell: [
-    haskell({ id: 'libtmux-haskell', kind: 'library', product: 'core', unit: 'Cabal package', label: 'libtmux-haskell', path: 'src',
+    haskellSource({ id: 'libtmux-haskell', kind: 'library', product: 'core', unit: 'Cabal package', label: 'libtmux-haskell', path: 'src',
       aliases: ['LibTmux', 'LibTmux.Server', 'LibTmux.Snapshot', 'LibTmux.Query', 'LibTmux.Snapshot.Fixture', 'LibTmux.Id', 'LibTmux.Value', 'LibTmux.Version'], note: 'Available from source; not published on Hackage.',
       unavailable: [{ kind: 'package', host: 'Hackage', url: 'https://hackage.haskell.org/package/libtmux-haskell', reason: 'not published' }] }),
     haskell({ id: 'repository', kind: 'source', product: 'core', label: 'libtmux-haskell', coordinate: 'libtmux/libtmux-haskell' }),

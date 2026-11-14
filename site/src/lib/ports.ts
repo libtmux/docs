@@ -386,6 +386,10 @@ const JULIA_GIT_INSTALL: InstallForm = {
   code: 'using Pkg\nPkg.add(PackageSpec(url="https://github.com/libtmux/libtmux-julia.git", rev="master"))', lang: 'julia',
 }
 
+const HASKELL_GIT_INSTALL: InstallForm = {
+  code: 'packages: .\n\nsource-repository-package\n  type: git\n  location: https://github.com/libtmux/libtmux-haskell\n  tag: master', lang: 'text',
+}
+
 const CORE_PORTS: readonly Port[] = [
   {
     slug: 'py',
@@ -772,9 +776,10 @@ const CORE_PORTS: readonly Port[] = [
     }],
     initProject: { lang: 'console', code: 'cabal init --non-interactive --exe --language=GHC2024 --dependency="base >=4.22 && <4.23, libtmux-haskell ^>=0.1.0.0"' },
     installForms: {
-      release: { lang: 'text', code: 'build-depends: libtmux-haskell ^>={version}' },
-      prerelease: { lang: 'text', code: 'build-depends: libtmux-haskell =={version}' },
-      git: { lang: 'text', code: 'packages: .\n\nsource-repository-package\n  type: git\n  location: https://github.com/libtmux/libtmux-haskell\n  tag: master' },
+      // Hackage does not carry libtmux-haskell, so every form installs from Git.
+      release: HASKELL_GIT_INSTALL,
+      prerelease: HASKELL_GIT_INSTALL,
+      git: HASKELL_GIT_INSTALL,
     },
     installNote: 'The source provides scoped Server handles, detached snapshots, typed queries, checked renames and pane titles, and validated offline fixtures. Creation, events and workspace tooling remain in development; MCP is excluded.',
   },
