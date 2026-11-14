@@ -3782,6 +3782,13 @@
   },
   {
    "port": "erlang",
+   "symbol": "tmux_query",
+   "page": "/erlang/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
    "symbol": "tmux_query:explain/1",
    "page": "/erlang/latest/concepts/architecture/",
    "title": "Architecture decisions",
@@ -3845,6 +3852,13 @@
   },
   {
    "port": "erlang",
+   "symbol": "tmux_select",
+   "page": "/erlang/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
    "symbol": "tmux_select:filter/2",
    "page": "/erlang/latest/concepts/queries/",
    "title": "Selections and queries",
@@ -3876,6 +3890,13 @@
    "symbol": "tmux_server",
    "page": "/erlang/latest/guides/api-documentation/",
    "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_server",
+   "page": "/erlang/latest/guides/getting-started/",
+   "title": "Getting started",
    "section": "guides"
   },
   {
@@ -4051,6 +4072,13 @@
    "symbol": "tmux_snapshot",
    "page": "/erlang/latest/guides/api-documentation/",
    "title": "Native API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_snapshot",
+   "page": "/erlang/latest/guides/getting-started/",
+   "title": "Getting started",
    "section": "guides"
   },
   {
