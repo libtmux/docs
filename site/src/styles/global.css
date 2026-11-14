@@ -121,6 +121,13 @@
   /* Short and long pages keep the same width with classic scrollbars. */
   html { scrollbar-gutter: stable; }
 
+  /* Every focusable control shows the one ring. A control's own rule, which is unlayered, still wins where a clipped
+     container needs the ring inside its edge. */
+  :where(a[href], button, summary, input, select, textarea, [tabindex]:not([tabindex="-1"])):focus-visible {
+    outline: 2px solid var(--focus-ring-color);
+    outline-offset: 2px;
+  }
+
   html[data-js] .section-search[hidden] { display: block !important; visibility: hidden; }
 
   *,
@@ -291,8 +298,8 @@ html[data-theme-mode="dark"] .prose .row-anchor-link:hover { color: var(--theme-
   .prose .row-anchor-link { opacity: 1; }
 }
 .prose :is(.row-anchor-link, .row-label-link):focus-visible {
-  outline: 2px solid var(--theme-primary);
-  outline-offset: 3px;
+  outline: 2px solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 /*
@@ -1068,7 +1075,7 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
 
 .scheme-switch__option:focus-within {
   outline: 2px solid var(--focus-ring-color);
-  outline-offset: 1px;
+  outline-offset: 2px;
 }
 
 .scheme-cycle { display: none; align-items: center; justify-content: center; width: 2rem; height: 1.75rem; padding: .25rem; border: 1px solid var(--control-border); border-radius: var(--radius-md, .375rem); color: var(--topnav-link-color); background: transparent; cursor: pointer; }
