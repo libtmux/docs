@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it, vi } from 'vitest'
-import { Window, type Document } from 'happy-dom'
+import { Window, type Document, type Element } from 'happy-dom'
 import { createComponent, render } from 'astro/compiler-runtime'
 vi.mock('astro:content', () => ({ getCollection: vi.fn(async () => []) }))
 import { loadAstroTemplate, renderAstroTemplate, withoutScope } from './astro-templates'
@@ -112,7 +112,9 @@ describe('the menu sidebar on protocol reference pages', () => {
     const document = await page('rs', 'tools', first('rs', 'tools'))
     const tab = document.querySelector('dt.gp-sphinx-api-header > .gp-sphinx-api-layout > .api-corner')!
     expect(tab, 'kind and Source share the corner tab').not.toBeNull()
-    expect([...tab.children].map((child) => child.classList.contains('api-leg--action'))).toEqual([false, true])
+    // The kind leads and Source ends the tab; a tool's toolset badge (the tool browser) sits between them.
+    const part = (child: Element) => child.classList.contains('api-leg--action') ? 'source' : child.classList.contains('mcp-tier') ? 'tier' : 'kind'
+    expect([...tab.children].map(part)).toEqual(['kind', 'tier', 'source'])
     expect(tab.querySelector('a.api-leg--action')?.getAttribute('href')).toMatch(/^https:\/\/github\.com\//)
     // The object is the page's entry; the type definitions below it are entries of their own and keep their permalinks.
     expect(document.querySelector('dl.gp-sphinx-api-container:not(.mcp-type-definition) > dt.gp-sphinx-api-header a.headerlink')).toBeNull()

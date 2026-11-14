@@ -826,6 +826,15 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout > .
 }
 .api-corner > .api-badge--mod.api-badge--mod.api-badge--mod { padding-inline: 0.35rem; font-size: 0.7421875rem; }
 .api-corner > .api-badge.api-badge.api-badge:last-child { border-bottom-right-radius: var(--tab-r); border-right-color: transparent; }
+/* The MCP toolset badge sits in the tab between the kind and Source, in the tab's 15px and with the tab's shape. */
+.api-corner > .mcp-tier {
+  box-sizing: border-box;
+  height: var(--corner-h);
+  margin: 0;
+  border-radius: var(--tab-r) 0 0 0;
+  border-bottom-color: transparent;
+  line-height: 1;
+}
 /* A header with a body below has no card corner at its bottom-right. */
 dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:not(:only-child) > .gp-sphinx-api-layout > .api-corner > .api-badge.api-badge.api-badge:last-child { border-bottom-right-radius: 0; }
 .api-corner > :focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: -2px; }
