@@ -28,6 +28,7 @@ import { withRoot } from '../../lib/site-root'
 import { API_MODELS, API_NAV, PORT_NAME, indexFor, isMemberOwner, ownersOf, pageSlug, referenceAlternatives, topLevelTypesOf } from '../../lib/api-models'
 import { PORT_BY_SLUG, referenceUrl } from '../../lib/ports'
 import { productApiHref } from '../../lib/product-api'
+import { alternateDocs } from '../../lib/perl-pod'
 import { nativeQualifiedName, nativeShortName } from '../../lib/native-name'
 import { nativeKind } from '../../lib/api-labels'
 import { plainMention } from '../../lib/mention-badge'
@@ -794,6 +795,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                 parentKind={declaringType?.kind}
                 index={index}
                 sourceUrl={sourceUrl}
+                alternate={(entry) => portModel ? alternateDocs(portModel, entry, version) : undefined}
                 port={port}
                 language={language}
                 manualLinks={source?.manualLinks}
