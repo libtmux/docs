@@ -1194,8 +1194,10 @@ export class SymbolIndex {
       const resolved = this.resolve(span.target, span.role, context)
       const lone = /^([A-Za-z_$][\w$]*)(\(.*\))?$/s.exec(span.target)
       const link = lone && this.isAnotherOwnersMember(lone[1]!, resolved, context, this.isCall(lone[2] ?? '')) ? undefined : resolved
-      // A `typeparam` reference that names nothing in scope is a literal, not a lookup of a global.
-      return !link && span.role === 'typeparam' ? { kind: 'code' as const, text: span.label } : { ...span, link }
+      // A `typeparam` reference that names nothing in scope is a literal, not a lookup of a global. So is a Raku span that names
+      // nothing whole: a name has hyphens and an adverb a leading colon (`:deadline(Instant)`), which the literal tokenizer reads as
+      // operators between other names, so it would link `deadline` to the member of another class.
+      return !link && (span.role === 'typeparam' || this.lang === 'raku') ? { kind: 'code' as const, text: span.label } : { ...span, link }
     })
   }
 

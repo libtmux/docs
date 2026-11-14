@@ -1,7 +1,9 @@
 import { createHash } from 'node:crypto'
+import { existsSync, readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { extractRakuArtifact } from '../src/languages/raku.ts'
 import { sourceUrl } from '../src/products.ts'
+import type { ApiModel } from '../src/model.ts'
 import { SymbolIndex } from '../src/reference.ts'
 
 const revision = 'a'.repeat(40)
@@ -48,7 +50,9 @@ describe('native Raku documentation', () => {
       .toBe('Acquire a pane.')
     expect(prose).toContainEqual(expect.objectContaining({ kind: 'ref', label: 'pane',
       link: expect.objectContaining({ href: '/reference/LibTmux::Pane/' }) }))
-    expect(index.docSpans('`LibTmux::Pane`', method)).toEqual([{ kind: 'code', text: 'LibTmux::Pane' }])
+    expect(index.docSpans('`LibTmux::Pane`', method)).toContainEqual(expect.objectContaining({ kind: 'ref', label: 'LibTmux::Pane',
+      link: expect.objectContaining({ href: '/reference/LibTmux::Pane/' }) }))
+    expect(index.docSpans('``LibTmux::Pane``', method)).toEqual([{ kind: 'code', text: 'LibTmux::Pane' }])
     expect(model.generatedSources).toBeUndefined()
     expect(sourceUrl(model, method, '/reference/')).toBe(`https://github.com/libtmux/libtmux-raku/blob/${revision}/${file}#L2`)
     expect(model.nativeProvenance?.exporter.revision).not.toBe(model.revision)
@@ -70,5 +74,48 @@ describe('native Raku documentation', () => {
     expect(() => extractRakuArtifact(missing, revision)).toThrow(/unresolved/)
     const invalid = artifact(); invalid.symbols[2]!.signatures[0]!.references[0]!.end = 999
     expect(() => extractRakuArtifact(invalid, revision)).toThrow(/type reference/)
+  })
+})
+
+const rakuModel = new URL('../../../site/src/data/api/raku.json', import.meta.url)
+
+describe.runIf(existsSync(rakuModel))('code spans in Raku descriptions', () => {
+  const { symbols } = JSON.parse(readFileSync(rakuModel, 'utf8')) as ApiModel
+  const index = new SymbolIndex(symbols, (symbol) => `/reference/${symbol.id}/`, 'raku')
+  const at = (id: string) => symbols.find((symbol) => symbol.id === id)!
+  // Every link a rendered span carries, whole or inside its literal.
+  const linked = (text: string, context: string) => index.docSpans(text, at(context)).flatMap((span) =>
+    span.kind === 'ref' ? [span.link?.symbol?.id, ...(span.parts ?? []).map((part) => part.link?.symbol?.id)].flatMap((id) => id ? [id] : []) : [])
+
+  it('link a method name, padded or not, to the member of the class being described', () => {
+    // The exporter writes `C<start>` as a padded span, and CommonMark strips one space from each side of one.
+    expect(linked('` start ` and `attach`', 'LibTmux::Server'))
+      .toEqual(['LibTmux::Server.start', 'LibTmux::Server.attach'])
+    for (const name of ['start', 'attach', 'run-batch', 'from-env', 'snapshot', 'capabilities', 'close', 'buffers']) {
+      expect(linked(`\` ${name} \``, 'LibTmux::Server'), name).toEqual([`LibTmux::Server.${name}`])
+    }
+  })
+
+  it('send a name several classes declare to the class being described first', () => {
+    // `capabilities` is declared on Server, Snapshot and Observation.
+    expect(linked('`capabilities`', 'LibTmux::Server')).toEqual(['LibTmux::Server.capabilities'])
+    expect(linked('`capabilities`', 'LibTmux::Server.attach')).toEqual(['LibTmux::Server.capabilities'])
+    expect(linked('`capabilities`', 'LibTmux::Model::Snapshot')).toEqual(['LibTmux::Model::Snapshot.capabilities'])
+  })
+
+  it('keep what names no member as plain code, and a doubled span as a literal', () => {
+    for (const text of ['`TMUX`', '`:parse-only`', '`$snapshot.clients`', '`` start ``']) {
+      expect(linked(text, 'LibTmux::Server'), text).toEqual([])
+    }
+  })
+
+  it('link only a span whose whole text names a symbol, as an adverb or a trait names none', () => {
+    // `deadline` and `operation` are also members of other classes; `:deadline(Instant)` and `is single-operation('async')`
+    // name an argument and a trait, and the shared tokenizer would read their hyphen and colon as operators between names.
+    for (const text of ["`:deadline(Instant)`", "`is single-operation('async')`", '`:hidden`']) {
+      expect(linked(text, 'LibTmux::Batch'), text).toEqual([])
+      expect(linked(text, 'LibTmux::Configuration'), text).toEqual([])
+    }
+    expect(linked('`LibTmux::Server`', 'LibTmux::Batch')).toEqual(['LibTmux::Server'])
   })
 })
