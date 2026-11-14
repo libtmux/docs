@@ -148,16 +148,29 @@ describe('stage --check compares badge files', () => {
 describe('badge URLs in a rendered guide', () => {
   afterEach(() => vi.unstubAllEnvs())
 
-  const render = async (port: string) => {
+  const render = async (port: string, markdown = '![x](/badges/abc.svg)', root = '') => {
     vi.stubEnv('LIBTMUX_DOCS_PORT', port)
     vi.stubEnv('LIBTMUX_DOCS_VERSION', 'latest')
-    vi.stubEnv('LIBTMUX_DOCS_ROOT', '')
-    vi.stubEnv('LIBTMUX_DOCS_PORT_ROOT', '')
+    vi.stubEnv('LIBTMUX_DOCS_ROOT', root)
+    vi.stubEnv('LIBTMUX_DOCS_PORT_ROOT', root)
     vi.resetModules()
     const { rehypeSiteRoot } = await import('../src/plugins/rehype-site-root.mjs')
     const processor = await createMarkdownProcessor({ rehypePlugins: [rehypeSiteRoot], syntaxHighlight: false })
-    return (await processor.render('![x](/badges/abc.svg)', { frontmatter: { port: 'ruby' } })).code
+    return (await processor.render(markdown, { frontmatter: { port: 'ruby' } })).code
   }
+
+  // Erlang's README header is HTML, so its localized badges are raw `<img>` tags, not Markdown images.
+  const htmlHeader = '<p>\n  <a href="https://hex.pm/packages/x"><img src="/badges/abc.svg" alt="x"></a>\n</p>'
+
+  it('serves an HTML header\'s badges from the port build\'s own mount', async () => {
+    const html = await render('ruby', htmlHeader)
+    expect(html).toContain('src="/ruby/latest/badges/abc.svg"')
+    expect(html).not.toContain('src="/badges/')
+  })
+
+  it('keeps an HTML header\'s badges inside a preview root', async () => {
+    expect(await render('ruby', htmlHeader, '/pr-317')).toContain('src="/pr-317/ruby/latest/badges/abc.svg"')
+  })
 
   it('serves a port build\'s badges from its own mount', async () => {
     expect(await render('ruby')).toContain('src="/ruby/latest/badges/abc.svg"')
