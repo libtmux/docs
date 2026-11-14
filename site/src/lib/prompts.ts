@@ -35,7 +35,9 @@ export interface PromptTopic {
   id: string
   /** Picker label. */
   label: string
-  /** One line for the picker and the index page. */
+  /** The picker row's line: six words or fewer, so a menu holds a label and a line and the sentence stays in `summary`. */
+  menu: string
+  /** One sentence for the index page and the summary beside the die. */
   summary: string
   /** The prompt's opening instruction, which states the outcome. */
   opening: string
@@ -108,6 +110,7 @@ export const TOPICS: readonly PromptTopic[] = [
   {
     id: SETUP_ID,
     label: 'Set up libtmux',
+    menu: 'Install libtmux and prove it works',
     summary: 'Install libtmux into a new or existing project and prove it drives a real tmux server.',
     opening: 'Set up libtmux in this repository and verify it against a real tmux server.',
     body: '',
@@ -116,6 +119,7 @@ export const TOPICS: readonly PromptTopic[] = [
   {
     id: 'agent-orchestrator',
     label: 'Agent orchestrator',
+    menu: 'Run agents in parallel panes',
     summary: 'Run several coding agents in their own panes, stream their output, and notice when each finishes.',
     opening: 'Then build an orchestrator that runs several coding agents side by side in tmux.',
     body: `What it does:
@@ -145,6 +149,7 @@ Constraints:
   {
     id: 'eval-sweep',
     label: 'Eval sweep',
+    menu: 'One prompt to every agent CLI',
     summary: 'Send one prompt to every agent CLI on this machine in parallel panes and compare the transcripts.',
     opening: 'Then build an eval sweep that runs one prompt across every coding agent on this machine.',
     body: `What it does:
@@ -168,6 +173,7 @@ Constraints:
   {
     id: 'service-manager',
     label: 'Detached service manager',
+    menu: 'Keep services running in a session',
     summary: 'Start Jupyter and other long-running services in a detached session at login, and reattach later.',
     opening: 'Then build a manager that keeps long-running services in a detached tmux session.',
     body: `What it does:
@@ -192,6 +198,7 @@ Constraints:
   {
     id: 'session-switcher',
     label: 'Session switcher',
+    menu: 'Pick any session, window or pane',
     summary: 'A fuzzy picker over every session, window and pane, that attaches or switches to the selection.',
     opening: 'Then build a tmux session switcher.',
     body: `What it does:
@@ -214,6 +221,7 @@ Constraints:
   {
     id: 'session-freezer',
     label: 'Session freezer',
+    menu: 'Save a session, rebuild it later',
     summary: 'Snapshot a running session to a workspace file, then rebuild it later on any machine.',
     opening: 'Then build a session freezer that snapshots a running tmux session and rebuilds it later.',
     body: `What it does:
@@ -235,6 +243,7 @@ Constraints:
   {
     id: 'session-supervisor',
     label: 'Session supervisor',
+    menu: 'Keep declared sessions running',
     summary: 'Declare the sessions you want, reconcile what is running, and restart what died.',
     opening: 'Then build a supervisor that reconciles running tmux sessions against a declared set.',
     body: `What it does:
@@ -257,6 +266,7 @@ Constraints:
   {
     id: 'test-fixtures',
     label: 'Test fixtures',
+    menu: 'A private tmux server per test',
     summary: 'Give each test its own isolated tmux server, torn down afterwards.',
     opening: 'Then set up tmux test fixtures so this project can test code that drives tmux.',
     body: `What it does:
@@ -292,6 +302,7 @@ Constraints:
   {
     id: 'output-watcher',
     label: 'Output watcher',
+    menu: 'Wait for text in a pane',
     summary: 'Wait for text to appear in a pane, then act on it, without polling on a timer.',
     opening: 'Then build a watcher that waits for output in a tmux pane and acts on it.',
     body: `What it does:

@@ -29,8 +29,8 @@ const current = TOPICS.find((topic) => topic.id === defaultTopic)!
           </label>
           <nav aria-label="Agent tasks">
             {TOPICS.map((topic) => <a class="doc-picker-option" href={`?prompt=${topic.id}`} data-task-option={topic.id}
-              data-picker-option data-match={`${topic.label} ${topic.summary}`} aria-current={topic.id === defaultTopic ? 'true' : undefined}>
-              <span>{topic.label}<small>{topic.summary}</small></span>
+              data-picker-option data-match={`${topic.label} ${topic.menu} ${topic.summary}`} aria-current={topic.id === defaultTopic ? 'true' : undefined}>
+              <span>{topic.label}<small>{topic.menu}</small></span>
               <span class="doc-picker-check" aria-hidden="true" hidden={topic.id !== defaultTopic}>✓</span>
             </a>)}
           </nav>
