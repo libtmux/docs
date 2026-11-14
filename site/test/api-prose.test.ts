@@ -211,6 +211,11 @@ const SYNTAXES: { port: string; syntax: string; refs: [string, string, string]; 
   { port: 'powershell', syntax: 'cmdlet names', label: 'Buffers', refs: ['Get-TmuxSession', 'LibTmux\\Get-TmuxWindow', 'Wait-TmuxPaneText'] },
   { port: 'powershell', syntax: 'code spans', label: 'Buffers', refs: ['`ConvertTo-TmuxQueryJson`', '`Get-TmuxPane`', '`LibTmux.Server`'] },
   { port: 'haskell', syntax: 'reST object roles', label: 'Buffers', refs: [':obj:`Server <LibTmux.Server#t:Server>`', ':obj:`withServer <LibTmux.Server#v:withServer>`', ':obj:`capture <LibTmux.Server#v:capture>`'] },
+  { port: 'raku', syntax: 'code spans of method names', label: 'Buffers', refs: ['`start`', '`has-session(:name)`', '`LibTmux::Server.run-batch`'] },
+  { port: 'raku', syntax: 'padded code spans, as the exporter writes C<>', label: 'Buffers', refs: ['` start `', '` from-env `', '` has-session(:id) `'] },
+  { port: 'raku', syntax: 'code spans of type names', label: 'Buffers', refs: ['`Server`', '`LibTmux::Model::Snapshot`', '`LibTmux::Server.open-control-async`'] },
+  { port: 'perl', syntax: 'reST object roles', label: 'Buffers', refs: [':obj:`"snapshot" <LibTmux::Server::snapshot>`', ':obj:`to_record <LibTmux::Entity::to_record>`', ':obj:`LibTmux::Selection <LibTmux::Selection>`'] },
+  { port: 'clojure', syntax: 'cljdoc wiki links', label: 'Buffers', refs: ['[[open!]]', '[[libtmux.data/windows]]', '[[libtmux.control/attach! attach]]'] },
   { port: 'erlang', syntax: 'EEP-48 function and type references', label: 'Buffers', refs: ['`open/1`', '`tmux_snapshot:sessions/1`', '`t:open_options/0`'] },
   { port: 'erlang', syntax: 'EEP-48 module and remote type references', label: 'Buffers', refs: ['`m:tmux_buffer`', '`t:tmux_snapshot:t/0`', '`c:init/1`'] },
   { port: 'ocaml', syntax: 'odoc references', label: 'Buffers', refs: ['{!Client.connect}', '{!Libtmux.Snapshot}', '{!Libtmux.Options.type-scope}'] },
@@ -288,6 +293,23 @@ describe('a capability directory keeps each port\'s spelling to itself', () => {
     ['erlang', 'a tuple', '`{server, Server}`'],
     ['ocaml', 'a code span', '`start`, `allow_kill`'],
     ['lisp', 'a name without its package', '`client`, `fetch-snapshot`'],
+    ['raku', 'an adverb', '`:parse-only`, `:format`'],
+    ['raku', 'a variable or an environment table', '`$snapshot`, `%*ENV`'],
+    ['raku', 'a method call on a variable', '`$snapshot.clients`'],
+    ['raku', 'a name its tokenizer cannot resolve whole', '`Server.start`'],
+    ['raku', 'options and ids', '`-S`, `%0` and `"x y"`'],
+    ['raku', 'a doubled span, which is literal', '``start``, ``run-batch``'],
+    ['raku', 'a Go doc link', '[Server.Kill]'],
+    ['raku', 'a role', ':obj:`start`'],
+    ['perl', 'a code span, which Perl keeps literal', '`snapshot`, `LibTmux::Server`'],
+    ['perl', 'a Markdown link', '[text](https://example.test)'],
+    ['perl', 'a role the adapter does not write', ':meth:`LibTmux::Server::snapshot`'],
+    ['perl', 'a Go doc link', '[Server.Kill]'],
+    ['clojure', 'a code span', '`open!`, `libtmux.data/windows`'],
+    ['clojure', 'a keyword', '`:tmux/ref`, `:detached?`'],
+    ['clojure', 'a link with a target no var has', '[[a:b]], [[x@y]]'],
+    ['clojure', 'a Go doc link', '[Server.Kill]'],
+    ['clojure', 'a reference-style link', '[text][ref]'],
   ])('%s does not read %s', (lang, _, ref) => {
     expect(groupDirectory(parseApiProse(run(ref)), lang).some((block) => block.kind === 'directory')).toBe(false)
   })
@@ -302,6 +324,66 @@ describe('a capability directory in python reads the roles the tokenizer resolve
     const ref = `:${role}:\`libtmux.Server.kill\``
     const read = groupDirectory(parseApiProse(run(ref)), 'py').some((block) => block.kind === 'directory')
     expect(read, ref).toBe(tokenizeDoc(ref, 'py').every((span) => span.kind === 'ref'))
+  })
+})
+
+/**
+ * The shape a native docstring gives the server's directory, which the shell folds into a table: a heading, bold-led task
+ * paragraphs, each followed by a reference paragraph or a `- Label: refs` list.
+ */
+const DIRECTORY_SHAPES: { port: string; refs: [string, string, string, string]; owner: string }[] = [
+  { port: 'clojure', owner: 'libtmux.core/open!', refs: ['[[open!]]', '[[close!]]', '[[libtmux.data/windows]]', '[[libtmux.control/attach!]]'] },
+  { port: 'perl', owner: 'LibTmux::Server', refs: [':obj:`"new" <LibTmux::Server::new>`', ':obj:`"snapshot" <LibTmux::Server::snapshot>`', ':obj:`"show_buffer" <LibTmux::Server::show_buffer>`', ':obj:`LibTmux::Selection <LibTmux::Selection>`'] },
+  { port: 'raku', owner: 'LibTmux::Server', refs: ['`new`', '`start`', '`has-session(:name)`', '`run-batch`'] },
+]
+
+describe.each(DIRECTORY_SHAPES)('the server directory of $port, as its docstring is written', ({ port, refs: [a, b, c, d] }) => {
+  const doc = [
+    '# What is on here', 'A server is what a program connects to.',
+    `**Connecting.** Open one, or take the one tmux started.\n\n- Open: ${a}, ${b}\n- Close: ${c}`,
+    `**Capturing.** Read what is on screen.\n\n${b}, ${c} and ${d}`,
+    `**Acting.** Change the session.\n\n- Create: ${a}\n- Run: ${b}, ${d}`,
+  ].join('\n\n')
+
+  it('folds three rows, one labelled list and one paragraph of references among them', () => {
+    const blocks = groupDirectory(parseApiProse(doc), port)
+    expect(blocks.map((block) => block.kind)).toEqual(['rubric', 'p', 'directory'])
+    const directory = blocks[2]
+    if (directory?.kind !== 'directory') throw new Error('no directory')
+    expect(directory.rows.map((row) => row.title)).toEqual(['Connecting', 'Capturing', 'Acting'])
+    expect(directory.rows.map((row) => row.groups)).toEqual([
+      [{ label: 'Open', refs: [a, b] }, { label: 'Close', refs: [c] }],
+      [{ refs: [b, c, d] }],
+      [{ label: 'Create', refs: [a] }, { label: 'Run', refs: [b, d] }],
+    ])
+  })
+
+  it('keeps prose with a code span or a link among its words as prose', () => {
+    const prose = (follower: string) => ['Connecting', 'Capturing', 'Acting'].map((title) => `**${title}.** Guidance.\n\n${follower}`).join('\n\n')
+    for (const follower of [`Call ${a} first, then ${b}.`, `- Open: ${a}, then ${b}`, `${a} and a [guide](https://example.test/guide)`]) {
+      expect(groupDirectory(parseApiProse(prose(follower)), port).some((block) => block.kind === 'directory'), follower).toBe(false)
+    }
+  })
+})
+
+describe('a Clojure directory reads the wiki links the tokenizer resolves and no others', () => {
+  const run = (follower: string) => Array.from({ length: 3 }, (_, n) => `**Group ${n}.** What these are for.\n\n${follower}`).join('\n\n')
+  it.each([
+    '[[open!]]', '[[libtmux.data/windows]]', '[[subscribe! subscribe]]', '[[same-entity?]]', '[[a:b]]', '[[x@y]]', '[[]]', '[[ open!]]', '[[open!',
+  ])('%s is a directory reference exactly when the tokenizer reads it as one', (ref) => {
+    const read = groupDirectory(parseApiProse(run(ref)), 'clojure').some((block) => block.kind === 'directory')
+    const spans = tokenizeDoc(ref, 'clojure')
+    expect(read, ref).toBe(spans.length === 1 && spans[0]!.kind === 'ref')
+  })
+})
+
+describe('Perl headings stay section anchors beside a directory', () => {
+  const rows = (follower: string) => ['A', 'B', 'C'].map((title) => `# ${title}\n\nWhat these are for.\n\n${follower}`).join('\n\n')
+  it('folds only bold-led rows, so a POD heading keeps the id its section links use', () => {
+    const blocks = groupDirectory(parseApiProse(rows(':obj:`"new" <LibTmux::Server::new>`, :obj:`"snapshot" <LibTmux::Server::snapshot>`')), 'perl')
+    expect(blocks.map((block) => block.kind)).toEqual(['rubric', 'p', 'p', 'rubric', 'p', 'p', 'rubric', 'p', 'p'])
+    // Go writes the same shape as a directory.
+    expect(groupDirectory(parseApiProse(rows('[Server.Kill], [NewServer]')), 'go').map((block) => block.kind)).toEqual(['directory'])
   })
 })
 
@@ -369,5 +451,33 @@ describe('generated Python docstring parity', () => {
     expect(markdown).toContain('[`list`](https://docs.python.org/3/builtins/stdtypes.html#list)')
     expect(markdown).toContain('[`t.Generic`](https://docs.python.org/3/library/typing.html#typing.Generic)')
     expect(markdown).toContain('libtmux._internal.query_list.QueryList')
+  })
+})
+
+
+describe('a description\'s directory is drawn for every port', () => {
+  const row = (title: string, refs: string) => `**${title}.** What these are for.\n\n${refs}`
+  const body = (refs: string) => ['# What is on here', 'A server is what a program connects to.', row('Connecting', refs), row('Capturing', refs), row('Acting', refs)].join('\n\n')
+  const render = async (port: string, text: string) => {
+    const [{ Window }, { createComponent, renderTemplate }, { loadAstroTemplate, renderAstroTemplate }, { SymbolIndex }] = await Promise.all([
+      import('happy-dom'), import('astro/runtime/server/index.js'), import('./astro-templates'), import('@libtmux/api-model/reference'),
+    ])
+    const Code = createComponent((_result: unknown, props: { code: string }) => renderTemplate`<pre>${props.code}</pre>`)
+    const template = await loadAstroTemplate('components/api/ApiProse.astro', { real: ['components/api/ApiDoc.astro'], modules: { 'astro-expressive-code/components': { Code } } })
+    const win = new Window()
+    try {
+      win.document.body.innerHTML = await renderAstroTemplate(template, { props: { text, index: new SymbolIndex([], () => '#', port) } })
+      return { rows: win.document.querySelectorAll('.api-directory__row').length, chips: win.document.querySelectorAll('.api-directory__chips li').length,
+        rubrics: [...win.document.querySelectorAll('p.rubric')].map((node) => node.textContent) }
+    } finally { await win.happyDOM.abort() }
+  }
+
+  it.each([
+    ['perl', ':obj:`"new" <LibTmux::Server::new>`, :obj:`"snapshot" <LibTmux::Server::snapshot>`'],
+    ['raku', '`new`, `start`'],
+    ['clojure', '[[open!]], [[close!]]'],
+  ])('shows %s as three rows of chips under the heading', async (port, refs) => {
+    const drawn = await render(port, body(refs))
+    expect(drawn).toEqual({ rows: 3, chips: 6, rubrics: ['What is on here'] })
   })
 })
