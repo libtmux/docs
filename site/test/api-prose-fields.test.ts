@@ -124,6 +124,7 @@ describe('the code that links prose', () => {
     'src/lib/symbol-markdown.ts': 'the Markdown copy of a symbol: docSpans, as the page links it, and types',
     'src/lib/tmux-links.ts': 'adds tmux links to spans docSpans has made',
     'src/lib/tmux-reference.ts': 'builds an index to resolve a reference to a page of this site',
+    'src/pages/reference/symbols/[letter].astro': 'links each symbol of the A-Z index to its own reference page (referenceHref) and lists a port\'s pages with coreApiSymbols; it renders no prose and takes no address from outside the site',
     'src/plugins/rehype-api-links.ts': 'the page linker: decideMention, with what the page says of its language',
   }
   const read = (listing: [string, string][]) => listing.filter(([file, source]) => WHERE.test(file) && SOURCES.test(file) && LINKER.test(source)).map(([file]) => file).sort()

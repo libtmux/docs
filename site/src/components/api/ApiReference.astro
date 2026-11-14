@@ -1,5 +1,4 @@
 ---
-import { firstLetter } from '../../lib/symbol-index'
 import type { ApiModel, ApiSymbol, SourceApiModel, SymbolIndex } from '@libtmux/api-model'
 import { aliasMembersTarget, membersOf, pageMembersOf, memberTier, docSummaryText, memberSignals, parameterId, qualifiedNameOf, moduleOf, modulesIn, sourceUrl as apiSourceUrl, symbolsForProduct } from '@libtmux/api-model/reference'
 import mentionsData from '../../data/mentions.json'
@@ -26,7 +25,7 @@ import { pageBreadcrumbs } from '../../lib/sidebar'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import { apiInventoryIdentity } from '../../lib/inventory-targets'
 import { withRoot } from '../../lib/site-root'
-import { API_MODELS, API_NAV, PORT_NAME, indexFor, isMemberOwner, ownersOf, pageSlug, referenceAlternatives, topLevelTypesOf } from '../../lib/api-models'
+import { API_MODELS, API_NAV, PORT_NAME, symbolIndexLetter, indexFor, isMemberOwner, ownersOf, pageSlug, referenceAlternatives, topLevelTypesOf } from '../../lib/api-models'
 import { PORT_BY_SLUG, referenceUrl } from '../../lib/ports'
 import { productApiHref } from '../../lib/product-api'
 import { alternateDocs } from '../../lib/perl-pod'
@@ -556,7 +555,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                 : `Browse the ${label} types and operations for working with tmux. Start with the core objects below, or search for a type or member.`}
             </p>
             {/* The A-Z view, for a reader who knows roughly what a name is. */}
-            <p class="mt-2"><a href={withRoot(`/reference/symbols/${firstLetter(model.symbols.map((s) => s.name)).toLowerCase()}/`)}>{label} symbol index (A–Z)</a></p>
+            <p class="mt-2"><a href={withRoot(`/reference/symbols/${symbolIndexLetter(model.symbols.map((s) => s.name)).toLowerCase()}/`)}>{label} symbol index (A–Z)</a></p>
             {paths.length > 0 && <ApiRelationships paths={paths} hrefFor={hrefFor} />}
             {sections.map((mod) => (
               /*
