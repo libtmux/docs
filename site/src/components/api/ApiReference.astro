@@ -8,7 +8,9 @@ import { apiTmuxSections } from '../../lib/api-tmux-sections'
 import ApiScalarMembers from './ApiScalarMembers.astro'
 import ApiMemberList from './ApiMemberList.astro'
 import ApiRelationships from './ApiRelationships.astro'
+import RelationshipCollection from './RelationshipCollection.astro'
 import { apiRelationshipSections, type ApiRelationshipPath } from '../../lib/api-relationships'
+import { lacksCallEdges, sameOwnerMembers } from '../../lib/api-collections'
 import ApiBadge from '../../components/api/ApiBadge.astro'
 import ApiGlossaryContent from './ApiGlossaryContent.astro'
 import { apiGlossary, apiGlossaryHeadings, API_GLOSSARY_TITLE, apiGlossaryHref } from '../../lib/api-glossary'
@@ -368,6 +370,8 @@ const pageSections: ApiSection[] = glossary ? apiGlossaryHeadings(glossaryContex
 ] : []
 const relationshipSections = owner && model ? apiRelationshipSections(model, owner) : []
 const paths = (source?.paths ?? []).filter((path) => !owner || path.symbols.some((symbol) => symbol.id === owner.id))
+if (owner && model && port && sameOwnerMembers(model, owner)) pageSections.push({ id: 'api-same-owner', label: 'Same owner' })
+if (owner && model && port && lacksCallEdges(model, owner, relationshipSections)) pageSections.push({ id: 'api-recorded-calls', label: 'Recorded calls' })
 if (relationshipSections.some((section) => ['api-calls', 'api-called-by'].includes(section.id))) pageSections.push({ id: 'api-call-network', label: 'Call neighborhood' })
 if (paths.length) pageSections.push({ id: 'api-source-paths', label: 'Paths through the source', count: paths.length })
 pageSections.push(...relationshipSections.map((section) => ({ id: section.id, label: section.label, count: section.items.length })))
@@ -824,8 +828,8 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
             )}
             <ApiRelationships owner={owner} model={model} sections={relationshipSections} paths={paths} hrefFor={hrefFor} />
             <ApiTmuxSections sections={tmuxSections} port={port!} />
-            {related.length > 0 && <section class="api-related-types" aria-labelledby="api-related-types">
-              <h2 class="api-section-heading text-lg font-semibold" id="api-related-types">Related types<a class="api-heading-link" href="#api-related-types" aria-label="Link to Related types">#</a></h2>
+            {related.length > 0 && <RelationshipCollection class="api-related-types" id="api-related-types" label="Related types" kind="type references"
+              why="Types this declaration takes, returns or names, from its signature and members. External types link to their own documentation.">
               <div class="api-related-cards">
                 {related.map((item) => <div class="api-index-card api-related-card">
                   <a class="api-index-card__link" href={item.href} title={item.identity}>
@@ -835,7 +839,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                   {item.symbol.doc?.summary && <p><ApiDoc text={item.symbol.doc.summary} index={index} context={item.symbol} citations={false} /></p>}
                 </div>)}
               </div>
-            </section>}
+            </RelationshipCollection>}
             {usage.length > 0 && <section class="api-tmux-usage" aria-labelledby="api-tmux-usage">
               <h2 class="api-section-heading text-lg font-semibold" id="api-tmux-usage">In libtmux<a class="api-heading-link" href="#api-tmux-usage" aria-label="Link to In libtmux">#</a></h2>
               {usage.map((entry) => <>

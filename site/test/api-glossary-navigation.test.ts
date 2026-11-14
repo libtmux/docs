@@ -15,6 +15,7 @@ import * as models from '../src/lib/api-models'
 import * as sections from '../src/lib/api-sections'
 import * as inventory from '../src/lib/inventory-targets'
 import * as relationships from '../src/lib/api-relationships'
+import * as collections from '../src/lib/api-collections'
 import * as equivalents from '../src/lib/api-equivalents'
 import * as tmuxSections from '../src/lib/api-tmux-sections'
 import * as tree from '../src/lib/api-tree'
@@ -63,7 +64,7 @@ async function components(stubs: Readonly<Record<string, string>> = {}) {
     '@libtmux/api-model/reference': model,
     ...Object.fromEntries(Object.entries({
       'api-glossary': glossary, 'api-models': models, 'api-sections': sections, 'inventory-targets': inventory,
-      'api-relationships': relationships, 'api-equivalents': equivalents, 'api-tmux-sections': tmuxSections, 'api-tree': tree, 'api-search': search, 'api-sidebar': apiSidebar,
+      'api-relationships': relationships, 'api-collections': collections, 'api-equivalents': equivalents, 'api-tmux-sections': tmuxSections, 'api-tree': tree, 'api-search': search, 'api-sidebar': apiSidebar,
       'api-labels': labels, 'word-break': wordBreak, 'native-name': nativeName, ports, 'product-api': products,
       versions, 'site-root': roots, sidebar, 'documentation-navigation': documentation,
       'page-ports-for': pagePorts, 'markdown-twins': markdown, 'tmux-manual-data': manual, 'tmux-reference': reference, 'tmux-catalog': catalog,
