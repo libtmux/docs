@@ -355,7 +355,7 @@
   },
   "ocaml": {
     "objects": {
-      "server": "Libtmux_unix.Client.t",
+      "server": "Libtmux_unix.Client",
       "session": "Libtmux.Session.t",
       "window": "Libtmux.Window.t",
       "pane": "Libtmux.Pane.t"
