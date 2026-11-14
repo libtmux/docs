@@ -585,7 +585,20 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings
   }
 
   let timer: ReturnType<typeof setTimeout> | undefined
+  // A search field empties itself on Escape, and the same key closes the
+  // dialog. The dialog keeps its query on close, so the field's own clearing is
+  // undone: it fires an `input` event, which is ignored, and the value returns.
+  let escaping: string | null = null
+  input.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape' || !dialog) return
+    escaping = input.value
+    setTimeout(() => {
+      if (escaping !== null && input.value !== escaping) input.value = escaping
+      escaping = null
+    }, 0)
+  })
   input.addEventListener('input', () => {
+    if (escaping !== null) return
     clearTimeout(timer)
     pending = undefined
     timer = setTimeout(() => void run(input.value), 120)

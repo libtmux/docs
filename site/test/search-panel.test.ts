@@ -216,6 +216,19 @@ describe('URL state and Back', () => {
 })
 
 describe('the dialog keeps its query on close', () => {
+  it('undoes the field\'s own clearing on Escape, so the query is there when the dialog reopens', async () => {
+    const { root, input, results } = fixture('Go', { dialog: true })
+    await vi.waitFor(() => expect(results()).toHaveLength(1))
+    // What Chromium does to a search field on Escape: empty it and say so.
+    input.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }) as unknown as Event)
+    input.value = ''
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+    await new Promise((resolve) => setTimeout(resolve, 200))
+    expect(input.value).toBe('capture')
+    expect(results()).toHaveLength(1)
+    expect(root.querySelector('.search-panel__status')?.textContent).toContain('1 result')
+  })
+
   it('leaves the field and results as they were when the dialog closes', async () => {
     const { root, input, results, dialog } = fixture('Go', { dialog: true })
     await vi.waitFor(() => expect(results()).toHaveLength(1))
