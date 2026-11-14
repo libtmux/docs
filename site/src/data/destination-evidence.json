@@ -4965,8 +4965,12 @@
       "repository": "libtmux/libtmux-erlang",
       "versionChecks": [
         {
-          "check": "unsupported",
-          "note": "the pinned manifest (libtmux/libtmux-erlang:apps/libtmux_erlang/src/libtmux_erlang.app.src) declares a development placeholder, which names no release"
+          "version": "0.0.1",
+          "source": "libtmux/libtmux-erlang:apps/libtmux_erlang/src/libtmux_erlang.app.src",
+          "ports": [
+            "erlang"
+          ],
+          "check": "confirmed"
         }
       ],
       "checkedAt": "2026-11-14",
