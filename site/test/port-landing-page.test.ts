@@ -24,8 +24,8 @@ const table = LANDING as LandingTable
 const cache = SOURCES as Record<string, CachedSource>
 
 // The page brings its own copy of the code-block component; this stands in with a marked element.
-const Code = createComponent((_result: unknown, props: { code: string; lang: string; title?: string }) =>
-  renderTemplate`<pre data-lang="${props.lang}" data-title="${props.title ?? ''}">${props.code}</pre>`)
+const Code = createComponent((_result: unknown, props: { code: string; lang: string; title?: string; meta?: string }) =>
+  renderTemplate`<pre data-lang="${props.lang}" data-title="${props.title ?? ''}" data-meta="${props.meta ?? ''}">${props.code}</pre>`)
 const REAL = [
   'components/landing/LandingInstall.astro', 'components/mcp/McpReplay.astro',
   'components/replay/TmuxScreen.astro', 'components/replay/ReplayControls.astro',
@@ -120,6 +120,8 @@ describe('the landing page markup', () => {
     expect(block.textContent).toBe(resolved.code)
     expect(block.getAttribute('data-title')).toBe(entry.file)
     expect(block.getAttribute('data-lang')).toBe('go')
+    // The frame says it is an excerpt and which lines of the file it quotes.
+    expect(block.getAttribute('data-meta')).toBe(`role="excerpt" lines="${resolved.ranges.map(({ start, end }) => start === end ? start : `${start}-${end}`).join(',')}"`)
     const caption = disclosure.querySelector('.landing-source')!
     expect(caption.querySelector('a')!.getAttribute('href')).toBe(resolved.sourceUrl)
     expect(caption.textContent).toContain(entry.ci.workflow)
