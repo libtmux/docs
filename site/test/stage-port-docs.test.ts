@@ -261,7 +261,7 @@ describe('staged port guide links', () => {
     if (port === 'perl') {
       const example = files.get('perl/examples/orchestration/index.md')!
       const body = /^---\n[\s\S]*?\n---\n\n([\s\S]*)$/.exec(example)![1]
-      expect(body).toMatch(/^Constructing `LibTmux::Server`/)
+      expect(body).toMatch(/^## Start with a complete program/)
     }
     for (const section of ['examples', 'topics']) {
       const page = files.get(`${port}/${section}/index.md`)
