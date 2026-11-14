@@ -106,7 +106,7 @@ describe('code tabs', () => {
   describe('keyboard and names', () => {
     const press = (tab: Element, key: string) => {
       const event = new window.KeyboardEvent('keydown', { key, bubbles: true, cancelable: true })
-      tab.dispatchEvent(event)
+      tab.dispatchEvent(event as unknown as Event)
       return event
     }
     const selectedPort = (group: Element) =>
