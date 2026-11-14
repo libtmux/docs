@@ -1444,7 +1444,8 @@ a.api-doc-link[data-api-kind]:not(.api-mention--chip):hover { text-decoration-st
   color: var(--api-kind-ink-lit, var(--color-link));
   background: color-mix(in srgb, var(--api-kind-ink, var(--color-link)) 10%, var(--color-inline-code-background));
 }
-@container (max-width: 44rem) {
+/* Two columns from 52rem, stacked below (ApiDirectory). */
+@container (width < 52rem) {
   .api-directory__row { grid-template-columns: minmax(0, 1fr); grid-template-areas: 'title' 'guidance' 'members'; grid-template-rows: auto; row-gap: .6rem; }
   .api-directory__label { width: auto; min-width: 5rem; }
   .api-directory__group { flex-wrap: wrap; }
@@ -1496,6 +1497,31 @@ a.api-doc-link.is-cross-lit:not(.api-mention--chip):not(:has(.api-literal--link)
 @media (forced-colors: active) {
   .is-cross-lit { outline: 2px solid Highlight; }
 }
+
+/*
+ * The measure and the type scale of an API reference page (15-typesetting). An entry is capped at `measure-reference` so a
+ * signature and its tables are not stretched across a 1265px column. The title is 32/38 at 600 (`.api-reference-title`),
+ * a section 24/32 and a subsection 18/26; an entry keeps its own type (signatures, badges, the 16/24 rubric).
+ */
+.api-reference-layout--symbol > .api-reference-content {
+  box-sizing: content-box;
+  max-width: var(--measure-reference, 100ch);
+}
+/* Section headings that stand alone. The Members and Fields bars are panels and keep the panel scale. */
+.api-reference-content > h2.api-section-heading,
+.api-reference-content > section > h2.api-section-heading {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.api-reference-content .prose h2 { margin-block: 2.5rem 0.75rem; font-size: 1.5rem; line-height: 2rem; font-weight: 600; letter-spacing: -0.01em; }
+.api-reference-content .prose h3,
+.api-source-path h3 { font-size: 1.125rem; line-height: 1.625rem; font-weight: 600; }
+.api-reference-content .prose h3 { margin-block: 1.75rem 0.5rem; }
+.api-reference-content .prose h3 code { font-size: 1rem; }
+/* Prose reads at `measure-prose`; grids, tables and code keep the column. */
+.api-reference-layout--glossary .api-reference-content .prose > :is(p, ul, ol) { max-width: var(--measure-prose, 72ch); }
 
 /*
  * A member collection longer than `list-budget` keeps its place in the page and scrolls inside its own bordered box, so a type
