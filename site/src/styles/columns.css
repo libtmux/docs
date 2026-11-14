@@ -8,7 +8,7 @@
  * design system's and carry fallbacks until the site defines them.
  */
 
-.miller { display: grid; gap: 0.75rem; min-width: 0; }
+.miller { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.75rem; min-width: 0; }
 .miller[hidden] { display: none; }
 .miller__stage, .miller__stage *, .miller__stage *::before, .miller__stage *::after { box-sizing: border-box; }
 

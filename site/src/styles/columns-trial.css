@@ -1,5 +1,5 @@
 /* The all-variants page around MillerColumns: the toolbar, the column props and the status line. */
-.columns-trial { display: grid; gap: 0.75rem; max-width: 100rem; margin-inline: auto; padding: 1.5rem 1rem 2rem; }
+.columns-trial { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.75rem; max-width: 100rem; margin-inline: auto; padding: 1.5rem 1rem 2rem; }
 .columns-trial h1 { margin: 0; font: 600 2rem/2.375rem var(--font-sans); }
 .columns-trial__what { margin: 0; max-width: 75ch; font: 400 0.875rem/1.5 var(--font-sans); }
 .columns-trial__bar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; font: 400 0.8125rem/1.4 var(--font-sans); }
