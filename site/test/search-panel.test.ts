@@ -50,7 +50,7 @@ function fixture(initialPort?: string, options: FixtureOptions = {}) {
   const long = Array.from({ length: options.total ?? 0 }, (_, i) => ({
     id: `m${i}`, data: async () => ({ url: `/en/go/latest/reference/m${i}/`, excerpt: `row ${i}`, meta: { title: `Pane.m${i}`, owner: 'Pane', kind: 'method' } }),
   }))
-  const search = vi.fn<PagefindApi['search']>(async (query, searchOptions) => {
+  const search = vi.fn<PagefindApi['search']>(async (query, searchOptions): ReturnType<PagefindApi['search']> => {
     const f = searchOptions?.filters as { port?: string[] | { any: string[] }; section?: string[]; kind?: string[] } | undefined
     const ports = Array.isArray(f?.port) ? f.port : f?.port?.any
     if (query === 'long') {
