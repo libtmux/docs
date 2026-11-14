@@ -41,6 +41,16 @@ export interface DocsPage {
   }
 }
 
+/**
+ * The kind of reading page a docs path is, or undefined for any other page.
+ * An example's steps and the prose of a guide, topic or concept share the
+ * content typesetting; a section index, whose cards use the full column, does not.
+ */
+export function contentKind(pagePath: string): 'example' | 'reading' | undefined {
+  const match = /(?:^|\/)(examples|guides|topics|concepts)\/[^/]+$/.exec(pagePath)
+  return match ? (match[1] === 'examples' ? 'example' : 'reading') : undefined
+}
+
 /** Path below a port/version root, or the unchanged shared document id. */
 export function docsPath(entry: DocsPage): string {
   if (entry.data.route) {

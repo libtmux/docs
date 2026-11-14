@@ -53,6 +53,11 @@
     outline-offset: -2px;
   }
 
+  .code-tab-panel:focus-visible {
+    outline: 2px solid var(--focus-ring-color, currentColor);
+    outline-offset: 2px;
+  }
+
   /* Expressive Code puts its own margin on the wrapper; inside a panel the
      tab strip already provides the spacing. */
   .code-tab-panel > .expressive-code { margin-top: 0; }
@@ -106,11 +111,15 @@
       for (const tab of tabs) {
         tab.addEventListener('click', () => show(tab.dataset.port ?? '', true), { signal })
         tab.addEventListener('keydown', (event) => {
-          const delta = event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0
-          if (!delta) return
-          event.preventDefault()
+          // Left and Right wrap; Home and End go to the first and last tab.
           const i = tabs.indexOf(tab)
-          const next = tabs[(i + delta + tabs.length) % tabs.length]
+          const next = event.key === 'ArrowRight' ? tabs[(i + 1) % tabs.length]
+            : event.key === 'ArrowLeft' ? tabs[(i - 1 + tabs.length) % tabs.length]
+              : event.key === 'Home' ? tabs[0]
+                : event.key === 'End' ? tabs[tabs.length - 1]
+                  : undefined
+          if (!next) return
+          event.preventDefault()
           show(next.dataset.port ?? '', true)
           next.focus()
         }, { signal })

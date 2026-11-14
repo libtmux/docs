@@ -62,16 +62,25 @@ function commonIndent(lines: readonly string[]): string {
   return indent ?? ''
 }
 
+/** An excerpt's text and the source lines it quotes, counted from one. */
+export interface LocatedExcerpt {
+  text: string
+  /** The first quoted line. */
+  start: number
+  /** The last quoted line. */
+  end: number
+}
+
 /**
  * The lines of `source` from the one that contains `from` through the first
- * later one that contains `to`, or just the first when `to` is omitted. The
- * indentation they share is removed.
+ * later one that contains `to`, or just the first when `to` is omitted, and
+ * where they sit in `source`. The indentation they share is removed.
  *
  * `from` must match exactly one line. `to` ends the range at its first match
  * after `from`, so a block can end at a closing line such as `fi` or `}` that
  * the file repeats; `to="=  }"` names the closer at that indentation.
  */
-export function sliceExcerpt(source: string, { from, to }: ExcerptRequest, label: string): string {
+export function locateExcerpt(source: string, { from, to }: ExcerptRequest, label: string): LocatedExcerpt {
   if (!from) throw new ExcerptError(`${label}: empty from anchor`)
   if (to === '') throw new ExcerptError(`${label}: empty to anchor`)
   const lines = source.replace(/\r\n/g, '\n').split('\n')
@@ -98,7 +107,13 @@ export function sliceExcerpt(source: string, { from, to }: ExcerptRequest, label
 
   const picked = lines.slice(start, end + 1)
   const indent = commonIndent(picked)
-  return picked.map((line) => line.startsWith(indent) ? line.slice(indent.length) : line.trimStart()).join('\n')
+  const text = picked.map((line) => line.startsWith(indent) ? line.slice(indent.length) : line.trimStart()).join('\n')
+  return { text, start: start + 1, end: end + 1 }
+}
+
+/** The text of `locateExcerpt`, for a caller that does not show where it came from. */
+export function sliceExcerpt(source: string, request: ExcerptRequest, label: string): string {
+  return locateExcerpt(source, request, label).text
 }
 
 /** Where an excerpt's text comes from. */

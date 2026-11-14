@@ -160,6 +160,11 @@ describe('the excerpt of each shipped product', () => {
       after = first + shown.length - 1
     }
     expect(resolved.code).toBe(landingRanges(entry).map((range) => sliceExcerpt(cached!.content, range, entry.file)).join('\n\n'))
+    // The frame names the source lines each range covers, so a reader can find them in the file.
+    expect(resolved.ranges).toHaveLength(landingRanges(entry).length)
+    for (const { start, end } of resolved.ranges) expect(lines.slice(start - 1, end).length).toBe(end - start + 1)
+    expect(resolved.ranges.reduce((rows, { start, end }) => rows + (end - start + 1), resolved.ranges.length - 1))
+      .toBe(resolved.code.split('\n').length)
   })
 
   it.each(excerpts.map((item) => [`${item.owner} ${item.product}`, item] as const))('%s names a language the highlighter has', (_name, { entry }) => {

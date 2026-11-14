@@ -142,6 +142,35 @@ function load(page: string, url: string, stored: Record<string, string> = {}): L
   return { window, document }
 }
 
+describe('install picker names', () => {
+  it('names the language strip for what it chooses, and each manager list for its port', async () => {
+    const window = openWindow()
+    const template = await loadAstroTemplate('components/widgets/PackageInstall.astro', {
+      real: ['components/widgets/InstallCode.astro'],
+      modules: {
+        '../../lib/api-models': { API_MODELS: {} },
+        'astro-expressive-code/components': { Code: () => '' },
+      },
+    })
+    window.document.body.innerHTML = await renderAstroTemplate(template, { props: { ports: ['py', 'ts'] } })
+    const lists = [...window.document.querySelectorAll('[role="tablist"]')]
+    // Tabs name the tool, never the language: the strip of ports is a choice of programming language.
+    expect(lists[0]!.getAttribute('aria-label')).toBe('Programming language')
+    expect(lists[0]!.querySelectorAll('[role="tab"]')).toHaveLength(2)
+    expect(lists.slice(1).map((list) => list.getAttribute('aria-label'))).toEqual(['Python package manager', 'TypeScript package manager'])
+  })
+
+  it('shows no strip for a single language', async () => {
+    const window = openWindow()
+    const template = await loadAstroTemplate('components/widgets/PackageInstall.astro', {
+      real: ['components/widgets/InstallCode.astro'],
+      modules: { '../../lib/api-models': { API_MODELS: {} }, 'astro-expressive-code/components': { Code: () => '' } },
+    })
+    window.document.body.innerHTML = await renderAstroTemplate(template, { props: { ports: ['py'] } })
+    expect(window.document.querySelector('.lm-pkg-install__tabs')).toBeNull()
+  })
+})
+
 describe('page script evaluation', () => {
   it('exposes classic scripts and leaves currentScript null for modules', () => {
     const { document } = load(

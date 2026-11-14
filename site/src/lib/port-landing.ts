@@ -12,7 +12,7 @@
 // build-site.sh and the example scripts import this module with bare Node;
 // local imports need `.ts`.
 import { DOC_PRODUCTS, hasPackageInstalls, portPageUrl, productAvailable, type DocProduct, type Port } from './ports.ts'
-import { sliceExcerpt } from './example-excerpt.ts'
+import { locateExcerpt } from './example-excerpt.ts'
 
 export type LandingProduct = 'core' | DocProduct
 
@@ -117,6 +117,8 @@ export interface ResolvedExcerpt {
   /** The file at the revision the cache holds. */
   sourceUrl: string
   ci: LandingCi
+  /** The source lines each range covers, in the order the code shows them. */
+  ranges: { start: number; end: number }[]
 }
 
 /**
@@ -134,8 +136,10 @@ export function landingExcerpt(
   const key = landingCacheKey(port.slug, product, entry.file)
   const cached = cache[key]
   if (!cached) throw new Error(`port-landing: ${key} is not in the example cache; run node scripts/gen-example-sources.mjs`)
+  const located = landingRanges(entry).map((range) => locateExcerpt(cached.content, range, key))
   return {
-    code: landingRanges(entry).map((range) => sliceExcerpt(cached.content, range, key)).join('\n\n'),
+    code: located.map(({ text }) => text).join('\n\n'),
+    ranges: located.map(({ start, end }) => ({ start, end })),
     lang: entry.lang,
     file: entry.file,
     repository: cached.repository,

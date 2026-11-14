@@ -173,9 +173,11 @@ const headingRow = heading || Astro.slots.has('hint')
   .home-example:has([data-example-errors]:checked):not(:has([data-example-cleanup]:checked)) [data-home-view="errors"],
   .home-example:not(:has([data-example-errors]:checked)):has([data-example-cleanup]:checked) [data-home-view="cleanup"],
   .home-example:has([data-example-errors]:checked):has([data-example-cleanup]:checked) [data-home-view="full"] { display: block; }
+  /* The program view fits its columns between 12.5px and 14px (record 0022); the Run panel's frames, below, use the 12.5px floor so they never read larger than the program above them. */
   .home-example-view :global(.expressive-code) {
-    --ec-codeFontSize: clamp(.8125rem, calc((100cqi - 2rem) / (var(--home-code-columns) * .625)), .9375rem);
+    --ec-codeFontSize: clamp(.78125rem, calc((100cqi - 2rem) / (var(--home-code-columns) * .625)), .875rem);
   }
+  .home-example-run :global(.expressive-code) { --ec-codeFontSize: .78125rem; }
   [data-with-cleanup] { display: none; }
   .home-example:has([data-example-cleanup]:checked) [data-with-cleanup] { display: inline; }
   .home-example:has([data-example-cleanup]:checked) [data-without-cleanup] { display: none; }

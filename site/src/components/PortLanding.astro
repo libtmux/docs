@@ -13,6 +13,7 @@ import { mcpShowcase, toolHeadings } from '../lib/mcp-showcase'
 import { loadCommand } from '../lib/workspace-links'
 import { landingExample, offersPicker, previewWindows, TOPICS, workspaceShowcase } from '../lib/workspace-showcase'
 import { QUICKSTARTS, homeCodeColumns } from '../lib/quickstarts'
+import { excerptMeta } from '../lib/code-frame.mjs'
 import { documentationSectionsFor } from '../lib/port-documentation'
 import LANDING from '../data/landing-examples.json'
 import SOURCES from '../data/example-sources.json'
@@ -72,7 +73,7 @@ const panelId = (product: string) => `landing-panel-${product}`
     const excerpt = panel.excerpt && <details class="landing-excerpt" data-landing-excerpt={panel.product}
       style={`--home-code-columns: ${homeCodeColumns(panel.excerpt.code)}`}>
       <summary>{panel.product === 'mcp' ? 'Embed the server in a program' : 'Build the workspace from a program'}</summary>
-      <Code code={panel.excerpt.code} lang={panel.excerpt.lang} title={panel.excerpt.file} frame="code" />
+      <Code code={panel.excerpt.code} lang={panel.excerpt.lang} title={panel.excerpt.file} frame="code" meta={excerptMeta({ ranges: panel.excerpt.ranges })} />
       <p class="landing-source">
         Excerpt of <a href={panel.excerpt.sourceUrl}><code>{panel.excerpt.file}</code></a>,
         which <code>{panel.excerpt.ci.command}</code> runs in the repository's CI
@@ -181,9 +182,6 @@ const panelId = (product: string) => `landing-panel-${product}`
   .port-landing:has([data-landing-product][value="mcp"]:checked) .landing-panel[data-landing-panel="mcp"],
   .port-landing:has([data-landing-product][value="workspace"]:checked) .landing-panel[data-landing-panel="workspace"] { display: block; }
 
-  .landing-excerpt :global(.expressive-code) {
-    --ec-codeFontSize: clamp(.8125rem, calc((100cqi - 2rem) / (var(--home-code-columns) * .625)), .9375rem);
-  }
   /* An excerpt is short by construction, so it shows whole; a complete program scrolls past the homepage's height. */
   .landing-note { font-size: .875rem; color: var(--color-muted); }
   .landing-excerpt :global(.expressive-code pre) { overflow: auto; tab-size: 8; }

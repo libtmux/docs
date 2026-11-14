@@ -21,7 +21,9 @@ the [native version of this example](/tmux/examples/attach-and-send-keys/) build
 the same sequence in shell. [Source and verification](#where-this-comes-from)
 identifies the file and its checks.
 
-## 1. Get a server
+## Steps
+
+### 1. Get a server
 
 Every call that reaches tmux takes a `context.Context`. The program gives the
 whole run 30 seconds, so a wait that never matches ends with
@@ -40,7 +42,7 @@ The server goes to `run`, so a test can pass in an isolated one.
 <span id="2-find-or-create-the-session" data-inventory-category="heading" data-inventory-display="2. Find or create the session"></span>
 <span id="3-add-a-window" data-inventory-category="heading" data-inventory-display="3. Add a window"></span>
 
-## 2. Create the session
+### 2. Create the session
 
 `Server.NewSession` creates a detached session, like `new-session -d`, which
 starts the server when the socket has none. `NewSessionRequest.Name`
@@ -60,7 +62,7 @@ links that pattern.
 
 <span id="3-use-the-sessions-window" data-inventory-category="heading" data-inventory-display="3. Use the session's window"></span>
 
-## 3. Pick the pane
+### 3. Pick the pane
 
 `Session.ResolveActivePane` lists the session's panes, like `list-panes -s`,
 and returns the active pane of the active window as a `tmux.Pane`. The program
@@ -74,7 +76,7 @@ explains why code addresses a pane by identity.
 
 <span id="5-watch-the-panes-output" data-inventory-category="heading" data-inventory-display="5. Watch the pane's output"></span>
 
-## 4. Watch the pane's output
+### 4. Watch the pane's output
 
 `Pane.OpenObservation` opens a dedicated control-mode client on the pane, which
 tmux sees as `attach-session` with `-C`, and captures the pane's visible text
@@ -87,7 +89,7 @@ which the deferred call does. Open it before typing, so no output is missed.
 
 <span id="6-send-a-command" data-inventory-category="heading" data-inventory-display="6. Send a command"></span>
 
-## 5. Send a command
+### 5. Send a command
 
 `Pane.Writer` returns the pane's keyboard as an `io.Writer`. The bytes are typed
 literally and each newline is the Enter key, so `fmt.Fprintln` submits the line.
@@ -100,7 +102,7 @@ shell.
 ```go file="examples/pane-io/main.go" from="command :=" to="=\t}"
 ```
 
-## 6. Wait for the answer
+### 6. Wait for the answer
 
 `PaneObservation.WaitFor` reads what the pane writes after the observation
 opened and calls the function with all of it each time new output arrives,
@@ -115,7 +117,7 @@ computed answer contains: the typed line says `$((6 * 7))`.
 ```go file="examples/pane-io/main.go" from="output.WaitFor" to="the pane answered"
 ```
 
-## 7. Read until the line appears
+### 7. Read until the line appears
 
 `PaneObservation.Reader` is an `io.Reader` over the same `%output` stream, so a
 `bufio` scanner reads the pane line by line, as it would a file. Reads block
@@ -127,7 +129,7 @@ command, which ends in a quote, cannot match.
 ```go file="examples/pane-io/main.go" from="next :=" to="read pane"
 ```
 
-## 8. Clean up
+### 8. Clean up
 
 `Session.Kill` destroys the session and its windows, like `kill-session`. The
 deferred calls run in reverse order on every return: the observation closes,

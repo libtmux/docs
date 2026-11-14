@@ -27,6 +27,7 @@ import * as ports from '../src/lib/ports'
 import * as products from '../src/lib/product-api'
 import * as versions from '../src/lib/versions'
 import * as roots from '../src/lib/site-root'
+import * as docsPaths from '../src/lib/docs-paths'
 import * as sidebar from '../src/lib/sidebar'
 import * as documentation from '../src/lib/documentation-navigation'
 import * as pagePorts from '../src/lib/page-ports-for'
@@ -64,7 +65,7 @@ async function components(stubs: Readonly<Record<string, string>> = {}) {
       'api-glossary': glossary, 'api-models': models, 'api-sections': sections, 'inventory-targets': inventory,
       'api-relationships': relationships, 'api-tmux-sections': tmuxSections, 'api-tree': tree, 'api-search': search, 'api-sidebar': apiSidebar,
       'api-labels': labels, 'word-break': wordBreak, 'native-name': nativeName, ports, 'product-api': products,
-      versions, 'site-root': roots, sidebar, 'documentation-navigation': documentation,
+      versions, 'site-root': roots, 'docs-paths': docsPaths, sidebar, 'documentation-navigation': documentation,
       'page-ports-for': pagePorts, 'markdown-twins': markdown, 'tmux-manual-data': manual, 'tmux-reference': reference, 'tmux-catalog': catalog,
       branding, 'mention-badge': mentionBadge, 'perl-pod': perlPod,
     }).map(([name, exports]) => [new URL(`../src/lib/${name}.ts`, import.meta.url).href, exports])),

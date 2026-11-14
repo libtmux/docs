@@ -29,6 +29,8 @@ import { referenceTree, apiTreeVersion } from '../lib/api-tree'
 import { searchApi, apiTreeHref } from '../lib/api-search'
 import { branding } from '../lib/branding'
 import { withRoot } from '../lib/site-root'
+import { contentKind } from '../lib/docs-paths'
+import '../styles/content-pages.css'
 import { DOC_PRODUCTS, PORT_BY_SLUG, portPageUrl, referenceUrl, productAvailable, type DocProduct } from '../lib/ports'
 
 /**
@@ -298,7 +300,7 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
     <main class="min-w-0 flex-1">
       {(!port || pagePath) && !(bare && breadcrumbs.length === 0) && <PageToolbar breadcrumbs={breadcrumbs} pagePorts={hasContext ? [] : pagePorts} port={port} editHref={editHref} editLabel={editLabel} />}
       {bare ? <slot /> : (
-      <article class:list={[!reference && 'prose max-w-none dark:prose-invert']}>
+      <article class:list={[!reference && 'prose max-w-none dark:prose-invert']} data-content={contentKind(pagePath)}>
         <div class:list={[reference && 'prose max-w-none dark:prose-invert']}>
         {productBrand ? (
           <div class="product-hero">

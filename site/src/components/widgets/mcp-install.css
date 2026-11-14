@@ -193,7 +193,8 @@ html[data-theme-mode='dark'] .lm-mcp-install {
 
 .lm-mcp-install__code code {
   font-family: var(--lm-mcp-install-mono);
-  font-size: 0.85em;
+  font-size: 0.8125rem;
+  line-height: 1.7;
   white-space: pre;
 }
 

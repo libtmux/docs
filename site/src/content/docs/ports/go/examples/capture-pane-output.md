@@ -22,7 +22,9 @@ example](/tmux/examples/capture-pane-output/) builds in shell. Follow the [setup
 run instructions](#setup-and-run) below. You need tmux and a Unix environment;
 no existing tmux session is required.
 
-## 1. Get a private server
+## Steps
+
+### 1. Get a private server
 
 `tmux.NewServer` validates a `tmux.ServerOptions` and does not start tmux.
 `ServerOptions.SocketPath` selects the socket, like `-S`, and
@@ -33,7 +35,7 @@ directory it just made.
 ```go excerpt="main.go" from="os.MkdirTemp" to="=  })"
 ```
 
-## 2. Bound the run
+### 2. Bound the run
 
 Every call that reaches tmux takes a `context.Context`. This deadline also ends
 the capture loop in step 8, so a command that never prints fails the program after five seconds.
@@ -41,7 +43,7 @@ the capture loop in step 8, so a command that never prints fails the program aft
 ```go excerpt="main.go" from="ctx, cancel :=" to="defer cancel()"
 ```
 
-## 3. Create the session
+### 3. Create the session
 
 `Server.NewSession` creates a detached session, like `new-session -d`, and the
 first command to reach the socket starts the server. `tmux.NewSessionRequest`
@@ -52,7 +54,7 @@ a startup file, like `-e ENV=/dev/null`.
 ```go excerpt="main.go" from="server.NewSession" to="=  }"
 ```
 
-## 4. Pick the pane
+### 4. Pick the pane
 
 `Server.Panes` lists every pane on the server. A private server holds only the
 session from step 3, so the first pane is its pane. On a shared server, list
@@ -63,7 +65,7 @@ explains why code addresses a pane by identity and not by position.
 ```go excerpt="main.go" from="panes, err := server.Panes" to="pane := panes[0]"
 ```
 
-## 5. Send the command
+### 5. Send the command
 
 `Pane.SendKeys` runs `send-keys` and then sends the Enter key, so the shell
 runs the text. `tmux.SendKeysRequest` takes the text as
@@ -77,7 +79,7 @@ runs the text. `tmux.SendKeysRequest` takes the text as
 
 <a id="read-whats-on-screen"></a>
 
-## 6. Capture the screen
+### 6. Capture the screen
 
 `Pane.Capture` runs `capture-pane` and returns the printed rows as strings. A
 zero `tmux.CapturePaneRequest` captures the visible screen with tmux's default
@@ -86,7 +88,7 @@ text handling.
 ```go excerpt="main.go" from="lines, err := pane.Capture" to="=    }"
 ```
 
-## 7. Match a complete line
+### 7. Match a complete line
 
 The program accepts only a row equal to `libtmux capture ready`. Matching the
 whole line keeps the echoed `printf` command from satisfying the check.
@@ -97,7 +99,7 @@ whole line keeps the echoed `printf` command from satisfying the check.
 <a id="wait-for-text-instead-of-guessing-a-delay"></a>
 <a id="wait-for-output-or-completion"></a>
 
-## 8. Wait, then capture again
+### 8. Wait, then capture again
 
 The shell may not have run the command yet, so the loop pauses and captures
 again until the deadline from step 2 ends it. The short pause limits polling;
@@ -111,7 +113,7 @@ explains why sending and waiting are separate operations.
 ```go excerpt="main.go" from="select {" to="=    }"
 ```
 
-## 9. Clean up
+### 9. Clean up
 
 `Server.Kill` stops the server and every session on it. The program registers
 this `defer` right after step 1, so it runs on every return below it, with its

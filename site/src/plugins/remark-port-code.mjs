@@ -5,11 +5,12 @@ import {
   EXCERPT_ATTRIBUTES,
   ExcerptError,
   excerptRequest,
+  locateExcerpt,
   pageSource,
   parseFenceAttributes,
-  sliceExcerpt,
   withoutAttributes,
 } from '../lib/example-excerpt.ts'
+import { excerptMeta } from '../lib/code-frame.mjs'
 /** Static import keeps source bytes available in bundled HTML and Markdown exports. */
 import CACHE from '../data/example-sources.json' with { type: 'json' }
 import { visit } from 'unist-util-visit'
@@ -128,9 +129,9 @@ function failure(error, pagePath) {
 }
 
 /**
- * The text of an excerpt fence. A page source is a titled block of the same
- * page, which is the program its native run and hash check cover; a file
- * source is read from the port's revision-bound cache.
+ * The text of an excerpt fence and the source lines it quotes. A page source
+ * is a titled block of the same page, which is the program its native run and
+ * hash check cover; a file source is read from the port's revision-bound cache.
  */
 function readExcerpt(owner, request, blocks, pagePath) {
   const { source } = request
@@ -140,7 +141,7 @@ function readExcerpt(owner, request, blocks, pagePath) {
     const text = source.kind === 'page'
       ? pageSource(blocks, source.name, label)
       : readFence(owner, { file: source.name }, pagePath)
-    return sliceExcerpt(text, request, label)
+    return locateExcerpt(text, request, label)
   } catch (error) {
     if (error instanceof ExcerptError) throw new Error(error.message)
     throw error
@@ -183,7 +184,7 @@ export function resolvePortCode(body, port, authoredPort, link = (href) => href)
       // The anchors name lines of the source; the export carries the lines.
       const info = excerpt ? [language, withoutAttributes(metadata, EXCERPT_ATTRIBUTES)].filter(Boolean).join(' ') : undefined
       out.push(info === undefined ? line : line.slice(0, line.length - marker[2].length) + info)
-      if (excerpt) out.push(readExcerpt(owner, excerpt, blocks, 'Markdown export'))
+      if (excerpt) out.push(readExcerpt(owner, excerpt, blocks, 'Markdown export').text)
       else if (fence.replaced) out.push(readFence(owner, meta, 'Markdown export'))
     } else if (fence && marker && marker[1][0] === fence.marker
       && marker[1].length >= fence.length && !marker[2].trim()) {
@@ -219,6 +220,36 @@ function sliceRegion(source, region) {
   return lines.slice(start + 1, end === -1 ? undefined : end).join('\n')
 }
 
+/** The last path segment of a source file, for a frame header. */
+const baseName = (path) => path.slice(path.lastIndexOf('/') + 1)
+
+/**
+ * The info string with each attribute the author left out filled in. An
+ * author's own `title`, `frame`, `role` or `lines` always wins.
+ * @param {string | null | undefined} meta
+ * @param {Record<string, string>} defaults
+ */
+function withFrameAttributes(meta, defaults) {
+  const given = parseMeta(meta)
+  const added = Object.entries(defaults).filter(([name]) => given[name] === undefined)
+    .map(([name, value]) => `${name}="${value}"`)
+  return [meta?.trim(), ...added].filter(Boolean).join(' ')
+}
+
+/** The titles of the page's own blocks that an excerpt quotes: each is a complete program. */
+function quotedTitles(blocks) {
+  const titles = new Set()
+  for (const block of blocks) {
+    try {
+      const request = excerptRequest(parseMeta(block.meta))
+      if (request?.source.kind === 'page') titles.add(request.source.name)
+    } catch {
+      // The block's own visit reports a malformed excerpt with the page path.
+    }
+  }
+  return titles
+}
+
 export function remarkPortCode() {
   const port = process.env.LIBTMUX_DOCS_PORT || ''
   const processor = this
@@ -244,6 +275,7 @@ export function remarkPortCode() {
     // An excerpt quotes a titled block of its own page, wherever the block sits.
     const blocks = []
     visit(tree, 'code', (node) => { blocks.push({ meta: node.meta, value: node.value }) })
+    const quoted = quotedTitles(blocks)
 
     visit(tree, 'code', (node, _index, parent) => {
       const lang = (node.lang || '').toLowerCase()
@@ -257,8 +289,11 @@ export function remarkPortCode() {
 
       const excerpt = excerptOf(meta, file?.path)
       if (excerpt) {
-        node.value = readExcerpt(owner, excerpt, blocks, file?.path)
-        node.meta = withoutAttributes(node.meta, EXCERPT_ATTRIBUTES)
+        const { text, start, end } = readExcerpt(owner, excerpt, blocks, file?.path)
+        node.value = text
+        // The frame names the file and the lines, and numbers the rows from the source's own count.
+        node.meta = withFrameAttributes(withoutAttributes(node.meta, EXCERPT_ATTRIBUTES),
+          parseFenceAttributes(excerptMeta({ title: baseName(excerpt.source.name), ranges: [{ start, end }] })))
         return
       }
 
@@ -267,6 +302,14 @@ export function remarkPortCode() {
       // from the code its own repository tests.
       if (meta.file && owner) {
         node.value = readFence(owner, meta, file?.path)
+        // A whole file, not a region of it, is a complete program.
+        if (!meta.region) node.meta = withFrameAttributes(node.meta, { title: baseName(meta.file), frame: 'code', role: 'program' })
+        return
+      }
+
+      // The block an excerpt quotes is the complete program, and an author may say so of any block.
+      if ((meta.title !== undefined && quoted.has(meta.title)) || meta.role !== undefined) {
+        node.meta = withFrameAttributes(node.meta, { frame: 'code', ...(meta.role === undefined ? { role: 'program' } : {}) })
       }
 
     })
