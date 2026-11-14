@@ -990,6 +990,64 @@ body[data-documentation-layout='reference'] {
 }
 
 /*
+ * The release notice is one line under `bp-phone` (30rem): the badge, a few
+ * words and "More", which opens the sentence below them. Every other width
+ * shows the sentence beside the badge and has no use for the short text or the
+ * disclosure. The disclosure is a <details>, so it opens without a script.
+ */
+.prerelease-notice__lead,
+.prerelease-notice__more { display: none; }
+.prerelease-notice__more summary { list-style: none; cursor: pointer; }
+.prerelease-notice__more summary::-webkit-details-marker { display: none; }
+.prerelease-notice__more-close { display: none; }
+
+@media (max-width: 29.999rem) {
+  .prerelease-notice--collapsible .prerelease-notice__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0 .25rem;
+    min-height: 2.25rem;
+    padding-block: .25rem;
+  }
+  .prerelease-notice--collapsible .prerelease-notice__text {
+    flex: 1 1 0;
+    min-width: 0;
+    flex-wrap: wrap;
+    align-items: center;
+    row-gap: .25rem;
+    min-height: 2rem;
+  }
+  .prerelease-notice--collapsible .prerelease-notice__badge { margin-inline-end: 0; }
+  .prerelease-notice--collapsible .prerelease-notice__lead {
+    display: block;
+    flex: 1 1 0;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .prerelease-notice--collapsible .prerelease-notice__text > .prerelease-notice__full { display: none; flex-basis: 100%; padding-bottom: .25rem; }
+  .prerelease-notice--collapsible:has(.prerelease-notice__more[open]) .prerelease-notice__full { display: block; }
+  .prerelease-notice--collapsible:has(.prerelease-notice__more[open]) .prerelease-notice__lead { display: none; }
+  .prerelease-notice--collapsible .prerelease-notice__more { display: block; flex: none; }
+  .prerelease-notice--collapsible .prerelease-notice__more summary {
+    display: inline-flex;
+    align-items: center;
+    height: 2rem;
+    padding-inline: .5rem;
+    border-radius: .25rem;
+    font-size: .8125rem;
+    text-decoration: underline;
+    text-underline-offset: .15em;
+  }
+  .prerelease-notice--collapsible .prerelease-notice__more summary:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: -2px; }
+  .prerelease-notice--collapsible .prerelease-notice__more[open] .prerelease-notice__more-open { display: none; }
+  .prerelease-notice--collapsible .prerelease-notice__more[open] .prerelease-notice__more-close { display: inline; }
+  .prerelease-notice--collapsible .prerelease-notice__dismiss { position: static; flex: none; }
+}
+
+/*
  * The colour-scheme control, and why its selected state is CSS.
  *
  * `ThemeScript` sets `data-color-scheme` on the root in <head>, so the right
@@ -1083,8 +1141,8 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
   .scheme-switch:has(+ .scheme-cycle:not([hidden])) { display: none; }
 }
 
-/* Keep full language names by hiding the scheme labels first. */
-@media (max-width: 95.999rem) {
+/* The scheme labels share the chips' threshold, 80rem: the Menu button no longer takes the room beside them. */
+@media (max-width: 79.999rem) {
   .scheme-switch__label {
     position: absolute;
     width: 1px;
@@ -1324,17 +1382,6 @@ html[data-theme-mode='dark'] .site-header .header-picker > summary:is(:hover, :f
   padding-top: 0;
 }
 
-/* ── Where the pieces move ──────────────────────────────
- *
- * Wide screens also show the color-scheme labels.
- */
-@media (min-width: 96rem) {
-  .site-header__menu-label {
-    display: none;
-  }
-
-}
-
 /* Narrow phones: the search label goes, the icon stays. Below this the bar is
    a wordmark and three controls, which is what fits on 320px. */
 @media (max-width: 26rem) {
@@ -1454,19 +1501,39 @@ html[data-theme-mode='dark'] .site-header .header-picker > summary:is(:hover, :f
 @media (min-width: 48rem) {
   .site-header__panel-destinations { display: none; }
 }
+/* Under a ContextStrip the Menu holds the destinations only below 48rem (bp-tablet); from there it would hold two links the product picker already offers. */
+@media (min-width: 48rem) {
+  .site-header__menu--overflow { display: none; }
+}
+/* The shortcut cap rides with the labels, from 80rem. */
+.site-header__search-hint {
+  display: none;
+  padding: .125rem .3rem;
+  border: 1px solid var(--control-border, #7f8d9b);
+  border-bottom-width: 2px;
+  border-radius: var(--radius-xs, .25rem);
+  background: transparent;
+  color: var(--topnav-link-color);
+  font: 500 .6875rem/1 var(--font-mono, ui-monospace, monospace);
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+@media (min-width: 80rem) {
+  .site-header__search-hint { display: inline-block; }
+}
 /* A host's name is longer than the word it replaces, so the labels wait for more room than the search label does. */
 @media (max-width: 79.999rem) {
   .site-header__destinations :is(.header-link__label, .header-picker__label) { display: none; }
 }
-@media (max-width: 95.999rem) {
+/* The Menu button carries its word from bp-phone (30rem) up; below it the bar has room for the icon only. */
+@media (max-width: 29.999rem) {
   .site-header__menu-label { display: none; }
+}
+@media (max-width: 79.999rem) {
   .site-header__bar { gap: 0.5rem; }
 }
 @media (max-width: 69.999rem) {
   .site-header__search-label { display: none; }
-}
-@media (max-width: 25rem) {
-  .site-header__menu-label { display: none; }
 }
 @media (max-width: 20rem) {
   body { --site-gutter: .5rem; }

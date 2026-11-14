@@ -24,7 +24,7 @@ const shortName = tmux ? 'tmux' : PORT_BY_SLUG[portSlug ?? '']?.shortName ?? nam
 const families = portFamilies(entries.map((entry) => entry.port))
 ---
 <details class="doc-picker" data-page-port-switcher data-doc-picker>
-  <summary aria-label={label ?? `${name}: choose a language or tmux documentation`} data-reserve-label-width={reserveLabelWidth || undefined}>
+  <summary aria-label={label ?? `${name}: choose a programming language or tmux documentation`} data-reserve-label-width={reserveLabelWidth || undefined}>
     <span class:list={['page-port-icon', { 'home-language-icon': homeLanguageIcons }]} aria-hidden="true">
       {tmux ? <img data-terminal-icon src={withRoot('/brand/tools/terminal/icon.svg')} width="24" height="24" alt="" /> : !homeLanguageIcons && portSlug && PORT_BY_SLUG[portSlug] ? <img
         data-language-icon={portSlug}
