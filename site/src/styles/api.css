@@ -60,6 +60,8 @@
 }
 .api-signature-parameters--multiline { white-space: pre-wrap; }
 .api-signature-parameters .sig-param { font-style: normal; }
+/* A run of repeated stub flags, named once; the implementation and the Parameters list show each. */
+.api-signature-parameters .api-signature-summary { color: var(--color-foreground-secondary); font-weight: 400; }
 .api-signature-parameters .api-parameter-name { color: inherit; text-decoration: none; }
 .api-signature-parameters .api-parameter-name:hover { text-decoration: underline; }
 .api-signature-parameters .api-parameter-name:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }

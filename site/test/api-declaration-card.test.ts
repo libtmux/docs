@@ -45,6 +45,22 @@ describe('the declaration card (Signature, adoption steps 2 and 36)', () => {
     expect(document.querySelector('[data-has-fold]')).toBeNull()
     expect(document.querySelector('.gp-sphinx-api-signature')?.textContent).toContain('escape_sequences')
   }, 60_000)
+
+  it('names a stub\'s run of repeated flags once and lists the implementation\'s in full', async () => {
+    const python = API_MODELS.py
+    const symbol = symbolOf(python, 'libtmux.pane.Pane.capture_pane')
+    const index = new SymbolIndex(python.symbols, (entry) => `/en/py/latest/reference/${entry.slug}/`, 'py')
+    const document = await entry(symbol, { index, port: 'py' })
+    const summaries = [...document.querySelectorAll('.api-signature-summary')].map((node) => node.textContent)
+    // Two overload stubs and the implementation: the stubs summarise their `= ...` flags, the implementation does not.
+    expect(summaries).toHaveLength(2)
+    for (const text of summaries) expect(text).toMatch(/^… \d+ more keyword flags, all bool = \.\.\. \(listed under Parameters\)$/)
+    const implementation = [...document.querySelectorAll('.gp-sphinx-api-signature .api-signature-parameters')].at(-1)!
+    expect(implementation.querySelector('.api-signature-summary')).toBeNull()
+    expect(implementation.querySelectorAll('a.api-parameter-name').length).toBeGreaterThanOrEqual(15)
+    // The parameters a summary stands for are still listed, each with its own anchor.
+    expect(document.querySelectorAll('.gp-sphinx-api-parameters .api-parameters > li').length).toBeGreaterThanOrEqual(15)
+  }, 60_000)
 })
 
 

@@ -354,7 +354,7 @@ const hasBody =
             symbol.signatures.map((sig, i) => (
               <>
                 <span {...signatureTargets[i]} class="section-anchor-alias" />
-                <ApiSignatureParameters signature={sig} symbol={symbol} index={index} language={language} layout={pythonLayouts?.get(sig)} />
+                <ApiSignatureParameters signature={sig} symbol={symbol} index={index} language={language} layout={pythonLayouts?.get(sig)} summarise={language === 'py' && sig !== symbol.signatures.at(-1)} />
                 {sig.returns && (
                   <span class="sig-return">
                     <span class="sig-return-icon">{language === 'ts' ? ':' : '→'}</span>{' '}
