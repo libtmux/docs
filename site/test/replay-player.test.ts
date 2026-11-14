@@ -49,7 +49,7 @@ describe('the replay player', () => {
     })!
     const count = () => document.querySelector('[data-count]')!.textContent
     const click = (element: Element) => element.dispatchEvent(new win.MouseEvent('click', { bubbles: true }) as unknown as Event)
-    const key = (name: string, extra: Partial<KeyboardEventInit> = {}) => root.querySelector('[data-body]')!.dispatchEvent(new win.KeyboardEvent('keydown', { key: name, bubbles: true, ...extra }) as unknown as Event)
+    const key = (name: string, extra: Record<string, boolean> = {}) => root.querySelector('[data-body]')!.dispatchEvent(new win.KeyboardEvent('keydown', { key: name, bubbles: true, ...extra }) as unknown as Event)
     const select = () => {
       const range = document.createRange()
       range.selectNodeContents(document.getElementById('words')!)

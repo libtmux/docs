@@ -32,7 +32,7 @@ async function page(port: string, section: McpSection, toolName?: string) {
   const object = toolName ? mcpObjects(port).find((entry) => entry.name === toolName)! : undefined
   const window = new Window()
   window.document.body.innerHTML = withoutScope(await renderAstroTemplate(template, { url: `https://libtmux.org/${port}/next/${object?.path ?? `mcp/${section}`}/`, props: { port, version: 'next', section, itemSlug: object?.slug } }))
-  return window.document
+  return window.document as unknown as Document
 }
 
 describe('the tools index', () => {

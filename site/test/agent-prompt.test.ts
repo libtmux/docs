@@ -16,7 +16,7 @@ beforeAll(async () => { template = await loadAstroTemplate('components/widgets/A
 async function widget(props: Record<string, unknown> = {}) {
   const window = new Window()
   window.document.body.innerHTML = withoutScope(await renderAstroTemplate(template, { props }))
-  return window.document
+  return window.document as unknown as Document
 }
 
 describe('the language control', () => {
