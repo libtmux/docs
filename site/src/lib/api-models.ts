@@ -40,6 +40,9 @@ import tsNav from '../data/api/ts.nav.json'
 import cxxModel from '../data/api/cxx.json'
 import csharpModel from '../data/api/csharp.json'
 import goModel from '../data/api/go.json'
+import goBehavior from '../data/api/go.behavior.json'
+import rsBehavior from '../data/api/rs.behavior.json'
+import { attachBehavior, type BehaviorSidecar } from './api-behavior'
 import javaModel from '../data/api/java.json'
 import pyModel from '../data/api/py.json'
 import rubyModel from '../data/api/ruby.json'
@@ -92,6 +95,10 @@ export const API_MODELS: Record<string, ApiModel> = {
   fsharp: fsharpModel as unknown as ApiModel,
   clojure: clojureModel as unknown as ApiModel,
 }
+
+// Doc-comment facts for the ports whose comments state completion, ownership and errors.
+attachBehavior(API_MODELS.go, goBehavior as unknown as BehaviorSidecar)
+attachBehavior(API_MODELS.rs, rsBehavior as unknown as BehaviorSidecar)
 
 /** One entry in a curated sidebar bucket, carrying just enough to link it. */
 export interface NavEntry {

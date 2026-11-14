@@ -10,6 +10,7 @@ import Aside from '../Aside.astro'
 import ApiBadge from './ApiBadge.astro'
 import ApiDoc from './ApiDoc.astro'
 import EquivalentsTable from './EquivalentsTable.astro'
+import BehaviorFacts from './BehaviorFacts.astro'
 import { equivalentsFor } from '../../lib/api-equivalents'
 import ApiProse from './ApiProse.astro'
 import ApiType from './ApiType.astro'
@@ -280,6 +281,7 @@ const hasBody =
   Boolean(symbol.publicOwner && symbol.publicOwner !== symbol.id) ||
   Boolean(showSummary && symbol.doc?.summary) ||
   Boolean(symbol.doc?.body) ||
+  Boolean(symbol.behavior) ||
   Boolean(symbol.doc?.deprecated) ||
   Boolean(symbol.command) ||
   methods.length > 0 ||
@@ -425,6 +427,7 @@ const hasBody =
 
   {hasBody && (
   <dd>
+    <BehaviorFacts symbol={symbol} index={index} sourceUrl={sourceUrl} />
     {symbol.exportedFrom && (
       <p class="gp-sphinx-api-facts">
         Exported from <ApiType type={symbol.exportedFrom} index={index} />

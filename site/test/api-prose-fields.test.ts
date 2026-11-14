@@ -68,7 +68,7 @@ describe('the expressions the components render as prose', () => {
   })
 
   it('stand for a field of the table or for a text the model builds', () => {
-    const built = new Set(['commandFacts and parameterBindingFacts', 'parameterBindingText', 'conceptNotes', 'ApiProse blocks'])
+    const built = new Set(['commandFacts and parameterBindingFacts', 'parameterBindingText', 'conceptNotes', 'behaviorFacts', 'ApiProse blocks'])
     for (const [expression, meaning] of Object.entries(RENDERED_TEXTS)) expect(meaning in PROSE_FIELDS || built.has(meaning), expression).toBe(true)
   })
 
@@ -109,6 +109,7 @@ describe('the code that links prose', () => {
     'src/components/api/ApiScalarMembers.astro': 'passes the index to ApiDoc',
     'src/components/api/ApiSignatureParameters.astro': 'passes the index to ApiType',
     'src/components/api/ApiType.astro': 'links a type: linkType, which the collector calls on every signature',
+    'src/components/api/BehaviorFacts.astro': 'passes the index to ApiDoc',
     'src/components/api/EquivalentsTable.astro': 'builds the index each port\'s equivalent notes render with',
     'src/components/api/ProductApiPage.astro': 'builds the index the page renders with',
     'src/lib/api-models.ts': 'builds the index (createApiIndex)',

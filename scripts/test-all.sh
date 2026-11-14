@@ -141,6 +141,14 @@ node scripts/gen-example-sources.mjs --check
 step 'example sources (negative)'
 node scripts/gen-example-sources.negative.mjs
 
+# Behaviour facts are sentences of each declaration's doc comment, kept with their line at the model's revision.
+# CI has no checkout, so the committed facts are held to the evidence lines they recorded.
+step 'behaviour facts'
+node scripts/gen-api-behavior.mjs --check
+
+step 'behaviour facts (negative)'
+node scripts/gen-api-behavior.negative.mjs
+
 # The workspace showcase quotes configurations a port's own tests load, read
 # at the revision its API model records. Without the checkouts this verifies
 # the committed bytes against their digests and the sources they describe.
