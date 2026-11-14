@@ -848,9 +848,9 @@
       "dedent": 0,
       "importsEndLine": 1
     },
-    "prerequisites": "Linux, Raku 6.d and tmux 3.3a through 3.8 on PATH, with the published distribution installed from Raku Land. The program starts its own private tmux server.",
+    "prerequisites": "Linux, Raku 6.d with zef, and tmux 3.3a through 3.8 on PATH. The first command installs the published LibTmux distribution from Raku Land, so it needs network access to the zef ecosystem. The program starts its own private tmux server.",
     "commands": [
-      "zef install 'LibTmux:auth<zef:libtmux>'",
+      "zef install 'LibTmux:ver<0.0.1+>:auth<zef:libtmux>'",
       "raku quickstart.raku"
     ],
     "expectedOutput": "editor: 2 panes\n",
