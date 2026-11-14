@@ -38,6 +38,7 @@ import { buildLocale } from '../../i18n/resolve'
 import { buildTarget, defaultVersionFor } from '../../lib/versions'
 import ApiDoc from '../../components/api/ApiDoc.astro'
 import ApiTree from '../../components/api/ApiTree.astro'
+import { sidebarHeadAt } from '../../lib/sidebar-head'
 import type { PortNavData } from '../../lib/api-models'
 import { apiTreeVersion, bucketAncestors, bucketForSymbol, navTree, referenceTree, referenceTreeFor, referenceNavigation, referenceIndexSections, referenceIndexSectionsFor, treeRowSymbol, type TreeBucket } from '../../lib/api-tree'
 import { sidebarSelection } from '../../lib/api-sidebar'
@@ -475,6 +476,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
         withMembers={withMembers}
         currentPath={Astro.url.pathname}
         version={apiTreeVersion(model, tree, dependencyNavigation?.hrefs)}
+        head={await sidebarHeadAt(port, version, Astro.url.pathname)}
       />
     )}
 

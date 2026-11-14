@@ -15,6 +15,8 @@ import { DEFAULT_LOCALE, localeSourcePath, type Locale } from '../../i18n/locale
 import SidebarLink from './SidebarLink.astro'
 import SidebarSection from './SidebarSection.astro'
 import { PORT_BY_SLUG, type DocProduct } from '../../lib/ports'
+import { rowsFor, sidebarHead } from '../../lib/sidebar-head'
+import SidebarHead from './SidebarHead.astro'
 import { currentDocumentation, getDocumentationSurfaces } from '../../lib/documentation-navigation'
 import { initializeDocumentationSidebar } from './documentation-sidebar'
 import '../../styles/api-tree.css'
@@ -36,23 +38,27 @@ const surfaces = portInfo ? await getDocumentationSurfaces(portInfo.slug, versio
 const selected = surfaces.length ? currentDocumentation(surfaces, currentPath) : undefined
 const pageItems: SidebarItem[] = navigation ?? (selected ? selected.section.items : await getSidebar(port, version, locale, product,
   /^meta(?:\/|$)/.test(localeSourcePath(currentPath, locale)) ? 'meta' : 'tmux'))
+// A port page's column opens with the way up and the scope its rows list; a root page has no ladder to climb.
+const head = portInfo && selected ? sidebarHead(portInfo.slug, version, selected) : undefined
+const rows = head && selected ? rowsFor(portInfo!.slug, head, surfaces, selected, pageItems) : pageItems
 // Root pages can supply a versioned manual or glossary tree of their own.
 const navigationScope = selected?.section.href ?? `tree:${createHash('sha256').update(JSON.stringify(pageItems)).digest('hex')}`
 ---
 
-{selected && <p class="section-context"><span>{selected.surface.label}</span><a href={selected.section.href}>{selected.section.label}</a></p>}
+{head ? <SidebarHead up={head.up} title={head.title} />
+  : selected && <p class="section-context"><span>{selected.surface.label}</span><a href={selected.section.href}>{selected.section.label}</a></p>}
 <div data-section-navigation data-section-scope={navigationScope}>
   <label class="section-search" data-section-search-label hidden>
-    <span class="sr-only">Find a page in {selected?.section.label ?? 'documentation'}</span>
-    <input type="search" autocomplete="off" placeholder="Find page" data-section-search />
+    <span class="sr-only">Filter {selected?.section.label ?? 'documentation'}</span>
+    <input type="search" autocomplete="off" placeholder="Filter this section" data-section-search />
   </label>
   <nav aria-label={selected ? `${selected.surface.label}: ${selected.section.label}` : 'Documentation'} class="sidebar-nav">
   {
-    pageItems.map((item) =>
+    rows.map((item) =>
       item.type === 'group' ? (
-        <SidebarSection label={item.label} href={item.href} kind={item.kind} items={item.items} currentPath={currentPath} />
+        <SidebarSection label={item.label} href={item.href} kind={item.kind} items={item.items} currentPath={currentPath} open={item.open} overline={item.overline} />
       ) : (
-        <SidebarLink href={item.href} label={item.href === selected?.section.href && item.label === selected.section.label ? 'Overview' : item.label} external={item.external} kind={item.kind} quiet={item.quiet} disabled={item.disabled} isActive={isActivePath(item.href, currentPath)} />
+        <SidebarLink href={item.href} label={item.href === selected?.section.href && item.label === selected.section.label ? 'Overview' : item.label} external={item.external} kind={item.kind} quiet={item.quiet} disabled={item.disabled} count={item.count} install={item.install} isActive={isActivePath(item.href, currentPath)} />
       ),
     )
   }

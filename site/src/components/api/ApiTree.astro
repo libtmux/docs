@@ -19,6 +19,8 @@
  */
 import ApiTreeItems, { type TreeNode } from './ApiTreeItems.astro'
 import ApiBadge from './ApiBadge.astro'
+import SidebarHead from '../docs/SidebarHead.astro'
+import type { SidebarHeadData } from '../../lib/sidebar-head'
 import { bucketTotal, firstEntry, type TreeBucket } from '../../lib/api-tree'
 import { apiTreeHref, type ApiTreeJson } from '../../lib/api-search'
 import { SIDEBAR_PRESENTATIONS, sidebarCatalog, sidebarNodes, type SidebarPresentation } from '../../lib/api-sidebar'
@@ -65,6 +67,8 @@ interface Props {
   currentIndex?: string
   glossaryHref?: string
   glossaryLabel?: string
+  /** The way up and the scope the tree lists, for a port's reference; a tmux reference has no ladder. */
+  head?: SidebarHeadData
 }
 
 const {
@@ -75,7 +79,7 @@ const {
   searchLabel = 'Find a type or member', searchPlaceholder = 'Find symbol',
   filters = [{ id: 'all', label: 'All' }, { id: 'types', label: 'Types' }, { id: 'members', label: 'Members' }],
   currentIndex,
-  glossaryHref, glossaryLabel = 'API glossary',
+  glossaryHref, glossaryLabel = 'API glossary', head,
 } = Astro.props as Props
 // The port's own reference root. `withRoot` would give the locale root:
 // Astro's `base` prefixes routes, not strings a component builds.
@@ -166,13 +170,14 @@ if (!mark(nodes)) {
     data-controlled={controlled || undefined}
     data-state-scope={presentation === 'outline' ? presentation : presentation ? `${presentation}:${selectedOwner?.id ?? ''}` : undefined} aria-labelledby="api-nav-title">
     <div class="api-nav__head">
-      <p class="api-nav__title" id="api-nav-title">{treeLabel}</p>
-      <button type="button" class="api-nav__close" data-api-nav-close aria-label={`Close ${treeLabel} contents`}>
+      <p class:list={['api-nav__title', head && 'sr-only']} id="api-nav-title">{treeLabel}</p>
+      <button type="button" class="api-nav__close" data-api-nav-close aria-label={`Close ${treeLabel} contents`} style={head ? 'margin-inline-start: auto' : undefined}>
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path stroke-linecap="round" d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
     </div>
+    {head && <SidebarHead up={head.up} title={head.title} />}
     <div class="api-nav__search">
       <label for="api-symbol-search" class="sr-only">{searchLabel}</label>
       <div class="api-nav__search-field">

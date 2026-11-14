@@ -13,7 +13,8 @@ import { mcpObjects, mcpSectionGroups, MCP_SECTIONS, type McpObject, type McpSec
 const options = {
   real: [
     'layouts/DocsLayout.astro', 'components/docs/Sidebar.astro', 'components/docs/SidebarSection.astro', 'components/docs/SidebarLink.astro',
-    'components/docs/DocumentationNavigationButtons.astro', 'components/PageToolbar.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro',
+    'components/docs/DocumentationNavigationButtons.astro', 'components/docs/SidebarHead.astro', 'components/StatusBadge.astro',
+    'components/PageToolbar.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro',
   ],
   stubs: {
     'layouts/BaseLayout.astro': '<slot name="context" /><slot />',
@@ -38,7 +39,7 @@ const first = (port: string, section: McpSection) => mcpObjects(port).find((obje
 const cases = [['rs', 'resources'], ['rs', 'tools'], ['py', 'prompts'], ['py', 'resources']] as const
 
 describe('the menu sidebar on protocol reference pages', () => {
-  it.each(cases)('shows %s %s with the section context, the page search and no API browser', async (port, section) => {
+  it.each(cases)('shows %s %s with the way up and the scope, the section filter and no API browser', async (port, section) => {
     const document = await page(port, section, first(port, section))
     expect(document.querySelector('.api-nav, #api-nav, [data-api-nav-toggle]'), 'no API tree, filters or its toggle').toBeNull()
     const sidebars = menus(document)
@@ -46,14 +47,18 @@ describe('the menu sidebar on protocol reference pages', () => {
     expect(sidebars.map((sidebar) => sidebar.closest('aside')?.id || 'desktop')).toEqual(['mobile-sidebar', 'desktop'])
     expect(document.querySelectorAll('noscript [data-section-navigation]')).toHaveLength(1)
     for (const sidebar of sidebars) {
-      const context = sidebar.parentElement!.querySelector('.section-context')!
-      expect([...context.children].map((child) => child.textContent)).toEqual(['MCP', MCP_SECTIONS[section]])
-      expect(sidebar.querySelector('input[type="search"][data-section-search]')?.getAttribute('placeholder')).toBe('Find page')
+      // One level up from the section is the product; the title is the section, linking to its index.
+      const head = sidebar.parentElement!.querySelector('[data-sidebar-head]')!
+      expect(head.querySelector('[data-sidebar-head-up]')!.getAttribute('aria-label')).toBe('Up to MCP')
+      expect(head.querySelector('[data-sidebar-head-up]')!.getAttribute('href')).toBe(`/${port}/next/mcp/`)
+      expect(head.querySelector('[data-sidebar-head-title]')!.textContent).toBe(MCP_SECTIONS[section])
+      expect(head.querySelector('[data-sidebar-head-title]')!.getAttribute('href')).toBe(`/${port}/next/mcp/${section}/`)
+      expect(sidebar.querySelector('input[type="search"][data-section-search]')?.getAttribute('placeholder')).toBe('Filter this section')
       expect(sidebar.querySelector('nav')?.getAttribute('aria-label')).toBe(`MCP: ${MCP_SECTIONS[section]}`)
     }
   })
 
-  it.each(cases)('nests %s %s under its groups and marks only the current page', async (port, section) => {
+  it.each(cases)('lists %s %s under its groups as labels over its rows and marks only the current page', async (port, section) => {
     const object = first(port, section)
     const group = mcpSectionGroups(port, section).find((entry) => entry.objects.includes(object))!
     const document = await page(port, section, object)
@@ -62,24 +67,25 @@ describe('the menu sidebar on protocol reference pages', () => {
       const current = [...nav.querySelectorAll('[aria-current="page"]')]
       expect(current.map((row) => row.textContent?.trim()), 'one current row, the page itself').toEqual([object.name])
       expect(current[0].matches('a.sidebar-link.api-nav__row')).toBe(true)
-      const details = current[0].closest('details.sidebar-section')!
-      expect(details.getAttribute('open'), 'the group of the page is open').not.toBeNull()
-      expect(details.querySelector(':scope > summary')?.textContent?.trim()).toBe(group.label)
-      expect(details.querySelector(':scope > .sidebar-section__children')?.contains(current[0])).toBe(true)
-      expect(current[0].parentElement?.closest('details')).toBe(details)
-      expect(nav.querySelectorAll('details.sidebar-section[open]'), 'every other group stays closed').toHaveLength(1)
+      // A group is a label over its rows, not a row: it cannot be opened, closed or selected.
+      expect(nav.querySelector('details'), 'no group is a disclosure').toBeNull()
+      const label = [...nav.querySelectorAll('.sidebar-overline')].map((entry) => entry.textContent?.trim())
+      expect(label).toEqual(mcpSectionGroups(port, section).map((entry) => entry.label))
+      let before = current[0].previousElementSibling
+      while (before && !before.classList.contains('sidebar-overline')) before = before.previousElementSibling
+      expect(before?.textContent?.trim(), 'the label over the page\'s row names its group').toBe(group.label)
       // A group names its kind: its rows draw no mark and keep the kind for assistive technology.
       expect(nav.querySelector('.api-nav__kind'), 'no kind mark on a row').toBeNull()
       expect(current[0].getAttribute('aria-description')).toBe(object.kind)
     }
   })
 
-  it.each(cases)('marks the section overview on the %s %s index and opens no group', async (port, section) => {
+  it.each(cases)('marks the section overview on the %s %s index and shows the groups as labels', async (port, section) => {
     const document = await page(port, section)
     const nav = menus(document)[1].querySelector('nav')!
     expect([...nav.querySelectorAll('[aria-current="page"]')].map((row) => row.textContent?.trim())).toEqual(['Overview'])
-    expect(nav.querySelectorAll('details.sidebar-section[open]')).toHaveLength(0)
-    expect([...nav.querySelectorAll('summary')].map((row) => row.textContent?.trim()))
+    expect(nav.querySelectorAll('details')).toHaveLength(0)
+    expect([...nav.querySelectorAll('.sidebar-overline')].map((row) => row.textContent?.trim()))
       .toEqual(mcpSectionGroups(port, section).map((group) => group.label))
   })
 
