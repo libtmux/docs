@@ -568,9 +568,9 @@ export async function checkApiNavigation(page, base, { sabotage } = {}) {
   await page.waitForFunction(() => window.__docsPageLoaded)
   await page.locator('[data-api-nav-toggle]').click()
   await search.fill('Server:snapshot')
-  await page.waitForFunction(() => document.querySelector('[data-api-search-status]').textContent.includes('could not load'))
+  await page.waitForFunction(() => document.querySelector('[data-api-search-status]').textContent.includes('did not load'))
   await page.unroute('**/tree.json')
-  await page.getByRole('button', { name: 'Retry search' }).click()
+  await page.getByRole('button', { name: 'Try again' }).click()
   await results.locator('a[href$="libtmux-server-snapshot/"]').waitFor()
   console.log('API search: full member names, category filters, keyboard focus, phone layout and visible retryable failures pass')
 
