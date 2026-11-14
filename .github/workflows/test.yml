@@ -65,6 +65,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
           echo "lisp=$(jq -r .revision site/src/data/api/lisp.json)" >> "$GITHUB_OUTPUT"
           echo "erlang=$(jq -r .revision site/src/data/api/erlang.json)" >> "$GITHUB_OUTPUT"
+          echo "raku=$(jq -r .revision site/src/data/api/raku.json)" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v7
         with:
@@ -126,6 +127,24 @@ jobs:
           ref: ${{ steps.integrated-sources.outputs.erlang }}
           path: .port-sources/erlang
           persist-credentials: false
+      - uses: actions/checkout@v7
+        with:
+          repository: libtmux/libtmux-raku
+          ref: ${{ steps.integrated-sources.outputs.raku }}
+          path: .port-sources/raku
+          persist-credentials: false
+
+      # The usage scanner parses library source with the compiler that revision pins; RakuAST can run compile-time code.
+      - name: Read the integrated Raku compiler
+        id: raku-runtime
+        run: |
+          version=$(jq -er '.nativeProvenance.exporter.compiler | select(test("^[0-9]{4}\\.[0-9]{2}$"))' site/src/data/api/raku.json)
+          printf 'version=%s\n' "$version" >> "$GITHUB_OUTPUT"
+      - uses: Raku/setup-raku@8602b3572876ee7a5e304837c3183cf913a78f47 # v1.15.0
+        with:
+          raku-version: ${{ steps.raku-runtime.outputs.version }}
+      - name: Install the Raku scanner dependency
+        run: zef install --/test JSON::Fast
 
       # The exporter tests compile a fixture with the package's own toolchain:
       # the exact pair the integrated Elixir source pins, read as port-docs.yml
@@ -197,6 +216,7 @@ jobs:
           LIBTMUX_DOCS_CHECKOUT_PERL: ${{ github.workspace }}/.port-sources/perl
           LIBTMUX_DOCS_CHECKOUT_LISP: ${{ github.workspace }}/.port-sources/lisp
           LIBTMUX_DOCS_CHECKOUT_ERLANG: ${{ github.workspace }}/.port-sources/erlang
+          LIBTMUX_DOCS_CHECKOUT_RAKU: ${{ github.workspace }}/.port-sources/raku
         run: |
           node scripts/stage-port-docs.mjs --from-source
           node scripts/stage-port-docs.mjs --cached --check
@@ -220,6 +240,7 @@ jobs:
           LIBTMUX_DOCS_CHECKOUT_LUA: ${{ github.workspace }}/.port-sources/lua
           LIBTMUX_DOCS_CHECKOUT_OCAML: ${{ github.workspace }}/.port-sources/ocaml
           LIBTMUX_DOCS_CHECKOUT_LISP: ${{ github.workspace }}/.port-sources/lisp
+          LIBTMUX_DOCS_CHECKOUT_RAKU: ${{ github.workspace }}/.port-sources/raku
           # PowerShell, Julia, Elixir, Haskell and Perl paths stay scoped to guide staging
           # above, which checks the cache used by ordinary builds. Native API
           # and MCP export freshness remain owning-port checks, not claims of
@@ -228,7 +249,7 @@ jobs:
           # OCaml's checkout also feeds source-derived usage checks. Its
           # compiled API is qualified by the owning port's exporter job.
           # Common Lisp's checkout stays available here so example sources are checked against the exact revision.
-          LIBTMUX_DOCS_SKIP_NATIVE_MODEL_PORTS: ruby,lua,powershell,julia,elixir,ocaml,haskell,perl,lisp,erlang
+          LIBTMUX_DOCS_SKIP_NATIVE_MODEL_PORTS: ruby,lua,powershell,julia,elixir,ocaml,haskell,perl,lisp,erlang,raku
 
       - name: Upload audited preview
         if: github.event_name == 'pull_request'

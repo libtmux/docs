@@ -40,6 +40,7 @@ export interface PackageRegistry {
   /** Which mark `components/icons/RegistryIcon.astro` draws. */
   icon: 'pypi' | 'npm' | 'crates' | 'go' | 'maven' | 'nuget' | 'swift' | 'rubygems' | 'luarocks' | 'powershell' | 'hex'
     | 'cpan'
+    | 'raku-land'
 }
 
 export type PortPackageId = 'core' | 'async' | DocProduct
@@ -1475,6 +1476,33 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
       git: { lang: 'console', code: 'git clone https://github.com/libtmux/libtmux-perl.git && \\\n  cd libtmux-perl && \\\n  cpm install --global ./packages/core' },
     },
     installNote: 'Workspace and the optional async distribution each depend on core, which the installer resolves. Keep one Perl interpreter and installation prefix for all of them.',
+  },
+  {
+    slug: 'raku', projectName: 'libtmux-raku', logoLanguage: 'raku', shortName: 'Raku',
+    name: 'Raku', language: 'Raku', packageName: 'LibTmux',
+    repo: 'libtmux/libtmux-raku', checkout: '~/work/libtmux/libtmux-raku',
+    worktree: '~/work/libtmux/libtmux-raku-docs-site',
+    source: { path: 'lib', ref: 'master' }, versionedDocs: true,
+    docsDispatch: { workflow: 'docs.yml' },
+    tagGrammar: 'semver', publishesOwnTree: true,
+    renderer: 'astro', generator: 'Rakudo RakuAST and native RakuDoc', referenceKind: 'model',
+    productAvailability: { workspace: 'excluded', mcp: 'excluded' },
+    registry: { name: 'Raku Land', url: 'https://raku.land/zef:libtmux/LibTmux', icon: 'raku-land' },
+    packages: [{ id: 'core', name: 'LibTmux', coordinate: 'LibTmux:auth<zef:libtmux>', require: 'LibTmux', source: { path: 'lib', ref: 'master' } }],
+    installs: [
+      { label: 'zef', lang: 'console', code: "zef install 'LibTmux:auth<zef:libtmux>'",
+        note: 'Requires Linux, Raku 6.d and tmux 3.3a through 3.8. The authority names the Fez publisher, zef:libtmux.' },
+      { label: 'zef (source)', lang: 'console',
+        code: 'git clone https://github.com/libtmux/libtmux-raku.git && \\\n  cd libtmux-raku && \\\n  zef install .',
+        note: 'Install a checkout instead of the published distribution.' },
+    ],
+    initProject: { lang: 'text', code: 'Add "LibTmux:auth<zef:libtmux>" to the depends array of META6.json.' },
+    installForms: {
+      release: { lang: 'console', code: "zef install 'LibTmux:auth<zef:libtmux>'" },
+      prerelease: { lang: 'console', code: "zef install 'LibTmux:ver<{version}>:auth<zef:libtmux>'" },
+      git: { lang: 'console', code: 'git clone --branch {tag} --depth 1 https://github.com/libtmux/libtmux-raku.git && \\\n  cd libtmux-raku && \\\n  zef install .' },
+    },
+    installNote: 'The API is experimental and may change between 0.x releases. CI qualifies Rakudo 2026.09 on Linux with tmux 3.3a and 3.8; other platforms and compiler versions are unverified. Workspace and MCP products are not published.',
   },
 
 ] as const

@@ -10,7 +10,7 @@ export interface PortFamily {
  * by how they are built and run. A port belongs to one group.
  */
 export const PORT_FAMILIES: readonly PortFamily[] = [
-  { label: 'Scripting & web', ports: ['py', 'ruby', 'lua', 'julia', 'ts', 'perl'] },
+  { label: 'Scripting & web', ports: ['py', 'ruby', 'lua', 'julia', 'ts', 'perl', 'raku'] },
   { label: 'Compiled & native', ports: ['rs', 'go', 'cxx', 'lisp', 'swift', 'ocaml', 'haskell'] },
   { label: 'JVM', ports: ['java', 'kotlin', 'scala', 'clojure'] },
   { label: '.NET', ports: ['csharp', 'fsharp', 'powershell'] },

@@ -25,6 +25,16 @@ export interface ExpectedLinks {
 }
 
 export const LINKS: Record<string, ExpectedLinks> = {
+  raku: {
+    actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-raku/lib', 'https://github.com/libtmux/libtmux-raku/tree/master/lib'],
+      ['package', 'Raku Land', 'Raku Land: LibTmux package', 'https://raku.land/zef:libtmux/LibTmux']],
+    indexed: true,
+    rows: [
+      ['source', 'LibTmux', 'Raku distribution · lib', 'https://github.com/libtmux/libtmux-raku/tree/master/lib', ['LibTmux']],
+      ['source', 'libtmux-raku', 'libtmux/libtmux-raku', 'https://github.com/libtmux/libtmux-raku', ['repository']],
+      ['package', 'LibTmux', 'Raku distribution · Raku Land', 'https://raku.land/zef:libtmux/LibTmux', ['LibTmux']],
+    ],
+  },
   ocaml: {
     actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-ocaml/lib', 'https://github.com/libtmux/libtmux-ocaml/tree/master/lib']],
     indexed: true,

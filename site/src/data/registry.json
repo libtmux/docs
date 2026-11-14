@@ -226,6 +226,12 @@
           "tag": "v0.003"
         }
       }
+    },
+    "raku": {
+      "status": "release",
+      "version": "0.0.1",
+      "release": "0.0.1",
+      "tag": "v0.0.1"
     }
   }
 }

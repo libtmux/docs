@@ -413,6 +413,26 @@ const VERIFIERS = {
     return pass({ status: 200, requested: kind === 'pod' ? api(`module/${name}`) : requested, identity: name, version: version ?? release.version, versions,
       repository: reposOf([release.resources?.repository?.url, release.resources?.repository?.web, release.resources?.homepage]) })
   },
+  async 'raku-land'({ url }, { get }) {
+    // Raku Land names a distribution by its Fez authority and its name, and answers 404 for an unknown one.
+    const [, authority, name] = /^https:\/\/raku\.land\/(zef:[^/?#]+)\/([^/?#]+)$/.exec(url) ?? []
+    if (!name) return fail('identity', `${url} is not a distribution page under a zef authority on raku.land`)
+    const response = await get(url)
+    const missing = answered(response, url)
+    if (missing) return missing
+    const title = titleOf(response.text)
+    if (title !== `Raku Land - ${name}`) return fail('identity', `title is "${title}", expected "Raku Land - ${name}"`, { status: 200, requested: url })
+    // The version selector lists every release and marks the one shown.
+    const options = [...response.text.matchAll(/<option\s+value="([^"]+)"([^>]*)>/g)].map(([, value, attributes]) => ({ value, selected: /\bselected\b/.test(attributes) }))
+    const sources = [...response.text.matchAll(/<a\s+href="(https:\/\/github\.com\/[^"/]+\/[^"/]+)"[^>]*>\s*github\.com\/[^<\s]+\s*</g)].map((match) => match[1])
+    return pass({ status: 200, requested: url, identity: `${name}:auth<${authority}>`, version: options.find((option) => option.selected)?.value,
+      versions: options.map((option) => option.value), repository: reposOf(sources),
+      exact: async (wanted) => {
+        const page = await get(`${url}?v=${encodeURIComponent(wanted)}`)
+        return page.status === 200 && titleOf(page.text) === title
+          && [...page.text.matchAll(/<option\s+value="([^"]+)"([^>]*)>/g)].some(([, value, attributes]) => value === wanted && /\bselected\b/.test(attributes))
+      } })
+  },
 }
 
 /**
@@ -431,6 +451,7 @@ export const VERSION_SUPPORT = {
   github: false, pypi: true, npm: true, crates: true, rubygems: true, 'powershell-gallery': true, nuget: true, luarocks: true,
   'maven-central': true, 'swift-package-index': true, 'pkg-go-dev': true, 'docs-rs': true, 'javadoc-io': true, hex: true, hexdocs: true,
   metacpan: true,
+  'raku-land': true,
 }
 /**
  * Where a host never lists a kind of version, so a manifest that declares one has not claimed a release. PAUSE
@@ -438,13 +459,15 @@ export const VERSION_SUPPORT = {
  */
 export const DEVELOPER_VERSION = { metacpan: /^\d+\.\d+_\d+$/ }
 /** Hosts whose records must name the repository the host reports. */
-export const REPOSITORY_HOSTS = new Set(['pypi', 'npm', 'crates', 'rubygems', 'powershell-gallery', 'nuget', 'luarocks', 'maven-central', 'swift-package-index', 'javadoc-io', 'hex', 'metacpan'])
+export const REPOSITORY_HOSTS = new Set(['pypi', 'npm', 'crates', 'rubygems', 'powershell-gallery', 'nuget', 'luarocks', 'maven-central', 'swift-package-index', 'javadoc-io', 'hex', 'metacpan',
+  'raku-land'])
 
 const HOSTNAMES = {
   'pypi.org': 'pypi', 'www.npmjs.com': 'npm', 'crates.io': 'crates', 'rubygems.org': 'rubygems',
   'www.powershellgallery.com': 'powershell-gallery', 'www.nuget.org': 'nuget', 'luarocks.org': 'luarocks',
   'central.sonatype.com': 'maven-central', 'swiftpackageindex.com': 'swift-package-index', 'pkg.go.dev': 'pkg-go-dev',
   'docs.rs': 'docs-rs', 'javadoc.io': 'javadoc-io', 'github.com': 'github', 'hex.pm': 'hex', 'metacpan.org': 'metacpan',
+  'raku.land': 'raku-land',
 }
 /** The host id of a URL; HexDocs serves each package from a subdomain of `hexdocs.pm`. */
 export const hostOf = (url) => {

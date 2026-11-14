@@ -37,6 +37,7 @@ const nativeAuthorities: Record<string, RegExp> = {
   haskell: /^https:\/\/(?:www\.haskell\.org|downloads\.haskell\.org|cabal\.readthedocs\.io)\//,
   lisp: /^https:\/\/(?:www\.lispworks\.com\/documentation\/HyperSpec|asdf\.common-lisp\.dev)\//,
   erlang: /^https:\/\/(?:www\.erlang\.org|github\.com\/erlang\/otp)\//,
+  raku: /^https:\/\/docs\.raku\.org\//,
 }
 
 afterEach(async () => {

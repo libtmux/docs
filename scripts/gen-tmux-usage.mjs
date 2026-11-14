@@ -44,6 +44,7 @@ import { forwardUsage } from './lib/tmux-usage-forward.mjs'
 import { settleCandidates, sweepCandidates } from './lib/tmux-usage-sweep.mjs'
 import { libraryScopes, scopeProblems } from './lib/tmux-usage-scopes.mjs'
 import { bindOcamlDefinitions } from './lib/tmux-usage-ocaml.mjs'
+import { nativeRakuScan } from './lib/tmux-usage-raku.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const dataDir = join(root, 'site/src/data')
@@ -242,7 +243,12 @@ export async function scanPort({ port, model, commands, checkout, known, dispatc
   }
   for (const [path, text] of sources) {
     if (grammar === 'haskell' && path.endsWith('.lhs')) throw new Error(`Haskell source usage coverage: literate input is not qualified: ${path}`)
-    const scanned = await scanSource({ grammar, text, commands: wanted, known, dispatch, builders, guards, labels, trace, native: native?.nativeScan.files[path], reviewedDigest: reviewedFiles?.[path] })
+    const rakuScan = port === 'raku' ? nativeRakuScan(text, checkout) : undefined
+    if (rakuScan && (rakuScan.compiler !== model.nativeProvenance?.exporter?.compiler
+      || !git(checkout, 'show', `${model.revision}:.tool-versions`).toString('utf8').split('\n').includes(`raku ${rakuScan.compiler}`))) {
+      throw new Error('Raku usage compiler differs from the compiler pinned by the library revision')
+    }
+    const scanned = await scanSource({ grammar, text, commands: wanted, known, dispatch, builders, guards, labels, trace, native: rakuScan ?? native?.nativeScan.files[path], reviewedDigest: reviewedFiles?.[path] })
     for (const fn of scanned.functions) functions.push({ ...fn, file: path })
     for (const type of scanned.types) types.push({ ...type, file: path })
     for (const module of scanned.modules ?? []) modules.push({ ...module, file: path })
@@ -533,8 +539,8 @@ export async function main() {
     }
     const checkout = checkoutFor(port)
     if (!existsSync(join(checkout, '.git')) && !existsSync(join(checkout, 'HEAD'))) {
-      if (check && port.slug === 'ocaml') {
-        failures.push('ocaml: source verification requires its pinned checkout; set LIBTMUX_DOCS_CHECKOUT_OCAML')
+      if (check && ['ocaml', 'raku'].includes(port.slug)) {
+        failures.push(`${port.slug}: source verification requires its pinned checkout; set LIBTMUX_DOCS_CHECKOUT_${port.slug.toUpperCase()}`)
         continue
       }
       if (check) { console.log(`gen-tmux-usage: ${port.slug}: no checkout at ${checkout}; skipped regeneration`); continue }

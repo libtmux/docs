@@ -1,4 +1,5 @@
 export { extractPerlArtifact } from './languages/perl.ts'
+export { extractRakuArtifact } from './languages/raku.ts'
 export * from './model.ts'
 export * from './doc/prose-blocks.ts'
 export { sourceUrl, symbolsForProduct } from './products.ts'

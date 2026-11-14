@@ -49,6 +49,7 @@ const SYNTAX: Readonly<Record<string, StatementSyntax>> = {
   lisp: { comment: ';', quotes: '"', literal: '#\\' },
   erlang: { comment: '%', quotes: '"\'', literal: '$' },
   perl: { comment: '#', quotes: '"\'', literal: '$' },
+  raku: { comment: '#', quotes: '"\'' },
   ocaml: { quotes: '"', block: { open: '(*', close: '*)', strings: true }, ticks: true, braces: true },
   haskell: { comment: '--', quotes: '"', operator: '!#$%&*+./<=>?@\\^|-~:', block: { open: '{-', close: '-}' }, ticks: true },
   clojure: { comment: ';', quotes: '"', literal: '\\' },

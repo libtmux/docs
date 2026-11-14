@@ -20,6 +20,7 @@ const read = (path: string) => JSON.parse(readFileSync(new URL(path, import.meta
 
 /** Every product a port ships, as the selector offers it. */
 const PRODUCTS: Record<string, LandingProduct[]> = {
+  raku: ['core'],
   ocaml: ['core', 'workspace'],
   perl: ['core', 'workspace'],
   py: ['core', 'mcp', 'workspace'],
