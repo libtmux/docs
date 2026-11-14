@@ -10,9 +10,9 @@ import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 
 const entry = (overrides: Partial<RegistryEntry>): RegistryEntry => ({ status: 'prerelease', version: null, release: null, tag: null, ...overrides })
 
-// What the registry resolver recorded for Julia when its first final release
-// was tagged and General did not carry it yet.
-const JULIA_FINAL_TAG: RegistryEntry = { status: 'unpublished', version: null, release: null, tag: 'v0.1.0' }
+// What the registry resolver records for Julia when a final version is tagged
+// and General does not carry it: no registry release, so unreleased whatever the tag says.
+const JULIA_FINAL_TAG: RegistryEntry = { status: 'unpublished', version: null, release: null, tag: 'v0.1.0', maturity: 'unreleased' }
 
 describe('release maturity', () => {
   it('reads Cabal numeric releases only when that grammar is declared', () => {
@@ -49,8 +49,8 @@ describe('release maturity', () => {
     expect(() => releaseMaturity(entry({ version: '0.1.0-dev.3' }))).toThrow(/no release stage in "0.1.0-dev.3"/)
   })
 
-  it('reads the live Julia entry, a final tag that General does not carry yet, as 0.x', () => {
-    expect(releaseMaturity(JULIA_FINAL_TAG)).toBe('0.x')
+  it('reads the live Julia entry, a final tag that General does not carry, as unreleased', () => {
+    expect(releaseMaturity(JULIA_FINAL_TAG)).toBe('unreleased')
   })
 
   it.each([
@@ -148,21 +148,21 @@ describe('product status', () => {
     }
   })
 
-  it('badges Julia 0.x from its final tag and states the line without naming a registry', async () => {
+  it('badges Julia unreleased whatever its tag says, and states a line that claims no release', async () => {
     const julia = PORT_BY_SLUG.julia!
     const status = productStatus(julia, 'core', { schema: 2, ports: { julia: JULIA_FINAL_TAG } })
-    expect(status).toBe('0.x')
-    // Python's releases are on PyPI and Julia's is not on General; one line has to be true of both.
-    expect(productStatusLine('0.x')).not.toMatch(/registry/i)
+    expect(status).toBe('unreleased')
+    expect(productStatusLine('unreleased')).not.toMatch(/release/i)
     const html = await renderAstroTemplate(await loadAstroTemplate('components/StatusBadge.astro'), {
       props: { status, product: julia.projectName, id: 'julia-core-status' },
     })
-    expect(html).toContain('data-status="0.x"')
-    expect(html).toContain(`<span class="status-toggletip__line">${productStatusLine('0.x')}</span>`)
+    expect(html).toContain('data-status="unreleased"')
+    expect(html).toContain(`<span class="status-toggletip__line">${productStatusLine('unreleased')}</span>`)
   })
 
   it.each([
-    ['General lists nothing', null, { status: 'unpublished', version: null, release: null, tag: 'v0.1.0' }, '0.x'],
+    // No registry release: the resolver records the tag and marks the entry unreleased.
+    ['General lists nothing', null, { status: 'unpublished', version: null, release: null, tag: 'v0.1.0', maturity: 'unreleased' }, 'unreleased'],
     ['General lists only 0.1.0-alpha.2', ['0.1.0-alpha.2'], { status: 'prerelease', version: '0.1.0-alpha.2', release: null, tag: 'v0.1.0-alpha.2' }, 'alpha'],
     ['General lists 0.1.0', ['0.1.0'], { status: 'release', version: '0.1.0', release: '0.1.0', tag: 'v0.1.0' }, '0.x'],
   ] as const)('reads the newest release tag only while the registry lists no release: %s', (_state, published, resolved, stage) => {

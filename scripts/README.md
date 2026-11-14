@@ -581,8 +581,15 @@ send an install command to nothing. A baseline tag the repository does not
 carry is dropped, so a port with no release tag records none and installs from
 its default branch.
 
+A git tag is not a release for a port whose core package the inventory does not
+mark `published`: the resolver writes an unpublished entry for it as
+`maturity: "unreleased"`, whatever tag the repository carries, including an
+entry it keeps from the baseline after a failed probe. Swift and C++ resolve
+releases from tags, are `published` in the inventory, and keep the stage their
+tag names.
+
 `gen-registry.negative.mjs` resolves each state Julia can be in, including a
-final tag that General does not carry yet, and requires every badge to read the
+final tag that General does not carry, and requires every badge to read the
 result. A build fails on an entry its badges cannot read, and only the deploy
 resolves live tags, so a pull request meets that failure here.
 

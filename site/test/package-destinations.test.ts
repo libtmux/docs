@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest'
 import evidence from '../src/data/destination-evidence.json'
 import { portHeaderLinks } from '../src/lib/header-links'
 import { INVENTORY } from '../src/lib/port-inventory'
-import { PORT_BY_SLUG, installCommand, portDestinations } from '../src/lib/ports'
-import { installsFor, registryFor } from '../src/lib/registry'
+import { PORT_BY_SLUG, PORTS, installCommand, portDestinations, productStatus, productStatusLine, releaseMaturity } from '../src/lib/ports'
+import { REGISTRY, installsFor, registryFor } from '../src/lib/registry'
 
 /**
  * Where each package's registry destination and install command come from.
@@ -139,5 +139,34 @@ describe('Erlang, released on Hex as libtmux_erlang', () => {
   it('no longer says the application is unreleased', () => {
     for (const { note } of erlang.installs) expect(note).not.toMatch(/unreleased|no Hex package/i)
     expect(library.note ?? '').not.toMatch(/no Hex release/i)
+  })
+})
+
+describe('release badge of a port no registry carries', () => {
+  const core = (slug: string) => INVENTORY[slug]!.find(({ kind }) => kind === 'library')!
+  const unreleased = PORTS.filter(({ slug }) => core(slug).status !== 'published').map(({ slug }) => slug)
+
+  it('covers the ports whose core package is not published', () => {
+    expect(unreleased.sort()).toEqual(['clojure', 'haskell', 'julia', 'lisp', 'ocaml', 'perl'])
+  })
+
+  it.each(unreleased)('reads %s as unreleased, whatever its newest git tag says', (slug) => {
+    const port = PORT_BY_SLUG[slug]!
+    expect(productStatus(port, 'core', REGISTRY), slug).toBe('unreleased')
+    expect(releaseMaturity(registryFor(port), port.tagGrammar), slug).toBe('unreleased')
+  })
+
+  it('says nothing is released for those ports, and installs from source', () => {
+    expect(productStatusLine('unreleased')).toBe('Not published yet; install from source.')
+    expect(installCommand(PORT_BY_SLUG.julia!, registryFor(PORT_BY_SLUG.julia!)).code).toContain('libtmux-julia.git')
+  })
+
+  it('leaves Swift and C++ on their tags, which is how SwiftPM and their own vcpkg registry resolve releases', () => {
+    expect(core('swift').status).toBe('published')
+    expect(core('cxx').status).toBe('published')
+    for (const slug of ['swift', 'cxx']) {
+      expect(registryFor(slug).maturity, `${slug} keeps the stage its tag names`).toBeUndefined()
+      expect(productStatus(PORT_BY_SLUG[slug]!, 'core', REGISTRY), slug).not.toBe('unreleased')
+    }
   })
 })

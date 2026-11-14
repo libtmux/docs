@@ -87,6 +87,7 @@ for (const [name, mutate] of mutations) {
     copyFileSync(script, join(dir, 'scripts/gen-registry.mjs'))
     copyFileSync(join(here, 'lib/port-checkout.mjs'), join(dir, 'scripts/lib/port-checkout.mjs'))
     copyFileSync(join(here, '../site/src/lib/versions.ts'), join(dir, 'site/src/lib/versions.ts'))
+    copyFileSync(join(here, '../site/src/lib/port-inventory.ts'), join(dir, 'site/src/lib/port-inventory.ts'))
     copyFileSync(real, join(dir, 'site/src/data/registry.json'))
     const ports = PORTS.map(({ slug, repo, packageName, tagGrammar, tagPrefix, registry }) => ({
       slug, repo, packageName, tagGrammar, tagPrefix, registry, checkout: join(dir, 'absent', slug),
@@ -258,8 +259,8 @@ for (const [name, mutate] of mutations) {
     const notInGeneral = { status: 404, body: '404: Not Found' }
     const prereleaseOnly = { body: `["0.1.0-alpha.2"]\ngit-tree-sha1 = "${'c'.repeat(40)}"\n` }
     for (const [state, repository, registry, stage] of [
-      ['a final tag General does not carry yet', ['v0.1.0'], notInGeneral, '0.x'],
-      ['a prerelease tag General does not carry yet', ['v0.1.0-alpha.1'], notInGeneral, 'alpha'],
+      ['a final tag General does not carry yet', ['v0.1.0'], notInGeneral, 'unreleased'],
+      ['a prerelease tag General does not carry yet', ['v0.1.0-alpha.1'], notInGeneral, 'unreleased'],
       ['a prerelease General carries', ['v0.1.0-alpha.2'], prereleaseOnly, 'alpha'],
       ['a prerelease General carries beside a final tag it lacks', ['v0.1.0-alpha.2', 'v0.1.0'], prereleaseOnly, 'alpha'],
       ['no tag and no General package', [], notInGeneral, 'unreleased'],
@@ -270,17 +271,33 @@ for (const [name, mutate] of mutations) {
       check(`every badge reads ${state} as ${stage}`, read === stage, `${read} ${JSON.stringify(failures)}`)
     }
     result = invoke({ ...replies, [julia]: tagged('v0.1.0'), [general]: notInGeneral })
-    check('a final tag General does not carry yet is recorded as the live registry recorded it',
-      same(result.ports.julia, { status: 'unpublished', version: null, release: null, tag: 'v0.1.0' }), `${JSON.stringify(result.ports.julia)} ${result.error}`)
+    check('a final tag General does not carry yet is recorded as unreleased',
+      same(result.ports.julia, { status: 'unpublished', version: null, release: null, tag: 'v0.1.0', maturity: 'unreleased' }), `${JSON.stringify(result.ports.julia)} ${result.error}`)
+    // The gate follows the inventory, not the port: Swift and C++ are published there, so their tags still name a stage.
+    const cxxTags = 'https://api.github.com/repos/libtmux/libtmux-cxx/tags?per_page=100'
+    const vcpkg = 'https://raw.githubusercontent.com/microsoft/vcpkg/master/ports/libtmux-cxx/vcpkg.json'
+    result = invoke({ ...replies, [cxxTags]: tagged('v0.1.0'), [vcpkg]: { status: 404, body: '404: Not Found' } })
+    check('a final tag on a published-inventory port with no curated vcpkg entry keeps its stage',
+      same(result.ports.cxx, { status: 'unpublished', version: null, release: null, tag: 'v0.1.0' })
+      && productStatus(PORTS.find(({ slug }) => slug === 'cxx'), 'core', { schema: 2, ports: result.ports }) === '0.x', `${JSON.stringify(result.ports.cxx)} ${result.error}`)
+    // A kept baseline entry is gated too, so a failed probe cannot bring back a release the port does not have.
+    writeFileSync(join(dir, 'published.json'), JSON.stringify({ ...baseline, ports: { ...baseline.ports, julia: { status: 'unpublished', version: null, release: null, tag: 'v0.1.0' } } }))
+    result = invoke({ ...replies, [julia]: tagged('v0.1.0'), [general]: { status: 500, body: 'unavailable' } })
+    check('a baseline entry kept after a failed probe is still unreleased',
+      same(result.ports.julia, { status: 'unpublished', version: null, release: null, tag: 'v0.1.0', maturity: 'unreleased' }), `${JSON.stringify(result.ports.julia)} ${result.error}`)
+    writeFileSync(join(dir, 'published.json'), JSON.stringify(baseline))
     // Once the registry lists a release, a newer tag it lacks is not recorded; the support page says so.
     result = invoke({ ...replies, [julia]: tagged('v0.1.0-alpha.2', 'v0.1.0'), [general]: prereleaseOnly })
     check('a final tag beside a registry that lists only a prerelease is not recorded',
       same(result.ports.julia, { status: 'prerelease', version: '0.1.0-alpha.2', release: null, tag: 'v0.1.0-alpha.2' }), `${JSON.stringify(result.ports.julia)} ${result.error}`)
 
     // The reads above pass only if the read can fail, so name the port and the tag it could not place.
-    result = invoke({ ...replies, [julia]: tagged('v0.1.0-dev.3'), [general]: notInGeneral })
+    // On a port the gate leaves alone: an unreleased port never reads its tag.
+    result = invoke({ ...replies, [cxxTags]: tagged('v0.1.0-dev.3'), [vcpkg]: { status: 404, body: '404: Not Found' } })
     check('a tag whose marker no stage names is reported with its port and name',
-      same(unread(result), ['julia core: releaseMaturity: no release stage in "v0.1.0-dev.3"']), `${JSON.stringify(unread(result))} ${result.error}`)
+      same(unread(result), ['cxx core: releaseMaturity: no release stage in "v0.1.0-dev.3"']), `${JSON.stringify(unread(result))} ${result.error}`)
+    result = invoke({ ...replies, [julia]: tagged('v0.1.0-dev.3'), [general]: notInGeneral })
+    check('an unreleased port never reads its tag, so one no stage names is not an error', same(unread(result), []), `${JSON.stringify(unread(result))} ${result.error}`)
     check('an incomplete result is not read as clean', unread({ ports: { go: seed.ports.go }, error: '' }).length === 1, 'a one-port registry read as clean')
 
     result = invoke({ ...replies, [core]: { body: feed('') }, [workspace]: { body: feed('') }, [general]: { status: 404, body: '404: Not Found' } })
