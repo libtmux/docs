@@ -41,6 +41,7 @@
     line-height: 1.4;
   }
   .code-tab:hover { color: inherit; }
+  @media (width < 30rem) { .code-tab { min-height: var(--touch-target); } }
   .code-tab[aria-selected='true'] {
     color: var(--theme-primary, inherit);
     border-color: var(--color-edge);

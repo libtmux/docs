@@ -57,7 +57,8 @@ html[data-theme-mode='dark'] .api-nav { --api-nav-guide: color-mix(in srgb, var(
 .api-nav__actions a { margin: 0; padding: 0.5rem 0.6rem; color: var(--color-link); }
 .api-nav__destinations a { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
 .api-nav__destinations a:hover { background: var(--color-surface-hover); }
-@media (pointer: coarse) { .api-nav { --api-nav-row-height: 2.75rem; } .api-nav__picker-row { --api-nav-control-size: 2.75rem; } }
+/* Rows and controls reach the touch target below the phone breakpoint and under any coarse pointer. */
+@media (pointer: coarse), (width < 30rem) { .api-nav { --api-nav-row-height: var(--touch-target); } .api-nav__picker-row { --api-nav-control-size: var(--touch-target); } }
 /* Each level past the second indents the whole row, mark and label together. Rows align to their first line, so a name that
    wraps keeps its mark and count beside line 1. */
 .api-nav[data-presentation] .api-nav__row {
@@ -65,7 +66,7 @@ html[data-theme-mode='dark'] .api-nav { --api-nav-guide: color-mix(in srgb, var(
   padding-block: calc((var(--api-nav-row-height) - 1.25rem) / 2);
   padding-inline-start: calc(0.5rem + max(0, var(--level, 1) - 2) * var(--api-nav-indent));
 }
-.api-nav[data-presentation] :is(button, input, select, summary, a):focus-visible { outline: 2px solid var(--color-link); outline-offset: 2px; }
+.api-nav[data-presentation] :is(button, input, select, summary, a):focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
 .api-nav__section { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; padding: 0.75rem 0.5rem 0.35rem; color: var(--color-muted); font-size: 0.6875rem; }
 .api-nav__section > :first-child { font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
 .api-nav__section > :last-child { white-space: nowrap; }
@@ -542,4 +543,9 @@ html[data-api-nav] .api-nav__item[aria-expanded='false'] > [role='group']:not([d
   opacity: .6;
   cursor: default;
   background: none;
+}
+
+/* Documentation sidebar rows are not tree rows but share the class; they reach the same touch target. */
+@media (pointer: coarse), (width < 30rem) {
+  .api-nav__row { min-height: var(--touch-target); }
 }

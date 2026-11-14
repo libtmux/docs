@@ -86,6 +86,9 @@ const { toc, isMobile = false, depth = 0 } = Astro.props
       text-decoration: none;
       outline-offset: -2px;
     }
+    @media (width < 30rem) {
+      .isMobile a { min-height: var(--touch-target); }
+    }
     .isMobile:first-child > li:first-child > a {
       border-top: 0;
     }
