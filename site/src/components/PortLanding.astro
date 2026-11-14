@@ -181,9 +181,6 @@ const panelId = (product: string) => `landing-panel-${product}`
   .port-landing:has([data-landing-product][value="mcp"]:checked) .landing-panel[data-landing-panel="mcp"],
   .port-landing:has([data-landing-product][value="workspace"]:checked) .landing-panel[data-landing-panel="workspace"] { display: block; }
 
-  .landing-excerpt :global(.expressive-code) {
-    --ec-codeFontSize: clamp(.8125rem, calc((100cqi - 2rem) / (var(--home-code-columns) * .625)), .9375rem);
-  }
   /* An excerpt is short by construction, so it shows whole; a complete program scrolls past the homepage's height. */
   .landing-note { font-size: .875rem; color: var(--color-muted); }
   .landing-excerpt :global(.expressive-code pre) { overflow: auto; tab-size: 8; }

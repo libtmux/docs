@@ -42,7 +42,8 @@ export default defineEcConfig({
     codePaddingBlock: '1rem',
     codePaddingInline: '1rem',
     codeFontFamily: 'var(--font-ibm-plex-mono)',
-    codeFontSize: '0.875rem',
+    // 13px: the design sets frame code a step under the 14px of signature headers (record 0032).
+    codeFontSize: '0.8125rem',
     codeLineHeight: '1.7',
     uiFontFamily: 'var(--font-ibm-plex-sans)',
     uiFontSize: '0.875rem',
