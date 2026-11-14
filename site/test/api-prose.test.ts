@@ -331,6 +331,30 @@ describe('a Haskell module\'s export groups', () => {
   })
 })
 
+describe('the capability directory of Erlang, OCaml and Common Lisp', () => {
+  // The shell folds whatever prose the pinned model carries, so a model pinned before the native docs gained their
+  // directory has a correct reader and no table.
+  const OWNERS = [
+    { port: 'erlang', id: 'tmux_server', rows: 8 },
+    { port: 'ocaml', id: 'Libtmux_unix.Client', rows: 8 },
+    { port: 'lisp', id: 'libtmux:client', rows: 8 },
+  ]
+
+  it.each(OWNERS)('is on the pinned $port model, in $rows rows on $id', ({ port, id, rows }) => {
+    const owner = API_MODELS[port].symbols.find((symbol) => symbol.id === id)
+    const directory = groupDirectory(parseApiProse(owner?.doc?.body ?? ''), port).find((block) => block.kind === 'directory')
+    if (directory?.kind !== 'directory') throw new Error(`${port} ${id} has no directory`)
+    expect(directory.rows).toHaveLength(rows)
+    for (const row of directory.rows) expect(row.groups.flatMap((group) => group.refs).length, row.title).toBeGreaterThan(0)
+  })
+
+  it('lists the Common Lisp client\'s operations as members of its class', () => {
+    const members = API_MODELS.lisp.symbols.filter((symbol) => symbol.parent === 'libtmux:client')
+    expect(members.map((symbol) => symbol.id)).toEqual(expect.arrayContaining(['libtmux:fetch-snapshot', 'libtmux:send-text']))
+    expect(members.every((symbol) => symbol.kind === 'function')).toBe(true)
+  })
+})
+
 describe('generated Python docstring parity', () => {
   it('keeps all source sessions and experimental emphasis in HTML input and Markdown', () => {
     const model = API_MODELS.py
