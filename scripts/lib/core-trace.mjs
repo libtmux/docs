@@ -189,14 +189,22 @@ function quietReply(directory, seq) {
  * by it, so a control invocation does not run inside the shim: the script logs
  * the startup command, starts a reader of the program's input and a reader of
  * tmux's output, and becomes the real tmux with both through pipes. Anything
- * else runs through `shim`.
+ * else runs through `shim`. An invocation whose last word is one of `inPlace` becomes
+ * the real tmux untraced, for a foreground daemon (`-D`) that a library owns by the
+ * process id it started: libtmux-raku binds the daemon to that id, and a wrapper
+ * process in between would make it a stranger. Such an invocation has no command to trace.
  *
- * @param {{ node: string, entry: string }} where the node binary and `core-trace.mjs`
+ * @param {{ node: string, entry: string, inPlace?: string[] }} where the node binary and `core-trace.mjs`, and the flags that end an in-place invocation
  */
-export const shimScript = ({ node, entry }) => `#!/bin/sh
+export const shimScript = ({ node, entry, inPlace = [] }) => `#!/bin/sh
 NODE=${JSON.stringify(node)}
 ENTRY=${JSON.stringify(entry)}
-for word in "$@"; do
+${inPlace.length === 0 ? '' : `last=
+for word in "$@"; do last=$word; done
+case $last in
+  ${inPlace.map((flag) => JSON.stringify(flag)).join('|')}) exec "$LIBTMUX_DOCS_REAL_TMUX" "$@" ;;
+esac
+`}for word in "$@"; do
   case $word in
     -*C*)
       if "$NODE" "$ENTRY" is-control "$@"; then
