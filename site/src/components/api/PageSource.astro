@@ -1,0 +1,108 @@
+---
+/**
+ * The full-page source view of one pinned file.
+ *
+ * Reached from a reference entry or the source pane. The page is built from
+ * the cached copy at the model's revision, never a branch head, and is
+ * complete without JavaScript: numbered lines, a list of the declarations the
+ * file holds, gutter marks that link to their reference pages. The script adds
+ * only what the address carries, which a static page cannot know: the range to
+ * highlight and where Back goes.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import ApiBadge from './ApiBadge.astro'
+import { API_MODELS, PORT_NAME } from '../../lib/api-models'
+import { productApiHref } from '../../lib/product-api'
+import { PORT_BY_SLUG, referenceUrl } from '../../lib/ports'
+import { linkedVersionFor } from '../../lib/versions'
+import { sourceLines, type GutterMark } from '../../lib/source-html'
+import { sourceLanguage, type SourcePageProps } from '../../lib/source-declarations'
+import { withRoot } from '../../lib/site-root'
+import '../../styles/source.css'
+
+type Props = SourcePageProps
+const { port, file, content, origin, declarations } = Astro.props as Props
+const model = API_MODELS[port]!
+const version = linkedVersionFor(port)
+const label = PORT_NAME[port] ?? port
+const referenceBase = PORT_BY_SLUG[port] ? referenceUrl(PORT_BY_SLUG[port], version) : withRoot('/reference/')
+const bySlug = new Map(model.symbols.map((symbol) => [symbol.slug, symbol]))
+const hrefOf = (slug: string) => {
+  const symbol = bySlug.get(slug)
+  return symbol ? productApiHref(model, symbol, version) : `${referenceBase}${slug}/`
+}
+
+// A declaration written inside another's range is its member: indented under it.
+const open: { to: number }[] = []
+const rows = declarations.map((declaration) => {
+  while (open.length && open.at(-1)!.to < declaration.line) open.pop()
+  const depth = Math.min(open.length, 3)
+  open.push(declaration)
+  return { ...declaration, depth, href: hrefOf(declaration.slug) }
+})
+const marks = new Map<number, GutterMark>()
+for (const row of rows) {
+  if (!marks.has(row.line)) marks.set(row.line, { href: row.href, title: `Documented as ${row.id}`, kind: row.kind })
+}
+const { html, css } = await sourceLines(content, sourceLanguage(file), marks, rows)
+
+const name = file.split('/').at(-1)!
+const github = origin ? `https://github.com/${origin.repo}/blob/${origin.revision}/${file}` : undefined
+const breadcrumbs = [
+  { name: label, url: referenceBase.replace(/reference\/$/, '') },
+  { name: 'API reference', url: referenceBase },
+  { name: file },
+]
+---
+
+<BaseLayout
+  title={`${file} source`}
+  description={`${file} at the revision the ${label} reference documents.`}
+  pagePath={`reference/sources/${file}`}
+  portSlug={port}
+  documentationLayout="reference"
+  version={version}
+  breadcrumbs={breadcrumbs}
+  searchable={false}
+  noindex
+  flush
+>
+  <main class="lm-source">
+    <div class="lm-source-bar">
+      <a class="lm-source-action" href={referenceBase} data-source-back data-source-back-base={referenceBase}>&larr; API reference</a>
+      <h1><code>{file}</code></h1>
+      {origin && <code class="lm-provenance" title="Pinned revision">{origin.repo}@{origin.revision.slice(0, 12)}</code>}
+      <span class="lm-muted">{origin ? 'The revision this reference documents. ' : ''}<span data-source-range></span></span>
+      <span class="lm-spacer"></span>
+      {github && <a class="lm-source-action" href={github} data-source-github rel="noopener">Open on GitHub</a>}
+    </div>
+    <div class="lm-source-grid">
+      <nav class="lm-source-decls" aria-label={`Declarations in ${name}`}>
+        <div class="lm-overline">Declared in this file</div>
+        {rows.length > 0 ? (
+          <ul>
+            {rows.map((row) => (
+              <li>
+                <a class="lm-source-row" style={row.depth ? `--depth:${row.depth}` : undefined} href={`#L${row.line}`} data-source-row data-slug={row.slug} data-line={row.line} data-from={row.from} data-to={row.to}
+                  data-title={row.title} data-page={row.href}>
+                  <ApiBadge label={row.kind} variant="kind" value={row.kind} compact />
+                  <span class="name">{row.name}</span>
+                  <span class="lm-count">{row.line}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        ) : <p>The reference documents no declaration in this file.</p>}
+        {rows.length > 0 && <p>A mark in the gutter links a declaration to its reference page.</p>}
+      </nav>
+      <div class="lm-source-body" data-source-body>
+        <pre class="lm-src" tabindex="0" aria-label={`${file}, ${content.split('\n').length} lines`} set:html={html} />
+      </div>
+    </div>
+    <style is:inline set:html={css}></style>
+  </main>
+</BaseLayout>
+
+<script>
+  import '../../lib/source-page-browser'
+</script>

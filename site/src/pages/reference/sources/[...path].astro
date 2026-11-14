@@ -1,0 +1,22 @@
+---
+import PageSource from '../../../components/api/PageSource.astro'
+import { API_MODELS } from '../../../lib/api-models'
+import { sourceRoutes, type SourcePageProps } from '../../../lib/source-declarations'
+import { buildLocale } from '../../../i18n/resolve'
+import { DEFAULT_LOCALE } from '../../../i18n/locales'
+
+/**
+ * One page per file the reference cites: the copy pinned at the model's revision
+ * and, for a port that generates sources at build time, the files its model embeds.
+ */
+export function getStaticPaths() {
+  const port = process.env.LIBTMUX_DOCS_PORT ?? ''
+  const model = API_MODELS[port]
+  if (buildLocale() !== DEFAULT_LOCALE || !model) return []
+  return sourceRoutes(port, model)
+}
+
+const props = Astro.props as SourcePageProps
+---
+
+<PageSource {...props} />
