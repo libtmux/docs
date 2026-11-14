@@ -60,6 +60,17 @@ text is replaced by the excerpt; `scripts/check-example-blocks.mjs` fails
 on it for the pages that check scans. The
 Markdown and LLM exports carry the quoted lines, without the anchors.
 
+The frame says what the block is. An excerpt's header reads "Excerpt · lines
+59–78" and numbers its rows from the source's own lines, so a reader can find
+them in the tested file; the block an excerpt quotes, and a whole `file="..."`
+inclusion, read "Complete program" and carry no line numbers. Three optional
+attributes adjust a frame: `role="program"` labels a block the page does not
+quote, `title="main.go"` names the file in the header (an excerpt takes its
+source's name), and `height="16"` stops a long block at that many lines with a
+"Show all N lines" button. A complete program of 40 lines or more takes a
+24-line cap; `height="full"` shows it whole. An excerpt always shows every
+line, Copy always copies every line, and print shows every line.
+
 Choose each range to be a whole unit: a statement, an `if` with its closing
 line, a loop with its `done`. The check rejects a range with unbalanced
 braces, parentheses, `if`/`fi` or `do`/`done`, which is how a `to` that
