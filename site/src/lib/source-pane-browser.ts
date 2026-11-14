@@ -52,8 +52,10 @@ function kindMarkup(doc: Document, kind: string): HTMLElement {
 }
 
 export function mountSourcePane(doc: Document = document): void {
-  const pane = doc.querySelector<HTMLElement>('[data-source-pane]')
-  if (!pane || pane.dataset.mounted) return
+  const found = doc.querySelector<HTMLElement>('[data-source-pane]')
+  if (!found || found.dataset.mounted) return
+  // A named, non-null binding: function declarations below run later and cannot see the narrowing above.
+  const pane: HTMLElement = found
   pane.dataset.mounted = ''
   const layout = pane.parentElement!
   const part = <T extends HTMLElement>(name: string) => pane.querySelector<T>(`[data-pane-${name}]`)!
