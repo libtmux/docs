@@ -140,7 +140,7 @@ describe('kind palette contrast', () => {
   describe('the inks of a native signature', () => {
     /** The signature surface in every brand and mode: the page colour with 6% of the text colour mixed in, as the header paints it. */
     const surfaces = () => {
-      const share = Number(/dt\.gp-sphinx-api-header:not\(:target\)\s*\{\s*background:\s*color-mix\(in srgb,\s*var\(--background-color\),\s*var\(--text-color\)\s+(\d+)%\)/.exec(apiCss)?.[1])
+      const share = Number(/dt\.gp-sphinx-api-header\s*\{\s*background:\s*color-mix\(in srgb,\s*var\(--background-color\),\s*var\(--text-color\)\s+(\d+)%\)/.exec(apiCss)?.[1])
       expect(Number.isFinite(share), 'the signature surface is read from the stylesheet').toBe(true)
       const blocks = [...brand.matchAll(/(html\[[^{}]*)\{([^{}]*)\}/g)]
         .map(([, selector, body]) => ({ selector: selector!.trim(), colours: Object.fromEntries([...body!.matchAll(/(--[\w-]+):\s*(#[0-9a-f]{6})/gi)].map(([, name, value]) => [name, value!.toLowerCase()])) as Record<string, string> }))

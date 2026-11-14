@@ -69,7 +69,8 @@
 /* Member declarations need the same distinct surface as type declarations. */
 dt.gp-sphinx-api-header { position: relative; }
 dt.gp-sphinx-api-header > .section-anchor-alias { inset-block-start: 0; inset-inline-start: 0; }
-dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:not(:target) {
+/* `.py` keeps this above the vendored rule that clears a member's header, and a target keeps the surface: arriving draws no box (record 0049). */
+dl.py.gp-sphinx-api-container > dt.gp-sphinx-api-header {
   background: color-mix(in srgb, var(--background-color), var(--text-color) 6%);
 }
 /* An entry without a body needs only the card's outer border. */
@@ -290,26 +291,6 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
 .api-members > .api-member-group > h3 + .api-member-list {
   border-top: 0;
   border-radius: 0 0 var(--api-member-radius) var(--api-member-radius);
-}
-/* The arrival cue tints the opaque bar instead of replacing it, so content never shows through. */
-.api-field-table > h2[data-anchor-arrival],
-.api-members > h2[data-anchor-arrival],
-.api-members > .api-member-group > h3[data-anchor-arrival] {
-  animation-name: api-member-bar-arrival;
-}
-@keyframes api-member-bar-arrival {
-  0%, 55% {
-    background-color: color-mix(in srgb, var(--color-link, #2879d0) 18%, var(--api-member-bar));
-    box-shadow: 0 0 0 .25rem color-mix(in srgb, var(--color-link, #2879d0) 18%, transparent);
-  }
-  100% { background-color: var(--api-member-bar); box-shadow: 0 0 0 .25rem transparent; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .api-field-table > h2[data-anchor-arrival],
-  .api-members > h2[data-anchor-arrival],
-  .api-members > .api-member-group > h3[data-anchor-arrival] {
-    background-color: color-mix(in srgb, var(--color-link, #2879d0) 18%, var(--api-member-bar)) !important;
-  }
 }
 .api-member-type { font: 0.875em var(--font-mono, ui-monospace, monospace); overflow-wrap: anywhere; }
 .api-member-group h3 {
