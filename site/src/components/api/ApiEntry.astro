@@ -8,6 +8,7 @@ import { Code } from 'astro-expressive-code/components'
 import { codeLang } from '../../lib/highlight'
 import Aside from '../Aside.astro'
 import ApiBadge from './ApiBadge.astro'
+import SourceButton from './SourceButton.astro'
 import ApiDoc from './ApiDoc.astro'
 import EquivalentsTable from './EquivalentsTable.astro'
 import BehaviorFacts from './BehaviorFacts.astro'
@@ -412,7 +413,7 @@ const hasBody =
            */
           (source || alternate) && (
             <span class="gp-sphinx-api-source-link viewcode-link">
-              {source && <span class="pre">[<a class="api-source-anchor" href={source}>source</a>]</span>}
+              {source && <SourceButton symbol={symbol} port={port} href={source} />}
               {alternate && (
                 <span class="pre api-alternate-link" data-alternate-docs={alternate.kind} data-alternate-observation={alternate.differs ? 'release' : 'source'}>[<a
                   class="api-source-anchor api-alternate-anchor" href={alternate.href} rel="noopener" title={alternate.title} aria-label={alternate.title}>{alternate.label}</a>]</span>

@@ -77,3 +77,13 @@ export function sourcePageHref(port: string, file: string, line?: SourceLines, f
   const base = referenceUrl(target, linkedVersionFor(port))
   return `${base}sources/${file}/${from ? `?from=${encodeURIComponent(from)}` : ''}${lineFragment(line)}`
 }
+
+/**
+ * Whether a declaration can offer a source view: its file has a page, and the
+ * model gives a line and the slug the pane keeps in `?source=`. An entry never
+ * offers a view that cannot load.
+ */
+export function hasSourceView(port: string | undefined, symbol: { slug?: string; source?: { file?: string; line?: number } }): boolean {
+  const { file, line } = symbol.source ?? {}
+  return Boolean(port && file && line && symbol.slug && (pinnedSource(port, file) || isGeneratedSource(port, file)))
+}

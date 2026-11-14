@@ -226,9 +226,10 @@ describe('the alternate documentation link on an API entry', () => {
   const cluster = entrySource.slice(entrySource.indexOf('(source || alternate) && ('), entrySource.indexOf('\n        }\n        <a class="headerlink"'))
   const entry = async (props: Record<string, unknown>) => {
     const template = await loadAstroTemplate('components/api/ApiEntry.astro', {
-      stubs: { 'components/api/ApiEntry.astro': `---\nconst { source, alternate } = Astro.props\n---\n{${cluster}}` },
+      real: ['components/api/SourceButton.astro'],
+      stubs: { 'components/api/ApiEntry.astro': `---\nimport SourceButton from './SourceButton.astro'\nconst { source, alternate, symbol, port } = Astro.props\n---\n{${cluster}}` },
     })
-    return withoutScope(await renderAstroTemplate(template, { props }))
+    return withoutScope(await renderAstroTemplate(template, { props: { symbol, ...props } }))
   }
   const model = API_MODELS.perl!
   const symbol = model.symbols.find((candidate) => candidate.id === 'LibTmux::Server::new')!
@@ -253,6 +254,16 @@ describe('the alternate documentation link on an API entry', () => {
     // A page that documents other source says so in the markup too.
     const other = await entry({ source: 'https://example.test/source', alternate: { ...alternate, differs: true } })
     expect(other).toContain('data-alternate-observation="release"')
+  })
+
+  it('offers the source pane only for a declaration whose file has a pinned copy', async () => {
+    const chip = await entry({ source: 'https://example.test/source', port: 'perl' })
+    expect(chip).toContain('api-source-button')
+    expect(chip).toContain(`data-source-slug="${symbol.slug}"`)
+    expect(chip).toContain('href="https://example.test/source"')
+    const uncached = await entry({ source: 'https://example.test/source', port: 'perl', symbol: { ...symbol, source: { ...symbol.source, file: 'lib/Nowhere.pm' } } })
+    expect(uncached).not.toContain('api-source-button')
+    expect(uncached).toContain('>source</a>')
   })
 
   it('renders nothing where there is no alternate, and keeps the source link alone', async () => {

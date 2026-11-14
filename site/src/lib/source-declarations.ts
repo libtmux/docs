@@ -271,3 +271,22 @@ export function sourceRoutes(port: string, model: Pick<ApiModel, 'port' | 'symbo
     }]
   })
 }
+
+/** `[file, line, from, to, title, kind]`: where a symbol's source is and how the pane names it. */
+export type SourceIndexEntry = [file: string, line: number, from: number, to: number, title: string, kind: string]
+
+/**
+ * The symbols of a port that have a source page, by reference slug, so the
+ * pane can show a declaration it was not opened from (a reload, a related type).
+ */
+export function sourceIndex(port: string, model: Pick<ApiModel, 'port' | 'symbols' | 'generatedSources'>, routes = sourceRoutes(port, model)): Record<string, SourceIndexEntry> {
+  const declared = new Map<string, SourceDeclaration>()
+  for (const { props } of routes) for (const declaration of props.declarations) declared.set(`${props.file}:${declaration.slug}:${declaration.line}`, declaration)
+  const index: Record<string, SourceIndexEntry> = {}
+  for (const symbol of model.symbols) {
+    const { file, line } = symbol.source ?? {}
+    const found = symbol.slug && file && line ? declared.get(`${file}:${symbol.slug}:${line}`) : undefined
+    if (symbol.slug && file && found) index[symbol.slug] = [file, found.line, found.from, found.to, found.title, found.kind]
+  }
+  return index
+}
