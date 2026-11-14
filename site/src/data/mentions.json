@@ -14470,6 +14470,76 @@
    "section": "ports"
   },
   {
+   "port": "raku",
+   "symbol": "LibTmux::Capabilities.status",
+   "page": "/raku/latest/examples/programs/",
+   "title": "Runnable programs",
+   "section": "examples"
+  },
+  {
+   "port": "raku",
+   "symbol": "LibTmux::Capabilities.status",
+   "page": "/raku/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "raku",
+   "symbol": "LibTmux::Model::PaneRef.send-keys",
+   "page": "/raku/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "raku",
+   "symbol": "LibTmux::Model::PaneRef.send-text",
+   "page": "/raku/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "raku",
+   "symbol": "LibTmux::Types::Outcome.Complete",
+   "page": "/raku/latest/examples/programs/",
+   "title": "Runnable programs",
+   "section": "examples"
+  },
+  {
+   "port": "raku",
+   "symbol": "LibTmux::Types::Outcome.Complete",
+   "page": "/raku/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "raku",
+   "symbol": "LibTmux::Types::Outcome.Failed",
+   "page": "/raku/latest/examples/programs/",
+   "title": "Runnable programs",
+   "section": "examples"
+  },
+  {
+   "port": "raku",
+   "symbol": "LibTmux::Types::Outcome.Failed",
+   "page": "/raku/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "raku",
+   "symbol": "LibTmux::Types::Outcome.Skipped",
+   "page": "/raku/latest/examples/programs/",
+   "title": "Runnable programs",
+   "section": "examples"
+  },
+  {
+   "port": "raku",
+   "symbol": "LibTmux::Types::Outcome.Skipped",
+   "page": "/raku/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
    "port": "rs",
    "symbol": "client.Client",
    "page": "/rs/latest/concepts/server-session-window-pane/",
@@ -19372,6 +19442,34 @@
    "why": "not defined in the stated port"
   },
   {
+   "port": "raku",
+   "text": "Promise",
+   "page": "/raku/latest/examples/programs/",
+   "line": 28,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "raku",
+   "text": "Supply",
+   "page": "/raku/latest/examples/programs/",
+   "line": 28,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "raku",
+   "text": "Promise",
+   "page": "/raku/latest/guides/getting-started/",
+   "line": 171,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "raku",
+   "text": "Supply",
+   "page": "/raku/latest/guides/getting-started/",
+   "line": 172,
+   "why": "not defined in the stated port"
+  },
+  {
    "port": "ruby",
    "text": "Enumerable",
    "page": "/ruby/latest/guides/getting-started/",
@@ -19446,6 +19544,13 @@
    "text": "libtmux._internal",
    "page": "/py/latest/concepts/transports/",
    "line": 33,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "raku",
+   "text": "LibTmux:auth<zef:libtmux>",
+   "page": "/raku/latest/core/",
+   "line": 25,
    "why": "not defined in the stated port"
   },
   {
