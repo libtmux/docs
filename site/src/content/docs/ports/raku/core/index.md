@@ -22,7 +22,7 @@ LibTmux gives Raku programs typed snapshots of a tmux server, ordinary
 predicates over them, and explicit commands that change tmux. Reading a
 snapshot makes no further tmux calls; an operation through a reference does.
 
-The distribution `LibTmux:auth<zef:libtmux>` is published on Raku Land. Its API
+The LibTmux distribution from the zef:libtmux authority is published on Raku Land. Its API
 is experimental and may change between `0.x` releases. CI qualifies Rakudo
 2026.09 on Linux with tmux 3.3a and 3.8; other platforms and compiler versions
 are unverified. The library has no workspace manager or MCP server.
