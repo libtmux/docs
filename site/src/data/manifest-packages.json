@@ -986,14 +986,14 @@
     },
     "raku": {
       "repo": "libtmux/libtmux-raku",
-      "revision": "8293da87dc45f61ea2a68d1cc5327b4e62892732",
+      "revision": "ae97f9f87b73db63d4ab3cabb108a195f64e4f6f",
       "distributions": [
         {
           "name": "LibTmux",
           "version": "0.0.1",
           "manifest": "META6.json",
           "repo": "libtmux/libtmux-raku",
-          "revision": "8293da87dc45f61ea2a68d1cc5327b4e62892732"
+          "revision": "ae97f9f87b73db63d4ab3cabb108a195f64e4f6f"
         }
       ],
       "units": []
