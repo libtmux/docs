@@ -116,12 +116,14 @@ describe('Japanese', () => {
   const ja = rule(':lang(ja)')
   const stack = ja['font-family']!.split(',').map((face) => face.trim().replace(/^'|'$/g, ''))
 
-  it('names the reader\'s own Japanese sans faces before IBM Plex Sans and ships no web font', () => {
-    expect(stack.slice(0, 7)).toEqual(['Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', 'Yu Gothic', 'Meiryo', 'Noto Sans CJK JP', 'Noto Sans JP'])
-    expect(stack[7]).toBe('var(--font-sans)')
+  it('keeps Latin in IBM Plex Sans, names the reader\'s own Japanese sans faces behind it and ships no web font (record 0052)', () => {
+    // Plex has no Japanese glyphs, so every kana and kanji falls through to the next named face. The site's Plex is
+    // registered under a hashed family name, so `--font-sans` (which resolves to it) stands for "IBM Plex Sans" here.
+    expect(css).toMatch(/--font-sans: var\(--font-ibm-plex-sans\)/)
+    expect(stack).toEqual(['var(--font-sans)', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', 'Yu Gothic', 'Meiryo', 'Noto Sans CJK JP', 'Noto Sans JP', 'system-ui', 'sans-serif'])
     expect(css).not.toMatch(/@font-face[^}]*(Noto Sans JP|Plex Sans JP)/)
     // A Mincho face must never be named.
-    expect(stack.join(' ')).not.toMatch(/Mincho|Serif/i)
+    expect(stack.join(' ')).not.toMatch(/Mincho|(?<!sans-)serif/i)
   })
 
   it('drops Latin tracking and breaks at phrases', () => {

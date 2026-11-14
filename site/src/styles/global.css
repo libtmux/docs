@@ -979,13 +979,17 @@ html[data-theme="purple"][data-theme-mode="dark"] {
 }
 
 /*
- * Japanese text (15-typesetting.md, PageLocale). IBM Plex Sans has no Japanese
- * glyphs, so an unnamed fallback can land on a Mincho serif. The reader's own
- * Japanese sans faces come first, named explicitly: Hiragino on macOS and iOS,
- * Yu Gothic and Meiryo on Windows, Noto Sans CJK on Linux and Android, then
- * IBM Plex Sans. No web font: IBM Plex Sans JP would add megabytes per weight
- * for one translated locale (decided 2026-11-14). `lang` is on the page root,
- * so the browser also picks the Japanese glyph variants.
+ * Japanese text (15-typesetting.md, PageLocale, record 0052). Latin keeps IBM
+ * Plex Sans, first in the stack as `var(--font-sans)`: the Fonts API registers
+ * the face under a hashed family name, so the variable is the only way to name
+ * it. Plex has no Japanese glyphs, so every kana and kanji falls through to the
+ * reader's own Japanese sans, named explicitly so an unnamed fallback never
+ * lands on a Mincho serif: Hiragino on macOS and iOS, Yu Gothic and Meiryo on
+ * Windows, Noto Sans CJK on Linux and Android. The browser tries each family
+ * per character, so the generic faces inside the variable come up empty for
+ * kana and the named faces are reached. No web font: IBM Plex Sans JP would add
+ * megabytes per weight for one translated locale (decided 2026-11-14). `lang`
+ * is on the page root, so the browser also picks the Japanese glyph variants.
  *
  * No Latin tracking (`letter-spacing: 0`), line height 1.85, about 40
  * characters a line, and phrase-aware breaks where the browser supports
@@ -994,7 +998,7 @@ html[data-theme="purple"][data-theme-mode="dark"] {
  */
 @layer components {
   :lang(ja) {
-    font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', 'Yu Gothic', Meiryo, 'Noto Sans CJK JP', 'Noto Sans JP', var(--font-sans);
+    font-family: var(--font-sans), 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', 'Yu Gothic', Meiryo, 'Noto Sans CJK JP', 'Noto Sans JP', system-ui, sans-serif;
     letter-spacing: 0;
     word-break: auto-phrase;
     line-break: strict;
