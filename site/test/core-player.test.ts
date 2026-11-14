@@ -310,7 +310,7 @@ describe('what a step shows of the commands it sent', () => {
 })
 
 /** What the page's code block draws, for a test: each line in the element Expressive Code gives it. */
-const Code = createComponent((_result: unknown, props: { code: string; lang: string }) => renderTemplate`<pre data-lang="${props.lang}"><code>${props.code.split('\n').map((line) => renderTemplate`<div class="ec-line"><div class="code">${line}</div></div>`)}</code></pre>`)
+const Code = createComponent((_result: unknown, props: { code: string; lang: string }) => renderTemplate`<div class="expressive-code"><pre data-lang="${props.lang}"><code>${props.code.split('\n').map((line) => renderTemplate`<div class="ec-line"><div class="code">${line}</div></div>`)}</code></pre></div>`)
 const PARTS = ['components/HomeExample.astro', 'components/replay/TmuxScreen.astro', 'components/replay/ReplayControls.astro']
 
 describe('the player component', () => {
@@ -323,21 +323,24 @@ describe('the player component', () => {
   // The page's script imports the shared player; the stand-in `require` hands it the player's own source, evaluated beside it.
   const script = `var exports = {};\nvar playerExports = {};\n(function (exports) {\n${commonjs(readFileSync(new URL('../src/lib/replay-player.ts', import.meta.url), 'utf8'))}\n})(playerExports);\nvar require = function (name) { if (/replay-player$/.test(name)) return playerExports; throw new Error('unexpected import ' + name) };\n${commonjs(/<script>([\s\S]*?)<\/script>/.exec(component)![1]!)}`
 
-  async function mount({ run = false, reduced = true }: { run?: boolean; reduced?: boolean } = {}) {
+  async function mount({ run = false, reduced = true, autoplay = false, intersect = false }: { run?: boolean; reduced?: boolean; autoplay?: boolean; intersect?: boolean } = {}) {
     const { recording, capability } = await recorded()
     const win = new Window({ url: 'https://libtmux.org/go/latest/' })
     windows.push(win)
-    win.document.body.innerHTML = await renderAstroTemplate(await template, { props: { port: 'go', language: 'Go', example, recording, capability } })
+    win.document.body.innerHTML = await renderAstroTemplate(await template, { props: { port: 'go', language: 'Go', example, recording, capability, autoplay } })
     const document = win.document as unknown as Document
+    let reveal = () => {}
     // Binding is the page's script running after the markup has been drawn.
     const bind = () => {
       const target = win as unknown as { matchMedia: (query: string) => { matches: boolean }; IntersectionObserver?: unknown; requestAnimationFrame: (callback: () => void) => void }
       target.matchMedia = (query: string) => ({ matches: /reduced-motion/.test(query) ? reduced : true })
-      target.IntersectionObserver = undefined
+      target.IntersectionObserver = intersect
+        ? class { constructor(callback: (entries: { isIntersecting: boolean }[]) => void) { reveal = () => callback([{ isIntersecting: true }]) } observe() {} disconnect() {} }
+        : undefined
       win.eval(`(function() {\n${script}\n})()`)
     }
     if (run) bind()
-    return { win, document, capability, bind }
+    return { win, document, capability, bind, reveal: () => reveal() }
   }
 
   const shown = (document: Document, selector: string) => [...document.querySelectorAll<HTMLElement>(selector)].filter((element) => !element.hidden && !element.hasAttribute('data-off'))
@@ -346,6 +349,8 @@ describe('the player component', () => {
   const over = (win: Window, element: Element, type = 'mouseover') => element.dispatchEvent(new win.MouseEvent(type, { bubbles: true }) as unknown as Event)
   const key = (win: Window, element: Element, name: string) => element.dispatchEvent(new win.KeyboardEvent('keydown', { key: name, bubbles: true }) as unknown as Event)
   const count = (document: Document) => document.querySelector('[data-count]')!.textContent
+  /** Wait for `done`, up to two seconds, so a slow machine is not a failure and a fast one is not a wait. */
+  const until = async (done: () => boolean) => { for (let waited = 0; waited < 2000 && !done(); waited += 10) await new Promise((resolve) => setTimeout(resolve, 10)) }
 
   it('fills HomeExample\'s stage: the program in every view, the tmux and the result beside it, the controls under both', async () => {
     const { document } = await mount()
@@ -436,10 +441,13 @@ describe('the player component', () => {
     for (const mark of marks) (mark as unknown as { scrollIntoView: () => void }).scrollIntoView = () => { throw new Error('the page must not scroll') }
 
     bind()
-    // A reader who asks for less motion starts at the end: the last dot is brought into the track, at once.
-    expect(scrolled).toHaveLength(1)
-    expect(scrolled[0]!.left).toBeGreaterThan(0)
-    expect(scrolled[0]!.behavior).toBe('auto')
+    // The player opens on the first call, whose dot is at the track's start.
+    expect(scrolled).toEqual([{ left: 0, behavior: 'auto' }])
+    // A jump to the last call brings its dot into the track, at once for a reader who asked for less motion.
+    click(win, [...track.querySelectorAll<HTMLElement>('[data-mark]:not([hidden])')].at(-1)!)
+    expect(scrolled).toHaveLength(2)
+    expect(scrolled[1]!.left).toBeGreaterThan(0)
+    expect(scrolled[1]!.behavior).toBe('auto')
     expect([earlier!.disabled, later!.disabled, rail.dataset.more]).toEqual([false, true, 'start'])
     expect(rail.hasAttribute('data-fits')).toBe(false)
 
@@ -471,12 +479,12 @@ describe('the player component', () => {
     expect([...rail.querySelectorAll<HTMLButtonElement>('button[data-page]')].map((button) => button.disabled)).toEqual([true, true])
   })
 
-  it('draws one frame and one result for the state before the first call and each call, and shows the first', async () => {
+  it('draws one frame and one result for the state before the first call and each call, and shows the first call\'s', async () => {
     const { document } = await mount()
     const { capability } = await recorded()
     const frames = ['0', ...capability.steps.map((_, index) => String(index + 1))]
     expect([...document.querySelectorAll('.core-player__tmux [data-frame]')].map((frame) => frame.getAttribute('data-frame'))).toEqual(frames)
-    expect(shown(document, '.core-player__tmux [data-frame]').map((frame) => frame.dataset.frame)).toEqual(['0'])
+    expect(shown(document, '.core-player__tmux [data-frame]').map((frame) => frame.dataset.frame)).toEqual(['1'])
     expect(document.querySelectorAll('.core-player__tmux .mcp-tmux')).toHaveLength(frames.length)
     expect([...document.querySelectorAll('.core-result')].map((result) => result.getAttribute('data-result'))).toEqual(frames)
     // The drawings are the replay's own, so their SVG ids must not collide with another player's on the page.
@@ -538,18 +546,20 @@ describe('the player component', () => {
     const drawn = onScreen()
     bind()
     expect(onScreen()).toEqual(drawn)
-    expect(drawn.frames).toEqual(['0'])
-    expect(drawn.results).toEqual(['0'])
-    expect(drawn.count).toMatch(/^0\//)
+    expect(drawn.frames, 'the first call, not the state before it and not the end').toEqual(['1'])
+    expect(drawn.results).toEqual(['1'])
+    expect(drawn.count).toMatch(/^1\//)
+    expect(drawn.current).toBe('1')
   })
 
-  it('keeps the finished state for a page with no script, and for a reader who asks for less motion until the script binds', () => {
+  it('shows the final tmux and every result to a page with no script, and opens every reader with script, reduced motion included, on the first call', () => {
     const css = readFileSync(new URL('../src/styles/core-player.css', import.meta.url), 'utf8')
     const controls = readFileSync(new URL('../src/styles/mcp-replay.css', import.meta.url), 'utf8')
-    expect(css).toMatch(/html:not\(\[data-js\]\) \.core-player__tmux > \.mcp-frame:first-child \{\s*display: none;/)
-    expect(css).toMatch(/html:not\(\[data-js\]\) \.core-player__tmux > \.mcp-frame\[data-off\]:last-child \{\s*display: block;/)
-    expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\) \{[^@]*:not\(\[data-live\]\) \.core-player__tmux > \.mcp-frame:last-child,[^@]*visibility: visible;/)
+    expect(css).toMatch(/html:not\(\[data-js\]\) \.core-player__tmux > \.mcp-frame:not\(:last-child\) \{\s*display: none;/)
+    expect(css).toMatch(/html:not\(\[data-js\]\) \.core-player__tmux > \.mcp-frame:last-child \{\s*display: block;/)
+    expect(css, 'no state drawn for a reduced-motion reader until the script binds: it opens where everyone does').not.toMatch(/prefers-reduced-motion/)
     expect(controls).toMatch(/html:not\(\[data-js\]\) \.mcp-replay__controls \{\s*display: none;/)
+    expect(controls, 'the Core player\'s bar is drawn at its opening step for everyone; only the MCP replay\'s finished chat hides its bar until bound').not.toMatch(/home-example-player\):not\(\[data-live\]\) \.mcp-replay__controls/)
   })
 
   it('hides what it has not bound: the pin buttons wait for the script, and the controls take their place from the first paint', async () => {
@@ -565,8 +575,10 @@ describe('the player component', () => {
     const { document, win, capability } = await mount({ run: true })
     const view = viewSteps(capability, code('concise'))
     const calls = view.length
-    expect(count(document)).toBe(`${calls}/${calls}`)
+    expect(count(document), 'the player opens on the first call, not the last').toBe(`1/${calls}`)
     const expected = (position: number) => Array.from({ length: view[position]!.lines[1] - view[position]!.lines[0] + 1 }, (_, offset) => view[position]!.lines[0] + offset)
+    expect(lit(document, 'concise')).toEqual(expected(0))
+    click(win, document.querySelector(`[data-mark="${calls}"]`)!)
     expect(lit(document, 'concise')).toEqual(expected(calls - 1))
     click(win, document.querySelector('[data-mark="1"]')!)
     expect(lit(document, 'concise')).toEqual(expected(0))
@@ -576,22 +588,66 @@ describe('the player component', () => {
     expect(shown(document, '[data-result]').map((result) => result.dataset.result)).toEqual(['0'])
   })
 
-  it('previews a call on hover and pins it on a click, and lets go on Escape', async () => {
+  const markerOf = (document: Document, view: string, position: number) => document.querySelector<HTMLElement>(`[data-home-view="${view}"] .core-step[data-step-marker="${position}"]`)!
+
+  it('previews a call while a pointer is on its marker, pins it from the result, and lets go on Escape', async () => {
     const { document, win } = await mount({ run: true })
     const stage = document.querySelector('.home-example-stage')!
-    click(win, document.querySelector('[data-mark="1"]')!)
-    const run = [...document.querySelectorAll('[data-home-view="concise"] .ec-line.is-call')].find((line) => line.textContent!.includes('left.Split('))!
-    const split = (await recorded()).capability.steps.findIndex((step) => step.id === 'split') + 1
-    over(win, run)
-    expect(shown(document, '.core-player__tmux [data-frame]').map((frame) => frame.dataset.frame)).toEqual([String(split)])
-    expect(count(document), 'hovering previews and moves nothing').toBe(`1/${(await recorded()).capability.steps.length - 1}`)
-    over(win, run, 'mouseout')
+    const { capability } = await recorded()
+    const split = viewSteps(capability, code('concise')).findIndex((step) => capability.steps[step.index]!.id === 'split') + 1
+    const marker = markerOf(document, 'concise', split)
+    const calls = viewSteps(capability, code('concise')).length
+    over(win, marker, 'mouseenter')
+    expect(shown(document, '.core-player__tmux [data-frame]').map((frame) => frame.dataset.frame)).toEqual([String(capability.steps.findIndex((step) => step.id === 'split') + 1)])
+    expect(count(document), 'hovering previews and moves nothing').toBe(`1/${calls}`)
+    expect(document.querySelectorAll('[data-home-view="concise"] .ec-line.is-hover').length, 'the call\'s lines are tinted').toBeGreaterThan(0)
+    over(win, marker, 'mouseleave')
     expect(shown(document, '.core-player__tmux [data-frame]').map((frame) => frame.dataset.frame)).toEqual(['1'])
-    click(win, run)
+    expect(document.querySelectorAll('[data-home-view="concise"] .ec-line.is-hover')).toHaveLength(0)
+    click(win, document.querySelector('.core-result:not([data-off]) [data-pin]')!)
     expect([...document.querySelectorAll('[data-home-view="concise"] .ec-line.is-pinned')].length).toBeGreaterThan(0)
     expect([...document.querySelectorAll('.core-result:not([data-off]) [data-pin]')].map((pin) => pin.getAttribute('aria-pressed'))).toEqual(['true'])
     key(win, stage, 'Escape')
+    expect([...document.querySelectorAll('.core-result:not([data-off]) [data-pin]')].map((pin) => pin.getAttribute('aria-pressed'))).toEqual(['false'])
+  })
+
+  it('previews a call when its marker takes focus, and goes to the call when it is pressed', async () => {
+    const { document, win } = await mount({ run: true })
+    const { capability } = await recorded()
+    const marker = markerOf(document, 'concise', 3)
+    marker.dispatchEvent(new win.FocusEvent('focus') as unknown as Event)
+    expect(count(document)).toBe(`1/${viewSteps(capability, code('concise')).length}`)
+    expect(document.querySelectorAll('[data-home-view="concise"] .ec-line.is-hover').length).toBeGreaterThan(0)
+    marker.dispatchEvent(new win.FocusEvent('blur') as unknown as Event)
+    expect(document.querySelectorAll('[data-home-view="concise"] .ec-line.is-hover')).toHaveLength(0)
+    click(win, marker)
+    expect(count(document)).toBe(`3/${viewSteps(capability, code('concise')).length}`)
+    expect(lit(document, 'concise').length).toBeGreaterThan(0)
+  })
+
+  it('leaves the step alone when the reader clicks, drags or hovers in the code, so text selects as anywhere else', async () => {
+    const { document, win } = await mount({ run: true })
+    const { capability } = await recorded()
+    const calls = viewSteps(capability, code('concise')).length
+    const lines = [...document.querySelectorAll('[data-home-view="concise"] .ec-line')]
+    const inCall = lines.find((line) => line.textContent!.includes('left.Split('))!
+    over(win, inCall)
+    click(win, inCall)
+    inCall.dispatchEvent(new win.MouseEvent('mousedown', { bubbles: true }) as unknown as Event)
+    inCall.dispatchEvent(new win.MouseEvent('mouseup', { bubbles: true }) as unknown as Event)
+    expect(count(document)).toBe(`1/${calls}`)
     expect(shown(document, '.core-player__tmux [data-frame]').map((frame) => frame.dataset.frame)).toEqual(['1'])
+    expect(document.querySelector('.is-pinned')).toBeNull()
+    expect(document.querySelector('.is-hover')).toBeNull()
+    for (const line of lines) expect(line.classList.contains('is-call'), 'no line answers to the pointer').toBe(false)
+  })
+
+  it('has no gutter marker or copy button without script, and they are real buttons with it', async () => {
+    const { document, bind } = await mount()
+    expect(document.querySelector('.core-step, .core-copy')).toBeNull()
+    bind()
+    for (const marker of document.querySelectorAll<HTMLButtonElement>('.core-step')) expect(marker.type).toBe('button')
+    for (const button of document.querySelectorAll<HTMLButtonElement>('.core-copy')) expect(button.type).toBe('button')
   })
 
   it('shows a window its label names, and the client\'s window again at the next call', async () => {
@@ -646,12 +702,109 @@ describe('the player component', () => {
     expect([made.textContent, made.getAttribute('href')]).toEqual(['Session.NewWindow', '/go/latest/reference/tmux-session-newwindow/'])
   })
 
-  it('makes only the lines of a call answer to the pointer', async () => {
-    const { document } = await mount({ run: true })
-    const callLines = [...document.querySelectorAll('[data-home-view="concise"] .ec-line.is-call')].map((line) => line.textContent)
-    expect(callLines.some((text) => text!.includes('package main'))).toBe(false)
-    expect(callLines.some((text) => text!.includes('server, err := tmux.NewServer('))).toBe(true)
-    expect(callLines).toHaveLength(viewSteps((await recorded()).capability, code('concise')).reduce((sum, step) => sum + step.lines[1] - step.lines[0] + 1, 0))
+  it('numbers a call in the gutter of its first line, names it, and marks no other line', async () => {
+    const { document, capability } = await mount({ run: true })
+    const view = viewSteps(capability, code('concise'))
+    const markers = [...document.querySelectorAll<HTMLElement>('[data-home-view="concise"] .core-step')]
+    expect(markers.map((marker) => marker.dataset.n)).toEqual(view.map((_, position) => String(position + 1)))
+    const lines = [...document.querySelectorAll('[data-home-view="concise"] .ec-line')]
+    markers.forEach((marker, position) => {
+      expect(marker.parentElement, 'on the first line of its call').toBe(lines[view[position]!.lines[0] - 1])
+      expect(marker.getAttribute('aria-label')).toBe(`Step ${position + 1}: ${capability.steps[view[position]!.index]!.label}`)
+      expect(marker.textContent, 'the number is drawn by the stylesheet, so it is in no copied text').toBe('')
+    })
+    expect(lines.filter((line) => line.querySelector('.core-step'))).toHaveLength(view.length)
+    expect(lines.find((line) => line.textContent!.includes('package main'))!.querySelector('.core-step')).toBeNull()
+    // Each view of the program carries its own markers, numbered by that view's calls.
+    expect(document.querySelectorAll('[data-home-view="cleanup"] .core-step')).toHaveLength(viewSteps(capability, code('cleanup')).length)
+  })
+
+  it('gives calls that share a line one marker, which goes to the first of them', async () => {
+    const watch = JSON.parse(readFileSync(new URL('../src/data/example-sources.json', import.meta.url), 'utf8'))['go:examples/control-mode-subscribe/main.go'].content.replace(/\n$/, '')
+    const { capability } = (await playableCapability('go', 'watch', watch))!
+    const view = viewSteps(capability, watch)
+    const starts = view.map((step) => step.lines[0])
+    expect(new Set(starts).size, 'the loop\'s passes share a line').toBeLessThan(starts.length)
+  })
+
+  it('copies the program as shown, with the choices as selected and no marker numbers, and says so', async () => {
+    const { document, win } = await mount({ run: true })
+    const written: string[] = []
+    Object.defineProperty(win.navigator, 'clipboard', { configurable: true, value: { writeText: async (text: string) => { written.push(text) } } })
+    const copy = (view: string) => document.querySelector<HTMLButtonElement>(`[data-home-view="${view}"] .core-copy`)!
+    expect(copy('concise').getAttribute('aria-label')).toBe('Copy the program')
+    click(win, copy('concise'))
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(written).toEqual([code('concise')])
+    expect(copy('concise').hasAttribute('data-copied')).toBe(true)
+    expect(copy('concise').parentElement!.querySelector('[role="status"]')!.textContent).toBe('Program copied.')
+    const errors = document.querySelector<HTMLInputElement>('[data-example-errors]')!
+    errors.checked = true
+    errors.dispatchEvent(new win.Event('change', { bubbles: true }) as unknown as Event)
+    click(win, copy('errors'))
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(written.at(-1)).toBe(code('errors'))
+  })
+
+  it('says a copy failed, and keeps the reader able to select the code', async () => {
+    const { document, win } = await mount({ run: true })
+    Object.defineProperty(win.navigator, 'clipboard', { configurable: true, value: { writeText: async () => { throw new Error('denied') } } })
+    const button = document.querySelector<HTMLButtonElement>('[data-home-view="concise"] .core-copy')!
+    click(win, button)
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(button.hasAttribute('data-copied')).toBe(false)
+    expect(button.parentElement!.querySelector('[role="status"]')!.textContent).toMatch(/^Copy failed/)
+  })
+
+  it('lists each step\'s caption as an item of one list, with no heading in the player, and marks the one shown', async () => {
+    const { document, bind, win, capability } = await mount()
+    const list = document.querySelector('.core-player__results')!
+    expect([list.tagName, list.getAttribute('role')]).toEqual(['OL', 'list'])
+    const items = [...list.children]
+    expect(items).toHaveLength(capability.steps.length + 1)
+    expect(items.every((item) => item.tagName === 'LI' && item.classList.contains('core-result'))).toBe(true)
+    expect(document.querySelector('.home-example-player')!.querySelector('h1, h2, h3, h4, h5, h6'), 'the player adds no heading to the page outline').toBeNull()
+    expect(items[0]!.querySelector('.core-result__title')!.textContent).toBe('Before the first call')
+    expect(items.map((item) => item.getAttribute('aria-current'))).toEqual([null, 'step', ...items.slice(2).map(() => null)])
+    bind()
+    click(win, document.querySelector('[data-mark="3"]')!)
+    expect(items.map((item) => item.getAttribute('aria-current')).indexOf('step'), 'the third call\'s caption is the shown one').toBe(3)
+    expect(items.filter((item) => item.hasAttribute('aria-current'))).toHaveLength(1)
+  })
+
+  it('does not play by itself when the player is on screen, and plays once it is opted in and seen', async () => {
+    const quiet = await mount({ run: true, intersect: true, reduced: false })
+    quiet.reveal()
+    await new Promise((resolve) => setTimeout(resolve, 60))
+    expect(count(quiet.document)).toBe(`1/${(await recorded()).capability.steps.length - 1}`)
+    const loud = await mount({ intersect: true, autoplay: true, reduced: false })
+    loud.document.querySelector('.home-example-player')!.setAttribute('data-interval', '5')
+    loud.bind()
+    expect(count(loud.document)).toMatch(/^1\//)
+    loud.reveal()
+    await until(() => /^(\d+)\/\1$/.test(count(loud.document)!))
+    expect(count(loud.document), 'plays to the end').toMatch(/^(\d+)\/\1$/)
+  })
+
+  it('stops an opted-in player when the reader selects in the code, and never starts it under reduced motion', async () => {
+    const reader = await mount({ intersect: true, autoplay: true, reduced: false })
+    reader.document.querySelector('.home-example-player')!.setAttribute('data-interval', '20')
+    reader.bind()
+    reader.reveal()
+    await new Promise((resolve) => setTimeout(resolve, 30))
+    const range = reader.document.createRange()
+    range.selectNodeContents(reader.document.querySelector('[data-home-view="concise"] .ec-line')!)
+    reader.document.getSelection()!.addRange(range)
+    reader.document.dispatchEvent(new reader.win.Event('selectionchange') as unknown as Event)
+    const at = count(reader.document)
+    await new Promise((resolve) => setTimeout(resolve, 100))
+    expect(count(reader.document), 'selecting in the code pauses it').toBe(at)
+    const still = await mount({ intersect: true, autoplay: true, reduced: true })
+    still.document.querySelector('.home-example-player')!.setAttribute('data-interval', '5')
+    still.bind()
+    still.reveal()
+    await new Promise((resolve) => setTimeout(resolve, 80))
+    expect(count(still.document)).toMatch(/^1\//)
   })
 
   it('plays the last call, Kill, only when the program cleans up, and keeps the step in range when the choice goes away', async () => {

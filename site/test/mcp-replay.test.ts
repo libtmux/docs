@@ -384,12 +384,13 @@ describe('the replay component', () => {
   }
 
   /** The page's markup in a DOM; with `run`, the page's own script on it. */
-  async function mount(port: string, options: { run?: boolean; reduced?: boolean; interval?: number; recorded?: boolean; stateless?: boolean } = {}) {
+  async function mount(port: string, options: { run?: boolean; reduced?: boolean; interval?: number; recorded?: boolean; stateless?: boolean; autoplay?: boolean } = {}) {
     const win = new Window({ url: 'https://libtmux.org/en/rs/latest/' })
     windows.push(win)
     win.document.body.innerHTML = await markup(port, options.recorded, options.stateless)
     const root = win.document.querySelector('[data-mcp-replay]') as unknown as HTMLElement
     if (options.interval) root.setAttribute('data-interval', String(options.interval))
+    if (options.autoplay) root.setAttribute('data-autoplay', '')
     if (options.run) {
       const target = win as unknown as { matchMedia: (query: string) => { matches: boolean }; IntersectionObserver?: unknown }
       target.matchMedia = (query: string) => ({ matches: /reduced-motion/.test(query) ? options.reduced ?? false : true })
@@ -636,13 +637,49 @@ describe('the replay component', () => {
     expect((document.querySelector('[data-controls]') as HTMLElement).hidden).toBe(false)
   })
 
-  it('without that preference plays from the first call to the last by itself', async () => {
-    const { document } = await mount('ts', { run: true, interval: 15 })
-    expect(turnsShown(document), 'starts from the prompt').toBeLessThan(CALLS.ts + 1)
+  it('without that preference starts at the prompt and waits for the reader to press play', async () => {
+    const { win, document } = await mount('ts', { run: true, reduced: false, interval: 15 })
+    await new Promise((resolve) => setTimeout(resolve, 80))
+    expect(turnsShown(document), 'nothing plays by itself').toBe(0)
+    expect(action(document, 'play').getAttribute('aria-label')).toBe('Play')
+    click(win, action(document, 'play'))
     await new Promise((resolve) => setTimeout(resolve, 900))
     expect(turnsShown(document)).toBe(CALLS.ts + 1)
     expect(frameShown(document)).toEqual([CALLS.ts])
     expect(document.querySelector('[data-count]')!.textContent).toBe(`${CALLS.ts}/${CALLS.ts}`)
+  })
+
+  it('plays from the first call to the last by itself only when the instance opts in', async () => {
+    const { document } = await mount('ts', { run: true, reduced: false, interval: 15, autoplay: true })
+    expect(turnsShown(document), 'starts from the prompt').toBeLessThan(CALLS.ts + 1)
+    await new Promise((resolve) => setTimeout(resolve, 900))
+    expect(turnsShown(document)).toBe(CALLS.ts + 1)
+    expect(document.querySelector('[data-count]')!.textContent).toBe(`${CALLS.ts}/${CALLS.ts}`)
+    const never = await mount('ts', { run: true, reduced: true, interval: 15, autoplay: true })
+    await new Promise((resolve) => setTimeout(resolve, 100))
+    expect(turnsShown(never.document), 'reduced motion shows the finished chat and plays nothing').toBe(CALLS.ts + 1)
+  })
+
+  it('stops an opted-in replay when the reader selects text in the chat, scrolls it or focuses in', async () => {
+    const select = async (act: (setup: Awaited<ReturnType<typeof mount>>) => void) => {
+      const setup = await mount('ts', { run: true, reduced: false, interval: 25, autoplay: true })
+      await new Promise((resolve) => setTimeout(resolve, 40))
+      act(setup)
+      const shown = turnsShown(setup.document)
+      await new Promise((resolve) => setTimeout(resolve, 120))
+      return [shown, turnsShown(setup.document)]
+    }
+    const [before, after] = await select(({ win, document }) => {
+      const range = document.createRange()
+      range.selectNodeContents(document.querySelector('[data-turn="prompt"] p')!)
+      document.getSelection()!.addRange(range)
+      document.dispatchEvent(new win.Event('selectionchange') as unknown as Event)
+    })
+    expect(after, 'a selection in the chat pauses it').toBe(before)
+    const [scrolled, held] = await select(({ win, document }) => { document.querySelector('[data-chat]')!.dispatchEvent(new win.Event('wheel', { bubbles: true }) as unknown as Event) })
+    expect(held, 'scrolling the chat pauses it').toBe(scrolled)
+    const [focused, kept] = await select(({ win, document }) => { document.querySelector('[data-body]')!.dispatchEvent(new win.FocusEvent('focusin', { bubbles: true }) as unknown as Event) })
+    expect(kept, 'focus into the replay pauses it').toBe(focused)
   })
 
   it('steps back and forward, jumps to a marker, and restarts from the end', async () => {
@@ -667,7 +704,7 @@ describe('the replay component', () => {
     expect(turnsShown(document), 'paused, so it stays').toBe(0)
   })
 
-  it('previews a call\'s state on hover and pins it on click, without changing what has played', async () => {
+  it('previews a call\'s state on hover and pins it with its button, without changing what has played', async () => {
     const { win, document } = await mount('rs', { run: true, reduced: true })
     const turn = (index: number) => document.querySelector(`[data-turn="${index}"]`)!
     turn(1).dispatchEvent(new win.MouseEvent('mouseenter') as unknown as Event)
@@ -675,33 +712,35 @@ describe('the replay component', () => {
     expect(turnsShown(document), 'everything stays visible').toBe(CALLS.rs + 1)
     turn(1).dispatchEvent(new win.MouseEvent('mouseleave') as unknown as Event)
     expect(frameShown(document)).toEqual([CALLS.rs])
-    click(win, turn(2))
+    click(win, turn(2).querySelector('[data-pin]')!)
     expect(frameShown(document)).toEqual([3])
     expect(turn(2).classList.contains('is-pinned')).toBe(true)
     expect(document.querySelector('[data-hint]')!.textContent).toMatch(/^Pinned/)
-    click(win, turn(2))
-    expect(frameShown(document), 'a second click unpins').toEqual([CALLS.rs])
-    click(win, turn(0))
+    click(win, turn(2).querySelector('[data-pin]')!)
+    expect(frameShown(document), 'a second press unpins').toEqual([CALLS.rs])
+    click(win, turn(0).querySelector('[data-pin]')!)
     key(win, document.querySelector('[data-body]')!, 'Escape')
     expect(frameShown(document), 'Escape unpins').toEqual([CALLS.rs])
   })
 
-  it('does not let focus or touch hover hold the preview, and ignores keys with a modifier', async () => {
-    const { win, document } = await mount('ts', { run: true, reduced: true })
-    const turn = document.querySelector('[data-turn="0"]')!
-    turn.dispatchEvent(new win.FocusEvent('focus') as unknown as Event)
-    expect(frameShown(document), 'focus does not preview').toEqual([CALLS.ts])
-    const body = document.querySelector('[data-body]')!
-    body.dispatchEvent(new win.KeyboardEvent('keydown', { key: 'ArrowLeft', altKey: true, bubbles: true }) as unknown as Event)
-    expect(frameShown(document), 'Alt+Left is the browser\'s').toEqual([CALLS.ts])
+  it('leaves the step alone when the reader clicks or drags in a turn, so its text selects', async () => {
+    const { win, document } = await mount('rs', { run: true, reduced: true })
+    const turn = document.querySelector('[data-turn="2"]')!
+    for (const target of [turn, turn.querySelector('p')!, document.querySelector('[data-turn="prompt"] p')!]) {
+      for (const type of ['mousedown', 'mouseup', 'click']) target.dispatchEvent(new win.MouseEvent(type, { bubbles: true }) as unknown as Event)
+    }
+    expect(frameShown(document)).toEqual([CALLS.rs])
+    expect(document.querySelector('.is-pinned')).toBeNull()
+    expect(document.querySelector('[data-hint]')!.textContent).not.toMatch(/^Pinned/)
   })
 
-  it('does not start by itself once the reader has used a control before it was on screen', async () => {
+  it('does not start by itself, even when opted in, once the reader has used a control before it was on screen', async () => {
     const win = new Window({ url: 'https://libtmux.org/en/rs/latest/' })
     windows.push(win)
     win.document.body.innerHTML = await markup('ts')
     const root = win.document.querySelector('[data-mcp-replay]') as unknown as HTMLElement
     root.setAttribute('data-interval', '10')
+    root.setAttribute('data-autoplay', '')
     let reveal: (() => void) | undefined
     const target = win as unknown as Record<string, unknown>
     target.matchMedia = (query: string) => ({ matches: !/reduced-motion/.test(query) })
@@ -739,12 +778,6 @@ describe('the replay component', () => {
     const { document } = await mount('ts')
     expect((document.querySelector('[data-head]') as HTMLElement).hidden).toBe(false)
     expect((document.querySelector('[data-controls]') as HTMLElement).hidden).toBe(false)
-  })
-
-  it('does not pin when the click is on a link', async () => {
-    const { win, document } = await mount('rs', { run: true, reduced: true })
-    click(win, document.querySelector('[data-turn="0"] a')!)
-    expect(document.querySelector('.is-pinned')).toBeNull()
   })
 
   it('works from the keyboard: arrows, Home and End step the replay from its body and from a call\'s pin button', async () => {
@@ -787,7 +820,9 @@ describe('the replay component', () => {
     expect(frameShown(document)).toEqual([CALLS.ts])
     expect(pins[1]!.getAttribute('aria-pressed')).toBe('false')
     click(win, turns[2]!)
-    expect(pins[2]!.getAttribute('aria-pressed'), 'a click on the call pins it for a pointer').toBe('true')
+    expect(pins[2]!.getAttribute('aria-pressed'), 'a click on the call itself pins nothing').toBe('false')
+    click(win, pins[2]!)
+    expect(pins[2]!.getAttribute('aria-pressed')).toBe('true')
     key(win, document.querySelector('[data-body]')!, 'Escape')
     expect(pins[2]!.getAttribute('aria-pressed')).toBe('false')
   })

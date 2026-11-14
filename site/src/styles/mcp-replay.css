@@ -60,7 +60,7 @@ html:not([data-js]) .mcp-replay .mcp-frame:not(:last-child) {
     display: none;
   }
 
-  :is(.mcp-replay, .home-example-player):not([data-live]) .mcp-replay__controls {
+  .mcp-replay:not([data-live]) .mcp-replay__controls {
     visibility: hidden;
   }
 }
@@ -171,10 +171,6 @@ html:not([data-js]) .mcp-replay .mcp-frame:not(:last-child) {
 /* The pin button's room is there from the first paint, so binding the script does not rewrap a call. */
 html[data-js] .mcp-replay .mcp-turn[data-turn]:not([data-turn='prompt']) {
   padding-inline-end: 2.25rem;
-}
-
-.mcp-replay[data-live] .mcp-turn[data-turn]:not([data-turn='prompt']) {
-  cursor: pointer;
 }
 
 .mcp-replay[data-live] .mcp-turn[data-turn]:not([data-turn='prompt']):not([aria-current='step']):hover {
