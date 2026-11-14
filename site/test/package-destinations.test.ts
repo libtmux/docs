@@ -147,7 +147,7 @@ describe('release badge of a port no registry carries', () => {
   const unreleased = PORTS.filter(({ slug }) => core(slug).status !== 'published').map(({ slug }) => slug)
 
   it('covers the ports whose core package is not published', () => {
-    expect(unreleased.sort()).toEqual(['clojure', 'haskell', 'julia', 'lisp', 'ocaml', 'perl'])
+    expect(unreleased.sort()).toEqual(['clojure', 'haskell', 'julia', 'lisp', 'ocaml'])
   })
 
   it.each(unreleased)('reads %s as unreleased, whatever its newest git tag says', (slug) => {
