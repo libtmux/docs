@@ -191,15 +191,30 @@ describe('kind palette contrast', () => {
     expect(forced).toEqual(dark)
   })
 
-  it('sends only the families whose solid step cannot hold white text to a ring', () => {
-    const ringed = FAMILIES.filter((family) => ratio('#ffffff', light[`${family}-solid`]!) < 4.5)
-    expect(ringed).toEqual(['callables', 'members', 'tools'])
+  it('sends only the families whose solid step cannot hold white text to the filled tint, with no ring (record 0049)', () => {
+    const tinted = FAMILIES.filter((family) => ratio('#ffffff', light[`${family}-solid`]!) < 4.5)
+    expect(tinted).toEqual(['callables', 'members', 'tools'])
     for (const family of FAMILIES) {
       const rule = css.match(new RegExp(`--mk-bg: var\\(--mark-${family}-bg\\)[^}]*`))?.[0] ?? ''
       expect(rule, family).not.toBe('')
-      // Solid where white holds; a 2px ring where it does not.
-      expect(/--mk-act-ring: 0 0 0 0 transparent/.test(rule), `${family} solid`).toBe(!ringed.includes(family))
-      expect(/--mk-act-ring: 0 0 0 2px/.test(rule), `${family} ring`).toBe(ringed.includes(family))
+      // Solid with a white letter where white holds; otherwise the family's fill, and the hue border the active rule draws.
+      expect(rule.includes(`--mk-act-bg: var(--mark-${family}-solid)`), `${family} solid`).toBe(!tinted.includes(family))
+      expect(rule.includes('--mk-act-fg: #fff'), `${family} white letter`).toBe(!tinted.includes(family))
+      expect(rule.includes(`--mk-act-bg: var(--mk-fill, var(--mark-${family}-bg))`), `${family} tint`).toBe(tinted.includes(family))
+    }
+  })
+
+  it('draws no ring on an active mark: the active rules set the fill and the hue border and no shadow', () => {
+    const marks = readFileSync(new URL('../src/styles/kind-marks.css', import.meta.url), 'utf8')
+    for (const [name, sheet] of [['api-kinds.css', css], ['kind-marks.css', marks], ['api.css', apiCss]] as const) {
+      expect(sheet, `${name} defines or applies --mk-act-ring`).not.toContain('--mk-act-ring')
+    }
+    const active = (sheet: string, selector: string) => sheet.slice(sheet.indexOf(selector), sheet.indexOf('}', sheet.indexOf(selector)))
+    for (const [sheet, selector] of [[marks, ':is(h1, h2, h3, h4, h5, h6):target .api-nav__kind'], [apiCss, '.api-member-list li:is(:hover, :focus-within) > span:first-child > .api-nav__kind']] as const) {
+      const rule = active(sheet, selector)
+      expect(rule, selector).toContain('background: var(--mk-act-bg')
+      expect(rule, selector).toContain('border-color: var(--mk-hue')
+      expect(rule, selector).not.toContain('box-shadow')
     }
   })
 

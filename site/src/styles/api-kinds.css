@@ -81,34 +81,35 @@
 
 /*
  * A kind joins a family. The badge, the mark and the legend chip read
- * `--mk-*`; the active state reads `--mk-act-*`: solid in the family hue, or
- * only a ring where white on the solid step is under 4.5:1 (callables,
- * members and tools).
+ * `--mk-*`; the active state reads `--mk-act-*`: solid in the family hue with a
+ * white letter, or, where white on the solid step is under 4.5:1 (callables,
+ * members and tools), the family's own fill with its hue as the border. Never
+ * a ring (record 0049).
  */
 .api-badge--kind-class, .api-badge--kind-struct, .api-badge--kind-enum, .api-badge--kind-union,
 .api-badge--kind-typealias, .api-badge--kind-module {
   --mk-bg: var(--mark-types-bg); --mk-fg: var(--mark-types-fg); --mk-hue: var(--mark-types-hue);
-  --mk-act-bg: var(--mark-types-solid); --mk-act-fg: #fff; --mk-act-ring: 0 0 0 0 transparent;
+  --mk-act-bg: var(--mark-types-solid); --mk-act-fg: #fff;
 }
 .api-badge--kind-interface, .api-badge--kind-trait {
   --mk-bg: var(--mark-traits-bg); --mk-fg: var(--mark-traits-fg); --mk-hue: var(--mark-traits-hue);
-  --mk-act-bg: var(--mark-traits-solid); --mk-act-fg: #fff; --mk-act-ring: 0 0 0 0 transparent;
+  --mk-act-bg: var(--mark-traits-solid); --mk-act-fg: #fff;
 }
 .api-badge--kind-function, .api-badge--kind-method, .api-badge--kind-command {
   --mk-bg: var(--mark-callables-bg); --mk-fg: var(--mark-callables-fg); --mk-hue: var(--mark-callables-hue);
-  --mk-act-bg: var(--mk-fill, var(--mark-callables-bg)); --mk-act-fg: var(--mark-callables-fg); --mk-act-ring: 0 0 0 2px var(--mark-callables-hue);
+  --mk-act-bg: var(--mk-fill, var(--mark-callables-bg)); --mk-act-fg: var(--mark-callables-fg);
 }
 .api-badge--kind-property, .api-badge--kind-attribute, .api-badge--kind-constant, .api-badge--kind-key, .api-badge--kind-option {
   --mk-bg: var(--mark-members-bg); --mk-fg: var(--mark-members-fg); --mk-hue: var(--mark-members-hue);
-  --mk-act-bg: var(--mk-fill, var(--mark-members-bg)); --mk-act-fg: var(--mark-members-fg); --mk-act-ring: 0 0 0 2px var(--mark-members-hue);
+  --mk-act-bg: var(--mk-fill, var(--mark-members-bg)); --mk-act-fg: var(--mark-members-fg);
 }
 .api-badge--kind-exception, .api-badge--kind-prompt, .api-badge--kind-resource-template, .api-badge--kind-format {
   --mk-bg: var(--mark-meta-bg); --mk-fg: var(--mark-meta-fg); --mk-hue: var(--mark-meta-hue);
-  --mk-act-bg: var(--mark-meta-solid); --mk-act-fg: #fff; --mk-act-ring: 0 0 0 0 transparent;
+  --mk-act-bg: var(--mark-meta-solid); --mk-act-fg: #fff;
 }
 .api-badge--kind-tool, .api-badge--kind-resource, .api-badge--kind-hook {
   --mk-bg: var(--mark-tools-bg); --mk-fg: var(--mark-tools-fg); --mk-hue: var(--mark-tools-hue);
-  --mk-act-bg: var(--mk-fill, var(--mark-tools-bg)); --mk-act-fg: var(--mark-tools-fg); --mk-act-ring: 0 0 0 2px var(--mark-tools-hue);
+  --mk-act-bg: var(--mk-fill, var(--mark-tools-bg)); --mk-act-fg: var(--mark-tools-fg);
 }
 
 /* Only interactive preview labels receive the dotted affordance. */

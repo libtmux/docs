@@ -3,9 +3,9 @@ import { chromium, type Browser } from 'playwright'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 /**
- * A mention in a note beside a split chip, where a doc comment names another declaration, keeps the box and layout a
- * mention has in a paragraph. The chip rules style the mark of an equivalent's link as the cap of an outlined chip, and a
- * mention's badge is not a chip's cap: it leads a name in running text, so the rules leave it alone. Both containers that
+ * A mention in a note beside a linked name, where a doc comment names another declaration, keeps the box and layout a
+ * mention has in a paragraph. The linked-name rules lay the mark of an equivalent's link on its name's baseline, and a
+ * mention's badge is not that mark: it leads a name in running text, so the rules leave it alone. Both containers that
  * hold such notes are measured: the usage table and an other-port entry. A table draws every mark without a hue, wherever
  * the mark is, so the fill is not compared. Measured in a real browser with the site's own stylesheets and no server.
  */
@@ -32,9 +32,9 @@ let browser: Browser
 beforeAll(async () => { browser = await chromium.launch({ headless: true }) }, 60_000)
 afterAll(async () => { await browser?.close() })
 
-const PROPERTIES = ['display', 'borderTopWidth', 'borderInlineEndWidth', 'minHeight', 'overflow', 'alignItems', 'paddingLeft', 'verticalAlign']
+const PROPERTIES = ['display', 'borderTopWidth', 'borderInlineEndWidth', 'minHeight', 'overflow', 'alignItems', 'alignSelf', 'paddingLeft', 'verticalAlign']
 
-/** The computed boxes of the mention's link and badge in a paragraph and in a note, and of the equivalent's chip. */
+/** The computed boxes of the mention's link and badge in a paragraph and in a note, and of the equivalent's link. */
 async function looks(css: string, container: string) {
   const target = await browser.newPage({ viewport: { width: 700, height: 400 } })
   await target.setContent(page(css, container))
@@ -52,18 +52,19 @@ async function looks(css: string, container: string) {
 }
 
 describe.each(Object.entries(CONTAINERS))('a mention in a note of %s', (_name, container) => {
-  it('keeps the box it has in a paragraph, and the equivalent beside it stays a chip', async () => {
+  it('keeps the box it has in a paragraph, and the equivalent beside it is a mark and a name with no chip', async () => {
     const measured = await looks(styles, container)
     expect(measured.note).toEqual(measured.prose)
-    expect(measured.equivalent.link.borderTopWidth).toBe('1px')
-    expect(measured.equivalent.link.overflow).toBe('hidden')
-    expect(measured.note.link.borderTopWidth).toBe('0px')
+    expect(measured.equivalent.link.borderTopWidth).toBe('0px')
+    expect(measured.equivalent.link.overflow).toBe('visible')
+    expect(measured.equivalent.mark.alignSelf).toBe('baseline')
+    expect(measured.note.mark.alignSelf).not.toBe('baseline')
   })
 
-  it('becomes a chip without the rule that leaves it alone, so the check above can fail', async () => {
+  it('takes the equivalent\'s mark layout without the rule that leaves it alone, so the check above can fail', async () => {
     expect(styles).toContain(':where(:not(.api-link-kind))')
     const measured = await looks(styles.replaceAll(':where(:not(.api-link-kind))', ''), container)
     expect(measured.note).not.toEqual(measured.prose)
-    expect(measured.note.link.borderTopWidth).toBe('1px')
+    expect(measured.note.mark.alignSelf).toBe('baseline')
   })
 })

@@ -345,7 +345,6 @@ a.api-member-link[data-link-preview]:not(:hover, :focus-visible) { text-decorati
   background: var(--mk-act-bg, var(--mk-fill, var(--mk-bg)));
   color: var(--mk-act-fg, var(--mk-fg));
   border-color: var(--mk-hue, currentColor);
-  box-shadow: var(--mk-act-ring, none);
 }
 
 .api-member-badges {
