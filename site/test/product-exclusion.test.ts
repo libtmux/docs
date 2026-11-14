@@ -13,8 +13,10 @@ import { DOC_PRODUCTS, PORT_BY_SLUG, PORTS, productAvailable, productExcluded, t
  * through `parentLibrary`.
  */
 const WITHOUT: Record<DocProduct, readonly string[]> = {
-  mcp: ['lua', 'powershell', 'erlang', 'elixir', 'haskell', 'lisp', 'ocaml', 'perl'],
-  workspace: ['lua', 'elixir', 'haskell', 'erlang'],
+  mcp: ['lua', 'powershell', 'erlang', 'elixir', 'haskell', 'lisp', 'ocaml', 'perl',
+    'raku'],
+  workspace: ['lua', 'elixir', 'haskell', 'erlang',
+    'raku'],
 }
 
 /** Product roots that were public before their port stopped claiming the product. */
