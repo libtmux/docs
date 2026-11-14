@@ -9,7 +9,7 @@ import * as showcaseLibrary from '../src/lib/workspace-showcase'
 import { loadCommand } from '../src/lib/workspace-links'
 import { STORAGE_PREFIX } from '../src/lib/workspace-picker'
 import { landingExcerpt, landingProducts, type CachedSource, type LandingExcerpt, type LandingTable } from '../src/lib/port-landing'
-import { PORTS, PORT_BY_SLUG, type DocProduct } from '../src/lib/ports'
+import { PORTS, PORT_BY_SLUG, productStatusLine, type DocProduct } from '../src/lib/ports'
 import LANDING from '../src/data/landing-examples.json'
 import SOURCES from '../src/data/example-sources.json'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
@@ -126,10 +126,10 @@ describe('the landing page markup', () => {
     expect(caption.textContent).toContain(entry.ci.command)
   })
 
-  it('opens the MCP tab with the install picker, then the worked example, the links and the excerpt', async () => {
+  it('opens the MCP tab with its maturity and the install picker, then the worked example, the links and the excerpt', async () => {
     const document = await render('rs')
     const panel = document.querySelector('[data-landing-panel="mcp"]')!
-    const order = ['[data-mcp-install]', '[data-landing-example="mcp"]', '.landing-links', '[data-landing-excerpt]']
+    const order = ['[data-landing-status]', '[data-mcp-install]', '[data-landing-example="mcp"]', '.landing-links', '[data-landing-excerpt]']
     const found = order.map((selector) => panel.querySelector(selector))
     found.forEach((element, index) => expect(element, order[index]).not.toBeNull())
     for (let index = 1; index < found.length; index += 1) {
@@ -154,6 +154,16 @@ describe('the landing page markup', () => {
       const example = panel.querySelector('[data-core-showcase], [data-landing-example]')!
       expect(installer, panel.getAttribute('data-landing-panel')!).not.toBeNull()
       expect(installer.compareDocumentPosition(example) & 4, `${panel.getAttribute('data-landing-panel')}: install precedes the example`).toBeTruthy()
+    }
+  })
+
+  it('names each companion product\'s maturity once beside it, and the core library\'s not at all', async () => {
+    const document = await render('go')
+    expect(document.querySelector('[data-landing-panel="core"] [data-landing-status]')).toBeNull()
+    for (const product of ['mcp', 'workspace']) {
+      const lines = document.querySelectorAll(`[data-landing-panel="${product}"] [data-landing-status]`)
+      expect(lines, product).toHaveLength(1)
+      expect(lines[0]!.textContent, product).toContain(productStatusLine('concept'))
     }
   })
 

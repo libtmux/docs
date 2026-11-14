@@ -67,9 +67,14 @@ const apis = new Map(shown.map((item) => [item.id, apisUsed(port, CORE_APIS[port
       </nav>
     </div>
   </details>}
+  {/* Without a script every panel is stacked below with its title, so these links jump to them. */}
+  {shown.length > 1 && <nav class="core-showcase__static" aria-label="Capabilities">
+    {shown.map((item) => <a href={`#capability-${item.id}`}>{item.label}</a>)}
+  </nav>}
   <div class="core-showcase__panels">
-    {shown.map((item, index) => item.quickstart ? <section class="core-showcase__panel" data-capability-panel={item.id} data-default={index === 0 ? '' : undefined}
+    {shown.map((item, index) => item.quickstart ? <section class="core-showcase__panel" id={`capability-${item.id}`} data-capability-panel={item.id} data-default={index === 0 ? '' : undefined}
       style={`--home-code-columns: ${homeCodeColumns(quickstartCode)}`}>
+      {shown.length > 1 && <h3 class="core-showcase__panel-title">{item.label}</h3>}
       {player
         ? <CorePlayer port={port} language={PORT_BY_SLUG[port]!.name} example={quickstart!} recording={player.recording} capability={player.capability} />
         : <HomeExample port={port} language={PORT_BY_SLUG[port]!.name} example={quickstart!} heading={false} fixed />}
@@ -80,8 +85,9 @@ const apis = new Map(shown.map((item) => [item.id, apisUsed(port, CORE_APIS[port
           {apis.get(item.id)!.more > 0 && <li><a href={apis.get(item.id)!.moreHref}>+{apis.get(item.id)!.more} more</a></li>}
         </ul>
       </div>}
-    </section> : <section class="core-showcase__panel" data-capability-panel={item.id} data-default={index === 0 ? '' : undefined}
+    </section> : <section class="core-showcase__panel" id={`capability-${item.id}`} data-capability-panel={item.id} data-default={index === 0 ? '' : undefined}
       style={`--home-code-columns: ${homeCodeColumns(item.code)}`}>
+      {shown.length > 1 && <h3 class="core-showcase__panel-title">{item.label}</h3>}
       {capabilityPlayers.get(item.id)
         ? <CorePlayer port={port} language={PORT_BY_SLUG[port]!.name} example={capabilityExample({ ...item, ...cachedSource(item.id) })} recording={capabilityPlayers.get(item.id)!.recording}
           capability={capabilityPlayers.get(item.id)!.capability} capabilityId={item.id} options={false} run={false} />
@@ -182,6 +188,14 @@ const apis = new Map(shown.map((item) => [item.id, apisUsed(port, CORE_APIS[port
   }
   .core-showcase__panel > :global(.expressive-code pre) { height: calc(34rem - var(--home-toolbar-row, 0rem)); max-height: none; overflow: auto; tab-size: 8; scrollbar-gutter: stable; }
   .core-showcase__panel h3 { margin: 0 0 .6rem; font-size: 1rem; }
+  /* No script: every capability shows in turn under its title, and the list of anchors replaces the picker. */
+  .core-showcase__static, .core-showcase__panel-title { display: none; }
+  :global(html:not([data-js])) .core-showcase__picker { display: none; }
+  :global(html:not([data-js])) .core-showcase__static { display: flex; flex-wrap: wrap; gap: .375rem; }
+  .core-showcase__static a { padding: .45rem .75rem; border: 1px solid var(--color-edge); border-radius: .35rem; font-size: .875rem; color: inherit; text-decoration: none; }
+  :global(html:not([data-js])) .core-showcase__panels { display: block; }
+  :global(html:not([data-js])) .core-showcase__panel { visibility: visible; margin-top: 1.5rem; scroll-margin-top: 5rem; }
+  :global(html:not([data-js])) .core-showcase__panel-title { display: block; }
   .core-showcase__tmux {
     margin-inline-start: .5rem; padding: .05rem .4rem; border: 1px solid var(--color-edge); border-radius: .75rem;
     font-size: .6875rem; font-weight: 500; color: var(--color-muted);
