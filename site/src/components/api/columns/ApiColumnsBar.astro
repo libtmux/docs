@@ -1,0 +1,95 @@
+---
+/**
+ * The reference's view switch, `View: Tree | Columns`, on its own row under the
+ * context strip, with the columns view and its configuration row.
+ *
+ * Without JavaScript nothing here shows and the tree stays the page's left
+ * column. A script sets `data-api-view` on the document before first paint (the
+ * address, then the visit's last choice, then the tree), so the page opens in
+ * the right view without a flash; the row is revealed by the same attribute.
+ */
+import { apiColumnsOffered, TRIAL_PAGES } from '../../../lib/columns/trial'
+import { PAGE_SIZES } from '../../../lib/columns/types'
+import '../../../styles/columns.css'
+import '../../../styles/api-columns.css'
+
+interface Props {
+  /** The port whose reference renders the tree. */
+  port?: string
+  /** The port's display name. */
+  portName?: string
+  /** The reference root, ending in a slash. */
+  base: string
+  /** A glossary page has no declaration to select; it keeps the tree. */
+  glossary?: boolean
+}
+const { port, portName = '', base, glossary = false } = Astro.props as Props
+const offered = apiColumnsOffered(port) && !glossary
+---
+{offered && (
+  <div class="api-columns" data-api-columns data-base={base} data-port-name={portName} data-pagefind-ignore="all">
+    <script is:inline data-astro-rerun>
+      ((root) => {
+        try {
+          const asked = new URLSearchParams(location.search).get('view')
+          const kept = sessionStorage.getItem('libtmux:api-view')
+          root.dataset.apiView = (asked === 'tree' || asked === 'columns' ? asked : kept) === 'columns' ? 'columns' : 'tree'
+        } catch { root.dataset.apiView = 'tree' }
+      })(document.documentElement)
+    </script>
+    <div class="api-columns__bar" data-api-columns-bar>
+      <span id="api-columns-view">View</span>
+      <span class="api-columns__seg" role="group" aria-labelledby="api-columns-view">
+        <button type="button" data-view="tree" aria-pressed="true">Tree</button>
+        <button type="button" data-view="columns" aria-pressed="false">Columns</button>
+      </span>
+      <span class="api-columns__note">Columns are a trial view; the tree stays the default.</span>
+      <span class="api-columns__trials">
+        {TRIAL_PAGES.map((trial) => <a href={`${base}trial/${trial.slug}/`}>{trial.label}</a>)}
+      </span>
+    </div>
+    <div class="api-columns__config" data-cfg-row hidden role="group" aria-label="Columns view configuration">
+      <span class="api-columns__seg" role="group" aria-label="Layout">
+        <button type="button" data-cfg-layout="columns" aria-pressed="true">A column per level</button>
+        <button type="button" data-cfg-layout="single" aria-pressed="false">Single column</button>
+      </span>
+      <label>Filter
+        <select data-cfg="search">
+          <option value="off">off</option>
+          <option value="button">per level, on demand</option>
+          <option value="open">per level, always open</option>
+        </select>
+      </label>
+      <label>Long levels
+        <select data-cfg="paginate">
+          <option value="0">scroll</option>
+          <option value="1">pages</option>
+        </select>
+      </label>
+      <label>Page size
+        <select data-cfg="pageSize">{PAGE_SIZES.map((size) => <option value={size}>{size}</option>)}</select>
+      </label>
+      <label><input type="checkbox" data-cfg="virtual" /> Virtual rows</label>
+      <label>Filter at
+        <select data-cfg="filterAt">
+          <option value="top">top</option>
+          <option value="bottom">bottom</option>
+        </select>
+      </label>
+      <code data-cfg-code></code>
+    </div>
+    <div class="api-columns__view" data-api-columns-view data-pagefind-ignore="all"></div>
+    <script>
+      import { mountApiColumns } from './api-columns'
+
+      const start = () => {
+        const host = document.querySelector<HTMLElement>('[data-api-columns]')
+        if (!host || host.dataset.mounted) return
+        host.dataset.mounted = ''
+        mountApiColumns(host)
+      }
+      start()
+      document.addEventListener('astro:page-load', start)
+    </script>
+  </div>
+)}

@@ -41,6 +41,7 @@ import { buildLocale } from '../../i18n/resolve'
 import { buildTarget, defaultVersionFor } from '../../lib/versions'
 import ApiDoc from '../../components/api/ApiDoc.astro'
 import ApiTree from '../../components/api/ApiTree.astro'
+import ApiColumnsBar from './columns/ApiColumnsBar.astro'
 import type { PortNavData } from '../../lib/api-models'
 import { apiTreeVersion, bucketAncestors, bucketForSymbol, navTree, referenceTree, referenceTreeFor, referenceNavigation, referenceIndexSections, referenceIndexSectionsFor, treeRowSymbol, type TreeBucket } from '../../lib/api-tree'
 import { sidebarSelection } from '../../lib/api-sidebar'
@@ -440,6 +441,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
           <span class="sr-only">{label} API contents</span>
         </button>
   </DocumentationContext>}
+  {model && sidebarInventory && <ApiColumnsBar port={port} portName={label} base={refBase} glossary={glossary} />}
   <!-- Flush: the tree's column runs from the header to the footer against the
        viewport's edge, as Learn's does, and only the text column is padded. -->
   <main class:list={["api-reference-layout grid", owner && 'api-reference-layout--symbol', glossary && 'api-reference-layout--glossary']}>
