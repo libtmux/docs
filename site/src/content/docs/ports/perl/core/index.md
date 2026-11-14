@@ -23,4 +23,6 @@ loop. Its [transport reference](../reference/libtmux-async-transport/) explains
 admission, cancellation, and cleanup. Linux x86_64 LP64 is qualified; other
 platforms and ABIs remain unsupported.
 
-The distributions are available from source and have no CPAN release.
+The LibTmux, LibTmux-Async, and LibTmux-Workspace distributions are on CPAN.
+The [installation guide](../guides/) lists the `cpm` command for each, and a
+source checkout remains available for development.

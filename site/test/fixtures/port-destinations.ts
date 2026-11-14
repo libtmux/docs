@@ -25,6 +25,8 @@ export const DESTINATIONS: Record<string, ExpectedDestinations> = {
   },
   perl: {
     source: github('https://github.com/libtmux/libtmux-perl/tree/master/packages/core', 'libtmux-perl'),
+    registry: { name: 'MetaCPAN', url: 'https://metacpan.org/dist/LibTmux', icon: 'cpan', label: 'LibTmux on MetaCPAN' },
+    api: { name: 'MetaCPAN POD', url: 'https://metacpan.org/pod/LibTmux', label: 'LibTmux API reference on MetaCPAN POD' },
   },
   clojure: {
     source: github('https://github.com/libtmux/libtmux-java/tree/master/libtmux-clojure', 'libtmux-java/libtmux-clojure'),

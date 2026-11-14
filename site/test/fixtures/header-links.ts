@@ -11,8 +11,8 @@
  * gains or loses a destination changes a row here.
  *
  * Julia, C++ and Haskell publish no package, so each has only a source link.
- * Only Rust, Elixir, Java, Kotlin, Scala and Swift link an API reference of
- * their own; Go's package page is its reference.
+ * Only Rust, Elixir, Java, Kotlin, Perl, Scala and Swift link an API reference
+ * of their own; Go's package page is its reference.
  */
 export type ExpectedAction = readonly [kind: 'source' | 'package' | 'api', label: string, name: string, url: string]
 export type ExpectedRow = readonly [kind: 'source' | 'package' | 'api', label: string, detail: string, url: string, entries: readonly string[]]
@@ -38,14 +38,23 @@ export const LINKS: Record<string, ExpectedLinks> = {
     ],
   },
   perl: {
-    actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-perl/packages/core', 'https://github.com/libtmux/libtmux-perl/tree/master/packages/core']],
+    actions: [['source', 'GitHub', 'GitHub: libtmux/libtmux-perl/packages/core', 'https://github.com/libtmux/libtmux-perl/tree/master/packages/core'],
+      ['package', 'MetaCPAN', 'MetaCPAN: LibTmux package', 'https://metacpan.org/dist/LibTmux'],
+      ['api', 'MetaCPAN POD', 'MetaCPAN POD: LibTmux API reference', 'https://metacpan.org/pod/LibTmux']],
     indexed: true,
     rows: [
-      ['source', 'LibTmux', 'packages/core', 'https://github.com/libtmux/libtmux-perl/tree/master/packages/core', ['LibTmux']],
-      ['source', 'LibTmux-Async', 'packages/async', 'https://github.com/libtmux/libtmux-perl/tree/master/packages/async', ['LibTmux-Async']],
+      ['source', 'LibTmux', 'distribution · packages/core', 'https://github.com/libtmux/libtmux-perl/tree/master/packages/core', ['LibTmux']],
+      ['source', 'LibTmux-Async', 'distribution · packages/async', 'https://github.com/libtmux/libtmux-perl/tree/master/packages/async', ['LibTmux-Async']],
       ['source', 'libtmux-perl', 'libtmux/libtmux-perl', 'https://github.com/libtmux/libtmux-perl', ['repository']],
-      ['source', 'LibTmux-Workspace', 'packages/workspace', 'https://github.com/libtmux/libtmux-perl/tree/master/packages/workspace', ['LibTmux-Workspace']],
+      ['source', 'LibTmux-Workspace', 'distribution · packages/workspace', 'https://github.com/libtmux/libtmux-perl/tree/master/packages/workspace', ['LibTmux-Workspace']],
       ['source', 'libtmux-workspace', 'command · packages/workspace/bin/libtmux-workspace', 'https://github.com/libtmux/libtmux-perl/blob/master/packages/workspace/bin/libtmux-workspace', ['libtmux-workspace']],
+      ['package', 'LibTmux', 'distribution · MetaCPAN', 'https://metacpan.org/dist/LibTmux', ['LibTmux']],
+      ['package', 'LibTmux-Async', 'distribution · MetaCPAN', 'https://metacpan.org/dist/LibTmux-Async', ['LibTmux-Async']],
+      // The command ships in the workspace distribution, so its page is the distribution's.
+      ['package', 'LibTmux-Workspace', 'distribution · MetaCPAN', 'https://metacpan.org/dist/LibTmux-Workspace', ['LibTmux-Workspace', 'libtmux-workspace']],
+      ['api', 'LibTmux', 'distribution · MetaCPAN POD', 'https://metacpan.org/pod/LibTmux', ['LibTmux']],
+      ['api', 'LibTmux-Async', 'distribution · MetaCPAN POD', 'https://metacpan.org/pod/LibTmux::Async', ['LibTmux-Async']],
+      ['api', 'LibTmux-Workspace', 'distribution · MetaCPAN POD', 'https://metacpan.org/pod/LibTmux::Workspace', ['LibTmux-Workspace']],
     ],
   },
   clojure: {

@@ -294,6 +294,26 @@ const PROBES = {
     const retired = new Set(Object.keys(body.retirements ?? {}))
     return (body.releases ?? []).map((release) => release.version).filter((version) => !retired.has(version))
   },
+  async perl() {
+    // MetaCPAN's API lists every release of a distribution with the maturity and status PAUSE gave it. A developer
+    // release (`0.001_001`) is not indexed and BackPAN holds removed ones, so neither is installable.
+    // A Perl version is a decimal number, which no SemVer grammar here reads, so the versions come back sorted
+    // newest first and the tag is matched against the registry's own text, as `v` and that text.
+    const packages = {}
+    for (const name of ['LibTmux', 'LibTmux-Async', 'LibTmux-Workspace']) {
+      const { status, body } = await getJson(`https://fastapi.metacpan.org/v1/release/_search?q=distribution:${name}&size=100`)
+      if (status !== 200 || !Array.isArray(body?.hits?.hits)) throw new Error(`MetaCPAN ${name}: HTTP ${status}`)
+      const releases = body.hits.hits.map((hit) => hit._source)
+      if (releases.some((release) => typeof release?.distribution !== 'string' || !/^\d+\.\d+(?:_\d+)?$/.test(release.version ?? ''))) {
+        throw new Error(`MetaCPAN ${name}: invalid release`)
+      }
+      const installable = releases.filter((release) => release.distribution === name && release.maturity === 'released'
+        && release.status !== 'backpan' && release.authorized !== false)
+      packages[name] = installable.length > 0 ? installable.map((release) => release.version).sort((a, b) => Number(b) - Number(a)) : null
+    }
+    const decimalTag = (tags, versions) => versions?.map((version) => `v${version}`).find((name) => tags.includes(name)) ?? null
+    return { versions: packages.LibTmux, packages, tagFor: decimalTag }
+  },
   async lisp() {
     // This port is source-installed through ASDF and Qlot. It deliberately
     // has no central package-registry entry to probe.
@@ -497,7 +517,8 @@ for (const port of PORTS) {
   // need the name that exists in the repository. Only a published version's
   // tag counts, so a release caught between its tag and its package is not
   // recorded until the package lands.
-  let tag = newestPublishedTag(tags, port, versions)
+  const tagFor = (list) => (probe && !Array.isArray(probe) && probe.tagFor ? probe.tagFor(tags, list) : newestPublishedTag(tags, port, list))
+  let tag = tagFor(versions)
   if (!tag) {
     // A tag recorded before its package landed stays. One the repository does
     // not carry is stale, and would send readers to a ref that does not exist.
@@ -513,7 +534,7 @@ for (const port of PORTS) {
     entry.packages = Object.fromEntries(
       Object.entries(probe.packages).map(([name, packageVersions]) => [
         name,
-        withStage(classify(port, packageVersions, probe.tagged && !probe.tagged.includes(name) ? null : tag), name),
+        withStage(classify(port, packageVersions, probe.tagFor ? tagFor(packageVersions) : probe.tagged && !probe.tagged.includes(name) ? null : tag), name),
       ]),
     )
   }

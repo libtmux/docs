@@ -5,7 +5,7 @@ import registry from '../src/data/registry.json'
 import { SERVERS } from '../src/lib/install-matrix'
 import { installsFor } from '../src/lib/registry'
 import { INVENTORY } from '../src/lib/port-inventory'
-import { PORT_BY_SLUG, PORTS, hasPackageInstalls, installCommand, portDestinations, portSourceUrl, productAvailable, productDescription, productIsConcept, type DocProduct } from '../src/lib/ports'
+import { PORT_BY_SLUG, PORTS, hasPackageInstalls, installCommand, portDestinations, portSourceUrl, productAvailable, productDescription, productIsConcept, workspaceInstallGuidance, type DocProduct } from '../src/lib/ports'
 import { DESTINATIONS } from './fixtures/port-destinations'
 
 it('keeps explicitly excluded products out of installation and concept navigation', () => {
@@ -168,6 +168,75 @@ describe('workspace CLI availability', () => {
   // and Swift resolves from Git, so none of them installs the executable.
   it.each(['java', 'cxx', 'swift'])('keeps %s local because a build produces its executable', (slug) => {
     expect(PORT_BY_SLUG[slug]!.workspaceCliAvailability).toBe('local')
+  })
+})
+
+describe('Perl CPAN publication', () => {
+  const perl = PORT_BY_SLUG.perl!
+  const package_ = (id: string) => perl.packages!.find((entry) => entry.id === id)!
+  const copyable = (port: typeof perl) => [
+    ...port.installs.flatMap(({ code, note }) => [code, note ?? '']),
+    ...(port.packages ?? []).flatMap((entry) => (entry.installs ?? []).flatMap(({ code, note }) => [code, note ?? ''])),
+    ...Object.values(port.installForms).map(({ code }) => code), port.installNote ?? '', port.initProject.code,
+  ]
+
+  it('registers MetaCPAN as the package host and its POD as the reference, for the port and for each package', () => {
+    expect(perl.registry).toEqual({ name: 'MetaCPAN', url: 'https://metacpan.org/dist/LibTmux', icon: 'cpan' })
+    expect(perl.ecosystemHost).toMatchObject({ name: 'MetaCPAN POD', url: 'https://metacpan.org/pod/LibTmux' })
+    expect(perl.packages!.map(({ id, registry, reference }) => [id, registry, reference])).toEqual([
+      ['core', 'https://metacpan.org/dist/LibTmux', 'https://metacpan.org/pod/LibTmux'],
+      ['async', 'https://metacpan.org/dist/LibTmux-Async', 'https://metacpan.org/pod/LibTmux::Async'],
+      ['workspace', 'https://metacpan.org/dist/LibTmux-Workspace', 'https://metacpan.org/pod/LibTmux::Workspace'],
+    ])
+    // The workspace product's page names its own distribution, and keeps the source directory beside it.
+    const { source, registry: packageRegistry, ecosystem } = portDestinations({ port: perl, product: 'workspace' })
+    expect(packageRegistry).toEqual({ name: 'MetaCPAN', url: 'https://metacpan.org/dist/LibTmux-Workspace', icon: 'cpan' })
+    expect(source.url).toBe('https://github.com/libtmux/libtmux-perl/tree/master/packages/workspace')
+    expect(ecosystem).toBeUndefined()
+  })
+
+  it('installs each distribution from CPAN first and keeps the source checkout as the explicit alternative', () => {
+    expect(perl.installs.map(({ label, code }) => [label, code])).toEqual([
+      ['cpm', 'cpm install --global LibTmux'],
+      ['cpm (source)', 'git clone https://github.com/libtmux/libtmux-perl.git && \\\n  cd libtmux-perl && \\\n  cpm install --global ./packages/core'],
+    ])
+    expect(package_('async').installs!.map(({ label, code }) => [label, code])).toEqual([
+      ['cpm', 'cpm install --global LibTmux::Async'], ['cpm (source)', 'cpm install --global ./packages/async'],
+    ])
+    expect(package_('workspace').installs!.map(({ label, code }) => [label, code])).toEqual([
+      ['cpm', 'cpm install --global LibTmux::Workspace'], ['cpm (source)', 'cpm install --global ./packages/workspace'],
+    ])
+    expect(perl.installForms.release.code).toBe('cpm install --global LibTmux')
+    expect(perl.installForms.git.code).toContain('git clone https://github.com/libtmux/libtmux-perl.git')
+    expect(hasPackageInstalls(perl, 'async') && hasPackageInstalls(perl, 'workspace')).toBe(true)
+  })
+
+  it('says nothing that calls the distributions unpublished', () => {
+    for (const text of copyable(perl)) expect(text).not.toMatch(/unpublished|no cpan release|not published|do not identify published/i)
+    expect(workspaceInstallGuidance(perl)).toBe('The `libtmux-workspace` CLI is published to MetaCPAN. Pin its version when automation depends on its output.')
+    expect(perl.workspaceCliAvailability).toBe('published')
+    expect(productDescription(perl, 'workspace')).toContain('published')
+  })
+
+  it('records the CPAN release with its decimal version and tag, not a dotted rewrite of them', () => {
+    const entry = registry.ports.perl
+    expect(entry).toMatchObject({ status: 'release' })
+    expect(entry.version).toMatch(/^\d+\.\d{3}$/)
+    expect(entry.tag).toBe(`v${entry.version}`)
+    expect(entry.release).toBe(entry.version)
+    for (const dist of ['LibTmux', 'LibTmux-Async', 'LibTmux-Workspace']) {
+      expect(entry.packages![dist as keyof typeof entry.packages], dist).toMatchObject({ status: 'release', version: entry.version, tag: entry.tag })
+    }
+    expect(installCommand(perl, entry as Parameters<typeof installCommand>[1]).code).toBe('cpm install --global LibTmux')
+  })
+
+  it('keeps MCP excluded and async an optional companion of core', () => {
+    expect(perl.productAvailability).toEqual({ workspace: 'available', mcp: 'excluded' })
+    expect(productAvailable(perl, 'mcp')).toBe(false)
+    expect(perl.packages!.some((entry) => entry.id === 'mcp')).toBe(false)
+    expect(new Set(INVENTORY.perl!.map((entry) => entry.product))).toEqual(new Set(['core', 'workspace']))
+    expect(package_('async').require).toBe('LibTmux::Async::Server')
+    expect(package_('async').installs![0]!.note).toMatch(/Future and IO::Async/)
   })
 })
 

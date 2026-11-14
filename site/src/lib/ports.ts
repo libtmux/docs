@@ -39,6 +39,7 @@ export interface PackageRegistry {
   url: string
   /** Which mark `components/icons/RegistryIcon.astro` draws. */
   icon: 'pypi' | 'npm' | 'crates' | 'go' | 'maven' | 'nuget' | 'swift' | 'rubygems' | 'luarocks' | 'powershell' | 'hex'
+    | 'cpan'
 }
 
 export type PortPackageId = 'core' | 'async' | DocProduct
@@ -1411,27 +1412,51 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
     source: { path: 'packages/core', ref: 'master' }, versionedDocs: true,
     docsDispatch: { workflow: 'docs.yml' },
     tagGrammar: 'semver', publishesOwnTree: true,
+    // MetaCPAN renders the POD shipped in each release. This site renders the same documentation and links to it.
+    ecosystemHost: {
+      name: 'MetaCPAN POD',
+      url: 'https://metacpan.org/pod/LibTmux',
+      rationale: 'POD for each module of the published distributions on MetaCPAN.',
+    },
     renderer: 'astro', generator: 'Perl PPI signatures and native POD', referenceKind: 'model',
-    workspaceCli: 'libtmux-workspace load', workspaceCliAvailability: 'local',
+    workspaceCli: 'libtmux-workspace load', workspaceCliAvailability: 'published',
     productAvailability: { workspace: 'available', mcp: 'excluded' },
     packages: [
-      { id: 'core', name: 'LibTmux', require: 'LibTmux::Server', source: { path: 'packages/core', ref: 'master' } },
-      { id: 'async', name: 'LibTmux-Async', require: 'LibTmux::Async::Server', source: { path: 'packages/async', ref: 'master' },
-        installs: [{ label: 'cpm (source)', lang: 'console', code: 'cpm install --global ./packages/async', note: 'From the source checkout after core installation; adds Future and IO::Async with its required Ppoll backend.' }] },
-      { id: 'workspace', name: 'LibTmux-Workspace', require: 'LibTmux::Workspace', executable: 'libtmux-workspace',
-        source: { path: 'packages/workspace', ref: 'master' },
-        installs: [{ label: 'cpm (source)', lang: 'console', code: 'cpm install --global ./packages/workspace', note: 'From the source checkout after core installation. No CPAN release.' }] },
+      { id: 'core', name: 'LibTmux', registry: 'https://metacpan.org/dist/LibTmux', reference: 'https://metacpan.org/pod/LibTmux',
+        require: 'LibTmux::Server', source: { path: 'packages/core', ref: 'master' } },
+      { id: 'async', name: 'LibTmux-Async', registry: 'https://metacpan.org/dist/LibTmux-Async', reference: 'https://metacpan.org/pod/LibTmux::Async',
+        require: 'LibTmux::Async::Server', source: { path: 'packages/async', ref: 'master' },
+        installs: [
+          { label: 'cpm', lang: 'console', code: 'cpm install --global LibTmux::Async',
+            note: 'Adds Future and IO::Async with its required Ppoll backend. The installer resolves the core distribution it depends on.' },
+          { label: 'cpm (source)', lang: 'console', code: 'cpm install --global ./packages/async',
+            note: 'From the source checkout after core installation.' },
+        ] },
+      { id: 'workspace', name: 'LibTmux-Workspace', registry: 'https://metacpan.org/dist/LibTmux-Workspace', reference: 'https://metacpan.org/pod/LibTmux::Workspace',
+        require: 'LibTmux::Workspace', executable: 'libtmux-workspace', source: { path: 'packages/workspace', ref: 'master' },
+        installs: [
+          { label: 'cpm', lang: 'console', code: 'cpm install --global LibTmux::Workspace',
+            note: 'Installs the libtmux-workspace command. The installer resolves the core distribution it depends on.' },
+          { label: 'cpm (source)', lang: 'console', code: 'cpm install --global ./packages/workspace',
+            note: 'From the source checkout after core installation.' },
+        ] },
     ],
-    installs: [{ label: 'cpm (source)', lang: 'console',
-      code: 'git clone https://github.com/libtmux/libtmux-perl.git && \\\n  cd libtmux-perl && \\\n  cpm install --global ./packages/core',
-      note: 'Unpublished development distribution. Requires Perl 5.44.0, Linux x86_64 LP64, and tmux 3.3a or newer.' }],
-    initProject: { lang: 'text', code: 'Create a Perl program using LibTmux::Server; install from the source checkout.' },
+    installs: [
+      { label: 'cpm', lang: 'console', code: 'cpm install --global LibTmux',
+        note: 'Requires Perl 5.44.0, Linux x86_64 LP64, and tmux 3.3a or newer.' },
+      { label: 'cpm (source)', lang: 'console',
+        code: 'git clone https://github.com/libtmux/libtmux-perl.git && \\\n  cd libtmux-perl && \\\n  cpm install --global ./packages/core',
+        note: 'Installs the development tree from Git rather than the CPAN release.' },
+    ],
+    registry: { name: 'MetaCPAN', url: 'https://metacpan.org/dist/LibTmux', icon: 'cpan' },
+    initProject: { lang: 'text', code: 'Create a Perl program using LibTmux::Server; install LibTmux from CPAN.' },
+    // PAUSE indexes releases only, so no resolver skips a prerelease and both forms install the newest indexed release.
     installForms: {
-      release: { lang: 'console', code: 'cpm install --global ./packages/core' },
-      prerelease: { lang: 'console', code: 'cpm install --global ./packages/core' },
+      release: { lang: 'console', code: 'cpm install --global LibTmux' },
+      prerelease: { lang: 'console', code: 'cpm install --global LibTmux' },
       git: { lang: 'console', code: 'git clone https://github.com/libtmux/libtmux-perl.git && \\\n  cd libtmux-perl && \\\n  cpm install --global ./packages/core' },
     },
-    installNote: 'Install core before workspace or optional async. These package names do not identify published CPAN releases.',
+    installNote: 'Workspace and the optional async distribution each depend on core, which the installer resolves. Keep one Perl interpreter and installation prefix for all of them.',
   },
 
 ] as const
@@ -1704,8 +1729,8 @@ export function workspaceInstallGuidance(port: Port): string | undefined {
   if (!productAvailable(port, 'workspace') || !port.workspaceCli) return undefined
   const command = port.workspaceCliRun ?? port.workspaceCli.split(/\s+/)[0]
   if (port.workspaceCliAvailability === 'published') {
-    return `The \`${command}\` CLI is published to ${port.registry?.name ?? 'the package registry'}, `
-      + 'numbered 0.1.N. Pin its version when automation depends on its output.'
+    return `The \`${command}\` CLI is published to ${port.registry?.name ?? 'the package registry'}. `
+      + 'Pin its version when automation depends on its output.'
   }
   if (port.workspaceCliAvailability !== 'local') return undefined
   const cliPackage = port.packages?.find((pkg) => pkg.executable === command || pkg.executable === port.workspaceCli)

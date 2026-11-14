@@ -134,6 +134,22 @@ describe('destination evidence', () => {
     expect(counts.unsupported).toBeGreaterThan(0)
   })
 
+  it('verifies each CPAN package and POD page through MetaCPAN’s API and names the repository it reports', () => {
+    const cpan = evidence.destinations.filter((record) => record.host === 'metacpan')
+    expect(cpan.map((record) => record.url)).toEqual([
+      'https://metacpan.org/dist/LibTmux', 'https://metacpan.org/dist/LibTmux-Async', 'https://metacpan.org/dist/LibTmux-Workspace',
+      'https://metacpan.org/pod/LibTmux', 'https://metacpan.org/pod/LibTmux::Async', 'https://metacpan.org/pod/LibTmux::Workspace',
+    ])
+    for (const record of cpan) {
+      // The page itself answers scripted clients with a challenge, so the record names the API that did the verifying.
+      expect(record, record.url).toMatchObject({ ok: true, status: 200, repository: 'libtmux/libtmux-perl' })
+      expect((record as { requested: string }).requested, record.url).toMatch(/^https:\/\/fastapi\.metacpan\.org\/v1\/(?:release|module)\//)
+      expect(record.identity, record.url).toBe(new URL(record.url).pathname.split('/').pop())
+    }
+    expect(REPOSITORY_HOSTS.has('metacpan')).toBe(true)
+    expect(VERSION_SUPPORT.metacpan).toBe(true)
+  })
+
   it('takes a developer version from the manifest as no claim of a release, on a CPAN host and nowhere else', () => {
     const demoEntry = demo({
       coordinate: 'Demo-Dist', label: 'Demo-Dist', package: { host: 'metacpan', url: 'https://metacpan.org/dist/Demo-Dist' },

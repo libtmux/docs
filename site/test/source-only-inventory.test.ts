@@ -4,8 +4,10 @@ import { portHeaderLinks } from '../src/lib/header-links'
 import { INVENTORY, type InventoryEntry } from '../src/lib/port-inventory'
 import { PORT_BY_SLUG } from '../src/lib/ports'
 
+// Perl is published on CPAN, so this entry keeps its source but not its registry destinations or its status.
+const { api: _api, ...published } = INVENTORY.perl![0]!
 const library: InventoryEntry = {
-  ...INVENTORY.perl![0]!, sourceAvailable: true,
+  ...published, status: 'configured-unpublished', sourceAvailable: true, note: 'Install from verified source.',
   package: { host: 'npm', url: 'https://www.npmjs.com/package/unpublished-test' },
 }
 

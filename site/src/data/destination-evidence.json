@@ -3434,7 +3434,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-11-07",
+      "checkedAt": "2026-11-13",
       "entries": [
         "perl:repository"
       ]
@@ -3455,7 +3455,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-11-07",
+      "checkedAt": "2026-11-13",
       "entries": [
         "perl:libtmux-workspace"
       ]
@@ -3476,7 +3476,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-11-07",
+      "checkedAt": "2026-11-13",
       "entries": [
         "perl:LibTmux-Async"
       ]
@@ -3497,7 +3497,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-11-07",
+      "checkedAt": "2026-11-13",
       "entries": [
         "perl:LibTmux"
       ]
@@ -3518,7 +3518,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-11-07",
+      "checkedAt": "2026-11-13",
       "entries": [
         "perl:LibTmux-Workspace"
       ]
@@ -5779,6 +5779,175 @@
       "checkedAt": "2026-11-08",
       "entries": [
         "lua:libtmux-workspace"
+      ]
+    },
+    {
+      "url": "https://metacpan.org/dist/LibTmux",
+      "kinds": [
+        "package"
+      ],
+      "host": "metacpan",
+      "ok": true,
+      "status": 200,
+      "requested": "https://fastapi.metacpan.org/v1/release/LibTmux",
+      "identity": "LibTmux",
+      "version": "0.003",
+      "repository": "libtmux/libtmux-perl",
+      "versionChecks": [
+        {
+          "version": "0.001_001",
+          "source": "libtmux/libtmux-perl:packages/core/Makefile.PL",
+          "ports": [
+            "perl"
+          ],
+          "check": "developer",
+          "note": "0.001_001 is a developer version, which metacpan does not list as a release"
+        }
+      ],
+      "checkedAt": "2026-11-13",
+      "entries": [
+        "perl:LibTmux"
+      ]
+    },
+    {
+      "url": "https://metacpan.org/dist/LibTmux-Async",
+      "kinds": [
+        "package"
+      ],
+      "host": "metacpan",
+      "ok": true,
+      "status": 200,
+      "requested": "https://fastapi.metacpan.org/v1/release/LibTmux-Async",
+      "identity": "LibTmux-Async",
+      "version": "0.003",
+      "repository": "libtmux/libtmux-perl",
+      "versionChecks": [
+        {
+          "version": "0.001_001",
+          "source": "libtmux/libtmux-perl:packages/async/Makefile.PL",
+          "ports": [
+            "perl"
+          ],
+          "check": "developer",
+          "note": "0.001_001 is a developer version, which metacpan does not list as a release"
+        }
+      ],
+      "checkedAt": "2026-11-13",
+      "entries": [
+        "perl:LibTmux-Async"
+      ]
+    },
+    {
+      "url": "https://metacpan.org/dist/LibTmux-Workspace",
+      "kinds": [
+        "package"
+      ],
+      "host": "metacpan",
+      "ok": true,
+      "status": 200,
+      "requested": "https://fastapi.metacpan.org/v1/release/LibTmux-Workspace",
+      "identity": "LibTmux-Workspace",
+      "version": "0.003",
+      "repository": "libtmux/libtmux-perl",
+      "versionChecks": [
+        {
+          "version": "0.001_001",
+          "source": "libtmux/libtmux-perl:packages/workspace/Makefile.PL",
+          "ports": [
+            "perl"
+          ],
+          "check": "developer",
+          "note": "0.001_001 is a developer version, which metacpan does not list as a release"
+        }
+      ],
+      "checkedAt": "2026-11-13",
+      "entries": [
+        "perl:LibTmux-Workspace",
+        "perl:libtmux-workspace"
+      ]
+    },
+    {
+      "url": "https://metacpan.org/pod/LibTmux",
+      "kinds": [
+        "api"
+      ],
+      "host": "metacpan",
+      "ok": true,
+      "status": 200,
+      "requested": "https://fastapi.metacpan.org/v1/module/LibTmux",
+      "identity": "LibTmux",
+      "version": "0.003",
+      "repository": "libtmux/libtmux-perl",
+      "versionChecks": [
+        {
+          "version": "0.001_001",
+          "source": "libtmux/libtmux-perl:packages/core/Makefile.PL",
+          "ports": [
+            "perl"
+          ],
+          "check": "developer",
+          "note": "0.001_001 is a developer version, which metacpan does not list as a release"
+        }
+      ],
+      "checkedAt": "2026-11-13",
+      "entries": [
+        "perl:LibTmux"
+      ]
+    },
+    {
+      "url": "https://metacpan.org/pod/LibTmux::Async",
+      "kinds": [
+        "api"
+      ],
+      "host": "metacpan",
+      "ok": true,
+      "status": 200,
+      "requested": "https://fastapi.metacpan.org/v1/module/LibTmux::Async",
+      "identity": "LibTmux::Async",
+      "version": "0.003",
+      "repository": "libtmux/libtmux-perl",
+      "versionChecks": [
+        {
+          "version": "0.001_001",
+          "source": "libtmux/libtmux-perl:packages/async/Makefile.PL",
+          "ports": [
+            "perl"
+          ],
+          "check": "developer",
+          "note": "0.001_001 is a developer version, which metacpan does not list as a release"
+        }
+      ],
+      "checkedAt": "2026-11-13",
+      "entries": [
+        "perl:LibTmux-Async"
+      ]
+    },
+    {
+      "url": "https://metacpan.org/pod/LibTmux::Workspace",
+      "kinds": [
+        "api"
+      ],
+      "host": "metacpan",
+      "ok": true,
+      "status": 200,
+      "requested": "https://fastapi.metacpan.org/v1/module/LibTmux::Workspace",
+      "identity": "LibTmux::Workspace",
+      "version": "0.003",
+      "repository": "libtmux/libtmux-perl",
+      "versionChecks": [
+        {
+          "version": "0.001_001",
+          "source": "libtmux/libtmux-perl:packages/workspace/Makefile.PL",
+          "ports": [
+            "perl"
+          ],
+          "check": "developer",
+          "note": "0.001_001 is a developer version, which metacpan does not list as a release"
+        }
+      ],
+      "checkedAt": "2026-11-13",
+      "entries": [
+        "perl:LibTmux-Workspace"
       ]
     },
     {
