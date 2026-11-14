@@ -4,18 +4,18 @@
 .doc-picker summary svg, .doc-picker-option svg { flex: none; }
 .doc-picker-caret { margin-left: auto; color: var(--color-muted); }
 .doc-picker[open] > summary .doc-picker-caret { transform: rotate(180deg); }
-.doc-picker-panel { --picker-width: 23.75rem; position: absolute; left: 0; z-index: 60; width: min(var(--picker-width), calc(100vw - 1rem)); margin: .4rem 0 0; padding: .75rem; border: 1px solid var(--color-edge); border-radius: .65rem; background: var(--background-color); color: var(--text-color); box-shadow: 0 .6rem 2rem #0002; }
+.doc-picker-panel { --picker-width: 23.75rem; --picker-inset: .5rem; position: absolute; left: 0; z-index: 60; width: min(var(--picker-width), calc(100vw - 1rem)); margin: .4rem 0 0; padding: .75rem; border: 1px solid var(--color-edge); border-radius: .65rem; background: var(--background-color); color: var(--text-color); box-shadow: 0 .6rem 2rem #0002; }
 .page-ports .doc-picker:not([data-enhanced]) > .doc-picker-panel { left: auto; right: 0; }
 .page-ports .doc-picker > summary { min-height: 1.5rem; padding: .25rem .5rem; border: 0; font-size: .875rem; line-height: 1; }
 .doc-picker[data-enhanced] > .doc-picker-panel { position: fixed; z-index: 90; margin: 0; overflow-y: auto; overscroll-behavior: contain; }
-.doc-picker-title { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin: .25rem .25rem .65rem; font-size: .75rem; font-weight: 600; }
+.doc-picker-title { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin: .25rem 0 .65rem; padding-inline: var(--picker-inset); font-size: .75rem; font-weight: 600; }
 .doc-picker-title-actions { display: flex; align-items: center; gap: .75rem; }
 .doc-picker-count { padding: .1rem .3rem; border-radius: .2rem; background: var(--color-surface); color: var(--color-muted); font-size: .6875rem; font-weight: 400; }
 .doc-picker-search { position: relative; display: flex; align-items: center; margin-bottom: .65rem; }
-.doc-picker-search > svg { position: absolute; left: .75rem; color: var(--color-muted); pointer-events: none; }
+.doc-picker-search > svg { position: absolute; left: var(--picker-inset); color: var(--color-muted); pointer-events: none; }
 .doc-picker-search input { width: 100%; min-width: 0; min-height: 2.75rem; padding: .6rem .75rem .6rem 2.1rem; border: 1px solid var(--control-border); border-radius: .45rem; background: var(--color-surface); color: inherit; font-size: .8125rem; }
 .doc-picker-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .2rem; }
-.doc-picker-option { display: flex; align-items: center; gap: .6rem; min-height: 2.5rem; padding: .5rem .6rem; border-radius: .4rem; color: inherit; text-decoration: none; line-height: 1.4; }
+.doc-picker-option { display: flex; align-items: center; gap: .6rem; min-height: 2.25rem; padding: .5rem var(--picker-inset); border-radius: .4rem; color: inherit; text-decoration: none; line-height: 1.4; }
 .doc-picker-option > span { min-width: 0; overflow-wrap: anywhere; }
 .doc-picker-option small { display: block; margin-top: .15rem; font-size: .6875rem; color: var(--color-muted); }
 .doc-picker-option > svg { color: var(--color-muted); }
@@ -38,16 +38,15 @@
 .picker-clear { position: absolute; top: 50%; right: 1.6rem; transform: translateY(-50%); display: grid; place-items: center; width: 1.5rem; height: 1.5rem; padding: 0; border: 0; border-radius: .25rem; background: transparent; color: var(--color-muted); cursor: pointer; }
 .picker-clear[hidden] { display: none; }
 .picker-clear:hover { background: var(--color-surface-hover); color: var(--text-color); }
-.picker-clear:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 1px; }
+.picker-clear:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
 
 /* The header's menus of a port's external destinations. */
 .header-picker { --picker-width: 22rem; }
 .header-picker__panel { max-height: min(32rem, calc(100dvh - 5rem)); overflow-y: auto; overscroll-behavior: contain; }
 /* A kind's heading is a label, not a row: small, muted capitals with no pointer, hover or focus state. Its rows sit inset under it. */
 .header-picker__group + .header-picker__group { margin-top: .5rem; }
-.header-picker__heading { margin: .5rem .6rem .15rem; color: var(--color-muted); cursor: default; font-size: .6875rem; font-weight: 600; letter-spacing: .04em; line-height: 1.35; text-transform: uppercase; }
-.header-picker__group > .header-picker__option { margin-inline-start: .5rem; }
-.header-picker__icon { display: grid; place-items: center; flex: none; width: 1.5rem; color: var(--color-muted); }
+.header-picker__heading { margin: .5rem var(--picker-inset) .15rem; color: var(--color-muted); cursor: default; font-size: .6875rem; font-weight: 600; letter-spacing: .04em; line-height: 1.35; text-transform: uppercase; }
+.header-picker__icon { display: grid; place-items: center; flex: none; width: 1rem; color: var(--color-muted); }
 .header-picker__text { display: grid; min-width: 0; }
 /* A detail is one line; the accessible name keeps the whole of it. */
 .header-picker__text > small { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -56,4 +55,9 @@
 html[data-theme-mode='dark'] .header-picker__option:is(:hover, :focus-visible) .registry-icon { color: var(--icon-brand-dark); }
 /* The shared link hint draws the one glyph; push it to the row's end. */
 a.header-picker__option[data-external-link]:not([data-external-link-icon])::after { flex: none; margin-inline-start: auto; color: var(--color-muted); }
-.header-picker__footer { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .5rem; padding: .5rem .6rem; border-radius: .4rem; background: var(--color-surface); color: var(--color-muted); font-size: .6875rem; }
+.header-picker__footer { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .5rem; padding: .5rem var(--picker-inset); border-radius: .4rem; background: var(--color-surface); color: var(--color-muted); font-size: .6875rem; }
+
+/* Picker rows reach the touch target below the phone breakpoint. */
+@media (width < 30rem) {
+  .doc-picker-option, .doc-picker-search input { min-height: var(--touch-target); }
+}
