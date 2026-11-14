@@ -74,12 +74,8 @@ const Tag = disabled ? 'span' : 'a'
 
   .sidebar-link.active {
     color: var(--theme-primary);
-    background: color-mix(in oklab, var(--theme-primary), transparent 90%);
-    font-weight: 500;
-  }
-
-  :global([data-theme-mode='dark']) .sidebar-link.active {
-    background: color-mix(in oklab, var(--theme-primary), transparent 85%);
+    background: var(--current-row-bg);
+    font-weight: 600;
   }
 
   .external-indicator {

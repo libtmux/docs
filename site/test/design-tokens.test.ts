@@ -93,6 +93,7 @@ const THEMED: Record<string, [string, string]> = {
   'tmux-usage-bracket': ['#586579', '#ccced4'],
   'lm-reroll-from': ['#6366f1', '#818cf8'],
   'lm-reroll-to': ['#a855f7', '#c084fc'],
+  'current-row-bg': ['color-mix(in oklab, var(--theme-primary), transparent 90%)', 'color-mix(in oklab, var(--theme-primary), transparent 85%)'],
 }
 const HUES: Record<string, string> = {
   'aside-note': 'oklch(0.65 0.15 250)',
@@ -241,5 +242,31 @@ describe('control outlines', () => {
   it('fails a control that keeps the decorative hairline, so the check can fail', () => {
     const hairline = '.field { border: 1px solid var(--color-edge); }'
     expect(declarations(hairline, '.field')).not.toMatch(/var\(--control-border\)/)
+  })
+})
+
+/** One current-row rule for the API tree, the docs and MCP protocol sidebars and the catalog tree. */
+describe('the current row', () => {
+  const source = (path: string) => readFileSync(new URL(`../src/${path}`, import.meta.url), 'utf8')
+  const RULE = /background:\s*var\(--current-row-bg\);\s*color:\s*var\(--theme-primary\);\s*font-weight:\s*600;/
+
+  it('tints the tree row, its closed bucket and the leaf in --theme-primary at weight 600', () => {
+    const tree = source('styles/api-tree.css')
+    const start = tree.indexOf(".api-nav__leaf[aria-current='page'],\n.api-nav__row:has(> [aria-current='page']),")
+    expect(start).toBeGreaterThan(-1)
+    expect(tree.slice(start, tree.indexOf('}', start) + 1)).toMatch(RULE)
+    expect(tree).not.toMatch(/theme-accent\) 18%/)
+  })
+
+  it('gives the docs sidebar, which the MCP protocol pages use, the same rule', () => {
+    expect(source('components/docs/SidebarLink.astro')).toMatch(/\.sidebar-link\.active \{\s*color: var\(--theme-primary\);\s*background: var\(--current-row-bg\);\s*font-weight: 600;/)
+    expect(source('components/docs/SidebarSection.astro')).toMatch(/> summary \{\s*background: var\(--current-row-bg\);\s*color: var\(--theme-primary\);\s*font-weight: 600;/)
+  })
+
+  it('draws no start-edge bar on a current row', () => {
+    const outline = source('components/TableOfContents/TableOfContentsList.astro')
+    expect(outline).not.toMatch(/aria-current='true'\]::before/)
+    expect(outline).toMatch(/a\[aria-current='true'\] \{\s*color: var\(--theme-primary\);\s*font-weight: 500;/)
+    expect(outline).not.toMatch(/rgb\(/)
   })
 })

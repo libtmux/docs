@@ -48,7 +48,8 @@ const expanded = current || containsCurrent(items)
     transform: translateY(0.1rem) rotate(225deg);
   }
   .sidebar-section:not([open]):has([aria-current='page']) > summary {
-    background: color-mix(in oklab, var(--theme-primary), transparent 90%);
+    background: var(--current-row-bg);
+    color: var(--theme-primary);
     font-weight: 600;
   }
 </style>

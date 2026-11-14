@@ -92,10 +92,6 @@ html[data-theme-mode='dark'] .api-nav { --api-nav-guide: color-mix(in srgb, var(
 @media (forced-colors: active) {
   .api-nav[data-presentation] .api-nav__row::after { --api-nav-guide: GrayText; forced-color-adjust: none; }
 }
-.api-nav[data-presentation] :is(.api-nav__leaf[aria-current='page'], .api-nav__row:has(> [aria-current='page'])) {
-  background: color-mix(in srgb, var(--theme-accent) 18%, transparent);
-}
-
 .api-nav .api-nav__tree[hidden], .api-nav .api-nav__results[hidden] { display: none; }
 .api-nav__search { padding: 0.75rem 0.5rem; }
 .api-nav__search-field { position: relative; }
@@ -380,16 +376,19 @@ html[data-api-nav] .api-nav__item[aria-expanded='false'] > [role='group']:not([d
 }
 
 /*
- * The page's row is semibold, as Nav marks a selected sub-item.
+ * The page's row, in the one current-row rule every navigation list shares:
+ * `--theme-primary` text, semibold, over `--current-row-bg`.
  *
- * Only a top-level bucket takes the weight for a row inside it, and only while
+ * Only a top-level bucket takes the rule for a row inside it, and only while
  * it is closed over the page, as NavCategoryItem marks a collapsed category
- * holding the selection. Open, it hands the weight to the row inside it. No row
+ * holding the selection. Open, it hands the rule to the row inside it. No row
  * draws a bar at its start edge.
  */
 .api-nav__leaf[aria-current='page'],
 .api-nav__row:has(> [aria-current='page']),
 .api-nav__tree > .api-nav__item[aria-expanded='false']:has([aria-current='page']) > .api-nav__row {
+  background: var(--current-row-bg);
+  color: var(--theme-primary);
   font-weight: 600;
 }
 

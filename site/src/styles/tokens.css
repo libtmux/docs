@@ -63,6 +63,9 @@
   --tmux-usage-bracket: #586579;
   --lm-reroll-from: #6366f1;
   --lm-reroll-to: #a855f7;
+
+  /* The current row of every navigation list: its text is --theme-primary on this tint, semibold, with no start-edge bar. */
+  --current-row-bg: color-mix(in oklab, var(--theme-primary), transparent 90%);
 }
 
 html[data-theme-mode="dark"] {
@@ -102,6 +105,7 @@ html[data-theme-mode="dark"] {
   --tmux-usage-bracket: #ccced4;
   --lm-reroll-from: #818cf8;
   --lm-reroll-to: #c084fc;
+  --current-row-bg: color-mix(in oklab, var(--theme-primary), transparent 85%);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -142,6 +146,7 @@ html[data-theme-mode="dark"] {
     --tmux-usage-bracket: #ccced4;
     --lm-reroll-from: #818cf8;
     --lm-reroll-to: #c084fc;
+    --current-row-bg: color-mix(in oklab, var(--theme-primary), transparent 85%);
   }
 }
 
