@@ -514,43 +514,106 @@ html[data-theme="purple"][data-theme-mode="dark"] {
    wins. One block per heading; h5/h6 carry the weight/margins that the
    typography plugin doesn't style. */
 @layer utilities {
+  /*
+   * One type scale for every page family (15-typesetting.md): page title
+   * 32/38, section 24/32, subsection 18/26, all 600. Each step is 75% of the
+   * one above, so the levels stay distinct; the content H2 was 80% of its
+   * H1 and read as one size. IBM Plex stops at 700 and the three levels ask
+   * for 600, a weight the family ships.
+   */
   .prose h1 {
-    font-size: 2.5em;
-    /* 700, not the typography plugin's 800: IBM Plex stops at 700, so an 800
-       here is a weight the browser fakes by smearing the Bold — on the
-       largest text on the page. Every other heading already asks for a
-       weight the family ships (h2 700, strong 600). */
-    font-weight: 700;
+    font-size: 2rem;
+    line-height: 2.375rem;
+    font-weight: 600;
     margin-top: 1.75rem;
     margin-bottom: 1rem;
   }
 
   .prose h2 {
-    font-size: 2em;
-    margin-top: 1.75rem;
-    margin-bottom: 1.25rem;
+    font-size: 1.5rem;
+    line-height: 2rem;
+    font-weight: 600;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
     scroll-margin-top: 3.5rem; /* Accounts for top nav height */
   }
 
   .prose h3 {
-    font-size: 1.5em;
-    margin-bottom: 1.25rem;
-    margin-top: 1.25rem;
+    font-size: 1.125rem;
+    line-height: 1.625rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    margin-top: 1.75rem;
     scroll-margin-top: 3.5rem; /* Accounts for top nav height */
   }
 
   .prose h4 {
-    font-size: 1.25em;
-    margin-bottom: 1.25rem;
+    font-size: 1rem;
+    line-height: 1.5rem;
+    margin-bottom: 0.5rem;
     scroll-margin-top: 3.5rem; /* Accounts for top nav height */
   }
 
   .prose h5 {
-    font-size: 1.125em;
+    font-size: 1rem;
   }
 
   .prose h6 {
-    font-size: 1em;
+    font-size: 1rem;
+  }
+}
+
+/*
+ * The same three steps for pages that set their headings without `.prose`:
+ * the search page, the meta pages, the symbol index and the 404. Names follow
+ * the design tokens (`page-title`, `section-heading`, `subsection-heading`).
+ */
+@layer components {
+  .page-title {
+    font-size: 2rem;
+    line-height: 2.375rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .section-heading {
+    font-size: 1.5rem;
+    line-height: 2rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  .subsection-heading {
+    font-size: 1.125rem;
+    line-height: 1.625rem;
+    font-weight: 600;
+  }
+}
+
+/*
+ * Prose colour and measure (15-typesetting.md). Body text is the page's own
+ * text colour, not the typography plugin's slate; a prose block stops at 72
+ * characters on every page family, while grids, tables and code frames keep
+ * the full column. `--measure-prose` is the foundations token; the fallback
+ * is its value.
+ */
+@layer utilities {
+  .prose {
+    --tw-prose-body: var(--text-color);
+    --tw-prose-headings: var(--text-color);
+    --tw-prose-bold: var(--text-color);
+    --tw-prose-invert-body: var(--text-color);
+    --tw-prose-invert-headings: var(--text-color);
+    --tw-prose-invert-bold: var(--text-color);
+  }
+
+  .prose :where(p, ul, ol, dl, blockquote) {
+    max-width: var(--measure-prose, 72ch);
+  }
+
+  /* Even right edges: a paragraph with several mentions fills its lines. */
+  .prose :where(p) {
+    text-wrap: pretty;
   }
 }
 
@@ -689,6 +752,50 @@ html[data-theme="purple"][data-theme-mode="dark"] {
   }
 }
 
+/*
+ * Glossary headings descend (15-typesetting.md). The per-port glossary set its
+ * H1 at 24/32 600 (`text-2xl`) above an H2 at 32/700 and an H3 at 24/600, so
+ * the page's own title was the smallest heading but one. The H1 takes the page
+ * title size; the H2 and H3 take the shared scale above, with a rule before
+ * each section, a term chip at 16px, and the spacing the scale calls for
+ * (H2 40/12, H3 28/8, paragraphs 12) so a term and its definition read as one
+ * unit. The lede is 18/28 at the prose measure.
+ */
+@layer utilities {
+  .api-reference-layout--glossary .api-reference-content > header h1 {
+    font-size: 2rem;
+    line-height: 2.375rem;
+    font-weight: 600;
+  }
+
+  .api-glossary-body :where(p) {
+    margin-block: 0 0.75rem;
+    line-height: 1.75rem;
+  }
+
+  .api-glossary-body .api-glossary-lede {
+    margin-top: 1.5rem;
+    font-size: 1.125rem;
+  }
+
+  .api-glossary-body h2 {
+    margin-top: 2.5rem;
+    margin-bottom: 0.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--color-background-border);
+  }
+
+  .api-glossary-body h3 {
+    margin-top: 1.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .api-glossary-body h3 code {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+}
+
 /* Inline code (not in pre blocks) */
 @layer components {
   /* Source-owned guides can contain path-like prose tokens that are wider
@@ -700,7 +807,11 @@ html[data-theme="purple"][data-theme-mode="dark"] {
   .prose code:not(pre code) {
     overflow-wrap: anywhere;
     @apply bg-gray-100 dark:bg-gray-800 text-[var(--theme-primary)] dark:text-[var(--theme-accent)];
-    @apply px-1.5 py-0.5 rounded text-sm font-medium;
+    /* Body weight at 0.875em; the 3px side padding keeps "editor;" from
+       reading "editor ;" (records 0025 and the typesetting page). */
+    @apply rounded font-normal;
+    padding: 0.125rem 0.1875rem;
+    font-size: 0.875em;
     @apply before:content-none! after:content-none!;
   }
 }

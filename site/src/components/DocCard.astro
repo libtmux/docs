@@ -68,9 +68,11 @@ const { label, body, href, external = false } = Astro.props as Props
     margin: 0;
   }
 
+  /* 22px leading, so a two-line description sits close to its title. */
   .doc-card__body {
     margin-top: 0.25rem;
     font-size: 0.875rem;
+    line-height: 1.375rem;
     color: var(--color-foreground-muted);
   }
 </style>
