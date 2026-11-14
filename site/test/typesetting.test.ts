@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { introBeforeCards } from '../src/lib/section-index'
+import { directoryPattern, introBeforeCards } from '../src/lib/section-index'
 import { siteCss } from './site-css'
 
 /**
@@ -74,6 +74,18 @@ describe('section index', () => {
     expect(introBeforeCards('```sh\ntmux\n```', 6)).toBe(false)
     expect(introBeforeCards('', 6)).toBe(false)
     expect(introBeforeCards('Intro.', 0)).toBe(false)
+  })
+})
+
+describe('guide directories', () => {
+  it('uses cards for two to six peers and a compact list from seven', () => {
+    expect([0, 2, 6, 7, 14].map(directoryPattern)).toEqual(['none', 'cards', 'cards', 'list', 'list'])
+  })
+
+  it('draws the compact list in two columns with a title and one line each', () => {
+    const page = readFileSync(new URL('../src/components/docs/DocPage.astro', import.meta.url), 'utf8')
+    expect(page).toMatch(/\.doc-dirlist \{[^}]*columns: 2 16rem/)
+    expect(page).toContain("directory === 'list'")
   })
 })
 

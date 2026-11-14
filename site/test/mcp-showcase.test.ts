@@ -317,8 +317,8 @@ describe('the overview page', () => {
     const tools = page.indexOf('<McpShowcase showcase={mcpTools} part="tools" />')
     expect(page.indexOf('productIntro && <ProductIntro parts={productIntro} />'), 'the example follows the intro').toBeLessThan(example)
     expect(example, 'the example comes before install').toBeLessThan(install)
-    expect(install).toBeLessThan(page.indexOf('placeholderLocale && <Content />'))
-    expect(page.indexOf('placeholderLocale && <Content />'), 'the tool grid follows the prose').toBeLessThan(tools)
+    expect(install).toBeLessThan(page.indexOf('placeholderLocale && !introFirst && <Content />'))
+    expect(page.indexOf('placeholderLocale && !introFirst && <Content />'), 'the tool grid follows the prose').toBeLessThan(tools)
     expect(page).toContain('!placeholderLocale && mcpTools && <McpShowcase')
   })
 

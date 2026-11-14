@@ -1,5 +1,5 @@
 ---
-import { introBeforeCards } from '../../lib/section-index'
+import { directoryPattern, introBeforeCards } from '../../lib/section-index'
 import { getCollection, render, type CollectionEntry } from 'astro:content'
 import DocsLayout from '../../layouts/DocsLayout.astro'
 import { docsPath, proseHref, tmuxProsePath } from '../../lib/docs-paths'
@@ -117,6 +117,8 @@ const productIsAvailable = port && entry.data.product
 const isMcpOverview = entry.data.product === 'mcp' && pagePath === 'mcp' && productIsAvailable
 const isProductOverview = productIsAvailable && pagePath === entry.data.product
 const isCoreHome = Boolean(port && !entry.data.product && pagePath === 'core' && entry.data.route === 'core')
+const directory = directoryPattern(cards.length)
+const pageKind = ({ guides: 'Guide', examples: 'Example', topics: 'Topic', concepts: 'Concept' } as Record<string, string>)[entry.data.route ?? '']
 const introFirst = !isCoreHome && introBeforeCards(entry.body, cards.length)
 const isWorkspaceOverview = entry.data.product === 'workspace'
   && pagePath === 'workspace'
@@ -301,10 +303,19 @@ const productIntro = isProductOverview && port && coreHome
   )}
   {!placeholderLocale && isCoreHome && <CoreHome port={port!} version={version ?? buildTarget(process.env).version} cards={cards} />}
   {!placeholderLocale && introFirst && <Content />}
-  {!placeholderLocale && !isCoreHome && cards.length > 0 && (
+  {!placeholderLocale && !isCoreHome && directory === 'cards' && (
     <div class:list={['not-prose grid gap-4 sm:grid-cols-2 lg:grid-cols-3', introFirst ? 'mt-6 mb-10' : 'mt-8 mb-10']}>
       {cards.map((card) => <DocCard href={proseHref(card.href, SITE_ROOT, port, version)} label={card.label} body={card.body} />)}
     </div>
+  )}
+  {/* A directory of seven or more is scanned, not chosen from: a compact list with the kind of page beside its sentence. */}
+  {!placeholderLocale && !isCoreHome && directory === 'list' && (
+    <ul class:list={['doc-dirlist not-prose', introFirst ? 'mt-6 mb-10' : 'mt-8 mb-10']}>
+      {cards.map((card) => <li>
+        <a href={proseHref(card.href, SITE_ROOT, port, version)}>{card.label}</a>
+        <span>{[pageKind, card.body].filter(Boolean).join(' · ')}</span>
+      </li>)}
+    </ul>
   )}
   {!placeholderLocale && !introFirst && <Content />}
   {!placeholderLocale && workspaceExamples && !workspaceExampleLeads && <WorkspaceShowcase showcase={workspaceExamples} />}
@@ -315,3 +326,11 @@ const productIntro = isProductOverview && port && coreHome
   {!placeholderLocale && entry.data.product && productIsAvailable && isProductApi &&
     <ProductApiIndex port={port!} product={entry.data.product} version={version ?? buildTarget(process.env).version} />}
 </DocsLayout>
+
+<style is:global>
+  /* GuideDirectory, compact: two columns from 32rem, a title and one line each, every row a link target. */
+  .doc-dirlist { margin-inline: 0; padding: 0; list-style: none; columns: 2 16rem; column-gap: 1.5rem; }
+  .doc-dirlist li { break-inside: avoid; padding: 0.375rem 0; border-bottom: 1px solid var(--color-background-border); }
+  .doc-dirlist a { font-size: 0.875rem; font-weight: 600; }
+  .doc-dirlist span { display: block; font-size: 0.8125rem; line-height: 1.25rem; color: var(--color-foreground-muted); }
+</style>

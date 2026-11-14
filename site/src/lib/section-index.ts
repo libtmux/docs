@@ -9,3 +9,8 @@
 export function introBeforeCards(body: string | undefined, cards: number): boolean {
   return cards > 0 && Boolean(body?.trim()) && !/^(#{1,6} |```|\|)/m.test(body ?? '')
 }
+
+/** Peers a reader chooses between get cards; past this many a directory is scanned, and gets a compact list. */
+export const DIRECTORY_CARDS = 6
+
+export const directoryPattern = (items: number): 'cards' | 'list' | 'none' => (items === 0 ? 'none' : items <= DIRECTORY_CARDS ? 'cards' : 'list')
