@@ -7,6 +7,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { expect, it } from 'vitest'
 import type { ApiModel } from '@libtmux/api-model'
 
+// It runs a Vite SSR build: a few seconds on an idle host, past the default 5 s when other suites share the cores.
 it('resolves native callable grammars and the parser runtime after SSR bundling', async () => {
   const root = fileURLToPath(new URL('../', import.meta.url))
   const require = createRequire(realpathSync(new URL('../node_modules/astro/package.json', import.meta.url)))
@@ -49,4 +50,4 @@ console.log(JSON.stringify(results));`)
       expect.objectContaining({ port: 'java', text: '@ReadOnly\n@Operation(Kind.READ)\npublic List<Session> sessions()', failures: [] }),
     ])
   } finally { rmSync(directory, { recursive: true, force: true }) }
-})
+}, 60_000)
