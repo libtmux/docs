@@ -49,7 +49,8 @@ describe('native Raku documentation', () => {
     expect(prose).toContainEqual(expect.objectContaining({ kind: 'ref', label: 'pane',
       link: expect.objectContaining({ href: '/reference/LibTmux::Pane/' }) }))
     expect(index.docSpans('`LibTmux::Pane`', method)).toEqual([{ kind: 'code', text: 'LibTmux::Pane' }])
-    expect(sourceUrl(model, method, '/reference/')).toBe(`/reference/sources/${file}`)
+    expect(model.generatedSources).toBeUndefined()
+    expect(sourceUrl(model, method, '/reference/')).toBe(`https://github.com/libtmux/libtmux-raku/blob/${revision}/${file}#L2`)
     expect(model.nativeProvenance?.exporter.revision).not.toBe(model.revision)
     expect(model.nativeProvenance?.exporter.compiler).toBe('2026.09')
     expect(input.symbols[2]!.doc?.summary).toContain('rakudoc:')

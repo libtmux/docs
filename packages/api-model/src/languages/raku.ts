@@ -115,6 +115,7 @@ export function extractRakuArtifact(input: unknown, expectedRevision?: string): 
     port: 'raku', repo: artifact.repo, revision: artifact.revision,
     extractor: artifact.extractor, symbols: artifact.symbols,
     exportGroups: artifact.exportGroups,
-    generatedSources: artifact.generatedSources, nativeProvenance: artifact.nativeProvenance,
+    // The captured sources only prove the digests above. The revision is public, so source links open GitHub at it.
+    nativeProvenance: artifact.nativeProvenance,
   }
 }

@@ -2014,6 +2014,66 @@
           "excerptSha256": "d4ab3b8b2e95bc65ef69eac865a5d198fe79d7ad168a9e649ba234fed5573541"
         }
       }
+    },
+    {
+      "port": "raku",
+      "page": "home",
+      "sourceRepository": "libtmux/libtmux-raku",
+      "sourceRevision": "9a9838047f1585c2c790b011cb708670999b7bdd",
+      "sourceTree": "8e2aec2ca4319d834066c1ef7fbea50eaa60e998",
+      "shellRecipe": [
+        "zef install 'LibTmux:auth<zef:libtmux>'",
+        "raku quickstart.raku"
+      ],
+      "expectedOutputs": [
+        [
+          "editor: 2 panes"
+        ]
+      ],
+      "files": [
+        {
+          "name": "quickstart.raku",
+          "sha256": "4d017243bab685e717452f47fea56a7f3d039e3a290d9ab61b4acc4a759e04b5",
+          "clipboardSha256": "96b3190feb053fd623b46ff1314d8e3ea8a53e51d94bc0bd6a45518c9bee465a"
+        }
+      ],
+      "excerptSha256": "96b3190feb053fd623b46ff1314d8e3ea8a53e51d94bc0bd6a45518c9bee465a",
+      "tmuxVersions": [
+        "3.3a",
+        "3.8"
+      ],
+      "variants": {
+        "concise": {
+          "files": [
+            {
+              "name": "quickstart.raku",
+              "sha256": "4d017243bab685e717452f47fea56a7f3d039e3a290d9ab61b4acc4a759e04b5",
+              "clipboardSha256": "96b3190feb053fd623b46ff1314d8e3ea8a53e51d94bc0bd6a45518c9bee465a"
+            }
+          ],
+          "excerptSha256": "96b3190feb053fd623b46ff1314d8e3ea8a53e51d94bc0bd6a45518c9bee465a"
+        },
+        "errors": {
+          "files": [
+            {
+              "name": "quickstart.raku",
+              "sha256": "4d017243bab685e717452f47fea56a7f3d039e3a290d9ab61b4acc4a759e04b5",
+              "clipboardSha256": "96b3190feb053fd623b46ff1314d8e3ea8a53e51d94bc0bd6a45518c9bee465a"
+            }
+          ],
+          "excerptSha256": "96b3190feb053fd623b46ff1314d8e3ea8a53e51d94bc0bd6a45518c9bee465a"
+        },
+        "cleanup": {
+          "files": [
+            {
+              "name": "quickstart.raku",
+              "sha256": "4d017243bab685e717452f47fea56a7f3d039e3a290d9ab61b4acc4a759e04b5",
+              "clipboardSha256": "96b3190feb053fd623b46ff1314d8e3ea8a53e51d94bc0bd6a45518c9bee465a"
+            }
+          ],
+          "excerptSha256": "96b3190feb053fd623b46ff1314d8e3ea8a53e51d94bc0bd6a45518c9bee465a"
+        }
+      }
     }
   ]
 }
