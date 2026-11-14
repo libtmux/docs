@@ -239,13 +239,19 @@ export function extractCommonLisp(input: unknown, revision?: string): ApiModel {
       kind: 'module', modifiers: [], signatures: [], product: pkg.product, package: pkg.system,
       publicOwner: pkg.name, apiScope: 'exported', doc: documentation(pkg.documentation), source: source(pkg.source),
     })
+    // A function whose first required parameter is the client operates on it, so the client's page lists it as a
+    // member, as other ports' server pages list their methods.
+    const client = pkg.symbols.find((symbol) => symbol.kind === 'class' && symbol.name === 'client')?.id
     for (const symbol of pkg.symbols) {
+      const params = symbol.signature ? parameters(symbol.signature) : []
+      const operation = client && symbol.kind === 'function' && !symbol.modifiers.includes('macro') &&
+        params[0]?.name.toLowerCase() === 'client' && !params[0].optional && !params[0].variadic
       symbols.push({
         id: symbol.id, publicId: symbol.id, qualifiedName: `${pkg.name}:${symbol.name}`,
         namespace: pkg.name, name: symbol.name, kind: symbol.kind as SymbolKind,
-        modifiers: symbol.modifiers as Modifier[], parent: pkg.name,
+        modifiers: symbol.modifiers as Modifier[], parent: operation ? client : pkg.name,
         signatures: [
-          ...(symbol.signature ? [{ raw: symbol.signature, params: parameters(symbol.signature) }] : []),
+          ...(symbol.signature ? [{ raw: symbol.signature, params }] : []),
           ...(symbol.methods ?? []).map((method) => methodSignature(symbol.id, method, names)),
         ],
         product: pkg.product, package: pkg.system, publicOwner: pkg.name, apiScope: 'exported',

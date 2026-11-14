@@ -217,6 +217,7 @@ describe('short names', () => {
           continue
         }
         if (port === 'raku' && !symbol.id.startsWith(owner.id)) { expect(shown, symbol.id).toBe(symbol.id); continue }
+        if (port === 'lisp' && owner.kind === 'class') { expect(shown, symbol.id).toBe(symbol.id); continue }
         expect(shown.startsWith(owner.name) && shown.endsWith(symbol.name), `${port} ${symbol.id}`).toBe(true)
         const separator = shown.slice(owner.name.length, shown.length - symbol.name.length)
         // A Rust tuple field follows its owner with a dot, as rustdoc writes it; every other Rust member with `::`.

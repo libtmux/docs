@@ -105,6 +105,8 @@ export function nativeShortName(model: { port?: string; symbols: readonly ApiSym
   const id = qualifiedNameOf(symbol), ownerId = qualifiedNameOf(owner)
   // Raku writes an exception by its X:: path, not through the module that exports it.
   if (model?.port === 'raku' && !id.startsWith(ownerId)) return id
+  // Common Lisp writes a class's operation by its package, never through the class.
+  if (model?.port === 'lisp' && owner.kind === 'class') return id
   // OCaml constructors and record fields live in their module's namespace, not their type's.
   if (model?.port === 'ocaml') return id.split('.').slice(-2).join('.')
   // Swift writes a member's labels in its name and fewer of them in its id, so the id is not always the owner and the name.
