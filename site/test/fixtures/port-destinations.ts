@@ -50,6 +50,7 @@ export const DESTINATIONS: Record<string, ExpectedDestinations> = {
   },
   erlang: {
     source: github('https://github.com/libtmux/libtmux-erlang/tree/master/apps/libtmux_erlang', 'libtmux-erlang/apps/libtmux_erlang'),
+    registry: { name: 'Hex', url: 'https://hex.pm/packages/libtmux_erlang', icon: 'hex', label: 'libtmux_erlang on Hex' },
   },
   elixir: {
     source: github('https://github.com/libtmux/libtmux-elixir/tree/main/lib', 'libtmux-elixir/lib'),

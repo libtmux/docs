@@ -93,16 +93,16 @@
       "tag": "v0.1.1-alpha.2"
     },
     "erlang": {
-      "status": "unpublished",
-      "version": null,
-      "release": null,
-      "tag": null,
+      "status": "release",
+      "version": "0.0.1",
+      "release": "0.0.1",
+      "tag": "v0.0.1",
       "packages": {
         "libtmux_erlang": {
-          "status": "unpublished",
-          "version": null,
-          "release": null,
-          "tag": null
+          "status": "release",
+          "version": "0.0.1",
+          "release": "0.0.1",
+          "tag": "v0.0.1"
         }
       }
     },

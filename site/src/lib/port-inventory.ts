@@ -219,6 +219,11 @@ const hexPackage = (name: string): Located & Pick<InventoryEntry, 'api'> => ({
   package: { host: 'hex', url: `https://hex.pm/packages/${name}` },
   api: { host: 'hexdocs', url: `https://${name}.hexdocs.pm/` },
 })
+/** A Hex package whose owner has published no HexDocs, so only the package page is real. */
+const hexRelease = (name: string): Located => ({
+  coordinate: name,
+  package: { host: 'hex', url: `https://hex.pm/packages/${name}` },
+})
 const MAVEN_GROUP = 'io.github.libtmux'
 const central = (artifact: string): Located => ({
   coordinate: `${MAVEN_GROUP}:${artifact}`,
@@ -386,8 +391,9 @@ export const INVENTORY: Readonly<Record<string, readonly InventoryEntry[]>> = {
       path: 'packages/LibTmuxWorkspace', aliases: ['using LibTmuxWorkspace', 'libtmux-workspace'] }),
   ],
   erlang: [
-    erlang({ id: 'libtmux_erlang', kind: 'library', product: 'core', label: 'libtmux_erlang', path: 'apps/libtmux_erlang',
-      aliases: ['Erlang/OTP', 'Rebar3'], note: 'Installs from Git with Rebar3 git_subdir; no Hex release.' }),
+    // Hex has no documentation for the package (docs_html_url is null), so no HexDocs reference is linked.
+    erlang({ id: 'libtmux_erlang', kind: 'library', product: 'core', label: 'libtmux_erlang', ...hexRelease('libtmux_erlang'),
+      path: 'apps/libtmux_erlang', aliases: ['Erlang/OTP', 'Rebar3'] }),
     erlang({ id: 'repository', kind: 'source', product: 'core', label: 'libtmux-erlang', coordinate: 'libtmux/libtmux-erlang' }),
   ],
   elixir: [

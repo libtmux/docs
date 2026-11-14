@@ -381,6 +381,8 @@ const ERLANG_SOURCE_INSTALL = `{deps, [
 const ERLANG_GIT_INSTALL: InstallForm = {
   code: ERLANG_SOURCE_INSTALL.replaceAll('{revision}', '"master"'), lang: 'erlang',
 }
+// An exact pin, as the package README gives: the API is still developing.
+const ERLANG_HEX_INSTALL: InstallForm = { code: '{deps, [{libtmux_erlang, "{version}"}]}.', lang: 'erlang' }
 
 const JULIA_GIT_INSTALL: InstallForm = {
   code: 'using Pkg\nPkg.add(PackageSpec(url="https://github.com/libtmux/libtmux-julia.git", rev="master"))', lang: 'julia',
@@ -693,13 +695,20 @@ const CORE_PORTS: readonly Port[] = [
     renderer: 'astro',
     publishesOwnTree: true,
     generator: 'OTP documentation chunks and native typespecs',
-    installs: [{ label: 'rebar.config', filename: 'rebar.config', lang: 'erlang',
-      code: ERLANG_SOURCE_INSTALL,
-      additionalBlocks: [{ lang: 'console', code: 'rebar3 compile' }],
-      note: 'Merge this deps entry into rebar.config. Requires Erlang/OTP 29.1.2, Rebar3 3.28.0, Linux, tmux 3.3a–3.8, make and a C11 compiler. Commit rebar.lock to retain the resolved Git revision. The application is unreleased; no Hex package is advertised.' }],
+    installs: [
+      { label: 'Rebar3 (Hex)', filename: 'rebar.config', lang: 'erlang',
+        code: ERLANG_HEX_INSTALL.code,
+        additionalBlocks: [{ lang: 'console', code: 'rebar3 compile' }],
+        note: 'Merge this deps entry into rebar.config. Requires Erlang/OTP 29.1.2, Rebar3 3.28.0, Linux, tmux 3.3a–3.8, make and a C11 compiler. The API is still developing, so the entry pins an exact version. Commit rebar.lock to retain the resolved package checksum.' },
+      { label: 'Rebar3 (Git)', filename: 'rebar.config', lang: 'erlang',
+        code: ERLANG_SOURCE_INSTALL,
+        additionalBlocks: [{ lang: 'console', code: 'rebar3 compile' }],
+        note: 'Installs the documented source revision instead of the Hex release. Merge this deps entry into rebar.config. Commit rebar.lock to retain the resolved Git revision.' },
+    ],
+    registry: { name: 'Hex', url: 'https://hex.pm/packages/libtmux_erlang', icon: 'hex' },
     initProject: { code: 'rebar3 new lib tmux_example && cd tmux_example', lang: 'console' },
-    installForms: { release: ERLANG_GIT_INSTALL, prerelease: ERLANG_GIT_INSTALL, git: ERLANG_GIT_INSTALL },
-    installNote: 'Add libtmux_erlang to your application dependencies and start it with application:ensure_all_started/1. Native records are experimental in OTP 29. The Git subdirectory selects the core application from its umbrella repository.',
+    installForms: { release: ERLANG_HEX_INSTALL, prerelease: ERLANG_HEX_INSTALL, git: ERLANG_GIT_INSTALL },
+    installNote: 'Add libtmux_erlang to your application dependencies and start it with application:ensure_all_started/1. Native records are experimental in OTP 29. The Git alternative selects the core application from its umbrella repository with a subdirectory.',
   },
   {
     slug: 'elixir',
