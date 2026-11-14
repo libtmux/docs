@@ -198,3 +198,48 @@ describe('contrast of the shared chrome', () => {
     expect(ratio(accent, tint(accent, 0.1, hex(light.background)))).toBeLessThan(4.5)
   })
 })
+
+/** Controls that an outline identifies read the control token, never the hairline that decorates a surface. */
+describe('control outlines', () => {
+  const source = (path: string) => readFileSync(new URL(`../src/${path}`, import.meta.url), 'utf8')
+  /** The declarations of every rule whose selector list contains `selector`. */
+  const declarations = (text: string, selector: string) => {
+    const escaped = selector.replace(/[.*+?^${}()|[\]\\>]/g, '\\$&')
+    const found = [...text.matchAll(new RegExp(`(?:^|[\\n,}])\\s*${escaped}[^{}]*\\{([^}]*)\\}`, 'g'))].map((match) => match[1]!)
+    expect(found, selector).not.toHaveLength(0)
+    return found.join('\n')
+  }
+  const CONTROLS: [string, string][] = [
+    ['styles/documentation-picker.css', '.doc-picker > summary'],
+    ['styles/documentation-picker.css', '.doc-picker-search input'],
+    ['styles/api-tree.css', '.api-nav__owner-field'],
+    ['styles/api-tree.css', '.api-nav__owner-search'],
+    ['styles/api-tree.css', '.api-nav__more > summary'],
+    ['styles/api-tree.css', '.api-nav__search input'],
+    ['styles/api-tree.css', '.api-nav__filters'],
+    ['styles/api-tree.css', '.api-nav__search-field > kbd'],
+    ['components/docs/Sidebar.astro', '.section-search input'],
+    ['components/SearchPanel.astro', '.search-panel__field'],
+    ['components/widgets/TaskPicker.astro', '.task-native select'],
+    ['components/widgets/mcp-install.css', '.lm-mcp-install__copy'],
+    ['components/widgets/package-install.css', '.lm-pkg-install__copy'],
+    ['components/widgets/AgentPrompt.astro', '.lm-agent-prompt__copy'],
+    ['styles/global.css', '.scheme-switch'],
+    ['styles/global.css', '.scheme-cycle'],
+  ]
+
+  it.each(CONTROLS)('%s %s is outlined in --control-border', (file, selector) => {
+    const body = declarations(source(file), selector)
+    expect(body).toMatch(/border:\s*1px solid var\(--control-border\)/)
+  })
+
+  it('names the control token to Tailwind for the header search chip', () => {
+    expect(source('styles/global.css')).toContain('--color-control: var(--control-border);')
+    expect(source('components/SiteHeader.astro')).toMatch(/site-header__search border border-control/)
+  })
+
+  it('fails a control that keeps the decorative hairline, so the check can fail', () => {
+    const hairline = '.field { border: 1px solid var(--color-edge); }'
+    expect(declarations(hairline, '.field')).not.toMatch(/var\(--control-border\)/)
+  })
+})

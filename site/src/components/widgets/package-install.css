@@ -434,7 +434,7 @@
 
   .lm-pkg-install__copy {
     appearance: none;
-    border: 1px solid var(--lm-pkg-install-border);
+    border: 1px solid var(--control-border);
     border-radius: 0.25rem;
     background: var(--lm-pkg-install-bg);
     color: var(--lm-pkg-install-fg-secondary);

@@ -109,6 +109,7 @@
   --color-edge: var(--color-background-border);
   --color-muted: var(--color-foreground-muted);
   --color-accent: var(--color-link);
+  --color-control: var(--control-border);
 }
 
 /* Theme color palettes (--color-<theme>-<slot>) are defined once, in the
@@ -732,7 +733,7 @@ html[data-theme="purple"][data-theme-mode="dark"] {
   .prose kbd {
     display: inline-block;
     padding: 0.05em 0.4em;
-    border: 1px solid var(--color-edge);
+    border: 1px solid var(--control-border);
     border-bottom-width: 2px;
     border-radius: 0.3em;
     background: var(--color-surface);
@@ -1007,7 +1008,7 @@ body[data-documentation-layout='reference'] {
   align-items: center;
   gap: 0.125rem;
   margin: 0;
-  border: 1px solid var(--color-background-border);
+  border: 1px solid var(--control-border);
   border-radius: var(--radius-md, 0.375rem);
   padding: 0.125rem;
 }
@@ -1070,7 +1071,7 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
   outline-offset: 1px;
 }
 
-.scheme-cycle { display: none; align-items: center; justify-content: center; width: 2rem; height: 1.75rem; padding: .25rem; border: 1px solid var(--color-background-border); border-radius: var(--radius-md, .375rem); color: var(--topnav-link-color); background: transparent; cursor: pointer; }
+.scheme-cycle { display: none; align-items: center; justify-content: center; width: 2rem; height: 1.75rem; padding: .25rem; border: 1px solid var(--control-border); border-radius: var(--radius-md, .375rem); color: var(--topnav-link-color); background: transparent; cursor: pointer; }
 .scheme-cycle [data-scheme-cycle-icon] { display: flex; }
 .scheme-cycle:hover { background: var(--color-surface-hover); }
 .scheme-cycle:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
@@ -1192,7 +1193,7 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
   min-height: 0;
   gap: 0.35rem;
   padding: 0 0.5rem;
-  border: 1px solid var(--color-background-border);
+  border: 1px solid var(--control-border);
   border-radius: var(--radius-md, 0.375rem);
   background: color-mix(in oklab, var(--topnav-background), var(--topnav-text-color) 7%);
   color: var(--topnav-link-color);
@@ -1265,7 +1266,7 @@ html[data-theme-mode='dark'] .site-header .header-picker > summary:is(:hover, :f
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  border: 1px solid var(--color-background-border);
+  border: 1px solid var(--control-border);
   border-radius: var(--radius-md, 0.375rem);
   padding: 0.3rem 0.5rem;
   font-size: 0.875rem;
