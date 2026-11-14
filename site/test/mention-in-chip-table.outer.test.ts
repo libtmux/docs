@@ -43,7 +43,7 @@ async function looks(css: string, container: string) {
       const link = document.querySelector(selector)!
       const mark = link.querySelector(':scope > .api-nav__kind')!
       const pick = (element: Element) => Object.fromEntries(properties.map((name) => [name, getComputedStyle(element)[name as never] as string]))
-      return { link: pick(link), mark: { ...pick(mark), width: getComputedStyle(mark).width, height: getComputedStyle(mark).height } }
+      return { link: pick(link), mark: { ...pick(mark), width: getComputedStyle(mark).width, height: getComputedStyle(mark).height, alignSelf: getComputedStyle(mark).alignSelf } }
     }
     return { prose: of('#prose a'), note: of('#note'), equivalent: of('#equivalent') }
   }, PROPERTIES)
