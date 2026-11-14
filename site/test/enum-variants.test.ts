@@ -138,7 +138,7 @@ async function page(id: string) {
   }))
   return win.document
 }
-const contents = (document: Window['document']) => [...document.querySelectorAll('nav[aria-label="On this page"] a')].map((link) => [link.getAttribute('href'), link.textContent])
+const contents = (document: Window['document']) => [...document.querySelectorAll('nav.api-section-links a')].map((link) => [link.getAttribute('href'), link.firstChild?.textContent])
 
 const without = (id: string) => model.symbols.filter((entry) => entry.id !== id)
 const retyped = (id: string, type: string) => model.symbols.map((entry) => entry.id === id ? { ...entry, type } : entry)

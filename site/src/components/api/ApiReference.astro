@@ -481,13 +481,13 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
     <div class="api-reference-content min-w-0 px-4 py-6 lg:px-6">
       <PageToolbar breadcrumbs={breadcrumbs} />
       <header id={owner ? 'api-overview' : undefined} class:list={[owner && 'api-reference-heading']}>
-        {owner && <div class="api-reference-eyebrow">
+        {/* The kind, project and release are context, not the page's subject: out of the search index so a type that is only named here never outranks the declaration. The version is stated once, in the context strip. */}
+        {owner && <div class="api-reference-eyebrow" data-pagefind-ignore="all">
           <ApiBadge label={owner.command?.kind ?? nativeKind(owner, language)} variant="kind" value={nativeKind(owner, language)} />
           <span>{source?.model.project ?? portMeta?.projectName}</span>
           {owner.doc?.since && <span>Since {owner.doc.since}</span>}
-          <span class="api-badge api-badge--mod api-reference-version"><span class="api-badge__label">{version}</span></span>
         </div>}
-        <h1 class="scroll-mt-24 text-2xl font-semibold tracking-tight">
+        <h1 class="scroll-mt-24 api-reference-title" data-pagefind-weight={owner ? '10' : undefined}>
           <SymbolName name={displayName} />
         </h1>
         {owner && <>
@@ -721,6 +721,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                 window.__initApiSourceDetails?.(document)
               </script>
               <summary>{source ? 'Source' : 'Source and package'}</summary>
+              {declaringType && <span hidden data-pagefind-meta={`owner:${declaringType.name}`} />}
               <dl class="api-definition">
               {/* The module, namespace or package this symbol is in, and its full name with a button to copy it; the page heading above carries neither. */}
               <dt>Qualified name</dt>
@@ -880,7 +881,8 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
         )
       }
     </div>
-    {(owner || glossary) && <ApiPageContents sections={pageSections} related={related} />}
+    {/* A symbol page has its section bar; the right-hand list stays only where there is no bar. */}
+    {(owner || glossary) && <ApiPageContents sections={pageSections} related={related} outline={!owner} />}
   </main>
 
 <script>

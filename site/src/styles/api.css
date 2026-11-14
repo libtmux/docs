@@ -904,14 +904,15 @@ html:has(:is(.api-reference-layout--symbol, .api-reference-layout--glossary)):no
 .api-glossary-contents > summary { cursor: pointer; padding-block: 0.375rem; font-size: 0.875rem; }
 .api-glossary-contents > summary:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
 @media (min-width: 85rem) {
-  :is(.api-reference-layout--symbol, .api-reference-layout--glossary):has(> .api-nav-column) {
+  /* A symbol page has its section bar and no third column; only the glossary, which has no bar, keeps the outline beside it. */
+  .api-reference-layout--glossary:has(> .api-nav-column) {
     grid-template-columns: 16rem minmax(0, 1fr) 14rem;
   }
   :is(.api-reference-layout--symbol, .api-reference-layout--glossary) > .api-reference-content {
     padding-inline: 2.25rem;
     padding-bottom: 3rem;
   }
-  .api-page-contents {
+  .api-page-contents:has(> aside) {
     display: block;
     min-width: 0;
     padding: 4.5rem 0.5rem 2rem 0;
@@ -964,11 +965,15 @@ html:has(:is(.api-reference-layout--symbol, .api-reference-layout--glossary)):no
 .api-reference-heading {
   margin-block: 1rem 1.25rem;
 }
-.api-reference-heading h1 {
-  margin-block: 0.5rem 0.375rem;
+.api-reference-heading h1 { margin-block: 0.5rem 0.375rem; }
+/* The one page title, 32/38 at 600 (`page-title`), for every reference page: a reader moving from a guide to an API page sees one size. */
+.api-reference-title {
   font-family: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
-  font-size: clamp(1.8rem, 2.4vw, 2.5rem);
-  line-height: 1.2;
+  font-size: 2rem;
+  line-height: 2.375rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
 }
 .api-reference-eyebrow {
   display: flex;
@@ -978,8 +983,6 @@ html:has(:is(.api-reference-layout--symbol, .api-reference-layout--glossary)):no
   color: var(--color-muted);
   font-size: 0.8125rem;
 }
-/* The version is a grey modifier chip, on the legend chip's box, at the row's far edge. */
-.api-reference-version { margin-left: auto; }
 .api-reference-relationships {
   display: flex;
   flex-wrap: wrap;
@@ -1025,7 +1028,8 @@ dl.py.gp-sphinx-api-container > dd > .gp-sphinx-api-parameters:last-child > dl.f
 .api-reference-summary {
   max-width: 76ch;
   margin-block: 1rem 0;
-  line-height: 1.75;
+  font-size: 1rem;
+  line-height: 1.75rem;
 }
 .api-qualified-name {
   position: relative;
