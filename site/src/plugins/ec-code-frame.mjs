@@ -1,5 +1,5 @@
 import { h, select } from 'astro-expressive-code/hast'
-import { lineNumbers, parseLines, requestedCap, roleLabel } from '../lib/code-frame.mjs'
+import { formatLines, lineNumbers, parseLines, rangeFragment, requestedCap, roleLabel } from '../lib/code-frame.mjs'
 
 /**
  * Expressive Code plugin: what a code frame says about its code.
@@ -9,6 +9,10 @@ import { lineNumbers, parseLines, requestedCap, roleLabel } from '../lib/code-fr
  * - The source's own line numbers on an excerpt, so a reader can find the
  *   lines in the tested file. The numbers sit in a gutter, outside the code,
  *   so Copy never has them.
+ * - On the complete program an excerpt of the page cites (`cite`), the same
+ *   numbers from line 1. The excerpt's range links to its lines (`#L63-L72`),
+ *   which highlight on arrival. A program nothing cites stays unnumbered,
+ *   because it is for copying (record 0054).
  * - A line cap (`height="16"`) for a long program or output: the frame stops
  *   at that many lines, scrolls inside, and a bar under it says how many it
  *   shows and offers the rest. Copy always copies every line, and print
@@ -29,6 +33,38 @@ function frameId(code, groupIndex) {
 export function codeFrame() {
   /** @type {WeakMap<object, (number | undefined)[]>} */
   const numbered = new WeakMap()
+  /** @type {WeakMap<object, Map<number, string>>} */
+  const anchors = new WeakMap()
+
+  /** The source line of each row: an excerpt's range, or every line of a program an excerpt cites. Empty when the frame shows no numbers. */
+  function rowsOf(codeBlock) {
+    let rows = numbered.get(codeBlock)
+    if (!rows) {
+      const role = codeBlock.metaOptions.getString('role')
+      const count = codeBlock.getLines().length
+      rows = (role === 'excerpt' ? lineNumbers(parseLines(codeBlock.metaOptions.getString('lines')), count)
+        : role === 'program' && parseLines(codeBlock.metaOptions.getString('cite')).length ? lineNumbers([{ start: 1, end: count }], count)
+          : undefined) ?? []
+      numbered.set(codeBlock, rows)
+    }
+    return rows
+  }
+
+  /** The fragment each cited range starts at, so a link lands on its first row. A row has one id; the first range to start there takes it. */
+  function anchorsOf(codeBlock) {
+    let found = anchors.get(codeBlock)
+    if (!found) {
+      found = new Map()
+      if (codeBlock.metaOptions.getString('role') === 'program') {
+        for (const range of parseLines(codeBlock.metaOptions.getString('cite'))) {
+          if (!found.has(range.start)) found.set(range.start, rangeFragment(range))
+        }
+      }
+      anchors.set(codeBlock, found)
+    }
+    return found
+  }
+
   return {
     name: 'code-frame',
     baseStyles: `
@@ -37,6 +73,12 @@ export function codeFrame() {
       .frame .header .role b { font-weight: 600; color: var(--text-color, inherit); }
       /* An excerpt is part of a program, so its header rule is dashed. */
       .frame[data-role='excerpt'] .header { background-image: none; border-bottom: 1px dashed var(--ec-frm-edTabBarBrdBtmCol); }
+      /* The lines an excerpt's range link points at, on arrival. The first row also takes :target where a script has not run. */
+      .ec-line[id] { scroll-margin-top: 5rem; }
+      .ec-line[data-hit], .ec-line:target { background: var(--color-highlight-on-target, color-mix(in srgb, var(--color-link, currentColor) 14%, transparent)); }
+      @media (forced-colors: active) { .ec-line[data-hit], .ec-line:target { outline: 2px solid Highlight; outline-offset: -2px; } }
+      .frame .header .role a { color: var(--color-link, inherit); text-decoration: underline dotted; text-underline-offset: 0.2em; }
+      .frame .header .role a:hover { text-decoration-style: solid; }
       /* The source's line numbers, one width on every row. */
       .ec-line .gutter .ln { box-sizing: content-box; width: var(--ln-width, 2ch); padding-inline: 1rem 0; text-align: end; color: var(--color-foreground-muted, var(--color-muted)); user-select: none; -webkit-user-select: none; }
       .ec-line .gutter ~ .code { --ecGtrBrdWd: 0px; padding-inline-start: calc(var(--ecIndent, 0ch) + 1.25ch); }
@@ -73,11 +115,8 @@ export function codeFrame() {
         records.forEach(record => record.addedNodes.forEach(ready));
       }).observe(document.body, { childList: true, subtree: true });
       document.addEventListener('astro:page-load', () => ready(document));
-      document.addEventListener('click', event => {
-        const button = event.target.closest?.('.expressive-code button[data-cap-toggle]');
-        if (!button) return;
+      function setExpanded(button, open) {
         const frame = button.closest('.frame');
-        const open = button.getAttribute('aria-expanded') !== 'true';
         frame.toggleAttribute('data-expanded', open);
         button.setAttribute('aria-expanded', String(open));
         button.textContent = open ? 'Show fewer lines' : 'Show all ' + button.getAttribute('data-total') + ' lines';
@@ -88,20 +127,53 @@ export function codeFrame() {
           if (pre) pre.scrollTop = 0;
           if (frame.getBoundingClientRect().top < 0) frame.scrollIntoView({ block: 'start' });
         }
+      }
+      document.addEventListener('click', event => {
+        const button = event.target.closest?.('.expressive-code button[data-cap-toggle]');
+        if (button) setExpanded(button, button.getAttribute('aria-expanded') !== 'true');
+      });
+      // An excerpt's range links to #L63-L72: the lines of the complete program that range names are highlighted.
+      function arrive(hash) {
+        document.querySelectorAll('.ec-line[data-hit]').forEach(row => row.removeAttribute('data-hit'));
+        const match = /^#L(\\d+)(?:-L?(\\d+))?$/.exec(hash);
+        if (!match) return;
+        const first = Number(match[1]);
+        const last = Number(match[2] ?? match[1]);
+        let target;
+        document.querySelectorAll('.frame[data-role="program"] .ec-line').forEach(row => {
+          const number = Number(row.querySelector('.gutter .ln')?.textContent);
+          if (number >= first && number <= last) {
+            row.setAttribute('data-hit', '');
+            target ??= row;
+          }
+        });
+        if (!target) return;
+        // A capped program shows the lines it was sent to.
+        const more = target.closest('.frame')?.querySelector('button[data-cap-toggle]');
+        if (more && !more.disabled && more.getAttribute('aria-expanded') !== 'true') setExpanded(more, true);
+        target.scrollIntoView?.({ block: 'center' });
+      }
+      const here = () => arrive(location.hash);
+      here();
+      window.addEventListener('hashchange', here);
+      window.addEventListener('popstate', here);
+      document.addEventListener('astro:page-load', here);
+      // The client router follows a link to a fragment of this page without a hashchange, so the link names where it leads.
+      document.addEventListener('click', event => {
+        const link = event.target.closest?.('a[href^="#L"]');
+        if (link) arrive(link.getAttribute('href'));
       });
     })();`],
     hooks: {
       postprocessRenderedLine: ({ codeBlock, lineIndex, renderData }) => {
-        const role = codeBlock.metaOptions.getString('role')
-        if (role !== 'excerpt') return
-        if (!numbered.has(codeBlock)) {
-          numbered.set(codeBlock, lineNumbers(parseLines(codeBlock.metaOptions.getString('lines')), codeBlock.getLines().length) ?? [])
-        }
-        const number = numbered.get(codeBlock)?.[lineIndex]
+        const rows = rowsOf(codeBlock)
         // A frame whose rows the lines do not describe has no numbers at all; a blank row between ranges has an empty cell.
-        if (!numbered.get(codeBlock)?.length) return
+        if (!rows.length) return
+        const number = rows[lineIndex]
         const cell = h('div.ln', { 'aria-hidden': 'true' }, number === undefined ? [] : [String(number)])
         renderData.lineAst.children.unshift(h('div.gutter', { 'data-pagefind-ignore': '' }, [cell]))
+        const fragment = number === undefined ? undefined : anchorsOf(codeBlock).get(number)
+        if (fragment) renderData.lineAst.properties.id = fragment
       },
       postprocessRenderedBlock: ({ codeBlock, renderData }) => {
         const figure = select('figure.frame', renderData.blockAst)
@@ -113,12 +185,18 @@ export function codeFrame() {
         const label = roleLabel(role, ranges)
         const header = select('figcaption.header', figure)
         if (label && header && select('.title', header)?.children.length) {
-          header.children.push(h('span.role', { 'data-pagefind-ignore': '' }, [h('b', label.name), ...(label.detail ? [` \u00b7 ${label.detail}`] : [])]))
+          // Where the page holds the complete program, the range leads to its lines.
+          const program = codeBlock.metaOptions.getString('program')
+          const detail = !label.detail ? []
+            : [' \u00b7 ', program && ranges.length
+              ? h('a', { href: `#${rangeFragment(ranges[0])}`, title: `${formatLines([ranges[0]]).replace(/^l/, 'L')} of the complete program ${program}` }, label.detail)
+              : label.detail]
+          header.children.push(h('span.role', { 'data-pagefind-ignore': '' }, [h('b', label.name), ...detail]))
           figure.properties.dataRole = role
         }
 
-        const rows = numbered.get(codeBlock)
-        if (rows?.length) {
+        const rows = rowsOf(codeBlock)
+        if (rows.length) {
           const digits = String(Math.max(...rows.filter((row) => row !== undefined))).length
           pre.properties.style = [pre.properties.style, `--ln-width: ${digits}ch`].filter(Boolean).join(';')
         }

@@ -14,6 +14,11 @@
  *                                joined by a comma ("12-40,55-60") are shown
  *                                one after the other with a blank row between
  *   height="16" | "full"         show this many lines, then scroll
+ *   program="main.go"            on an excerpt: the complete program on the same
+ *                                page holds these lines, so the range links to them
+ *   cite="6,59-78"               on a complete program: the lines excerpts of the
+ *                                page quote, so the program numbers its lines and
+ *                                the range links land on them (record 0054)
  */
 
 const EN_DASH = '–'
@@ -72,6 +77,25 @@ export function roleLabel(role, ranges) {
 }
 
 /**
+ * A line range as the URL fragment of a numbered program names it: `L63-L72`, or `L7`.
+ * @param {{ start: number, end: number }} range
+ */
+export function rangeFragment({ start, end }) {
+  return start === end ? `L${start}` : `L${start}-L${end}`
+}
+
+/**
+ * The `cite` attribute of a complete program: the ranges its excerpts quote,
+ * once each and in source order; undefined when nothing quotes it.
+ * @param {{ start: number, end: number }[]} ranges
+ */
+export function citeMeta(ranges) {
+  const sorted = [...ranges].sort((a, b) => a.start - b.start || a.end - b.end)
+  const unique = sorted.filter((range, index) => index === 0 || range.start !== sorted[index - 1].start || range.end !== sorted[index - 1].end)
+  return unique.length ? unique.map(({ start, end }) => (start === end ? `${start}` : `${start}-${end}`)).join(',') : undefined
+}
+
+/**
  * The source line number of each row of an excerpt; a blank row between two
  * ranges has none. Undefined when the rows are not the lines the ranges
  * describe, so a frame never shows numbers that are wrong.
@@ -116,9 +140,10 @@ export function requestedCap(request, total) {
 /**
  * The info string attributes of an excerpt: its role and source lines, and
  * its file in a file-tab frame when the caller does not name one itself.
- * @param {{ title?: string, ranges: { start: number, end: number }[] }} excerpt
+ * `program` names the complete program on the page that holds these lines.
+ * @param {{ title?: string, ranges: { start: number, end: number }[], program?: string }} excerpt
  */
-export function excerptMeta({ title, ranges }) {
+export function excerptMeta({ title, ranges, program }) {
   const lines = ranges.map(({ start, end }) => (start === end ? `${start}` : `${start}-${end}`)).join(',')
-  return `${title === undefined ? '' : `title="${title}" frame="code" `}role="excerpt" lines="${lines}"`
+  return `${title === undefined ? '' : `title="${title}" frame="code" `}role="excerpt" lines="${lines}"${program === undefined ? '' : ` program="${program}"`}`
 }

@@ -8,11 +8,13 @@ import ecConfig from '../ec.config.mjs'
 import {
   LONG_PROGRAM_LINES,
   PROGRAM_CAP_LINES,
+  citeMeta,
   excerptMeta,
   formatLines,
   lineCap,
   lineNumbers,
   parseLines,
+  rangeFragment,
   roleLabel,
 } from '../src/lib/code-frame.mjs'
 import { parseFenceAttributes } from '../src/lib/example-excerpt.ts'
@@ -49,6 +51,18 @@ describe('line ranges', () => {
   it('numbers nothing when the rows do not match the range, rather than mislabel them', () => {
     expect(lineNumbers([{ start: 59, end: 78 }], 3)).toBeUndefined()
     expect(lineNumbers([], 3)).toBeUndefined()
+  })
+})
+
+describe('the lines of a program that an excerpt cites (record 0054)', () => {
+  it('writes a range the way a URL fragment names it', () => {
+    expect(rangeFragment({ start: 63, end: 72 })).toBe('L63-L72')
+    expect(rangeFragment({ start: 7, end: 7 })).toBe('L7')
+  })
+
+  it('lists the cited ranges once each, in source order', () => {
+    expect(citeMeta([{ start: 59, end: 78 }, { start: 6, end: 6 }, { start: 59, end: 78 }])).toBe('6,59-78')
+    expect(citeMeta([])).toBeUndefined()
   })
 })
 
@@ -92,6 +106,15 @@ describe('Expressive Code frames', () => {
     render = async (code, meta, language) => toHtml(await rendered(code, meta, language))
   })
 
+  /** The page with the frame drawn and the frame scripts run, at `url`. */
+  const open = async (code: string, meta: string, url = 'https://libtmux.org/en/example/') => {
+    const window = new Window({ url })
+    window.document.body.innerHTML = await render(code, meta)
+    window.eval(script)
+    const document = window.document as unknown as Document
+    return { window, document, button: document.querySelector<HTMLButtonElement>('.cap button')!, frame: document.querySelector<HTMLElement>('.frame')! }
+  }
+
   describe('role label', () => {
     it('says Excerpt with the source lines in the header, after the file name', async () => {
       const ast = await rendered(go(3), 'title="main.go" frame="code" role="excerpt" lines="59-61"')
@@ -102,7 +125,7 @@ describe('Expressive Code frames', () => {
       expect(select('figure.frame', ast)!.properties.dataRole).toBe('excerpt')
     })
 
-    it('says Complete program, with no line numbers: a program is for copying', async () => {
+    it('says Complete program, with no line numbers unless an excerpt cites it: a program is for copying', async () => {
       const ast = await rendered(go(5), 'title="main.go" frame="code" role="program"')
       expect(toHtml(select('.role', ast)!)).toBe('<span class="role" data-pagefind-ignore=""><b>Complete program</b></span>')
       expect(select('figure.frame', ast)!.properties.dataRole).toBe('program')
@@ -147,6 +170,75 @@ describe('Expressive Code frames', () => {
       const ast = await rendered(go(3), 'title="main.go" frame="code" role="excerpt" lines="59-78"')
       expect(selectAll('.gutter', ast)).toHaveLength(0)
       expect(toHtml(select('.role', ast)!)).toContain('lines 59–78')
+    })
+  })
+
+  describe('a complete program that an excerpt cites (record 0054)', () => {
+    const cited = 'title="main.go" frame="code" role="program" cite="2-3,5"'
+
+    it('numbers every line from 1, and gives the first line of each cited range its fragment', async () => {
+      const code = go(6)
+      const ast = await rendered(code, cited)
+      expect(selectAll('.ec-line .gutter .ln', ast).map((ln) => toHtml(ln.children))).toEqual(['1', '2', '3', '4', '5', '6'])
+      expect(selectAll('.ec-line', ast).map((row) => row.properties.id ?? '')).toEqual(['', 'L2-L3', '', '', 'L5', ''])
+      expect(selectAll('.gutter', ast).every((gutter) => gutter.properties.dataPagefindIgnore === ''), 'search skips the numbers').toBe(true)
+      expect(select('.copy button[data-code]', ast)!.properties.dataCode).toBe(code.replace(/\n/g, '\x7f'))
+      expect(toHtml(select('.role', ast)!)).toBe('<span class="role" data-pagefind-ignore=""><b>Complete program</b></span>')
+    })
+
+    it('keeps the number column one width on every row', async () => {
+      const ast = await rendered(go(120), 'title="main.go" frame="code" role="program" height="full" cite="100-105"')
+      expect(select('pre', ast)!.properties.style).toContain('--ln-width: 3ch')
+    })
+
+    it('numbers a program only when it is one: a cite on an excerpt or on a frame with no role changes nothing', async () => {
+      expect(selectAll('.gutter', await rendered(go(3), 'title="a.go" frame="code" cite="1-2"'))).toHaveLength(0)
+      expect(selectAll('.ec-line', await rendered(go(3), 'title="a.go" frame="code" role="excerpt" lines="5-7" cite="1-2"')).map((row) => row.properties.id ?? '')).toEqual(['', '', ''])
+    })
+
+    it('links the excerpt\'s range to those lines, and leaves the range plain where nothing leads there', async () => {
+      const ast = await rendered(go(3, 59), 'title="main.go" frame="code" role="excerpt" lines="59-61" program="main.go"')
+      expect(toHtml(select('.role', ast)!)).toBe('<span class="role" data-pagefind-ignore=""><b>Excerpt</b> · <a href="#L59-L61" title="Lines 59–61 of the complete program main.go">lines 59–61</a></span>')
+      const plain = await rendered(go(3, 59), 'title="main.go" frame="code" role="excerpt" lines="59-61"')
+      expect(select('.role a', plain)).toBeUndefined()
+    })
+
+    it('highlights the lines of a range on arrival, and again when the fragment changes', async () => {
+      const { window, document } = await open(go(6), cited, 'https://libtmux.org/en/example/#L2-L3')
+      const hit = () => [...document.querySelectorAll('.ec-line[data-hit] .ln')].map((ln) => ln.textContent)
+      expect(hit()).toEqual(['2', '3'])
+      window.location.hash = '#L5'
+      window.dispatchEvent(new window.Event('hashchange'))
+      expect(hit()).toEqual(['5'])
+      window.location.hash = '#api-section'
+      window.dispatchEvent(new window.Event('hashchange'))
+      expect(hit()).toEqual([])
+    })
+
+    it('highlights the lines a range link names when the router follows it without changing the hash', async () => {
+      const { document } = await open(go(6), cited)
+      const link = document.createElement('a')
+      link.setAttribute('href', '#L2-L3')
+      document.body.append(link)
+      link.click()
+      expect([...document.querySelectorAll('.ec-line[data-hit] .ln')].map((ln) => ln.textContent)).toEqual(['2', '3'])
+    })
+
+    it('opens a capped program that holds a highlighted line', async () => {
+      const { document } = await open(go(60), 'title="main.go" frame="code" role="program" cite="50-52"', 'https://libtmux.org/en/example/#L50-L52')
+      expect(document.querySelector('.frame')!.hasAttribute('data-expanded')).toBe(true)
+      expect(document.querySelector('.cap button')!.getAttribute('aria-expanded')).toBe('true')
+      expect([...document.querySelectorAll('.ec-line[data-hit] .ln')].map((ln) => ln.textContent)).toEqual(['50', '51', '52'])
+    })
+
+    it('highlights nothing for a fragment that is not a line range', async () => {
+      const { document } = await open(go(6), cited, 'https://libtmux.org/en/example/#L2x')
+      expect(document.querySelectorAll('[data-hit]')).toHaveLength(0)
+    })
+
+    it('marks the highlighted rows with the page\'s target colour and a forced-colours outline', () => {
+      expect(baseStyles).toMatch(/\.ec-line\[data-hit\][^{]*\{[^}]*background:\s*var\(--color-highlight-on-target/)
+      expect(baseStyles).toMatch(/forced-colors:\s*active\)\s*\{[^@]*\.ec-line\[data-hit\][^{]*\{[^}]*outline/)
     })
   })
 
@@ -209,14 +301,6 @@ describe('Expressive Code frames', () => {
   })
 
   describe('Show all lines button', () => {
-    const open = async (code: string, meta: string) => {
-      const window = new Window({ url: 'https://libtmux.org/en/example/' })
-      window.document.body.innerHTML = await render(code, meta)
-      window.eval(script)
-      const document = window.document as unknown as Document
-      return { window, document, button: document.querySelector<HTMLButtonElement>('.cap button')!, frame: document.querySelector<HTMLElement>('.frame')! }
-    }
-
     it('is disabled until the script is ready, then expands and collapses the frame', async () => {
       const { button, frame, document } = await open(go(86), 'title="main.go" frame="code" height="16"')
       expect(button.disabled).toBe(false)
@@ -256,7 +340,7 @@ describe('what the fences of a page ask the frame for', () => {
 
   it('labels an excerpt of a block on the page with its file, its role and the lines it quotes', () => {
     const [first] = codes(body)
-    expect(attributes(first!)).toEqual({ title: 'main.go', frame: 'code', role: 'excerpt', lines: '7-8' })
+    expect(attributes(first!)).toEqual({ title: 'main.go', frame: 'code', role: 'excerpt', lines: '7-8', program: 'main.go' })
     expect(first!.meta).not.toMatch(/excerpt=|from=|\bto=/)
   })
 
@@ -264,6 +348,11 @@ describe('what the fences of a page ask the frame for', () => {
     const program = codes(body).find((node) => attributes(node).title === 'main.go' && attributes(node).role === 'program')
     expect(program).toBeDefined()
     expect(attributes(program!)).toMatchObject({ frame: 'code', role: 'program' })
+  })
+
+  it('tells the complete program which of its lines the excerpts cite, so it numbers them (record 0054)', () => {
+    const program = codes(body).find((node) => attributes(node).title === 'main.go' && attributes(node).role === 'program')!
+    expect(attributes(program).cite).toBe('6,7-8')
   })
 
   it('leaves a titled block nothing quotes, and a plain fence, as they are', () => {
@@ -275,19 +364,28 @@ describe('what the fences of a page ask the frame for', () => {
   it('keeps a title the author gave an excerpt and a role the author chose', () => {
     const nodes = codes(body)
     const titled = nodes.find((node) => attributes(node).title === 'step.go')!
-    expect(attributes(titled)).toMatchObject({ title: 'step.go', role: 'excerpt', lines: '6' })
+    expect(attributes(titled)).toMatchObject({ title: 'step.go', role: 'excerpt', lines: '6', program: 'main.go' })
     const chosen = nodes.find((node) => attributes(node).title === 'config.yaml')!
+    // Nothing quotes it, so it is not cited and stays unnumbered.
     expect(attributes(chosen)).toEqual({ title: 'config.yaml', role: 'program', frame: 'code' })
   })
 
   it('names a whole cached file, and the lines of an excerpt of one, from the example cache', () => {
     const nodes = codes('```go file="examples/pane-io/main.go"\n```\n\n```go file="examples/pane-io/main.go" from="server, err := tmux.NewServer" to="return run(ctx, server)"\n```\n')
     expect(attributes(nodes[0]!)).toMatchObject({ title: 'main.go', frame: 'code', role: 'program' })
-    const { lines, role, title } = attributes(nodes[1]!)
+    const { lines, role, title, program } = attributes(nodes[1]!)
     expect(role).toBe('excerpt')
     expect(title).toBe('main.go')
+    expect(program).toBe('main.go')
+    expect(attributes(nodes[0]!).cite).toBe(lines)
     expect(lines).toMatch(/^\d+-\d+$/)
     const [start, end] = lines!.split('-').map(Number)
     expect(nodes[1]!.value.split('\n')).toHaveLength(end! - start! + 1)
+  })
+
+  it('links no range, and numbers no program, where the page holds no complete program of the excerpt\'s file', () => {
+    const [excerpt] = codes('```go file="examples/pane-io/main.go" from="server, err := tmux.NewServer" to="return run(ctx, server)"\n```\n')
+    expect(attributes(excerpt!).role).toBe('excerpt')
+    expect(attributes(excerpt!).program).toBeUndefined()
   })
 })

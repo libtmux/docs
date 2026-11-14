@@ -10,7 +10,7 @@ import {
   parseFenceAttributes,
   withoutAttributes,
 } from '../lib/example-excerpt.ts'
-import { excerptMeta } from '../lib/code-frame.mjs'
+import { citeMeta, excerptMeta } from '../lib/code-frame.mjs'
 /** Static import keeps source bytes available in bundled HTML and Markdown exports. */
 import CACHE from '../data/example-sources.json' with { type: 'json' }
 import { visit } from 'unist-util-visit'
@@ -250,6 +250,9 @@ function quotedTitles(blocks) {
   return titles
 }
 
+/** The key a complete program is quoted by: its title on the page, or the cached file of a port. */
+const programKey = (owner, source) => (source.kind === 'page' ? `page:${source.name}` : `file:${owner}:${source.name}`)
+
 export function remarkPortCode() {
   const port = process.env.LIBTMUX_DOCS_PORT || ''
   const processor = this
@@ -277,6 +280,25 @@ export function remarkPortCode() {
     visit(tree, 'code', (node) => { blocks.push({ meta: node.meta, value: node.value }) })
     const quoted = quotedTitles(blocks)
 
+    // The lines of each complete program that the page's excerpts quote (record 0054): the program numbers them,
+    // and each excerpt's range links to them. A file is a program of the page only when the page includes it whole.
+    const cited = new Map()
+    const programs = new Set()
+    visit(tree, 'code', (node) => {
+      const owner = LANG_TO_PORT[(node.lang || '').toLowerCase()]
+      if (port && owner && owner !== port && authoredPort !== port) return
+      const meta = parseMeta(node.meta)
+      const excerpt = excerptOf(meta, file?.path)
+      if (!excerpt) {
+        if (meta.file && owner && !meta.region) programs.add(programKey(owner, { kind: 'file', name: meta.file }))
+        return
+      }
+      const key = programKey(owner, excerpt.source)
+      const { start, end } = readExcerpt(owner, excerpt, blocks, file?.path)
+      cited.set(key, [...(cited.get(key) ?? []), { start, end }])
+    })
+    for (const title of quoted) programs.add(programKey(undefined, { kind: 'page', name: title }))
+
     visit(tree, 'code', (node, _index, parent) => {
       const lang = (node.lang || '').toLowerCase()
       const owner = LANG_TO_PORT[lang]
@@ -293,7 +315,11 @@ export function remarkPortCode() {
         node.value = text
         // The frame names the file and the lines, and numbers the rows from the source's own count.
         node.meta = withFrameAttributes(withoutAttributes(node.meta, EXCERPT_ATTRIBUTES),
-          parseFenceAttributes(excerptMeta({ title: baseName(excerpt.source.name), ranges: [{ start, end }] })))
+          parseFenceAttributes(excerptMeta({
+            title: baseName(excerpt.source.name), ranges: [{ start, end }],
+            // The range links to the complete program where the page shows one.
+            program: programs.has(programKey(owner, excerpt.source)) ? baseName(excerpt.source.name) : undefined,
+          })))
         return
       }
 
@@ -303,13 +329,17 @@ export function remarkPortCode() {
       if (meta.file && owner) {
         node.value = readFence(owner, meta, file?.path)
         // A whole file, not a region of it, is a complete program.
-        if (!meta.region) node.meta = withFrameAttributes(node.meta, { title: baseName(meta.file), frame: 'code', role: 'program' })
+        if (!meta.region) {
+          const cite = citeMeta(cited.get(programKey(owner, { kind: 'file', name: meta.file })) ?? [])
+          node.meta = withFrameAttributes(node.meta, { title: baseName(meta.file), frame: 'code', role: 'program', ...(cite ? { cite } : {}) })
+        }
         return
       }
 
       // The block an excerpt quotes is the complete program, and an author may say so of any block.
       if ((meta.title !== undefined && quoted.has(meta.title)) || meta.role !== undefined) {
-        node.meta = withFrameAttributes(node.meta, { frame: 'code', ...(meta.role === undefined ? { role: 'program' } : {}) })
+        const cite = meta.title === undefined ? undefined : citeMeta(cited.get(programKey(undefined, { kind: 'page', name: meta.title })) ?? [])
+        node.meta = withFrameAttributes(node.meta, { frame: 'code', ...(meta.role === undefined ? { role: 'program' } : {}), ...(cite ? { cite } : {}) })
       }
 
     })
