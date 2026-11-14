@@ -211,6 +211,10 @@ const SYNTAXES: { port: string; syntax: string; refs: [string, string, string]; 
   { port: 'powershell', syntax: 'cmdlet names', label: 'Buffers', refs: ['Get-TmuxSession', 'LibTmux\\Get-TmuxWindow', 'Wait-TmuxPaneText'] },
   { port: 'powershell', syntax: 'code spans', label: 'Buffers', refs: ['`ConvertTo-TmuxQueryJson`', '`Get-TmuxPane`', '`LibTmux.Server`'] },
   { port: 'haskell', syntax: 'reST object roles', label: 'Buffers', refs: [':obj:`Server <LibTmux.Server#t:Server>`', ':obj:`withServer <LibTmux.Server#v:withServer>`', ':obj:`capture <LibTmux.Server#v:capture>`'] },
+  { port: 'erlang', syntax: 'EEP-48 function and type references', label: 'Buffers', refs: ['`open/1`', '`tmux_snapshot:sessions/1`', '`t:open_options/0`'] },
+  { port: 'erlang', syntax: 'EEP-48 module and remote type references', label: 'Buffers', refs: ['`m:tmux_buffer`', '`t:tmux_snapshot:t/0`', '`c:init/1`'] },
+  { port: 'ocaml', syntax: 'odoc references', label: 'Buffers', refs: ['{!Client.connect}', '{!Libtmux.Snapshot}', '{!Libtmux.Options.type-scope}'] },
+  { port: 'lisp', syntax: 'package-qualified code spans', label: 'Buffers', refs: ['`libtmux:fetch-snapshot`', '`libtmux.control:open-connection`', '`libtmux.query:one-or-none`'] },
 ]
 
 describe.each(SYNTAXES)('a capability directory in $port\'s $syntax', ({ port, refs, label }) => {
@@ -280,6 +284,10 @@ describe('a capability directory keeps each port\'s spelling to itself', () => {
     ['powershell', 'a Go doc link', '[Server]'],
     ['lua', 'options and ids', '`-S`, `%0` and `"x y"`'],
     ['lua', 'a rustdoc link', '[`Server`]'],
+    ['erlang', 'an atom', '`inconsistent_capture`'],
+    ['erlang', 'a tuple', '`{server, Server}`'],
+    ['ocaml', 'a code span', '`start`, `allow_kill`'],
+    ['lisp', 'a name without its package', '`client`, `fetch-snapshot`'],
   ])('%s does not read %s', (lang, _, ref) => {
     expect(groupDirectory(parseApiProse(run(ref)), lang).some((block) => block.kind === 'directory')).toBe(false)
   })

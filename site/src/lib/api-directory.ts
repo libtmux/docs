@@ -58,6 +58,12 @@ const BY_PORT: Record<string, RegExp[]> = {
   ruby: [/\{(?:#[A-Za-z_]\w*[?!=]?|(?:::)?[A-Z]\w*(?:::[A-Z]\w*)*(?:[#.][A-Za-z_]\w*[?!=]?)?)(?:[ \t]+(?=[\w"'([])[^}\n`]*[^}\s`])?\}/],
   // Haddock links reach the shell as the reST role the adapter writes: :obj:`name <Module#v:name>`.
   haskell: [/:obj:`[^`\n]+`/],
+  // EEP-48 Markdown: `fun/1`, `mod:fun/1`, `t:type/0`, `t:mod:type/0`, `c:callback/1` and `m:module`.
+  erlang: [/`m:[a-z_]\w*`/, /`(?:[tc]:)?(?:[a-z_]\w*:)?[a-z_]\w*\/\d+`/],
+  // odoc: {!Client.connect}, {!Libtmux.Options.type-scope} and {{!Client.connect}text}.
+  ocaml: [/\{\{![^{}\s]+\}[^{}]*\}|\{![^{}\s]+\}/],
+  // A symbol with its package, as the docstrings write it: `libtmux:fetch-snapshot`, `libtmux.control:open-connection`.
+  lisp: [/`[a-z][\w.-]*:[^\s`:]+`/],
   // Documenter: [`name`](@ref), [`name`](@ref Module.name) and [text](@ref).
   julia: [/\[[^\]\n]+\]\(@ref(?:\s[^)\n]*)?\)/],
   // Native help names a cmdlet as a bare word or in a code span.
