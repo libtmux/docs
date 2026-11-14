@@ -1,4 +1,5 @@
 import data from '../data/mcp-tools.json' with { type: 'json' }
+import wraps from '../data/mcp-wraps.json' with { type: 'json' }
 import { portFromSentence } from '../../../packages/api-model/src/prose.ts'
 import type { MentionContext } from '../../../packages/api-model/src/prose.ts'
 
@@ -167,4 +168,20 @@ export function mcpRunMentions(text: string, port: string): McpRunMention[] {
     const object = resolveMcpObject(port, token[0])
     return object && object.kind !== 'resource' && object.kind !== 'resource-template' ? [{ start: token.index, end, object }] : []
   })
+}
+
+/** The library call a tool makes, by the public id of its API symbol, with the line of the port's source that makes it. */
+export interface McpWraps { call: string; source: string; repo: string; revision: string }
+
+/**
+ * The library call a tool wraps, where the port's docs record one.
+ *
+ * Each entry names the call and the line of the server's source that makes it, at the revision the
+ * documentation is of, so a reader can check it. A tool with no entry has no link: a name that happens
+ * to match a call (`capture_pane` and `Pane.capture_pane`) is not evidence that the tool makes it.
+ */
+export function mcpWraps(port: string, toolName: string): McpWraps | undefined {
+  const entry = (wraps as Record<string, { repo: string; revision: string; tools: Record<string, { call: string; source: string }> }>)[port]
+  const tool = entry?.tools[toolName]
+  return entry && tool ? { ...tool, repo: entry.repo, revision: entry.revision } : undefined
 }

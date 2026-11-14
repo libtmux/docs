@@ -59,9 +59,15 @@
   border-top: 1px solid var(--color-edge);
 }
 
-/* The program is set a size smaller than the homepage's, so that most of its lines fit the column beside the tmux. */
+/* The program is set a size smaller than the homepage's, so that most of its lines fit the column beside the tmux; the gutter's start padding is part of what the column holds. */
 .home-example-player .home-example-stage > .home-example-code > .home-example-view .expressive-code {
-  --ec-codeFontSize: clamp(0.75rem, calc((100cqi - 2rem) / (var(--home-code-columns) * 0.625)), 0.875rem);
+  --ec-codeFontSize: clamp(0.75rem, calc((100cqi - 2.75rem) / (var(--home-code-columns) * 0.625)), 0.875rem);
+  position: relative;
+}
+
+/* Each call's first line has room in its start padding for the numbered marker (.core-step), so adding the markers moves no text. */
+.home-example-player .home-example-stage > .home-example-code > .home-example-view .expressive-code .ec-line > .code {
+  padding-inline-start: 1.75rem;
 }
 
 /* More specific than the landing page's cap on every program in its panels, which holds for the stand-alone example. */
@@ -111,9 +117,9 @@
   }
 }
 
-/* The call being shown. A tint, not a bar: the code's own colours stay readable on it. */
-.home-example-view .ec-line.is-call {
-  cursor: pointer;
+/* The call a reader is previewing from its marker, then the call being shown. A tint, not a bar: the code's own colours stay readable on it. */
+.home-example-view .ec-line.is-hover {
+  background: color-mix(in srgb, var(--color-link) 8%, transparent);
 }
 
 .home-example-view .ec-line.is-current {
@@ -122,6 +128,97 @@
 
 .home-example-view .ec-line.is-current.is-pinned {
   background: color-mix(in srgb, var(--color-link) 24%, transparent);
+}
+
+/*
+ * Expressive Code resets every element inside its container (`.expressive-code
+ * :not(:is(svg, svg *))`), so the two controls drawn into it are prefixed with
+ * the container to outrank that reset.
+ *
+ * Text in the code selects as anywhere else. A call's first line carries a
+ * numbered marker in the gutter: a button, the one way into a step from the
+ * code. A pointer over it or focus on it previews the step; it is drawn by the
+ * script, so a page without one has no dead buttons.
+ */
+.expressive-code .core-step {
+  position: absolute;
+  top: 50%;
+  left: 0.3rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  padding: 0;
+  transform: translateY(-50%);
+  border: 1px solid var(--color-muted);
+  border-radius: 50%;
+  background: var(--ec-codeBg, var(--color-surface));
+  color: var(--color-muted);
+  font: 600 0.625rem / 1 var(--font-sans, inherit);
+  cursor: pointer;
+  user-select: none;
+}
+
+.expressive-code .core-step::before {
+  content: attr(data-n);
+}
+
+.expressive-code .core-step:hover,
+.expressive-code .core-step:focus-visible {
+  border-color: var(--color-link);
+  color: var(--color-link);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-link) 25%, transparent);
+}
+
+.expressive-code .core-step:focus-visible {
+  outline: 2px solid var(--focus-ring-color, currentColor);
+  outline-offset: 2px;
+}
+
+.expressive-code .ec-line.is-current .core-step {
+  border-color: var(--color-link);
+  background: var(--color-link);
+  color: var(--ec-codeBg, var(--color-surface));
+}
+
+/* The copy button, at the program's top right and clear of its scrollbar: the code frame's own 2rem square. */
+.expressive-code .core-copy {
+  position: absolute;
+  top: 0.5rem;
+  right: 1.25rem;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid var(--color-edge);
+  border-radius: 0.25rem;
+  background: var(--ec-codeBg, var(--color-surface));
+  color: var(--color-muted);
+  cursor: pointer;
+  opacity: 0.75;
+}
+
+.expressive-code .core-copy:hover,
+.expressive-code .core-copy:focus-visible,
+.expressive-code .core-copy[data-copied] {
+  color: var(--ec-codeFg, var(--text-color));
+  opacity: 1;
+}
+
+.expressive-code .core-copy[data-copied] {
+  border-color: currentColor;
+  color: var(--color-link);
+}
+
+.expressive-code .core-copy:focus-visible {
+  outline: 2px solid var(--focus-ring-color, currentColor);
+  outline-offset: 2px;
+}
+
+@media print {
+  .expressive-code .core-copy {
+    display: none;
+  }
 }
 
 /* The side */
@@ -143,7 +240,9 @@
 .core-player__results {
   flex: 1;
   min-height: 0;
+  margin: 0;
   padding: 0 1rem 0.75rem;
+  list-style: none;
   border-top: 1px solid var(--color-edge);
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -165,29 +264,17 @@
 }
 
 /*
- * The markup is drawn at the state before the first call, which is where the
- * script starts a reader who has not asked for less motion. A page without
- * script, and a reduced-motion reader's page until the script binds (it starts
- * finished), show the final frame and result instead.
+ * The markup is drawn at the first call, which is where the script opens the
+ * player for every reader, reduced motion included (nothing plays until the
+ * reader presses play). A page without script shows the final frame and every
+ * result instead.
  */
-html:not([data-js]) .core-player__tmux > .mcp-frame:first-child {
+html:not([data-js]) .core-player__tmux > .mcp-frame:not(:last-child) {
   display: none;
 }
 
-html:not([data-js]) .core-player__tmux > .mcp-frame[data-off]:last-child {
+html:not([data-js]) .core-player__tmux > .mcp-frame:last-child {
   display: block;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html[data-js] .home-example-player:not([data-live]) .core-player__tmux > .mcp-frame:first-child,
-  html[data-js] .home-example-player:not([data-live]) .core-player__results > .core-result:first-child {
-    visibility: hidden;
-  }
-
-  html[data-js] .home-example-player:not([data-live]) .core-player__tmux > .mcp-frame:last-child,
-  html[data-js] .home-example-player:not([data-live]) .core-player__results > .core-result:last-child {
-    visibility: visible;
-  }
 }
 
 html:not([data-js]) .core-result + .core-result {
@@ -211,6 +298,10 @@ html[data-js] .core-player__tmux > .mcp-frame[data-off],
 html[data-js] .core-player__results > .core-result[data-off] {
   display: block;
   visibility: hidden;
+}
+
+.core-result {
+  list-style: none;
 }
 
 .core-result__title {

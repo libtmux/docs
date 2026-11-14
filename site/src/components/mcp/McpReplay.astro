@@ -13,6 +13,11 @@
  * below plays the session, or lets a reader step through it. Without script
  * the whole chat and the final state show. The markup is drawn at the state before the first call, where the script starts, so binding it changes nothing on screen; `mcp-replay.css` shows the finished chat instead where there is no script, and for a reader who asked for less motion until the script binds. Without a recording the page shows
  * the requests only, says so, and draws no preview.
+ *
+ * Selecting text in a turn never changes the step. Hovering a turn previews the
+ * tmux after it; its pin button holds that step, and the controls and the arrow
+ * keys move between steps. Nothing plays until the reader presses play, unless
+ * the instance sets `autoplay`.
  */
 import { Code } from 'astro-expressive-code/components'
 import type { Frame } from '../../lib/mcp-replay'
@@ -27,8 +32,10 @@ interface Props {
   portName: string
   /** The heading's level: 2 on the overview, where it is a section, 3 inside a landing panel. */
   level?: 2 | 3
+  /** Play by itself once the replay is 40% on screen. Off by default; a reader's selection, scroll or focus stops it, and reduced motion never starts it. */
+  autoplay?: boolean
 }
-const { example, portName, level = 2 } = Astro.props as Props
+const { example, portName, level = 2, autoplay = false } = Astro.props as Props
 const Heading = `h${level}` as 'h2' | 'h3'
 const { recording } = example
 const total = example.steps.length
@@ -45,11 +52,11 @@ const note = (frame: Frame) => {
 {/* The heading was "Worked example"; links to that anchor still land here. */}
 <span id="worked-example"></span>
 <Heading id="tmux-through-mcp">tmux through MCP</Heading>
-<section class={`not-prose mcp-replay${recording ? '' : ' mcp-replay--requests'}`} data-mcp-replay data-steps={total} aria-label="tmux through MCP replay">
+<section class={`not-prose mcp-replay${recording ? '' : ' mcp-replay--requests'}`} data-mcp-replay data-steps={total} data-autoplay={autoplay ? '' : undefined} aria-label="tmux through MCP replay">
   {recording && (
     <header class="mcp-replay__head" data-head>
       <span class="mcp-replay__title">Replay</span>
-      <span class="mcp-replay__hint" data-hint>Hover a call to preview the tmux state after it. Click to pin it.</span>
+      <span class="mcp-replay__hint" data-hint>Hover a call to preview the tmux state after it. Use its pin button to hold it.</span>
     </header>
   )}
   <div class="mcp-replay__body" tabindex={recording ? 0 : undefined} data-body>
@@ -70,12 +77,12 @@ const note = (frame: Frame) => {
       </div>
     )}
     <div class="mcp-replay__chat" data-chat>
-      <div class="mcp-turn mcp-turn--user" data-turn="prompt"><span class="mcp-turn__who">you</span><p>{example.prompt}</p></div>
+      <div class="mcp-turn mcp-turn--user" data-turn="prompt"><span class="mcp-turn__who">You</span><p>{example.prompt}</p></div>
       {example.steps.map((step, index) => {
         const tier = tierFor(step.tool)
         return (
           <article class="mcp-turn" data-turn={index} data-off={recording ? '' : undefined}>
-            <p class="mcp-turn__say"><span class="mcp-turn__who">agent</span>{step.caption}</p>
+            <p class="mcp-turn__say"><span class="mcp-turn__who">Agent</span>{step.caption}</p>
             <div class="mcp-call">
               <span class="mcp-call__dot" aria-hidden="true"></span>
               <span class="mcp-call__tool"><a href={step.tool.href}><code>{step.tool.name}</code></a></span>
@@ -95,7 +102,7 @@ const note = (frame: Frame) => {
       {recording && answers.length > 0 && (
         <div class="mcp-turn mcp-turn--answer" data-turn={total} data-off>
           <button type="button" class="mcp-turn__pin" data-pin aria-pressed="false" tabindex="-1" hidden aria-label="Pin the final tmux state"><svg class="mcp-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 2.5h6v11L8 11l-3 2.5z" /></svg></button>
-          <p class="mcp-turn__say"><span class="mcp-turn__who">agent</span>
+          <p class="mcp-turn__say"><span class="mcp-turn__who">Agent</span>
             {answers.map((answer, index) => <>{index > 0 && '; '}{answer.pane ? `in ${answer.pane} it` : 'It'} printed <q>{answer.line}</q></>)}.</p>
         </div>
       )}
@@ -118,12 +125,16 @@ const note = (frame: Frame) => {
     const hint = root.querySelector<HTMLElement>('[data-hint]')
     // A touch screen fires mouseenter on a tap and never mouseleave, so only a pointer that can hover previews.
     const canHover = window.matchMedia?.('(hover: hover)').matches ?? true
-    const IDLE_HINT = canHover ? 'Hover a call to preview the tmux state after it. Click to pin it.' : 'Tap a call to pin the tmux state after it.'
+    const IDLE_HINT = canHover ? 'Hover a call to preview the tmux state after it. Use its pin button to hold it.' : 'Use a call\'s pin button to hold the tmux state after it.'
     // The one call whose pin button is a tab stop; arrow keys move it, so the list is a single stop.
     let rover = -1
 
     const player = bindReplay(root, {
       body,
+      content: chat,
+      autoplay: root.hasAttribute('data-autoplay'),
+      // A reader who asked for less motion has the finished chat, and presses play to watch it again.
+      reducedOpening: 'end',
       total: () => total,
       // Calls made so far, the call pinned by a click, and the call under the pointer or focus.
       render({ step, shown, pinned }, scroll) {
@@ -142,7 +153,7 @@ const note = (frame: Frame) => {
           pin.tabIndex = position === active ? 0 : -1
         })
         frames.forEach((frame) => { frame.toggleAttribute('data-off', Number(frame.dataset.frame) !== shown) })
-        if (hint) hint.textContent = pinned !== null ? 'Pinned. Click the call again, or press Escape, to follow the replay.' : IDLE_HINT
+        if (hint) hint.textContent = pinned !== null ? 'Pinned. Press its pin button again, or Escape, to follow the replay.' : IDLE_HINT
         if (scroll) chat.scrollTo({ top: chat.scrollHeight, behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
       },
       ownsKey: (target) => target.hasAttribute('data-pin'),
@@ -159,11 +170,7 @@ const note = (frame: Frame) => {
         turn.addEventListener('mouseenter', () => player.hover(frame))
         turn.addEventListener('mouseleave', () => player.hover(null))
       }
-      // A click anywhere on the call pins it, for a pointer; the button is the way in for a keyboard and for assistive technology.
-      turn.addEventListener('click', (event) => {
-        if ((event.target as HTMLElement).closest('a, summary, button')) return
-        player.togglePin(frame)
-      })
+      // A click or a drag in a turn selects its text; the pin button, the one way to hold a call, is a real button for a pointer, a keyboard and assistive technology.
       pin.addEventListener('click', () => { rover = position; player.togglePin(frame) })
       pin.addEventListener('focus', () => { rover = position })
       pin.addEventListener('keydown', (event) => {

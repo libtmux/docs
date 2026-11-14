@@ -35,9 +35,25 @@ export interface ReplayOptions {
   /**
    * What the dot for `step` shows: the call, in code, and what it did. With
    * it, a dot under the pointer or focus shows a tooltip, and a pointer over
-   * it previews that step as hovering the call's code does.
+   * it previews that step as hovering the call's marker does.
    */
   tip?: (step: number) => { call?: string; text: string } | undefined
+  /**
+   * The pane a reader reads and selects in: the program, or the chat. An
+   * autoplaying player pauses when a reader selects text in it, scrolls it or
+   * touches it. Nothing in it changes the step; the host's own controls do.
+   */
+  content?: HTMLElement | null
+  /** Play by itself once the player is on screen. Off unless the instance opts in, and never under reduced motion. */
+  autoplay?: boolean
+  /**
+   * The step the markup is drawn at and the player opens on: 0 is the state
+   * before the first call, `'end'` the last. A page the script has not bound
+   * draws this step, so binding changes nothing on screen.
+   */
+  opening?: number | 'end'
+  /** Where a reader who asked for less motion opens; `opening` by default. */
+  reducedOpening?: number | 'end'
 }
 
 export interface ReplayPlayer {
@@ -52,6 +68,8 @@ export interface ReplayPlayer {
   refresh: () => void
   /** Whether the reader asked for less motion. */
   reduced: boolean
+  /** Whether the player is playing by itself, which a reader's selection, scroll or focus stops. */
+  autoplaying: () => boolean
 }
 
 /**
@@ -97,16 +115,21 @@ export function bindReplay(root: HTMLElement, options: ReplayOptions): ReplayPla
   }
   let railStep = -1
 
-  let step = total()
+  const reducedStart = options.reducedOpening ?? options.opening ?? 0
+  const opening = (reduced ? reducedStart : options.opening ?? 0)
+  let step = opening === 'end' ? total() : Math.min(opening, total())
+  const first = step
   let pinned: number | null = null
   let hover: number | null = null
   let timer: ReturnType<typeof setTimeout> | undefined
   let playing = false
-  // Once the reader has used a control, the replay does not start by itself.
+  // Once the reader has used a control, or has selected, scrolled or focused in, the replay does not start by itself.
   let touched = false
+  // Set while the player plays because the instance asked for it; the reader's selection, scroll or focus ends it.
+  let automatic = false
 
-  const use = () => { touched = true; hover = null }
-  const stop = () => { playing = false; if (timer) clearTimeout(timer); timer = undefined }
+  const use = () => { touched = true; automatic = false; hover = null }
+  const stop = () => { playing = false; automatic = false; if (timer) clearTimeout(timer); timer = undefined }
   const state = (): ReplayState => ({ step, shown: hover ?? pinned ?? step, pinned, playing })
 
   function render(scroll = false) {
@@ -229,16 +252,38 @@ export function bindReplay(root: HTMLElement, options: ReplayOptions): ReplayPla
     hover: (next) => { hover = next; render() },
     clearPin: () => { pinned = null; hover = null; render() },
     refresh: () => render(),
+    autoplaying: () => automatic,
   }
 
-  // A reader who asks for less motion gets the finished replay and presses play; others see it play once it is on screen.
-  if (reduced) { render(); return player }
-  step = 0
   render()
+  // Nothing plays until the reader presses play, unless the instance asked for it; and a reader who asked for less motion never gets it.
+  if (!options.autoplay || reduced) return player
+
+  // A reader who selects text, scrolls or touches the content, or focuses into the player, is reading: the replay stops and stays stopped.
+  const halt = () => {
+    touched = true
+    if (!automatic) return
+    stop()
+    render()
+  }
+  const content = options.content
+  root.addEventListener('focusin', halt)
+  for (const type of ['wheel', 'touchmove', 'pointerdown']) content?.addEventListener(type, halt, { passive: true })
+  const selected = () => {
+    const selection = root.ownerDocument.getSelection()
+    if (!root.isConnected) { root.ownerDocument.removeEventListener('selectionchange', selected); return }
+    if (content && selection && !selection.isCollapsed && content.contains(selection.anchorNode)) halt()
+  }
+  root.ownerDocument.addEventListener('selectionchange', selected)
+
   const begin = () => {
     // A hidden panel can still intersect the viewport; it plays when the reader sees it.
     const shown = root.checkVisibility?.({ visibilityProperty: true }) ?? true
-    if (shown && !touched && !playing && step === 0 && pinned === null) start()
+    if (!shown || touched || playing || step !== first || pinned !== null) return
+    automatic = true
+    playing = true
+    render(true)
+    timer = setTimeout(tick, interval)
   }
   if (typeof IntersectionObserver === 'undefined') begin()
   else {
