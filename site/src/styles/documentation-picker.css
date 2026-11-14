@@ -13,7 +13,7 @@
 .doc-picker-count { padding: .1rem .3rem; border-radius: .2rem; background: var(--color-surface); color: var(--color-muted); font-size: .6875rem; font-weight: 400; }
 .doc-picker-search { position: relative; display: flex; align-items: center; margin-bottom: .65rem; }
 .doc-picker-search > svg { position: absolute; left: var(--picker-inset); color: var(--color-muted); pointer-events: none; }
-.doc-picker-search input { width: 100%; min-width: 0; min-height: 2.75rem; padding: .6rem .75rem .6rem 2.1rem; border: 1px solid var(--control-border); border-radius: .45rem; background: var(--color-surface); color: inherit; font-size: .8125rem; }
+.doc-picker-search input { width: 100%; min-width: 0; min-height: 2.75rem; padding: .6rem .75rem .6rem calc(2.1rem - 1px); border: 1px solid var(--control-border); border-radius: .45rem; background: var(--color-surface); color: inherit; font-size: .8125rem; }
 .doc-picker-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .2rem; }
 .doc-picker-option { display: flex; align-items: center; gap: .6rem; min-height: 2.25rem; padding: .5rem var(--picker-inset); border-radius: .4rem; color: inherit; text-decoration: none; line-height: 1.4; }
 .doc-picker-option > span { min-width: 0; overflow-wrap: anywhere; }
