@@ -981,6 +981,66 @@
       "heading": "@overload"
     },
     {
+      "label": "CPAN",
+      "url": "https://metacpan.org/dist/LibTmux",
+      "heading": "LibTmux-0.003 - Captured tmux graph queries and explicit process execution - metacpan.org"
+    },
+    {
+      "label": "CPAN distribution",
+      "url": "https://metacpan.org/dist/LibTmux",
+      "heading": "LibTmux-0.003 - Captured tmux graph queries and explicit process execution - metacpan.org"
+    },
+    {
+      "label": "LibTmux",
+      "url": "https://metacpan.org/dist/LibTmux",
+      "heading": "LibTmux-0.003 - Captured tmux graph queries and explicit process execution - metacpan.org"
+    },
+    {
+      "label": "CPAN",
+      "url": "https://metacpan.org/dist/LibTmux-Async",
+      "heading": "LibTmux-Async-0.003 - Optional Future-based libtmux execution - metacpan.org"
+    },
+    {
+      "label": "CPAN distribution",
+      "url": "https://metacpan.org/dist/LibTmux-Async",
+      "heading": "LibTmux-Async-0.003 - Optional Future-based libtmux execution - metacpan.org"
+    },
+    {
+      "label": "LibTmux-Async",
+      "url": "https://metacpan.org/dist/LibTmux-Async",
+      "heading": "LibTmux-Async-0.003 - Optional Future-based libtmux execution - metacpan.org"
+    },
+    {
+      "label": "CPAN",
+      "url": "https://metacpan.org/dist/LibTmux-Workspace",
+      "heading": "LibTmux-Workspace-0.003 - Versioned workspace configuration for tmux - metacpan.org"
+    },
+    {
+      "label": "CPAN distribution",
+      "url": "https://metacpan.org/dist/LibTmux-Workspace",
+      "heading": "LibTmux-Workspace-0.003 - Versioned workspace configuration for tmux - metacpan.org"
+    },
+    {
+      "label": "LibTmux-Workspace",
+      "url": "https://metacpan.org/dist/LibTmux-Workspace",
+      "heading": "LibTmux-Workspace-0.003 - Versioned workspace configuration for tmux - metacpan.org"
+    },
+    {
+      "label": "POD",
+      "url": "https://metacpan.org/pod/LibTmux",
+      "heading": "LibTmux"
+    },
+    {
+      "label": "POD",
+      "url": "https://metacpan.org/pod/LibTmux::Async",
+      "heading": "LibTmux::Async"
+    },
+    {
+      "label": "POD",
+      "url": "https://metacpan.org/pod/LibTmux::Workspace",
+      "heading": "LibTmux::Workspace"
+    },
+    {
       "label": "MCP ToolAnnotations",
       "url": "https://modelcontextprotocol.io/specification/2025-11-25/schema#toolannotations",
       "heading": "ToolAnnotations"
@@ -1199,66 +1259,6 @@
       "label": "TypeScript async/await in ES6 targets",
       "url": "https://www.typescriptlang.org/docs/handbook/release-notes/typescript-1-7.html#asyncawait-support-in-es6-targets-node-v4",
       "heading": "async / await support in ES6 targets (Node v4+)"
-    },
-    {
-      "label": "CPAN",
-      "url": "https://metacpan.org/dist/LibTmux",
-      "heading": "LibTmux-0.003 - Captured tmux graph queries and explicit process execution - metacpan.org"
-    },
-    {
-      "label": "CPAN",
-      "url": "https://metacpan.org/dist/LibTmux-Async",
-      "heading": "LibTmux-Async-0.003 - Optional Future-based libtmux execution - metacpan.org"
-    },
-    {
-      "label": "CPAN",
-      "url": "https://metacpan.org/dist/LibTmux-Workspace",
-      "heading": "LibTmux-Workspace-0.003 - Versioned workspace configuration for tmux - metacpan.org"
-    },
-    {
-      "label": "POD",
-      "url": "https://metacpan.org/pod/LibTmux",
-      "heading": "LibTmux"
-    },
-    {
-      "label": "POD",
-      "url": "https://metacpan.org/pod/LibTmux::Async",
-      "heading": "LibTmux::Async"
-    },
-    {
-      "label": "POD",
-      "url": "https://metacpan.org/pod/LibTmux::Workspace",
-      "heading": "LibTmux::Workspace"
-    },
-    {
-      "label": "LibTmux",
-      "url": "https://metacpan.org/dist/LibTmux",
-      "heading": "LibTmux-0.003 - Captured tmux graph queries and explicit process execution - metacpan.org"
-    },
-    {
-      "label": "LibTmux-Async",
-      "url": "https://metacpan.org/dist/LibTmux-Async",
-      "heading": "LibTmux-Async-0.003 - Optional Future-based libtmux execution - metacpan.org"
-    },
-    {
-      "label": "LibTmux-Workspace",
-      "url": "https://metacpan.org/dist/LibTmux-Workspace",
-      "heading": "LibTmux-Workspace-0.003 - Versioned workspace configuration for tmux - metacpan.org"
-    },
-    {
-      "label": "CPAN distribution",
-      "url": "https://metacpan.org/dist/LibTmux",
-      "heading": "LibTmux-0.003 - Captured tmux graph queries and explicit process execution - metacpan.org"
-    },
-    {
-      "label": "CPAN distribution",
-      "url": "https://metacpan.org/dist/LibTmux-Async",
-      "heading": "LibTmux-Async-0.003 - Optional Future-based libtmux execution - metacpan.org"
-    },
-    {
-      "label": "CPAN distribution",
-      "url": "https://metacpan.org/dist/LibTmux-Workspace",
-      "heading": "LibTmux-Workspace-0.003 - Versioned workspace configuration for tmux - metacpan.org"
     }
   ]
 }
