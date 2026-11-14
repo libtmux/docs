@@ -373,6 +373,22 @@ export function apiInheritedTypeParameters(symbol: ApiSymbol, index?: SymbolInde
   return index?.inheritedTypeParameters(symbol) ?? []
 }
 
+/** Past this many rows a member list keeps its place in the page and scrolls inside its own box (`--list-budget`, 28rem). */
+export const MEMBER_BUDGET = 14
+
+/**
+ * What a member collection says about itself: whether it outgrows the budget, the word its count uses, and whether it mixes
+ * kinds. The count is text beside the heading ("175 members", "12 properties"), and the kind word trails a row only where the
+ * kinds differ: in a list of one kind the mark already says it.
+ */
+export function memberCollectionFacts(members: ApiSymbol[], heading: string, kindOf: (member: ApiSymbol) => string) {
+  return {
+    budgeted: members.length > MEMBER_BUDGET,
+    countNoun: /^[A-Z][a-z]+$/.test(heading) ? heading.toLowerCase() : 'members',
+    mixed: new Set(members.map(kindOf)).size > 1,
+  }
+}
+
 /** "Errors" everywhere; Python keeps "Raises" because the language says so. */
 export const apiErrorsLabel = (port?: string) => port === 'py' ? 'Raises' : 'Errors'
 

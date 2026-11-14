@@ -15,7 +15,7 @@ import { apiGlossary, apiGlossaryHeadings, API_GLOSSARY_TITLE, apiGlossaryHref }
 import ApiQualifiedName from '../../components/api/ApiQualifiedName.astro'
 import ApiType from '../../components/api/ApiType.astro'
 import ApiPageContents from '../../components/api/ApiPageContents.astro'
-import { apiEntryFields, apiEntrySections, apiMemberGroups, apiMemberSections, fieldsLabel, fieldsRepeated, memberTable, memberTableColumns, relatedTypeLinks, variantPayloads, type ApiSection } from '../../lib/api-sections'
+import { apiEntryFields, apiEntrySections, apiMemberGroups, apiMemberSections, fieldsLabel, fieldsRepeated, memberCollectionFacts, memberTable, memberTableColumns, relatedTypeLinks, variantPayloads, type ApiSection } from '../../lib/api-sections'
 import PageToolbar from '../../components/PageToolbar.astro'
 import PagePortSwitcher from '../../components/PagePortSwitcher.astro'
 import DocumentationContext from '../../components/docs/DocumentationContext.astro'
@@ -374,6 +374,11 @@ const payloads = table?.columns === 'variants' && model ? variantPayloads(model.
 // A row repeats a type drawn in full elsewhere when a variant has a page of its own, or when the port's fields do: C# properties.
 const rowsRepeat = (columns?: string) => columns === 'variants' || (columns === 'fields' && fieldsRepeated(port))
 const membersLabel = aliasedMembers ? `Members of ${aliasedMembers.name}` : tableColumns === 'fields' || tableColumns === 'variants' ? tableHeading : owner?.variant || (language === 'julia' && owner?.kind === 'struct' && shown.every((member) => member.kind === 'property')) ? 'Fields' : 'Members'
+const memberFacts = memberCollectionFacts(shown, membersLabel, (member) => nativeKind(member, language))
+const { countNoun } = memberFacts
+const budgeted = !tableColumns && memberFacts.budgeted
+const mixedKinds = memberFacts.mixed
+const mixedInherited = new Set(otherInherited.map((member) => nativeKind(member, language))).size > 1
 const glossaryContext = apiGlossary(`${refBase}glossary/`)
 const pageSections: ApiSection[] = glossary ? apiGlossaryHeadings(glossaryContext.path).map((heading) => ({
   id: heading.slug, label: heading.text, nested: heading.depth === 3,
@@ -716,12 +721,12 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                 <span hidden data-pagefind-meta={`file:${owner.source.file}`} />
               )}
               {owner?.kind && <span hidden data-pagefind-meta={`kind:${nativeKind(owner, language)}`} />}
+              {declaringType && <span hidden data-pagefind-meta={`owner:${declaringType.name}`} />}
             <details class="api-source-details" data-pagefind-ignore="all" open>
               <script is:inline>
                 window.__initApiSourceDetails?.(document)
               </script>
               <summary>{source ? 'Source' : 'Source and package'}</summary>
-              {declaringType && <span hidden data-pagefind-meta={`owner:${declaringType.name}`} />}
               <dl class="api-definition">
               {/* The module, namespace or package this symbol is in, and its full name with a button to copy it; the page heading above carries neither. */}
               <dt>Qualified name</dt>
@@ -827,8 +832,15 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
             )}
             {shown.length > 0 && (
               <div class="api-members mt-8">
-                <h2 class="api-section-heading text-lg font-semibold" id="api-members">{aliasedMembers ? <>Members of <a class="api-members-target" href={hrefFor(aliasedMembers)}><code>{aliasedMembers.name}</code></a></> : membersLabel}<span class="api-section-count">{shown.length}</span><a class="api-heading-link" href="#api-members" aria-label={`Link to ${membersLabel}`}>#</a></h2>
-                {tableColumns ? <ApiScalarMembers owner={owner} members={listed} index={index} hrefFor={hrefFor} columns={tableColumns} label={tableHeading} payloads={payloads} repeated={rowsRepeat(tableColumns)} /> : <ApiMemberList groups={memberGroups} showGroups={showMemberGroups} index={index} hrefFor={hrefFor} language={language} />}
+                <h2 class="api-section-heading text-lg font-semibold" id="api-members">{aliasedMembers ? <>Members of <a class="api-members-target" href={hrefFor(aliasedMembers)}><code>{aliasedMembers.name}</code></a></> : membersLabel}<span class="api-section-count">{shown.length} {countNoun}</span><a class="api-heading-link" href="#api-members" aria-label={`Link to ${membersLabel}`}>#</a></h2>
+                {tableColumns ? <ApiScalarMembers owner={owner} members={listed} index={index} hrefFor={hrefFor} columns={tableColumns} label={tableHeading} payloads={payloads} repeated={rowsRepeat(tableColumns)} />
+                  : budgeted ? <>
+                    <div class="api-member-budget" role="region" tabindex="0" aria-label={aliasedMembers ? membersLabel : `${membersLabel} of ${owner.name}`}>
+                      <ApiMemberList groups={memberGroups} showGroups={showMemberGroups} index={index} hrefFor={hrefFor} language={language} mixed={mixedKinds} />
+                    </div>
+                    <p class="api-collection-note">Order: the accessors that walk the hierarchy, the operations the ports share, then the rest.</p>
+                  </>
+                  : <ApiMemberList groups={memberGroups} showGroups={showMemberGroups} index={index} hrefFor={hrefFor} language={language} mixed={mixedKinds} />}
               </div>
             )}
 
@@ -843,7 +855,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                     <li>
                       <span><ApiBadge label={nativeKind(m, language)} variant="kind" value={nativeKind(m, language)} compact preview={false} /><a class="api-member-link" href={hrefFor(m)}>{m.name}</a></span>
                       <span class="api-member-badges">
-                        <ApiBadge label={nativeKind(m, language)} variant="kind" value={nativeKind(m, language)} plain />
+                        {mixedInherited && <ApiBadge label={nativeKind(m, language)} variant="kind" value={nativeKind(m, language)} plain />}
                         <a class="api-badge api-badge--mod" href={apiGlossaryHref('inherited', Astro.url.pathname)} title={`Inherited from ${m.inheritedFrom}`} aria-description={`Inherited from ${m.inheritedFrom}`} data-preview-context={`Inherited from ${m.inheritedFrom}.`}><span class="api-badge__label">inherited</span></a>
                       </span>
                       {m.doc?.summary && (

@@ -417,7 +417,7 @@ describe('product reference pages', () => {
     expect(heading, 'the Members heading has an id').not.toBeNull()
     expect(heading.classList.contains('api-section-heading')).toBe(true)
     expect(heading.firstChild?.textContent).toBe('Members')
-    expect(heading.querySelector('.api-section-count')?.textContent).toBe(String(members.length))
+    expect(heading.querySelector('.api-section-count')?.textContent).toBe(`${members.length} members`)
     const link = heading.querySelector('a.api-heading-link')!
     expect(link.getAttribute('href')).toBe('#api-members')
     expect(link.getAttribute('aria-label')).toBe('Link to Members')
@@ -509,7 +509,7 @@ const { symbol, member, nameHref } = Astro.props
       const membersHeading = document.querySelector('.api-members > h2#api-members')
       if (rest.length > 0) {
         expect(membersHeading!.firstChild?.textContent).toBe('Other members')
-        expect(membersHeading!.querySelector('.api-section-count')?.textContent).toBe(String(rest.length))
+        expect(membersHeading!.querySelector('.api-section-count')?.textContent).toBe(`${rest.length} members`)
         expect(heading.compareDocumentPosition(membersHeading!) & 4, 'Fields come before Members').toBeGreaterThan(0)
       } else expect(membersHeading).toBeNull()
       const ids = [...document.querySelectorAll('[id]')].map((element) => element.id)
@@ -531,7 +531,7 @@ const { symbol, member, nameHref } = Astro.props
       expect(members.filter(isField).length).toBeGreaterThan(0)
       expect(document.querySelector('#api-fields, .api-field-table, table')).toBeNull()
       expect(document.querySelector('.api-members > h2#api-members')?.firstChild?.textContent).toBe('Members')
-      expect(document.querySelector('.api-members > h2#api-members .api-section-count')?.textContent).toBe(String(members.length))
+      expect(document.querySelector('.api-members > h2#api-members .api-section-count')?.textContent).toBe(`${members.length} members`)
       expect(document.querySelectorAll('.api-members .api-member-list > li')).toHaveLength(members.length)
       expect(document.querySelectorAll('dl[data-member="true"]')).toHaveLength(0)
     }, 60_000)

@@ -358,16 +358,32 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
   font-weight: 600;
 }
 
+/*
+ * One loud thing per row, and only on demand (MemberCollection, record 0034): the name is body text in mono 600; hovering or
+ * focusing it turns it the link colour with an underline and fills its outline kind mark. A list of 175 names is not 175 links
+ * in the link colour competing with the marks' hues.
+ */
 .api-member-link {
   min-width: 0;
+  color: var(--text-color);
   font-family: var(--font-ibm-plex-mono, ui-monospace, monospace);
   font-weight: 600;
   text-decoration: none;
   overflow-wrap: anywhere;
 }
 
-.api-member-link:hover {
+.api-member-link:is(:hover, :focus-visible) {
+  color: var(--color-link);
   text-decoration: underline;
+  text-underline-offset: 3px;
+}
+/* At rest a name is plain text: the link-preview dots the shell draws under every previewable link are the loud thing record 0034 removes. */
+a.api-member-link[data-link-preview]:not(:hover, :focus-visible) { text-decoration-line: none; }
+.api-member-list li:is(:hover, :focus-within) > span:first-child > .api-nav__kind {
+  background: var(--mk-act-bg, var(--mk-fill, var(--mk-bg)));
+  color: var(--mk-act-fg, var(--mk-fg));
+  border-color: var(--mk-hue, currentColor);
+  box-shadow: var(--mk-act-ring, none);
 }
 
 .api-member-badges {
@@ -1480,3 +1496,40 @@ a.api-doc-link.is-cross-lit:not(.api-mention--chip):not(:has(.api-literal--link)
 @media (forced-colors: active) {
   .is-cross-lit { outline: 2px solid Highlight; }
 }
+
+/*
+ * A member collection longer than `list-budget` keeps its place in the page and scrolls inside its own bordered box, so a type
+ * of 175 methods does not push everything after it down the page (MemberCollection). The heading and the count stay above it.
+ * One border: the box draws it, and the group bars and rows inside draw only their dividers.
+ */
+.api-member-budget {
+  max-block-size: var(--list-budget, 28rem);
+  margin-top: 0.75rem;
+  border: 1px solid var(--color-edge);
+  border-radius: var(--api-member-radius);
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-muted) transparent;
+}
+.api-member-budget:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
+.api-member-budget .api-member-group { margin-block: 0; }
+.api-member-budget .api-member-list { margin-top: 0; border: 0; border-radius: 0; }
+.api-member-budget > .api-member-group > h3 {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border: 0;
+  border-bottom: 1px solid var(--color-edge);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--background-color), var(--text-color) 6%);
+  overflow-wrap: anywhere;
+}
+.api-member-budget > .api-member-group + .api-member-group > h3 { border-top: 1px solid var(--color-edge); }
+/* The count beside a collection's heading is muted text ("175 members"), not a box. */
+.api-members > h2 > .api-section-count,
+.api-field-table > h2 > .api-section-count { padding: 0; background: none; font-variant-numeric: tabular-nums; }
+.api-collection-note { margin: 0.5rem 0 0; color: var(--color-muted); font-size: 0.75rem; line-height: 1.5; }
+@media print { .api-member-budget { max-block-size: none; overflow: visible; } }
