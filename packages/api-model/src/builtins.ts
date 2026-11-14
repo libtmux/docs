@@ -156,6 +156,10 @@ export const BUILTINS: Record<string, Record<string, string>> = {
   erlang: {
     'erl_error:format_exception/3': 'https://www.erlang.org/doc/apps/stdlib/erl_error.html#format_exception/3',
   },
+  raku: {
+    Promise: 'https://docs.raku.org/type/Promise',
+    Supply: 'https://docs.raku.org/type/Supply',
+  },
   ocaml: {
     Iarray: 'https://ocaml.org/manual/5.5/api/Iarray.html',
     'Iarray.t': 'https://ocaml.org/manual/5.5/api/Iarray.html#TYPEt',

@@ -5474,6 +5474,588 @@
           ]
         }
       ]
+    },
+    {
+      "port": "raku",
+      "owner": "ClientTarget",
+      "names": [
+        "clear-prompt-history"
+      ],
+      "commands": [
+        "clear-history"
+      ],
+      "kind": "other-command",
+      "why": "Clears prompt history with clear-prompt-history; pane scrollback is separate.",
+      "in": "lib/LibTmux/Client.rakumod",
+      "evidence": [
+        {
+          "at": "lib/LibTmux/Client.rakumod:367",
+          "has": [
+            "my @argv = 'clear-prompt-history';"
+          ]
+        },
+        {
+          "at": "lib/LibTmux/Client.rakumod:369",
+          "has": [
+            "await self!run(Invocation.new(:argv(@argv)), |%operation)"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "raku",
+      "owner": "ClientTarget",
+      "names": [
+        "find-window"
+      ],
+      "commands": [
+        "list-clients",
+        "list-windows"
+      ],
+      "kind": "other-command",
+      "why": "Opens find-window. list-clients is shared identity revalidation, not this method’s discovery operation.",
+      "in": "lib/LibTmux/Client.rakumod",
+      "evidence": [
+        {
+          "at": "lib/LibTmux/Client.rakumod:112",
+          "has": [
+            "my @clients = $runtime.read($projection, Invocation.new(:argv(['list-clients'])),"
+          ]
+        },
+        {
+          "at": "lib/LibTmux/Client.rakumod:275",
+          "has": [
+            "my @argv = 'find-window', '-t', $pane;"
+          ]
+        },
+        {
+          "at": "lib/LibTmux/Client.rakumod:283",
+          "has": [
+            "await self!run(Invocation.new(:argv(@argv)), :$pane, |%operation)"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "raku",
+      "owner": "ClientRef",
+      "names": [
+        "clear-prompt-history"
+      ],
+      "commands": [
+        "clear-history"
+      ],
+      "kind": "other-command",
+      "why": "Clears prompt history with clear-prompt-history; pane scrollback is separate.",
+      "in": "lib/LibTmux/Client.rakumod",
+      "evidence": [
+        {
+          "at": "lib/LibTmux/Client.rakumod:367",
+          "has": [
+            "my @argv = 'clear-prompt-history';"
+          ]
+        },
+        {
+          "at": "lib/LibTmux/Client.rakumod:369",
+          "has": [
+            "await self!run(Invocation.new(:argv(@argv)), |%operation)"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "raku",
+      "owner": "ClientRef",
+      "names": [
+        "find-window"
+      ],
+      "commands": [
+        "list-clients",
+        "list-windows"
+      ],
+      "kind": "other-command",
+      "why": "Opens find-window. list-clients is shared identity revalidation, not this method’s discovery operation.",
+      "in": "lib/LibTmux/Client.rakumod",
+      "evidence": [
+        {
+          "at": "lib/LibTmux/Client.rakumod:112",
+          "has": [
+            "my @clients = $runtime.read($projection, Invocation.new(:argv(['list-clients'])),"
+          ]
+        },
+        {
+          "at": "lib/LibTmux/Client.rakumod:275",
+          "has": [
+            "my @argv = 'find-window', '-t', $pane;"
+          ]
+        },
+        {
+          "at": "lib/LibTmux/Client.rakumod:283",
+          "has": [
+            "await self!run(Invocation.new(:argv(@argv)), :$pane, |%operation)"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "raku",
+      "owner": "Buffers",
+      "names": [
+        "get"
+      ],
+      "commands": [
+        "list-buffers",
+        "show-buffer"
+      ],
+      "kind": "other-command",
+      "why": "Reads exact buffer bytes with save-buffer to stdout.",
+      "in": "lib/LibTmux/Configuration.rakumod",
+      "evidence": [
+        {
+          "at": "lib/LibTmux/Configuration.rakumod:440",
+          "has": [
+            "self!execute(['save-buffer', '-b', $name, '-']).stdout"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "raku",
+      "ownerSuffix": "Selection",
+      "names": [
+        "list",
+        "List"
+      ],
+      "commands": [
+        "list-panes",
+        "list-windows",
+        "list-sessions",
+        "list-clients",
+        "list-buffers"
+      ],
+      "kind": "values",
+      "why": "Native List coercions return captured membership without acquiring daemon state.",
+      "in": "lib/LibTmux/Selection.rakumod",
+      "evidence": [
+        {
+          "at": "lib/LibTmux/Selection.rakumod:43",
+          "has": [
+            "method list(--> List:D) { $!members.list }"
+          ]
+        },
+        {
+          "at": "lib/LibTmux/Selection.rakumod:45",
+          "has": [
+            "method List(--> List:D) { $!members.List }"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "raku",
+      "owner": "Pane",
+      "names": [
+        "new"
+      ],
+      "commands": [
+        "new-pane"
+      ],
+      "kind": "no-send",
+      "why": "Captured views reject public construction; acquisition creates their records internally.",
+      "in": "lib/LibTmux/Model.rakumod",
+      "evidence": [
+        {
+          "at": "lib/LibTmux/Model.rakumod:825",
+          "has": [
+            "method new(| --> Nil) {"
+          ]
+        },
+        {
+          "at": "lib/LibTmux/Model.rakumod:826",
+          "has": [
+            "X::LibTmux::Command.new(:kind<argument>, :outcome(NotStarted),"
+          ]
+        },
+        {
+          "at": "lib/LibTmux/Model.rakumod:827",
+          "has": [
+            ":message('Obtain captured views from a Snapshot')).throw"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "raku",
+      "owner": "Session",
+      "names": [
+        "new"
+      ],
+      "commands": [
+        "new-session"
+      ],
+      "kind": "no-send",
+      "why": "Captured views reject public construction; acquisition creates their records internally.",
+      "in": "lib/LibTmux/Model.rakumod",
+      "evidence": [
+        {
+          "at": "lib/LibTmux/Model.rakumod:825",
+          "has": [
+            "method new(| --> Nil) {"
+          ]
+        },
+        {
+          "at": "lib/LibTmux/Model.rakumod:826",
+          "has": [
+            "X::LibTmux::Command.new(:kind<argument>, :outcome(NotStarted),"
+          ]
+        },
+        {
+          "at": "lib/LibTmux/Model.rakumod:827",
+          "has": [
+            ":message('Obtain captured views from a Snapshot')).throw"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "raku",
+      "owner": "SessionGroup",
+      "names": [
+        "new"
+      ],
+      "commands": [
+        "new-session"
+      ],
+      "kind": "no-send",
+      "why": "Captured views reject public construction; acquisition creates their records internally.",
+      "in": "lib/LibTmux/Model.rakumod",
+      "evidence": [
+        {
+          "at": "lib/LibTmux/Model.rakumod:825",
+          "has": [
+            "method new(| --> Nil) {"
+          ]
+        },
+        {
+          "at": "lib/LibTmux/Model.rakumod:826",
+          "has": [
+            "X::LibTmux::Command.new(:kind<argument>, :outcome(NotStarted),"
+          ]
+        },
+        {
+          "at": "lib/LibTmux/Model.rakumod:827",
+          "has": [
+            ":message('Obtain captured views from a Snapshot')).throw"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "raku",
+      "owner": "Window",
+      "names": [
+        "new"
+      ],
+      "commands": [
+        "new-window"
+      ],
+      "kind": "no-send",
+      "why": "Captured views reject public construction; acquisition creates their records internally.",
+      "in": "lib/LibTmux/Model.rakumod",
+      "evidence": [
+        {
+          "at": "lib/LibTmux/Model.rakumod:825",
+          "has": [
+            "method new(| --> Nil) {"
+          ]
+        },
+        {
+          "at": "lib/LibTmux/Model.rakumod:826",
+          "has": [
+            "X::LibTmux::Command.new(:kind<argument>, :outcome(NotStarted),"
+          ]
+        },
+        {
+          "at": "lib/LibTmux/Model.rakumod:827",
+          "has": [
+            ":message('Obtain captured views from a Snapshot')).throw"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "raku",
+      "owner": "WindowLink",
+      "names": [
+        "new"
+      ],
+      "commands": [
+        "new-window"
+      ],
+      "kind": "no-send",
+      "why": "Captured views reject public construction; acquisition creates their records internally.",
+      "in": "lib/LibTmux/Model.rakumod",
+      "evidence": [
+        {
+          "at": "lib/LibTmux/Model.rakumod:825",
+          "has": [
+            "method new(| --> Nil) {"
+          ]
+        },
+        {
+          "at": "lib/LibTmux/Model.rakumod:826",
+          "has": [
+            "X::LibTmux::Command.new(:kind<argument>, :outcome(NotStarted),"
+          ]
+        },
+        {
+          "at": "lib/LibTmux/Model.rakumod:827",
+          "has": [
+            ":message('Obtain captured views from a Snapshot')).throw"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "raku",
+      "owner": "Pane",
+      "names": [
+        "pipe"
+      ],
+      "commands": [
+        "pipe-pane"
+      ],
+      "kind": "values",
+      "why": "Reads the captured pipe flag without dispatching a command.",
+      "in": "lib/LibTmux/Fields.rakumod",
+      "evidence": [
+        {
+          "at": "lib/LibTmux/Fields.rakumod:116",
+          "has": [
+            "method pipe(--> Bool:D) { self.value('pipe') }"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "raku",
+      "owner": "WindowLink",
+      "names": [
+        "last"
+      ],
+      "commands": [
+        "last-window"
+      ],
+      "kind": "values",
+      "why": "Reads the captured last-window flag without selecting a window.",
+      "in": "lib/LibTmux/Fields.rakumod",
+      "evidence": [
+        {
+          "at": "lib/LibTmux/Fields.rakumod:40",
+          "has": [
+            "method last(--> Bool:D) { self.value('last') }"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "raku",
+      "owner": "PaneRef",
+      "names": [
+        "clear-history"
+      ],
+      "commands": [
+        "clear-prompt-history"
+      ],
+      "kind": "other-command",
+      "why": "Clears pane scrollback with clear-history; client prompt history is separate.",
+      "in": "lib/LibTmux/Model.rakumod",
+      "evidence": [
+        {
+          "at": "lib/LibTmux/Model.rakumod:465",
+          "has": [
+            "method clear-history(--> Result:D) is single-operation { self.command(Invocation.new(:argv(['clear-history', '-t', self.id]))) }"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "raku",
+      "owner": "PaneRef",
+      "names": [
+        "copy-command"
+      ],
+      "commands": [
+        "copy-mode"
+      ],
+      "kind": "other-command",
+      "why": "Dispatches a copy-mode action with send-keys -X without entering copy mode.",
+      "in": "lib/LibTmux/Model.rakumod",
+      "evidence": [
+        {
+          "at": "lib/LibTmux/Model.rakumod:482",
+          "has": [
+            "self.command(Invocation.new(:argv(['send-keys', '-X', '-t', self.id, '--', $command, |@arguments])))"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "raku",
+      "owner": "Session",
+      "names": [
+        "window-links"
+      ],
+      "commands": [
+        "link-window"
+      ],
+      "kind": "values",
+      "why": "Traverses captured window placements without creating a link.",
+      "in": "lib/LibTmux/Model.rakumod",
+      "evidence": [
+        {
+          "at": "lib/LibTmux/Model.rakumod:912",
+          "has": [
+            "method window-links(--> WindowLinkSelection:D) { self.relation('window-links') }"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "raku",
+      "owner": "Snapshot",
+      "names": [
+        "window-links"
+      ],
+      "commands": [
+        "link-window"
+      ],
+      "kind": "values",
+      "why": "Traverses captured window placements without creating a link.",
+      "in": "lib/LibTmux/Model.rakumod",
+      "evidence": [
+        {
+          "at": "lib/LibTmux/Model.rakumod:681",
+          "has": [
+            "method window-links(--> WindowLinkSelection:D) { self.selection('window-link') }"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "raku",
+      "owner": "Window",
+      "names": [
+        "links"
+      ],
+      "commands": [
+        "link-window"
+      ],
+      "kind": "values",
+      "why": "Traverses captured window placements without creating a link.",
+      "in": "lib/LibTmux/Model.rakumod",
+      "evidence": [
+        {
+          "at": "lib/LibTmux/Model.rakumod:930",
+          "has": [
+            "method links(--> WindowLinkSelection:D) { self.relation('links') }"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "raku",
+      "owner": "Server",
+      "names": [
+        "close",
+        "close-async"
+      ],
+      "commands": [
+        "kill-server"
+      ],
+      "kind": "no-send",
+      "why": "Joins runtime work and stops an owned process through its pidfd; borrowed daemons remain running.",
+      "in": "lib/LibTmux/Server.rakumod",
+      "evidence": [
+        {
+          "at": "lib/LibTmux/Server.rakumod:685",
+          "has": [
+            "method close(--> Nil) { await self.close-async }"
+          ]
+        },
+        {
+          "at": "lib/LibTmux/Server.rakumod:695",
+          "has": [
+            "try { $!runtime.close; CATCH { default { $failure = $_ } } }"
+          ]
+        },
+        {
+          "at": "lib/LibTmux/Server.rakumod:697",
+          "has": [
+            "try { $!owner.stop if $!owner.defined; CATCH { default { $failure //= $_ } } }"
+          ]
+        },
+        {
+          "at": "lib/LibTmux/Server.rakumod:171",
+          "has": [
+            "method signal(Int:D $signal --> Nil) {"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "raku",
+      "owner": "Server",
+      "names": [
+        "query-window-links"
+      ],
+      "commands": [
+        "link-window"
+      ],
+      "kind": "other-command",
+      "why": "Executes a window-link query; it does not create a placement.",
+      "in": "lib/LibTmux/Server.rakumod",
+      "evidence": [
+        {
+          "at": "lib/LibTmux/Server.rakumod:438",
+          "has": [
+            "method query-window-links(*%options --> WindowLinkSelection:D) { self.query('window-link', |%options) }"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "raku",
+      "owner": "Server",
+      "names": [
+        "start"
+      ],
+      "commands": [
+        "start-server"
+      ],
+      "kind": "other-command",
+      "why": "Launches an owned foreground daemon with -D, then sends new-session.",
+      "in": "lib/LibTmux/Server.rakumod",
+      "evidence": [
+        {
+          "at": "lib/LibTmux/Server.rakumod:141",
+          "has": [
+            "$!process = Proc::Async.new(:w, |$!endpoint.argv, '-D');"
+          ]
+        },
+        {
+          "at": "lib/LibTmux/Server.rakumod:653",
+          "has": [
+            "$owner.launch;"
+          ]
+        },
+        {
+          "at": "lib/LibTmux/Server.rakumod:665",
+          "has": [
+            "{ LEAVE $creator.close; created($creator, $observation, $command, :$cancel, :$deadline) }"
+          ]
+        }
+      ]
     }
   ]
 }

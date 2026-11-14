@@ -126,6 +126,32 @@ describe('spans that are code but not API', () => {
   })
 })
 
+describe('distribution files, wire format names and query paths', () => {
+  it('are not API, so an unresolved one is not reported', () => {
+    expect(notApiReason('Changes')).toBe('CPAN changelog file')
+    expect(notApiReason('libtmux.where/v1')).toBe('wire format name')
+    expect(notApiReason('pane.where.width.-gte')).toBe('query path')
+    // The controls: a type, a qualified name and a field path stay candidates.
+    for (const text of ['ChangeSet', 'Changes.parse', 'libtmux.where', 'pane.where.width', 'Mod.fun/1']) {
+      expect(notApiReason(text), text).toBeUndefined()
+    }
+  })
+})
+
+describe('a Raku core type', () => {
+  const raku = { port: 'raku', version: '0', symbols: [{ id: 'LibTmux::Server', name: 'Server', kind: 'class', signatures: [], docs: [] }] }
+  const models = { raku } as unknown as Record<string, ApiModel>
+  const resolver = new Resolver(Object.values(models))
+  const read = (body: string) => pageMentions({
+    body, portByLabel: { Raku: 'raku' }, page: '/raku/latest/guides/getting-started/', authoredPort: 'raku', nativeTmux: false, resolver, models, authoredTarget: () => undefined,
+  })
+
+  it('links to the Raku documentation, and an undefined name is still reported', () => {
+    const page = read('Asynchronous operations return `Promise` values through a `Supply`, unlike `MissingApi`.')
+    expect(page.dangling.map(({ text }) => text)).toEqual(['MissingApi'])
+  })
+})
+
 describe('the assertion helper of an example program', () => {
   it('is a fixture, whichever member is named', () => {
     for (const text of ['Example', 'Example()', 'Example.check', 'Example.check_all', 'Example.ready?']) {

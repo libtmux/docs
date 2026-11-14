@@ -55,11 +55,21 @@ describe('header links', () => {
     expect(go.actions[1]!.label).toBe('pkg.go.dev')
     expect(go.actions[1]!.name).toBe('pkg.go.dev: libtmux/libtmux-go/tmux package and API reference')
     // Control: a port whose reference is another page names only its package, and has the reference chip as well.
-    for (const slug of ['rs', 'java', 'swift', 'elixir']) {
+    for (const slug of ['rs', 'java', 'swift', 'elixir', 'perl']) {
       const [, pack, api] = links(slug).actions
       expect(pack!.name, slug).toMatch(/ package$/)
       expect(api?.kind, slug).toBe('api')
     }
+  })
+
+  it('finds each Perl distribution, module and the command by the words a reader types', () => {
+    expect(found('perl', 'cpan')).toEqual(found('perl', 'metacpan'))
+    expect(found('perl', 'metacpan')).toEqual(['package:LibTmux', 'package:LibTmux-Async', 'package:LibTmux-Workspace', 'api:LibTmux', 'api:LibTmux-Async', 'api:LibTmux-Workspace'])
+    expect(found('perl', 'pod async')).toEqual(['api:LibTmux-Async'])
+    expect(found('perl', 'distribution workspace registry')).toEqual(['package:LibTmux-Workspace'])
+    // The command ships in the workspace distribution, so its search finds that distribution's page.
+    expect(found('perl', 'libtmux-workspace registry')).toEqual(['package:LibTmux-Workspace'])
+    expect(found('perl', 'LibTmux::Async::Server')).toEqual(['source:LibTmux-Async', 'package:LibTmux-Async', 'api:LibTmux-Async'])
   })
 
   it('names one row for each URL and keeps every entry’s identity in its search text', () => {
@@ -196,8 +206,10 @@ describe('header links', () => {
     expect(marks('java')).toEqual(['github', 'maven', 'javadoc'])
     expect(marks('rs')).toEqual(['github', 'crates', 'docsrs'])
     expect(marks('elixir')).toEqual(['github', 'hex', 'hexdocs'])
+    // MetaCPAN serves the distribution page and its POD, so the two chips wear different marks.
+    expect(marks('perl')).toEqual(['github', 'cpan', 'pod'])
     // Control: every reference chip wears a mark of the reference, not of the package host it follows.
-    for (const slug of ['rs', 'java', 'kotlin', 'scala', 'swift', 'elixir']) {
+    for (const slug of ['rs', 'java', 'kotlin', 'scala', 'swift', 'elixir', 'perl']) {
       const [, pack, api] = links(slug).actions
       expect(api!.icon, slug).not.toBe(pack!.icon)
     }

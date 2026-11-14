@@ -605,6 +605,17 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
       'libtmux.Watch': 'watch handle shared by several tmux objects',
     },
   },
+  raku: {
+    unsettled: {
+      LibTmux: 'public module spanning the task buckets; its exported declarations have their own placements',
+      'LibTmux::Configuration': 'namespace of the options, hooks, environment, buffer and key-binding facades; each facade has its own placement',
+      'LibTmux::Engine': 'module holding connection and daemon identity values placed under Server',
+      'LibTmux::Model': 'module of the captured objects and their references; each object has its own placement',
+      'LibTmux::Types': 'module of value types shared by every object; the outcome and state enums sit with their tasks',
+      'LibTmux::Types::Count': 'nonnegative count shared by every object, owned by none',
+      'LibTmux::Types::Positive': 'positive dimension shared by every object, owned by none',
+    },
+  },
   perl: {
     unsettled: {
       LibTmux: 'distribution namespace and version; concrete packages have their own placements',
@@ -893,6 +904,15 @@ const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
   cxx: {
     workspace: ['BuildEvent', 'BuildPhase', 'BuildStop'].map((name) => `libtmux::workspace::${name}`),
   },
+  raku: {
+    client: ['LibTmux::Attachment'],
+    commands: ['LibTmux::Batch', 'LibTmux::Batch::Batch', 'LibTmux::Batch::Evidence', 'LibTmux::Batch::Operation', 'LibTmux::Batch::Report', 'LibTmux::Types::Outcome'],
+    version: ['LibTmux::Catalogue', 'LibTmux::Catalogue.catalogue', 'LibTmux::Catalogue.parse-tmux-version', 'LibTmux::Catalogue.support-policy',
+      'LibTmux::Catalogue::CatalogueData', 'LibTmux::Catalogue::SupportPolicy', 'LibTmux::Types::SupportState'],
+    server: ['LibTmux::Engine::Endpoint', 'LibTmux::Engine::Incarnation', 'LibTmux::Engine::Observation'],
+    queries: ['LibTmux::Selection', 'LibTmux::Selection::Selection'],
+    snapshots: ['LibTmux::Model::View', 'LibTmux::Types::ValueState'],
+  },
 }
 
 /** Free functions and cmdlets need the same discovery-first order as object members. */
@@ -960,7 +980,7 @@ function languageBucket(bucket: Bucket, port: string, root = bucket.id): Bucket 
 }
 
 export const NAV: Record<string, PortNav> = Object.fromEntries(
-  ['perl', 'powershell', 'julia', 'elixir', 'lisp', 'erlang', 'py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'clojure', 'kotlin', 'scala', 'fsharp', 'csharp', 'cxx', 'swift', 'ocaml', 'haskell'].map((port) => [
+  ['perl', 'powershell', 'julia', 'elixir', 'lisp', 'erlang', 'py', 'ruby', 'lua', 'ts', 'rs', 'go', 'java', 'clojure', 'kotlin', 'scala', 'fsharp', 'csharp', 'cxx', 'swift', 'ocaml', 'haskell', 'raku'].map((port) => [
     port,
     {
       port,

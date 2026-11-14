@@ -59,14 +59,16 @@ export function installSelection(
 
 /** Resolve package snippets against the selected docs source or registry snapshot. */
 export function installsFor(port: Port, selection: { version?: string; pin?: boolean; revision?: string } = {}): readonly InstallCommand[] {
-  if (port.installs.some((command) => command.code.includes('{revision}'))) {
-    const revision = JSON.stringify(selection.revision ?? port.source?.ref ?? 'HEAD')
+  const revision = JSON.stringify(selection.revision ?? port.source?.ref ?? 'HEAD')
+  const versioned = port.installs.some((command) => command.code.includes('{version}') || command.additionalBlocks?.some((block) => block.code.includes('{version}')))
+  if (!versioned && port.installs.some((command) => command.code.includes('{revision}'))) {
     return port.installs.map((command) => ({ ...command, code: command.code.replaceAll('{revision}', revision) }))
   }
-  if (!port.installs.some((command) => command.code.includes('{version}') || command.additionalBlocks?.some((block) => block.code.includes('{version}')))) return port.installs
+  if (!versioned) return port.installs
   const entry = registryFor(port)
   const version = selection.version ?? entry.version
-  const fill = (code: string) => code.replaceAll('{version}', version!)
+  // A port may offer a registry release beside a source install, so one pass fills both.
+  const fill = (code: string) => code.replaceAll('{version}', version!).replaceAll('{revision}', revision)
   if (!version) {
     const source = installCommand(port, entry)
     return [{ label: 'Source', ...source, code: source.lang === 'console' ? wrapShell(source.code) : source.code }]

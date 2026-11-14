@@ -87,11 +87,14 @@ for (const [name, mutate] of mutations) {
     copyFileSync(script, join(dir, 'scripts/gen-registry.mjs'))
     copyFileSync(join(here, 'lib/port-checkout.mjs'), join(dir, 'scripts/lib/port-checkout.mjs'))
     copyFileSync(join(here, '../site/src/lib/versions.ts'), join(dir, 'site/src/lib/versions.ts'))
+    copyFileSync(join(here, '../site/src/lib/port-inventory.ts'), join(dir, 'site/src/lib/port-inventory.ts'))
     copyFileSync(real, join(dir, 'site/src/data/registry.json'))
     const ports = PORTS.map(({ slug, repo, packageName, tagGrammar, tagPrefix, registry }) => ({
       slug, repo, packageName, tagGrammar, tagPrefix, registry, checkout: join(dir, 'absent', slug),
     }))
-    writeFileSync(join(dir, 'site/src/lib/ports.ts'), `export const PORTS = ${JSON.stringify(ports)}\n`)
+    // A port with no registry and no probe is the source-only case; `extra` adds one for the checks that need it.
+    const useStub = (extra = []) => writeFileSync(join(dir, 'site/src/lib/ports.ts'), `export const PORTS = ${JSON.stringify([...ports, ...extra])}\n`)
+    useStub()
     const seed = JSON.parse(readFileSync(real, 'utf8'))
     const baseline = structuredClone(seed)
     delete baseline.ports.powershell
@@ -159,21 +162,76 @@ for (const [name, mutate] of mutations) {
     const same = (a, b) => JSON.stringify(a) === JSON.stringify(b)
     let result = invoke(replies)
     check('an older published registry gains both ports', Object.keys(result.ports).length === PORTS.length, result.error)
-    check('source-only Perl keeps its unpublished package entries during online refresh',
-      same(result.ports.perl, seed.ports.perl), result.error)
-    writeFileSync(join(dir, 'published.json'), JSON.stringify({
-      ...baseline, ports: { ...baseline.ports, perl: { status: 'release', version: '1.0.0', release: '1.0.0', tag: 'v1.0.0' } },
-    }))
+    // A source-only port declares no registry and has no probe, so its unpublished entry is kept and a published one is refused.
+    const sourceOnly = { slug: 'sourceonly', repo: 'libtmux/libtmux-sourceonly', packageName: 'sourceonly', tagGrammar: 'semver', checkout: join(dir, 'absent', 'sourceonly') }
+    const unpublished = { status: 'unpublished', version: null, release: null, tag: null }
+    const published = { status: 'release', version: '1.0.0', release: '1.0.0', tag: 'v1.0.0' }
+    useStub([sourceOnly])
+    writeFileSync(join(dir, 'published.json'), JSON.stringify({ ...baseline, ports: { ...baseline.ports, sourceonly: unpublished } }))
+    check('a source-only port keeps its unpublished entry during online refresh',
+      same(invoke(replies).ports.sourceonly, unpublished), invoke(replies).error)
+    writeFileSync(join(dir, 'published.json'), JSON.stringify({ ...baseline, ports: { ...baseline.ports, sourceonly: published } }))
     const unconfigured = invoke(replies)
-    check('a published Perl entry requires a registry probe', /perl: no registry probe/.test(unconfigured.error), unconfigured.error)
+    check('a published entry of a port with no probe requires a registry probe', /sourceonly: no registry probe/.test(unconfigured.error), unconfigured.error)
     writeFileSync(join(dir, 'published.json'), JSON.stringify({
-      ...baseline, ports: { ...baseline.ports, perl: { ...seed.ports.perl, packages: {
-        ...seed.ports.perl.packages, 'LibTmux-Workspace': { status: 'release', version: '1.0.0', release: '1.0.0', tag: 'v1.0.0' },
-      } } },
+      ...baseline, ports: { ...baseline.ports, sourceonly: { ...unpublished, packages: { companion: published } } },
     }))
     const companion = invoke(replies)
-    check('a published Perl companion also requires a registry probe', /perl: no registry probe/.test(companion.error), companion.error)
+    check('a published companion of a port with no probe also requires a registry probe', /sourceonly: no registry probe/.test(companion.error), companion.error)
+    useStub()
     writeFileSync(join(dir, 'published.json'), JSON.stringify(baseline))
+    // The deploy builds from what the resolver wrote, and a badge that cannot read an entry fails that
+    // build after the registry job has passed. Resolve each state Julia can be in, then read every
+    // port's badges and packages from the result. An incomplete result is not a clean read.
+    const unread = (resolved) => {
+      const count = Object.keys(resolved.ports).length
+      if (count !== PORTS.length) return [`the resolver wrote ${count} of ${PORTS.length} ports: ${resolved.error}`]
+      const registry = { schema: 2, ports: resolved.ports }
+      return PORTS.flatMap((port) => [
+        ...['core', 'mcp', 'workspace'].filter((product) => product === 'core' || productAvailable(port, product))
+          .map((product) => [`${port.slug} ${product}`, () => productStatus(port, product, registry)]),
+        ...Object.entries(registry.ports[port.slug].packages ?? {})
+          .map(([name, item]) => [`${port.slug} ${name}`, () => releaseMaturity(item, port.tagGrammar)]),
+      ].flatMap(([label, read]) => {
+        try {
+          read()
+          return []
+        } catch (err) {
+          return [`${label}: ${err.message}`]
+        }
+      }))
+    }
+    const tagged = (...names) => ({ body: JSON.stringify(names.map((name) => ({ name }))) })
+    // CPAN: decimal versions order as numbers, developer and BackPAN releases are not installable, and a tag counts once its release is indexed.
+    const cpanSearch = (dist) => `https://fastapi.metacpan.org/v1/release/_search?q=distribution:${dist}&size=100`
+    const cpanHits = (dist, ...releases) => ({ body: JSON.stringify({ hits: { hits: releases.map(([version, status = 'cpan', maturity = 'released']) => ({
+      _source: { distribution: dist, version, status, maturity, authorized: true },
+    })) } }) })
+    const perlTags = 'https://api.github.com/repos/libtmux/libtmux-perl/tags?per_page=100'
+    const cpan = {
+      ...replies,
+      [perlTags]: tagged('v0.002', 'v0.003', 'v0.010', 'v0.011'),
+      [cpanSearch('LibTmux')]: cpanHits('LibTmux', ['0.002'], ['0.010', 'latest'], ['0.003'], ['0.011_001', 'cpan', 'developer'], ['0.001', 'backpan']),
+      [cpanSearch('LibTmux-Async')]: cpanHits('LibTmux-Async', ['0.002', 'latest']),
+      [cpanSearch('LibTmux-Workspace')]: cpanHits('LibTmux-Workspace'),
+    }
+    result = invoke(cpan)
+    check('CPAN orders decimal versions as numbers and skips developer and BackPAN releases',
+      result.ports.perl?.version === '0.010' && result.ports.perl?.release === '0.010' && result.ports.perl?.status === 'release', `${JSON.stringify(result.ports.perl)} ${result.error}`)
+    check('a CPAN tag is recorded once its release is indexed, and not before',
+      result.ports.perl?.tag === 'v0.010' && result.ports.perl?.packages?.['LibTmux-Async']?.tag === 'v0.002', `${JSON.stringify(result.ports.perl)} ${result.error}`)
+    check('a distribution CPAN does not carry is unpublished beside one it does',
+      same(result.ports.perl?.packages?.['LibTmux-Workspace'], unpublished) && result.ports.perl?.packages?.['LibTmux-Async']?.version === '0.002', `${JSON.stringify(result.ports.perl)} ${result.error}`)
+    check('every badge reads a CPAN release as the 0.x series', unread(result).length === 0
+      && productStatus(PORTS.find(({ slug }) => slug === 'perl'), 'core', { schema: 2, ports: result.ports }) === '0.x', `${JSON.stringify(unread(result))}`)
+    for (const [why, response] of [
+      ['HTTP 500', { status: 500, body: 'unavailable' }],
+      ['an unexpected body', { body: '{"error":"Not found"}' }],
+      ['a release with no decimal version', cpanHits('LibTmux', ['1.2.3'])],
+    ]) {
+      result = invoke({ ...cpan, [cpanSearch('LibTmux')]: response })
+      check(`CPAN ${why} preserves the committed Perl entry`, same(result.ports.perl, seed.ports.perl), `${JSON.stringify(result.ports.perl)} ${result.error}`)
+    }
     check('Gallery pages refresh the core and workspace prereleases, excluding unlisted versions',
       result.ports.powershell?.version === '0.1.0-alpha3' && result.ports.powershell?.tag === 'v0.1.0-alpha3'
       && result.ports.powershell?.packages?.['LibTmux.Workspace']?.version === '0.1.0-alpha4', result.error)
@@ -232,34 +290,12 @@ for (const [name, mutate] of mutations) {
       result.ports.julia?.tag === 'v0.1.0-alpha.1', `${JSON.stringify(result.ports.julia)} ${result.error}`)
     writeFileSync(join(dir, 'published.json'), JSON.stringify(baseline))
 
-    // The deploy builds from what the resolver wrote, and a badge that cannot read an entry fails that
-    // build after the registry job has passed. Resolve each state Julia can be in, then read every
-    // port's badges and packages from the result. An incomplete result is not a clean read.
-    const unread = (resolved) => {
-      const count = Object.keys(resolved.ports).length
-      if (count !== PORTS.length) return [`the resolver wrote ${count} of ${PORTS.length} ports: ${resolved.error}`]
-      const registry = { schema: 2, ports: resolved.ports }
-      return PORTS.flatMap((port) => [
-        ...['core', 'mcp', 'workspace'].filter((product) => product === 'core' || productAvailable(port, product))
-          .map((product) => [`${port.slug} ${product}`, () => productStatus(port, product, registry)]),
-        ...Object.entries(registry.ports[port.slug].packages ?? {})
-          .map(([name, item]) => [`${port.slug} ${name}`, () => releaseMaturity(item, port.tagGrammar)]),
-      ].flatMap(([label, read]) => {
-        try {
-          read()
-          return []
-        } catch (err) {
-          return [`${label}: ${err.message}`]
-        }
-      }))
-    }
     const juliaPort = PORTS.find(({ slug }) => slug === 'julia')
-    const tagged = (...names) => ({ body: JSON.stringify(names.map((name) => ({ name }))) })
     const notInGeneral = { status: 404, body: '404: Not Found' }
     const prereleaseOnly = { body: `["0.1.0-alpha.2"]\ngit-tree-sha1 = "${'c'.repeat(40)}"\n` }
     for (const [state, repository, registry, stage] of [
-      ['a final tag General does not carry yet', ['v0.1.0'], notInGeneral, '0.x'],
-      ['a prerelease tag General does not carry yet', ['v0.1.0-alpha.1'], notInGeneral, 'alpha'],
+      ['a final tag General does not carry yet', ['v0.1.0'], notInGeneral, 'unreleased'],
+      ['a prerelease tag General does not carry yet', ['v0.1.0-alpha.1'], notInGeneral, 'unreleased'],
       ['a prerelease General carries', ['v0.1.0-alpha.2'], prereleaseOnly, 'alpha'],
       ['a prerelease General carries beside a final tag it lacks', ['v0.1.0-alpha.2', 'v0.1.0'], prereleaseOnly, 'alpha'],
       ['no tag and no General package', [], notInGeneral, 'unreleased'],
@@ -270,17 +306,33 @@ for (const [name, mutate] of mutations) {
       check(`every badge reads ${state} as ${stage}`, read === stage, `${read} ${JSON.stringify(failures)}`)
     }
     result = invoke({ ...replies, [julia]: tagged('v0.1.0'), [general]: notInGeneral })
-    check('a final tag General does not carry yet is recorded as the live registry recorded it',
-      same(result.ports.julia, { status: 'unpublished', version: null, release: null, tag: 'v0.1.0' }), `${JSON.stringify(result.ports.julia)} ${result.error}`)
+    check('a final tag General does not carry yet is recorded as unreleased',
+      same(result.ports.julia, { status: 'unpublished', version: null, release: null, tag: 'v0.1.0', maturity: 'unreleased' }), `${JSON.stringify(result.ports.julia)} ${result.error}`)
+    // The gate follows the inventory, not the port: Swift and C++ are published there, so their tags still name a stage.
+    const cxxTags = 'https://api.github.com/repos/libtmux/libtmux-cxx/tags?per_page=100'
+    const vcpkg = 'https://raw.githubusercontent.com/microsoft/vcpkg/master/ports/libtmux-cxx/vcpkg.json'
+    result = invoke({ ...replies, [cxxTags]: tagged('v0.1.0'), [vcpkg]: { status: 404, body: '404: Not Found' } })
+    check('a final tag on a published-inventory port with no curated vcpkg entry keeps its stage',
+      same(result.ports.cxx, { status: 'unpublished', version: null, release: null, tag: 'v0.1.0' })
+      && productStatus(PORTS.find(({ slug }) => slug === 'cxx'), 'core', { schema: 2, ports: result.ports }) === '0.x', `${JSON.stringify(result.ports.cxx)} ${result.error}`)
+    // A kept baseline entry is gated too, so a failed probe cannot bring back a release the port does not have.
+    writeFileSync(join(dir, 'published.json'), JSON.stringify({ ...baseline, ports: { ...baseline.ports, julia: { status: 'unpublished', version: null, release: null, tag: 'v0.1.0' } } }))
+    result = invoke({ ...replies, [julia]: tagged('v0.1.0'), [general]: { status: 500, body: 'unavailable' } })
+    check('a baseline entry kept after a failed probe is still unreleased',
+      same(result.ports.julia, { status: 'unpublished', version: null, release: null, tag: 'v0.1.0', maturity: 'unreleased' }), `${JSON.stringify(result.ports.julia)} ${result.error}`)
+    writeFileSync(join(dir, 'published.json'), JSON.stringify(baseline))
     // Once the registry lists a release, a newer tag it lacks is not recorded; the support page says so.
     result = invoke({ ...replies, [julia]: tagged('v0.1.0-alpha.2', 'v0.1.0'), [general]: prereleaseOnly })
     check('a final tag beside a registry that lists only a prerelease is not recorded',
       same(result.ports.julia, { status: 'prerelease', version: '0.1.0-alpha.2', release: null, tag: 'v0.1.0-alpha.2' }), `${JSON.stringify(result.ports.julia)} ${result.error}`)
 
     // The reads above pass only if the read can fail, so name the port and the tag it could not place.
-    result = invoke({ ...replies, [julia]: tagged('v0.1.0-dev.3'), [general]: notInGeneral })
+    // On a port the gate leaves alone: an unreleased port never reads its tag.
+    result = invoke({ ...replies, [cxxTags]: tagged('v0.1.0-dev.3'), [vcpkg]: { status: 404, body: '404: Not Found' } })
     check('a tag whose marker no stage names is reported with its port and name',
-      same(unread(result), ['julia core: releaseMaturity: no release stage in "v0.1.0-dev.3"']), `${JSON.stringify(unread(result))} ${result.error}`)
+      same(unread(result), ['cxx core: releaseMaturity: no release stage in "v0.1.0-dev.3"']), `${JSON.stringify(unread(result))} ${result.error}`)
+    result = invoke({ ...replies, [julia]: tagged('v0.1.0-dev.3'), [general]: notInGeneral })
+    check('an unreleased port never reads its tag, so one no stage names is not an error', same(unread(result), []), `${JSON.stringify(unread(result))} ${result.error}`)
     check('an incomplete result is not read as clean', unread({ ports: { go: seed.ports.go }, error: '' }).length === 1, 'a one-port registry read as clean')
 
     result = invoke({ ...replies, [core]: { body: feed('') }, [workspace]: { body: feed('') }, [general]: { status: 404, body: '404: Not Found' } })

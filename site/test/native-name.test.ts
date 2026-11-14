@@ -202,7 +202,7 @@ describe('short names', () => {
   })
 
   it('follow native ownership and qualification for every symbol of every port', { timeout: 30_000 }, () => {
-    const separators: Record<string, string[]> = { perl: ['::'], rs: ['::'], cxx: ['::'], ruby: ['::', '.', '#'], lua: ['.', ':'], lisp: [':'], powershell: ['\\'], clojure: ['/'], erlang: [':', '.'] }
+    const separators: Record<string, string[]> = { perl: ['::'], rs: ['::'], cxx: ['::'], ruby: ['::', '.', '#'], lua: ['.', ':'], lisp: [':'], raku: ['::', '.'], powershell: ['\\'], clojure: ['/'], erlang: [':', '.'] }
     for (const [port, model] of Object.entries(API_MODELS)) {
       const owners = new Map(model.symbols.map((symbol) => [symbol.id, symbol]))
       for (const symbol of model.symbols) {
@@ -216,6 +216,7 @@ describe('short names', () => {
           expect(shown, symbol.id).toBe(`#${owner.name}:${symbol.name.slice(1)}`)
           continue
         }
+        if (port === 'raku' && !symbol.id.startsWith(owner.id)) { expect(shown, symbol.id).toBe(symbol.id); continue }
         expect(shown.startsWith(owner.name) && shown.endsWith(symbol.name), `${port} ${symbol.id}`).toBe(true)
         const separator = shown.slice(owner.name.length, shown.length - symbol.name.length)
         // A Rust tuple field follows its owner with a dot, as rustdoc writes it; every other Rust member with `::`.

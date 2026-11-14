@@ -8,6 +8,7 @@ import { RECIPES as PERL, withoutMarks as withoutPerlMarks } from '../../scripts
 import { RECIPES as OCAML, ocamlHelper, withoutMarks as withoutOcamlMarks } from '../../scripts/lib/core-recipes/ocaml.mjs'
 import { RECIPES as HASKELL, withoutMarks as withoutHaskellMarks } from '../../scripts/lib/core-recipes/haskell.mjs'
 import { RECIPES as CLOJURE, clojureHelper, withoutMarks as withoutClojureMarks } from '../../scripts/lib/core-recipes/clojure.mjs'
+import { RECIPES as RAKU, withoutMarks as withoutRakuMarks } from '../../scripts/lib/core-recipes/raku.mjs'
 import * as corePlayer from '../src/lib/core-player'
 import { playableCapability, tmuxChanges, viewSteps } from '../src/lib/core-player'
 import { recordingProblems, sha256, type CoreRecording } from '../src/lib/core-recording'
@@ -17,7 +18,7 @@ import home from '../src/data/home-examples.json'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 
 /** The ports whose landing program the player plays that this file covers. */
-type NewPort = 'lisp' | 'perl' | 'erlang' | 'ocaml' | 'haskell' | 'clojure'
+type NewPort = 'lisp' | 'perl' | 'erlang' | 'ocaml' | 'haskell' | 'clojure' | 'raku'
 
 const recording = (port: string): CoreRecording => JSON.parse(readFileSync(new URL(`../src/data/core-recordings/${port}.json`, import.meta.url), 'utf8'))
 const capabilityOf = (port: string) => recording(port).capabilities['typed-graph']!
@@ -163,8 +164,8 @@ describe('the player of a program that connects to a server its setup started', 
 })
 
 describe('the real player component for each new port', () => {
-  const names = { lisp: 'Common Lisp', perl: 'Perl', erlang: 'Erlang', ocaml: 'OCaml', haskell: 'Haskell', clojure: 'Clojure' } as const
-  it.each(['lisp', 'perl', 'erlang', 'ocaml', 'haskell', 'clojure'] as const)('draws %s: a frame and a result for the state before the first call and for each call, and plans each view', async (port) => {
+  const names = { lisp: 'Common Lisp', perl: 'Perl', erlang: 'Erlang', ocaml: 'OCaml', haskell: 'Haskell', clojure: 'Clojure', raku: 'Raku' } as const
+  it.each(['lisp', 'perl', 'erlang', 'ocaml', 'haskell', 'clojure', 'raku'] as const)('draws %s: a frame and a result for the state before the first call and for each call, and plans each view', async (port) => {
     const played = (await playableCapability(port, 'typed-graph', shown(port)))!
     const template = await loadAstroTemplate('components/core/CorePlayer.astro', {
       real: ['components/HomeExample.astro', 'components/replay/TmuxScreen.astro', 'components/replay/ReplayControls.astro'],
@@ -197,7 +198,7 @@ describe('the landing page player of the new ports', () => {
 
   it('replaces the plain example with the player once a port has a sound recording', async () => {
     const render = renderer(await loadAstroTemplate('components/CoreShowcase.astro', { stubs, modules: { 'astro-expressive-code/components': { Code } } }))
-    for (const port of ['lisp', 'erlang', 'perl', 'ocaml', 'haskell', 'clojure']) {
+    for (const port of ['lisp', 'erlang', 'perl', 'ocaml', 'haskell', 'clojure', 'raku']) {
       const document = await render(port)
       expect(document.querySelector('[data-capability-panel="typed-graph"] [data-core-player]'), `${port} plays its recording`).not.toBeNull()
       expect(document.querySelector('[data-home-example]'), `${port} keeps no plain example`).toBeNull()
@@ -669,5 +670,98 @@ describe('the Clojure recording of the landing page program', () => {
   it('is played for the program it records and for no other', async () => {
     expect(await playableCapability('clojure', 'typed-graph', shown('clojure'))).toBeDefined()
     expect(await playableCapability('clojure', 'typed-graph', `${shown('clojure')}\n; edited`)).toBeUndefined()
+  })
+})
+
+describe('Raku recipe', () => {
+  const recipe = RAKU['typed-graph']
+  const code = home.raku.files[0]!.code
+  const marked = recipe.instrument(code, recipe.steps)
+
+  it('adds only marker lines to the displayed program: the helper after its import, a mark after each call, and the close mark as a phaser', () => {
+    expect(withoutRakuMarks(marked)).toBe(code)
+    const lines = marked.split('\n')
+    expect(lines[lines.indexOf('use LibTmux;') + 1]).toBe('use JSON::Fast; # docs:mark')
+    const marks = lines.filter((line: string) => line.endsWith('docs:mark') && /docs-mark\("/.test(line)).map((line: string) => /docs-mark\("([^"]+)"/.exec(line)?.[1])
+    expect(marks.toSorted()).toEqual(recipe.steps.map((step: { id: string }) => step.id).toSorted())
+  })
+
+  it('declares the close mark before the program\'s own LEAVE, so that it runs after the daemon has stopped', () => {
+    const lines = marked.split('\n')
+    const mark = lines.findIndex((line: string) => line.startsWith('LEAVE docs-mark("close"'))
+    expect(lines[mark + 1]).toBe('LEAVE $server.close if $server.defined;')
+  })
+
+  it('refuses an anchor the program does not hold, and a program without the import to put the helper after', () => {
+    expect(() => recipe.instrument(code, [{ id: 'x', anchor: '$server.nope(', value: 'Nil' }])).toThrow(/not on exactly one line/)
+    expect(() => recipe.instrument(code.replace('use LibTmux;', ''), recipe.steps)).toThrow(/use LibTmux/)
+  })
+
+  it('finds every call on exactly one line of the displayed program', () => {
+    for (const step of recipe.steps) expect(statementLines(code, step.anchor, syntaxOf('raku'), occurrenceOf(step)), step.id).toBeDefined()
+  })
+
+  it('reads a command out of the guard the library wraps it in, and nothing else', () => {
+    const guarded = ['if-shell', '-F', '#{==:#{pid}/#{start_time},1/2}', '"split-window" "-t" "%0" "--" "exec cat"', `libtmux-stale-${'a'.repeat(32)}`]
+    expect(recipe.unwrap(guarded)).toEqual(['split-window', '-t', '%0', '--', 'exec cat'])
+    expect(recipe.unwrap(['split-window', '-t', '%0'])).toBeUndefined()
+    expect(recipe.unwrap(['if-shell', '-F', 'x', 'y', 'z'])).toBeUndefined()
+  })
+})
+
+describe('the Raku recording of the landing page program', () => {
+  const capability = capabilityOf('raku')
+  const step = (id: string) => capability.steps.find((each) => each.id === id)!
+  const sent = (id: string) => step(id).commands.filter((command) => command.role === 'command').map((command) => command.tmux.split(' ')[0])
+
+  it('is sound, of the displayed program, and was recorded at the revision the page records', () => {
+    expectPlayable('raku')
+  })
+
+  it('has one step per call of the step map, in the order the calls ran', () => {
+    expect(capability.steps.map((each) => [each.id, each.label, each.anchor, each.type])).toEqual(RAKU['typed-graph'].steps.map((each: { id: string; label: string; anchor: string; type: string }) => [each.id, each.label, each.anchor, each.type]))
+  })
+
+  it('starts with no server: Server.start starts the daemon and creates the first session', () => {
+    expect(capability.tmuxBefore.sessions).toEqual([])
+    expect(sent('start')).toEqual(['new-session'])
+  })
+
+  it('records what each call returned and the commands that changed tmux', () => {
+    expect(step('start').returned).toEqual({ socket: 'libtmux-owned-AbC123' })
+    expect(step('snapshot-before').returned).toEqual({ sessions: 1, windows: 1, panes: 1 })
+    expect(step('split').returned).toEqual({ id: '%1' })
+    expect(step('snapshot').returned).toEqual({ sessions: 1, windows: 1, panes: 2 })
+    expect(step('selected').returned).toEqual({ id: '%0', title: 'editor' })
+    expect(sent('split')).toEqual(['split-window'])
+    expect(sent('title-editor')).toEqual(['select-pane'])
+    expect(sent('title-logs')).toEqual(['select-pane'])
+    expect(sent('snapshot-before')).toEqual(['list-sessions', 'list-windows', 'list-windows', 'list-panes', 'list-clients', 'list-sessions', 'list-buffers'])
+    expect(sent('pane'), 'reading a snapshot sends nothing').toEqual([])
+    expect(sent('selected'), 'reading a snapshot sends nothing').toEqual([])
+  })
+
+  it('counts the library\'s daemon identity checks as probes, and shows no guard, token or process id', () => {
+    expect(step('split').commands).toHaveLength(1)
+    expect(step('snapshot').commands.filter((command) => command.role === 'probe').length).toBeGreaterThan(0)
+    const text = JSON.stringify(capability.steps.flatMap((each) => each.commands.map((command) => command.tmux)))
+    expect(text).not.toMatch(/if-shell|libtmux-stale|[0-9a-f]{32}(?<!0{32})/)
+    expect(text).not.toMatch(/libtmux-owned-(?!AbC123)/)
+  })
+
+  it('ends with the call that closes the owned daemon, after which no session is left', () => {
+    const close = step('close')
+    expect(close.stopsServer).toBe(true)
+    expect(close.tmux.sessions).toEqual([])
+    expect(close.returned).toBeNull()
+  })
+
+  it('plays every call in every view of the program, each on the line its anchor names', () => {
+    expectPlayedInEveryView('raku')
+  })
+
+  it('is played for the program it records and for no other', async () => {
+    expect(await playableCapability('raku', 'typed-graph', shown('raku'))).toBeDefined()
+    expect(await playableCapability('raku', 'typed-graph', `${shown('raku')}\n# edited`)).toBeUndefined()
   })
 })

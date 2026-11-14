@@ -15,6 +15,7 @@
 
 /** Language libraries, by the slug the site uses. */
 export type PortSlug = 'perl' | 'py' | 'ruby' | 'lua' | 'ts' | 'rs' | 'go' | 'java' | 'csharp' | 'cxx' | 'swift' | 'kotlin' | 'scala' | 'fsharp' | 'powershell' | 'julia' | 'elixir' | 'ocaml' | 'haskell' | 'clojure' | 'lisp' | 'erlang'
+  | 'raku'
 
 export type ApiProduct = 'core' | 'workspace' | 'mcp'
 
@@ -384,6 +385,8 @@ export interface ApiModelBase {
   nativeProvenance?: {
     files: { path: string; sha256: string }[]
     exporter: Record<string, unknown>
+    /** The library revision a native exporter described, when it records one apart from the exporter's own. */
+    library?: { repository: string; revision: string; workingTree: boolean }
   }
   /** Generated public source files, stored with the revision that produced them. */
   generatedSources?: Record<string, string>

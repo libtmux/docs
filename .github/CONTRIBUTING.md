@@ -704,6 +704,16 @@ cleanup in separate work.
 Follow [WRITING.md](../WRITING.md#commits) for commit messages and
 [AGENTS.md](../AGENTS.md#repository-boundaries) for push and deployment limits.
 
+### Raku source-bound documentation checks
+
+The Raku command-usage scanner parses the library with the compiler that the
+library revision pins in `.tool-versions`, and with `JSON::Fast` installed.
+Put that `raku` on `PATH`, or set `LIBTMUX_DOCS_RAKU` to its executable; a
+missing or different compiler fails the scan. RakuAST can run trusted
+compile-time code, so the scanner reads only reviewed library revisions. CI
+reads the compiler from the committed API model and installs `JSON::Fast`
+before it runs the fixture.
+
 ### Perl source-bound documentation checks
 
 The reusable port builder checks the selected Perl artifact after rendering.

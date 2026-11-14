@@ -38,6 +38,15 @@ and neutral reading surfaces. Its library cards describe the repository
 scaffold without an API example. Provenance is recorded in
 [`perl/source.json`](../site/public/brand/perl/source.json).
 
+Raku uses the library set from assets revision
+`55dd6eac4347ba22270788b74a71ec0cba12e287`, with Linguist's `#0000fb` primary.
+Its link and filled-control shades are darker in light mode and lighter in dark
+mode; reading surfaces stay neutral. Only the library set is included because
+the port publishes no workspace or MCP product. The port switcher shows the
+library tile, labelled as libtmux for Raku rather than as the Raku language
+logo. Digests and the shared-root manifest overrides are recorded in
+[`raku/source.json`](../site/public/brand/raku/source.json).
+
 - [GitHub Linguist colors](https://github.com/github-linguist/linguist/blob/538da05f034fa5c83bd81df128d144e208898da3/lib/linguist/languages.yml)
 - The original libtmux and tmuxp geometry was supplied by the project owner.
 - The MCP overlay uses the symbol, without the wordmark, from the

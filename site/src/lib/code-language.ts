@@ -4,6 +4,7 @@ const EC_LANGS = new Set([
   'csharp', 'cpp', 'c', 'go', 'bash', 'shell', 'console', 'json', 'yaml',
   'toml', 'xml', 'diff', 'text', 'tmux-usage', 'tmux-shell', 'tmux-config', 'powershell', 'julia', 'elixir', 'properties', 'ini',
   'cmake', 'ocaml', 'lisp', 'haskell', 'clojure', 'erlang',
+  'raku',
 ])
 
 const EC_ALIASES: Record<string, string> = {

@@ -617,6 +617,36 @@ jobs:
           perl scripts/export-api.pl --revision "$SOURCE_SHA" \
             --exporter-revision "$SOURCE_SHA" --output docs/_build/api.json
 
+      - name: Read the selected Raku documentation runtime
+        if: matrix.port == 'raku'
+        id: raku-runtime
+        working-directory: port
+        run: |
+          python3 - <<'PYCODE'
+          import os, pathlib, re
+          rows = [line.split() for line in pathlib.Path('.tool-versions').read_text().splitlines()]
+          versions = [row[1] for row in rows if len(row) == 2 and row[0] == 'raku']
+          if len(versions) != 1 or not re.fullmatch(r'[0-9]{4}\.[0-9]{2}', versions[0]):
+              raise ValueError('Raku documentation requires an exact compiler pin')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'version={versions[0]}\n')
+          PYCODE
+      - name: Install the selected Raku compiler
+        if: matrix.port == 'raku'
+        uses: Raku/setup-raku@8602b3572876ee7a5e304837c3183cf913a78f47 # v1.15.0
+        with:
+          raku-version: ${{ steps.raku-runtime.outputs.version }}
+      - name: Export the selected Raku declarations and native RakuDoc
+        if: matrix.port == 'raku'
+        working-directory: port
+        run: |
+          set -euo pipefail
+          zef install --/test --deps-only .
+          raku -I. tools/export-docs.raku
+      - name: Install the Raku usage scanner dependency
+        if: matrix.port == 'raku'
+        run: zef install --/test JSON::Fast
+
       - name: Install Common Lisp documentation toolchain
         if: matrix.port == 'lisp'
         uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
@@ -815,6 +845,11 @@ jobs:
         if: matrix.port == 'perl'
         working-directory: docs
         run: time pnpm run --recursive type-check
+
+      - name: Check the Raku native model adapter
+        if: matrix.port == 'raku'
+        working-directory: docs
+        run: time node site/node_modules/vitest/vitest.mjs run --root packages/api-model test/raku.test.ts
 
       # The version directory itself: its contents become
       # <locale>/<port>/<version>.

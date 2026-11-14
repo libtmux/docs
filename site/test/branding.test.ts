@@ -33,6 +33,7 @@ describe('route branding', () => {
       csharp: 'libtmux-dotnet: C#-based tmux client', fsharp: 'libtmux-fsharp: F#-based tmux client',
       cxx: 'libtmux-cxx: C++-based tmux client', swift: 'libtmux-swift: Swift-based tmux client',
       ocaml: 'libtmux-ocaml: OCaml-based tmux client',
+      raku: 'libtmux-raku: Raku-based tmux client',
     })
     expect(portTagline(PORTS.find((port) => port.slug === 'rs')!)).toBe('Rust-based tmux client')
     // The home title carries no ` | project` suffix, for Julia's differing project name too.
@@ -54,6 +55,7 @@ describe('route branding', () => {
       scala: 'libtmux-scala', csharp: 'libtmux-dotnet', fsharp: 'libtmux-fsharp',
       cxx: 'libtmux-cxx', swift: 'libtmux-swift', clojure: 'libtmux-clojure',
       ocaml: 'libtmux-ocaml',
+      raku: 'libtmux-raku',
     }
     expect(Object.fromEntries(PORTS.map((port) => [port.slug, branding(port.slug).projectName]))).toEqual(names)
     expect(branding('java', 'reference/libtmux-scala-cats').projectName).toBe('libtmux-scala')

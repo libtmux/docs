@@ -4144,8 +4144,98 @@ for (const [id, binding] of Object.entries(CLOJURE_CONCEPTS)) {
   concept.symbols.clojure = binding.symbol
   if (binding.note) (concept.notes ??= {}).clojure = binding.note
 }
+const RAKU_CONCEPTS: Record<string, { symbol: string; note?: string }> = {
+  server: { symbol: 'LibTmux::Server' },
+  session: { symbol: 'LibTmux::Model::Session' },
+  window: { symbol: 'LibTmux::Model::Window', note: 'A physical window may have multiple WindowLink placements, including distinct indexes in one session.' },
+  pane: { symbol: 'LibTmux::Model::Pane' },
+  snapshot: { symbol: 'LibTmux::Server.snapshot', note: 'Explicit I/O captures an observation interval. Existing views and relationships remain local.' },
+  'list-sessions': { symbol: 'LibTmux::Model::Snapshot.sessions' },
+  'list-server-windows': { symbol: 'LibTmux::Model::Snapshot.windows', note: 'Physical windows occur once; window-links preserves placements.' },
+  'list-server-panes': { symbol: 'LibTmux::Model::Snapshot.panes' },
+  'list-clients': { symbol: 'LibTmux::Model::Snapshot.clients' },
+  'list-windows': { symbol: 'LibTmux::Model::Session.window-links', note: 'Returns captured WindowLink placements. Follow each window relationship for the physical window.' },
+  'list-panes': { symbol: 'LibTmux::Model::Window.panes' },
+  'pane-window': { symbol: 'LibTmux::Model::Pane.window' },
+  'window-session': { symbol: 'LibTmux::Model::WindowLink.session', note: 'The session belongs to a link, not to the physical Window.' },
+  'window-link-window': { symbol: 'LibTmux::Model::WindowLink.window' },
+  'client-session': { symbol: 'LibTmux::Model::Client.session' },
+  'active-pane': { symbol: 'LibTmux::Model::Window.active-pane' },
+  'active-window': { symbol: 'LibTmux::Model::Session.current-link', note: 'Returns the captured active WindowLink; its window relationship selects the physical window.' },
+  'new-session': { symbol: 'LibTmux::Server.new-session' },
+  'start-server': { symbol: 'LibTmux::Server.start', note: 'Starts an owned private daemon; close stops only an owned incarnation.' },
+  'kill-server': { symbol: 'LibTmux::Server.kill-server', note: 'Explicitly terminates the observed daemon. Owned callers still close to join cleanup.' },
+  'server-from-env': { symbol: 'LibTmux::Server.from-env', note: 'Explicitly imports TMUX environment data, verifies the daemon PID and binds that incarnation.' },
+  'has-session': { symbol: 'LibTmux::Server.has-session', note: 'Checks one exact ID or name; acquisition and identity failures still throw.' },
+  'run-shell': { symbol: 'LibTmux::Server.run-shell', note: 'Background acknowledgement does not establish job completion.' },
+  'if-shell': { symbol: 'LibTmux::Server.if-shell', note: 'Branches use bounded Invocation values; the condition explicitly selects shell or FORMAT semantics.' },
+  'source-file': { symbol: 'LibTmux::Server.source-file', note: 'Sources a literal pathname; parse-only validates without executing commands.' },
+  'wait-for': { symbol: 'LibTmux::Server.wait-for', note: 'Waits, signals, locks or unlocks a named channel within the Server deadline.' },
+  'server-cmd': { symbol: 'LibTmux::Server.command' },
+  'attach-session': { symbol: 'LibTmux::Server.attach', note: 'Returns a separately owned attachment with an explicit lifecycle.' },
+  'server-version': { symbol: 'LibTmux::Server.capabilities', note: 'Client and observed daemon versions are distinct capability inputs.' },
+  'chain-commands': { symbol: 'LibTmux::Server.run-batch', note: 'Returns per-operation evidence and partial results; this is not a transaction.' },
+}
+for (const [owner, bindings] of Object.entries({
+  SessionRef: { 'new-window': 'new-window', 'kill-session': 'kill', 'rename-session': 'rename', 'session-cmd': 'command',
+    'refresh-session': 'inspect', 'next-window': 'next-window', 'previous-window': 'previous-window', 'last-window': 'last-window',
+    'detach-session-clients': 'detach-clients', 'lock-session': 'lock' },
+  WindowRef: { 'kill-window': 'kill', 'rename-window': 'rename', 'window-cmd': 'command', 'refresh-window': 'inspect',
+    'select-layout': 'select-layout', 'next-layout': 'next-layout', 'previous-layout': 'previous-layout', 'resize-window': 'resize',
+    'respawn-window': 'respawn', 'link-window': 'link', 'rotate-panes': 'rotate', 'last-pane': 'last-pane' },
+  WindowLinkRef: { 'unlink-window': 'unlink', 'move-window': 'move', 'swap-window': 'swap', 'select-window': 'select' },
+  PaneRef: { 'capture-pane': 'capture', 'send-keys': 'send-keys', 'split-pane': 'split', 'respawn-pane': 'respawn',
+    'resize-pane': 'resize', 'kill-pane': 'kill', 'break-pane': 'break', 'join-pane': 'join', 'move-pane': 'move', 'swap-pane': 'swap',
+    'pipe-pane': 'pipe', 'select-pane': 'select', 'clear-history': 'clear-history', 'set-pane-title': 'set-title',
+    'copy-mode': 'copy-mode', 'clock-mode': 'clock-mode', 'send-prefix': 'send-prefix', 'reset-pane': 'reset',
+    'pane-cmd': 'command', 'refresh-pane': 'inspect' },
+  ClientRef: { 'detach-client': 'detach', 'refresh-client': 'refresh', 'switch-client': 'switch', 'lock-client': 'lock',
+    'suspend-client': 'suspend', 'display-menu': 'menu-async', 'display-popup': 'popup-async', 'command-prompt': 'prompt-async',
+    'confirm-before': 'confirm-async', 'prompt-history': 'prompt-history', 'clear-prompt-history': 'clear-prompt-history',
+    'find-window': 'find-window' },
+})) for (const [concept, method] of Object.entries(bindings)) RAKU_CONCEPTS[concept] = { symbol: `LibTmux::Model::${owner}.${method}` }
+for (const [prefix, owner, fields] of [
+  ['session', 'Session', ['id', 'name', 'created', 'path', 'group', 'grouped']],
+  ['window', 'Window', ['id', 'name', 'height', 'width', 'layout', 'linked']],
+  ['pane', 'Pane', ['id', 'index', 'height', 'width', 'title', 'active', 'current-command', 'current-path', 'pid', 'tty', 'dead', 'in-mode', 'window-id']],
+  ['window', 'WindowLink', ['index', 'active', 'session-id']],
+] as const) for (const field of fields) RAKU_CONCEPTS[`${prefix}-${field}`] = { symbol: `LibTmux::Model::${owner}.${field}` }
+for (const scope of ['server', 'session', 'window', 'pane']) {
+  for (const [suffix, method] of Object.entries({ options: 'entries', option: 'get' })) RAKU_CONCEPTS[`${scope}-${suffix}`] = {
+    symbol: `LibTmux::Configuration::Options.${method}`, note: 'Use the corresponding server or reference options facade; acquisition is explicit.' }
+  for (const method of ['set', 'unset']) RAKU_CONCEPTS[`${method}-${scope}-option`] = { symbol: `LibTmux::Configuration::Options.${method}` }
+  RAKU_CONCEPTS[`${scope}-hooks`] = { symbol: 'LibTmux::Configuration::Hooks.list', note: 'Use the explicitly scoped hooks facade.' }
+  for (const method of ['set', 'unset']) RAKU_CONCEPTS[`${method}-${scope}-hook`] = { symbol: `LibTmux::Configuration::Hooks.${method}` }
+}
+for (const scope of ['server', 'session']) {
+  RAKU_CONCEPTS[`${scope}-environment`] = { symbol: 'LibTmux::Configuration::Environment.list', note: 'Use the corresponding server or session environment facade.' }
+  RAKU_CONCEPTS[`${scope}-get-environment`] = { symbol: 'LibTmux::Configuration::Environment.get' }
+  for (const method of ['set', 'unset', 'remove']) RAKU_CONCEPTS[`${method}-${scope}-environment`] = { symbol: `LibTmux::Configuration::Environment.${method}` }
+}
+for (const [concept, method] of Object.entries({ 'list-buffers': 'list', 'show-buffer': 'get', 'set-buffer': 'put', 'delete-buffer': 'delete', 'paste-buffer': 'paste' })) {
+  RAKU_CONCEPTS[concept] = { symbol: `LibTmux::Configuration::Buffers.${method}`, note: 'Buffer content is byte data; file I/O remains a separate caller operation.' }
+}
+for (const [concept, method] of Object.entries({ 'list-keys': 'list', 'bind-key': 'bind', 'unbind-key': 'unbind' })) RAKU_CONCEPTS[concept] = { symbol: `LibTmux::Configuration::KeyBindings.${method}` }
+for (const [id, binding] of Object.entries(RAKU_CONCEPTS)) {
+  const concept = CONCEPTS[id]
+  if (!concept) throw new Error(`concepts: Raku maps unknown concept ${id}`)
+  concept.symbols.raku = binding.symbol
+  if (binding.note) (concept.notes ??= {}).raku = binding.note
+}
+for (const [id, reason] of Object.entries({
+  'workspace-description': 'Workspace functionality is outside the Raku core library scope.',
+  'build-workspace': 'Workspace functionality is outside the Raku core library scope.',
+  'freeze-workspace': 'Workspace functionality is outside the Raku core library scope.',
+  'pane-session': 'A pane belongs to a physical window, which can have several session links. Traverse window.links and each link.session.',
+  'pane-session-id': 'A physical pane has no single session identity; inspect its window links.',
+  'session-from-env': 'Session targeting is explicit and incarnation-bound.',
+  'load-buffer': 'Read file bytes with native Raku I/O and pass them to Buffers.put.',
+  'save-buffer': 'Acquire bytes with Buffers.get and write them with native Raku I/O.',
+})) (CONCEPTS[id]!.absent ??= {}).raku = reason
+
 for (const concept of Object.values(CONCEPTS)) {
   concept.absent ??= {}
+  if (!concept.symbols.raku) concept.absent.raku ??= 'No direct Raku mapping is recorded for this operation; consult the native API reference.'
   if (!concept.symbols.powershell) concept.absent.powershell ??= 'No source-verified PowerShell equivalent is recorded for this operation.'
   if (!concept.symbols.julia) concept.absent.julia ??= 'No source-verified Julia equivalent is recorded for this operation.'
   if (!concept.symbols.elixir) concept.absent.elixir = 'No source-verified Elixir equivalent is recorded for this operation.'

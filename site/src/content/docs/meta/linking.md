@@ -23,7 +23,7 @@ links to select a language, version or preview.
 <!-- port:root,py,ruby,julia,ts,rs,go,java,csharp,cxx,swift -->
 | [llms-full.txt](/llms-full.txt) | Fetch guides and MCP contracts together as Markdown. API references are linked separately. |
 <!-- /port -->
-<!-- port:lua,powershell,erlang,elixir,haskell,lisp,ocaml,perl -->
+<!-- port:lua,powershell,erlang,elixir,haskell,lisp,ocaml,perl,raku -->
 | [llms-full.txt](/llms-full.txt) | Fetch the guides together as Markdown. API references are linked separately. |
 <!-- /port -->
 | [docs.json](/docs.json) | Discover page titles, URLs, descriptions, headings and Markdown URLs in a structured manifest. |

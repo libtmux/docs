@@ -381,25 +381,28 @@ describe('registry data', () => {
   })
 
   it('sends an agent looking for a final release only where the newest tag is not already one', () => {
-    const julia = PORT_BY_SLUG.julia!
-    const prompt = (entry: RegistryEntry) => composePrompt({
-      port: julia, released: isReleaseSeries(releaseMaturity(entry)), install: installCommand(julia, entry),
-      wording: releaseWording(julia, entry), ctx, topicId: 'setup',
+    const prompt = (port: Port, entry: RegistryEntry) => composePrompt({
+      port, released: isReleaseSeries(releaseMaturity(entry)), install: installCommand(port, entry),
+      wording: releaseWording(port, entry), ctx, topicId: 'setup',
     }).replace(/\s+/g, ' ')
+    // C++ resolves its releases from tags, so a final tag is a final release.
+    const cxx = PORT_BY_SLUG.cxx!
     const finalTag: RegistryEntry = { status: 'unpublished', version: null, release: null, tag: 'v0.1.0' }
-    expect(prompt(finalTag)).toContain('if you need a different version.')
-    expect(prompt(finalTag)).not.toContain('prefer a final release')
-    expect(prompt({ ...finalTag, tag: 'v0.1.0-alpha.2' })).toContain('prefer a final release if there now is one.')
+    expect(prompt(cxx, finalTag)).toContain('if you need a different version.')
+    expect(prompt(cxx, finalTag)).not.toContain('prefer a final release')
+    expect(prompt(cxx, { ...finalTag, tag: 'v0.1.0-alpha.2' })).toContain('prefer a final release if there now is one.')
+    // Julia has no registry release, so the resolver writes it as unreleased and a final tag does not change that.
+    expect(prompt(PORT_BY_SLUG.julia!, { ...finalTag, maturity: 'unreleased' })).toContain('prefer a final release if there now is one.')
   })
 
   it('composes the site’s prompt from the entry the registry holds', () => {
     const julia = PORT_BY_SLUG.julia!
     const recorded = REGISTRY.ports.julia!
-    // What the deploy's resolver wrote once v0.1.0 was tagged and General did not carry it.
-    REGISTRY.ports.julia = { status: 'unpublished', version: null, release: null, tag: 'v0.1.0' }
+    // What the deploy's resolver writes once v0.1.0 is tagged and General does not carry it.
+    REGISTRY.ports.julia = { status: 'unpublished', version: null, release: null, tag: 'v0.1.0', maturity: 'unreleased' }
     try {
-      expect(promptInputs(julia, ctx).released).toBe(true)
-      expect(promptPartsFor(julia, ctx).setup.replace(/\s+/g, ' ')).toContain('if you need a different version.')
+      expect(promptInputs(julia, ctx).released).toBe(false)
+      expect(promptPartsFor(julia, ctx).setup.replace(/\s+/g, ' ')).toContain('prefer a final release if there now is one.')
     } finally {
       REGISTRY.ports.julia = recorded
     }

@@ -1,0 +1,249 @@
+{
+  "schemaVersion": 1,
+  "repository": "https://github.com/libtmux/assets",
+  "revision": "55dd6eac4347ba22270788b74a71ec0cba12e287",
+  "language": "raku",
+  "primary": "#0000fb",
+  "githubLanguageColors": "https://github.com/github-linguist/linguist/blob/d456527fe93355baa28c3c29d542c97282b61bc7/lib/linguist/languages.yml",
+  "sourceDirectory": "assets/raku",
+  "variants": [
+    "library"
+  ],
+  "manifestOverrides": {
+    "files": [
+      "site.webmanifest",
+      "site-dark.webmanifest"
+    ],
+    "id": "/",
+    "start_url": "../../../",
+    "scope": "../../../",
+    "display": "browser"
+  },
+  "sourceFiles": [
+    {
+      "file": "library/logo.svg",
+      "bytes": 5879,
+      "sha256": "d29de9b0d137e07e41e919a1b4e339b3b4f25830320dd47bb503ac6507cd14cb"
+    },
+    {
+      "file": "library/logo-16.png",
+      "bytes": 563,
+      "sha256": "66dff74ed31f19515d4fe93f7e2a37647c600cf92ecea3902fc3a4a3c4b68545"
+    },
+    {
+      "file": "library/logo-24.png",
+      "bytes": 751,
+      "sha256": "4a7ac0dd1d229e62d9d92930e331db00a762527103b3840a34e638f5e4d0ea79"
+    },
+    {
+      "file": "library/logo-32.png",
+      "bytes": 1009,
+      "sha256": "6ff0537aa942c284f50ece1fae4a244d368280522c0447a86082b55319657807"
+    },
+    {
+      "file": "library/logo-48.png",
+      "bytes": 1458,
+      "sha256": "162feed5b2a715fd7cf830e72d141f972465b48a62ca942d7310739f09335228"
+    },
+    {
+      "file": "library/logo-64.png",
+      "bytes": 1887,
+      "sha256": "23408529a0e37c98f695ffdc1fd407caff307ba1f554bdfeca57ce765392b0f7"
+    },
+    {
+      "file": "library/logo-96.png",
+      "bytes": 2725,
+      "sha256": "6688886c3505b05eb8d0591a058a4ece1920da6a80ddbc84a4a3fa60e026d67b"
+    },
+    {
+      "file": "library/logo-128.png",
+      "bytes": 3644,
+      "sha256": "0fedf8ae7574d25038463e5eb77a1f9587d4ea4fbe36839c68f4074de7b2ed1b"
+    },
+    {
+      "file": "library/logo-144.png",
+      "bytes": 4092,
+      "sha256": "0c8533c0bdac2f4cfedd4741e3a34b51d9116481dc4e640058cff41f6df704ed"
+    },
+    {
+      "file": "library/logo-152.png",
+      "bytes": 4241,
+      "sha256": "2b97c3cc942a8a34db6268164b264f02f5b7030b5870a0a612b24d6b46608a73"
+    },
+    {
+      "file": "library/logo-167.png",
+      "bytes": 4680,
+      "sha256": "8e23cf4bab3145d61abee4da34c26caa6711d9b2993f8b81a39677b52bcb5b4f"
+    },
+    {
+      "file": "library/logo-180.png",
+      "bytes": 5176,
+      "sha256": "41478eed635a47867e9c5e2fd81ad518f56e1aca7dfce45e62b72e1fdba74312"
+    },
+    {
+      "file": "library/logo-192.png",
+      "bytes": 5499,
+      "sha256": "9faaf59f1c1b708418480c346ebd80bbe22425addf1db455b493f1fa0df88196"
+    },
+    {
+      "file": "library/logo-256.png",
+      "bytes": 7440,
+      "sha256": "fde027226f1f7b33dc07f64a5fb660cb5e220dd76e948b4518fc7278874cf3da"
+    },
+    {
+      "file": "library/logo-384.png",
+      "bytes": 11534,
+      "sha256": "03a10bcb4c5e508b407eedcf9136d1d46cde4e7daf86f8243245bad596ce451e"
+    },
+    {
+      "file": "library/logo-512.png",
+      "bytes": 15988,
+      "sha256": "4cb45d5d6f0a33c479795a32a58d3e44a7dd2d2e0c1bbfd1baa975d5e1c50483"
+    },
+    {
+      "file": "library/logo-1024.png",
+      "bytes": 36310,
+      "sha256": "905f7c9f105d85a332b120598b8f59eafe0d2c5da725909a7e1167043f3b1b04"
+    },
+    {
+      "file": "library/favicon.ico",
+      "bytes": 22542,
+      "sha256": "d32346301b8c95f4074c42382eab7d518758b10035225723acbda69ee1022f05"
+    },
+    {
+      "file": "library/safari-pinned-tab.svg",
+      "bytes": 5879,
+      "sha256": "290b7e5f70062386563d6bf4f5768ed6605a618cd3b608354ca600d68616284f"
+    },
+    {
+      "file": "library/apple-touch-icon-light.png",
+      "bytes": 3857,
+      "sha256": "031004f812ad5dad209c82d881fdd8853d3784064425e88726c531cc1881270d"
+    },
+    {
+      "file": "library/app-icon-1024-light.png",
+      "bytes": 28394,
+      "sha256": "86a140bd45afd5c4450bae7f864d60cfd0a25b1d7d3f76a8dd32f110c77546be"
+    },
+    {
+      "file": "library/maskable-192-light.png",
+      "bytes": 3084,
+      "sha256": "2588e7514f9531b86ee2a1826f0833d95c79290c54293ebf6f580303d9b220ea"
+    },
+    {
+      "file": "library/maskable-512-light.png",
+      "bytes": 9293,
+      "sha256": "9cf9371c9ff12256ea235f4b59508294dc0e60488d04634118536879d1f97faa"
+    },
+    {
+      "file": "library/mstile-150-light.png",
+      "bytes": 2999,
+      "sha256": "dcd60dcd8e347e4bae3a649d4104c9caf11f39f2f6b1b06e800ad2eeb77ea43e"
+    },
+    {
+      "file": "library/mstile-310-light.png",
+      "bytes": 6525,
+      "sha256": "18ef095ad71e0d2f320a209d7b1b9d59ed6bf7576b4333b9f0cc2b543c2981d3"
+    },
+    {
+      "file": "library/opengraph-light.png",
+      "bytes": 25134,
+      "sha256": "9ac90c0cbc233162bc71d1de93466736171dc6aac90090466100dc8b54a8fc39"
+    },
+    {
+      "file": "library/opengraph-light.jpg",
+      "bytes": 46117,
+      "sha256": "e27ee0a46b91971d8dd95150b7ecffde754b1aa47c40d7e884aabdc64688ffba"
+    },
+    {
+      "file": "library/twitter-light.png",
+      "bytes": 24965,
+      "sha256": "760d706412948ca09da22cfcdd41884ca6d5b5538cbf1bb391733f6e8e23d7f9"
+    },
+    {
+      "file": "library/social-square-light.png",
+      "bytes": 28890,
+      "sha256": "0e2c83ef136c6f516629e858357db97e3f375b77551dad9eebaab90c0fb9ec71"
+    },
+    {
+      "file": "library/site.webmanifest",
+      "bytes": 716,
+      "sha256": "3bf9f40554b13ee88a31c13c126b1d319bcb5dbb56cf61d2ef2e827074d94dab"
+    },
+    {
+      "file": "library/browserconfig.xml",
+      "bytes": 238,
+      "sha256": "a275b5bf7cf9484884c1fd85f2aaeead64e4eef44785c7390f715bc81c4dbd87"
+    },
+    {
+      "file": "library/apple-touch-icon-dark.png",
+      "bytes": 3873,
+      "sha256": "abb814cf8cd8d691d028d6848fb1c6f62b873511c19febdb22b53086c2fe02f6"
+    },
+    {
+      "file": "library/app-icon-1024-dark.png",
+      "bytes": 28683,
+      "sha256": "5873a255a31c9e94e7fb9077016deecb39c3fe3cbff811eb9e0ef0d4d6d668c8"
+    },
+    {
+      "file": "library/maskable-192-dark.png",
+      "bytes": 3114,
+      "sha256": "02cf7a6a92a5f2f1682b2f3fa1547cd2397003ed17ff27cfdb69f093edc28a81"
+    },
+    {
+      "file": "library/maskable-512-dark.png",
+      "bytes": 9375,
+      "sha256": "42bcd9ff5f1c960c1bb9019eb9d235cb5e49db703fc4361c04d6d22c59037834"
+    },
+    {
+      "file": "library/mstile-150-dark.png",
+      "bytes": 3024,
+      "sha256": "f4b4fabf34865a50077a5e96ded570e095eb66033d0b7e259636f36ac442bf2e"
+    },
+    {
+      "file": "library/mstile-310-dark.png",
+      "bytes": 6578,
+      "sha256": "01be9b8ce61c01349e8f490ebd4c41a95c745d43471358f563b006d89d14d198"
+    },
+    {
+      "file": "library/opengraph-dark.png",
+      "bytes": 25396,
+      "sha256": "660ef6b57a1c45657fad9229d45b132c35d95346063278e1fd4969e8ff5f0a3b"
+    },
+    {
+      "file": "library/opengraph-dark.jpg",
+      "bytes": 43791,
+      "sha256": "cc6971140c97e02ce7f334bc231e1124bc5afa8151023a7260cb76e161a25ff3"
+    },
+    {
+      "file": "library/twitter-dark.png",
+      "bytes": 25219,
+      "sha256": "85b09f4c814224590c2c8bb02037cf3e2ba90b10d46ac972aaac751770bb5b50"
+    },
+    {
+      "file": "library/social-square-dark.png",
+      "bytes": 29151,
+      "sha256": "a9fca634a2ef64b844c7627dddfe9ad790804201ee96dbec54e156a30d9be93c"
+    },
+    {
+      "file": "library/site-dark.webmanifest",
+      "bytes": 714,
+      "sha256": "a95d23a5948ae8702adcf2b737221012f844a7e5215250bb813b87fbd2476e0e"
+    },
+    {
+      "file": "library/browserconfig-dark.xml",
+      "bytes": 236,
+      "sha256": "1fa4e33a8b34b8f169bcc71d3246f5c398412645aa19fb05c638a43b75ae13bf"
+    },
+    {
+      "file": "library/github-social-dark.png",
+      "bytes": 25777,
+      "sha256": "2af6f52eeddd561bce31d795ec2e5fb2444e214360ab3830bd0b1cac981dc1fc"
+    },
+    {
+      "file": "library/github-social-light.png",
+      "bytes": 25516,
+      "sha256": "c348d034527fddae0735ce160632af604bb0c24298a1152067c9125f707b7328"
+    }
+  ]
+}

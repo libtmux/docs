@@ -88,7 +88,7 @@ const read = readTmuxState({ sandbox: sandboxReal })
 function prepare() {
   for (const name of ['home', 'config', 'bin', 'exact', 'marked']) mkdirSync(join(sandbox, name), { recursive: true })
   const entry = join(root, 'scripts/core-trace.mjs')
-  writeFileSync(join(sandbox, 'bin/tmux'), shimScript({ node: process.execPath, entry }))
+  writeFileSync(join(sandbox, 'bin/tmux'), shimScript({ node: process.execPath, entry, inPlace: recipe.inPlace }))
   writeFileSync(join(sandbox, 'bin/docs-mark'), `#!/bin/sh\nexec ${JSON.stringify(process.execPath)} ${JSON.stringify(entry)} mark "$@"\n`)
   for (const name of ['tmux', 'docs-mark']) chmodSync(join(sandbox, 'bin', name), 0o755)
   const marked = recipe.instrument(program.code, recipe.steps)

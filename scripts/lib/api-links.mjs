@@ -101,6 +101,7 @@ export function languageOfUrl(url) {
     'www.haskell.org': 'haskell', 'downloads.haskell.org': 'haskell', 'cabal.readthedocs.io': 'haskell',
     'perldoc.perl.org': 'perl', 'metacpan.org': 'perl',
     'www.lispworks.com': 'lisp', 'asdf.common-lisp.dev': 'lisp',
+    'docs.raku.org': 'raku',
     'modelcontextprotocol.io': 'any',
   }
   if (byHost[hostname]) return byHost[hostname]
@@ -117,6 +118,7 @@ export const PORT_LANGUAGES = {
   csharp: ['csharp', 'dotnet'], fsharp: ['fsharp', 'dotnet'], powershell: ['powershell', 'dotnet'],
   cxx: ['cpp'], swift: ['swift'], julia: ['julia'], lua: ['lua'], elixir: ['elixir', 'erlang'], ruby: ['ruby'], ocaml: ['ocaml'],
   haskell: ['haskell'], erlang: ['erlang'], lisp: ['lisp'],
+  raku: ['raku'],
 }
 
 /**

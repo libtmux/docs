@@ -2,7 +2,7 @@
   "generated": "scripts/gen-core-recording.mjs",
   "port": "erlang",
   "repo": "libtmux/libtmux-erlang",
-  "revision": "e858027b2b204c3e621b1f74e9419c9b71e3f2f5",
+  "revision": "539c7297ceae65a1cf683e0836eae0a1ccd34d64",
   "sandbox": {
     "tmux": "tmux 3.8a",
     "erlang": "29.1.2",
@@ -78,7 +78,7 @@
               "tmux": "display-message -p -t $0: -F '#{session_id}\n#{session_attached}\t#{session_created}'",
               "mutates": false,
               "exit": 0,
-              "stdout": "$0\n0\t1794448261",
+              "stdout": "$0\n0\t1794633957",
               "stderr": ""
             },
             {
@@ -293,7 +293,7 @@
               "tmux": "display-message -p -t %2 -F '#{pane_id}\n#{pane_active}\t#{pane_dead}\t#{pane_dead_status}\t#{pane_height}\t#{pane_index}\t#{pane_pid}\t#{pane_width}\t#{window_id}'",
               "mutates": false,
               "exit": 0,
-              "stdout": "%2\n0\t0\t\t30\t1\t1795457\t59\t@1",
+              "stdout": "%2\n0\t0\t\t30\t1\t1955728\t59\t@1",
               "stderr": ""
             },
             {
@@ -597,7 +597,7 @@
               "tmux": "list-sessions -F '#{session_id}\t#{session_attached}\t#{session_created}'",
               "mutates": false,
               "exit": 0,
-              "stdout": "$0\t0\t1794448261",
+              "stdout": "$0\t0\t1794633957",
               "stderr": ""
             },
             {
@@ -629,7 +629,7 @@
               "tmux": "list-panes -a -F '#{session_id}\t#{window_id}\t#{window_index}\t#{pane_id}\t#{pane_index}\t#{pane_active}\t#{pane_dead}\t#{pane_dead_status}\t#{pane_height}\t#{pane_pid}\t#{pane_width}'",
               "mutates": false,
               "exit": 0,
-              "stdout": "$0\t@0\t0\t%0\t0\t1\t0\t\t30\t1795013\t120\n$0\t@1\t1\t%1\t0\t1\t0\t\t30\t1795126\t79\n$0\t@1\t1\t%2\t1\t0\t0\t\t30\t1795457\t40",
+              "stdout": "$0\t@0\t0\t%0\t0\t1\t0\t\t30\t1955557\t120\n$0\t@1\t1\t%1\t0\t1\t0\t\t30\t1955635\t79\n$0\t@1\t1\t%2\t1\t0\t0\t\t30\t1955728\t40",
               "stderr": ""
             },
             {
@@ -693,7 +693,7 @@
               "tmux": "list-sessions -F '#{session_id}\t#{session_attached}\t#{session_created}'",
               "mutates": false,
               "exit": 0,
-              "stdout": "$0\t0\t1794448261",
+              "stdout": "$0\t0\t1794633957",
               "stderr": ""
             },
             {
@@ -725,7 +725,7 @@
               "tmux": "list-panes -a -F '#{session_id}\t#{window_id}\t#{window_index}\t#{pane_id}\t#{pane_index}\t#{pane_active}\t#{pane_dead}\t#{pane_dead_status}\t#{pane_height}\t#{pane_pid}\t#{pane_width}'",
               "mutates": false,
               "exit": 0,
-              "stdout": "$0\t@0\t0\t%0\t0\t1\t0\t\t30\t1795013\t120\n$0\t@1\t1\t%1\t0\t1\t0\t\t30\t1795126\t79\n$0\t@1\t1\t%2\t1\t0\t0\t\t30\t1795457\t40",
+              "stdout": "$0\t@0\t0\t%0\t0\t1\t0\t\t30\t1955557\t120\n$0\t@1\t1\t%1\t0\t1\t0\t\t30\t1955635\t79\n$0\t@1\t1\t%2\t1\t0\t0\t\t30\t1955728\t40",
               "stderr": ""
             }
           ],
@@ -1020,7 +1020,7 @@
               "tmux": "list-sessions -F '#{session_id}\t#{session_attached}\t#{session_created}'",
               "mutates": false,
               "exit": 0,
-              "stdout": "$0\t0\t1794448261",
+              "stdout": "$0\t0\t1794633957",
               "stderr": ""
             },
             {
@@ -1052,7 +1052,7 @@
               "tmux": "list-panes -a -F '#{session_id}\t#{window_id}\t#{window_index}\t#{pane_id}\t#{pane_index}\t#{pane_active}\t#{pane_dead}\t#{pane_dead_status}\t#{pane_height}\t#{pane_pid}\t#{pane_width}'",
               "mutates": false,
               "exit": 0,
-              "stdout": "$0\t@0\t0\t%0\t0\t1\t0\t\t30\t1795013\t120\n$0\t@1\t1\t%1\t0\t1\t0\t\t30\t1795126\t79\n$0\t@1\t1\t%2\t1\t0\t0\t\t30\t1795457\t40",
+              "stdout": "$0\t@0\t0\t%0\t0\t1\t0\t\t30\t1955557\t120\n$0\t@1\t1\t%1\t0\t1\t0\t\t30\t1955635\t79\n$0\t@1\t1\t%2\t1\t0\t0\t\t30\t1955728\t40",
               "stderr": ""
             },
             {
@@ -1116,7 +1116,7 @@
               "tmux": "list-sessions -F '#{session_id}\t#{session_attached}\t#{session_created}'",
               "mutates": false,
               "exit": 0,
-              "stdout": "$0\t0\t1794448261",
+              "stdout": "$0\t0\t1794633957",
               "stderr": ""
             },
             {
@@ -1148,7 +1148,7 @@
               "tmux": "list-panes -a -F '#{session_id}\t#{window_id}\t#{window_index}\t#{pane_id}\t#{pane_index}\t#{pane_active}\t#{pane_dead}\t#{pane_dead_status}\t#{pane_height}\t#{pane_pid}\t#{pane_width}'",
               "mutates": false,
               "exit": 0,
-              "stdout": "$0\t@0\t0\t%0\t0\t1\t0\t\t30\t1795013\t120\n$0\t@1\t1\t%1\t0\t1\t0\t\t30\t1795126\t79\n$0\t@1\t1\t%2\t1\t0\t0\t\t30\t1795457\t40",
+              "stdout": "$0\t@0\t0\t%0\t0\t1\t0\t\t30\t1955557\t120\n$0\t@1\t1\t%1\t0\t1\t0\t\t30\t1955635\t79\n$0\t@1\t1\t%2\t1\t0\t0\t\t30\t1955728\t40",
               "stderr": ""
             }
           ],
@@ -1318,7 +1318,7 @@
               "tmux": "list-sessions -F '#{session_id}\t#{session_attached}\t#{session_created}'",
               "mutates": false,
               "exit": 0,
-              "stdout": "$0\t0\t1794448261",
+              "stdout": "$0\t0\t1794633957",
               "stderr": ""
             },
             {
@@ -1350,7 +1350,7 @@
               "tmux": "list-panes -a -F '#{session_id}\t#{window_id}\t#{window_index}\t#{pane_id}\t#{pane_index}\t#{pane_active}\t#{pane_dead}\t#{pane_dead_status}\t#{pane_height}\t#{pane_pid}\t#{pane_width}'",
               "mutates": false,
               "exit": 0,
-              "stdout": "$0\t@0\t0\t%0\t0\t1\t0\t\t30\t1795013\t120\n$0\t@1\t1\t%1\t0\t1\t0\t\t30\t1795126\t79\n$0\t@1\t1\t%2\t1\t0\t0\t\t30\t1795457\t40",
+              "stdout": "$0\t@0\t0\t%0\t0\t1\t0\t\t30\t1955557\t120\n$0\t@1\t1\t%1\t0\t1\t0\t\t30\t1955635\t79\n$0\t@1\t1\t%2\t1\t0\t0\t\t30\t1955728\t40",
               "stderr": ""
             },
             {
@@ -1414,7 +1414,7 @@
               "tmux": "list-sessions -F '#{session_id}\t#{session_attached}\t#{session_created}'",
               "mutates": false,
               "exit": 0,
-              "stdout": "$0\t0\t1794448261",
+              "stdout": "$0\t0\t1794633957",
               "stderr": ""
             },
             {
@@ -1446,7 +1446,7 @@
               "tmux": "list-panes -a -F '#{session_id}\t#{window_id}\t#{window_index}\t#{pane_id}\t#{pane_index}\t#{pane_active}\t#{pane_dead}\t#{pane_dead_status}\t#{pane_height}\t#{pane_pid}\t#{pane_width}'",
               "mutates": false,
               "exit": 0,
-              "stdout": "$0\t@0\t0\t%0\t0\t1\t0\t\t30\t1795013\t120\n$0\t@1\t1\t%1\t0\t1\t0\t\t30\t1795126\t79\n$0\t@1\t1\t%2\t1\t0\t0\t\t30\t1795457\t40",
+              "stdout": "$0\t@0\t0\t%0\t0\t1\t0\t\t30\t1955557\t120\n$0\t@1\t1\t%1\t0\t1\t0\t\t30\t1955635\t79\n$0\t@1\t1\t%2\t1\t0\t0\t\t30\t1955728\t40",
               "stderr": ""
             }
           ],

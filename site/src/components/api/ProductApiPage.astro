@@ -11,6 +11,7 @@ import { apiTmuxSections } from '../../lib/api-tmux-sections'
 import { productApiAlternatives, productApiHref, productApiIndex } from '../../lib/product-api'
 import { DOC_PRODUCTS, PORT_BY_SLUG, portPageUrl, productApiPath, type DocProduct } from '../../lib/ports'
 import { symbolSource } from '../../lib/markdown-twins'
+import { alternateDocs } from '../../lib/perl-pod'
 import '../../styles/api.css'
 import '../../styles/vendor/gp-sphinx-api.css'
 interface Props { model: ApiModel; symbol: ApiSymbol; version: string }
@@ -54,7 +55,8 @@ const tmuxSections = apiTmuxSections(model.port, symbol, alternativesFor(symbol)
   pageSource={symbolSource(model, symbol)} markdown="source">
   <div class="api-reference-content not-prose">
   {symbol.apiScope === 'supporting' && <p>This type appears in public signatures. It is not a package entry point.</p>}
-  <ApiEntry symbol={symbol} index={index} port={model.port} alternativesFor={alternativesFor} heading linkRows={false} sourceUrl={(entry) => sourceUrl(model, entry)} />
+  <ApiEntry symbol={symbol} index={index} port={model.port} alternativesFor={alternativesFor} heading linkRows={false} sourceUrl={(entry) => sourceUrl(model, entry)}
+    alternate={(entry) => alternateDocs(model, entry, version)} />
   <ApiTmuxSections sections={tmuxSections} />
   {table && <div class="api-field-table mt-8">
     <h2 class="api-section-heading text-lg font-semibold" id={table.id}>{table.label}<span class="api-section-count">{table.rows.length}</span><a class="api-heading-link" href={`#${table.id}`} aria-label={`Link to ${table.label}`}>#</a></h2>

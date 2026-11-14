@@ -1,0 +1,3113 @@
+{
+  "commands": [
+    "attach-session",
+    "bind-key",
+    "break-pane",
+    "capture-pane",
+    "choose-buffer",
+    "choose-client",
+    "choose-tree",
+    "clear-history",
+    "clear-prompt-history",
+    "clock-mode",
+    "command-prompt",
+    "confirm-before",
+    "copy-mode",
+    "customize-mode",
+    "delete-buffer",
+    "detach-client",
+    "display-menu",
+    "display-message",
+    "display-panes",
+    "display-popup",
+    "find-window",
+    "has-session",
+    "if-shell",
+    "join-pane",
+    "kill-pane",
+    "kill-server",
+    "kill-session",
+    "kill-window",
+    "last-pane",
+    "last-window",
+    "link-window",
+    "list-buffers",
+    "list-clients",
+    "list-commands",
+    "list-keys",
+    "list-panes",
+    "list-sessions",
+    "list-windows",
+    "load-buffer",
+    "lock-client",
+    "lock-server",
+    "lock-session",
+    "move-pane",
+    "move-window",
+    "new-pane",
+    "new-session",
+    "new-window",
+    "next-layout",
+    "next-window",
+    "paste-buffer",
+    "pipe-pane",
+    "previous-layout",
+    "previous-window",
+    "refresh-client",
+    "rename-session",
+    "rename-window",
+    "resize-pane",
+    "resize-window",
+    "respawn-pane",
+    "respawn-window",
+    "rotate-window",
+    "run-shell",
+    "save-buffer",
+    "select-layout",
+    "select-pane",
+    "select-window",
+    "send-keys",
+    "send-prefix",
+    "server-access",
+    "set-buffer",
+    "set-environment",
+    "set-hook",
+    "set-option",
+    "set-window-option",
+    "show-buffer",
+    "show-environment",
+    "show-hooks",
+    "show-messages",
+    "show-options",
+    "show-prompt-history",
+    "show-window-options",
+    "source-file",
+    "split-window",
+    "start-server",
+    "suspend-client",
+    "swap-pane",
+    "swap-window",
+    "switch-client",
+    "unbind-key",
+    "unlink-window",
+    "wait-for"
+  ],
+  "port": "raku",
+  "repo": "libtmux/libtmux-raku",
+  "revision": "8293da87dc45f61ea2a68d1cc5327b4e62892732",
+  "schemaVersion": 1,
+  "symbols": {
+    "LibTmux::Attachment.inspect-client": [
+      {
+        "command": "list-clients",
+        "evidence": [
+          "lib/LibTmux/Attachment.rakumod:202",
+          "lib/LibTmux/Attachment.rakumod:197"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "the child has not exited"
+      }
+    ],
+    "LibTmux::Attachment.spawn": [
+      {
+        "command": "attach-session",
+        "evidence": [
+          "lib/LibTmux/Attachment.rakumod:86",
+          "lib/LibTmux/Attachment.rakumod:74",
+          "lib/LibTmux/Attachment.rakumod:112"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "lib/LibTmux/Attachment.rakumod:70"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Client::ClientTarget.choose": [
+      {
+        "command": "choose-buffer",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:265",
+          "lib/LibTmux/Client.rakumod:251"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "kind is buffer"
+      },
+      {
+        "command": "choose-client",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:265",
+          "lib/LibTmux/Client.rakumod:250"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "kind is client"
+      },
+      {
+        "command": "choose-tree",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:265",
+          "lib/LibTmux/Client.rakumod:250"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "kind is tree"
+      },
+      {
+        "command": "customize-mode",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:265",
+          "lib/LibTmux/Client.rakumod:251"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "kind is customize"
+      }
+    ],
+    "LibTmux::Client::ClientTarget.clear-prompt-history": [
+      {
+        "command": "clear-prompt-history",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:369",
+          "lib/LibTmux/Client.rakumod:367"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Client::ClientTarget.close-popup": [
+      {
+        "command": "display-popup",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:213"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Client::ClientTarget.confirm-async": [
+      {
+        "command": "confirm-before",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:239"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Client::ClientTarget.detach": [
+      {
+        "command": "detach-client",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:314"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Client::ClientTarget.display-format": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:151",
+          "lib/LibTmux/Client.rakumod:148"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Client::ClientTarget.display-message": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:142",
+          "lib/LibTmux/Client.rakumod:138"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Client::ClientTarget.display-panes-async": [
+      {
+        "command": "display-panes",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:295",
+          "lib/LibTmux/Client.rakumod:291"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Client::ClientTarget.find-window": [
+      {
+        "command": "find-window",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:283",
+          "lib/LibTmux/Client.rakumod:275"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Client::ClientTarget.key-table": [
+      {
+        "command": "switch-client",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:339"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Client::ClientTarget.lock": [
+      {
+        "command": "lock-client",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:324"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Client::ClientTarget.menu-async": [
+      {
+        "command": "display-menu",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:184",
+          "lib/LibTmux/Client.rakumod:163"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Client::ClientTarget.popup-async": [
+      {
+        "command": "display-popup",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:208",
+          "lib/LibTmux/Client.rakumod:197"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Client::ClientTarget.prompt-async": [
+      {
+        "command": "command-prompt",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:233",
+          "lib/LibTmux/Client.rakumod:225"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Client::ClientTarget.prompt-history": [
+      {
+        "command": "show-prompt-history",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:362",
+          "lib/LibTmux/Client.rakumod:360"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Client::ClientTarget.refresh": [
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:309",
+          "lib/LibTmux/Client.rakumod:306"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Client::ClientTarget.suspend": [
+      {
+        "command": "suspend-client",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:319"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Client::ClientTarget.switch": [
+      {
+        "command": "switch-client",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:333",
+          "lib/LibTmux/Client.rakumod:330"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Client::ClientTarget.switch-relative": [
+      {
+        "command": "switch-client",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:348"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Client::ClientTarget.toggle-read-only": [
+      {
+        "command": "switch-client",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:354"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Configuration::Buffers.delete": [
+      {
+        "command": "delete-buffer",
+        "evidence": [
+          "lib/LibTmux/Configuration.rakumod:450"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Configuration::Buffers.get": [
+      {
+        "command": "save-buffer",
+        "evidence": [
+          "lib/LibTmux/Configuration.rakumod:440"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Configuration::Buffers.list": [
+      {
+        "command": "list-buffers",
+        "evidence": [
+          "lib/LibTmux/Configuration.rakumod:429"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Configuration::Buffers.paste": [
+      {
+        "command": "paste-buffer",
+        "evidence": [
+          "lib/LibTmux/Configuration.rakumod:465",
+          "lib/LibTmux/Configuration.rakumod:461"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Configuration::Buffers.put": [
+      {
+        "command": "load-buffer",
+        "evidence": [
+          "lib/LibTmux/Configuration.rakumod:445"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Configuration::Buffers.rename": [
+      {
+        "command": "set-buffer",
+        "evidence": [
+          "lib/LibTmux/Configuration.rakumod:455"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Configuration::Environment.get": [
+      {
+        "command": "show-environment",
+        "evidence": [
+          "lib/LibTmux/Configuration.rakumod:379",
+          "lib/LibTmux/Configuration.rakumod:376"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Configuration::Environment.list": [
+      {
+        "command": "show-environment",
+        "evidence": [
+          "lib/LibTmux/Configuration.rakumod:361",
+          "lib/LibTmux/Configuration.rakumod:359"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Configuration::Environment.remove": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "lib/LibTmux/Configuration.rakumod:402"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Configuration::Environment.set": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "lib/LibTmux/Configuration.rakumod:392",
+          "lib/LibTmux/Configuration.rakumod:389"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Configuration::Environment.unset": [
+      {
+        "command": "set-environment",
+        "evidence": [
+          "lib/LibTmux/Configuration.rakumod:397"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Configuration::Hooks.append": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "lib/LibTmux/Configuration.rakumod:501"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Configuration::Hooks.list": [
+      {
+        "command": "show-hooks",
+        "evidence": [
+          "lib/LibTmux/Configuration.rakumod:488",
+          "lib/LibTmux/Configuration.rakumod:486"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Configuration::Hooks.run": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "lib/LibTmux/Configuration.rakumod:512"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Configuration::Hooks.set": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "lib/LibTmux/Configuration.rakumod:496"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Configuration::Hooks.unset": [
+      {
+        "command": "set-hook",
+        "evidence": [
+          "lib/LibTmux/Configuration.rakumod:506"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Configuration::KeyBindings.bind": [
+      {
+        "command": "bind-key",
+        "evidence": [
+          "lib/LibTmux/Configuration.rakumod:551",
+          "lib/LibTmux/Configuration.rakumod:547"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Configuration::KeyBindings.clear": [
+      {
+        "command": "unbind-key",
+        "evidence": [
+          "lib/LibTmux/Configuration.rakumod:561"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Configuration::KeyBindings.list": [
+      {
+        "command": "list-keys",
+        "evidence": [
+          "lib/LibTmux/Configuration.rakumod:570",
+          "lib/LibTmux/Configuration.rakumod:578"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Configuration::KeyBindings.unbind": [
+      {
+        "command": "unbind-key",
+        "evidence": [
+          "lib/LibTmux/Configuration.rakumod:556"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Configuration::Options.entries": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "lib/LibTmux/Configuration.rakumod:196",
+          "lib/LibTmux/Configuration.rakumod:193"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Configuration::Options.get": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "lib/LibTmux/Configuration.rakumod:206",
+          "lib/LibTmux/Configuration.rakumod:193",
+          "lib/LibTmux/Configuration.rakumod:196"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Configuration::Options.get-raw": [
+      {
+        "command": "show-options",
+        "evidence": [
+          "lib/LibTmux/Configuration.rakumod:261"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Configuration::Options.set": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "lib/LibTmux/Configuration.rakumod:243"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Configuration::Options.set-raw": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "lib/LibTmux/Configuration.rakumod:256"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Configuration::Options.unset": [
+      {
+        "command": "set-option",
+        "evidence": [
+          "lib/LibTmux/Configuration.rakumod:250"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Control::Connection.connect": [
+      {
+        "command": "attach-session",
+        "evidence": [
+          "lib/LibTmux/Control/Connection.rakumod:160",
+          "lib/LibTmux/Control/Connection.rakumod:200",
+          "lib/LibTmux/Control/Connection.rakumod:229",
+          "lib/LibTmux/Control/Connection.rakumod:230"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "lib/LibTmux/Control/Connection.rakumod:160",
+          "lib/LibTmux/Control/Connection.rakumod:200",
+          "lib/LibTmux/Control/Connection.rakumod:202",
+          "lib/LibTmux/Control/Connection.rakumod:203"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "new-layouts negotiation is enabled"
+      }
+    ],
+    "LibTmux::Control::Connection.connect-async": [
+      {
+        "command": "attach-session",
+        "evidence": [
+          "lib/LibTmux/Control/Connection.rakumod:200",
+          "lib/LibTmux/Control/Connection.rakumod:229",
+          "lib/LibTmux/Control/Connection.rakumod:230"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "lib/LibTmux/Control/Connection.rakumod:200",
+          "lib/LibTmux/Control/Connection.rakumod:202",
+          "lib/LibTmux/Control/Connection.rakumod:203"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "new-layouts negotiation is enabled"
+      }
+    ],
+    "LibTmux::Control::Connection.observe": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "lib/LibTmux/Control/Connection.rakumod:463",
+          "lib/LibTmux/Control/Connection.rakumod:471",
+          "lib/LibTmux/Control/Connection.rakumod:365"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Control::Connection.observe-async": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "lib/LibTmux/Control/Connection.rakumod:471",
+          "lib/LibTmux/Control/Connection.rakumod:365"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Control::Connection.query": [
+      {
+        "command": "list-buffers",
+        "evidence": [
+          "lib/LibTmux/Control/Connection.rakumod:491",
+          "lib/LibTmux/Control/Connection.rakumod:507",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:218",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:993"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "buffer query or full graph"
+      },
+      {
+        "command": "list-clients",
+        "evidence": [
+          "lib/LibTmux/Control/Connection.rakumod:491",
+          "lib/LibTmux/Control/Connection.rakumod:507",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:218",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:993"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "client query or full graph"
+      },
+      {
+        "command": "list-panes",
+        "evidence": [
+          "lib/LibTmux/Control/Connection.rakumod:491",
+          "lib/LibTmux/Control/Connection.rakumod:507",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:216",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:992"
+        ],
+        "reviewed": true,
+        "scope": "server",
+        "when": "pane query or full graph"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "lib/LibTmux/Control/Connection.rakumod:491",
+          "lib/LibTmux/Control/Connection.rakumod:507",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:216",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:991"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "session/group query or full graph"
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "lib/LibTmux/Control/Connection.rakumod:491",
+          "lib/LibTmux/Control/Connection.rakumod:507",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:217",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:992"
+        ],
+        "reviewed": true,
+        "scope": "server",
+        "when": "window/link query or full graph"
+      }
+    ],
+    "LibTmux::Control::Connection.query-async": [
+      {
+        "command": "list-buffers",
+        "evidence": [
+          "lib/LibTmux/Control/Connection.rakumod:507",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:218",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:993"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "buffer query or full graph"
+      },
+      {
+        "command": "list-clients",
+        "evidence": [
+          "lib/LibTmux/Control/Connection.rakumod:507",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:218",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:993"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "client query or full graph"
+      },
+      {
+        "command": "list-panes",
+        "evidence": [
+          "lib/LibTmux/Control/Connection.rakumod:507",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:216",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:992"
+        ],
+        "reviewed": true,
+        "scope": "server",
+        "when": "pane query or full graph"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "lib/LibTmux/Control/Connection.rakumod:507",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:216",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:991"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "session/group query or full graph"
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "lib/LibTmux/Control/Connection.rakumod:507",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:217",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:992"
+        ],
+        "reviewed": true,
+        "scope": "server",
+        "when": "window/link query or full graph"
+      }
+    ],
+    "LibTmux::Control::Connection.query-panes": [
+      {
+        "command": "list-buffers",
+        "evidence": [
+          "lib/LibTmux/Control/Connection.rakumod:511",
+          "lib/LibTmux/Control/Connection.rakumod:491",
+          "lib/LibTmux/Control/Connection.rakumod:507",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:218",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:993"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "relationship predicates require a full graph"
+      },
+      {
+        "command": "list-clients",
+        "evidence": [
+          "lib/LibTmux/Control/Connection.rakumod:511",
+          "lib/LibTmux/Control/Connection.rakumod:491",
+          "lib/LibTmux/Control/Connection.rakumod:507",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:218",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:993"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "relationship predicates require a full graph"
+      },
+      {
+        "command": "list-panes",
+        "evidence": [
+          "lib/LibTmux/Control/Connection.rakumod:511",
+          "lib/LibTmux/Control/Connection.rakumod:491",
+          "lib/LibTmux/Control/Connection.rakumod:507",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:216",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:992"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "lib/LibTmux/Control/Connection.rakumod:511",
+          "lib/LibTmux/Control/Connection.rakumod:491",
+          "lib/LibTmux/Control/Connection.rakumod:507",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:216",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:991"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "relationship predicates require a full graph"
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "lib/LibTmux/Control/Connection.rakumod:511",
+          "lib/LibTmux/Control/Connection.rakumod:491",
+          "lib/LibTmux/Control/Connection.rakumod:507",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:217",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:992"
+        ],
+        "reviewed": true,
+        "scope": "server",
+        "when": "relationship predicates require a full graph"
+      }
+    ],
+    "LibTmux::Control::Connection.snapshot": [
+      {
+        "command": "list-buffers",
+        "evidence": [
+          "lib/LibTmux/Control/Connection.rakumod:477",
+          "lib/LibTmux/Control/Connection.rakumod:481",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:993"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-clients",
+        "evidence": [
+          "lib/LibTmux/Control/Connection.rakumod:477",
+          "lib/LibTmux/Control/Connection.rakumod:481",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:993"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-panes",
+        "evidence": [
+          "lib/LibTmux/Control/Connection.rakumod:477",
+          "lib/LibTmux/Control/Connection.rakumod:481",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:992"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "lib/LibTmux/Control/Connection.rakumod:477",
+          "lib/LibTmux/Control/Connection.rakumod:481",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:991"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "lib/LibTmux/Control/Connection.rakumod:477",
+          "lib/LibTmux/Control/Connection.rakumod:481",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:992"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      }
+    ],
+    "LibTmux::Control::Connection.snapshot-async": [
+      {
+        "command": "list-buffers",
+        "evidence": [
+          "lib/LibTmux/Control/Connection.rakumod:481",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:993"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-clients",
+        "evidence": [
+          "lib/LibTmux/Control/Connection.rakumod:481",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:993"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-panes",
+        "evidence": [
+          "lib/LibTmux/Control/Connection.rakumod:481",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:992"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "lib/LibTmux/Control/Connection.rakumod:481",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:991"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "lib/LibTmux/Control/Connection.rakumod:481",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:992"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      }
+    ],
+    "LibTmux::Model::ClientRef.choose": [
+      {
+        "command": "choose-buffer",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:265",
+          "lib/LibTmux/Client.rakumod:251"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "kind is buffer"
+      },
+      {
+        "command": "choose-client",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:265",
+          "lib/LibTmux/Client.rakumod:250"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "kind is client"
+      },
+      {
+        "command": "choose-tree",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:265",
+          "lib/LibTmux/Client.rakumod:250"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "kind is tree"
+      },
+      {
+        "command": "customize-mode",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:265",
+          "lib/LibTmux/Client.rakumod:251"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "kind is customize"
+      }
+    ],
+    "LibTmux::Model::ClientRef.clear-prompt-history": [
+      {
+        "command": "clear-prompt-history",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:369",
+          "lib/LibTmux/Client.rakumod:367"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::ClientRef.close-popup": [
+      {
+        "command": "display-popup",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:213"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::ClientRef.confirm-async": [
+      {
+        "command": "confirm-before",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:239"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::ClientRef.detach": [
+      {
+        "command": "detach-client",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:314"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::ClientRef.display-format": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:151",
+          "lib/LibTmux/Client.rakumod:148"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::ClientRef.display-message": [
+      {
+        "command": "display-message",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:142",
+          "lib/LibTmux/Client.rakumod:138"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::ClientRef.display-panes-async": [
+      {
+        "command": "display-panes",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:295",
+          "lib/LibTmux/Client.rakumod:291"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::ClientRef.find-window": [
+      {
+        "command": "find-window",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:283",
+          "lib/LibTmux/Client.rakumod:275"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::ClientRef.inspect": [
+      {
+        "command": "list-buffers",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:577",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:993"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-clients",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:577",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:993"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-panes",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:577",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:992"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:577",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:991"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:577",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:992"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      }
+    ],
+    "LibTmux::Model::ClientRef.key-table": [
+      {
+        "command": "switch-client",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:339"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::ClientRef.lock": [
+      {
+        "command": "lock-client",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:324"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::ClientRef.menu-async": [
+      {
+        "command": "display-menu",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:184",
+          "lib/LibTmux/Client.rakumod:163"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::ClientRef.popup-async": [
+      {
+        "command": "display-popup",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:208",
+          "lib/LibTmux/Client.rakumod:197"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::ClientRef.prompt-async": [
+      {
+        "command": "command-prompt",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:233",
+          "lib/LibTmux/Client.rakumod:225"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::ClientRef.prompt-history": [
+      {
+        "command": "show-prompt-history",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:362",
+          "lib/LibTmux/Client.rakumod:360"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::ClientRef.refresh": [
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:309",
+          "lib/LibTmux/Client.rakumod:306"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::ClientRef.suspend": [
+      {
+        "command": "suspend-client",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:319"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::ClientRef.switch": [
+      {
+        "command": "switch-client",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:333",
+          "lib/LibTmux/Client.rakumod:330"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::ClientRef.switch-relative": [
+      {
+        "command": "switch-client",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:348"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::ClientRef.toggle-read-only": [
+      {
+        "command": "switch-client",
+        "evidence": [
+          "lib/LibTmux/Client.rakumod:354"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::PaneRef.break": [
+      {
+        "command": "break-pane",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:447",
+          "lib/LibTmux/Model.rakumod:417"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-panes",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:427"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": "server"
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:434"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": "server"
+      }
+    ],
+    "LibTmux::Model::PaneRef.capture": [
+      {
+        "command": "capture-pane",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:271",
+          "lib/LibTmux/Model.rakumod:262"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::PaneRef.capture-pending": [
+      {
+        "command": "capture-pane",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:275"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::PaneRef.clear-history": [
+      {
+        "command": "clear-history",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:465"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::PaneRef.clock-mode": [
+      {
+        "command": "clock-mode",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:485"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::PaneRef.copy-command": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:482"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::PaneRef.copy-mode": [
+      {
+        "command": "copy-mode",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:477"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::PaneRef.float": [
+      {
+        "command": "break-pane",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:394"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::PaneRef.inspect": [
+      {
+        "command": "list-buffers",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:107",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:993"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-clients",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:107",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:993"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-panes",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:107",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:992"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:107",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:991"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:107",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:992"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      }
+    ],
+    "LibTmux::Model::PaneRef.join": [
+      {
+        "command": "join-pane",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:357",
+          "lib/LibTmux/Model.rakumod:348"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::PaneRef.kill": [
+      {
+        "command": "kill-pane",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:495"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::PaneRef.move": [
+      {
+        "command": "move-pane",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:363",
+          "lib/LibTmux/Model.rakumod:348"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::PaneRef.move-floating": [
+      {
+        "command": "move-pane",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:369"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::PaneRef.new-floating": [
+      {
+        "command": "new-pane",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:312",
+          "lib/LibTmux/Model.rakumod:305"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::PaneRef.pipe": [
+      {
+        "command": "pipe-pane",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:490"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::PaneRef.reset": [
+      {
+        "command": "clear-history",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:472",
+          "lib/LibTmux/Model.rakumod:471"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "if-shell",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:472"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "send-keys",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:472",
+          "lib/LibTmux/Model.rakumod:470"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::PaneRef.reset-terminal": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:467"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::PaneRef.resize": [
+      {
+        "command": "resize-pane",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:317"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::PaneRef.respawn": [
+      {
+        "command": "respawn-pane",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:341"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::PaneRef.select": [
+      {
+        "command": "select-pane",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:324"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::PaneRef.send-keys": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:250"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::PaneRef.send-prefix": [
+      {
+        "command": "send-prefix",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:254"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::PaneRef.send-text": [
+      {
+        "command": "send-keys",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:245"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::PaneRef.set-input": [
+      {
+        "command": "select-pane",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:332"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::PaneRef.set-title": [
+      {
+        "command": "select-pane",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:328"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::PaneRef.set-z-index": [
+      {
+        "command": "move-pane",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:382"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::PaneRef.split": [
+      {
+        "command": "split-window",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:294",
+          "lib/LibTmux/Model.rakumod:287"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::PaneRef.stack": [
+      {
+        "command": "move-pane",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:377"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::PaneRef.swap": [
+      {
+        "command": "swap-pane",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:402"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::PaneRef.tile": [
+      {
+        "command": "move-pane",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:387"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::PaneRef.toggle-mark": [
+      {
+        "command": "select-pane",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:335"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::PaneRef.toggle-zoom": [
+      {
+        "command": "resize-pane",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:321"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::PaneRef.unmark": [
+      {
+        "command": "select-pane",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:337"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::SessionRef.detach-clients": [
+      {
+        "command": "detach-client",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:167"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::SessionRef.inspect": [
+      {
+        "command": "list-buffers",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:107",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:993"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-clients",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:107",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:993"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-panes",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:107",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:992"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:107",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:991"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:107",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:992"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      }
+    ],
+    "LibTmux::Model::SessionRef.kill": [
+      {
+        "command": "kill-session",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:169"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::SessionRef.last-window": [
+      {
+        "command": "last-window",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:161"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::SessionRef.lock": [
+      {
+        "command": "lock-session",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:165"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::SessionRef.new-window": [
+      {
+        "command": "new-window",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:149",
+          "lib/LibTmux/Model.rakumod:142"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::SessionRef.next-window": [
+      {
+        "command": "next-window",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:154"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::SessionRef.previous-window": [
+      {
+        "command": "previous-window",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:158"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::SessionRef.rename": [
+      {
+        "command": "rename-session",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:132"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::SessionRef.renumber-windows": [
+      {
+        "command": "move-window",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:163"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::WindowLinkRef.move": [
+      {
+        "command": "move-window",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:549"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::WindowLinkRef.select": [
+      {
+        "command": "select-window",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:533"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::WindowLinkRef.swap": [
+      {
+        "command": "swap-window",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:561"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::WindowLinkRef.unlink": [
+      {
+        "command": "unlink-window",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:540"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::WindowRef.inspect": [
+      {
+        "command": "list-buffers",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:107",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:993"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-clients",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:107",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:993"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-panes",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:107",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:992"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:107",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:991"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:107",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:992"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      }
+    ],
+    "LibTmux::Model::WindowRef.kill": [
+      {
+        "command": "kill-window",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:239"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::WindowRef.last-pane": [
+      {
+        "command": "last-pane",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:206"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::WindowRef.link": [
+      {
+        "command": "link-window",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:232"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:227"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": "server"
+      }
+    ],
+    "LibTmux::Model::WindowRef.next-layout": [
+      {
+        "command": "next-layout",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:200"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::WindowRef.previous-layout": [
+      {
+        "command": "previous-layout",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:202"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::WindowRef.rename": [
+      {
+        "command": "rename-window",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:176"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::WindowRef.resize": [
+      {
+        "command": "resize-window",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:180"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::WindowRef.respawn": [
+      {
+        "command": "respawn-window",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:215"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::WindowRef.restore-layout": [
+      {
+        "command": "select-layout",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:197"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::WindowRef.rotate": [
+      {
+        "command": "rotate-window",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:209"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::WindowRef.select-layout": [
+      {
+        "command": "select-layout",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:190"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Model::WindowRef.spread-layout": [
+      {
+        "command": "select-layout",
+        "evidence": [
+          "lib/LibTmux/Model.rakumod:204"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Server.attach": [
+      {
+        "command": "attach-session",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:592",
+          "lib/LibTmux/Server.rakumod:602",
+          "lib/LibTmux/Attachment.rakumod:86",
+          "lib/LibTmux/Attachment.rakumod:74",
+          "lib/LibTmux/Attachment.rakumod:112"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Server.attach-async": [
+      {
+        "command": "attach-session",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:602",
+          "lib/LibTmux/Attachment.rakumod:86",
+          "lib/LibTmux/Attachment.rakumod:74",
+          "lib/LibTmux/Attachment.rakumod:112"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Server.buffers": [
+      {
+        "command": "run-shell",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:562",
+          "lib/LibTmux/Server.rakumod:544",
+          "lib/LibTmux/Server.rakumod:368",
+          "lib/LibTmux/Engine.rakumod:283",
+          "lib/LibTmux/Engine.rakumod:247",
+          "lib/LibTmux/Engine.rakumod:245"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Server.capabilities": [
+      {
+        "command": "run-shell",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:384",
+          "lib/LibTmux/Server.rakumod:368",
+          "lib/LibTmux/Engine.rakumod:283",
+          "lib/LibTmux/Engine.rakumod:247",
+          "lib/LibTmux/Engine.rakumod:245"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Server.capabilities-async": [
+      {
+        "command": "run-shell",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:388",
+          "lib/LibTmux/Server.rakumod:368",
+          "lib/LibTmux/Engine.rakumod:283",
+          "lib/LibTmux/Engine.rakumod:247",
+          "lib/LibTmux/Engine.rakumod:245"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Server.environment": [
+      {
+        "command": "run-shell",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:558",
+          "lib/LibTmux/Server.rakumod:544",
+          "lib/LibTmux/Server.rakumod:368",
+          "lib/LibTmux/Engine.rakumod:283",
+          "lib/LibTmux/Engine.rakumod:247",
+          "lib/LibTmux/Engine.rakumod:245"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Server.explain": [
+      {
+        "command": "run-shell",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:398",
+          "lib/LibTmux/Server.rakumod:368",
+          "lib/LibTmux/Engine.rakumod:283",
+          "lib/LibTmux/Engine.rakumod:247",
+          "lib/LibTmux/Engine.rakumod:245"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Server.explain-panes": [
+      {
+        "command": "run-shell",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:432",
+          "lib/LibTmux/Server.rakumod:398",
+          "lib/LibTmux/Server.rakumod:368",
+          "lib/LibTmux/Engine.rakumod:283",
+          "lib/LibTmux/Engine.rakumod:247",
+          "lib/LibTmux/Engine.rakumod:245"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Server.from-env": [
+      {
+        "command": "run-shell",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:324",
+          "lib/LibTmux/Server.rakumod:368",
+          "lib/LibTmux/Engine.rakumod:283",
+          "lib/LibTmux/Engine.rakumod:247",
+          "lib/LibTmux/Engine.rakumod:245"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Server.has-session": [
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:449",
+          "lib/LibTmux/Server.rakumod:434",
+          "lib/LibTmux/Server.rakumod:405",
+          "lib/LibTmux/Server.rakumod:426",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:216"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Server.hooks": [
+      {
+        "command": "run-shell",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:567",
+          "lib/LibTmux/Server.rakumod:544",
+          "lib/LibTmux/Server.rakumod:368",
+          "lib/LibTmux/Engine.rakumod:283",
+          "lib/LibTmux/Engine.rakumod:247",
+          "lib/LibTmux/Engine.rakumod:245"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Server.if-shell": [
+      {
+        "command": "if-shell",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:498",
+          "lib/LibTmux/Server.rakumod:504"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Server.key-bindings": [
+      {
+        "command": "run-shell",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:571",
+          "lib/LibTmux/Server.rakumod:544",
+          "lib/LibTmux/Server.rakumod:368",
+          "lib/LibTmux/Engine.rakumod:283",
+          "lib/LibTmux/Engine.rakumod:247",
+          "lib/LibTmux/Engine.rakumod:245"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Server.kill-server": [
+      {
+        "command": "kill-server",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:539"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Server.new-session": [
+      {
+        "command": "new-session",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:455",
+          "lib/LibTmux/Server.rakumod:453",
+          "lib/LibTmux/Server.rakumod:65",
+          "lib/LibTmux/Server.rakumod:72"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Server.open-control": [
+      {
+        "command": "attach-session",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:576",
+          "lib/LibTmux/Server.rakumod:583",
+          "lib/LibTmux/Control/Connection.rakumod:200",
+          "lib/LibTmux/Control/Connection.rakumod:229",
+          "lib/LibTmux/Control/Connection.rakumod:230"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:576",
+          "lib/LibTmux/Server.rakumod:583",
+          "lib/LibTmux/Control/Connection.rakumod:200",
+          "lib/LibTmux/Control/Connection.rakumod:202",
+          "lib/LibTmux/Control/Connection.rakumod:203"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "new-layouts negotiation is enabled"
+      }
+    ],
+    "LibTmux::Server.open-control-async": [
+      {
+        "command": "attach-session",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:583",
+          "lib/LibTmux/Control/Connection.rakumod:200",
+          "lib/LibTmux/Control/Connection.rakumod:229",
+          "lib/LibTmux/Control/Connection.rakumod:230"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "refresh-client",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:583",
+          "lib/LibTmux/Control/Connection.rakumod:200",
+          "lib/LibTmux/Control/Connection.rakumod:202",
+          "lib/LibTmux/Control/Connection.rakumod:203"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "new-layouts negotiation is enabled"
+      }
+    ],
+    "LibTmux::Server.options": [
+      {
+        "command": "run-shell",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:554",
+          "lib/LibTmux/Server.rakumod:544",
+          "lib/LibTmux/Server.rakumod:368",
+          "lib/LibTmux/Engine.rakumod:283",
+          "lib/LibTmux/Engine.rakumod:247",
+          "lib/LibTmux/Engine.rakumod:245"
+        ],
+        "incidental": true,
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Server.query": [
+      {
+        "command": "list-buffers",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:405",
+          "lib/LibTmux/Server.rakumod:426",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:218",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:993"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "buffer query or full graph"
+      },
+      {
+        "command": "list-clients",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:405",
+          "lib/LibTmux/Server.rakumod:426",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:218",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:993"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "client query or full graph"
+      },
+      {
+        "command": "list-panes",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:405",
+          "lib/LibTmux/Server.rakumod:426",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:216",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:992"
+        ],
+        "reviewed": true,
+        "scope": "server",
+        "when": "pane query or full graph"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:405",
+          "lib/LibTmux/Server.rakumod:426",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:216",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:991"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "session/group query or full graph"
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:405",
+          "lib/LibTmux/Server.rakumod:426",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:217",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:992"
+        ],
+        "reviewed": true,
+        "scope": "server",
+        "when": "window/link query or full graph"
+      }
+    ],
+    "LibTmux::Server.query-async": [
+      {
+        "command": "list-buffers",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:426",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:218",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:993"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "buffer query or full graph"
+      },
+      {
+        "command": "list-clients",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:426",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:218",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:993"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "client query or full graph"
+      },
+      {
+        "command": "list-panes",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:426",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:216",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:992"
+        ],
+        "reviewed": true,
+        "scope": "server",
+        "when": "pane query or full graph"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:426",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:216",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:991"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "session/group query or full graph"
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:426",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:217",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:992"
+        ],
+        "reviewed": true,
+        "scope": "server",
+        "when": "window/link query or full graph"
+      }
+    ],
+    "LibTmux::Server.query-panes": [
+      {
+        "command": "list-buffers",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:430",
+          "lib/LibTmux/Server.rakumod:405",
+          "lib/LibTmux/Server.rakumod:426",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:218",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:993"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "relationship predicates require a full graph"
+      },
+      {
+        "command": "list-clients",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:430",
+          "lib/LibTmux/Server.rakumod:405",
+          "lib/LibTmux/Server.rakumod:426",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:218",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:993"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "relationship predicates require a full graph"
+      },
+      {
+        "command": "list-panes",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:430",
+          "lib/LibTmux/Server.rakumod:405",
+          "lib/LibTmux/Server.rakumod:426",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:216",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:992"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:430",
+          "lib/LibTmux/Server.rakumod:405",
+          "lib/LibTmux/Server.rakumod:426",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:216",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:991"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "relationship predicates require a full graph"
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:430",
+          "lib/LibTmux/Server.rakumod:405",
+          "lib/LibTmux/Server.rakumod:426",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:217",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:992"
+        ],
+        "reviewed": true,
+        "scope": "server",
+        "when": "relationship predicates require a full graph"
+      }
+    ],
+    "LibTmux::Server.query-sessions": [
+      {
+        "command": "list-buffers",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:434",
+          "lib/LibTmux/Server.rakumod:405",
+          "lib/LibTmux/Server.rakumod:426",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:218",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:993"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "relationship predicates require a full graph"
+      },
+      {
+        "command": "list-clients",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:434",
+          "lib/LibTmux/Server.rakumod:405",
+          "lib/LibTmux/Server.rakumod:426",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:218",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:993"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "relationship predicates require a full graph"
+      },
+      {
+        "command": "list-panes",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:434",
+          "lib/LibTmux/Server.rakumod:405",
+          "lib/LibTmux/Server.rakumod:426",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:216",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:992"
+        ],
+        "reviewed": true,
+        "scope": "server",
+        "when": "relationship predicates require a full graph"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:434",
+          "lib/LibTmux/Server.rakumod:405",
+          "lib/LibTmux/Server.rakumod:426",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:216",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:991"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:434",
+          "lib/LibTmux/Server.rakumod:405",
+          "lib/LibTmux/Server.rakumod:426",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:217",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:992"
+        ],
+        "reviewed": true,
+        "scope": "server",
+        "when": "relationship predicates require a full graph"
+      }
+    ],
+    "LibTmux::Server.query-window-links": [
+      {
+        "command": "list-buffers",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:438",
+          "lib/LibTmux/Server.rakumod:405",
+          "lib/LibTmux/Server.rakumod:426",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:218",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:993"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "relationship predicates require a full graph"
+      },
+      {
+        "command": "list-clients",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:438",
+          "lib/LibTmux/Server.rakumod:405",
+          "lib/LibTmux/Server.rakumod:426",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:218",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:993"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "relationship predicates require a full graph"
+      },
+      {
+        "command": "list-panes",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:438",
+          "lib/LibTmux/Server.rakumod:405",
+          "lib/LibTmux/Server.rakumod:426",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:216",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:992"
+        ],
+        "reviewed": true,
+        "scope": "server",
+        "when": "relationship predicates require a full graph"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:438",
+          "lib/LibTmux/Server.rakumod:405",
+          "lib/LibTmux/Server.rakumod:426",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:216",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:991"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "relationship predicates require a full graph"
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:438",
+          "lib/LibTmux/Server.rakumod:405",
+          "lib/LibTmux/Server.rakumod:426",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:217",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:992"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      }
+    ],
+    "LibTmux::Server.query-windows": [
+      {
+        "command": "list-buffers",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:436",
+          "lib/LibTmux/Server.rakumod:405",
+          "lib/LibTmux/Server.rakumod:426",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:218",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:993"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "relationship predicates require a full graph"
+      },
+      {
+        "command": "list-clients",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:436",
+          "lib/LibTmux/Server.rakumod:405",
+          "lib/LibTmux/Server.rakumod:426",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:218",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:993"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "relationship predicates require a full graph"
+      },
+      {
+        "command": "list-panes",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:436",
+          "lib/LibTmux/Server.rakumod:405",
+          "lib/LibTmux/Server.rakumod:426",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:216",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:992"
+        ],
+        "reviewed": true,
+        "scope": "server",
+        "when": "relationship predicates require a full graph"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:436",
+          "lib/LibTmux/Server.rakumod:405",
+          "lib/LibTmux/Server.rakumod:426",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:216",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:991"
+        ],
+        "reviewed": true,
+        "scope": null,
+        "when": "relationship predicates require a full graph"
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:436",
+          "lib/LibTmux/Server.rakumod:405",
+          "lib/LibTmux/Server.rakumod:426",
+          "lib/LibTmux/Query/Execution.rakumod:36",
+          "lib/LibTmux/Query/Execution.rakumod:37",
+          "lib/LibTmux/Query/Execution.rakumod:39",
+          "lib/LibTmux/Query/Plan.rakumod:217",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:992"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      }
+    ],
+    "LibTmux::Server.run-shell": [
+      {
+        "command": "run-shell",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:483",
+          "lib/LibTmux/Server.rakumod:487",
+          "lib/LibTmux/Server.rakumod:489",
+          "lib/LibTmux/Server.rakumod:478"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Server.run-shell-async": [
+      {
+        "command": "run-shell",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:487",
+          "lib/LibTmux/Server.rakumod:489"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Server.snapshot": [
+      {
+        "command": "list-buffers",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:375",
+          "lib/LibTmux/Server.rakumod:379",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:993"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-clients",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:375",
+          "lib/LibTmux/Server.rakumod:379",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:993"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-panes",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:375",
+          "lib/LibTmux/Server.rakumod:379",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:992"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:375",
+          "lib/LibTmux/Server.rakumod:379",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:991"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:375",
+          "lib/LibTmux/Server.rakumod:379",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:992"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      }
+    ],
+    "LibTmux::Server.snapshot-async": [
+      {
+        "command": "list-buffers",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:379",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:993"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-clients",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:379",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:993"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-panes",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:379",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:992"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      },
+      {
+        "command": "list-sessions",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:379",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:991"
+        ],
+        "reviewed": true,
+        "scope": null
+      },
+      {
+        "command": "list-windows",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:379",
+          "lib/LibTmux/Model.rakumod:1004",
+          "lib/LibTmux/Model.rakumod:992"
+        ],
+        "reviewed": true,
+        "scope": "server"
+      }
+    ],
+    "LibTmux::Server.source-file": [
+      {
+        "command": "source-file",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:514",
+          "lib/LibTmux/Server.rakumod:519"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Server.start": [
+      {
+        "command": "new-session",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:665",
+          "lib/LibTmux/Server.rakumod:626",
+          "lib/LibTmux/Server.rakumod:65",
+          "lib/LibTmux/Server.rakumod:72"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Server.wait-for": [
+      {
+        "command": "wait-for",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:524",
+          "lib/LibTmux/Server.rakumod:528",
+          "lib/LibTmux/Server.rakumod:533",
+          "lib/LibTmux/Server.rakumod:478"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "LibTmux::Server.wait-for-async": [
+      {
+        "command": "wait-for",
+        "evidence": [
+          "lib/LibTmux/Server.rakumod:528",
+          "lib/LibTmux/Server.rakumod:533"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ]
+  }
+}

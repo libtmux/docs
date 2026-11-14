@@ -78,6 +78,7 @@ export const DEFAULT_PRIMARY_MODULES: Record<string, string> = {
   elixir: 'LibTmux',
   perl: 'LibTmux',
   lisp: 'libtmux',
+  raku: 'LibTmux',
 }
 
 export const DEFAULT_TEMPLATES: UrlTemplate[] = [

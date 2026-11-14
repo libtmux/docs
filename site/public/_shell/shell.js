@@ -26,6 +26,7 @@
     {"slug":"swift","name":"Swift","shortName":"Sw","logoLanguage":"swift","versionedDocs":true,"mcp":true},
     {"slug":"ocaml","name":"OCaml","shortName":"ML","logoLanguage":"ocaml","versionedDocs":true,"mcp":false},
     {"slug":"perl","name":"Perl","shortName":"Pl","logoLanguage":"perl","versionedDocs":true,"mcp":false},
+    {"slug":"raku","name":"Raku","shortName":"Raku","logoLanguage":"raku","versionedDocs":true,"mcp":false},
   ]
   // <<< end generated
 

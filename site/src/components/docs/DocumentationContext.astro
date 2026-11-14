@@ -79,7 +79,11 @@ const tmuxVersions = !port ? TMUX_VERSIONS.map((entry) => ({
   .documentation-context :global(.doc-picker:not([data-enhanced]) > .doc-picker-panel) { width: min(var(--picker-width), calc(100% - 1rem)); }
   .documentation-context :global(.surface-picker > summary) { border-color: transparent; background: transparent; padding-inline-start: calc(var(--site-gutter) - .75rem - 1px); }
   .documentation-context :global(.surface-picker > summary:hover), .documentation-context :global(.surface-picker[open] > summary) { border-color: var(--color-edge); background: var(--background-color); }
-  .documentation-context :global(.surface-current strong), .documentation-context :global(.surface-current small) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .documentation-context :global(.surface-current small) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* The name gives way before its badge: a long status such as "unreleased" stays readable beside a shortened name. */
+  .documentation-context :global(.surface-current strong) { display: flex; align-items: center; min-width: 0; white-space: nowrap; }
+  .documentation-context :global(.surface-current .surface-label) { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .documentation-context :global(.surface-current__badge) { flex: none; }
   @media (max-width: 40rem) {
     .documentation-context-surface { flex: 1 1 0; padding: .25rem; }
     .documentation-context-selectors { flex: none; gap: .2rem; padding: .25rem; }

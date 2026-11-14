@@ -284,6 +284,8 @@ const SYNTAX: Record<string, ReadonlySet<string>> = {
   py: new Set(['rest', 'citation']),
   // Pod::Simple exports local POD targets as roles and external targets as Markdown links.
   perl: new Set(['pod', 'markdown-link']),
+  // The RakuDoc adapter resolves L<> links into roles; C<> stays literal code.
+  raku: new Set(['rest-role', 'markdown-link', 'literal-code']),
   rs: new Set(['intra-doc']),
   go: new Set(['go-link']),
   java: new Set(['jsdoc']),

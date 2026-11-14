@@ -41,15 +41,15 @@ describe('documentation surface navigation', () => {
     }
   })
 
-  it('builds Julia’s surfaces and badges the library 0.x from its final tag alone', () => {
+  it('builds Julia’s surfaces and badges the library unreleased, whatever its tags say', () => {
     const julia = PORTS.find((port) => port.slug === 'julia')!
     const recorded = REGISTRY.ports.julia!
-    // What the deploy's resolver wrote once v0.1.0 was tagged and General did not carry it.
-    REGISTRY.ports.julia = { status: 'unpublished', version: null, release: null, tag: 'v0.1.0' }
+    // What the deploy's resolver writes once v0.1.0 is tagged and General does not carry it.
+    REGISTRY.ports.julia = { status: 'unpublished', version: null, release: null, tag: 'v0.1.0', maturity: 'unreleased' }
     try {
       const surfaces = buildDocumentationSurfaces('julia', 'latest', menus(julia, 'latest'))
       expect(Object.fromEntries(surfaces.map((surface) => [surface.id, surface.status])))
-        .toEqual({ core: '0.x', mcp: 'concept', workspace: 'concept' })
+        .toEqual({ core: 'unreleased', mcp: 'concept', workspace: 'concept' })
     } finally {
       REGISTRY.ports.julia = recorded
     }

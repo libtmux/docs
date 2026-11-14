@@ -561,6 +561,11 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
   border-radius: 2px;
 }
 
+/* The alternate link follows `[source]` inside the same cluster, set off by a space the brackets do not carry. */
+.api-alternate-link {
+  margin-inline-start: 0.5rem;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .api-type-link,
   .api-source-anchor {

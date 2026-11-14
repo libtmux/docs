@@ -266,6 +266,13 @@ const READERS = {
     return { distributions, units: [] }
   },
 
+  /** META6.json is JSON: the root file names the one distribution zef publishes. */
+  raku(repo) {
+    const { name, version } = JSON.parse(repo.read('META6.json'))
+    if (typeof name !== 'string' || typeof version !== 'string') throw new Error('Invalid META6.json: name and version are required')
+    return { distributions: [{ name, version, manifest: 'META6.json' }], units: [] }
+  },
+
   /** One source distribution exports the non-test ASDF systems and workspace script. */
   lisp(repo) {
     const manifest = 'libtmux.asd'
@@ -285,6 +292,7 @@ const READER_FOR = {
   java: 'java', clojure: 'java', kotlin: 'java', scala: 'java', csharp: 'dotnet', fsharp: 'dotnet', cxx: 'cxx', swift: 'swift', elixir: 'elixir', ocaml: 'ocaml',
   haskell: 'haskell',
   lisp: 'lisp', erlang: 'erlang',
+  raku: 'raku',
 }
 
 /**

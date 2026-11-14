@@ -1,0 +1,19 @@
+{
+  "name": "Raku",
+  "asset": "icon.svg",
+  "sourceUrl": "https://raw.githubusercontent.com/libtmux/assets/55dd6eac4347ba22270788b74a71ec0cba12e287/assets/raku/library/logo.svg",
+  "resolvedUrl": "https://raw.githubusercontent.com/libtmux/assets/55dd6eac4347ba22270788b74a71ec0cba12e287/assets/raku/library/logo.svg",
+  "sourcePage": "https://github.com/libtmux/assets/tree/55dd6eac4347ba22270788b74a71ec0cba12e287/assets/raku",
+  "retrievedAt": "2026-11-13T22:50:00-06:00",
+  "sha256": "d29de9b0d137e07e41e919a1b4e339b3b4f25830320dd47bb503ac6507cd14cb",
+  "copyright": "The libtmux Raku artwork is maintained by the libtmux project.",
+  "license": {
+    "name": "Project-owner artwork; no new license assigned",
+    "urls": [
+      "https://github.com/libtmux/assets/blob/55dd6eac4347ba22270788b74a71ec0cba12e287/THIRD_PARTY.md#libtmux-and-tmuxp"
+    ],
+    "notes": "The source kit assigns no new license to the project owner's artwork or trademarks. Used to identify the Raku port; it is the libtmux library tile, not the Raku language logo, and no endorsement by the Raku project is implied."
+  },
+  "modifications": "None. The reviewed library SVG bytes are preserved.",
+  "upstreamRevision": "55dd6eac4347ba22270788b74a71ec0cba12e287"
+}

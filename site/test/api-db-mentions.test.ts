@@ -46,7 +46,10 @@ describe('prose mention index', () => {
     expect(mentionIndex.mentions.some((row) => row.port === 'csharp'
       && row.symbol === 'LibTmux.Workspace.WorkspaceActionKind.CaptureResult'
       && row.page === '/powershell/latest/workspace/source-guide/')).toBe(true)
-    expect(mentionIndex.dangling.filter((row) => ['powershell', 'julia', 'elixir', 'perl'].includes(row.port))).toEqual([])
+    // Perl's guides name a CPAN changelog file, a wire-format identifier and a filter criterion path in code spans; none is API.
+    const notApi = new Set(['Changes', 'libtmux.where/v1', 'pane.where.width.-gte'])
+    expect(mentionIndex.dangling.filter((row) => ['powershell', 'julia', 'elixir', 'perl'].includes(row.port)
+      && !(row.port === 'perl' && notApi.has(row.text)))).toEqual([])
     expect(mentionIndex.mentions.some((row) => row.port === 'perl'
       && row.symbol === 'LibTmux::Filter'
       && row.page === '/perl/latest/guides/filtering/')).toBe(true)

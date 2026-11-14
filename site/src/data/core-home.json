@@ -447,5 +447,28 @@
     "objectDescriptions": {
       "window": "A physical tmux window; session membership uses window links"
     }
+  },
+  "raku": {
+    "objects": {
+      "server": "LibTmux::Server",
+      "session": "LibTmux::Model::Session",
+      "window": "LibTmux::Model::Window",
+      "pane": "LibTmux::Model::Pane"
+    },
+    "association": "LibTmux::Model::WindowLink",
+    "capabilities": {
+      "objects": "LibTmux::Model::Pane",
+      "ids": "LibTmux::Model::Pane.id",
+      "queries": "LibTmux::Model::PaneSelection.where",
+      "errors": "X::LibTmux::InvalidFilter",
+      "servers": "LibTmux::Server.start",
+      "traversal": "LibTmux::Server.snapshot",
+      "send-keys": "LibTmux::Model::PaneRef.send-keys",
+      "capture": "LibTmux::Model::PaneRef.capture",
+      "argv": "LibTmux::Server.command",
+      "version-gate": "X::LibTmux::Unsupported",
+      "control-mode": "LibTmux::Server.open-control-async",
+      "async": "LibTmux::Server.snapshot-async"
+    }
   }
 }

@@ -3434,7 +3434,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-11-07",
+      "checkedAt": "2026-11-14",
       "entries": [
         "perl:repository"
       ]
@@ -3455,7 +3455,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-11-07",
+      "checkedAt": "2026-11-14",
       "entries": [
         "perl:libtmux-workspace"
       ]
@@ -3476,7 +3476,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-11-07",
+      "checkedAt": "2026-11-14",
       "entries": [
         "perl:LibTmux-Async"
       ]
@@ -3497,7 +3497,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-11-07",
+      "checkedAt": "2026-11-14",
       "entries": [
         "perl:LibTmux"
       ]
@@ -3518,7 +3518,7 @@
           "note": "a branch link names no release"
         }
       ],
-      "checkedAt": "2026-11-07",
+      "checkedAt": "2026-11-14",
       "entries": [
         "perl:LibTmux-Workspace"
       ]
@@ -3647,6 +3647,48 @@
       "checkedAt": "2026-11-08",
       "entries": [
         "powershell:LibTmux.Workspace"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-raku",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-raku",
+      "identity": "libtmux/libtmux-raku",
+      "versionChecks": [
+        {
+          "check": "unsupported",
+          "note": "a branch link names no release"
+        }
+      ],
+      "checkedAt": "2026-11-14",
+      "entries": [
+        "raku:repository"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-raku/tree/master/lib",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-raku/tree/master/lib",
+      "identity": "libtmux/libtmux-raku/lib",
+      "versionChecks": [
+        {
+          "check": "unsupported",
+          "note": "a branch link names no release"
+        }
+      ],
+      "checkedAt": "2026-11-14",
+      "entries": [
+        "raku:LibTmux"
       ]
     },
     {
@@ -4952,6 +4994,33 @@
       ]
     },
     {
+      "url": "https://hex.pm/packages/libtmux_erlang",
+      "kinds": [
+        "package"
+      ],
+      "host": "hex",
+      "ok": true,
+      "status": 200,
+      "requested": "https://hex.pm/packages/libtmux_erlang",
+      "identity": "libtmux_erlang",
+      "version": "0.0.1",
+      "repository": "libtmux/libtmux-erlang",
+      "versionChecks": [
+        {
+          "version": "0.0.1",
+          "source": "libtmux/libtmux-erlang:apps/libtmux_erlang/src/libtmux_erlang.app.src",
+          "ports": [
+            "erlang"
+          ],
+          "check": "confirmed"
+        }
+      ],
+      "checkedAt": "2026-11-14",
+      "entries": [
+        "erlang:libtmux_erlang"
+      ]
+    },
+    {
       "url": "https://hex.pm/packages/libtmux_mcp",
       "kinds": [
         "package"
@@ -5782,6 +5851,169 @@
       ]
     },
     {
+      "url": "https://metacpan.org/dist/LibTmux",
+      "kinds": [
+        "package"
+      ],
+      "host": "metacpan",
+      "ok": true,
+      "status": 200,
+      "requested": "https://fastapi.metacpan.org/v1/release/LibTmux",
+      "identity": "LibTmux",
+      "version": "0.003",
+      "repository": "libtmux/libtmux-perl",
+      "versionChecks": [
+        {
+          "version": "0.003",
+          "source": "libtmux/libtmux-perl:packages/core/Makefile.PL",
+          "ports": [
+            "perl"
+          ],
+          "check": "confirmed"
+        }
+      ],
+      "checkedAt": "2026-11-14",
+      "entries": [
+        "perl:LibTmux"
+      ]
+    },
+    {
+      "url": "https://metacpan.org/dist/LibTmux-Async",
+      "kinds": [
+        "package"
+      ],
+      "host": "metacpan",
+      "ok": true,
+      "status": 200,
+      "requested": "https://fastapi.metacpan.org/v1/release/LibTmux-Async",
+      "identity": "LibTmux-Async",
+      "version": "0.003",
+      "repository": "libtmux/libtmux-perl",
+      "versionChecks": [
+        {
+          "version": "0.003",
+          "source": "libtmux/libtmux-perl:packages/async/Makefile.PL",
+          "ports": [
+            "perl"
+          ],
+          "check": "confirmed"
+        }
+      ],
+      "checkedAt": "2026-11-14",
+      "entries": [
+        "perl:LibTmux-Async"
+      ]
+    },
+    {
+      "url": "https://metacpan.org/dist/LibTmux-Workspace",
+      "kinds": [
+        "package"
+      ],
+      "host": "metacpan",
+      "ok": true,
+      "status": 200,
+      "requested": "https://fastapi.metacpan.org/v1/release/LibTmux-Workspace",
+      "identity": "LibTmux-Workspace",
+      "version": "0.003",
+      "repository": "libtmux/libtmux-perl",
+      "versionChecks": [
+        {
+          "version": "0.003",
+          "source": "libtmux/libtmux-perl:packages/workspace/Makefile.PL",
+          "ports": [
+            "perl"
+          ],
+          "check": "confirmed"
+        }
+      ],
+      "checkedAt": "2026-11-14",
+      "entries": [
+        "perl:LibTmux-Workspace",
+        "perl:libtmux-workspace"
+      ]
+    },
+    {
+      "url": "https://metacpan.org/pod/LibTmux",
+      "kinds": [
+        "api"
+      ],
+      "host": "metacpan",
+      "ok": true,
+      "status": 200,
+      "requested": "https://fastapi.metacpan.org/v1/module/LibTmux",
+      "identity": "LibTmux",
+      "version": "0.003",
+      "repository": "libtmux/libtmux-perl",
+      "versionChecks": [
+        {
+          "version": "0.003",
+          "source": "libtmux/libtmux-perl:packages/core/Makefile.PL",
+          "ports": [
+            "perl"
+          ],
+          "check": "confirmed"
+        }
+      ],
+      "checkedAt": "2026-11-14",
+      "entries": [
+        "perl:LibTmux"
+      ]
+    },
+    {
+      "url": "https://metacpan.org/pod/LibTmux::Async",
+      "kinds": [
+        "api"
+      ],
+      "host": "metacpan",
+      "ok": true,
+      "status": 200,
+      "requested": "https://fastapi.metacpan.org/v1/module/LibTmux::Async",
+      "identity": "LibTmux::Async",
+      "version": "0.003",
+      "repository": "libtmux/libtmux-perl",
+      "versionChecks": [
+        {
+          "version": "0.003",
+          "source": "libtmux/libtmux-perl:packages/async/Makefile.PL",
+          "ports": [
+            "perl"
+          ],
+          "check": "confirmed"
+        }
+      ],
+      "checkedAt": "2026-11-14",
+      "entries": [
+        "perl:LibTmux-Async"
+      ]
+    },
+    {
+      "url": "https://metacpan.org/pod/LibTmux::Workspace",
+      "kinds": [
+        "api"
+      ],
+      "host": "metacpan",
+      "ok": true,
+      "status": 200,
+      "requested": "https://fastapi.metacpan.org/v1/module/LibTmux::Workspace",
+      "identity": "LibTmux::Workspace",
+      "version": "0.003",
+      "repository": "libtmux/libtmux-perl",
+      "versionChecks": [
+        {
+          "version": "0.003",
+          "source": "libtmux/libtmux-perl:packages/workspace/Makefile.PL",
+          "ports": [
+            "perl"
+          ],
+          "check": "confirmed"
+        }
+      ],
+      "checkedAt": "2026-11-14",
+      "entries": [
+        "perl:LibTmux-Workspace"
+      ]
+    },
+    {
       "url": "https://pkg.go.dev/github.com/libtmux/libtmux-go",
       "kinds": [
         "package",
@@ -6367,6 +6599,33 @@
       "checkedAt": "2026-11-08",
       "entries": [
         "py:tmuxp"
+      ]
+    },
+    {
+      "url": "https://raku.land/zef:libtmux/LibTmux",
+      "kinds": [
+        "package"
+      ],
+      "host": "raku-land",
+      "ok": true,
+      "status": 200,
+      "requested": "https://raku.land/zef:libtmux/LibTmux",
+      "identity": "LibTmux:auth<zef:libtmux>",
+      "version": "0.0.1",
+      "repository": "libtmux/libtmux-raku",
+      "versionChecks": [
+        {
+          "version": "0.0.1",
+          "source": "libtmux/libtmux-raku:META6.json",
+          "ports": [
+            "raku"
+          ],
+          "check": "confirmed"
+        }
+      ],
+      "checkedAt": "2026-11-14",
+      "entries": [
+        "raku:LibTmux"
       ]
     },
     {

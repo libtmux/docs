@@ -41,13 +41,15 @@ const breadcrumbs = [{ name: 'libtmux', url: withRoot('/') }, { name: 'Support a
       <strong>beta</strong> or <strong>rc</strong>. A final release shows its series instead, such as
       <strong>0.x</strong> for <code>0.1.0</code>: it is released, and any release may change or
       remove exported identifiers, so pin an exact version. When the registry lists no release at
-      all, the badge shows the stage of the repository's newest release tag instead, and a tag that is
+      all and the toolchain resolves releases from repository tags, as C++ does, the badge shows the
+      stage of the newest release tag instead, and a tag that is
       exactly <code>MAJOR.MINOR.PATCH</code>, with an optional leading <code>v</code> or package label,
       such as <code>v0.1.0</code>, shows its series. A tag newer than the
       registry's newest version does not count: a registry that lists only <code>0.1.0-alpha.2</code>
-      shows <strong>alpha</strong> even after the repository tags <code>v0.1.0</code>. A package with
-      no release and no release tag shows <strong>unreleased</strong>. A language without an
-      implementation has no badge.
+      shows <strong>alpha</strong> even after the repository tags <code>v0.1.0</code>. A package that
+      no registry carries and that installs from source shows <strong>unreleased</strong>, whatever
+      tags its repository holds, and so does a package with no release and no release tag. A language
+      without an implementation has no badge.
     </p>
     <p class="mt-3">
       Python's <code>tmuxp</code> workspace loader and Python MCP server show their own PyPI release

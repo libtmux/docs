@@ -269,7 +269,7 @@ describe('port inventory', () => {
     }
     // Only these ecosystems host an API reference off site.
     expect(PORTS.filter((port) => entries(port.slug).some((entry) => entry.api)).map(({ slug }) => slug).sort())
-      .toEqual(['elixir', 'go', 'java', 'kotlin', 'rs', 'scala', 'swift'])
+      .toEqual(['elixir', 'go', 'java', 'kotlin', 'perl', 'rs', 'scala', 'swift'])
     // Go’s package page and its API reference are one URL on one host.
     for (const entry of entries('go')) expect(entry.api?.url, entry.id).toBe(entry.package?.url)
   })
@@ -300,6 +300,30 @@ describe('port inventory', () => {
     }
     // They produce no link, so the header offers only the published entries.
     expect(published('elixir').map((entry) => entry.id)).toEqual(['libtmux', 'repository'])
+  })
+
+  it('lists Perl’s three CPAN distributions with their MetaCPAN pages, and the command on its distribution’s page', () => {
+    const dist = (name: string) => `https://metacpan.org/dist/${name}`
+    const pod = (module: string) => `https://metacpan.org/pod/${module}`
+    expect(entries('perl').map((entry) => [entry.id, entry.kind, entry.status, entry.package?.url, entry.api?.url])).toEqual([
+      ['LibTmux', 'library', 'published', dist('LibTmux'), pod('LibTmux')],
+      ['LibTmux-Async', 'companion', 'published', dist('LibTmux-Async'), pod('LibTmux::Async')],
+      ['LibTmux-Workspace', 'companion', 'published', dist('LibTmux-Workspace'), pod('LibTmux::Workspace')],
+      ['repository', 'source', 'published', undefined, undefined],
+      ['libtmux-workspace', 'cli', 'published', dist('LibTmux-Workspace'), undefined],
+    ])
+    // Nothing claims the packages are unreleased, and source stays a link through its own entries.
+    for (const entry of entries('perl')) {
+      expect(entry.note, entry.id).toBeUndefined()
+      expect(entry.sourceAvailable, entry.id).toBeUndefined()
+      expect(sourceUrl(entry), entry.id).toMatch(/^https:\/\/github\.com\/libtmux\/libtmux-perl/)
+    }
+    expect(entries('perl').filter((entry) => entry.package).map((entry) => entry.package!.host)).toEqual(Array(4).fill('metacpan'))
+    // One host serves both pages with a different mark for each, as the Swift Package Index does.
+    expect(PACKAGE_HOSTS.metacpan).toMatchObject({ name: 'MetaCPAN', hostname: 'metacpan.org', icon: 'cpan' })
+    expect(API_HOSTS.metacpan).toMatchObject({ name: 'MetaCPAN POD', hostname: 'metacpan.org', icon: 'pod' })
+    // Async keeps its own page apart from core's, though its module and class names resemble core's.
+    expect(new Set(entries('perl').flatMap((entry) => [entry.package?.url, entry.api?.url]).filter(Boolean)).size).toBe(6)
   })
 
   it('links nothing for an entry that is planned or configured but not published', () => {

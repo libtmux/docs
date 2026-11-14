@@ -1678,8 +1678,8 @@
       "port": "perl",
       "page": "home",
       "sourceRepository": "libtmux/libtmux-perl",
-      "sourceRevision": "36b978c5eb6aa33873229046037e7d26136ca2cf",
-      "sourceTree": "269782d0ba1403af082abe05736ade4e31b5aa53",
+      "sourceRevision": "a1cab0324b600a5df6e34b92590b5c3bd8f79c69",
+      "sourceTree": "ce5106dc71b51d688816194599e27a62db5a10e2",
       "files": [
         {
           "name": "examples/quickstart.pl",
@@ -1688,14 +1688,16 @@
         },
         {
           "name": "scripts/lib/LibTmuxFixture.pm",
-          "sha256": "6b17d71a3bb2251d7512d5872bc60791fb0f4b1c0557a6d47e6799aaeabed94e",
-          "clipboardSha256": "50c57a617a04dfe553cbbcfd726f1f6a24e8e8cb77ca171aec86cd0f534f3667"
+          "sha256": "234be617ad56c89e3a41c97c8ce84ec1b198a444e06dea9950d0da54f07f3fd6",
+          "clipboardSha256": "6caf21d81a772ac1f567e77b641e04c430906da2b896844961db2a4237ff08b8"
         }
       ],
       "shellRecipe": [
+        "cpm install \\\n    --global \\\n    'LibTmux~>= 0.003'",
         "perl examples/quickstart.pl"
       ],
       "expectedOutputs": [
+        [],
         [
           "session demo",
           "  window 0:editor: %0 %1",
@@ -1728,8 +1730,8 @@
             },
             {
               "name": "scripts/lib/LibTmuxFixture.pm",
-              "sha256": "6b17d71a3bb2251d7512d5872bc60791fb0f4b1c0557a6d47e6799aaeabed94e",
-              "clipboardSha256": "50c57a617a04dfe553cbbcfd726f1f6a24e8e8cb77ca171aec86cd0f534f3667"
+              "sha256": "234be617ad56c89e3a41c97c8ce84ec1b198a444e06dea9950d0da54f07f3fd6",
+              "clipboardSha256": "6caf21d81a772ac1f567e77b641e04c430906da2b896844961db2a4237ff08b8"
             }
           ],
           "excerptSha256": "0f56b6c69c9f65059b161e876346d5c164fd2463371f00fb5cf1df23de43936e"
@@ -1743,8 +1745,8 @@
             },
             {
               "name": "scripts/lib/LibTmuxFixture.pm",
-              "sha256": "6b17d71a3bb2251d7512d5872bc60791fb0f4b1c0557a6d47e6799aaeabed94e",
-              "clipboardSha256": "50c57a617a04dfe553cbbcfd726f1f6a24e8e8cb77ca171aec86cd0f534f3667"
+              "sha256": "234be617ad56c89e3a41c97c8ce84ec1b198a444e06dea9950d0da54f07f3fd6",
+              "clipboardSha256": "6caf21d81a772ac1f567e77b641e04c430906da2b896844961db2a4237ff08b8"
             }
           ],
           "excerptSha256": "1b06fe564ac4ab43baac37aeb5473fe3a5434c1d3bc78c4c5e9570910b463fc6"
@@ -1758,8 +1760,8 @@
             },
             {
               "name": "scripts/lib/LibTmuxFixture.pm",
-              "sha256": "6b17d71a3bb2251d7512d5872bc60791fb0f4b1c0557a6d47e6799aaeabed94e",
-              "clipboardSha256": "50c57a617a04dfe553cbbcfd726f1f6a24e8e8cb77ca171aec86cd0f534f3667"
+              "sha256": "234be617ad56c89e3a41c97c8ce84ec1b198a444e06dea9950d0da54f07f3fd6",
+              "clipboardSha256": "6caf21d81a772ac1f567e77b641e04c430906da2b896844961db2a4237ff08b8"
             }
           ],
           "excerptSha256": "29d2e40a82a47781c8673f3de385a9d106e598dac819a35202c10b1b4205a7dd"
@@ -1918,8 +1920,8 @@
       "port": "erlang",
       "page": "home",
       "sourceRepository": "libtmux/libtmux-erlang",
-      "sourceRevision": "e858027b2b204c3e621b1f74e9419c9b71e3f2f5",
-      "sourceTree": "0e5cf4b98920e44500a7ae8f3be5d8a88fae443f",
+      "sourceRevision": "539c7297ceae65a1cf683e0836eae0a1ccd34d64",
+      "sourceTree": "418f84b74d1be2f7e961d7392a5d66e8e0c47e6d",
       "files": [
         {
           "name": "src/readme_demo.erl",
@@ -1928,8 +1930,8 @@
         },
         {
           "name": "rebar.config",
-          "sha256": "bf5c066734476ae773ef8472e8db6cab88cff06a67ea8f748ed3e42095344540",
-          "clipboardSha256": "99c327669ed758d04d0801dcc672ee528f4dfaaed236fbe6c46a271f5e4ccba0"
+          "sha256": "429086e6932b1fef7329d70c037111f8c636ecd8b002177ed64b29787adf11bd",
+          "clipboardSha256": "d53ea24777d588d02815e45546629a38bf7b197001f5cc08c38907c2221c2703"
         },
         {
           "name": "src/tmux_example.app.src",
@@ -1940,7 +1942,7 @@
       "excerptSha256": "d4ab3b8b2e95bc65ef69eac865a5d198fe79d7ad168a9e649ba234fed5573541",
       "shellRecipe": [
         "rebar3 compile",
-        "env \\\n    -u TMUX \\\n    -u TMUX_PANE \\\n    erl \\\n    -noshell \\\n    -pa _build/default/lib/tmux_example/ebin \\\n    -pa _build/default/lib/libtmux_erlang/apps/libtmux_erlang/ebin \\\n    -eval '\n        {ok, _} = application:ensure_all_started(libtmux_erlang),\n        Tmux = unicode:characters_to_binary(os:find_executable(\"tmux\")),\n        Stats = readme_demo:run(Tmux),\n        io:format(\"~B session, ~B windows, ~B panes; ~B matches~n\", [\n            maps:get(sessions, Stats), maps:get(windows, Stats),\n            maps:get(panes, Stats), maps:get(matched_panes, Stats)]),\n        halt().'"
+        "env \\\n    -u TMUX \\\n    -u TMUX_PANE \\\n    erl \\\n    -noshell \\\n    -pa _build/default/lib/tmux_example/ebin \\\n    -pa _build/default/lib/libtmux_erlang/ebin \\\n    -eval '\n        {ok, _} = application:ensure_all_started(libtmux_erlang),\n        Tmux = unicode:characters_to_binary(os:find_executable(\"tmux\")),\n        Stats = readme_demo:run(Tmux),\n        io:format(\"~B session, ~B windows, ~B panes; ~B matches~n\", [\n            maps:get(sessions, Stats), maps:get(windows, Stats),\n            maps:get(panes, Stats), maps:get(matched_panes, Stats)]),\n        halt().'"
       ],
       "expectedOutputs": [
         [],
@@ -1949,7 +1951,7 @@
         ]
       ],
       "tmuxVersions": [
-        "3.3",
+        "3.3a",
         "3.8"
       ],
       "variants": {
@@ -1962,8 +1964,8 @@
             },
             {
               "name": "rebar.config",
-              "sha256": "bf5c066734476ae773ef8472e8db6cab88cff06a67ea8f748ed3e42095344540",
-              "clipboardSha256": "99c327669ed758d04d0801dcc672ee528f4dfaaed236fbe6c46a271f5e4ccba0"
+              "sha256": "429086e6932b1fef7329d70c037111f8c636ecd8b002177ed64b29787adf11bd",
+              "clipboardSha256": "d53ea24777d588d02815e45546629a38bf7b197001f5cc08c38907c2221c2703"
             },
             {
               "name": "src/tmux_example.app.src",
@@ -1982,8 +1984,8 @@
             },
             {
               "name": "rebar.config",
-              "sha256": "bf5c066734476ae773ef8472e8db6cab88cff06a67ea8f748ed3e42095344540",
-              "clipboardSha256": "99c327669ed758d04d0801dcc672ee528f4dfaaed236fbe6c46a271f5e4ccba0"
+              "sha256": "429086e6932b1fef7329d70c037111f8c636ecd8b002177ed64b29787adf11bd",
+              "clipboardSha256": "d53ea24777d588d02815e45546629a38bf7b197001f5cc08c38907c2221c2703"
             },
             {
               "name": "src/tmux_example.app.src",
@@ -2002,8 +2004,8 @@
             },
             {
               "name": "rebar.config",
-              "sha256": "bf5c066734476ae773ef8472e8db6cab88cff06a67ea8f748ed3e42095344540",
-              "clipboardSha256": "99c327669ed758d04d0801dcc672ee528f4dfaaed236fbe6c46a271f5e4ccba0"
+              "sha256": "429086e6932b1fef7329d70c037111f8c636ecd8b002177ed64b29787adf11bd",
+              "clipboardSha256": "d53ea24777d588d02815e45546629a38bf7b197001f5cc08c38907c2221c2703"
             },
             {
               "name": "src/tmux_example.app.src",
@@ -2012,6 +2014,67 @@
             }
           ],
           "excerptSha256": "d4ab3b8b2e95bc65ef69eac865a5d198fe79d7ad168a9e649ba234fed5573541"
+        }
+      }
+    },
+    {
+      "port": "raku",
+      "page": "home",
+      "sourceRepository": "libtmux/libtmux-raku",
+      "sourceRevision": "9a9838047f1585c2c790b011cb708670999b7bdd",
+      "sourceTree": "8e2aec2ca4319d834066c1ef7fbea50eaa60e998",
+      "shellRecipe": [
+        "zef install 'LibTmux:ver<0.0.1+>:auth<zef:libtmux>'",
+        "raku quickstart.raku"
+      ],
+      "expectedOutputs": [
+        [],
+        [
+          "editor: 2 panes"
+        ]
+      ],
+      "files": [
+        {
+          "name": "quickstart.raku",
+          "sha256": "4d017243bab685e717452f47fea56a7f3d039e3a290d9ab61b4acc4a759e04b5",
+          "clipboardSha256": "96b3190feb053fd623b46ff1314d8e3ea8a53e51d94bc0bd6a45518c9bee465a"
+        }
+      ],
+      "excerptSha256": "96b3190feb053fd623b46ff1314d8e3ea8a53e51d94bc0bd6a45518c9bee465a",
+      "tmuxVersions": [
+        "3.3a",
+        "3.8"
+      ],
+      "variants": {
+        "concise": {
+          "files": [
+            {
+              "name": "quickstart.raku",
+              "sha256": "4d017243bab685e717452f47fea56a7f3d039e3a290d9ab61b4acc4a759e04b5",
+              "clipboardSha256": "96b3190feb053fd623b46ff1314d8e3ea8a53e51d94bc0bd6a45518c9bee465a"
+            }
+          ],
+          "excerptSha256": "96b3190feb053fd623b46ff1314d8e3ea8a53e51d94bc0bd6a45518c9bee465a"
+        },
+        "errors": {
+          "files": [
+            {
+              "name": "quickstart.raku",
+              "sha256": "4d017243bab685e717452f47fea56a7f3d039e3a290d9ab61b4acc4a759e04b5",
+              "clipboardSha256": "96b3190feb053fd623b46ff1314d8e3ea8a53e51d94bc0bd6a45518c9bee465a"
+            }
+          ],
+          "excerptSha256": "96b3190feb053fd623b46ff1314d8e3ea8a53e51d94bc0bd6a45518c9bee465a"
+        },
+        "cleanup": {
+          "files": [
+            {
+              "name": "quickstart.raku",
+              "sha256": "4d017243bab685e717452f47fea56a7f3d039e3a290d9ab61b4acc4a759e04b5",
+              "clipboardSha256": "96b3190feb053fd623b46ff1314d8e3ea8a53e51d94bc0bd6a45518c9bee465a"
+            }
+          ],
+          "excerptSha256": "96b3190feb053fd623b46ff1314d8e3ea8a53e51d94bc0bd6a45518c9bee465a"
         }
       }
     }

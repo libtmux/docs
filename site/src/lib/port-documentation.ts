@@ -442,6 +442,21 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
     ],
     redirects: [{ path: 'mcp', target: '' }, { path: 'workspace', target: '' }],
   },
+  raku: {
+    domains: [
+      libraryDomain('Typed tmux snapshots, local selections and explicit commands for Raku programs.'),
+    ],
+    sections: {
+      guides: 'Install LibTmux and create, find and arrange tmux sessions and panes.',
+      examples: 'Run complete Raku programs with their documented results and cleanup.',
+      topics: 'Check which tmux releases and platforms the library supports.',
+    },
+    sourceGuides: [
+      guide('README.md', 'guides/getting-started', 'core', { title: 'Getting started', aliases: [], sidebar: { group: 'Guides', order: 1 } }),
+      guide('examples/README.md', 'examples/programs', 'core', { title: 'Runnable programs', description: 'Run the checked Raku programs and compare each with its expected result.', aliases: [] }),
+      guide('docs/adr/0001-tmux-compatibility.md', 'topics/compatibility', 'core', { title: 'tmux compatibility', aliases: [] }),
+    ],
+  },
 }
 
 export const SOURCE_GUIDE_PORTS = Object.keys(PORT_DOCUMENTATION)

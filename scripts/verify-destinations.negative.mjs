@@ -27,8 +27,8 @@
  * FAMILIES below. Every family gets the right package, a different package
  * under the same URL, and a version the manifest declares that the host lacks.
  * The families whose host reports a repository (PyPI, npm, crates.io,
- * RubyGems, the PowerShell Gallery, NuGet, LuaRocks, Maven Central, Hex and
- * javadoc.io) also get the right package filed under another repository and
+ * RubyGems, the PowerShell Gallery, NuGet, LuaRocks, Maven Central, Hex,
+ * MetaCPAN and javadoc.io) also get the right package filed under another repository and
  * one whose host reports no repository at all, and npm a directory that
  * differs. pkg.go.dev, docs.rs, HexDocs and the Swift Package Index name their
  * repository only in the URL, so they get none of those; pkg.go.dev instead
@@ -181,6 +181,14 @@ const FAMILIES = [
     },
   },
   {
+    host: 'raku-land', variants: REPORTS_REPOSITORY, coordinate: (id) => `${id}:auth<zef:demo>`, destination: (id) => ({ package: { host: 'raku-land', url: `https://raku.land/zef:demo/${id}` } }),
+    serve: (id, { shown, repo }) => {
+      const page = html(`Raku Land - ${shown}`, `<select id=version name=v><option value="1.0.0" disabled selected>1.0.0 (2026-01-01)</option></select>${repo ? `<a href="https://github.com/${repo}" rel=nofollow>github.com/${repo}</a>` : ''}`)
+      routes[`/raku.land/zef:demo/${id}`] = () => [200, 'text/html', page]
+      routes[`/raku.land/zef:demo/${id}?v=1.0.0`] = () => [200, 'text/html', page]
+    },
+  },
+  {
     host: 'hexdocs', variants: NAMED_BY_URL, coordinate: (id) => id, destination: (id) => ({ api: { host: 'hexdocs', url: `https://${id}.hexdocs.pm/` } }),
     serve: (id, { shown }) => {
       // The reported name leads the title of the package's root page and of the page for its release.
@@ -217,12 +225,36 @@ const FAMILIES = [
       routes[`/swiftpackageindex.com/demo/other/1.0.0/documentation/lib`] = () => [200, 'text/html', html('lib Documentation &ndash; Swift Package Index')]
     },
   },
+  {
+    // The distribution page is behind a challenge, so the API names it.
+    host: 'metacpan', variants: REPORTS_REPOSITORY, coordinate: (id) => id, destination: (id) => ({ package: { host: 'metacpan', url: `https://metacpan.org/dist/${id}` } }),
+    serve: (id, { shown, repo }) => cpanRelease(id, shown, repo),
+  },
+  {
+    // A module's POD page is read from its rendered NAME section; the module endpoint says which file documents it.
+    host: 'metacpan-pod', variants: REPORTS_REPOSITORY, coordinate: (id) => id, destination: (id) => ({ api: { host: 'metacpan', url: `https://metacpan.org/pod/${podModule(id)}` } }),
+    serve: (id, { shown, repo }) => {
+      const module = podModule(id)
+      cpanRelease(`${id}-dist`, `${id}-dist`, repo)
+      routes[`/fastapi.metacpan.org/v1/module/${module}`] = () => text({ documentation: shown === id ? module : shown, distribution: `${id}-dist`, version: '1.0.0', path: 'lib/Demo.pm' })
+      routes[`/fastapi.metacpan.org/v1/pod/${module}`] = () => [200, 'text/html', `<h1 id="NAME">NAME</h1>\n<p>${module} - a demo</p>`]
+    },
+  },
 ]
 
 /** A Go module on the proxy: the versions it lists, and where in its repository the proxy says it lives. */
 function goModule(path, versions, subdir) {
   routes[`/proxy.golang.org/${path}/@v/list`] = () => text(`${versions.join('\n')}\n`, 'text/plain')
   for (const version of versions) routes[`/proxy.golang.org/${path}/@v/${version}.info`] = () => text({ Version: version, Origin: { VCS: 'git', ...(subdir && { Subdir: subdir }) } })
+}
+
+/** A Perl module name for a case id, since a POD NAME section names `Word::Word`. */
+const podModule = (id) => `Demo::${id.replace(/(?:^|[^A-Za-z0-9]+)(\w)/g, (_, letter) => letter.toUpperCase())}`
+
+/** A CPAN distribution as the MetaCPAN API lists it: its newest release, filed under `repo`, and every release it carries. */
+function cpanRelease(dist, shown, repo, versions = ['1.0.0']) {
+  routes[`/fastapi.metacpan.org/v1/release/${dist}`] = () => text({ distribution: shown, version: versions.at(-1), status: 'latest', resources: repo ? { repository: { url: `git://github.com/${repo}.git`, web: `https://github.com/${repo}` } } : {} })
+  routes[`/fastapi.metacpan.org/v1/release/_search?q=distribution:${dist}&size=100`] = () => text({ hits: { hits: versions.map((version) => ({ _source: { distribution: dist, version, status: 'cpan', maturity: 'released' } })) } })
 }
 
 /** Any other repository under demo/ is a page titled for itself, and a directory of one is titled as GitHub titles it. */
@@ -242,8 +274,8 @@ const server = createServer((request, response) => {
 })
 await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
 const base = `http://127.0.0.1:${server.address().port}`
-const ORIGINS = ['github.com', 'pypi.org', 'rubygems.org', 'javadoc.io', 'registry.npmjs.org', 'www.npmjs.com', 'crates.io', 'repo1.maven.org', 'central.sonatype.com',
-  'www.nuget.org', 'api.nuget.org', 'www.powershellgallery.com', 'luarocks.org', 'pkg.go.dev', 'proxy.golang.org', 'docs.rs', 'swiftpackageindex.com', 'hex.pm',
+const ORIGINS = ['fastapi.metacpan.org', 'github.com', 'pypi.org', 'rubygems.org', 'javadoc.io', 'registry.npmjs.org', 'www.npmjs.com', 'crates.io', 'repo1.maven.org', 'central.sonatype.com',
+  'www.nuget.org', 'api.nuget.org', 'www.powershellgallery.com', 'luarocks.org', 'pkg.go.dev', 'proxy.golang.org', 'docs.rs', 'swiftpackageindex.com', 'hex.pm', 'raku.land',
   // HexDocs gives each package a host of its own, so each package a case serves is an origin.
   ...NAMED_BY_URL.map((variant) => `hexdocs-${variant}.hexdocs.pm`)]
 const rewrite = JSON.stringify(Object.fromEntries(ORIGINS.map((host) => [`https://${host}`, `${base}/${host}`])))
@@ -474,6 +506,41 @@ const recordFor = (url) => good.destinations.find((candidate) => candidate.url =
 const source = recordFor('https://github.com/demo/demo')
 const withPypi = (change) => ({ ...good, destinations: good.destinations.map((item) => (item.host === 'pypi' ? { ...item, ...change } : item)) })
 const check1 = (version, check, extra = {}) => [{ version, source: 'demo/demo:m', ports: ['demo'], check, ...extra }]
+
+// MetaCPAN: PAUSE indexes no developer release, so a manifest at a development commit that declares one is not a claim of a release.
+// The same version on a host that does list such releases is still one the host lacks.
+cpanRelease('demo-cpan', 'demo-cpan', 'demo/demo', ['0.002', '0.003'])
+const cpanDist = { package: { host: 'metacpan', url: 'https://metacpan.org/dist/demo-cpan' } }
+const developer = await verify('a developer version on MetaCPAN is recorded as one and passes', [entry('demo-cpan', { coordinate: 'demo-cpan', ...cpanDist })], {
+  manifests: manifestFor([['demo-cpan', '0.001_001']]), expect: { code: 0, matches: [/ok\s+200\s+package\s+https:\/\/metacpan\.org\/dist\/demo-cpan/], excludes: [/problem/] },
+})
+const developerChecks = JSON.parse(readFileSync(developer.out, 'utf8')).destinations.find((candidate) => candidate.url === 'https://metacpan.org/dist/demo-cpan')?.versionChecks
+if (developerChecks?.length === 1 && developerChecks[0].check === 'developer' && developerChecks[0].version === '0.001_001') console.log('ok   the record says the version is a developer version and checked nothing against the host')
+else { console.error(`FAIL the record did not name a developer version: ${JSON.stringify(developerChecks)}`); failures += 1 }
+await verify('a released version MetaCPAN carries is confirmed', [entry('demo-cpan', { coordinate: 'demo-cpan', ...cpanDist })], {
+  manifests: manifestFor([['demo-cpan', '0.003']]), expect: { code: 0, matches: [/ok\s+200\s+package\s+https:\/\/metacpan\.org\/dist\/demo-cpan/], excludes: [/problem/] },
+})
+await verify('a developer version on a host that lists them is a version the host lacks', control, {
+  manifests: manifestFor([['demo-good', '0.001_001']]), expect: { code: 1, matches: [/does not carry 0\.001_001/] },
+})
+await verify('offline, a developer version recorded for a release number fails', [entry('demo-cpan', { coordinate: 'demo-cpan', ...cpanDist })], {
+  args: ['--check'], manifests: manifestFor([['demo-cpan', '0.003']]),
+  evidence: { schema: 1, checkedAt: '2026-01-01', destinations: [
+    { ...JSON.parse(readFileSync(developer.out, 'utf8')).destinations.find((candidate) => candidate.url === 'https://metacpan.org/dist/demo-cpan'), versionChecks: check1('0.003', 'developer') },
+    source,
+  ] },
+  expect: { code: 1, matches: [/records 0\.003 as a developer version, which metacpan does not issue/] },
+})
+// MetaCPAN answers a scripted client's page request with a challenge; the POD page is read from its NAME section.
+routes['/fastapi.metacpan.org/v1/module/Demo::Challenged'] = () => text({ documentation: 'Demo::Challenged', distribution: 'demo-cpan', version: '0.003', path: 'lib/Demo/Challenged.pm' })
+routes['/fastapi.metacpan.org/v1/pod/Demo::Challenged'] = () => [200, 'text/html', html('Client Challenge', '<h1>Client Challenge</h1>')]
+routes['/fastapi.metacpan.org/v1/module/Demo::Other'] = () => text({ documentation: 'Demo::Other', distribution: 'demo-cpan', version: '0.003', path: 'lib/Demo/Other.pm' })
+routes['/fastapi.metacpan.org/v1/pod/Demo::Other'] = () => [200, 'text/html', '<h1 id="NAME">NAME</h1><p>Demo::Elsewhere - declares another module</p>']
+routes['/fastapi.metacpan.org/v1/module/Demo::Shared::Error'] = () => text({ documentation: 'Demo::Shared', distribution: 'demo-cpan', version: '0.003', path: 'lib/Demo/Shared.pm' })
+for (const [module, matches] of [['Demo::Challenged', /FAIL\s+200\s+api[\s\S]*the POD names "" in its NAME section/], ['Demo::Other', /FAIL\s+200\s+api[\s\S]*the POD names "Demo::Elsewhere" in its NAME section/],
+  ['Demo::Shared::Error', /FAIL\s+200\s+api[\s\S]*MetaCPAN documents "Demo::Shared" in lib\/Demo\/Shared\.pm, expected "Demo::Shared::Error"/]]) {
+  await verify(`MetaCPAN POD for ${module} is refused`, [entry('demo-pod', { api: { host: 'metacpan', url: `https://metacpan.org/pod/${module}` } })], { expect: { code: 1, matches: [matches] } })
+}
 await verify('offline, evidence for every destination passes', control, { args: ['--check'], evidence: good, expect: { code: 0, matches: [/agrees with the inventory/] } })
 await verify('offline, a destination with no record fails', control, {
   args: ['--check'], evidence: { ...good, destinations: [source] }, expect: { code: 1, matches: [/https:\/\/pypi\.org\/project\/demo-good\/ has no evidence/] },

@@ -46,7 +46,8 @@ const PINS: Record<string, { lang: string; code: (name: string, series: string, 
   hex: { lang: 'elixir', code: (name, _s, v) => `{:${name}, "~> ${v}"}` },
   nuget: { lang: 'xml', code: (name, s, v) => `<PackageReference Include="${name}" Version="[${v},${s.replace(/\d+$/, (n) => String(Number(n) + 1))})" />` },
 }
-const pin = series && info.slug !== 'py' && info.registry ? PINS[info.registry.icon] : undefined
+// Erlang's install already pins an exact version, and its Hex entry is not an Elixir tuple.
+const pin = series && info.slug !== 'py' && info.slug !== 'erlang' && info.registry ? PINS[info.registry.icon] : undefined
 const capabilityOf = (key: string) => [...home.capabilities.typed, ...home.capabilities.cli].find((row) => row.key === key)
 const location = capabilityOf('current-pane')
 const testing = capabilityOf('test-fixtures')
