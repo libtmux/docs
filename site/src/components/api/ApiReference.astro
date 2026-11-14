@@ -1,4 +1,5 @@
 ---
+import { firstLetter } from '../../lib/symbol-index'
 import type { ApiModel, ApiSymbol, SourceApiModel, SymbolIndex } from '@libtmux/api-model'
 import { aliasMembersTarget, membersOf, pageMembersOf, memberTier, docSummaryText, memberSignals, parameterId, qualifiedNameOf, moduleOf, modulesIn, sourceUrl as apiSourceUrl, symbolsForProduct } from '@libtmux/api-model/reference'
 import mentionsData from '../../data/mentions.json'
@@ -554,6 +555,8 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                 ? 'Browse the LibTmux cmdlets by the tmux objects and operations they control. Each command includes syntax, parameter sets, pipeline types, and examples.'
                 : `Browse the ${label} types and operations for working with tmux. Start with the core objects below, or search for a type or member.`}
             </p>
+            {/* The A-Z view, for a reader who knows roughly what a name is. */}
+            <p class="mt-2"><a href={withRoot(`/reference/symbols/${firstLetter(model.symbols.map((s) => s.name)).toLowerCase()}/`)}>{label} symbol index (A–Z)</a></p>
             {paths.length > 0 && <ApiRelationships paths={paths} hrefFor={hrefFor} />}
             {sections.map((mod) => (
               /*
