@@ -79,6 +79,8 @@ export function extractRakuArtifact(input: unknown, expectedRevision?: string): 
       symbol.source.line! <= artifact.generatedSources[symbol.source.file]!.split('\n').length &&
       symbol.source.revision === artifact.revision, `source identity differs: ${symbol.id}`)
     check(Array.isArray(symbol.signatures), `missing signatures: ${symbol.id}`)
+    // Raku declares a top-level class by its package path; the shared model names a type by its last segment.
+    symbol.name = symbol.name.split('::').at(-1)!
     for (const signature of symbol.signatures) {
       check(typeof signature.raw === 'string' && signature.raw.length > 0 && Array.isArray(signature.params), `invalid native signature: ${symbol.id}`)
       let previous = -1

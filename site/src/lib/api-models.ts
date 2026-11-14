@@ -218,8 +218,9 @@ export function ownersOf(model: ApiModelBase) {
 export function topLevelTypesOf(model: ApiModelBase) {
   const owners = new Set(ownersOf(model).map((symbol) => symbol.id))
   const packages = new Set(model.symbols.filter((symbol) => symbol.kind === 'module').map((symbol) => symbol.id))
-  const lisp = 'port' in model && model.port === 'lisp'
-  return model.symbols.filter((s) => (!s.parent || (lisp && packages.has(s.parent))) && OWNER_KINDS.has(s.kind)
+  // Common Lisp and Raku declare their types under the public module that exports them.
+  const underPackage = 'port' in model && (model.port === 'lisp' || model.port === 'raku')
+  return model.symbols.filter((s) => (!s.parent || (underPackage && packages.has(s.parent))) && OWNER_KINDS.has(s.kind)
     && (s.kind !== 'typealias' || owners.has(s.id)))
 }
 
