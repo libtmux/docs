@@ -73,6 +73,7 @@ describe('localizeBadges', () => {
     ['elixir', 'https://img.shields.io/hexpm/v/libtmux', '0.1.0', 'hex: v0.1.0'],
     ['kotlin', 'https://img.shields.io/maven-central/v/io.github.libtmux/libtmux-kotlin', '0.1.0', 'maven-central: v0.1.0'],
     ['scala', 'https://img.shields.io/maven-central/v/io.github.libtmux/libtmux-scala_3', '0.1.0', 'maven-central: v0.1.0'],
+    ['perl', 'https://img.shields.io/cpan/v/LibTmux', '0.003', 'cpan: v0.003'],
   ])('renders the %s registry badge from a port entry without packages', (port, url, version, aria) => {
     const data = { ports: { [port]: { version } } }
     const [svg] = localizeBadges(`![x](${url})`, port, data).files.values()

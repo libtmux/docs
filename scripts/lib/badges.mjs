@@ -25,6 +25,7 @@ export const BADGE_DIRECTORY = 'badges'
  * a Maven group).
  */
 const VERSION_SERVICES = {
+  cpan: { label: 'cpan', qualifiers: 0 },
   gem: { label: 'gem', qualifiers: 0 },
   crates: { label: 'crates.io', qualifiers: 0 },
   hexpm: { label: 'hex', qualifiers: 0 },
