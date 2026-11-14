@@ -119,7 +119,8 @@ export function buildDocumentationSurfaces(
       // A group names its kind, so its rows need no mark; one that mixes kinds keeps them.
       section.items.push(...groups.map((group): SidebarItem => {
         const quiet = sharesOneKind(group.objects.map((object) => object.kind))
-        return { type: 'group', label: group.label, href: `${portPageUrl(info, version, `${prefix}${key}`)}#${group.id}`, items: group.objects.map((object) => ({
+        // The tmux object a tool acts on is a label over its rows, not a page: it links to its place on the index and cannot be selected.
+        return { type: 'group', overline: true, label: group.label, href: `${portPageUrl(info, version, `${prefix}${key}`)}#${group.id}`, items: group.objects.map((object) => ({
           type: 'link' as const, label: object.name, kind: object.kind, href: portPageUrl(info, version, object.path), ...(quiet ? { quiet } : {}),
         })) }
       }))

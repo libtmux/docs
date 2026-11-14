@@ -199,6 +199,8 @@ export async function checkDevSample(browser, base) {
         const layout = await page.evaluate(() => {
           const controls = ['.site-header__search', '.scheme-switch, .scheme-cycle', '.site-header__menu-button']
             .map((selector) => [...document.querySelectorAll(selector)].find((node) => node.checkVisibility()))
+            // The Menu button is absent under a ContextStrip from 48rem.
+            .filter(Boolean)
             .map((node) => { const { top, height } = node.getBoundingClientRect(); return { top, height } })
           const table = document.querySelector('table')
           const head = [...(table?.tHead?.rows[0]?.cells ?? [])]

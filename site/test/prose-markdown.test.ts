@@ -163,7 +163,7 @@ describe('prose Markdown links', () => {
       const sidebar = await getSidebar('ruby', 'latest')
       const concepts = sidebar.find((entry) => entry.type === 'group' && entry.label === 'Concepts')
       expect(concepts).toMatchObject({ href: expect.stringContaining('/ruby/latest/concepts/'), items: [] })
-      expect((await pageBreadcrumbs('Model', 'concepts/model', 'latest', 'ruby')).map((entry) => entry.name)).toEqual(['Ruby', 'Ruby concepts', 'Model'])
+      expect((await pageBreadcrumbs('Model', 'concepts/model', 'latest', 'ruby')).map((entry) => entry.name)).toEqual(['Ruby', 'Core Library', 'Ruby concepts', 'Model'])
     } finally {
       vi.mocked(getCollection).mockResolvedValue([])
     }

@@ -72,6 +72,7 @@ describe('the task rows and the summary', () => {
     for (const [index, row] of rows.entries()) {
       const topic = TOPICS[index]!
       expect(row.querySelector('small')!.textContent, topic.id).toBe(topic.menu)
+      expect(row.textContent, `${topic.id}: the row shows the line, not the sentence`).not.toContain(topic.summary)
       expect(row.dataset.match, 'search matches the label, the line and the sentence').toBe(`${topic.label} ${topic.menu} ${topic.summary}`)
     }
   })

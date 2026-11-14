@@ -55,10 +55,7 @@ const rest = (group: keyof typeof CAPABILITY_GROUPS) => home.capabilities[group]
 ---
 <p>{coreLead(port)}</p>
 
-{cards.length > 0 && <div class="not-prose mt-6 mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-  {cards.map((card) => <DocCard href={proseHref(card.href, SITE_ROOT, port, version)} label={card.label} body={card.body} />)}
-</div>}
-
+{/* The installer comes first, above the fold: the sections to go on to follow it (record 0026). */}
 <h2 id="install">Install</h2>
 <div class="not-prose"><Code code={install.code} lang={install.lang} frame="none" /></div>
 {sourceInstall?.note && <p>{sourceInstall.note}</p>}
@@ -66,6 +63,10 @@ const rest = (group: keyof typeof CAPABILITY_GROUPS) => home.capabilities[group]
   <p><code>{info.packageName} {released}</code> is pre-1.0 and can change between minor versions. Pin to a range:</p>
   <div class="not-prose"><Code code={pin.code(info.packageName, series, released)} lang={pin.lang} frame="none" /></div>
 </>}
+
+{cards.length > 0 && <div class="not-prose mt-6 mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+  {cards.map((card) => <DocCard href={proseHref(card.href, SITE_ROOT, port, version)} label={card.label} body={card.body} />)}
+</div>}
 
 <h2 id="at-a-glance">At a glance</h2>
 {home.modules.length > 0 ? <div class="core-home__table" role="region" aria-label="Public modules" tabindex="0">

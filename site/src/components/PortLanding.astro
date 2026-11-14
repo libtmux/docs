@@ -7,7 +7,9 @@ import WorkspaceConfig from './workspace/WorkspaceConfig.astro'
 import WorkspaceEvidence from './workspace/WorkspaceEvidence.astro'
 import WorkspacePicker from './workspace/WorkspacePicker.astro'
 import WorkspaceWindows from './workspace/WorkspaceWindows.astro'
-import { portPageUrl, type Port } from '../lib/ports'
+import StatusBadge from './StatusBadge.astro'
+import { portPageUrl, productStatus, productStatusLine, type DocProduct, type Port } from '../lib/ports'
+import { REGISTRY } from '../lib/registry'
 import { landingPanels, type CachedSource, type LandingTable } from '../lib/port-landing'
 import { mcpShowcase, toolHeadings } from '../lib/mcp-showcase'
 import { loadCommand } from '../lib/workspace-links'
@@ -20,6 +22,8 @@ import SOURCES from '../data/example-sources.json'
 
 /**
  * What each product a port ships looks like in use, with its install widget.
+ * The installer opens each panel, above the example, so it is above the fold
+ * on the port home as it is on every product home (record 0026).
  *
  * Core API is the homepage's example block, fixed to the port's language.
  * MCP opens with one sentence, the install picker, then the MCP overview's
@@ -80,16 +84,19 @@ const panelId = (product: string) => `landing-panel-${product}`
         (<code>{panel.excerpt.ci.workflow}</code>).
       </p>
     </details>
+    // A companion product names its maturity once, beside its name; the core library's is the page's own badge.
+    const maturity = panel.product === 'core' ? undefined : productStatus(port, panel.product as DocProduct, REGISTRY)
     return <div class="landing-panel" id={panelId(panel.product)} data-landing-panel={panel.product}>
     {panel.product === 'core' ? <>
-      <CoreShowcase port={port.slug} links={coreLinks} />
       <LandingInstall panel={panel} port={port.slug} />
+      <CoreShowcase port={port.slug} links={coreLinks} />
     </> : panel.product === 'mcp' ? <>
       <h2 class="sr-only">{panel.label}</h2>
+      {maturity && <p class="landing-status" data-landing-status><StatusBadge status={maturity} /> <span>{productStatusLine(maturity)}</span></p>}
+      <LandingInstall panel={panel} port={port.slug} />
       {showcase?.example && <div class="landing-example" data-landing-example="mcp">
         <McpReplay example={showcase.example} portName={port.name} level={3} />
       </div>}
-      <LandingInstall panel={panel} port={port.slug} />
       <ul class="landing-links">
         {showcase && <li><a href={`${panel.href}#${toolHeadings(showcase)[0]!.slug}`}>All tools{showcase.groups.some((group) => group.tier) ? ' by tier' : ''} →</a></li>}
         {showcase && <li><a href={showcase.toolsHref}>Every tool, with its arguments and result →</a></li>}
@@ -98,6 +105,8 @@ const panelId = (product: string) => `landing-panel-${product}`
       {excerpt}
     </> : <>
       <h2 class="sr-only">{panel.label}</h2>
+      {maturity && <p class="landing-status" data-landing-status><StatusBadge status={maturity} /> <span>{productStatusLine(maturity)}</span></p>}
+      <LandingInstall panel={panel} port={port.slug} />
       {workspace && workspaceExample && workspaceTopic && <div class="landing-example" data-landing-example="workspace">
         {offersPicker(workspace)
           ? <WorkspacePicker showcase={workspace} landing={{ first: workspaceExample.topic, program: workspaceProgram?.program }} />
@@ -111,7 +120,6 @@ const panelId = (product: string) => `landing-panel-${product}`
             <WorkspaceEvidence showcase={workspace} example={workspaceExample} program={workspaceProgram?.program} />
           </>}
       </div>}
-      <LandingInstall panel={panel} port={port.slug} />
       <ul class="landing-links">
         {workspace && <li><a href={`${panel.href}#example-workspaces`}>Example workspaces →</a></li>}
         {workspaceProgram && <li><a href={portPageUrl(port, version, workspaceProgram.path)}>The <code>{workspaceProgram.program} load</code> command →</a></li>}
@@ -196,6 +204,7 @@ const panelId = (product: string) => `landing-panel-${product}`
   .landing-example :global(h3) { margin: 0 0 .5rem; font-weight: 600; line-height: 1.4; }
   .landing-example > :global(p:not(.mcp-replay-note)) { margin: 0 0 1rem; }
   .landing-note { margin: 0 0 1rem; }
+  .landing-status { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .5rem; margin: 0 0 1rem; font-size: .875rem; color: var(--color-muted); }
   .landing-links { margin: 1.25rem 0 0; padding: 0; list-style: none; display: grid; gap: .35rem; font-size: .875rem; }
   .landing-links a { color: var(--color-link); }
   .landing-excerpt { margin-top: 1.25rem; }

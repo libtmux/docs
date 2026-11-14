@@ -418,14 +418,14 @@ describe('the overview page', () => {
     expect(page).toContain('const workspaceExampleLeads = Boolean(workspaceExamples && !offersPicker(workspaceExamples))')
     // A port with one preset renders no picker, so its table of contents lists no "Explore tmux layout" either.
     expect(page).toContain("...(workspaceExamples && offersPicker(workspaceExamples) ? [{ depth: 2, slug: 'explore-tmux-layout-workspace-possibilities', text: 'Explore tmux layout / workspace possibilities' }] : []),")
-    // With no picker to open the page, the one example opens it, before Install; behind a picker it follows the prose.
+    // The installer follows the intro (record 0026). With no picker to open the page, the one example follows it, ahead of the prose; behind a picker it follows the prose.
     const leads = page.indexOf('{!placeholderLocale && workspaceExamples && workspaceExampleLeads && <WorkspaceShowcase')
     const follows = page.indexOf('{!placeholderLocale && workspaceExamples && !workspaceExampleLeads && <WorkspaceShowcase')
     expect(leads).toBeGreaterThan(page.indexOf('<WorkspacePicker showcase={workspaceExamples} />'))
-    expect(leads).toBeLessThan(page.indexOf('<h2 id="install">Install</h2>\n      <p>Install the workspace package'))
+    expect(leads).toBeGreaterThan(page.indexOf('<h2 id="install">Install</h2>\n      <p>Install the workspace package'))
     expect(page.indexOf('<Content />')).toBeLessThan(follows)
     const toc = page.slice(page.indexOf('headings={'), page.indexOf('pagePath={publicPagePath}'))
-    expect(toc.indexOf('workspaceExampleLeads ? workspaceHeadings')).toBeLessThan(toc.indexOf("slug: 'install'"))
+    expect(toc.indexOf('workspaceExampleLeads ? workspaceHeadings')).toBeGreaterThan(toc.indexOf("slug: 'install'"))
     expect(toc.indexOf('!workspaceExampleLeads ? workspaceHeadings')).toBeGreaterThan(toc.indexOf('...headings,'))
   })
 })

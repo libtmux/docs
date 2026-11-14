@@ -12,6 +12,8 @@ export const ui = {
   en: {
     'navigation.back': 'Back',
     'navigation.settings': 'Documentation controls',
+    'navigation.version': 'Version',
+    'navigation.change': 'Change',
     'i18n.untranslated': 'This page has not been translated yet.',
     'i18n.contribute': 'Help translate it',
     'i18n.translated': 'Japanese translation available',
@@ -42,6 +44,8 @@ export const ui = {
   ja: {
     'navigation.back': '戻る',
     'navigation.settings': '表示とナビゲーション',
+    'navigation.version': 'バージョン',
+    'navigation.change': '変更',
     'i18n.untranslated': 'このページはまだ翻訳されていません。',
     'i18n.contribute': '翻訳に協力する',
     'i18n.translated': '日本語版があります',

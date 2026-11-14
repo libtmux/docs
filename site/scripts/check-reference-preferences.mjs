@@ -219,7 +219,8 @@ export async function checkHeaderLinksFail(browser, base) {
       await page.waitForSelector('details[data-header-picker][data-enhanced]', { state: 'attached' })
       if (css) await page.addStyleTag({ content: css })
       if (script) await page.evaluate(script)
-      await page.locator('.site-header__menu > summary').click()
+      // From 48rem the Menu is absent under a ContextStrip, so there is nothing to open.
+      if (await page.locator('.site-header__menu > summary').isVisible()) await page.locator('.site-header__menu > summary').click()
       await checkHeaderLinks(page, path, width, true)
     } finally {
       await context.close()
@@ -417,7 +418,8 @@ export async function checkGlobalHeader(browser, base) {
           await page.setViewportSize({ width, height: 900 })
           assert.equal(await page.locator('header nav[aria-label="Documentation destinations"]').count(), 0)
           const menu = page.locator('.site-header__menu')
-          await menu.locator(':scope > summary').click()
+          // The Menu holds something the bar lacks only below 48rem, or on a page with no ContextStrip.
+          if (await menu.locator(':scope > summary').isVisible()) await menu.locator(':scope > summary').click()
           assert.equal(await menu.locator('[data-port-home]').count(), 0)
           const geometry = await page.evaluate(() => {
             const brand = document.querySelector('.site-header__mark').getBoundingClientRect()
@@ -428,7 +430,7 @@ export async function checkGlobalHeader(browser, base) {
               frame: { left: bar.left, width: bar.width, height: bar.height, wordmark: brand.left, controls: controls.left, menu: menu.left },
               wordmarkVisible: brand.width > 40 && brand.height > 20
                 && getComputedStyle(document.querySelector('.site-header__wordmark')).clipPath === 'none',
-              separate: brand.right <= controls.left && controls.right <= menu.left }
+              separate: brand.right <= controls.left && (menu.width === 0 || controls.right <= menu.left) }
           })
           assert(geometry.fits && geometry.separate, `${path} at ${width}px: header controls fit without overlap`)
           assert(geometry.wordmarkVisible, `${path} at ${width}px: the wordmark remains a visible home link`)
@@ -439,7 +441,7 @@ export async function checkGlobalHeader(browser, base) {
             if (!headerFrames.has(width)) headerFrames.set(width, geometry.frame)
             assert.deepEqual(geometry.frame, headerFrames.get(width), `${path} at ${width}px: global controls keep their homepage positions`)
           }
-          await menu.locator(':scope > summary').click()
+          if (await menu.locator(':scope > summary').isVisible()) await menu.locator(':scope > summary').click()
         }
       }
       await page.setViewportSize({ width: 280, height: 900 })

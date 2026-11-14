@@ -310,20 +310,21 @@ describe('the worked example', () => {
 describe('the overview page', () => {
   const page = readFileSync(new URL('../src/components/docs/DocPage.astro', import.meta.url), 'utf8')
 
-  it('opens the MCP overview with the worked example, then install, and closes it with the tools', () => {
+  it('opens the MCP overview with install, then the worked example, and closes it with the tools', () => {
     expect(page).toContain("const mcpTools = isMcpOverview && port ? await mcpShowcase(port, version ?? buildTarget(process.env).version) : undefined")
     const example = page.indexOf('<McpShowcase showcase={mcpTools} part="example" />')
     const install = page.indexOf('<h2 id="install">Install</h2>')
     const tools = page.indexOf('<McpShowcase showcase={mcpTools} part="tools" />')
-    expect(page.indexOf('productIntro && <ProductIntro parts={productIntro} />'), 'the example follows the intro').toBeLessThan(example)
-    expect(example, 'the example comes before install').toBeLessThan(install)
-    expect(install).toBeLessThan(page.indexOf('placeholderLocale && !introFirst && <Content />'))
+    // The installer follows the intro, above the fold on every product home (record 0026); the example follows it.
+    expect(page.indexOf('productIntro && <ProductIntro parts={productIntro} />'), 'install follows the intro').toBeLessThan(install)
+    expect(install, 'install comes before the example').toBeLessThan(example)
+    expect(example).toBeLessThan(page.indexOf('placeholderLocale && !introFirst && <Content />'))
     expect(page.indexOf('placeholderLocale && !introFirst && <Content />'), 'the tool grid follows the prose').toBeLessThan(tools)
     expect(page).toContain('!placeholderLocale && mcpTools && <McpShowcase')
   })
 
-  it('lists the table of contents in the order the page draws: example, install, prose, tools', () => {
-    const order = ['mcpExampleHeadings(mcpTools)', "slug: 'install'", '...headings,', 'mcpToolHeadings(mcpTools)'].map((needle) => page.indexOf(needle, page.indexOf('headings={placeholderLocale')))
+  it('lists the table of contents in the order the page draws: install, example, prose, tools', () => {
+    const order = ["slug: 'install'", 'mcpExampleHeadings(mcpTools)', '...headings,', 'mcpToolHeadings(mcpTools)'].map((needle) => page.indexOf(needle, page.indexOf('headings={placeholderLocale')))
     expect(order.every((at) => at > 0), 'every list is in the headings prop').toBe(true)
     expect([...order].sort((a, b) => a - b)).toEqual(order)
   })

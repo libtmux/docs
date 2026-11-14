@@ -35,7 +35,8 @@ const hintsCss = externalLinksCss.replace('url("./external-link.svg")', `url("${
 <style is:inline>
   html.fonts-pending .api-nav [role="tree"], html.link-hints-pending .api-nav [role="tree"] { visibility: hidden; }
   #page-load-status { visibility: visible; position: fixed; inset: 0; z-index: 2147483647; display: grid; place-content: center; gap: 1rem; padding: 2rem; background: var(--background-color, white); color: var(--text-color, black); font: 1rem system-ui; }
-  #page-load-status button { font: inherit; cursor: pointer; }
+  #page-load-status strong { font-size: 1.125rem; }
+  #page-load-status button { justify-self: start; font: inherit; cursor: pointer; }
 </style>
 <script is:inline data-anchor-startup>
   // Capture unowned fragments before startup scripts alter history state.

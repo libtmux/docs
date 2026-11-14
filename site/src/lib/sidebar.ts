@@ -43,6 +43,10 @@ export interface SidebarLinkItem {
   kind?: string
   /** The kind stays on the row for assistive technology, and its mark is not drawn: the group names it. */
   quiet?: boolean
+  /** Pages the row's section holds, muted at the row's end. Never zero: an empty section shows none. */
+  count?: number
+  /** The row jumps to the product's installer, and carries the download mark. */
+  install?: boolean
 }
 
 export interface SidebarGroupItem {
@@ -52,6 +56,10 @@ export interface SidebarGroupItem {
   href?: string
   kind?: string
   items: SidebarItem[]
+  /** The group starts open, as a product does in a port's own column. */
+  open?: boolean
+  /** The group is a label over its rows, not a row: it cannot be selected, as the tmux objects over MCP tools. */
+  overline?: boolean
 }
 
 export type SidebarItem = SidebarLinkItem | SidebarGroupItem
@@ -103,8 +111,9 @@ export async function pageBreadcrumbs(title: string, path: string, version: stri
     { name: 'API reference', url: url('reference') },
     ...referenceBreadcrumbs(model, API_NAV[port!], navTree(port!), symbol, url('reference'), (entry) => productApiHref(model, entry, version)),
   ]
-  // The reference index and the glossary are the core library's, and name that product as the symbol pages do.
-  if (port && /^reference(?:\/|$)/.test(path)) items.push({ name: 'Core Library', url: url('core') })
+  // The Core Library is the level between a port and its sections (record 0021): `Go / Core Library / Guides / Capturing output`.
+  // The reference index and the glossary are the core library's, as the symbol pages above name it. A product's pages name the product instead.
+  if (port && path && path !== 'core' && !/^(?:mcp|workspace|api)(?:\/|$)/.test(path)) items.push({ name: 'Core Library', url: url('core') })
   const entries = docsEntriesAvailable(await getCollection('docs', (entry) => !entry.data.port || entry.data.port === port), port)
   const parts = path.split('/').filter(Boolean)
   for (let i = tmux ? 2 : 1; i < parts.length; i++) {

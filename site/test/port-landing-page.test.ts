@@ -9,7 +9,7 @@ import * as showcaseLibrary from '../src/lib/workspace-showcase'
 import { loadCommand } from '../src/lib/workspace-links'
 import { STORAGE_PREFIX } from '../src/lib/workspace-picker'
 import { landingExcerpt, landingProducts, type CachedSource, type LandingExcerpt, type LandingTable } from '../src/lib/port-landing'
-import { PORTS, PORT_BY_SLUG, type DocProduct } from '../src/lib/ports'
+import { PORTS, PORT_BY_SLUG, productStatusLine, type DocProduct } from '../src/lib/ports'
 import LANDING from '../src/data/landing-examples.json'
 import SOURCES from '../src/data/example-sources.json'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
@@ -128,10 +128,10 @@ describe('the landing page markup', () => {
     expect(caption.textContent).toContain(entry.ci.command)
   })
 
-  it('opens the MCP tab with a sentence, the worked example, the install picker, then the links and the excerpt', async () => {
+  it('opens the MCP tab with its maturity and the install picker, then the worked example, the links and the excerpt', async () => {
     const document = await render('rs')
     const panel = document.querySelector('[data-landing-panel="mcp"]')!
-    const order = ['[data-landing-example="mcp"]', '[data-mcp-install]', '.landing-links', '[data-landing-excerpt]']
+    const order = ['[data-landing-status]', '[data-mcp-install]', '[data-landing-example="mcp"]', '.landing-links', '[data-landing-excerpt]']
     const found = order.map((selector) => panel.querySelector(selector))
     found.forEach((element, index) => expect(element, order[index]).not.toBeNull())
     for (let index = 1; index < found.length; index += 1) {
@@ -147,6 +147,26 @@ describe('the landing page markup', () => {
     const hrefs = [...panel.querySelectorAll('.landing-links a')].map((link) => link.getAttribute('href'))
     expect(hrefs).toContain('/rs/latest/mcp/#tools-by-tier')
     expect(hrefs).toContain(showcase.toolsHref)
+  })
+
+  it('puts every panel\'s installer above its example, so it is above the fold on the port home (record 0026)', async () => {
+    const document = await render('go')
+    for (const panel of document.querySelectorAll('[data-landing-panel]')) {
+      const installer = panel.querySelector('[data-package-install], [data-mcp-install]')!
+      const example = panel.querySelector('[data-core-showcase], [data-landing-example]')!
+      expect(installer, panel.getAttribute('data-landing-panel')!).not.toBeNull()
+      expect(installer.compareDocumentPosition(example) & 4, `${panel.getAttribute('data-landing-panel')}: install precedes the example`).toBeTruthy()
+    }
+  })
+
+  it('names each companion product\'s maturity once beside it, and the core library\'s not at all', async () => {
+    const document = await render('go')
+    expect(document.querySelector('[data-landing-panel="core"] [data-landing-status]')).toBeNull()
+    for (const product of ['mcp', 'workspace']) {
+      const lines = document.querySelectorAll(`[data-landing-panel="${product}"] [data-landing-status]`)
+      expect(lines, product).toHaveLength(1)
+      expect(lines[0]!.textContent, product).toContain(productStatusLine('concept'))
+    }
   })
 
   it('names the MCP and Workspace panels with a screen-reader label, not a visible heading under the tab', async () => {
@@ -197,8 +217,10 @@ describe('the landing page markup', () => {
       const program = claimed(slug, example)
       const command = [...body.querySelectorAll('pre')].map((pre) => pre.textContent!).find((text) => text.includes(' load workspace.yaml'))
       expect(command, slug).toBe(program ? `${program} load workspace.yaml` : undefined)
-      const after = ['[data-package-install]', '.landing-links', '[data-landing-excerpt]'].map((selector) => panel.querySelector(selector))
-      expect(body.compareDocumentPosition(after[0] ?? after[1]!) & 4, `${slug} install follows the example`).toBeTruthy()
+      // The installer opens the panel (record 0026); the links and the excerpt follow the example.
+      expect(panel.querySelector('[data-package-install]')!.compareDocumentPosition(body) & 4, `${slug} install precedes the example`).toBeTruthy()
+      const after = ['.landing-links', '[data-landing-excerpt]'].map((selector) => panel.querySelector(selector))
+      expect(body.compareDocumentPosition(after[0] ?? after[1]!) & 4, `${slug} links follow the example`).toBeTruthy()
     }
   })
 
@@ -220,8 +242,10 @@ describe('the landing page markup', () => {
       // The overview's examples carry the files in full; the landing page shows each file once.
       expect(body.querySelector('[data-workspace-showcase], .ws-example'), slug).toBeNull()
       expect(body.querySelectorAll('.ws-config__panel--yaml'), `${slug} one copy of each file`).toHaveLength(showcase.examples.length)
-      const after = ['[data-package-install]', '.landing-links', '[data-landing-excerpt]'].map((selector) => panel.querySelector(selector))
-      expect(body.compareDocumentPosition(after[0] ?? after[1]!) & 4, `${slug} install follows the picker`).toBeTruthy()
+      // The installer opens the panel (record 0026); the links and the excerpt follow the picker.
+      expect(panel.querySelector('[data-package-install]')!.compareDocumentPosition(body) & 4, `${slug} install precedes the picker`).toBeTruthy()
+      const after = ['.landing-links', '[data-landing-excerpt]'].map((selector) => panel.querySelector(selector))
+      expect(body.compareDocumentPosition(after[0] ?? after[1]!) & 4, `${slug} links follow the picker`).toBeTruthy()
     })
   })
 
