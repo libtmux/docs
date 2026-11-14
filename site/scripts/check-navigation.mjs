@@ -142,13 +142,15 @@ export async function checkContextSettings(page, javaScriptEnabled = true) {
   const settings = context.locator('[data-context-settings]')
   const back = context.locator('[data-context-settings-back]')
   const navigation = context.locator('.documentation-context-navigation > button')
-  const compact = await page.evaluate(() => matchMedia('(max-width: 24rem)').matches)
-  assert.equal(await toggle.isVisible(), javaScriptEnabled && compact, 'The cog appears on enhanced narrow screens')
+  // Below bp-phone the version and translation language fold into one trigger; below 22rem the navigation buttons fold in with them.
+  const compact = await page.evaluate(() => matchMedia('(max-width: 29.999rem)').matches)
+  const narrow = await page.evaluate(() => matchMedia('(max-width: 21.875rem)').matches)
+  assert.equal(await toggle.isVisible(), javaScriptEnabled && compact, 'The version and language trigger appears on enhanced phone screens')
   if (!await toggle.isVisible()) {
     assert(await settings.isVisible(), 'Version and locale remain directly available without compact enhancement')
     return
   }
-  for (const button of await navigation.all()) assert(!await button.isVisible(), 'Narrow navigation controls live in the cog view')
+  if (narrow) for (const button of await navigation.all()) assert(!await button.isVisible(), 'Narrow navigation controls live in the settings view')
   const before = await context.boundingBox()
   await toggle.focus()
   await page.keyboard.press('Enter')
@@ -185,7 +187,8 @@ export async function checkContextSettings(page, javaScriptEnabled = true) {
     await page.setViewportSize({ ...viewport, width: 641 })
     await drawerButton.click()
     await page.setViewportSize(viewport)
-    await context.locator(':scope[data-settings-open]').waitFor()
+    // Only below 22rem do the navigation buttons fold into the settings view, which must then open to keep the drawer's opener visible.
+    if (narrow) await context.locator(':scope[data-settings-open]').waitFor()
     await page.keyboard.press('Escape')
     await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))))
     assert(await drawerButton.isVisible(), 'Resizing an open drawer keeps its return control visible')
