@@ -248,6 +248,27 @@ const wrapsHref = wraps ? referenceHref(port, wraps.call, version) : undefined
     </div>
     {object && <ApiPageContents sections={sections} related={[]} />}
   </div>
+<script>
+  /** `?tier=` opens the tools index on one tier, which the tool pages' tier badges link to; a change updates the address. */
+  function bindTierFilter() {
+    const filter = document.querySelector<HTMLElement>('[data-mcp-tier-filter]')
+    if (!filter || filter.dataset.live) return
+    filter.dataset.live = ''
+    const radios = [...filter.querySelectorAll<HTMLInputElement>('input[name="tier"]')]
+    const wanted = new URL(window.location.href).searchParams.get('tier')
+    const initial = radios.find((radio) => radio.value === wanted)
+    if (initial) initial.checked = true
+    filter.addEventListener('change', () => {
+      const url = new URL(window.location.href)
+      const value = radios.find((radio) => radio.checked)?.value
+      if (!value || value === 'all') url.searchParams.delete('tier')
+      else url.searchParams.set('tier', value)
+      history.replaceState(history.state, '', url)
+    })
+  }
+  bindTierFilter()
+  document.addEventListener('astro:after-swap', bindTierFilter)
+</script>
 </DocsLayout>
 <style>
   /* The menu sidebar is the layout's, so the page's grid is the content and its contents rail. */
@@ -312,25 +333,3 @@ const wrapsHref = wraps ? referenceHref(port, wraps.call, version) : undefined
   .mcp-safety__note { max-width: 72ch; margin-top: 0.75rem; color: var(--color-muted); font-size: 0.875rem; }
   .gp-sphinx-api-layout-right .mcp-tier { text-decoration: none; }
 </style>
-
-<script>
-  /** `?tier=` opens the tools index on one tier, which the tool pages' tier badges link to; a change updates the address. */
-  function bindTierFilter() {
-    const filter = document.querySelector<HTMLElement>('[data-mcp-tier-filter]')
-    if (!filter || filter.dataset.live) return
-    filter.dataset.live = ''
-    const radios = [...filter.querySelectorAll<HTMLInputElement>('input[name="tier"]')]
-    const wanted = new URL(window.location.href).searchParams.get('tier')
-    const initial = radios.find((radio) => radio.value === wanted)
-    if (initial) initial.checked = true
-    filter.addEventListener('change', () => {
-      const url = new URL(window.location.href)
-      const value = radios.find((radio) => radio.checked)?.value
-      if (!value || value === 'all') url.searchParams.delete('tier')
-      else url.searchParams.set('tier', value)
-      history.replaceState(history.state, '', url)
-    })
-  }
-  bindTierFilter()
-  document.addEventListener('astro:after-swap', bindTierFilter)
-</script>
