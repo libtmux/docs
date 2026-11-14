@@ -3650,6 +3650,48 @@
       ]
     },
     {
+      "url": "https://github.com/libtmux/libtmux-raku",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-raku",
+      "identity": "libtmux/libtmux-raku",
+      "versionChecks": [
+        {
+          "check": "unsupported",
+          "note": "a branch link names no release"
+        }
+      ],
+      "checkedAt": "2026-11-14",
+      "entries": [
+        "raku:repository"
+      ]
+    },
+    {
+      "url": "https://github.com/libtmux/libtmux-raku/tree/master/lib",
+      "kinds": [
+        "source"
+      ],
+      "host": "github",
+      "ok": true,
+      "status": 200,
+      "requested": "https://github.com/libtmux/libtmux-raku/tree/master/lib",
+      "identity": "libtmux/libtmux-raku/lib",
+      "versionChecks": [
+        {
+          "check": "unsupported",
+          "note": "a branch link names no release"
+        }
+      ],
+      "checkedAt": "2026-11-14",
+      "entries": [
+        "raku:LibTmux"
+      ]
+    },
+    {
       "url": "https://github.com/libtmux/libtmux-rs",
       "kinds": [
         "source"
@@ -6367,6 +6409,33 @@
       "checkedAt": "2026-11-08",
       "entries": [
         "py:tmuxp"
+      ]
+    },
+    {
+      "url": "https://raku.land/zef:libtmux/LibTmux",
+      "kinds": [
+        "package"
+      ],
+      "host": "raku-land",
+      "ok": true,
+      "status": 200,
+      "requested": "https://raku.land/zef:libtmux/LibTmux",
+      "identity": "LibTmux:auth<zef:libtmux>",
+      "version": "0.0.1",
+      "repository": "libtmux/libtmux-raku",
+      "versionChecks": [
+        {
+          "version": "0.0.1",
+          "source": "libtmux/libtmux-raku:META6.json",
+          "ports": [
+            "raku"
+          ],
+          "check": "confirmed"
+        }
+      ],
+      "checkedAt": "2026-11-14",
+      "entries": [
+        "raku:LibTmux"
       ]
     },
     {

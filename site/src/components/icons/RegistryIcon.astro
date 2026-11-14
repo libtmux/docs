@@ -27,6 +27,7 @@ interface Props {
 }
 
 export type IconName = 'github' | 'pypi' | 'npm' | 'crates' | 'go' | 'maven' | 'nuget' | 'swift' | 'rubygems' | 'luarocks' | 'powershell' | 'docsrs' | 'javadoc' | 'docc' | 'packages' | 'hex' | 'hexdocs'
+  | 'raku-land'
 
 const ICONS: Record<Exclude<IconName, 'pypi' | 'powershell'>, { label: string; path: string }> = {
   github: {
@@ -88,6 +89,11 @@ const ICONS: Record<Exclude<IconName, 'pypi' | 'powershell'>, { label: string; p
     label: 'HexDocs',
     path: 'M2 5.2c2.9-1.2 6.6-1.1 9 .8v12.6c-2.4-1.5-6-1.7-9-.6zM22 5.2c-2.9-1.2-6.6-1.1-9 .8v12.6c2.4-1.5 6-1.7 9-.6z',
   },
+  // A square frame around an R, drawn for this site: Raku Land publishes no vector mark of its own.
+  'raku-land': {
+    label: 'Raku Land',
+    path: 'M5 2h14a3 3 0 0 1 3 3v14a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3zM4.2 4.2v15.6h15.6V4.2zM8.6 7.4h3.9c1.7 0 2.9 1 2.9 2.5 0 1.1-.6 1.9-1.6 2.3l2 3.9h-1.8l-1.8-3.5h-1.9v3.5H8.6zM10.2 8.9v2.1h2.2c.8 0 1.3-.4 1.3-1.05S13.2 8.9 12.4 8.9z',
+  },
   luarocks: {
     label: 'LuaRocks',
     path: 'M7 1h10l6 7-2 11-9 4-9-4L1 8zm1.4 4L5.2 9l1.4 7.2L12 19l5.4-2.8L18.8 9l-3.2-4zM9 7h6l1.5 3.5-2 4.5h-5l-2-4.5z',
@@ -127,6 +133,7 @@ const { label, path } = icon === 'powershell' ? { label: 'PowerShell Gallery', p
   .registry-icon[data-icon='swift'] { --icon-brand: #f05138; --icon-brand-dark: #ff7a5e; }
   .registry-icon[data-icon='rubygems'] { --icon-brand: #e9573f; --icon-brand-dark: #ff7662; }
   .registry-icon[data-icon='luarocks'] { --icon-brand: #2c3e86; --icon-brand-dark: #8095e8; }
+  .registry-icon[data-icon='raku-land'] { --icon-brand: #0000fb; --icon-brand-dark: #8c8cfd; }
   .registry-icon[data-icon='docsrs'] { --icon-brand: #000000; --icon-brand-dark: #ffffff; }
   .registry-icon[data-icon='javadoc'] { --icon-brand: #b3261e; --icon-brand-dark: #ff8a80; }
   .registry-icon[data-icon='docc'] { --icon-brand: #f05138; --icon-brand-dark: #ff7a5e; }

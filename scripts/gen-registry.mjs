@@ -299,6 +299,25 @@ const PROBES = {
     // has no central package-registry entry to probe.
     return null
   },
+  async raku(port) {
+    // zef reads one ecosystem index, so the index is the registry. Raku Land renders the same
+    // entries, but its pages carry no machine-readable listing. The authority is part of a
+    // distribution's identity; another publisher's LibTmux is not this package.
+    const response = await fetch('https://360.zef.pm/index.json', {
+      headers: { 'user-agent': 'libtmux-docs gen-registry.mjs' },
+      signal: AbortSignal.timeout(90_000),
+    })
+    if (!response.ok) throw new Error(`Raku ecosystem index: HTTP ${response.status}`)
+    const index = await response.json()
+    if (!Array.isArray(index)) throw new Error('Invalid Raku ecosystem index')
+    const versions = index
+      .filter((entry) => entry?.name === port.packageName && entry.auth === 'zef:libtmux')
+      .map((entry) => entry.version)
+    if (versions.some((version) => typeof version !== 'string' || !releaseTag(`v${version}`, port))) {
+      throw new Error('Unsupported Raku distribution version')
+    }
+    return versions.length > 0 ? versions : null
+  },
   async ts() {
     // `libtmux`, not the scoped `@libtmux/libtmux` this probe used to ask for.
     // The scoped name 404s, which classified a published package as having

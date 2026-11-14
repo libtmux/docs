@@ -79,9 +79,11 @@ export type PublicationStatus = 'published' | 'configured-unpublished' | 'planne
 export type PackageHostId =
   | 'pypi' | 'rubygems' | 'luarocks' | 'powershell-gallery' | 'npm' | 'crates' | 'pkg-go-dev'
   | 'maven-central' | 'nuget' | 'swift-package-index' | 'hex'
+  | 'raku-land'
 export type ApiHostId = 'docs-rs' | 'pkg-go-dev' | 'javadoc-io' | 'swift-package-index' | 'hexdocs'
 export type HostIcon = 'github' | 'pypi' | 'npm' | 'crates' | 'go' | 'maven' | 'nuget' | 'swift' | 'rubygems' | 'luarocks'
   | 'powershell' | 'docsrs' | 'javadoc' | 'docc' | 'hex' | 'hexdocs'
+  | 'raku-land'
 
 export interface HostIdentity {
   name: string
@@ -108,6 +110,7 @@ export const PACKAGE_HOSTS: Readonly<Record<PackageHostId, HostIdentity>> = {
   nuget: { name: 'NuGet', hostname: 'www.nuget.org', icon: 'nuget' },
   'swift-package-index': { name: 'Swift Package Index', hostname: 'swiftpackageindex.com', icon: 'swift' },
   hex: { name: 'Hex', hostname: 'hex.pm', icon: 'hex' },
+  'raku-land': { name: 'Raku Land', hostname: 'raku.land', icon: 'raku-land' },
 }
 
 export const API_HOSTS: Readonly<Record<ApiHostId, HostIdentity>> = {
@@ -219,6 +222,11 @@ const hexPackage = (name: string): Located & Pick<InventoryEntry, 'api'> => ({
   package: { host: 'hex', url: `https://hex.pm/packages/${name}` },
   api: { host: 'hexdocs', url: `https://${name}.hexdocs.pm/` },
 })
+/** A distribution on Raku Land under its Fez authority; the site serves no API reference for it. */
+const rakuDist = (authority: string, name: string): Located => ({
+  coordinate: name,
+  package: { host: 'raku-land', url: `https://raku.land/${authority}/${name}` },
+})
 const MAVEN_GROUP = 'io.github.libtmux'
 const central = (artifact: string): Located => ({
   coordinate: `${MAVEN_GROUP}:${artifact}`,
@@ -244,6 +252,7 @@ const lua = family('libtmux/libtmux-lua')
 const powershell = family('libtmux/libtmux-powershell')
 const julia = family('libtmux/libtmux-julia')
 const elixir = family('libtmux/libtmux-elixir', 'main')
+const raku = family('libtmux/libtmux-raku')
 const haskell = family('libtmux/libtmux-haskell')
 const lisp = family('libtmux/libtmux-lisp')
 const erlang = family('libtmux/libtmux-erlang')
@@ -297,6 +306,10 @@ const GO = 'github.com/libtmux/libtmux-go'
  * testing products in the order a reader reaches for them.
  */
 export const INVENTORY: Readonly<Record<string, readonly InventoryEntry[]>> = {
+  raku: [
+    raku({ id: 'LibTmux', kind: 'library', product: 'core', unit: 'Raku distribution', label: 'LibTmux', ...rakuDist('zef:libtmux', 'LibTmux'), aliases: ['use LibTmux', 'LibTmux:auth<zef:libtmux>'], path: 'lib' }),
+    raku({ id: 'repository', kind: 'source', product: 'core', label: 'libtmux-raku', coordinate: 'libtmux/libtmux-raku' }),
+  ],
   ocaml: [
     { id: 'libtmux', kind: 'library', product: 'core', unit: 'opam package', label: 'libtmux', coordinate: 'libtmux',
       aliases: ['Libtmux'], repo: 'libtmux/libtmux-ocaml', ref: 'master', path: 'lib', status: 'published' },

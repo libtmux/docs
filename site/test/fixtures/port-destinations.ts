@@ -20,6 +20,10 @@ export interface ExpectedDestinations {
 const github = (url: string, name: string): ExpectedLink => ({ url, label: `${name} on GitHub` })
 
 export const DESTINATIONS: Record<string, ExpectedDestinations> = {
+  raku: {
+    source: github('https://github.com/libtmux/libtmux-raku/tree/master/lib', 'libtmux-raku/lib'),
+    registry: { name: 'Raku Land', url: 'https://raku.land/zef:libtmux/LibTmux', icon: 'raku-land', label: 'LibTmux on Raku Land' },
+  },
   ocaml: {
     source: github('https://github.com/libtmux/libtmux-ocaml/tree/master/lib', 'libtmux-ocaml/lib'),
   },

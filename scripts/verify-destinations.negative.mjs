@@ -181,6 +181,14 @@ const FAMILIES = [
     },
   },
   {
+    host: 'raku-land', variants: REPORTS_REPOSITORY, coordinate: (id) => `${id}:auth<zef:demo>`, destination: (id) => ({ package: { host: 'raku-land', url: `https://raku.land/zef:demo/${id}` } }),
+    serve: (id, { shown, repo }) => {
+      const page = html(`Raku Land - ${shown}`, `<select id=version name=v><option value="1.0.0" disabled selected>1.0.0 (2026-01-01)</option></select>${repo ? `<a href="https://github.com/${repo}" rel=nofollow>github.com/${repo}</a>` : ''}`)
+      routes[`/raku.land/zef:demo/${id}`] = () => [200, 'text/html', page]
+      routes[`/raku.land/zef:demo/${id}?v=1.0.0`] = () => [200, 'text/html', page]
+    },
+  },
+  {
     host: 'hexdocs', variants: NAMED_BY_URL, coordinate: (id) => id, destination: (id) => ({ api: { host: 'hexdocs', url: `https://${id}.hexdocs.pm/` } }),
     serve: (id, { shown }) => {
       // The reported name leads the title of the package's root page and of the page for its release.
@@ -243,7 +251,7 @@ const server = createServer((request, response) => {
 await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
 const base = `http://127.0.0.1:${server.address().port}`
 const ORIGINS = ['github.com', 'pypi.org', 'rubygems.org', 'javadoc.io', 'registry.npmjs.org', 'www.npmjs.com', 'crates.io', 'repo1.maven.org', 'central.sonatype.com',
-  'www.nuget.org', 'api.nuget.org', 'www.powershellgallery.com', 'luarocks.org', 'pkg.go.dev', 'proxy.golang.org', 'docs.rs', 'swiftpackageindex.com', 'hex.pm',
+  'www.nuget.org', 'api.nuget.org', 'www.powershellgallery.com', 'luarocks.org', 'pkg.go.dev', 'proxy.golang.org', 'docs.rs', 'swiftpackageindex.com', 'hex.pm', 'raku.land',
   // HexDocs gives each package a host of its own, so each package a case serves is an origin.
   ...NAMED_BY_URL.map((variant) => `hexdocs-${variant}.hexdocs.pm`)]
 const rewrite = JSON.stringify(Object.fromEntries(ORIGINS.map((host) => [`https://${host}`, `${base}/${host}`])))
