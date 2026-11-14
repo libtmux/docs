@@ -169,7 +169,7 @@ const breadcrumbs = [{ name: 'libtmux', url: withRoot('/') }, { name: 'Parity', 
                   </a>
                 </td>
                 <td class="meta-mono">{row.packageName}</td>
-                <td data-reference-host>{row.host}{row.alsoHost && <>, also <a href={row.alsoHost.url} rel="noopener">{row.alsoHost.name}<span aria-hidden="true">&#8599;&#65038;</span></a></>}</td>
+                <td data-reference-host>{row.host}{row.alsoHost && <>, also <a href={row.alsoHost.url} rel="noopener">{row.alsoHost.name}</a></>}</td>
                 <td data-renderer>{row.renderer}</td>
                 <td>{row.generator}</td>
               </tr>

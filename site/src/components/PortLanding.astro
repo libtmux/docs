@@ -157,7 +157,8 @@ const panelId = (product: string) => `landing-panel-${product}`
 </script>
 
 <style>
-  .port-landing { container-type: inline-size; max-width: 56rem; }
+  /* One content edge: the hero, install and player take the full column, as the cards below them do. */
+  .port-landing { container-type: inline-size; }
   .landing-products {
     display: flex; flex-wrap: wrap; gap: .125rem; margin: 0 0 1.25rem; padding: 0;
     border: 0; border-bottom: 1px solid var(--color-edge);

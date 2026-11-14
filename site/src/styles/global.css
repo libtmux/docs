@@ -591,6 +591,21 @@ html[data-theme="purple"][data-theme-mode="dark"] {
 }
 
 /*
+ * The landing title (15-typesetting.md): 48/48 600, for the port landing and
+ * the product homes (MCP, Workspace Manager) only. The product home's title
+ * was the prose H1, so it read 40/700 beside a 48/600 port landing. In
+ * `utilities`, so it outranks `.prose h1`.
+ */
+@layer utilities {
+  .prose .product-hero h1 {
+    font-size: 3rem;
+    line-height: 3rem;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+}
+
+/*
  * Prose colour and measure (15-typesetting.md). Body text is the page's own
  * text colour, not the typography plugin's slate; a prose block stops at 72
  * characters on every page family, while grids, tables and code frames keep
