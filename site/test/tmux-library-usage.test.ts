@@ -894,11 +894,11 @@ describe('a C page', () => {
     expect(heading.textContent).toContain('In libtmux')
     expect(heading.querySelector('a[href="#api-tmux-usage"]')).not.toBeNull()
     expect(heading.closest('section')!.querySelectorAll('.tmux-usage table')).toHaveLength(1)
-    // It is in the section links and in "On this page", in the same last place.
-    for (const links of [document.querySelector('nav.api-section-links')!, document.querySelector('.api-page-contents')!]) {
-      const targets = [...links.querySelectorAll('a[href^="#api-"]')].map((link) => link.getAttribute('href'))
-      expect(targets.at(-1)).toBe('#api-tmux-usage')
-    }
+    // It is the last section link too. The section bar is the page's one outline, with no right-hand "On this page" list
+    // (design system PageApiDetail, "Removed or moved"; adoption step 2).
+    const targets = [...document.querySelector('nav.api-section-links')!.querySelectorAll('a[href^="#api-"]')].map((link) => link.getAttribute('href'))
+    expect(targets.at(-1)).toBe('#api-tmux-usage')
+    expect(document.querySelector('nav[aria-label="On this page"]')).toBeNull()
     // Nothing of the table is inside the declaration card.
     expect(document.querySelector('.api-overview .tmux-usage')).toBeNull()
   })

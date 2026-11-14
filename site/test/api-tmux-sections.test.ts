@@ -306,18 +306,19 @@ describe('the reference page of pane.Pane.sendKeys', () => {
     return win.document
   }
 
-  it('lists the new sections before Related types, in the section links and in On this page, with their counts', async () => {
+  it('lists the new sections before Related types, in the section links, with their counts', async () => {
     const document = await page('ts', sendKeys)
     const wanted = sections('ts', sendKeys)
     const ids = [...document.querySelectorAll('h2[id^="api-"]')].map((heading) => heading.id)
     const first = ids.indexOf(wanted[0].id)
     expect(ids.slice(first, first + wanted.length)).toEqual(wanted.map((section) => section.id))
     expect(ids.indexOf('api-related-types')).toBeGreaterThan(first + wanted.length - 1)
-    for (const links of [document.querySelector('nav.api-section-links')!, document.querySelector('.api-page-contents')!]) {
-      const targets = [...links.querySelectorAll('a[data-api-section-link]')].map((link) => link.getAttribute('href')!.slice(1))
-      expect(targets.filter((id) => wanted.some((section) => section.id === id))).toEqual(wanted.map((section) => section.id))
-      expect(targets.indexOf('api-related-types')).toBeGreaterThan(targets.indexOf(wanted.at(-1)!.id))
-    }
+    // The section bar is the page's one outline: a symbol page draws no right-hand "On this page" list
+    // (design system PageApiDetail, "Removed or moved"; adoption step 2).
+    expect(document.querySelector('nav[aria-label="On this page"]')).toBeNull()
+    const targets = [...document.querySelector('nav.api-section-links')!.querySelectorAll('a[data-api-section-link]')].map((link) => link.getAttribute('href')!.slice(1))
+    expect(targets.filter((id) => wanted.some((section) => section.id === id))).toEqual(wanted.map((section) => section.id))
+    expect(targets.indexOf('api-related-types')).toBeGreaterThan(targets.indexOf(wanted.at(-1)!.id))
     const counts = [...document.querySelectorAll('nav.api-section-links a')].filter((link) => wanted.some((section) => `#${section.id}` === link.getAttribute('href')))
       .map((link) => link.querySelector('span')?.textContent)
     expect(counts).toEqual(wanted.map((section) => String(section.count)))
