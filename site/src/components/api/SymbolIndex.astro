@@ -1,0 +1,269 @@
+---
+/**
+ * The symbol index: one letter of the public names, as rows.
+ *
+ * Shared by the cross-port page and each port's own A-Z view. Every row is
+ * server-rendered, so the page reads and searches without JavaScript; the
+ * filter and kind chips are an enhancement that appears with it.
+ */
+import ApiBadge from './ApiBadge.astro'
+import PageToolbar from '../PageToolbar.astro'
+import { PORT_NAME } from '../../lib/api-models'
+import {
+  countStatus, groupRepeats, isSpecialName, kindCounts, letterLabel, ownerCount,
+  type IndexEntry,
+} from '../../lib/symbol-index'
+
+interface Props {
+  title: string
+  letter: string
+  letters: { letter: string; href: string }[]
+  entries: IndexEntry[]
+  breadcrumbs: { name: string; url: string }[]
+  /** The port this index covers; omitted, it spans every port. */
+  port?: string
+  portName?: string
+  total?: number
+  /** Names that also exist in another port, for the cross-port index. */
+  shared?: ReadonlySet<string>
+}
+const { title, letter, letters, entries, breadcrumbs, port, portName, total = entries.length, shared } = Astro.props as Props
+
+const publicEntries = entries.filter((entry) => !isSpecialName(entry.name))
+const specialEntries = entries.filter((entry) => isSpecialName(entry.name))
+// A port's index folds names many owners declare; the cross-port index lists every row, as `capture` x11 is the point there.
+const fold = (list: IndexEntry[]) => (port ? groupRepeats(list) : list.map((entry) => ({ type: 'symbol' as const, entry })))
+const kinds = port ? kindCounts(entries) : []
+const word = (kind: string) => (kind === 'typealias' ? 'type alias' : kind)
+const filterLabel = `Filter the ${portName ?? ''} API index`.replace('  ', ' ')
+---
+
+<main class="symidx" data-symidx data-total={entries.length}>
+  <PageToolbar breadcrumbs={breadcrumbs} />
+  <h1 class="page-title">{title}</h1>
+  <p class="symidx__lede">
+    {port
+      ? <>Public {portName} names, one letter at a time. {entries.length} of {total} begin with <strong>{letterLabel(letter)}</strong>.</>
+      : <>Public symbols by name. {entries.length} beginning with <strong>{letterLabel(letter)}</strong>.</>}
+  </p>
+
+  {port && (
+    <div class="symidx__tools" data-symidx-tools hidden>
+      <label class="symidx__field">
+        <span class="symidx__sr">{filterLabel}</span>
+        <input type="search" placeholder={filterLabel} autocomplete="off" spellcheck="false" data-symidx-q />
+      </label>
+      <div class="symidx__chips" role="group" aria-label="Kind">
+        <button type="button" aria-pressed="true" data-kind-filter="">All</button>
+        {kinds.map(([kind, count]) => <button type="button" aria-pressed="false" data-kind-filter={kind}>{word(kind)} <span>{count}</span></button>)}
+      </div>
+    </div>
+  )}
+
+  <nav class="symidx__strip" aria-label="Jump to letter" data-symidx-strip>
+    <button type="button" class="symidx__arrow" data-dir="-1" aria-label="Earlier letters" hidden>&#8249;</button>
+    <ol class="symidx__letters">
+      {letters.map((item) => (
+        <li><a href={item.href} aria-current={item.letter === letter ? 'page' : undefined}>{letterLabel(item.letter)}</a></li>
+      ))}
+    </ol>
+    <button type="button" class="symidx__arrow" data-dir="1" aria-label="Later letters" hidden>&#8250;</button>
+  </nav>
+
+  <p class="symidx__status" role="status" data-symidx-status>{countStatus(entries.length, entries.length)}</p>
+
+  <ul class="symidx__rows" data-symidx-rows>
+    {fold(publicEntries).map((row) => row.type === 'group' ? (
+      <li class="symidx__row symidx__row--group" data-name={row.name} data-kinds={[...new Set(row.entries.map((e) => e.kind))].join(' ')}>
+        <details>
+          <summary><span class="symidx__name">{row.name}</span> <span class="symidx__meta">{ownerCount(row.entries.length)}</span></summary>
+          <ul>
+            {row.entries.map((entry) => (
+              <li class="symidx__row" data-name={entry.name} data-kind={entry.kind} data-search={`${entry.name} ${entry.id} ${entry.owner ?? ''}`.toLowerCase()}>
+                <ApiBadge label={entry.kind} variant="kind" value={entry.kind} compact preview={false} />
+                <a class="symidx__name" href={entry.href}>{entry.owner ? <><span class="symidx__owner">{entry.owner}.</span>{entry.name}</> : entry.name}</a>
+                <span class="symidx__meta"><ApiBadge label={entry.kind} variant="kind" value={entry.kind} plain /></span>
+                <span class="symidx__id">{entry.id}</span>
+              </li>
+            ))}
+          </ul>
+        </details>
+      </li>
+    ) : (
+      <li class="symidx__row" data-name={row.entry.name} data-kind={row.entry.kind} data-search={`${row.entry.name} ${row.entry.id} ${row.entry.owner ?? ''}`.toLowerCase()}>
+        <ApiBadge label={row.entry.kind} variant="kind" value={row.entry.kind} compact preview={false} />
+        {row.entry.href ? <a class="symidx__name" href={row.entry.href}>{row.entry.name}</a> : <span class="symidx__name">{row.entry.name}</span>}
+        <span class="symidx__meta">
+          <ApiBadge label={row.entry.kind} variant="kind" value={row.entry.kind} plain />
+          {!port && <span class="symidx__port">{PORT_NAME[row.entry.port] ?? row.entry.port}</span>}
+          {!port && shared?.has(row.entry.name) && <span class="symidx__shared" title="Also in other ports">&#183;shared</span>}
+        </span>
+        {row.entry.id !== row.entry.name && <span class="symidx__id">{row.entry.id}</span>}
+        {port && <span class="symidx__summary">{row.entry.summary ?? <em>No summary in source.</em>}</span>}
+      </li>
+    ))}
+    {specialEntries.length > 0 && (<>
+      <li class="symidx__rule" role="separator">Private and special names: leading <code>_</code> or <code>~</code></li>
+      {fold(specialEntries).map((row) => row.type === 'symbol' && (
+        <li class="symidx__row symidx__row--special" data-name={row.entry.name} data-kind={row.entry.kind} data-search={`${row.entry.name} ${row.entry.id}`.toLowerCase()}>
+          <ApiBadge label={row.entry.kind} variant="kind" value={row.entry.kind} compact preview={false} />
+          {row.entry.href ? <a class="symidx__name" href={row.entry.href}>{row.entry.name}</a> : <span class="symidx__name">{row.entry.name}</span>}
+          <span class="symidx__meta">
+            <ApiBadge label={row.entry.kind} variant="kind" value={row.entry.kind} plain />
+            {!port && <span class="symidx__port">{PORT_NAME[row.entry.port] ?? row.entry.port}</span>}
+          </span>
+          {row.entry.id !== row.entry.name && <span class="symidx__id">{row.entry.id}</span>}
+        </li>
+      ))}
+    </>)}
+  </ul>
+  <p class="symidx__empty" data-symidx-empty hidden>No symbols match. Clear the filter, or <a href="../../../search/">search the documentation</a>.</p>
+</main>
+
+<style is:global>
+  .symidx { max-width: 64rem; margin-inline: auto; padding: 2.5rem 1rem; }
+  .symidx__lede { max-width: var(--measure-prose, 72ch); margin: 0.75rem 0 0; line-height: 1.75rem; }
+  .symidx__sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .symidx__tools { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; margin-top: 1.25rem; }
+  .symidx__tools[hidden] { display: none; }
+  .symidx__field { flex: 1 1 14rem; }
+  .symidx__field input {
+    width: 100%; min-height: 2.5rem; padding: 0 0.75rem; border: 1px solid var(--control-border, var(--color-background-border));
+    border-radius: var(--radius-md, 0.375rem); background: var(--background-color); color: var(--text-color); font: inherit; font-size: 0.875rem;
+  }
+  .symidx__chips { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+  .symidx__chips button {
+    min-height: 1.75rem; padding: 0 0.625rem; border: 1px solid var(--control-border, var(--color-background-border));
+    border-radius: 9999px; background: transparent; color: var(--text-color); font: inherit; font-size: 0.8125rem; cursor: pointer;
+  }
+  .symidx__chips button span { color: var(--color-foreground-muted); }
+  .symidx__chips button[aria-pressed='true'] { background: color-mix(in oklab, var(--theme-primary) 10%, transparent); color: var(--theme-primary); font-weight: 600; }
+  .symidx__chips button[aria-pressed='true'] span { color: inherit; }
+  .symidx__field input:focus-visible, .symidx__chips button:focus-visible, .symidx__arrow:focus-visible, .symidx__letters a:focus-visible, .symidx__row a:focus-visible, .symidx__row summary:focus-visible {
+    outline: 2px solid var(--focus-ring-color, var(--theme-primary)); outline-offset: 2px;
+  }
+
+  /* One row of letters. When they do not fit it scrolls sideways, the edge fades where letters are hidden, and the arrows appear. */
+  .symidx__strip { position: relative; display: flex; align-items: center; gap: 0.25rem; margin-top: 1.5rem; }
+  .symidx__letters {
+    display: flex; flex: 1; gap: 0.25rem; margin: 0; padding: 0.125rem; list-style: none; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none;
+    mask-image: linear-gradient(to right, transparent 0, #000 var(--fade-start, 0), #000 calc(100% - var(--fade-end, 0px)), transparent 100%);
+  }
+  .symidx__letters::-webkit-scrollbar { display: none; }
+  .symidx__letters a {
+    display: grid; place-items: center; min-width: 1.75rem; height: 1.75rem; padding: 0 0.25rem; border-radius: var(--radius-xs, 0.25rem);
+    color: var(--color-link); font: 600 0.8125rem/1 var(--font-mono); text-decoration: none; scroll-snap-align: center;
+  }
+  .symidx__letters a:hover { background: var(--color-api-background-hover); }
+  .symidx__letters a[aria-current='page'] { background: var(--theme-primary); color: var(--background-color); }
+  .symidx__arrow {
+    flex: none; width: 1.75rem; height: 1.75rem; border: 1px solid var(--control-border, var(--color-background-border)); border-radius: var(--radius-xs, 0.25rem);
+    background: transparent; color: var(--text-color); font-size: 1rem; line-height: 1; cursor: pointer;
+  }
+  .symidx__arrow[hidden] { display: none; }
+  .symidx__arrow:disabled { opacity: 0.4; cursor: default; }
+
+  .symidx__status { margin: 1rem 0 0; font-size: 0.875rem; color: var(--color-foreground-muted); }
+  .symidx__rows, .symidx__rows ul { margin: 0.5rem 0 0; padding: 0; list-style: none; }
+  .symidx__rows ul { margin-left: 1.75rem; }
+
+  /* A row: kind mark, name, kind word, port, and "shared" in one run; the qualified id and the summary on lines of their own. */
+  .symidx__row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.125rem 0.625rem; padding: 0.375rem 0; border-top: 1px solid color-mix(in oklab, var(--color-background-border) 60%, transparent); }
+  .symidx__rows > .symidx__row:first-child { border-top: 0; }
+  .symidx__row[hidden], .symidx__empty[hidden] { display: none; }
+  .symidx__row > .api-nav__kind { align-self: center; flex: none; }
+  .symidx__name { font: 500 1rem/1.5rem var(--font-mono); color: var(--text-color); text-decoration: none; overflow-wrap: anywhere; }
+  .symidx a.symidx__name { text-decoration: none; border-bottom: 0; }
+  .symidx a.symidx__name:hover { text-decoration: underline; }
+  .symidx__owner { font-weight: 400; color: var(--color-foreground-muted); }
+  .symidx__meta { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 0 0.5rem; font-size: 0.8125rem; color: var(--color-foreground-muted); }
+  .symidx__meta .api-kind-word { color: var(--color-foreground-muted); }
+  .symidx__port { padding-left: 0.5rem; border-left: 1px solid var(--color-background-border); }
+  .symidx__id, .symidx__summary { flex: 1 1 100%; min-width: 0; margin-left: 1.875rem; font-size: 0.8125rem; line-height: 1.25rem; color: var(--color-foreground-muted); overflow-wrap: anywhere; }
+  .symidx__id { font-family: var(--font-mono); }
+  .symidx__summary em { font-style: italic; }
+  .symidx__row--group { display: block; }
+  .symidx__row--group summary { cursor: pointer; padding-block: 0.125rem; }
+  .symidx__row--group summary .symidx__name { font-weight: 600; }
+  .symidx__rule { margin: 1.5rem 0 0.25rem; padding-top: 0.75rem; border-top: 1px solid var(--color-background-border); font-size: 0.8125rem; color: var(--color-foreground-muted); }
+  .symidx__row--special .symidx__name { color: var(--color-foreground-muted); }
+  .symidx__empty { margin-top: 1rem; color: var(--color-foreground-muted); }
+
+  @media (forced-colors: active) {
+    .symidx__letters a[aria-current='page'], .symidx__chips button[aria-pressed='true'] { background: Highlight; color: HighlightText; }
+    .symidx__letters { mask-image: none; }
+  }
+  @media print {
+    .symidx__tools, .symidx__strip { display: none; }
+  }
+</style>
+
+<script>
+  import { countStatus } from '../../lib/symbol-index'
+
+  // The filter and kind chips appear only here, so a page without JavaScript shows every row and no dead controls.
+  function enhance(root: HTMLElement) {
+    const tools = root.querySelector<HTMLElement>('[data-symidx-tools]')
+    const rows = [...root.querySelectorAll<HTMLElement>('[data-symidx-rows] li[data-name]')].filter((row) => row.dataset.kind !== undefined)
+    const status = root.querySelector<HTMLElement>('[data-symidx-status]')
+    const empty = root.querySelector<HTMLElement>('[data-symidx-empty]')
+    const input = root.querySelector<HTMLInputElement>('[data-symidx-q]')
+    const chips = [...root.querySelectorAll<HTMLButtonElement>('[data-kind-filter]')]
+    const total = rows.length
+    if (tools) tools.hidden = false
+
+    const apply = () => {
+      const q = (input?.value ?? '').trim().toLowerCase()
+      const kind = chips.find((chip) => chip.getAttribute('aria-pressed') === 'true')?.dataset.kindFilter ?? ''
+      let shown = 0
+      for (const row of rows) {
+        const match = (!q || (row.dataset.search ?? row.dataset.name ?? '').includes(q)) && (!kind || row.dataset.kind === kind)
+        row.hidden = !match
+        if (match) shown += 1
+      }
+      // A folded group is hidden when none of its owners match, and opens when the reader is filtering.
+      for (const group of root.querySelectorAll<HTMLElement>('.symidx__row--group')) {
+        const open = group.querySelectorAll('li:not([hidden])').length
+        group.hidden = open === 0
+        group.querySelector('details')?.toggleAttribute('open', Boolean(q || kind) && open > 0)
+      }
+      if (status) status.textContent = countStatus(shown, total)
+      if (empty) empty.hidden = shown > 0
+    }
+    input?.addEventListener('input', apply)
+    for (const chip of chips) {
+      chip.addEventListener('click', () => {
+        for (const other of chips) other.setAttribute('aria-pressed', String(other === chip))
+        apply()
+      })
+    }
+
+    // The letter row scrolls when it does not fit: arrows at the ends, a fade where letters hide, the current letter in the middle.
+    const strip = root.querySelector<HTMLElement>('[data-symidx-strip]')
+    const list = strip?.querySelector<HTMLElement>('.symidx__letters')
+    if (!strip || !list) return
+    const [back, forward] = [...strip.querySelectorAll<HTMLButtonElement>('.symidx__arrow')]
+    const sync = () => {
+      const fits = list.scrollWidth <= list.clientWidth + 1
+      for (const button of [back, forward]) if (button) button.hidden = fits
+      if (back) back.disabled = list.scrollLeft <= 0
+      if (forward) forward.disabled = list.scrollLeft + list.clientWidth >= list.scrollWidth - 1
+      list.style.setProperty('--fade-start', !fits && list.scrollLeft > 0 ? '1.5rem' : '0px')
+      list.style.setProperty('--fade-end', !fits && list.scrollLeft + list.clientWidth < list.scrollWidth - 1 ? '1.5rem' : '0px')
+    }
+    for (const button of [back, forward]) {
+      button?.addEventListener('click', () => list.scrollBy({ left: Number(button.dataset.dir) * list.clientWidth * 0.8, behavior: 'smooth' }))
+    }
+    list.addEventListener('scroll', sync, { passive: true })
+    new ResizeObserver(sync).observe(list)
+    const current = list.querySelector<HTMLElement>('[aria-current="page"]')
+    if (current && list.scrollWidth > list.clientWidth) list.scrollLeft = current.offsetLeft - (list.clientWidth - current.offsetWidth) / 2
+    sync()
+  }
+
+  function mount() {
+    for (const root of document.querySelectorAll<HTMLElement>('[data-symidx]')) if (!root.dataset.ready) { root.dataset.ready = ''; enhance(root) }
+  }
+  mount()
+  document.addEventListener('astro:after-swap', mount)
+</script>

@@ -5,7 +5,8 @@ const glossary = apiGlossary(Astro.props.contextPath ?? Astro.url.pathname)
 const { groups } = glossary
 const jsonHref = `${glossary.path.slice(0, -1)}.json`
 ---
-  <p>{glossary.description} Select an annotation or full API badge to open its definition here.</p>
+<div class="api-glossary-body">
+  <p class="api-glossary-lede">{glossary.description} Select an annotation or full API badge to open its definition here.</p>
   <p>The signature and entry documentation describe the API’s behavior, including its calling conventions, storage and runtime checks.</p>
   {groups.map((group) => <section aria-labelledby={group.id}>
     <h2 id={group.id}>{group.title}<a class="api-heading-link" href={`#${group.id}`} aria-label={`Link to ${group.title}`} data-pagefind-ignore="all">#</a></h2>
@@ -20,3 +21,4 @@ const jsonHref = `${glossary.path.slice(0, -1)}.json`
     </section>)}
   </section>)}
   <p><a href={jsonHref}>Glossary JSON</a></p>
+</div>

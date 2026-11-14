@@ -8,6 +8,23 @@
  * (`data-pagefind-meta`), so this renders them under each result.
  */
 
+import {
+  countLine,
+  filterCount,
+  filtersFor,
+  needsMoreResults,
+  orderedSections,
+  parseSearchState,
+  readSnapshot,
+  scopeLabel,
+  searchStateQuery,
+  sectionLabel,
+  withSnapshot,
+  type SearchScope,
+  type SearchSnapshot,
+  type SearchState,
+} from './search-state'
+
 export interface PagefindResultData {
   url: string
   excerpt: string
@@ -43,8 +60,15 @@ export interface SearchPanelOptions {
   subResults?: SubResultsDisplay
   /** A query to run as soon as the panel mounts. */
   initialQuery?: string
-  /** Select the current port before the first query; readers may change it. */
+  /** The current port's name: the first query searches it, and the scope control names it. */
   initialPort?: string
+  /**
+   * Keep the state in the page URL as `?q=&scope=&section=&kind=`. The search
+   * page does; the dialog leaves the address alone.
+   */
+  url?: boolean
+  /** Links the index-failure message offers, such as the API index and the guides. */
+  fallbackLinks?: { label: string; href: string }[]
   /** An index to search instead of Pagefind's. */
   mock?: PagefindApi
   /** Names for path segments in a breadcrumb, such as `py` for Python. */
@@ -72,26 +96,105 @@ export interface SearchPanelHandle {
   clear: () => void
 }
 
+/** Where the panel hands its state to the page: the dialog's link to the search page follows it. */
+export const SEARCH_STATE_EVENT = 'search-panel:state'
+
 export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings: SearchPanelOptions = {}): SearchPanelHandle {
   const input = root.querySelector<HTMLInputElement>('.search-panel__input')!
   const results = root.querySelector<HTMLElement>('.search-panel__results')!
   const filtersBox = root.querySelector<HTMLElement>('.search-panel__filters')!
-  const filterList = root.querySelector<HTMLElement>('.search-panel__filter-list')!
+  const filterList = root.querySelector<HTMLElement>('.search-panel__filter-list:not(.search-panel__section-list):not(.search-panel__kind-list)')!
+  // The scope control, the Section and Kind facets are optional markup: a
+  // panel without them is a plain port-or-all search.
+  const scopeBox = root.querySelector<HTMLElement>('.search-panel__scope')
+  const portGroup = root.querySelector<HTMLElement>('.search-panel__facet--port')
+  const sectionGroup = root.querySelector<HTMLElement>('.search-panel__facet--section')
+  const sectionList = root.querySelector<HTMLElement>('.search-panel__section-list')
+  const kindGroup = root.querySelector<HTMLElement>('.search-panel__facet--kind')
+  const kindList = root.querySelector<HTMLElement>('.search-panel__kind-list')
+  const dialog = root.closest('dialog')
+
+  // A port page searches its port; the root search starts across all of them.
+  const defaultScope: SearchScope = settings.initialPort ? 'port' : 'all'
+  const fromUrl = settings.url ? parseSearchState(location.search, defaultScope) : undefined
+  const restored = readSnapshot(history.state)
+  // Back returns to the view that was left; the URL names it for a shared link.
+  const restore = restored && (settings.url ? restored.q === fromUrl?.q : dialog ? restored.open : false) ? restored : undefined
+  const start: SearchState = restore ?? fromUrl ?? { q: settings.initialQuery ?? '', scope: defaultScope }
+
+  let state: SearchState = { q: start.q, scope: settings.initialPort ? start.scope : 'all', section: start.section, kind: start.kind }
+  const selectedPorts = new Set(restore?.ports ?? [])
 
   let api: PagefindApi | null = null
   let loading: Promise<PagefindApi | null> | null = null
-  let shown = PAGE_SIZE
+  let failed = false
+  let shown = restore && needsMoreResults(restore, PAGE_SIZE) ? restore.shown : PAGE_SIZE
   let all: { id: string; data: () => Promise<PagefindResultData> }[] = []
   let selected = -1
   let token = 0
-  const selectedPorts = new Set(settings.initialPort ? [settings.initialPort] : [])
+  let pending = restore
 
-  const status = (text: string) => {
+  const portName = settings.initialPort
+  const scopeText = () => scopeLabel(state.scope, portName)
+
+  const status = (text: string, widen = false) => {
     results.innerHTML = ''
     const p = document.createElement('p')
     p.className = 'search-panel__status'
+    p.setAttribute('role', 'status')
     p.textContent = text
     results.append(p)
+    if (widen && portName && state.scope !== 'all') {
+      const wider = document.createElement('button')
+      wider.type = 'button'
+      wider.className = 'search-panel__widen'
+      wider.textContent = 'Search all languages'
+      wider.addEventListener('click', () => setScope('all'))
+      results.append(wider)
+    }
+  }
+
+  /** The index did not load: say so, keep the query, and offer a way on. */
+  function failure() {
+    results.innerHTML = ''
+    const box = document.createElement('div')
+    box.className = 'search-panel__failure'
+    box.setAttribute('role', 'alert')
+    const lead = document.createElement('strong')
+    lead.textContent = 'The search index did not load.'
+    const body = document.createElement('p')
+    body.textContent = 'The query is kept. Browse instead, or try again.'
+    const row = document.createElement('div')
+    row.className = 'search-panel__failure-actions'
+    const retry = document.createElement('button')
+    retry.type = 'button'
+    retry.textContent = 'Try again'
+    retry.addEventListener('click', () => {
+      failed = false
+      loading = null
+      void run(input.value)
+    })
+    row.append(retry)
+    for (const link of settings.fallbackLinks ?? []) {
+      const a = document.createElement('a')
+      a.href = link.href
+      a.textContent = link.label
+      row.append(a)
+    }
+    box.append(lead, body, row)
+    results.append(box)
+  }
+
+  /** Write the state where Back and a shared link can find it. */
+  function remember(open = false) {
+    const query = searchStateQuery(state, defaultScope)
+    root.dispatchEvent(new CustomEvent(SEARCH_STATE_EVENT, { bubbles: true, detail: { query } }))
+    if (!settings.url && !dialog) return
+    const snapshot: SearchSnapshot = {
+      ...state, ports: [...selectedPorts], shown, selected, scroll: results.scrollTop, open: open || Boolean(dialog?.open),
+    }
+    const href = settings.url ? `${location.pathname}${query}${location.hash}` : undefined
+    history.replaceState(withSnapshot(history.state, snapshot), '', href)
   }
 
   async function pagefind(): Promise<PagefindApi | null> {
@@ -101,6 +204,7 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings
       loading = (async () => {
         try {
           const head = await fetch(`${bundlePath}pagefind.js`, { method: 'HEAD' })
+          // A build without an index answers with its 404 page, not script.
           if (!head.ok || !(head.headers.get('content-type') ?? '').includes('javascript')) {
             return null
           }
@@ -112,6 +216,7 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings
           api = mod
           return mod
         } catch {
+          failed = true
           return null
         }
       })()
@@ -119,45 +224,112 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings
     return loading
   }
 
-  const activeFilters = () => {
-    const checked = [...selectedPorts]
-    return checked.length ? { port: checked } : undefined
+  interface FilterCounts {
+    port?: Record<string, number>
+    section?: Record<string, number>
+    kind?: Record<string, number>
   }
 
-  async function renderFilters(counts: Record<string, number> | undefined) {
-    const available = { ...Object.fromEntries([...selectedPorts].map((port) => [port, 0])), ...counts }
-    if (Object.keys(available).length === 0) {
+  /** One facet: a title's worth of checkboxes, each with its count. */
+  function facetRows(
+    list: HTMLElement,
+    entries: [string, number][],
+    isOn: (value: string) => boolean,
+    label: (value: string) => string,
+    toggle: (value: string, on: boolean) => void,
+  ) {
+    list.innerHTML = ''
+    for (const [value, count] of entries) {
+      const row = document.createElement('label')
+      row.className = 'search-panel__filter'
+      const box = document.createElement('input')
+      box.type = 'checkbox'
+      box.value = value
+      box.checked = isOn(value)
+      box.addEventListener('change', () => toggle(value, box.checked))
+      const text = document.createElement('span')
+      text.textContent = label(value)
+      const n = document.createElement('span')
+      n.className = 'search-panel__result-count search-panel__filter-count'
+      n.textContent = String(count)
+      row.append(box, text, n)
+      list.append(row)
+    }
+  }
+
+  /** The scope buttons say which one is on; a root search has none. */
+  function paintScope() {
+    if (!scopeBox) return
+    for (const button of scopeBox.querySelectorAll<HTMLButtonElement>('button[data-scope]')) {
+      button.setAttribute('aria-pressed', String(button.dataset.scope === state.scope))
+    }
+  }
+
+  /** A narrower or wider search starts from the first page of its own results. */
+  function setState(next: Partial<SearchState>) {
+    state = { ...state, ...next }
+    void run(input.value)
+  }
+
+  function setScope(scope: SearchScope) {
+    if (scope === state.scope) return
+    // The API scope is the reference section; leaving it must not leave it fixed.
+    setState({ scope, section: scope === 'reference' ? undefined : state.section, kind: scope === 'all' && !state.section ? undefined : state.kind })
+  }
+
+  scopeBox?.addEventListener('click', (e) => {
+    const button = (e.target as Element).closest<HTMLButtonElement>('button[data-scope]')
+    if (button) setScope(button.dataset.scope as SearchScope)
+  })
+
+  const activeFilters = () => filtersFor(state, portName, [...selectedPorts]) as Record<string, unknown> | undefined
+
+  async function renderFilters(counts: FilterCounts) {
+    paintScope()
+    // Hidden, not removed: a facet the data does not have stays out of the way.
+    const ports = state.scope === 'all' ? { ...Object.fromEntries([...selectedPorts].map((port) => [port, 0])), ...counts.port } : {}
+    const sections = state.scope === 'reference' ? {} : { ...(state.section ? { [state.section]: 0 } : {}), ...counts.section }
+    // Kinds belong to reference pages, so the facet shows once the search is among them.
+    const kinds = state.scope === 'reference' || state.section === 'reference' ? { ...(state.kind ? { [state.kind]: 0 } : {}), ...counts.kind } : {}
+    const hasPorts = Object.keys(ports).length > 0
+    const hasSections = Boolean(sectionList) && Object.keys(sections).length > 0
+    const hasKinds = Boolean(kindList) && Object.keys(kinds).length > 0
+    if (portGroup) portGroup.hidden = !hasPorts
+    if (sectionGroup) sectionGroup.hidden = !hasSections
+    if (kindGroup) kindGroup.hidden = !hasKinds
+    if (!hasPorts && !hasSections && !hasKinds) {
       filtersBox.hidden = true
       return
     }
     // Open, not collapsed. The filter is how a reader narrows twelve thousand
     // symbols to one port, and behind a closed disclosure it went unused.
     filtersBox.hidden = false
-    filterList.innerHTML = ''
-    for (const [value, count] of Object.entries(available).sort((a, b) => b[1] - a[1])) {
-      const label = document.createElement('label')
-      label.className = 'search-panel__filter'
-      const box = document.createElement('input')
-      box.type = 'checkbox'
-      box.value = value
-      box.checked = selectedPorts.has(value)
-      box.addEventListener('change', () => {
-        if (box.checked) selectedPorts.add(value)
+    facetRows(
+      filterList,
+      Object.entries(ports).sort((a, b) => b[1] - a[1]),
+      (value) => selectedPorts.has(value),
+      (value) => value,
+      (value, on) => {
+        if (on) selectedPorts.add(value)
         else selectedPorts.delete(value)
         void run(input.value)
-      })
-      const text = document.createElement('span')
-      text.textContent = value
-      const n = document.createElement('span')
-      n.className = 'search-panel__result-count search-panel__filter-count'
-      n.textContent = String(count)
-      label.append(box, text, n)
-      filterList.append(label)
+      },
+    )
+    if (sectionList) {
+      facetRows(sectionList, orderedSections(sections), (value) => state.section === value, sectionLabel, (value, on) =>
+        // One section at a time: the facet narrows, it does not combine.
+        setState({ section: on ? value : undefined, kind: on && value === 'reference' ? state.kind : undefined }))
+    }
+    if (kindList) {
+      facetRows(kindList, Object.entries(kinds).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])), (value) => state.kind === value, (value) => value, (value, on) =>
+        setState({ kind: on ? value : undefined }))
     }
   }
 
   function metaOf(data: PagefindResultData) {
-    const bits: string[] = [displayUrl(data.url)]
+    const bits: string[] = []
+    if (data.meta.kind) bits.push(data.meta.kind)
+    bits.push(displayUrl(data.url))
     if (data.meta.package) bits.push(data.meta.package)
     if (data.meta.file) bits.push(data.meta.file)
     return bits
@@ -261,17 +433,51 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings
     choices().forEach((choice, i) => choice.setAttribute('aria-selected', String(i === selected)))
   }
 
-  async function paint() {
+  /** A symbol's owner reads muted before its name: `Pane.` then `Capture`. */
+  function titleOf(data: PagefindResultData): HTMLElement {
+    const title = document.createElement('div')
+    title.className = 'search-panel__result-title'
+    const name = data.meta.title ?? displayUrl(data.url)
+    const owner = data.meta.owner
+    if (!owner) {
+      title.textContent = name
+      return title
+    }
+    const prefix = document.createElement('span')
+    prefix.className = 'search-panel__owner'
+    prefix.textContent = `${owner}.`
+    title.append(prefix, name.startsWith(`${owner}.`) ? name.slice(owner.length + 1) : name)
+    return title
+  }
+
+  /** The status line: both numbers, the scope, and a way to drop the filters. */
+  function statusLine(): HTMLElement {
+    const line = document.createElement('p')
+    line.className = 'search-panel__status'
+    line.setAttribute('role', 'status')
+    line.append(countLine(all.length, Math.min(shown, all.length), scopeText()))
+    const extra = filterCount(state, [...selectedPorts])
+    if (extra > 0) {
+      const clear = document.createElement('button')
+      clear.type = 'button'
+      clear.className = 'search-panel__clear'
+      clear.textContent = `Clear ${extra} filter${extra === 1 ? '' : 's'}`
+      clear.addEventListener('click', () => {
+        selectedPorts.clear()
+        setState({ section: undefined, kind: undefined })
+      })
+      line.append(' ', clear)
+    }
+    return line
+  }
+
+  async function paint(focusFrom?: number) {
     const mine = token
     const slice = all.slice(0, shown)
     const rendered = await Promise.all(slice.map((r) => r.data()))
     if (mine !== token) return
     results.innerHTML = ''
-
-    const count = document.createElement('p')
-    count.className = 'search-panel__status'
-    count.textContent = `${all.length} result${all.length === 1 ? '' : 's'}`
-    results.append(count)
+    results.append(statusLine())
 
     rendered.forEach((data) => {
       const item = document.createElement('div')
@@ -289,10 +495,6 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings
         a.append(crumb)
       }
 
-      const title = document.createElement('div')
-      title.className = 'search-panel__result-title'
-      title.textContent = data.meta.title ?? displayUrl(data.url)
-
       const excerpt = document.createElement('p')
       excerpt.className = 'search-panel__result-excerpt'
       excerpt.innerHTML = data.excerpt
@@ -305,7 +507,7 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings
         meta.append(span)
       }
 
-      a.append(title, excerpt, meta)
+      a.append(titleOf(data), excerpt, meta)
       item.append(a, ...sectionsFor(data))
       results.append(item)
     })
@@ -317,16 +519,33 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings
       more.className = 'search-panel__more'
       more.textContent = `Show ${Math.min(PAGE_SIZE, all.length - shown)} more`
       more.addEventListener('click', () => {
+        const from = shown
         shown += PAGE_SIZE
-        void paint()
+        void paint(from)
       })
       results.append(more)
     }
+
+    if (pending) {
+      // Back: the row that was chosen, the list where it was scrolled.
+      const view = pending
+      pending = undefined
+      const rows = choices()
+      selected = view.selected < rows.length ? view.selected : -1
+      highlight()
+      results.scrollTop = view.scroll
+      if (selected >= 0) rows[selected]?.focus({ preventScroll: true })
+    } else if (focusFrom !== undefined) {
+      // "Show more" moves focus to the first row it added.
+      results.querySelectorAll<HTMLElement>('.search-panel__result')[focusFrom]?.focus({ preventScroll: false })
+    }
+    remember()
   }
 
   async function run(query: string) {
     const mine = ++token
     const q = query.trim()
+    state = { ...state, q }
     if (!q) {
       all = []
       selected = -1
@@ -334,33 +553,54 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings
       const idle = await pagefind()
       if (idle && mine === token) {
         const counts = await idle.filters()
-        if (mine === token) await renderFilters(counts.port)
+        if (mine === token) await renderFilters(counts)
       }
+      remember()
       return
     }
 
     const pf = await pagefind()
     if (!pf) {
-      status('No search index in this build. Run a full build to generate one.')
+      if (failed) failure()
+      else status('No search index in this build. Run a full build to generate one.')
       return
     }
     const res = await pf.search(q, { filters: activeFilters() })
     if (mine !== token) return
 
-    await renderFilters(res.totalFilters?.port ?? res.filters?.port)
+    await renderFilters({
+      port: res.totalFilters?.port ?? res.filters?.port,
+      section: res.filters?.section ?? res.totalFilters?.section,
+      kind: res.filters?.kind ?? res.totalFilters?.kind,
+    })
     all = res.results
-    shown = PAGE_SIZE
+    shown = pending ? Math.max(PAGE_SIZE, pending.shown) : PAGE_SIZE
     selected = -1
     if (all.length === 0) {
-      status(`No results for ${q}.`)
+      status(`No results for ${q}.`, true)
+      remember()
       return
     }
     await paint()
   }
 
   let timer: ReturnType<typeof setTimeout> | undefined
+  // A search field empties itself on Escape, and the same key closes the
+  // dialog. The dialog keeps its query on close, so the field's own clearing is
+  // undone: it fires an `input` event, which is ignored, and the value returns.
+  let escaping: string | null = null
+  input.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape' || !dialog) return
+    escaping = input.value
+    setTimeout(() => {
+      if (escaping !== null && input.value !== escaping) input.value = escaping
+      escaping = null
+    }, 0)
+  })
   input.addEventListener('input', () => {
+    if (escaping !== null) return
     clearTimeout(timer)
+    pending = undefined
     timer = setTimeout(() => void run(input.value), 120)
   })
 
@@ -384,16 +624,31 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings
     list[selected]?.scrollIntoView({ block: 'nearest' })
   })
 
-  if (settings.initialQuery) {
-    input.value = settings.initialQuery
-  }
-  const ready = run(settings.initialQuery ?? '')
+  // A result opens a new entry; the one it leaves keeps what Back needs.
+  root.addEventListener('click', (e) => {
+    const link = (e.target as Element).closest('.search-panel__result, .search-panel__sub')
+    if (!link) return
+    const rows = choices()
+    const at = rows.indexOf(link as HTMLAnchorElement)
+    if (at >= 0) selected = at
+    remember(true)
+  }, true)
+
+  // The dialog keeps its query when it closes and opens on it again; the query
+  // goes only when the page changes and a new dialog arrives with it. Closing
+  // does record that the dialog is shut, so Back does not reopen it.
+  dialog?.addEventListener('close', () => remember())
+
+  input.value = state.q
+  paintScope()
+  const ready = run(state.q)
 
   return {
     ready,
     focus: () => input.focus(),
     clear: () => {
       input.value = ''
+      pending = undefined
       void run('')
     },
   }

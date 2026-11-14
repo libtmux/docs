@@ -18,7 +18,7 @@ import { linkTmuxManualCatalog } from '../../lib/tmux-catalog-html'
 import {
   CATALOG_KINDS, CATALOG_TITLE, OPTION_SCOPE_FLAGS, OPTION_TYPES, tmuxCatalog, tmuxCatalogDefault, tmuxCatalogDescription,
   tmuxCatalogEntries, tmuxCatalogEntry, tmuxCatalogGroup, tmuxCatalogHistory, tmuxCatalogChangeText, tmuxCatalogManualUrl, tmuxCatalogNavigation,
-  tmuxCatalogPageTitle, tmuxCatalogSourceUrl, tmuxCatalogUrl, tmuxCatalogValues, type CatalogKind,
+  tmuxCatalogPageTitle, tmuxCatalogSourceUrl, tmuxCatalogUrl, tmuxCatalogValues, catalogTypeCounts, type CatalogKind,
 } from '../../lib/tmux-catalog'
 import { tmuxCatalogReferences, tmuxCatalogUses } from '../../lib/tmux-catalog-usage'
 import '../../styles/api.css'
@@ -71,9 +71,9 @@ const sections = entry ? [
   ...(uses.length ? [{ id: 'used-by', label: 'Used by' }] : []),
 ] : []
 const sectionGroups = kind ? navigation.tree.find((bucket) => bucket.id === info!.segment)!.children : []
-const entryCards = (items: ReturnType<typeof tmuxCatalogEntries>) => items.map((item) => ({
-  item, href: tmuxCatalogUrl(version, item.kind, item.name),
-}))
+// Columns follow the kind: options compare type and default, hooks the scope they run in, formats their type.
+const catalogColumns = kind === 'option' ? ['Name', 'Type', 'Default', 'Summary'] : kind === 'hook' ? ['Name', 'Scope', 'Summary'] : ['Name', 'Type', 'Summary']
+const typeChips = kind ? catalogTypeCounts(tmuxCatalogEntries(version, kind)) : []
 ---
 <BaseLayout title={title} description={description} pagePath={pagePath} documentationLayout="reference"
   version={version} noindex={version !== 'latest'} searchable={version === 'latest'} pageSource={pageSource}
@@ -186,13 +186,48 @@ const entryCards = (items: ReturnType<typeof tmuxCatalogEntries>) => items.map((
         </section>}
       </> : kind ? <>
         <p class="mt-3 max-w-3xl">{info!.blurb} The list covers tmux {model.version}, {model.counts[kind]} entries.</p>
-        {sectionGroups.map((bucket) => <section class="mt-8" id={bucket.id}>
-          <h2 class="api-index-summary border-b border-edge pb-1 font-mono">{bucket.label}<span class="ml-2 text-xs font-sans opacity-60">{bucket.entries.length}</span></h2>
-          <div class="mt-3 grid gap-3 sm:grid-cols-2">{entryCards(bucket.entries.map((row) => tmuxCatalogEntry(version, kind, row.name)!)).map(({ item, href }) => <div class="api-index-card scroll-mt-24 rounded border border-edge p-3 hover:bg-surface-hover">
-            <a class="api-index-card__link font-mono font-semibold" href={href}><ApiBadge label={item.kind} variant="kind" value={item.kind} compact /><SymbolName name={item.name} /></a>
-            {item.summary && <div class="mt-1 text-sm opacity-75">{item.summary}</div>}
-          </div>)}</div>
-        </section>)}
+        {/* A comparison, not a gallery: the facts a reader sets side by side are columns. The filter appears with JavaScript; every row is already on the page. */}
+        <div class="catalog-filter" data-catalog-filter hidden>
+          <label class="catalog-filter__field">
+            <span class="sr-only">Filter {info!.label.toLowerCase()} by name or summary</span>
+            <input type="search" placeholder="Filter by name or summary" autocomplete="off" spellcheck="false" data-catalog-q />
+          </label>
+          {typeChips.length > 1 && <div class="catalog-filter__chips" role="group" aria-label="Type">
+            <button type="button" aria-pressed="true" data-catalog-type="">All</button>
+            {typeChips.map(([type, count]) => <button type="button" aria-pressed="false" data-catalog-type={type}>{type} <span>{count}</span></button>)}
+          </div>}
+          <span class="catalog-filter__count" role="status" data-catalog-count>{model.counts[kind]} entries</span>
+        </div>
+        {sectionGroups.map((bucket) => {
+          const all = bucket.entries.map((row) => tmuxCatalogEntry(version, kind, row.name)!)
+          // After-command hooks share one description, so it is stated once and the names listed; any hook of the group with its own text keeps a table row.
+          const shared = kind === 'hook' ? all.filter((row) => row.descriptionSource === 'after-hook') : []
+          const names = shared.length >= 3 ? shared : []
+          const rows = names.length ? all.filter((row) => !names.includes(row)) : all
+          return <section class="catalog-group mt-8" id={bucket.id} data-catalog-group>
+            <h2 class="api-index-summary border-b border-edge pb-1 font-mono">{bucket.label}<span class="ml-2 text-xs font-sans opacity-60">{bucket.entries.length}</span></h2>
+            {names.length > 0 && <>
+              <p class="catalog-note mt-3">Every command that has an after hook shares one description: tmux runs the hook after the command finishes.</p>
+              <ul class="catalog-names">{names.map((row) => <li data-catalog-row data-name={row.name.toLowerCase()} data-type="">
+                <a href={tmuxCatalogUrl(version, row.kind, row.name)}><ApiBadge label={row.kind} variant="kind" value={row.kind} compact /><SymbolName name={row.name} /></a>
+              </li>)}</ul>
+            </>}
+            {rows.length > 0 && <div class="catalog-table" role="region" tabindex="0" aria-label={`${bucket.label} ${info!.label.toLowerCase()}, scrollable`}>
+              <table>
+                <thead><tr>{catalogColumns.map((column) => <th scope="col" class={`catalog-col--${column.toLowerCase()}`}>{column}</th>)}</tr></thead>
+                <tbody>{rows.map((row) => <tr data-catalog-row data-name={row.name.toLowerCase()} data-type={row.type ?? ''} data-summary={row.summary.toLowerCase()}>
+                  {catalogColumns.map((column) => column === 'Name'
+                    ? <th scope="row" class="catalog-col--name"><a href={tmuxCatalogUrl(version, row.kind, row.name)}><ApiBadge label={row.kind} variant="kind" value={row.kind} compact /><SymbolName name={row.name} /></a></th>
+                    : column === 'Type' ? <td class="catalog-col--type">{row.type ?? ''}</td>
+                    : column === 'Scope' ? <td class="catalog-col--scope">{row.scope?.join(', ') ?? ''}</td>
+                    : column === 'Default' ? <td class="catalog-col--default">{tmuxCatalogDefault(row) !== undefined ? <code>{tmuxCatalogDefault(row)}</code> : <span class="catalog-none">None</span>}</td>
+                    : <td class="catalog-col--summary">{row.summary || <em>Not in the manual.</em>}</td>)}
+                </tr>)}</tbody>
+              </table>
+            </div>}
+          </section>
+        })}
+        <p class="catalog-empty" data-catalog-empty hidden>No entries match. Clear the filter to see all {model.counts[kind]}.</p>
       </> : <>
         <p class="mt-3 max-w-3xl">
           Look up what a name in tmux means: the {model.counts.option} options, {model.counts.hook} hooks and
@@ -213,8 +248,83 @@ const entryCards = (items: ReturnType<typeof tmuxCatalogEntries>) => items.map((
     </div>
     {entry && <ApiPageContents sections={sections} related={[]} />}
   </main>
+<script>
+  // The filter appears with JavaScript. Without it every row is on the page, in order.
+  function mount() {
+    for (const filter of document.querySelectorAll<HTMLElement>('[data-catalog-filter]')) {
+      if (filter.dataset.ready) continue
+      filter.dataset.ready = ''
+      filter.hidden = false
+      const input = filter.querySelector<HTMLInputElement>('[data-catalog-q]')
+      const chips = [...filter.querySelectorAll<HTMLButtonElement>('[data-catalog-type]')]
+      const count = filter.querySelector<HTMLElement>('[data-catalog-count]')
+      const rows = [...document.querySelectorAll<HTMLElement>('[data-catalog-row]')]
+      const empty = document.querySelector<HTMLElement>('[data-catalog-empty]')
+      const apply = () => {
+        const q = (input?.value ?? '').trim().toLowerCase()
+        const type = chips.find((chip) => chip.getAttribute('aria-pressed') === 'true')?.dataset.catalogType ?? ''
+        let shown = 0
+        for (const row of rows) {
+          const match = (!q || (row.dataset.name ?? '').includes(q) || (row.dataset.summary ?? '').includes(q)) && (!type || row.dataset.type === type)
+          row.hidden = !match
+          if (match) shown += 1
+        }
+        for (const group of document.querySelectorAll<HTMLElement>('[data-catalog-group]')) {
+          group.hidden = !group.querySelector('[data-catalog-row]:not([hidden])')
+        }
+        if (count) count.textContent = shown === rows.length ? `${rows.length} entries` : `${shown} of ${rows.length} entries`
+        if (empty) empty.hidden = shown > 0
+      }
+      input?.addEventListener('input', apply)
+      for (const chip of chips) chip.addEventListener('click', () => { for (const other of chips) other.setAttribute('aria-pressed', String(other === chip)); apply() })
+    }
+  }
+  mount()
+  document.addEventListener('astro:after-swap', mount)
+</script>
 </BaseLayout>
 <style>
+  /* Kind pages: scope groups as comparison tables on one column grid (Name 15rem, Type 6.5rem, Default 9.5rem, Summary the rest),
+     so columns line up from table to table. Rows stay in the flow so find-in-page and anchors work; the box scrolls sideways on phones. */
+  .catalog-filter { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem; margin-top: 1.25rem; }
+  .catalog-filter[hidden], .catalog-empty[hidden] { display: none; }
+  .catalog-filter__field { flex: 1 1 14rem; }
+  .catalog-filter__field input { width: 100%; min-height: 2.5rem; padding: 0 .75rem; border: 1px solid var(--control-border, var(--color-background-border)); border-radius: var(--radius-md, .375rem); background: var(--background-color); color: var(--text-color); font: inherit; font-size: .875rem; }
+  .catalog-filter__chips { display: flex; flex-wrap: wrap; gap: .25rem; }
+  .catalog-filter__chips button { min-height: 1.75rem; padding: 0 .625rem; border: 1px solid var(--control-border, var(--color-background-border)); border-radius: 9999px; background: transparent; color: var(--text-color); font: inherit; font-size: .8125rem; cursor: pointer; }
+  .catalog-filter__chips button span { color: var(--color-muted); }
+  .catalog-filter__chips button[aria-pressed='true'] { background: color-mix(in oklab, var(--theme-primary) 10%, transparent); color: var(--theme-primary); font-weight: 600; }
+  .catalog-filter__chips button[aria-pressed='true'] span { color: inherit; }
+  .catalog-filter__count { margin-left: auto; font-size: .875rem; color: var(--color-muted); }
+  .catalog-filter :is(input, button):focus-visible, .catalog-table:focus-visible { outline: 2px solid var(--focus-ring-color, var(--theme-primary)); outline-offset: 2px; }
+  .catalog-table { margin-top: .75rem; overflow-x: auto; border: 1px solid var(--color-edge); border-radius: .25rem;
+    background: linear-gradient(to right, var(--background-color) 30%, transparent) left center / 2rem 100% no-repeat local,
+      linear-gradient(to left, var(--background-color) 30%, transparent) right center / 2rem 100% no-repeat local,
+      linear-gradient(to right, rgb(0 0 0 / .18), transparent) left center / .75rem 100% no-repeat scroll,
+      linear-gradient(to left, rgb(0 0 0 / .18), transparent) right center / .75rem 100% no-repeat scroll; }
+  :global(html[data-theme-mode='dark']) .catalog-table { background-image: linear-gradient(to right, var(--background-color) 30%, transparent), linear-gradient(to left, var(--background-color) 30%, transparent), linear-gradient(to right, rgb(255 255 255 / .2), transparent), linear-gradient(to left, rgb(255 255 255 / .2), transparent); }
+  .catalog-table table { width: 100%; min-width: 44rem; table-layout: fixed; border-collapse: collapse; font-size: .875rem; line-height: 1.25rem; }
+  .catalog-table thead th { position: sticky; top: 0; z-index: 1; background: var(--color-surface); text-align: left; font-weight: 600; }
+  .catalog-table :is(th, td) { padding: .5rem .75rem; vertical-align: top; border-bottom: 1px solid var(--color-edge); overflow-wrap: anywhere; }
+  .catalog-table tr:last-child :is(th, td) { border-bottom: 0; }
+  .catalog-table tbody th { font-weight: 500; text-align: left; }
+  .catalog-table tbody th a { text-decoration: none; }
+  .catalog-table tbody th a:hover { text-decoration: underline; }
+  .catalog-col--name { width: 15rem; }
+  .catalog-col--type, .catalog-col--scope { width: 6.5rem; }
+  .catalog-col--default { width: 9.5rem; }
+  .catalog-col--default code { font-size: .8125rem; background: none; padding: 0; }
+  .catalog-none { color: var(--color-muted); }
+  .catalog-col--summary { color: var(--text-color); }
+  .catalog-col--summary em { color: var(--color-muted); }
+  .catalog-names { columns: 3 12rem; margin: .75rem 0 0; padding: 0; list-style: none; font-size: .875rem; }
+  .catalog-names li { break-inside: avoid; padding-block: .15rem; }
+  .catalog-names a { text-decoration: none; }
+  .catalog-names a:hover { text-decoration: underline; }
+  .catalog-empty { margin-top: 1rem; color: var(--color-muted); }
+  [data-catalog-row][hidden] { display: none; }
+  @media (forced-colors: active) { .catalog-filter__chips button[aria-pressed='true'] { background: Highlight; color: HighlightText; } }
+  @media print { .catalog-filter { display: none; } .catalog-table { overflow: visible; } }
   .catalog-facts { margin-block: 1.25rem; }
   .catalog-section { margin-block-start: 2rem; }
   .catalog-section h2 { font-size: 1.125rem; font-weight: 600; margin-bottom: .75rem; padding-bottom: .4rem; border-bottom: 1px solid var(--api-border); }

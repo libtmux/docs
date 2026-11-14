@@ -25,7 +25,7 @@ import { pageBreadcrumbs } from '../../lib/sidebar'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import { apiInventoryIdentity } from '../../lib/inventory-targets'
 import { withRoot } from '../../lib/site-root'
-import { API_MODELS, API_NAV, PORT_NAME, indexFor, isMemberOwner, ownersOf, pageSlug, referenceAlternatives, topLevelTypesOf } from '../../lib/api-models'
+import { API_MODELS, API_NAV, PORT_NAME, symbolIndexLetter, indexFor, isMemberOwner, ownersOf, pageSlug, referenceAlternatives, topLevelTypesOf } from '../../lib/api-models'
 import { PORT_BY_SLUG, referenceUrl } from '../../lib/ports'
 import { productApiHref } from '../../lib/product-api'
 import { alternateDocs } from '../../lib/perl-pod'
@@ -559,6 +559,8 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                 ? 'Browse the LibTmux cmdlets by the tmux objects and operations they control. Each command includes syntax, parameter sets, pipeline types, and examples.'
                 : `Browse the ${label} types and operations for working with tmux. Start with the core objects below, or search for a type or member.`}
             </p>
+            {/* The A-Z view, for a reader who knows roughly what a name is. */}
+            <p class="mt-2"><a href={withRoot(`/reference/symbols/${symbolIndexLetter(model.symbols.map((s) => s.name)).toLowerCase()}/`)}>{label} symbol index (A–Z)</a></p>
             {paths.length > 0 && <ApiRelationships paths={paths} hrefFor={hrefFor} />}
             {sections.map((mod) => (
               /*
@@ -722,6 +724,8 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
               )}
               {owner?.kind && <span hidden data-pagefind-meta={`kind:${nativeKind(owner, language)}`} />}
               {declaringType && <span hidden data-pagefind-meta={`owner:${declaringType.name}`} />}
+              {/* The Kind facet in search filters on the same word the result shows. */}
+              {owner?.kind && <span hidden data-pagefind-filter={`kind:${nativeKind(owner, language)}`} />}
             <details class="api-source-details" data-pagefind-ignore="all" open>
               <script is:inline>
                 window.__initApiSourceDetails?.(document)

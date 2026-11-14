@@ -499,3 +499,6 @@ for (const m of (mentionIndex as MentionIndex).mentions) {
 export function mentionsOf(port: string, symbolId: string): MentionIndex['mentions'] {
   return mentionsBySymbol.get(`${port} ${symbolId}`) ?? []
 }
+
+/** The letter a port's A-Z symbol index opens on, for the link from its reference index. */
+export { firstLetter as symbolIndexLetter } from './symbol-index'

@@ -1,0 +1,249 @@
+/*
+ * The site's own pages (Support, Parity, Translations): one 64rem column, the
+ * site-wide type scale (15-typesetting.md), prose held to the prose measure
+ * and tables that wrap instead of clipping.
+ *
+ * Each page used a different column (768, 896, 1024px) and its own heading
+ * sizes. Scoped to `.meta-page`, so the rules reach only these pages.
+ */
+.meta-page {
+  max-width: 64rem;
+  margin-inline: auto;
+  padding: 3rem 1rem;
+}
+
+.meta-page h1 {
+  margin: 0;
+  font-size: 2rem;
+  line-height: 2.375rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.meta-page h2 {
+  margin: 2.5rem 0 0;
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.meta-page h2.meta-wide {
+  margin-top: 3rem;
+}
+
+.meta-page h3 {
+  margin: 2rem 0 0;
+  font-size: 1.125rem;
+  line-height: 1.625rem;
+  font-weight: 600;
+}
+
+/* Body 16/28 at the prose measure; notes 14/20. */
+.meta-page :where(p, dl, ul.meta-notes, aside) {
+  max-width: var(--measure-prose, 72ch);
+  margin: 0.75rem 0 0;
+  line-height: 1.75rem;
+}
+
+.meta-page .meta-small {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.meta-page .meta-note {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--color-foreground-muted);
+}
+
+.meta-page a:not(.meta-plain) {
+  text-decoration: underline;
+}
+
+/* Inline code gets the site's chip at 0.875em, so it no longer outsizes its sentence. */
+.meta-page :where(p, li, dd) code {
+  padding: 0.125rem 0.1875rem;
+  border-radius: 0.25rem;
+  background: var(--color-inline-code-background);
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  font-weight: 400;
+}
+
+.meta-page ul.meta-notes {
+  padding-left: 1.25rem;
+  list-style: disc;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.meta-page ul.meta-notes > li + li {
+  margin-top: 0.75rem;
+}
+
+/* Tables wrap instead of clipping: a package name breaks anywhere, and the first
+   table fits the 64rem column. Where one still overflows, below 40rem, the box
+   shows an edge on the side with more, keeps its first column in view and takes
+   keyboard focus. */
+.meta-scroll {
+  position: relative;
+  margin-top: 1rem;
+  overflow-x: auto;
+  border: 1px solid var(--color-background-border);
+  border-radius: 0.25rem;
+  background:
+    linear-gradient(to right, var(--background-color) 30%, transparent) left center / 2rem 100% no-repeat local,
+    linear-gradient(to left, var(--background-color) 30%, transparent) right center / 2rem 100% no-repeat local,
+    linear-gradient(to right, var(--table-edge-shadow, rgb(0 0 0 / 0.2)), transparent) left center / 0.75rem 100% no-repeat scroll,
+    linear-gradient(to left, var(--table-edge-shadow, rgb(0 0 0 / 0.2)), transparent) right center / 0.75rem 100% no-repeat scroll;
+}
+
+html[data-theme-mode='dark'] .meta-scroll {
+  --table-edge-shadow: rgb(255 255 255 / 0.2);
+}
+
+.meta-scroll:focus-visible {
+  outline: 2px solid var(--focus-ring-color, var(--theme-primary));
+  outline-offset: 2px;
+}
+
+.meta-scroll table {
+  width: 100%;
+  min-width: 0;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.meta-scroll :is(th, td) {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: break-word;
+  border-bottom: 1px solid var(--color-background-border);
+}
+
+.meta-scroll th {
+  font-weight: 600;
+  background: var(--color-background-secondary);
+}
+
+.meta-scroll tr:last-child td {
+  border-bottom: 0;
+}
+
+.meta-scroll td:first-child {
+  font-weight: 500;
+}
+
+/* Package names and module paths at the table's own 14px, wrapping anywhere. */
+.meta-scroll .meta-mono {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  overflow-wrap: anywhere;
+}
+
+.meta-scroll .meta-fmt {
+  color: var(--color-foreground-muted);
+  font-weight: 400;
+}
+
+@media (max-width: 39.999rem) {
+  .meta-scroll table {
+    min-width: 38rem;
+  }
+
+  .meta-scroll :is(td, th):first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: var(--background-color);
+  }
+
+  .meta-scroll th:first-child {
+    background: var(--color-background-secondary);
+  }
+}
+
+/* Evidence states: always a word beside the colour. */
+.meta-page {
+  --meta-ok: #007a55;
+  --meta-warn: #bb4d00;
+  --meta-aside-bg: #fffbeb;
+  --meta-aside-border: #fee685;
+}
+
+html[data-theme-mode='dark'] .meta-page {
+  --meta-ok: #00d492;
+  --meta-warn: #ffb900;
+  --meta-aside-bg: color-mix(in srgb, #f59e0b 10%, var(--background-color));
+  --meta-aside-border: color-mix(in srgb, #f59e0b 35%, var(--background-color));
+}
+
+.meta-page .meta-ok {
+  color: var(--meta-ok);
+}
+
+.meta-page .meta-warn {
+  color: var(--meta-warn);
+}
+
+.meta-page .meta-unk {
+  color: var(--color-foreground-muted);
+}
+
+.meta-page .meta-none {
+  opacity: 0.4;
+}
+
+.meta-page dt.meta-ok,
+.meta-page dt.meta-warn,
+.meta-page dt.meta-unk {
+  font-weight: 500;
+}
+
+.meta-page .meta-legend {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.meta-page .meta-legend + .meta-legend {
+  margin-top: 0.5rem;
+}
+
+.meta-page .meta-legend dt {
+  flex: none;
+  width: 7rem;
+}
+
+.meta-page .meta-legend dd {
+  margin: 0;
+}
+
+.meta-page .meta-aside {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border: 1px solid var(--meta-aside-border);
+  border-radius: 0.25rem;
+  background: var(--meta-aside-bg);
+}
+
+.meta-page .meta-aside p {
+  margin: 0;
+  line-height: inherit;
+}
+
+.meta-page .meta-aside p + p {
+  margin-top: 0.5rem;
+}
+
+.meta-page .meta-aside-title {
+  font-weight: 600;
+}
+
+/* Translation coverage: row headers read as the first column. */
+.meta-scroll th[scope='row'] {
+  font-weight: 400;
+  background: transparent;
+}

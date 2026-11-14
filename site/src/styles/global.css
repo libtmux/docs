@@ -519,43 +519,121 @@ html[data-theme="purple"][data-theme-mode="dark"] {
    wins. One block per heading; h5/h6 carry the weight/margins that the
    typography plugin doesn't style. */
 @layer utilities {
+  /*
+   * One type scale for every page family (15-typesetting.md): page title
+   * 32/38, section 24/32, subsection 18/26, all 600. Each step is 75% of the
+   * one above, so the levels stay distinct; the content H2 was 80% of its
+   * H1 and read as one size. IBM Plex stops at 700 and the three levels ask
+   * for 600, a weight the family ships.
+   */
   .prose h1 {
-    font-size: 2.5em;
-    /* 700, not the typography plugin's 800: IBM Plex stops at 700, so an 800
-       here is a weight the browser fakes by smearing the Bold — on the
-       largest text on the page. Every other heading already asks for a
-       weight the family ships (h2 700, strong 600). */
-    font-weight: 700;
+    font-size: 2rem;
+    line-height: 2.375rem;
+    font-weight: 600;
     margin-top: 1.75rem;
     margin-bottom: 1rem;
   }
 
   .prose h2 {
-    font-size: 2em;
-    margin-top: 1.75rem;
-    margin-bottom: 1.25rem;
+    font-size: 1.5rem;
+    line-height: 2rem;
+    font-weight: 600;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
     scroll-margin-top: 3.5rem; /* Accounts for top nav height */
   }
 
   .prose h3 {
-    font-size: 1.5em;
-    margin-bottom: 1.25rem;
-    margin-top: 1.25rem;
+    font-size: 1.125rem;
+    line-height: 1.625rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    margin-top: 1.75rem;
     scroll-margin-top: 3.5rem; /* Accounts for top nav height */
   }
 
   .prose h4 {
-    font-size: 1.25em;
-    margin-bottom: 1.25rem;
+    font-size: 1rem;
+    line-height: 1.5rem;
+    margin-bottom: 0.5rem;
     scroll-margin-top: 3.5rem; /* Accounts for top nav height */
   }
 
   .prose h5 {
-    font-size: 1.125em;
+    font-size: 1rem;
   }
 
   .prose h6 {
-    font-size: 1em;
+    font-size: 1rem;
+  }
+}
+
+/*
+ * The same three steps for pages that set their headings without `.prose`:
+ * the search page, the meta pages, the symbol index and the 404. Names follow
+ * the design tokens (`page-title`, `section-heading`, `subsection-heading`).
+ */
+@layer components {
+  .page-title {
+    font-size: 2rem;
+    line-height: 2.375rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .section-heading {
+    font-size: 1.5rem;
+    line-height: 2rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  .subsection-heading {
+    font-size: 1.125rem;
+    line-height: 1.625rem;
+    font-weight: 600;
+  }
+}
+
+/*
+ * The landing title (15-typesetting.md): 48/48 600, for the port landing and
+ * the product homes (MCP, Workspace Manager) only. The product home's title
+ * was the prose H1, so it read 40/700 beside a 48/600 port landing. In
+ * `utilities`, so it outranks `.prose h1`.
+ */
+@layer utilities {
+  .prose .product-hero h1 {
+    font-size: 3rem;
+    line-height: 3rem;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+}
+
+/*
+ * Prose colour and measure (15-typesetting.md). Body text is the page's own
+ * text colour, not the typography plugin's slate; a prose block stops at 72
+ * characters on every page family, while grids, tables and code frames keep
+ * the full column. `--measure-prose` is the foundations token; the fallback
+ * is its value.
+ */
+@layer utilities {
+  .prose {
+    --tw-prose-body: var(--text-color);
+    --tw-prose-headings: var(--text-color);
+    --tw-prose-bold: var(--text-color);
+    --tw-prose-invert-body: var(--text-color);
+    --tw-prose-invert-headings: var(--text-color);
+    --tw-prose-invert-bold: var(--text-color);
+  }
+
+  .prose :where(p, ul, ol, dl, blockquote) {
+    max-width: var(--measure-prose, 72ch);
+  }
+
+  /* Even right edges: a paragraph with several mentions fills its lines. */
+  .prose :where(p) {
+    text-wrap: pretty;
   }
 }
 
@@ -694,6 +772,50 @@ html[data-theme="purple"][data-theme-mode="dark"] {
   }
 }
 
+/*
+ * Glossary headings descend (15-typesetting.md). The per-port glossary set its
+ * H1 at 24/32 600 (`text-2xl`) above an H2 at 32/700 and an H3 at 24/600, so
+ * the page's own title was the smallest heading but one. The H1 takes the page
+ * title size; the H2 and H3 take the shared scale above, with a rule before
+ * each section, a term chip at 16px, and the spacing the scale calls for
+ * (H2 40/12, H3 28/8, paragraphs 12) so a term and its definition read as one
+ * unit. The lede is 18/28 at the prose measure.
+ */
+@layer utilities {
+  .api-reference-layout--glossary .api-reference-content > header h1 {
+    font-size: 2rem;
+    line-height: 2.375rem;
+    font-weight: 600;
+  }
+
+  .api-glossary-body :where(p) {
+    margin-block: 0 0.75rem;
+    line-height: 1.75rem;
+  }
+
+  .api-glossary-body .api-glossary-lede {
+    margin-top: 1.5rem;
+    font-size: 1.125rem;
+  }
+
+  .api-glossary-body h2 {
+    margin-top: 2.5rem;
+    margin-bottom: 0.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--color-background-border);
+  }
+
+  .api-glossary-body h3 {
+    margin-top: 1.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .api-glossary-body h3 code {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+}
+
 /* Inline code (not in pre blocks) */
 @layer components {
   /* Source-owned guides can contain path-like prose tokens that are wider
@@ -705,7 +827,11 @@ html[data-theme="purple"][data-theme-mode="dark"] {
   .prose code:not(pre code) {
     overflow-wrap: anywhere;
     @apply bg-[var(--color-inline-code-background)] text-[var(--theme-primary)] dark:text-[var(--theme-accent)];
-    @apply px-1.5 py-0.5 rounded text-sm font-medium;
+    /* Body weight at 0.875em; the 3px side padding keeps "editor;" from
+       reading "editor ;" (records 0025 and the typesetting page). */
+    @apply rounded font-normal;
+    padding: 0.125rem 0.1875rem;
+    font-size: 0.875em;
     @apply before:content-none! after:content-none!;
   }
 }
@@ -779,6 +905,27 @@ html[data-theme="purple"][data-theme-mode="dark"] {
     overflow-x: auto;
     border-collapse: collapse;
     font-size: 0.9em;
+    /* A table wider than its column scrolls inside a bordered box, and the
+       clipped edge says so: a fade on the side that has more. The two
+       `local` gradients are the page ground and cover the `scroll` shadows
+       once the box has been scrolled to that end, so only an edge with
+       hidden content shows its shadow (15-typesetting.md, Tables). */
+    border: 1px solid var(--color-background-border);
+    border-radius: 0.25rem;
+    background:
+      linear-gradient(to right, var(--background-color) 30%, transparent) left center / 2rem 100% no-repeat local,
+      linear-gradient(to left, var(--background-color) 30%, transparent) right center / 2rem 100% no-repeat local,
+      linear-gradient(to right, var(--table-edge-shadow, rgb(0 0 0 / 0.16)), transparent) left center / 0.75rem 100% no-repeat scroll,
+      linear-gradient(to left, var(--table-edge-shadow, rgb(0 0 0 / 0.16)), transparent) right center / 0.75rem 100% no-repeat scroll;
+  }
+
+  html[data-theme-mode='dark'] .prose :where(table) {
+    --table-edge-shadow: rgb(255 255 255 / 0.18);
+  }
+
+  .prose :where(table:focus-visible) {
+    outline: 2px solid var(--focus-ring-color, var(--theme-primary));
+    outline-offset: 2px;
   }
 
   .prose :where(th) {
@@ -811,7 +958,9 @@ html[data-theme="purple"][data-theme-mode="dark"] {
     border: 1px solid var(--color-background-border);
     border-radius: 0.2em;
     padding: 0.1em 0.3em;
-    font-size: 0.9em;
+    /* Mono cells keep at least 13px: a package name is never set smaller than
+       the table text around it. */
+    font-size: max(0.8125rem, 0.9em);
   }
 
   .prose :where(tbody tr:hover) {
@@ -826,6 +975,49 @@ html[data-theme="purple"][data-theme-mode="dark"] {
 @layer utilities {
   .prose table:not([class]) :is(th, td) {
     padding-inline: 0.75rem;
+  }
+}
+
+/*
+ * Japanese text (15-typesetting.md, PageLocale). IBM Plex Sans has no Japanese
+ * glyphs, so an unnamed fallback can land on a Mincho serif. The reader's own
+ * Japanese sans faces come first, named explicitly: Hiragino on macOS and iOS,
+ * Yu Gothic and Meiryo on Windows, Noto Sans CJK on Linux and Android, then
+ * IBM Plex Sans. No web font: IBM Plex Sans JP would add megabytes per weight
+ * for one translated locale (decided 2026-11-14). `lang` is on the page root,
+ * so the browser also picks the Japanese glyph variants.
+ *
+ * No Latin tracking (`letter-spacing: 0`), line height 1.85, about 40
+ * characters a line, and phrase-aware breaks where the browser supports
+ * `word-break: auto-phrase`, with strict line-breaking rules. Code, command
+ * names and API names stay in the Latin mono face.
+ */
+@layer components {
+  :lang(ja) {
+    font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', 'Yu Gothic', Meiryo, 'Noto Sans CJK JP', 'Noto Sans JP', var(--font-sans);
+    letter-spacing: 0;
+    word-break: auto-phrase;
+    line-break: strict;
+  }
+
+  :lang(ja) :where(code, kbd, pre, samp) {
+    font-family: var(--font-mono);
+  }
+
+  :lang(ja) :where(h1, h2, h3, h4, .doc-card h3) {
+    text-wrap: balance;
+  }
+}
+
+/* In `utilities`, where the typography plugin's own measure and leading live. */
+@layer utilities {
+  :lang(ja) .prose :where(p, ul, ol, dl, blockquote),
+  :lang(ja) .locale-notice {
+    max-width: 40em;
+  }
+
+  :lang(ja) .prose :where(p, li, dd, blockquote) {
+    line-height: 1.85;
   }
 }
 
