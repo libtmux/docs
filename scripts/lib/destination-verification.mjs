@@ -414,6 +414,10 @@ export const hostOf = (url) => {
 async function versionChecks(result, destination) {
   const expected = destination.expected ?? []
   if (expected.length === 0) {
+    const placeholders = destination.placeholders ?? []
+    if (placeholders.length > 0) {
+      return [{ check: 'unsupported', note: `the pinned manifest (${placeholders.join(', ')}) declares a development placeholder, which names no release` }]
+    }
     return [{ check: 'unsupported', note: destination.kinds.every((kind) => kind === 'source') ? 'a branch link names no release' : 'no manifest declares a version for this destination' }]
   }
   const checks = []
@@ -482,13 +486,22 @@ function distributionOf(entries, entry) {
 }
 
 /**
+ * A manifest's placeholder for a version not yet released, such as Erlang's
+ * `0.0.0+development`. It names no release, so no host is asked to carry it.
+ */
+const DEVELOPMENT_PLACEHOLDER = /\+development$/
+
+/**
  * The version the pinned manifest declares for the distribution an entry
- * belongs to, and the manifest file it came from.
+ * belongs to, and the manifest file it came from. A development placeholder
+ * is flagged: it declares no release for a host to carry.
  */
 export function manifestVersion(manifests, port, entries, entry) {
   const distribution = distributionOf(entries, entry)
   const found = manifests?.ports?.[port]?.distributions?.find((candidate) => candidate.name === distribution.coordinate)
-  return found ? { version: found.version, source: `${found.repo}:${found.manifest}` } : undefined
+  if (!found) return undefined
+  const declared = { version: found.version, source: `${found.repo}:${found.manifest}` }
+  return DEVELOPMENT_PLACEHOLDER.test(found.version ?? '') ? { ...declared, placeholder: true } : declared
 }
 
 /**
@@ -503,10 +516,10 @@ export function manifestVersion(manifests, port, entries, entry) {
  * the manifest declares for their distribution.
  */
 export function collectDestinations(inventory, manifests) {
-  /** @type {Map<string, { url: string, host: string, kinds: string[], entries: { port: string, id: string, status: string }[], repos: string[], paths: string[], expected: { version: string, source: string, ports: string[] }[] }>} */
+  /** @type {Map<string, { url: string, host: string, kinds: string[], entries: { port: string, id: string, status: string }[], repos: string[], paths: string[], expected: { version: string, source: string, ports: string[] }[], placeholders: string[] }>} */
   const found = new Map()
   const add = (port, entry, { kind, url, host }, status) => {
-    const known = found.get(url) ?? { url, host, kinds: [], entries: [], repos: [], paths: [], expected: [] }
+    const known = found.get(url) ?? { url, host, kinds: [], entries: [], repos: [], paths: [], expected: [], placeholders: [] }
     if (!known.kinds.includes(kind)) known.kinds.push(kind)
     // An entry whose package page is also its reference names the URL twice.
     if (!known.entries.some((owner) => owner.port === port && owner.id === entry.id)) known.entries.push({ port, id: entry.id, status })
@@ -516,7 +529,8 @@ export function collectDestinations(inventory, manifests) {
     if (status === 'published' && kind !== 'source') {
       const declared = manifestVersion(manifests, port, inventory[port], entry)
       const same = known.expected.find((candidate) => candidate.version === declared?.version)
-      if (declared && same) { if (!same.ports.includes(port)) same.ports.push(port) }
+      if (declared?.placeholder) { if (!known.placeholders.includes(declared.source)) known.placeholders.push(declared.source) }
+      else if (declared && same) { if (!same.ports.includes(port)) same.ports.push(port) }
       else if (declared) known.expected.push({ version: declared.version, source: declared.source, ports: [port] })
     }
     found.set(url, known)

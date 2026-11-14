@@ -107,11 +107,20 @@ describe('destination evidence', () => {
   })
 
   it('checks the manifest version on every host that lists versions, and says why where one cannot', () => {
-    const counts = { confirmed: 0, unsupported: 0 }
+    const counts = { confirmed: 0, unsupported: 0, placeholder: 0 }
     for (const [url, destination] of wanted) {
       const record = records.get(url)!
       if (!record.ok || !destination.entries.some(({ status }: { status: string }) => status === 'published')) continue
       expect(checksOf(url).length, url).toBeGreaterThan(0)
+      if (destination.placeholders.length > 0) {
+        // The pinned manifest predates the release it documents: the record says so, until the pin moves to a released revision.
+        for (const check of checksOf(url)) {
+          expect(check.check, url).toBe('unsupported')
+          expect(check.note, `${url} says why`).toMatch(/development placeholder/)
+        }
+        counts.placeholder += 1
+        continue
+      }
       if (destination.kinds.every((kind: string) => kind === 'source')) {
         // Only a branch link may decline: every registry and reference host here can say whether a version exists.
         expect(VERSION_SUPPORT[destination.host as keyof typeof VERSION_SUPPORT], url).toBe(false)
@@ -128,7 +137,7 @@ describe('destination evidence', () => {
     }
     // Every package and reference page is confirmed; every source link names a branch.
     const nonSource = [...wanted.values()].filter((destination) => !destination.kinds.every((kind: string) => kind === 'source') && destination.entries.some(({ status }: { status: string }) => status === 'published'))
-    expect(counts.confirmed).toBe(nonSource.length)
+    expect(counts.confirmed + counts.placeholder).toBe(nonSource.length)
     expect(counts.unsupported).toBeGreaterThan(0)
   })
 
@@ -310,6 +319,21 @@ describe('destination evidence', () => {
       const absent = { version: '9.9.9', source: 'x:Cargo.toml', ports: ['demo'], check: 'absent' }
       expect(check(withEvidence([{ ...record, versionChecks: [absent] }])).join('\n'))
         .toMatch(/does not carry 9\.9\.9, the version x:Cargo\.toml declares for demo/)
+    })
+
+    it('asks a host for no version when the manifest declares only a development placeholder', () => {
+      const registry = demo(crates)
+      const manifest = (version: string) => ({ ports: { demo: distribution(version) } })
+      const asked = (version: string) => collectDestinations(registry, manifest(version)).get('https://crates.io/crates/demo')!.expected
+        .map((expected: { version: string }) => expected.version)
+      // Erlang's umbrella declares 0.0.0+development until a release is cut, and no host can carry that.
+      expect(asked('0.0.0+development')).toEqual([])
+      expect(collectDestinations(registry, manifest('0.0.0+development')).get('https://crates.io/crates/demo')!.placeholders)
+        .toEqual(['libtmux/libtmux-rs:Cargo.toml'])
+      expect(checkEvidence(registry, passing(registry, manifest('0.0.0+development')), { manifests: manifest('0.0.0+development') })).toEqual([])
+      // Control: every other declared version is still asked for, a zero release and a prerelease included.
+      expect(asked('0.0.1')).toEqual(['0.0.1'])
+      expect(asked('0.1.0-alpha.1')).toEqual(['0.1.0-alpha.1'])
     })
 
     it('fails when a host that lists versions declines to confirm one', () => {
