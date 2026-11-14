@@ -263,6 +263,7 @@ const jvm = family('libtmux/libtmux-java')
 const dotnet = family('libtmux/libtmux-dotnet')
 const cxx = family('libtmux/libtmux-cxx')
 const swift = family('libtmux/libtmux-swift')
+const ocaml = fromGit(family('libtmux/libtmux-ocaml'), 'Installs from source; the opam repository does not carry it.')
 
 export type DestinationKind = 'source' | 'package' | 'api'
 
@@ -307,18 +308,12 @@ const GO = 'github.com/libtmux/libtmux-go'
  */
 export const INVENTORY: Readonly<Record<string, readonly InventoryEntry[]>> = {
   ocaml: [
-    { id: 'libtmux', kind: 'library', product: 'core', unit: 'opam package', label: 'libtmux', coordinate: 'libtmux',
-      aliases: ['Libtmux'], repo: 'libtmux/libtmux-ocaml', ref: 'master', path: 'lib', status: 'published' },
-    { id: 'libtmux-unix', kind: 'companion', product: 'core', unit: 'opam package', label: 'libtmux-unix', coordinate: 'libtmux-unix',
-      aliases: ['Libtmux_unix'], repo: 'libtmux/libtmux-ocaml', ref: 'master', path: 'unix', status: 'published' },
-    { id: 'libtmux-eio', kind: 'companion', product: 'core', unit: 'opam package', label: 'libtmux-eio', coordinate: 'libtmux-eio',
-      aliases: ['Libtmux_eio'], repo: 'libtmux/libtmux-ocaml', ref: 'master', path: 'eio', status: 'published' },
-    { id: 'libtmux-json', kind: 'companion', product: 'core', unit: 'opam package', label: 'libtmux-json', coordinate: 'libtmux-json',
-      aliases: ['Libtmux_json'], repo: 'libtmux/libtmux-ocaml', ref: 'master', path: 'json', status: 'published' },
-    { id: 'libtmux-workspace', kind: 'companion', product: 'workspace', unit: 'opam package', label: 'libtmux-workspace', coordinate: 'libtmux-workspace',
-      aliases: ['Libtmux_workspace'], repo: 'libtmux/libtmux-ocaml', ref: 'master', path: 'workspace', status: 'published' },
-    { id: 'libtmux-workspace-cli', kind: 'cli', product: 'workspace', unit: 'opam package', label: 'libtmux-workspace-cli', coordinate: 'libtmux-workspace-cli',
-      aliases: ['tmux-workspace'], repo: 'libtmux/libtmux-ocaml', ref: 'master', path: 'cli', status: 'published' },
+    ocaml({ id: 'libtmux', kind: 'library', product: 'core', unit: 'opam package', label: 'libtmux', aliases: ['Libtmux'], path: 'lib' }),
+    ocaml({ id: 'libtmux-unix', kind: 'companion', product: 'core', unit: 'opam package', label: 'libtmux-unix', aliases: ['Libtmux_unix'], path: 'unix' }),
+    ocaml({ id: 'libtmux-eio', kind: 'companion', product: 'core', unit: 'opam package', label: 'libtmux-eio', aliases: ['Libtmux_eio'], path: 'eio' }),
+    ocaml({ id: 'libtmux-json', kind: 'companion', product: 'core', unit: 'opam package', label: 'libtmux-json', aliases: ['Libtmux_json'], path: 'json' }),
+    ocaml({ id: 'libtmux-workspace', kind: 'companion', product: 'workspace', unit: 'opam package', label: 'libtmux-workspace', aliases: ['Libtmux_workspace'], path: 'workspace' }),
+    ocaml({ id: 'libtmux-workspace-cli', kind: 'cli', product: 'workspace', unit: 'opam package', label: 'libtmux-workspace-cli', aliases: ['tmux-workspace'], path: 'cli' }),
   ],
   perl: [
     { id: 'LibTmux', kind: 'library', product: 'core', label: 'LibTmux', coordinate: 'LibTmux', aliases: ["LibTmux::Server"], repo: 'libtmux/libtmux-perl', ref: 'master', path: 'packages/core', status: 'configured-unpublished', sourceAvailable: true, note: 'Install from verified source; no CPAN release is published.' },

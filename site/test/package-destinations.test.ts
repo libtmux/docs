@@ -12,9 +12,13 @@ import { PORT_BY_SLUG } from '../src/lib/ports'
  * and `destination-evidence.json`; these tests hold the site's own tables to it.
  */
 
-/** The spelling that would resolve the package from its ecosystem's registry. */
-const REGISTRY_INSTALL: Record<string, RegExp> = {
-  julia: /Pkg\.add\("LibTmux"\)|PackageSpec\(name=/,
+/**
+ * Per port with no registry release: the spelling that would resolve its
+ * package from the ecosystem's registry, and what every install must name instead.
+ */
+const SOURCE_ONLY: Record<string, { registryInstall: RegExp; source?: string }> = {
+  julia: { registryInstall: /Pkg\.add\("LibTmux"\)|PackageSpec\(name=/, source: 'libtmux/libtmux-julia.git' },
+  ocaml: { registryInstall: /\bopam\s+(?:install|pin\s+add)\s+libtmux/ },
 }
 
 /** Every command a reader or a prompt can be handed for a port's core package. */
@@ -24,13 +28,15 @@ const coreInstalls = (slug: string) => {
     ...Object.entries(port.installForms).map(([form, { code }]) => [`installForms.${form}`, code] as const)]
 }
 
-describe.each(['julia'])('%s, which no registry carries', (slug) => {
+describe.each(Object.keys(SOURCE_ONLY))('%s, which no registry carries', (slug) => {
+  const { registryInstall, source } = SOURCE_ONLY[slug]!
+
   it('offers no registry install in any form', () => {
-    for (const [where, code] of coreInstalls(slug)) expect(code, where).not.toMatch(REGISTRY_INSTALL[slug]!)
+    for (const [where, code] of coreInstalls(slug)) expect(code, where).not.toMatch(registryInstall)
   })
 
-  it('keeps Git as the one install, in every form', () => {
-    for (const [where, code] of coreInstalls(slug)) expect(code, where).toContain(`libtmux/libtmux-${slug}.git`)
+  it.skipIf(!source)('names its source in every install form', () => {
+    for (const [where, code] of coreInstalls(slug)) expect(code, where).toContain(source!)
   })
 
   it('names no registry for the port', () => {
@@ -42,13 +48,14 @@ describe.each(['julia'])('%s, which no registry carries', (slug) => {
     const packages = INVENTORY[slug]!.filter(({ kind }) => kind !== 'source')
     expect(packages.length).toBeGreaterThan(0)
     for (const entry of packages) {
-      expect(entry.status, entry.id).toBe('configured-unpublished')
-      expect(entry.sourceAvailable, entry.id).toBe(true)
+      // A planned entry is declared but not yet in the repository, so it links nothing.
+      expect(['configured-unpublished', 'planned'], entry.id).toContain(entry.status)
+      if (entry.status === 'configured-unpublished') expect(entry.sourceAvailable, entry.id).toBe(true)
       expect(entry.note, entry.id).toBeTruthy()
       expect(entry.package ?? entry.api, entry.id).toBeUndefined()
     }
     // The public repository itself is what is published.
-    expect(INVENTORY[slug]!.filter(({ kind }) => kind === 'source').map(({ status }) => status)).toEqual(['published'])
+    for (const entry of INVENTORY[slug]!.filter(({ kind }) => kind === 'source')) expect(entry.status, entry.id).toBe('published')
   })
 
   it('links only source from the header', () => {
@@ -66,7 +73,7 @@ describe('Julia companions', () => {
       for (const { label, code } of pkg.installs!) {
         expect(pkg.registry, pkg.name).toBeUndefined()
         expect(code, `${pkg.name} ${label}`).toContain('url=repo')
-        expect(code, `${pkg.name} ${label}`).not.toMatch(REGISTRY_INSTALL.julia!)
+        expect(code, `${pkg.name} ${label}`).not.toMatch(SOURCE_ONLY.julia!.registryInstall)
       }
     }
   })
