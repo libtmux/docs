@@ -62,8 +62,11 @@ Markdown and LLM exports carry the quoted lines, without the anchors.
 
 The frame says what the block is. An excerpt's header reads "Excerpt · lines
 59–78" and numbers its rows from the source's own lines, so a reader can find
-them in the tested file; the block an excerpt quotes, and a whole `file="..."`
-inclusion, read "Complete program" and carry no line numbers. Three optional
+them in the tested file. The block an excerpt quotes, and a whole `file="..."`
+inclusion, read "Complete program". When an excerpt on the page quotes it, the
+program numbers every line from 1 and the excerpt's range links to its lines
+(`#L59-L78`), which highlight on arrival; a program nothing quotes stays
+unnumbered, since it is for copying. Three optional
 attributes adjust a frame: `role="program"` labels a block the page does not
 quote, `title="main.go"` names the file in the header (an excerpt takes its
 source's name), and `height="16"` stops a long block at that many lines with a
