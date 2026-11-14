@@ -382,6 +382,10 @@ const ERLANG_GIT_INSTALL: InstallForm = {
   code: ERLANG_SOURCE_INSTALL.replaceAll('{revision}', '"master"'), lang: 'erlang',
 }
 
+const JULIA_GIT_INSTALL: InstallForm = {
+  code: 'using Pkg\nPkg.add(PackageSpec(url="https://github.com/libtmux/libtmux-julia.git", rev="master"))', lang: 'julia',
+}
+
 const CORE_PORTS: readonly Port[] = [
   {
     slug: 'py',
@@ -659,10 +663,10 @@ const CORE_PORTS: readonly Port[] = [
       note: 'Run in Julia with tmux on PATH. The package is not registered in General, so this installs from Git; Manifest.toml records the package tree hash.' }],
     initProject: { code: 'using Pkg\nPkg.activate(".")', lang: 'julia' },
     installForms: {
-      release: { code: 'using Pkg\nPkg.add("LibTmux")', lang: 'julia' },
-      prerelease: { code: 'using Pkg\nPkg.add(PackageSpec(name="LibTmux", version="{version}"))', lang: 'julia' },
-      // Unselected source installs follow the default branch.
-      git: { code: 'using Pkg\nPkg.add(PackageSpec(url="https://github.com/libtmux/libtmux-julia.git", rev="master"))', lang: 'julia' },
+      // General does not carry LibTmux, so every form installs from Git. Unselected source installs follow the default branch.
+      release: JULIA_GIT_INSTALL,
+      prerelease: JULIA_GIT_INSTALL,
+      git: JULIA_GIT_INSTALL,
     },
     installNote: 'Requires Julia 1.13.1 and tmux 3.3a or newer. JSON layouts require tmux 3.8. Companion packages install from the same revision as the core.',
   },

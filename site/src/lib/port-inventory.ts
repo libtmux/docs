@@ -235,6 +235,14 @@ const spiTarget = (target: string): Pick<InventoryEntry, 'api'> => ({
   api: { host: 'swift-package-index', url: `${SPI}/documentation/${target.toLowerCase()}`, tool: 'DocC' },
 })
 
+/**
+ * An entry installed from public Git because no registry carries it. Its source
+ * is linked and nothing else: `published` means a registry release, which this
+ * entry does not have.
+ */
+const fromGit = (build: ReturnType<typeof family>, note: string) =>
+  (draft: Draft & { repo?: string }): InventoryEntry => build({ status: 'configured-unpublished', sourceAvailable: true, note, ...draft })
+
 const PY = 'tmux-python/libtmux'
 const py = family(PY)
 const tmuxp = family('tmux-python/tmuxp')
@@ -243,6 +251,7 @@ const ruby = family('libtmux/libtmux-ruby')
 const lua = family('libtmux/libtmux-lua')
 const powershell = family('libtmux/libtmux-powershell')
 const julia = family('libtmux/libtmux-julia')
+const juliaSource = fromGit(julia, 'Installs from Git; the General registry does not carry it.')
 const elixir = family('libtmux/libtmux-elixir', 'main')
 const haskell = family('libtmux/libtmux-haskell')
 const lisp = family('libtmux/libtmux-lisp')
@@ -364,19 +373,19 @@ export const INVENTORY: Readonly<Record<string, readonly InventoryEntry[]>> = {
   ],
   julia: [
     // None of the three packages is registered in General; they install from the repository by URL and subdirectory.
-    julia({ id: 'LibTmux', kind: 'library', product: 'core', unit: 'package', label: 'LibTmux', path: 'src', aliases: ['using LibTmux'] }),
+    juliaSource({ id: 'LibTmux', kind: 'library', product: 'core', unit: 'package', label: 'LibTmux', path: 'src', aliases: ['using LibTmux'] }),
     julia({ id: 'repository', kind: 'source', product: 'core', label: 'libtmux-julia', coordinate: 'libtmux/libtmux-julia' }),
     // Defined in src/criteria.jl and loaded with LibTmux.
-    julia({ id: 'LibTmux.Filters', kind: 'module', product: 'core', unit: 'module', within: 'LibTmux', label: 'LibTmux.Filters',
+    juliaSource({ id: 'LibTmux.Filters', kind: 'module', product: 'core', unit: 'module', within: 'LibTmux', label: 'LibTmux.Filters',
       path: 'src/criteria.jl', file: true, aliases: ['using LibTmux.Filters'] }),
     // Package extensions, loaded when JSON or Tables is; each is a file of ext/.
-    julia({ id: 'LibTmuxJSONExt', kind: 'module', product: 'core', unit: 'extension', within: 'LibTmux', label: 'LibTmuxJSONExt',
+    juliaSource({ id: 'LibTmuxJSONExt', kind: 'module', product: 'core', unit: 'extension', within: 'LibTmux', label: 'LibTmuxJSONExt',
       path: 'ext/LibTmuxJSONExt.jl', file: true, aliases: ['JSON'] }),
-    julia({ id: 'LibTmuxTablesExt', kind: 'module', product: 'core', unit: 'extension', within: 'LibTmux', label: 'LibTmuxTablesExt',
+    juliaSource({ id: 'LibTmuxTablesExt', kind: 'module', product: 'core', unit: 'extension', within: 'LibTmux', label: 'LibTmuxTablesExt',
       path: 'ext/LibTmuxTablesExt.jl', file: true, aliases: ['Tables'] }),
-    julia({ id: 'LibTmuxMCP', kind: 'mcp-server', product: 'mcp', unit: 'package', label: 'LibTmuxMCP', path: 'packages/LibTmuxMCP',
+    juliaSource({ id: 'LibTmuxMCP', kind: 'mcp-server', product: 'mcp', unit: 'package', label: 'LibTmuxMCP', path: 'packages/LibTmuxMCP',
       aliases: ['using LibTmuxMCP', 'libtmux-mcp'] }),
-    julia({ id: 'LibTmuxWorkspace', kind: 'companion', product: 'workspace', unit: 'package', label: 'LibTmuxWorkspace',
+    juliaSource({ id: 'LibTmuxWorkspace', kind: 'companion', product: 'workspace', unit: 'package', label: 'LibTmuxWorkspace',
       path: 'packages/LibTmuxWorkspace', aliases: ['using LibTmuxWorkspace', 'libtmux-workspace'] }),
   ],
   erlang: [
