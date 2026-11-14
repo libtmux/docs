@@ -485,6 +485,12 @@ describe('the replay component', () => {
       expect(rule(tier, '.mcp-tier')).toMatch(/border-radius: 0\.25rem;/)
       expect(rule(tier, '.mcp-tier')).not.toMatch(/999px/)
     })
+
+    it('takes the rail from the port\'s solid brand colour, and keeps its marks clear of the track\'s edge', () => {
+      expect(rule(css, '.mcp-replay__rail')).toMatch(/--mcp-accent: var\(--brand-solid, /)
+      expect(rule(css, '.mcp-replay__track')).toMatch(/height: 2\.125rem;/)
+      expect(rule(css, '.mcp-replay__line')).toMatch(/inset-inline: 1rem;/)
+    })
   })
 
   it('gives the rail a row of its own on a narrow bar, after the rule that sizes it beside the buttons', () => {

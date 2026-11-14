@@ -729,7 +729,8 @@ html:not([data-js]) .mcp-replay__controls {
  * The tooltip is the rail's, not the track's, so the scroll box does not clip it.
  */
 .mcp-replay__rail {
-  --mcp-accent: var(--color-link, currentColor);
+  /* The rail takes the port's solid brand colour, as filled elements do; the current call's tint stays the link colour. */
+  --mcp-accent: var(--brand-solid, var(--color-link, currentColor));
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -742,7 +743,8 @@ html:not([data-js]) .mcp-replay__controls {
 .mcp-replay__track {
   overflow-x: auto;
   overflow-y: hidden;
-  height: 1.5rem;
+  /* Tall enough for the current mark at its hover scale with its ring and shadow. */
+  height: 2.125rem;
   scroll-snap-type: x proximity;
   scrollbar-width: none;
   overscroll-behavior-x: contain;
@@ -771,10 +773,10 @@ html:not([data-js]) .mcp-replay__controls {
   height: 100%;
 }
 
-/* The unplayed line is a muted tone with a slight inset; the played part is the accent with a soft glow. */
+/* The unplayed line is a muted tone; the played part is the accent with a soft glow. It starts 1rem in, so the current mark, its ring and a hover scale stay inside the track. */
 .mcp-replay__line {
   position: absolute;
-  inset-inline: 0.75rem;
+  inset-inline: 1rem;
   top: 50%;
   height: 0.375rem;
   transform: translateY(-50%);
