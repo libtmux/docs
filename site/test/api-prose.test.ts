@@ -496,3 +496,16 @@ describe('a description\'s directory is drawn for every port', () => {
     expect(drawn).toEqual({ rows: 3, chips: 6, rubrics: ['What is on here'] })
   })
 })
+
+describe('the Markdown twin of a Raku description', () => {
+  // The page links a Raku code span to the member it names; the twin took its allowlist from a port list without Raku and
+  // left the same span plain.
+  it('links the Server methods its description names, as the page does', () => {
+    const model = API_MODELS.raku
+    const server = model.symbols.find((symbol) => symbol.id === 'LibTmux::Server')!
+    const markdown = symbolMarkdown({ model, symbol: server })
+    for (const name of ['start', 'from-env', 'run-batch', 'snapshot']) {
+      expect(markdown, name).toMatch(new RegExp(`\\[\`${name}\`\\]\\((?!/tmux/)[^)\\s]+\\)`))
+    }
+  })
+})
