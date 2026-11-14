@@ -355,6 +355,46 @@
           ]
         }
       ]
+    },
+    {
+      "port": "raku",
+      "name": "!guard",
+      "owner": "Runtime",
+      "purpose": "Refuses a subprocess mutation when the daemon PID/start time differs from the retained incarnation.",
+      "evidence": [
+        {
+          "at": "lib/LibTmux/Engine.rakumod:317",
+          "has": [
+            "method !guard(Invocation:D $command, Incarnation:D $incarnation, Str:D $refusal --> Invocation:D) {"
+          ]
+        },
+        {
+          "at": "lib/LibTmux/Engine.rakumod:321",
+          "has": [
+            "'if-shell', '-F', $condition, $command.source, $refusal,"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "raku",
+      "name": "spawn",
+      "owner": "Attachment",
+      "purpose": "Refuses attachment when the daemon PID/start time differs from the retained incarnation.",
+      "evidence": [
+        {
+          "at": "lib/LibTmux/Attachment.rakumod:55",
+          "has": [
+            "method spawn(Endpoint:D :$endpoint!, Incarnation:D :$incarnation!,"
+          ]
+        },
+        {
+          "at": "lib/LibTmux/Attachment.rakumod:81",
+          "has": [
+            "my $guard = Invocation.new(:argv(['if-shell', '-F', $condition,"
+          ]
+        }
+      ]
     }
   ]
 }
