@@ -40,7 +40,7 @@ const searchHref = port ? withPortRoot(`/${port}/${version}/search/`) : withRoot
   }
 
   .search-modal::backdrop {
-    background: rgb(0 0 0 / 0.5);
+    background: var(--scrim);
   }
 
   .search-modal:not([open]) {

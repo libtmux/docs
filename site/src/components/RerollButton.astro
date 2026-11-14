@@ -90,7 +90,7 @@ const { size = 'md', label, title = 'Reroll', animateOnMount = false, class: cla
     line-height: 1;
     cursor: pointer;
     user-select: none;
-    background-image: linear-gradient(to right, #6366f1, #a855f7); /* indigo-500, purple-500 */
+    background-image: linear-gradient(to right, var(--lm-reroll-from), var(--lm-reroll-to));
     transition: transform 150ms;
   }
 
@@ -98,8 +98,9 @@ const { size = 'md', label, title = 'Reroll', animateOnMount = false, class: cla
     background-image: linear-gradient(to right, #4f46e5, #9333ea); /* indigo-600, purple-600 */
   }
 
-  html[data-theme-mode="dark"] .lm-reroll {
-    background-image: linear-gradient(to right, #818cf8, #c084fc); /* indigo-400, purple-400 */
+  /* The dark stops are lighter already, so hover keeps them. */
+  html[data-theme-mode="dark"] .lm-reroll:hover {
+    background-image: linear-gradient(to right, var(--lm-reroll-from), var(--lm-reroll-to));
   }
 
   .lm-reroll:active {
@@ -107,7 +108,7 @@ const { size = 'md', label, title = 'Reroll', animateOnMount = false, class: cla
   }
 
   .lm-reroll:focus-visible {
-    outline: 2px solid #6366f1;
+    outline: 2px solid var(--focus-ring-color);
     outline-offset: 2px;
   }
 

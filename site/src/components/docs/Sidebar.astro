@@ -82,10 +82,7 @@ const navigationScope = selected?.section.href ?? `tree:${createHash('sha256').u
     background: transparent;
   }
   .sidebar-nav::-webkit-scrollbar-thumb {
-    background: rgb(203 213 225); /* slate-300 */
+    background: var(--color-edge);
     border-radius: 2px;
-  }
-  :global([data-theme-mode='dark']) .sidebar-nav::-webkit-scrollbar-thumb {
-    background: rgb(71 85 105); /* slate-600 */
   }
 </style>

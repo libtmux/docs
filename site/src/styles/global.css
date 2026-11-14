@@ -421,7 +421,7 @@ html[data-theme-mode="dark"] {
  * A block highlighted by `highlightInline` outside the widgets, which carry
  * their own copy of this. Shiki writes each token's light and dark colours as
  * custom properties, and this reads the one in use; the scrollbar is the thin
- * slate one the widgets use.
+ * thin one the widgets use, in the hairline colour.
  */
 .lm-highlighted span {
   color: var(--shiki-light);
@@ -433,12 +433,9 @@ html[data-theme-mode="dark"] .lm-highlighted span {
 
 pre.lm-highlighted {
   scrollbar-width: thin;
-  scrollbar-color: rgb(203 213 225) transparent;
+  scrollbar-color: var(--color-edge) transparent;
 }
 
-html[data-theme-mode="dark"] pre.lm-highlighted {
-  scrollbar-color: rgb(71 85 105) transparent;
-}
 
 /* Emerald Theme */
 html[data-theme="emerald"] {
@@ -707,7 +704,7 @@ html[data-theme="purple"][data-theme-mode="dark"] {
 
   .prose code:not(pre code) {
     overflow-wrap: anywhere;
-    @apply bg-gray-100 dark:bg-gray-800 text-[var(--theme-primary)] dark:text-[var(--theme-accent)];
+    @apply bg-[var(--color-inline-code-background)] text-[var(--theme-primary)] dark:text-[var(--theme-accent)];
     @apply px-1.5 py-0.5 rounded text-sm font-medium;
     @apply before:content-none! after:content-none!;
   }

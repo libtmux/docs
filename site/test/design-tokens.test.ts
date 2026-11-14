@@ -319,3 +319,24 @@ describe('pickers, touch targets, focus and labels', () => {
     expect(source('components/docs/Sidebar.astro')).toContain('placeholder="Filter this section"')
   })
 })
+
+describe('shared chrome reads tokens, not greys', () => {
+  const source = (path: string) => readFileSync(new URL(`../src/${path}`, import.meta.url), 'utf8')
+
+  it.each(['components/BackToTop.astro', 'components/MobileToC.astro', 'layouts/DocsLayout.astro', 'components/TableOfContents/TableOfContents.astro', 'components/TableOfContents/TableOfContentsList.astro', 'components/docs/Sidebar.astro', 'components/RerollButton.astro'])(
+    '%s has no slate or gray palette utility and no rgb or hex grey literal', (file) => {
+      expect(source(file)).not.toMatch(/(?:bg|text|border|ring|divide|from|via|to)-(?:slate|gray|zinc|neutral|stone)-\d{2,3}/)
+      expect(source(file)).not.toMatch(/rgb\(\d+ \d+ \d+\)/)
+    })
+
+  it('paints every drawer overlay with the scrim token', () => {
+    expect(source('layouts/DocsLayout.astro')).toContain('bg-[var(--scrim)]')
+    expect(source('components/MobileToC.astro')).toContain('bg-[var(--scrim)]')
+    expect(source('styles/api-tree.css')).toContain('background: var(--scrim);')
+    expect(source('components/SearchModal.astro')).toContain('background: var(--scrim);')
+  })
+
+  it('draws the reroll gradient from its tokens', () => {
+    expect(source('components/RerollButton.astro')).toContain('linear-gradient(to right, var(--lm-reroll-from), var(--lm-reroll-to))')
+  })
+})

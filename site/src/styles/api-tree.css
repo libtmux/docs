@@ -499,7 +499,7 @@ html[data-api-nav] .api-nav__item[aria-expanded='false'] > [role='group']:not([d
     position: fixed;
     inset: 0;
     z-index: 40;
-    background: rgb(0 0 0 / 0.5);
+    background: var(--scrim);
   }
 
   html[data-api-nav] .api-nav-toggle {
