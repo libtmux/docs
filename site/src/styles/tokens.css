@@ -21,6 +21,10 @@
   --scrim: rgba(15, 20, 25, 0.5);
   --diff-bg: #fdf3d8;
 
+  /* The mark's primary pane is the port's brand colour and its base is the same in every port. The upper and lower panes are per-port art in libtmux/assets, with no source here. */
+  --logo-primary: var(--brand-color);
+  --logo-base: #231f20;
+
   /* Asides keep their hue for border and icon; titles read in the ink. */
   --aside-note: oklch(0.65 0.15 250);
   --aside-tip: oklch(0.73 0.13 120);

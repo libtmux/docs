@@ -108,6 +108,7 @@ const FIXED: Record<string, string> = {
   'control-sm': '2rem', 'control-md': '2.5rem', 'control-lg': '3.5rem', 'touch-target': '2.75rem', 'row-compact': '1.75rem', 'row-default': '2.125rem',
   'kind-mark': '1.25rem', 'list-budget': '28rem', 'opacity-deprecated': '0.7',
   'z-context': '35', 'z-topnav': '40', 'z-drawer': '50', 'z-pane': '55', 'z-dialog': '60',
+  'logo-primary': 'var(--brand-color)', 'logo-base': '#231f20',
   'bp-phone': '30rem', 'bp-tablet': '48rem', 'bp-nav': '64rem', 'bp-outline': '80rem',
 }
 
