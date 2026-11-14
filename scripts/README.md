@@ -592,6 +592,29 @@ path (`mcp/v0.0.1-alpha.9`) while the library tags bare. `tagPrefix` in
 ports.ts declares the first case, and its absence rejects any tag carrying `/`
 or `@`, so a submodule's release is never read as the library's.
 
+```console
+$ node scripts/gen-perl-pod.mjs
+```
+
+Regenerates `site/src/data/perl-pod.json`, which records what the latest CPAN
+release of each Perl distribution documents: the document each provided
+package belongs to, each document's file with its SHA-256, and the fragments of
+its rendered POD. A Perl reference page builds its MetaCPAN POD links from it
+and the API model alone, so rendering and the unit tests request nothing. MetaCPAN
+answers a script's page request with a challenge, so the script reads
+`fastapi.metacpan.org` instead: the `pod` endpoint renders a page's body with
+the page's own renderer, which makes a heading's `id` the fragment the page
+answers to, and the `source` endpoint gives the file whose digest is compared
+with the one the API model recorded. It refuses a distribution that is not the
+latest released one, a package MetaCPAN files under another release, and a POD
+whose NAME section names another module.
+
+The distributions are the Perl port's packages in `ports.ts`. Pass `--check` to
+fail instead of writing when the file differs from what MetaCPAN reports now,
+and `--offline` with it to read the committed file alone, as the test gate does.
+`gen-perl-pod.negative.mjs` shows the offline check failing on each defect a link
+depends on.
+
 Assemble a complete preview:
 
 ```console

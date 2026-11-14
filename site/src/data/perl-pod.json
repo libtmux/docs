@@ -1,0 +1,612 @@
+{
+  "schema": 1,
+  "distributions": {
+    "LibTmux": {
+      "author": "TONY",
+      "release": "0.003",
+      "documents": {
+        "LibTmux": {
+          "path": "lib/LibTmux.pm",
+          "sha256": "da7690215acae3f9a4f2d5aeb6ef1785d2b5f0f84718fd130bca4666c8e908c9",
+          "anchors": [
+            "NAME",
+            "DESCRIPTION",
+            "DOCUMENTATION"
+          ]
+        },
+        "LibTmux::Client": {
+          "path": "lib/LibTmux/Client.pm",
+          "sha256": "1d6a7fe38802d134215f476727e014cceb7f189d608a45e907aa74a9b33377a3",
+          "anchors": [
+            "NAME",
+            "METHODS",
+            "height",
+            "id",
+            "name",
+            "pid",
+            "session",
+            "tty",
+            "width",
+            "OWNERSHIP"
+          ]
+        },
+        "LibTmux::ClientSelection": {
+          "path": "lib/LibTmux/ClientSelection.pm",
+          "sha256": "24c200afefcb28a5df984b99db8df4253986176b005daf175ecd3f45ebc50aab",
+          "anchors": [
+            "NAME",
+            "DESCRIPTION"
+          ]
+        },
+        "LibTmux::Codec": {
+          "path": "lib/LibTmux/Codec.pm",
+          "sha256": "c3517cd3542e7622b575ddf3a8274841e43df843d4b9b4739d79268ed047a327",
+          "anchors": [
+            "NAME",
+            "DESCRIPTION",
+            "METHODS",
+            "format",
+            "decode"
+          ]
+        },
+        "LibTmux::CommandResult": {
+          "path": "lib/LibTmux/CommandResult.pm",
+          "sha256": "c05fee72a809d924d96908eeb5c9d4c328b088d5e4f9692f292f9c96b13fdbd9",
+          "anchors": [
+            "NAME",
+            "METHODS",
+            "stdout",
+            "stderr",
+            "exit_code",
+            "signal",
+            "raw_status",
+            "success",
+            "OWNERSHIP"
+          ]
+        },
+        "LibTmux::Entity": {
+          "path": "lib/LibTmux/Entity.pm",
+          "sha256": "46fbe507850d5880f59d78a732270e2554d5e4fe112d8a8013e60a9fca0d5c20",
+          "anchors": [
+            "NAME",
+            "DESCRIPTION",
+            "METHODS",
+            "kind",
+            "server_id",
+            "generation",
+            "identity",
+            "to_record",
+            "EXECUTION"
+          ]
+        },
+        "LibTmux::Filter": {
+          "path": "lib/LibTmux/Filter.pm",
+          "sha256": "fa3b65a22515a6086d06f044e06eeb454575b926e41216419f445d084c8cd8bc",
+          "anchors": [
+            "NAME",
+            "SYNOPSIS",
+            "CONTRACT",
+            "METHODS",
+            "new",
+            "entity",
+            "normalized_where",
+            "matches",
+            "register_adapter",
+            "to_data",
+            "to_json",
+            "from_data",
+            "from_json",
+            "EXECUTION"
+          ]
+        },
+        "LibTmux::Operation": {
+          "path": "lib/LibTmux/Operation.pm",
+          "sha256": "dc63406ae06d858fad89347a146cb7ba8496e6db9ee5eaf1ab278e2a67d250e3",
+          "anchors": [
+            "NAME",
+            "METHODS",
+            "request",
+            "value",
+            "then",
+            "catch",
+            "sequence",
+            "run"
+          ]
+        },
+        "LibTmux::Pane": {
+          "path": "lib/LibTmux/Pane.pm",
+          "sha256": "1d34d763df3256c8645b91395788d0e863e1bff80115a473494b23c4525f3040",
+          "anchors": [
+            "NAME",
+            "METHODS",
+            "active",
+            "current_command",
+            "current_path",
+            "cursor_shape",
+            "dead",
+            "exit_status",
+            "height",
+            "id",
+            "index",
+            "pid",
+            "title",
+            "width",
+            "window",
+            "OWNERSHIP"
+          ]
+        },
+        "LibTmux::PaneSelection": {
+          "path": "lib/LibTmux/PaneSelection.pm",
+          "sha256": "6edb85943a642e56afcc5185b905c4fc82fcb9c3ca35d013aa61627421354fc5",
+          "anchors": [
+            "NAME",
+            "DESCRIPTION"
+          ]
+        },
+        "LibTmux::ProcessJob": {
+          "path": "lib/LibTmux/ProcessJob.pm",
+          "sha256": "fd46908c18f4b034cd74b1c8e10b1525d7270e60159e32e6c45b0778425be642",
+          "anchors": [
+            "NAME",
+            "METHODS",
+            "start",
+            "pid",
+            "cleanup_complete",
+            "take_result_handle",
+            "consume",
+            "finish",
+            "cancel",
+            "wait"
+          ]
+        },
+        "LibTmux::QueryPlan": {
+          "path": "lib/LibTmux/QueryPlan.pm",
+          "sha256": "3f18a903100e46dcb58c32b7ad6a4853df8094f8932a56644b33d6e4dd5668fa",
+          "anchors": [
+            "NAME",
+            "METHODS",
+            "summary",
+            "to_data",
+            "filter",
+            "policy"
+          ]
+        },
+        "LibTmux::Schema": {
+          "path": "lib/LibTmux/Schema.pm",
+          "sha256": "69290dbf72abe7cb27d9364b519f261281088d59abd4c17af33026adf4d7a52f",
+          "anchors": [
+            "NAME",
+            "METHODS",
+            "register_adapter"
+          ]
+        },
+        "LibTmux::Selection": {
+          "path": "lib/LibTmux/Selection.pm",
+          "sha256": "12565d289dcb00e13852d297cbd843a65a9bab43c0e6cab6392bc6fdf8749c99",
+          "anchors": [
+            "NAME",
+            "METHODS",
+            "new",
+            "where",
+            "grep",
+            "count",
+            "exists",
+            "first",
+            "one",
+            "one_or_undef",
+            "iterator",
+            "to_array",
+            "EXECUTION"
+          ]
+        },
+        "LibTmux::Selection::Iterator": {
+          "path": "lib/LibTmux/Selection/Iterator.pm",
+          "sha256": "755aaf2aa31e3302422d00573bd4ce4d26be8017f1d008b12be1f64708496d40",
+          "anchors": [
+            "NAME",
+            "METHODS",
+            "next"
+          ]
+        },
+        "LibTmux::Server": {
+          "path": "lib/LibTmux/Server.pm",
+          "sha256": "2ee3f86b2a377d31692321c19928845f49463a6faa1e231bf4fadb5825be23ef",
+          "anchors": [
+            "NAME",
+            "SYNOPSIS",
+            "CONTRACT",
+            "ERRORS",
+            "METHODS",
+            "new",
+            "execute",
+            "cmd",
+            "new_session",
+            "new_window",
+            "split_pane",
+            "snapshot",
+            "listings",
+            "query_panes",
+            "explain_panes",
+            "rename_session",
+            "rename_window",
+            "link_window",
+            "unlink_window",
+            "move_window",
+            "select_window",
+            "select_pane",
+            "select_layout",
+            "resize_pane",
+            "set_title",
+            "send_keys",
+            "send_text",
+            "capture_pane",
+            "kill_pane",
+            "kill_window",
+            "kill_session",
+            "kill_server",
+            "clients",
+            "attach_argv",
+            "detach_client",
+            "set_option",
+            "get_option",
+            "unset_option",
+            "set_hook",
+            "show_hooks",
+            "set_environment",
+            "get_environment",
+            "unset_environment",
+            "set_buffer",
+            "show_buffer",
+            "delete_buffer",
+            "batch",
+            "operation",
+            "VERIFICATION-REPORT",
+            "policy,-status,-comparison",
+            "native_checked,-translation_exact,-native_filter,-reasons",
+            "server_id,-generation,-daemon_version,-capture_start,-capture_end",
+            "captured_ids,-local_ids,-native_ids",
+            "missing_ids,-unexpected_ids,-uncaptured_ids"
+          ]
+        },
+        "LibTmux::Session": {
+          "path": "lib/LibTmux/Session.pm",
+          "sha256": "937f4399513d814108380b75beb1c8824960593354f3955559439e2bc999da83",
+          "anchors": [
+            "NAME",
+            "METHODS",
+            "attached",
+            "created",
+            "id",
+            "name",
+            "path",
+            "window_links",
+            "OWNERSHIP"
+          ]
+        },
+        "LibTmux::SessionSelection": {
+          "path": "lib/LibTmux/SessionSelection.pm",
+          "sha256": "8ba23cdcf527ceb555ce392857c2b43b86b1b55ab4e881e5dc733ced99e95f4c",
+          "anchors": [
+            "NAME",
+            "DESCRIPTION"
+          ]
+        },
+        "LibTmux::Snapshot": {
+          "path": "lib/LibTmux/Snapshot.pm",
+          "sha256": "d25f65b94405c1d9cb3ff3f0e268de567d79d4aca178efa66c14db8bd040df5d",
+          "anchors": [
+            "NAME",
+            "METHODS",
+            "from_records",
+            "server_id",
+            "generation",
+            "complete",
+            "metadata",
+            "sessions",
+            "windows",
+            "window_links",
+            "panes",
+            "clients",
+            "session_by_id",
+            "window_by_id",
+            "pane_by_id",
+            "to_records",
+            "EXECUTION"
+          ]
+        },
+        "LibTmux::Transport": {
+          "path": "lib/LibTmux/Transport.pm",
+          "sha256": "57dcb66db1c204f7fe6bcfee6623742dcfe425d8f9f0220e126d8e7c0a6535dc",
+          "anchors": [
+            "NAME",
+            "METHODS",
+            "run",
+            "start",
+            "RESULTS"
+          ]
+        },
+        "LibTmux::Window": {
+          "path": "lib/LibTmux/Window.pm",
+          "sha256": "df01e902cc513dee0e7458c2499078ca9141446066a822525a2e45864942e06e",
+          "anchors": [
+            "NAME",
+            "METHODS",
+            "active_pane",
+            "height",
+            "id",
+            "layout",
+            "links",
+            "name",
+            "panes",
+            "width",
+            "OWNERSHIP"
+          ]
+        },
+        "LibTmux::WindowLink": {
+          "path": "lib/LibTmux/WindowLink.pm",
+          "sha256": "30c8937a5806bb2996af3b21c3a6936a383a3e34ead6d591748a077b7b6adebf",
+          "anchors": [
+            "NAME",
+            "METHODS",
+            "active",
+            "id",
+            "index",
+            "session",
+            "window",
+            "OWNERSHIP"
+          ]
+        },
+        "LibTmux::WindowLinkSelection": {
+          "path": "lib/LibTmux/WindowLinkSelection.pm",
+          "sha256": "8301d518b97d620f76c7d1c7927c14809962a48b9ae5027768ea2163395550f1",
+          "anchors": [
+            "NAME",
+            "DESCRIPTION"
+          ]
+        },
+        "LibTmux::WindowSelection": {
+          "path": "lib/LibTmux/WindowSelection.pm",
+          "sha256": "8b7956f6360344d3c3f8c7b1759f2e53e0acbbc98e81d2f3f864c339b8fcf8c2",
+          "anchors": [
+            "NAME",
+            "DESCRIPTION"
+          ]
+        },
+        "LibTmux::X": {
+          "path": "lib/LibTmux/X.pm",
+          "sha256": "83438781e81322c06006dd84fe7bf357472a34c1e3e3a502babdc5b040036195",
+          "anchors": [
+            "NAME",
+            "DESCRIPTION",
+            "METHODS",
+            "new",
+            "throw",
+            "message",
+            "path",
+            "entity",
+            "expected",
+            "received",
+            "matched_ids",
+            "count",
+            "result",
+            "dispatched",
+            "details",
+            "created",
+            "cause",
+            "CARDINALITY-AND-DATA-FAILURES",
+            "NoMatch",
+            "MultipleMatches",
+            "InvalidFilter",
+            "InvalidSelection",
+            "InvalidArgument",
+            "Unloaded",
+            "UnsupportedValue",
+            "Unsupported",
+            "AcquisitionRace",
+            "QueryMismatch",
+            "StaleReference",
+            "Spawn",
+            "NoServer",
+            "Command",
+            "Timeout",
+            "Cancelled",
+            "OutputLimit",
+            "Transport",
+            "Codec",
+            "NoSuchTarget",
+            "Creation",
+            "DIAGNOSTICS"
+          ]
+        }
+      },
+      "packages": {
+        "LibTmux": "LibTmux",
+        "LibTmux::Client": "LibTmux::Client",
+        "LibTmux::ClientSelection": "LibTmux::ClientSelection",
+        "LibTmux::Codec": "LibTmux::Codec",
+        "LibTmux::CommandResult": "LibTmux::CommandResult",
+        "LibTmux::Entity": "LibTmux::Entity",
+        "LibTmux::Filter": "LibTmux::Filter",
+        "LibTmux::Operation": "LibTmux::Operation",
+        "LibTmux::Pane": "LibTmux::Pane",
+        "LibTmux::PaneSelection": "LibTmux::PaneSelection",
+        "LibTmux::Platform::Linux": null,
+        "LibTmux::ProcessJob": "LibTmux::ProcessJob",
+        "LibTmux::QueryPlan": "LibTmux::QueryPlan",
+        "LibTmux::Schema": "LibTmux::Schema",
+        "LibTmux::Selection": "LibTmux::Selection",
+        "LibTmux::Selection::Iterator": "LibTmux::Selection::Iterator",
+        "LibTmux::Server": "LibTmux::Server",
+        "LibTmux::Session": "LibTmux::Session",
+        "LibTmux::SessionSelection": "LibTmux::SessionSelection",
+        "LibTmux::Snapshot": "LibTmux::Snapshot",
+        "LibTmux::Transport": "LibTmux::Transport",
+        "LibTmux::Window": "LibTmux::Window",
+        "LibTmux::WindowLink": "LibTmux::WindowLink",
+        "LibTmux::WindowLinkSelection": "LibTmux::WindowLinkSelection",
+        "LibTmux::WindowSelection": "LibTmux::WindowSelection",
+        "LibTmux::X": "LibTmux::X",
+        "LibTmux::X::AcquisitionRace": "LibTmux::X",
+        "LibTmux::X::Cancelled": "LibTmux::X",
+        "LibTmux::X::Codec": "LibTmux::X",
+        "LibTmux::X::Command": "LibTmux::X",
+        "LibTmux::X::Creation": "LibTmux::X",
+        "LibTmux::X::InvalidArgument": "LibTmux::X",
+        "LibTmux::X::InvalidFilter": "LibTmux::X",
+        "LibTmux::X::InvalidSelection": "LibTmux::X",
+        "LibTmux::X::MultipleMatches": "LibTmux::X",
+        "LibTmux::X::NoMatch": "LibTmux::X",
+        "LibTmux::X::NoServer": "LibTmux::X",
+        "LibTmux::X::NoSuchTarget": "LibTmux::X",
+        "LibTmux::X::OutputLimit": "LibTmux::X",
+        "LibTmux::X::QueryMismatch": "LibTmux::X",
+        "LibTmux::X::Spawn": "LibTmux::X",
+        "LibTmux::X::StaleReference": "LibTmux::X",
+        "LibTmux::X::Timeout": "LibTmux::X",
+        "LibTmux::X::Transport": "LibTmux::X",
+        "LibTmux::X::Unloaded": "LibTmux::X",
+        "LibTmux::X::Unsupported": "LibTmux::X",
+        "LibTmux::X::UnsupportedValue": "LibTmux::X"
+      }
+    },
+    "LibTmux-Async": {
+      "author": "TONY",
+      "release": "0.003",
+      "documents": {
+        "LibTmux::Async": {
+          "path": "lib/LibTmux/Async.pm",
+          "sha256": "a17ae3cb757850a86ec7b40ddc59902fa74df36241066b63b2d38f2f2f161d84",
+          "anchors": [
+            "NAME",
+            "DESCRIPTION",
+            "DOCUMENTATION"
+          ]
+        },
+        "LibTmux::Async::Server": {
+          "path": "lib/LibTmux/Async/Server.pm",
+          "sha256": "65af3416d55200c0d10d4a2a8982280254ee28b5d06b15222a1da7da6beeea11",
+          "anchors": [
+            "NAME",
+            "SYNOPSIS",
+            "METHODS",
+            "new",
+            "close",
+            "CORE-OPERATIONS",
+            "execute",
+            "cmd",
+            "new_session",
+            "new_window",
+            "split_pane",
+            "snapshot",
+            "listings",
+            "query_panes",
+            "explain_panes",
+            "rename_session",
+            "rename_window",
+            "link_window",
+            "unlink_window",
+            "move_window",
+            "select_window",
+            "select_pane",
+            "select_layout",
+            "resize_pane",
+            "set_title",
+            "send_keys",
+            "send_text",
+            "capture_pane",
+            "kill_pane",
+            "kill_window",
+            "kill_session",
+            "kill_server",
+            "clients",
+            "attach_argv",
+            "detach_client",
+            "set_option",
+            "get_option",
+            "unset_option",
+            "set_hook",
+            "show_hooks",
+            "set_environment",
+            "get_environment",
+            "unset_environment",
+            "set_buffer",
+            "show_buffer",
+            "delete_buffer",
+            "batch"
+          ]
+        },
+        "LibTmux::Async::Transport": {
+          "path": "lib/LibTmux/Async/Transport.pm",
+          "sha256": "67c30dd33016be2f7161aeaa4aab0ff3a153b06c8739a32fc9a8786642dc9375",
+          "anchors": [
+            "NAME",
+            "METHODS",
+            "new",
+            "execute",
+            "close"
+          ]
+        },
+        "LibTmux::Async::X": {
+          "path": "lib/LibTmux/Async/X.pm",
+          "sha256": "c1f342b52f45de5eee2c1970e806049a373f0f88d1c579ae4c157ed40756d272",
+          "anchors": [
+            "NAME",
+            "QueueFull",
+            "Closed"
+          ]
+        }
+      },
+      "packages": {
+        "LibTmux::Async": "LibTmux::Async",
+        "LibTmux::Async::Server": "LibTmux::Async::Server",
+        "LibTmux::Async::Transport": "LibTmux::Async::Transport",
+        "LibTmux::Async::X": "LibTmux::Async::X",
+        "LibTmux::Async::X::Closed": "LibTmux::Async::X",
+        "LibTmux::Async::X::QueueFull": "LibTmux::Async::X"
+      }
+    },
+    "LibTmux-Workspace": {
+      "author": "TONY",
+      "release": "0.003",
+      "documents": {
+        "LibTmux::Workspace": {
+          "path": "lib/LibTmux/Workspace.pm",
+          "sha256": "5201a40ede160f6f4931b475f753de3329280cc4c49469fab7242c7943f77aee",
+          "anchors": [
+            "NAME",
+            "SYNOPSIS",
+            "METHODS",
+            "new",
+            "from_json",
+            "plan",
+            "load",
+            "COMMAND-LINE",
+            "DOCUMENTATION"
+          ]
+        },
+        "LibTmux::Workspace::X": {
+          "path": "lib/LibTmux/Workspace/X.pm",
+          "sha256": "10c8aeefee1eff75d303559f1a30d4a71705ba638fa95e630fad0b4df04c0220",
+          "anchors": [
+            "NAME",
+            "EXCEPTIONS",
+            "Config",
+            "Conflict",
+            "Load",
+            "METHODS",
+            "report",
+            "report_data",
+            "cause"
+          ]
+        }
+      },
+      "packages": {
+        "LibTmux::Workspace": "LibTmux::Workspace",
+        "LibTmux::Workspace::X": "LibTmux::Workspace::X",
+        "LibTmux::Workspace::X::Config": "LibTmux::Workspace::X",
+        "LibTmux::Workspace::X::Conflict": "LibTmux::Workspace::X",
+        "LibTmux::Workspace::X::Load": "LibTmux::Workspace::X"
+      }
+    }
+  }
+}
