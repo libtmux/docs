@@ -479,7 +479,8 @@ const activePortRules = items
 
   .lm-agent-prompt__code code {
     font-family: var(--lm-agent-prompt-mono);
-    font-size: 0.875rem;
+    /* Code blocks are 13px at 1.7 (record 0032); signature headers keep 14px. */
+    font-size: 0.8125rem;
     line-height: 1.7;
     white-space: pre;
     color: var(--lm-agent-prompt-code-fg);

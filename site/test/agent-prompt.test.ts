@@ -50,6 +50,13 @@ describe('the language control', () => {
     expect(rule('.lm-agent-prompt__lang-picker .doc-picker > summary')).toMatch(/min-height: 2\.25rem;/)
   })
 
+  it('sets the prompt at the code size, 13px at a line height of 1.7', () => {
+    const source = readFileSync(new URL('../src/components/widgets/AgentPrompt.astro', import.meta.url), 'utf8')
+    expect(/\.lm-agent-prompt__code code \{[^}]*font-size: 0\.8125rem;[^}]*line-height: 1\.7;/.test(source)).toBe(true)
+    // Control: the published 14px rule is the one this check refuses.
+    expect(/\.lm-agent-prompt__code code \{[^}]*font-size: 0\.8125rem;/.test('.lm-agent-prompt__code code { font-size: 0.875rem; line-height: 1.7; }')).toBe(false)
+  })
+
   it('is left out where the page supplies a language picker of its own', async () => {
     const document = await widget({ showLanguageTabs: false })
     expect(document.querySelector('[data-lang-picker], [data-lang-menu]')).toBeNull()
