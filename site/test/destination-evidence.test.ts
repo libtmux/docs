@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
-  EVIDENCE_MAX_AGE_DAYS, REPOSITORY_HOSTS, VERSION_SUPPORT, checkEvidence, collectDestinations, dateProblem, futureRecords, inventoryCoverage, repoOf, staleRecords, staleWarnings,
+  DEVELOPER_VERSION, EVIDENCE_MAX_AGE_DAYS, REPOSITORY_HOSTS, VERSION_SUPPORT, checkEvidence, collectDestinations, dateProblem, futureRecords, inventoryCoverage, repoOf, staleRecords, staleWarnings,
 } from '../../scripts/lib/destination-verification.mjs'
 import evidence from '../src/data/destination-evidence.json'
 import manifests from '../src/data/manifest-packages.json'
@@ -108,6 +108,7 @@ describe('destination evidence', () => {
 
   it('checks the manifest version on every host that lists versions, and says why where one cannot', () => {
     const counts = { confirmed: 0, unsupported: 0 }
+    const developer = (host: string, version?: string) => DEVELOPER_VERSION[host as keyof typeof DEVELOPER_VERSION]?.test(version ?? '') === true
     for (const [url, destination] of wanted) {
       const record = records.get(url)!
       if (!record.ok || !destination.entries.some(({ status }: { status: string }) => status === 'published')) continue
@@ -122,7 +123,8 @@ describe('destination evidence', () => {
         counts.unsupported += 1
       } else {
         expect(versionsOf(url), url).toEqual(destination.expected.map(({ version }: { version: string }) => version))
-        for (const check of checksOf(url)) expect(check.check, url).toBe('confirmed')
+        // A host that never lists developer releases leaves one in a manifest as such, and only that host does.
+        for (const check of checksOf(url)) expect(check.check, url).toBe(developer(destination.host, check.version) ? 'developer' : 'confirmed')
         counts.confirmed += 1
       }
     }
@@ -130,6 +132,29 @@ describe('destination evidence', () => {
     const nonSource = [...wanted.values()].filter((destination) => !destination.kinds.every((kind: string) => kind === 'source') && destination.entries.some(({ status }: { status: string }) => status === 'published'))
     expect(counts.confirmed).toBe(nonSource.length)
     expect(counts.unsupported).toBeGreaterThan(0)
+  })
+
+  it('takes a developer version from the manifest as no claim of a release, on a CPAN host and nowhere else', () => {
+    const demoEntry = demo({
+      coordinate: 'Demo-Dist', label: 'Demo-Dist', package: { host: 'metacpan', url: 'https://metacpan.org/dist/Demo-Dist' },
+    })
+    const record = (version: string, check: string) => ({
+      url: 'https://metacpan.org/dist/Demo-Dist', kinds: ['package'], host: 'metacpan', ok: true, status: 200, identity: 'Demo-Dist', repository: 'libtmux/libtmux-rs',
+      versionChecks: [{ version, source: 'libtmux/libtmux-rs:Makefile.PL', ports: ['demo'], check }], checkedAt: new Date().toISOString().slice(0, 10), entries: ['demo:demo'],
+    })
+    const declared = (version: string) => ({ ports: { demo: { distributions: [{ name: 'Demo-Dist', version, manifest: 'Makefile.PL', repo: 'libtmux/libtmux-rs' }] } } })
+    const repository = {
+      url: 'https://github.com/libtmux/libtmux-rs', kinds: ['source'], host: 'github', ok: true, status: 200, identity: 'libtmux/libtmux-rs',
+      versionChecks: [{ check: 'unsupported', note: 'a branch link names no release' }], checkedAt: record('0.003', 'confirmed').checkedAt, entries: ['demo:demo'],
+    }
+    const problems = (version: string, check: string) =>
+      checkEvidence(demoEntry, { schema: 1, checkedAt: repository.checkedAt, destinations: [record(version, check), repository] }, { manifests: declared(version), today })
+    expect(problems('0.001_001', 'developer')).toEqual([])
+    expect(problems('0.003', 'confirmed')).toEqual([])
+    // Controls: a release number is not a developer version, and a developer version that was never checked is not a confirmed one.
+    expect(problems('0.003', 'developer')).toEqual([expect.stringMatching(/records 0\.003 as a developer version, which metacpan does not issue/)])
+    expect(problems('0.001_001', 'absent')).toEqual([expect.stringMatching(/does not carry 0\.001_001/)])
+    expect(DEVELOPER_VERSION).not.toHaveProperty('pypi')
   })
 
   it('checks a Go module against its own tag series and a package against the module that holds it', () => {
