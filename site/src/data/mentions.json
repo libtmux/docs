@@ -12483,10 +12483,24 @@
   },
   {
    "port": "perl",
+   "symbol": "LibTmux::Filter",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
    "symbol": "LibTmux::Pane::cursor_shape",
    "page": "/perl/latest/concepts/fields/",
    "title": "Entity fields",
    "section": "concepts"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Selection",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "perl",
@@ -12498,6 +12512,13 @@
   {
    "port": "perl",
    "symbol": "LibTmux::Selection::first",
+   "page": "/perl/latest/examples/programs/",
+   "title": "Runnable programs",
+   "section": "examples"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Selection::first",
    "page": "/perl/latest/guides/filtering/",
    "title": "Filtering",
    "section": "guides"
@@ -12505,15 +12526,15 @@
   {
    "port": "perl",
    "symbol": "LibTmux::Selection::grep",
-   "page": "/perl/latest/examples/programs/",
-   "title": "Runnable programs",
-   "section": "examples"
+   "page": "/perl/latest/guides/filtering/",
+   "title": "Filtering",
+   "section": "guides"
   },
   {
    "port": "perl",
    "symbol": "LibTmux::Selection::grep",
-   "page": "/perl/latest/guides/filtering/",
-   "title": "Filtering",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
    "section": "guides"
   },
   {
@@ -12532,6 +12553,20 @@
   },
   {
    "port": "perl",
+   "symbol": "LibTmux::Selection::one",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Selection::one_or_undef",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
    "symbol": "LibTmux::Selection::one_or_undef",
    "page": "/perl/latest/topics/errors/",
    "title": "Errors and recovery",
@@ -12546,10 +12581,10 @@
   },
   {
    "port": "perl",
-   "symbol": "LibTmux::Selection::where",
-   "page": "/perl/latest/examples/programs/",
-   "title": "Runnable programs",
-   "section": "examples"
+   "symbol": "LibTmux::Selection::to_array",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "perl",
@@ -12560,10 +12595,17 @@
   },
   {
    "port": "perl",
+   "symbol": "LibTmux::Selection::where",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
    "symbol": "LibTmux::Server",
-   "page": "/perl/latest/examples/orchestration/",
-   "title": "Create sessions, windows, and panes",
-   "section": "examples"
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "perl",
@@ -12585,6 +12627,13 @@
    "page": "/perl/latest/examples/orchestration/",
    "title": "Create sessions, windows, and panes",
    "section": "examples"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server::capture_pane",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
   },
   {
    "port": "perl",
@@ -12623,6 +12672,27 @@
   },
   {
    "port": "perl",
+   "symbol": "LibTmux::Server::new_session",
+   "page": "/perl/latest/examples/orchestration/",
+   "title": "Create sessions, windows, and panes",
+   "section": "examples"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server::new_session",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server::new_session",
+   "page": "/perl/latest/guides/installation/",
+   "title": "Installation",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
    "symbol": "LibTmux::Server::query_panes",
    "page": "/perl/latest/topics/query-planning/",
    "title": "Live query planning",
@@ -12637,6 +12707,13 @@
   },
   {
    "port": "perl",
+   "symbol": "LibTmux::Server::send_keys",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
    "symbol": "LibTmux::Server::send_text",
    "page": "/perl/latest/examples/orchestration/",
    "title": "Create sessions, windows, and panes",
@@ -12644,10 +12721,31 @@
   },
   {
    "port": "perl",
+   "symbol": "LibTmux::Server::send_text",
+   "page": "/perl/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "perl",
    "symbol": "LibTmux::Server::set_option",
    "page": "/perl/latest/examples/orchestration/",
    "title": "Create sessions, windows, and panes",
    "section": "examples"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server::snapshot",
+   "page": "/perl/latest/examples/orchestration/",
+   "title": "Create sessions, windows, and panes",
+   "section": "examples"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::Server::snapshot",
+   "page": "/perl/latest/guides/installation/",
+   "title": "Installation",
+   "section": "guides"
   },
   {
    "port": "perl",
@@ -12721,10 +12819,24 @@
   },
   {
    "port": "perl",
+   "symbol": "LibTmux::X::expected",
+   "page": "/perl/latest/topics/errors/",
+   "title": "Errors and recovery",
+   "section": "topics"
+  },
+  {
+   "port": "perl",
    "symbol": "LibTmux::X::InvalidSelection",
    "page": "/perl/latest/concepts/graph/",
    "title": "Snapshot graph and identity",
    "section": "concepts"
+  },
+  {
+   "port": "perl",
+   "symbol": "LibTmux::X::NoServer",
+   "page": "/perl/latest/guides/installation/",
+   "title": "Installation",
+   "section": "guides"
   },
   {
    "port": "perl",
@@ -19369,6 +19481,34 @@
    "text": "Since",
    "page": "/lua/latest/topics/format-token-fields/",
    "line": 33,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "perl",
+   "text": "libtmux.where/v1",
+   "page": "/perl/latest/guides/getting-started/",
+   "line": 187,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "perl",
+   "text": "Changes",
+   "page": "/perl/latest/guides/getting-started/",
+   "line": 218,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "perl",
+   "text": "Changes",
+   "page": "/perl/latest/guides/installation/",
+   "line": 59,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "perl",
+   "text": "pane.where.width.-gte",
+   "page": "/perl/latest/topics/errors/",
+   "line": 84,
    "why": "not defined in the stated port"
   },
   {
