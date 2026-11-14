@@ -75,6 +75,27 @@ export function toolTier(tool: Pick<ProtocolTool, '_meta'>): TierId | undefined 
   return Array.isArray(tags) ? tags.find(isTier) : undefined
 }
 
+/** What a server says one of its tools can reach, from the tool's metadata. A port that names none has no row to show. */
+export interface ToolCapability {
+  toolset?: TierId
+  /** The processes the tool's input can reach (`none`, `pane-input`), as the server names them. */
+  processReach?: string
+  /** What the tool does to tmux (`observe`, `change`), as the server names them. */
+  tmuxEffects?: string[]
+}
+
+/** The toolset, process reach and tmux effects a tool's metadata states. Nothing is guessed for a server that states none. */
+export function toolCapability(tool: Pick<ProtocolTool, '_meta'>): ToolCapability {
+  const meta = tool._meta?.[CAPABILITY_KEY] as { processReach?: unknown; tmuxEffects?: unknown } | undefined
+  const toolset = toolTier(tool)
+  const effects = Array.isArray(meta?.tmuxEffects) ? meta.tmuxEffects.filter((effect): effect is string => typeof effect === 'string') : undefined
+  return {
+    ...(toolset ? { toolset } : {}),
+    ...(typeof meta?.processReach === 'string' ? { processReach: meta.processReach } : {}),
+    ...(effects ? { tmuxEffects: effects } : {}),
+  }
+}
+
 /** A sentence ends after two word characters, so `e.g.` and `i.e.` stay whole. */
 const SENTENCE = /(?<=\w\w['")\]]?[.!?])\s+(?=\S)/
 
@@ -281,6 +302,13 @@ const SNAPSHOTS = import.meta.glob<ProtocolSnapshot>('../data/mcp-protocol/*.jso
 /** The `tools/list` snapshot committed for a port. */
 export async function protocolSnapshot(port: string): Promise<ProtocolSnapshot | undefined> {
   return SNAPSHOTS[`../data/mcp-protocol/${port}.json`]?.()
+}
+
+/** Each tool's capability by name, and the purpose each opens with, for a port with a committed `tools/list` snapshot. */
+export async function mcpToolFacts(port: string): Promise<{ capabilities: Map<string, ToolCapability>; purposes: Map<string, string> }> {
+  const snapshot = await protocolSnapshot(port)
+  const tools = snapshot?.protocol.tools ?? []
+  return { capabilities: new Map(tools.map((tool) => [tool.name, toolCapability(tool)])), purposes: toolPurposes(tools) }
 }
 
 /**
