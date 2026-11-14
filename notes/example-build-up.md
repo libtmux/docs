@@ -10,8 +10,12 @@ reference; copy their shape.
 
 1. One paragraph on the concept and what the program does. Say that each
    step block is a range of lines from the complete program.
-2. Steps as `## 1. Verb the thing` headings. Each step names one call or
-   idea in plain words, shows one small block, and says what to observe.
+2. Steps as `### 1. Verb the thing` headings under one `## Steps` heading
+   (or one H2 per phase when a complete file separates two runs of steps, as
+   in the workspace example). Steps are parts of one build-up, not sections,
+   so they are H3s; `site/test/example-steps.test.ts` fails on a numbered H2.
+   Each step names one call or idea in plain words, shows one small block, and
+   says what to observe.
 3. `## The complete program` with the tested file, exactly as the native run
    records it.
 4. The run command and its output, then the links the page already had.

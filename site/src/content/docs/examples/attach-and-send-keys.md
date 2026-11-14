@@ -16,7 +16,9 @@ finished `send-command.sh`, so each step shows code that runs. [The complete
 script](#the-complete-script) follows the last step. It needs tmux 3.3a or
 newer and a POSIX shell.
 
-## 1. Choose a private socket
+## Steps
+
+### 1. Choose a private socket
 
 A tmux server listens on a socket, and a command reaches the server whose
 socket it names. Create a directory for this run and put the socket inside it,
@@ -30,7 +32,7 @@ repeats `-S "$socket"`; a command without it would reach your default server.
 [Select a server](/topics/socket-and-servers/#select-a-server) covers the socket
 options.
 
-## 2. Start a detached session
+### 2. Start a detached session
 
 `new-session -d` creates a session without attaching your terminal to it. The
 first command to use a new `-S` path starts a server there, and `-f /dev/null`
@@ -46,7 +48,7 @@ once the session exists; `tmux.sock` is now in the directory. To watch the pane
 yourself, pass the same socket to `attach-session`. The script reads the pane
 instead and never attaches.
 
-## 3. Check the session by exact name
+### 3. Check the session by exact name
 
 `has-session` exits with a non-zero status when no session matches, and
 `set -e` stops the script there. A bare `-t demo` matches every session whose
@@ -55,7 +57,7 @@ name starts with `demo`. The `=` in `=demo` requires the exact name.
 ```sh excerpt="send-command.sh" from="has-session"
 ```
 
-## 4. Find the pane by its ID
+### 4. Find the pane by its ID
 
 `list-panes` prints one row for each pane in a window. `-t '=demo:main'`
 selects the window named `main` of the exact session. `-f '#{pane_active}'`
@@ -70,7 +72,7 @@ indexes move as panes come and go, and start at `pane-base-index`, while the
 ID names the same pane until it closes. [Stable
 identity](/concepts/server-session-window-pane/#stable-identity) explains why.
 
-## 5. Require exactly one pane
+### 5. Require exactly one pane
 
 The filter should leave one row. `set -- $panes` splits the value into
 positional parameters, and `[ "$#" -eq 1 ]` fails the script when there are
@@ -85,7 +87,7 @@ covers the same check in the language libraries.
 
 <a id="keep-literal-text-and-keys-separate"></a>
 
-## 6. Type text without pressing keys
+### 6. Type text without pressing keys
 
 `send-keys -l` types its argument literally, character by character. The
 target `-t "$pane"` is the ID from step 4, so the text reaches that pane
@@ -97,7 +99,7 @@ whichever window is current.
 The typed text waits at the prompt. The shell has not run it, because no key
 has been pressed.
 
-## 7. Press Enter
+### 7. Press Enter
 
 Without `-l`, `send-keys` treats an argument that names a key as that key.
 Send the [`Enter`](/tmux/latest/manual/send-keys/) key to run the typed command.
@@ -111,7 +113,7 @@ The shell now runs `printf` and prints `native input ready` on a new row. The
 [sending keys guide](/guides/sending-keys/#literal-text-key-names-and-whether-enter-follows)
 also covers control keys and pane input modes.
 
-## 8. Read the screen
+### 8. Read the screen
 
 `capture-pane -p` prints the pane's visible text to standard output. Without
 `-p`, tmux copies the text into a paste buffer. The script redirects the output
@@ -127,7 +129,7 @@ scrollback ranges and wrapped lines.
 
 <a id="wait-for-the-result-you-need"></a>
 
-## 9. Poll until the line appears
+### 9. Poll until the line appears
 
 `send-keys` returns when tmux has queued the input, not when the shell has run
 it, so the first capture can come too early. The loop repeats the capture, up
@@ -144,7 +146,7 @@ of a timer: `wait-for` blocks until another command signals a channel, and the
 [capture example](/examples/capture-pane-output/) shows the polling alternative
 in more detail.
 
-## 10. Report the result
+### 10. Report the result
 
 If the line never appeared, the script prints an error to standard error and
 exits with status 1. Otherwise it prints the line, which is the script's output.
@@ -152,7 +154,7 @@ exits with status 1. Otherwise it prints the line, which is the script's output.
 ```sh excerpt="send-command.sh" from='"$found" != yes' to="printf 'native input ready"
 ```
 
-## 11. Clean up
+### 11. Clean up
 
 `kill-server` stops the private server and removes its socket. `trap cleanup 0`
 runs `cleanup` whenever the script exits, whether it succeeded or failed, and
