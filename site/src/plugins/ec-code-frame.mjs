@@ -7,8 +7,12 @@ import { formatLines, lineNumbers, parseLines, rangeFragment, requestedCap, role
  * - A role label after the file name: "Excerpt · lines 59–78" or "Complete
  *   program" (`role` and `lines` in the fence's info string).
  * - The source's own line numbers on an excerpt, so a reader can find the
- *   lines in the tested file. The numbers sit in a gutter, outside the code,
- *   so Copy never has them.
+ *   lines in the tested file. The numbers hang in a rail beside the code, never
+ *   in a column inside it (record 0055): outside the frame where the layout sets
+ *   `--code-hang-out: 1`, inside the code's start padding otherwise. The rail is
+ *   a sibling of the `<pre>`, so the pre's overflow does not clip it; it follows
+ *   a capped frame's vertical scroll and stays put when the code scrolls sideways.
+ *   Copy never has the numbers.
  * - On the complete program an excerpt of the page cites (`cite`), the same
  *   numbers from line 1. The excerpt's range links to its lines (`#L63-L72`),
  *   which highlight on arrival. A program nothing cites stays unnumbered,
@@ -17,7 +21,6 @@ import { formatLines, lineNumbers, parseLines, rangeFragment, requestedCap, role
  *   at that many lines, scrolls inside, and a bar under it says how many it
  *   shows and offers the rest. Copy always copies every line, and print
  *   shows every line.
- *
  * - `copy="off"` removes the frame's own Copy button, for a component that draws
  *   one of its own, so a frame has one copy control.
  *
@@ -82,14 +85,25 @@ export function codeFrame() {
       @media (forced-colors: active) { .ec-line[data-hit], .ec-line:target { outline: 2px solid Highlight; outline-offset: -2px; } }
       .frame .header .role a { color: var(--color-link, inherit); text-decoration: underline dotted; text-underline-offset: 0.2em; }
       .frame .header .role a:hover { text-decoration-style: solid; }
-      /* The source's line numbers, one width on every row. */
-      .ec-line .gutter .ln { box-sizing: content-box; width: var(--ln-width, 2ch); padding-inline: 1rem 0; text-align: end; color: var(--color-foreground-muted, var(--color-muted)); user-select: none; -webkit-user-select: none; }
-      .ec-line .gutter ~ .code { --ecGtrBrdWd: 0px; padding-inline-start: calc(var(--ecIndent, 0ch) + 1.25ch); }
+      /*
+       * The source's line numbers hang in a rail before the code (record 0055). Out, a layout that leaves room left of its frames
+       * sets --code-hang-out: 1 and the numbers sit in that margin; in, the rail takes the code's start padding, which widens by
+       * the rail only then, and has the code's ground so code scrolled sideways does not show under the numbers.
+       * The rail is positioned where it would sit in flow, so it meets the top of the code whatever the header's height.
+       */
+      .frame { --rail-gap: 1.25ch; }
+      .frame > .rail { position: absolute; z-index: 1; box-sizing: border-box; overflow: hidden; width: calc(var(--ln-width, 2ch) + (1 - var(--code-hang-out, 0)) * (var(--ec-codePadInl) + var(--rail-gap))); padding-inline: calc((1 - var(--code-hang-out, 0)) * var(--ec-codePadInl)) calc((1 - var(--code-hang-out, 0)) * var(--rail-gap)); inset-inline-start: calc((1 - var(--code-hang-out, 0)) * var(--ec-brdWd) - var(--code-hang-out, 0) * (var(--ln-width, 2ch) + var(--rail-gap))); border-end-start-radius: var(--ec-brdRad); background-color: color-mix(in srgb, var(--ec-codeBg) calc(100% * (1 - var(--code-hang-out, 0))), transparent); color: var(--color-foreground-muted, var(--color-muted)); font-family: var(--ec-codeFontFml); font-size: var(--ec-codeFontSize); line-height: var(--ec-codeLineHt); font-variant-numeric: tabular-nums; user-select: none; -webkit-user-select: none; pointer-events: none; }
+      .frame:not(.has-title) > .rail { margin-block-start: var(--ec-brdWd); }
+      .frame > .rail .rail-in { padding-block: var(--ec-codePadBlk); }
+      .frame > .rail .ln { display: block; height: calc(var(--ec-codeLineHt) * var(--ec-codeFontSize)); text-align: end; }
+      .frame > .rail ~ pre .ec-line .code { --ecGtrBrdWd: 0px; padding-inline-start: calc(var(--ecIndent, 0ch) + var(--ec-codePadInl) + (1 - var(--code-hang-out, 0)) * (var(--ln-width, 2ch) + var(--rail-gap))); }
       /* A cap on a long frame, where a script can lift it. Without one the frame shows every line. */
       @media (scripting: enabled) {
         .frame[data-cap] { scroll-margin-top: 4rem; }
         .frame[data-cap] pre { max-height: calc(var(--cap-lines) * var(--ec-codeLineHt) * var(--ec-codeFontSize) + 2 * var(--ec-codePadBlk)); overflow-y: auto; scrollbar-gutter: stable; border-end-start-radius: 0; border-end-end-radius: 0; }
         .frame[data-cap][data-expanded] pre { max-height: none; overflow-y: visible; }
+        .frame[data-cap] > .rail { max-height: calc(var(--cap-lines) * var(--ec-codeLineHt) * var(--ec-codeFontSize) + 2 * var(--ec-codePadBlk)); border-end-start-radius: 0; }
+        .frame[data-cap][data-expanded] > .rail { max-height: none; }
         .cap { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.375rem 0.75rem 0.375rem 1rem; border: var(--ec-brdWd) solid var(--ec-brdCol); border-top: 0; border-end-start-radius: calc(var(--ec-brdRad) + var(--ec-brdWd)); border-end-end-radius: calc(var(--ec-brdRad) + var(--ec-brdWd)); background: var(--color-surface, var(--color-background-secondary)); font-size: 0.8125rem; line-height: 1.5; color: var(--color-foreground-muted, var(--color-muted)); }
         .cap-count[hidden] + button { margin-inline-start: auto; }
         .cap button { padding: 0.2rem 0.5rem; border: 1px solid var(--control-border, color-mix(in oklab, var(--text-color, currentColor) 60%, var(--background-color, transparent))); border-radius: 0.25rem; background: var(--background-color, transparent); color: var(--text-color, inherit); font: inherit; cursor: pointer; }
@@ -102,15 +116,32 @@ export function codeFrame() {
       @media print {
         .frame[data-cap] pre { max-height: none !important; overflow: visible !important; }
         .cap { display: none !important; }
+        .frame > .rail { display: none; }
+        .frame > .rail ~ pre .ec-line .code { padding-inline-start: calc(var(--ecIndent, 0ch) + var(--ec-codePadInl)); }
         pre .ec-line .code { white-space: pre-wrap; overflow-wrap: anywhere; }
       }
     `,
     // Custom modules follow the built-in frame module in the same bundle.
     jsModules: [`(() => {
+      // The rail of a capped frame follows the code's vertical scroll and ends where the code's visible rows end,
+      // above the code's own scrollbar, which comes and goes with the width.
+      function followCode(pre) {
+        const rail = pre?.parentElement?.querySelector(':scope > .rail');
+        if (!rail) return;
+        rail.firstElementChild.style.transform = 'translateY(' + -pre.scrollTop + 'px)';
+        if (pre.clientHeight) rail.style.height = pre.clientHeight + 'px';
+      }
+      const watched = new WeakSet();
       function ready(root) {
         root.querySelectorAll?.('.expressive-code button[data-cap-pending]').forEach(button => {
           button.disabled = false;
           button.removeAttribute('data-cap-pending');
+        });
+        root.querySelectorAll?.('.frame[data-cap] pre').forEach(pre => {
+          if (watched.has(pre)) return;
+          watched.add(pre);
+          followCode(pre);
+          if (typeof ResizeObserver === 'function') new ResizeObserver(() => followCode(pre)).observe(pre);
         });
       }
       ready(document);
@@ -125,12 +156,16 @@ export function codeFrame() {
         button.textContent = open ? 'Show fewer lines' : 'Show all ' + button.getAttribute('data-total') + ' lines';
         const count = frame.querySelector('.cap-count');
         if (count) count.hidden = open;
-        if (!open) {
-          const pre = frame.querySelector('pre');
-          if (pre) pre.scrollTop = 0;
-          if (frame.getBoundingClientRect().top < 0) frame.scrollIntoView({ block: 'start' });
-        }
+        const pre = frame.querySelector('pre');
+        if (!open && pre) pre.scrollTop = 0;
+        followCode(pre);
+        if (!open && frame.getBoundingClientRect().top < 0) frame.scrollIntoView({ block: 'start' });
       }
+      // A scroll does not bubble, so the capture phase hears every frame's code from here.
+      document.addEventListener('scroll', event => {
+        const pre = event.target;
+        if (pre instanceof Element && pre.matches('.frame[data-cap] pre')) followCode(pre);
+      }, true);
       document.addEventListener('click', event => {
         const button = event.target.closest?.('.expressive-code button[data-cap-toggle]');
         if (button) setExpanded(button, button.getAttribute('aria-expanded') !== 'true');
@@ -143,13 +178,13 @@ export function codeFrame() {
         const first = Number(match[1]);
         const last = Number(match[2] ?? match[1]);
         let target;
-        document.querySelectorAll('.frame[data-role="program"] .ec-line').forEach(row => {
-          const number = Number(row.querySelector('.gutter .ln')?.textContent);
+        document.querySelectorAll('.frame[data-role="program"]').forEach(frame => frame.querySelectorAll('.ec-line').forEach((row, at) => {
+          const number = Number(frame.querySelector(':scope > .rail')?.querySelectorAll('.ln')[at]?.textContent);
           if (number >= first && number <= last) {
             row.setAttribute('data-hit', '');
             target ??= row;
           }
-        });
+        }));
         if (!target) return;
         // A capped program shows the lines it was sent to.
         const more = target.closest('.frame')?.querySelector('button[data-cap-toggle]');
@@ -168,13 +203,9 @@ export function codeFrame() {
       });
     })();`],
     hooks: {
+      // A cited range's first row is where a range link lands.
       postprocessRenderedLine: ({ codeBlock, lineIndex, renderData }) => {
-        const rows = rowsOf(codeBlock)
-        // A frame whose rows the lines do not describe has no numbers at all; a blank row between ranges has an empty cell.
-        if (!rows.length) return
-        const number = rows[lineIndex]
-        const cell = h('div.ln', { 'aria-hidden': 'true' }, number === undefined ? [] : [String(number)])
-        renderData.lineAst.children.unshift(h('div.gutter', { 'data-pagefind-ignore': '' }, [cell]))
+        const number = rowsOf(codeBlock)[lineIndex]
         const fragment = number === undefined ? undefined : anchorsOf(codeBlock).get(number)
         if (fragment) renderData.lineAst.properties.id = fragment
       },
@@ -204,10 +235,16 @@ export function codeFrame() {
           figure.properties.dataRole = role
         }
 
+        // A frame whose rows the lines do not describe has no numbers at all; a blank row between ranges has an empty cell.
         const rows = rowsOf(codeBlock)
         if (rows.length) {
           const digits = String(Math.max(...rows.filter((row) => row !== undefined))).length
-          pre.properties.style = [pre.properties.style, `--ln-width: ${digits}ch`].filter(Boolean).join(';')
+          figure.properties.style = [figure.properties.style, `--ln-width: ${digits}ch`].filter(Boolean).join(';')
+          const rail = h('div.rail', { 'aria-hidden': 'true', 'data-pagefind-ignore': '' }, [
+            h('div.rail-in', rows.map((row) => h('span.ln', row === undefined ? [] : [String(row)]))),
+          ])
+          // Right before the code, so the rail's static position is the code's top edge.
+          figure.children.splice(figure.children.indexOf(pre), 0, rail)
         }
 
         const total = codeBlock.getLines().length

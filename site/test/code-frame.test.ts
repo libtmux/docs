@@ -129,14 +129,14 @@ describe('Expressive Code frames', () => {
       const ast = await rendered(go(5), 'title="main.go" frame="code" role="program"')
       expect(toHtml(select('.role', ast)!)).toBe('<span class="role" data-pagefind-ignore=""><b>Complete program</b></span>')
       expect(select('figure.frame', ast)!.properties.dataRole).toBe('program')
-      expect(selectAll('.gutter', ast)).toHaveLength(0)
+      expect(select('.rail', ast)).toBeUndefined()
     })
 
     it('leaves a frame without a role as it was', async () => {
       const ast = await rendered(go(3), 'title="main.go"')
       expect(select('.role', ast)).toBeUndefined()
       expect(select('figure.frame', ast)!.properties.dataRole).toBeUndefined()
-      expect(selectAll('.gutter', ast)).toHaveLength(0)
+      expect(select('.rail', ast)).toBeUndefined()
       expect(select('.cap', ast)).toBeUndefined()
     })
 
@@ -146,53 +146,130 @@ describe('Expressive Code frames', () => {
     })
   })
 
-  describe('source line numbers', () => {
-    it('numbers an excerpt from its first source line and leaves the numbers out of Copy', async () => {
+  describe('source line numbers (record 0055)', () => {
+    const numbers = (ast: unknown) => selectAll('.rail .ln', ast as never).map((ln) => toHtml(ln.children))
+
+    it('numbers an excerpt in a rail beside the code, never in a column inside it, and leaves the numbers out of Copy', async () => {
       const code = go(3, 59)
       const ast = await rendered(code, 'title="main.go" frame="code" role="excerpt" lines="59-61"')
-      expect(selectAll('.ec-line .gutter .ln', ast).map((ln) => toHtml(ln.children))).toEqual(['59', '60', '61'])
-      expect(selectAll('.ln', ast).every((ln) => ln.properties.ariaHidden === 'true')).toBe(true)
-      expect(selectAll('.gutter', ast).every((gutter) => gutter.properties.dataPagefindIgnore === ''), 'search skips the numbers').toBe(true)
+      expect(selectAll('.ec-line .gutter', ast), 'no column inside the code').toHaveLength(0)
+      expect(selectAll('pre .rail, pre .ln', ast), 'the rail is a sibling of the scrolling pre, so its overflow cannot clip the rail').toHaveLength(0)
+      const figure = select('figure.frame', ast)!
+      const rail = select('.rail', figure)!
+      const pre = select('pre', figure)!
+      expect(figure.children.indexOf(rail), 'the rail sits right before the pre, so its static position is the top of the code').toBe(figure.children.indexOf(pre) - 1)
+      expect(numbers(ast)).toEqual(['59', '60', '61'])
+      expect(rail.properties.ariaHidden).toBe('true')
+      expect(rail.properties.dataPagefindIgnore, 'search skips the numbers').toBe('')
       expect(select('.copy button[data-code]', ast)!.properties.dataCode).toBe(code.replace(/\n/g, '\x7f'))
     })
 
-    it('keeps the number column one width on every row', async () => {
+    it('keeps the number column one width on every row, set on the frame so the rail and the code both read it', async () => {
       const ast = await rendered(go(3, 98), 'title="main.go" frame="code" role="excerpt" lines="98-100"')
-      expect(select('pre', ast)!.properties.style).toContain('--ln-width: 3ch')
+      expect(select('figure.frame', ast)!.properties.style).toContain('--ln-width: 3ch')
     })
 
-    it('numbers each range of a joined excerpt and skips the blank row between them', async () => {
+    it('numbers each range of a joined excerpt and leaves an empty row for the blank row between them', async () => {
       const ast = await rendered('a\nb\n\nc\nd', 'title="main.go" frame="code" role="excerpt" lines="12-13,55-56"')
-      expect(selectAll('.ec-line', ast).map((row) => select('.ln', row) ? toHtml(select('.ln', row)!.children) : '')).toEqual(['12', '13', '', '55', '56'])
+      expect(numbers(ast)).toEqual(['12', '13', '', '55', '56'])
     })
 
     it('shows no numbers when the range does not describe the rows', async () => {
       const ast = await rendered(go(3), 'title="main.go" frame="code" role="excerpt" lines="59-78"')
-      expect(selectAll('.gutter', ast)).toHaveLength(0)
+      expect(select('.rail', ast)).toBeUndefined()
       expect(toHtml(select('.role', ast)!)).toContain('lines 59–78')
+    })
+
+    it('hangs the rail inside the start padding, and outside the frame where a layout sets --code-hang-out: 1', () => {
+      const rail = /\.frame > \.rail\s*\{([^}]*)\}/.exec(baseStyles)
+      expect(rail, 'a rule for the rail').not.toBeNull()
+      expect(rail![1], 'the rail moves out of the frame by the layout\'s say').toMatch(/inset-inline-start:[^;]*var\(--code-hang-out, 0\)/)
+      expect(rail![1], 'inside, the rail has the code\'s ground, so code scrolled sideways does not show under the numbers').toMatch(/background-color:[^;]*var\(--ec-codeBg\)[^;]*var\(--code-hang-out, 0\)/)
+      const code = /\.rail ~ pre \.ec-line \.code\s*\{([^}]*)\}/.exec(baseStyles)
+      expect(code, 'the code\'s start padding widens by the rail only when the rail is inside').not.toBeNull()
+      expect(code![1]).toMatch(/padding-inline-start:[^;]*\(1 - var\(--code-hang-out, 0\)\)/)
+    })
+
+    it('leaves numbers out of print, where the rows wrap and the rail cannot follow them', () => {
+      expect(/@media print\s*\{[^@]*\.rail\s*\{\s*display:\s*none/.exec(baseStyles)).not.toBeNull()
+    })
+  })
+
+  describe('the rail of a capped frame', () => {
+    const open = async () => {
+      const window = new Window({ url: 'https://libtmux.org/en/example/' })
+      window.document.body.innerHTML = await render(go(86), 'title="main.go" frame="code" height="16"')
+      window.eval(script)
+      const document = window.document as unknown as Document
+      const pre = document.querySelector<HTMLElement>('.frame pre')!
+      // A program that numbers its rows carries the same rail as an excerpt.
+      const rail = document.createElement('div')
+      rail.className = 'rail'
+      rail.innerHTML = '<div class="rail-in"><span class="ln">1</span></div>'
+      pre.before(rail)
+      return { window, rail, pre, inner: rail.firstElementChild as HTMLElement }
+    }
+
+    it('follows the code\'s vertical scroll and stays put when the code scrolls sideways', async () => {
+      const { window, pre, inner } = await open()
+      pre.scrollTop = 48
+      pre.dispatchEvent(new window.Event('scroll') as unknown as Event)
+      expect(inner.style.transform).toBe('translateY(-48px)')
+      pre.scrollLeft = 30
+      pre.dispatchEvent(new window.Event('scroll') as unknown as Event)
+      expect(inner.style.transform).toBe('translateY(-48px)')
+    })
+
+    it('ends where the code\'s visible rows end, above the code\'s own scrollbar, as soon as the page loads', async () => {
+      const window = new Window({ url: 'https://libtmux.org/en/example/' })
+      window.document.body.innerHTML = await render(go(86), 'title="main.go" frame="code" height="16"')
+      const document = window.document as unknown as Document
+      const pre = document.querySelector<HTMLElement>('.frame pre')!
+      const rail = document.createElement('div')
+      rail.className = 'rail'
+      rail.innerHTML = '<div class="rail-in"><span class="ln">1</span></div>'
+      pre.before(rail)
+      Object.defineProperty(pre, 'clientHeight', { configurable: true, value: 346 })
+      window.eval(script)
+      expect(rail.style.height).toBe('346px')
+    })
+
+    it('goes back to the top with the code when the frame collapses', async () => {
+      const { window, pre, inner } = await open()
+      const document = pre.ownerDocument
+      pre.scrollTop = 48
+      pre.dispatchEvent(new window.Event('scroll') as unknown as Event)
+      const button = document.querySelector<HTMLButtonElement>('.cap button')!
+      button.click()
+      button.click()
+      expect(pre.scrollTop).toBe(0)
+      expect(inner.style.transform).toBe('translateY(0px)')
     })
   })
 
   describe('a complete program that an excerpt cites (record 0054)', () => {
     const cited = 'title="main.go" frame="code" role="program" cite="2-3,5"'
+    /** The numbers of the rows an arrival highlighted: each row's number is the rail's, at the same place. */
+    const hitNumbers = (document: Document) => [...document.querySelectorAll('.frame')].flatMap((frame) => [...frame.querySelectorAll('.ec-line')]
+      .flatMap((row, at) => (row.hasAttribute('data-hit') ? [frame.querySelectorAll('.rail .ln')[at]!.textContent] : [])))
 
     it('numbers every line from 1, and gives the first line of each cited range its fragment', async () => {
       const code = go(6)
       const ast = await rendered(code, cited)
-      expect(selectAll('.ec-line .gutter .ln', ast).map((ln) => toHtml(ln.children))).toEqual(['1', '2', '3', '4', '5', '6'])
+      expect(selectAll('.rail .ln', ast).map((ln) => toHtml(ln.children))).toEqual(['1', '2', '3', '4', '5', '6'])
       expect(selectAll('.ec-line', ast).map((row) => row.properties.id ?? '')).toEqual(['', 'L2-L3', '', '', 'L5', ''])
-      expect(selectAll('.gutter', ast).every((gutter) => gutter.properties.dataPagefindIgnore === ''), 'search skips the numbers').toBe(true)
+      expect(select('.rail', ast)!.properties.dataPagefindIgnore, 'search skips the numbers').toBe('')
       expect(select('.copy button[data-code]', ast)!.properties.dataCode).toBe(code.replace(/\n/g, '\x7f'))
       expect(toHtml(select('.role', ast)!)).toBe('<span class="role" data-pagefind-ignore=""><b>Complete program</b></span>')
     })
 
     it('keeps the number column one width on every row', async () => {
       const ast = await rendered(go(120), 'title="main.go" frame="code" role="program" height="full" cite="100-105"')
-      expect(select('pre', ast)!.properties.style).toContain('--ln-width: 3ch')
+      expect(select('figure.frame', ast)!.properties.style).toContain('--ln-width: 3ch')
     })
 
     it('numbers a program only when it is one: a cite on an excerpt or on a frame with no role changes nothing', async () => {
-      expect(selectAll('.gutter', await rendered(go(3), 'title="a.go" frame="code" cite="1-2"'))).toHaveLength(0)
+      expect(select('.rail', await rendered(go(3), 'title="a.go" frame="code" cite="1-2"'))).toBeUndefined()
       expect(selectAll('.ec-line', await rendered(go(3), 'title="a.go" frame="code" role="excerpt" lines="5-7" cite="1-2"')).map((row) => row.properties.id ?? '')).toEqual(['', '', ''])
     })
 
@@ -205,7 +282,7 @@ describe('Expressive Code frames', () => {
 
     it('highlights the lines of a range on arrival, and again when the fragment changes', async () => {
       const { window, document } = await open(go(6), cited, 'https://libtmux.org/en/example/#L2-L3')
-      const hit = () => [...document.querySelectorAll('.ec-line[data-hit] .ln')].map((ln) => ln.textContent)
+      const hit = () => hitNumbers(document)
       expect(hit()).toEqual(['2', '3'])
       window.location.hash = '#L5'
       window.dispatchEvent(new window.Event('hashchange'))
@@ -221,14 +298,14 @@ describe('Expressive Code frames', () => {
       link.setAttribute('href', '#L2-L3')
       document.body.append(link)
       link.click()
-      expect([...document.querySelectorAll('.ec-line[data-hit] .ln')].map((ln) => ln.textContent)).toEqual(['2', '3'])
+      expect(hitNumbers(document)).toEqual(['2', '3'])
     })
 
     it('opens a capped program that holds a highlighted line', async () => {
       const { document } = await open(go(60), 'title="main.go" frame="code" role="program" cite="50-52"', 'https://libtmux.org/en/example/#L50-L52')
       expect(document.querySelector('.frame')!.hasAttribute('data-expanded')).toBe(true)
       expect(document.querySelector('.cap button')!.getAttribute('aria-expanded')).toBe('true')
-      expect([...document.querySelectorAll('.ec-line[data-hit] .ln')].map((ln) => ln.textContent)).toEqual(['50', '51', '52'])
+      expect(hitNumbers(document)).toEqual(['50', '51', '52'])
     })
 
     it('highlights nothing for a fragment that is not a line range', async () => {
