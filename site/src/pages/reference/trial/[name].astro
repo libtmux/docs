@@ -5,6 +5,7 @@
  * build writes them for Go alone.
  */
 import ColumnsTrial from '../../../components/api/columns/ColumnsTrial.astro'
+import PanelsTrial from '../../../components/api/panels/PanelsTrial.astro'
 import { apiColumnsOffered, TRIAL_PAGES } from '../../../lib/columns/trial'
 import { DEFAULT_LOCALE } from '../../../i18n/locales'
 import { buildLocale } from '../../../i18n/resolve'
@@ -17,3 +18,4 @@ export function getStaticPaths() {
 const { name } = Astro.params
 ---
 {name === 'columns' && <ColumnsTrial />}
+{name === 'panels' && <PanelsTrial />}

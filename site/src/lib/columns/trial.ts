@@ -9,4 +9,5 @@ export const apiColumnsOffered = (port: string | undefined): boolean => Boolean(
 /** The reference's own routes for the trial pages, below the port's reference root. */
 export const TRIAL_PAGES = [
   { slug: 'columns', label: 'All variants' },
+  { slug: 'panels', label: 'Panels' },
 ] as const

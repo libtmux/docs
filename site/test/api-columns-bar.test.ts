@@ -49,7 +49,7 @@ describe('the reference view switch', () => {
 
   it('links the trial pages from the row and gives the columns view its own container', async () => {
     const { document } = await render(go)
-    expect([...document.querySelectorAll('.api-columns__trials a')].map((a) => a.getAttribute('href'))).toEqual(['/go/latest/reference/trial/columns/'])
+    expect([...document.querySelectorAll('.api-columns__trials a')].map((a) => a.getAttribute('href'))).toEqual(['/go/latest/reference/trial/columns/', '/go/latest/reference/trial/panels/'])
     expect(document.querySelector('[data-api-columns-view]')).not.toBeNull()
   })
 
