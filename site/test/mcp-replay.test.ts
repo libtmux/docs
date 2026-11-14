@@ -455,6 +455,38 @@ describe('the replay component', () => {
     expect(css, 'the replay draws no dotted line of its own').not.toMatch(/\.mcp-replay a[^{]*\{[^}]*dotted/)
   })
 
+  describe('the stylesheet', () => {
+    const css = readFileSync(new URL('../src/styles/mcp-replay.css', import.meta.url), 'utf8')
+    const tier = readFileSync(new URL('../src/styles/mcp-showcase.css', import.meta.url), 'utf8')
+    const rule = (sheet: string, selector: string) => new RegExp(`${selector.replace(/[.[\]()*+?^$|]/g, '\\$&')} \\{([^}]*)\\}`).exec(sheet)?.[1] ?? ''
+    const startBar = /\.mcp-turn[^{]*\{[^}]*border-inline-start/
+
+    it('draws no bar on the start edge of a turn: the tint and aria-current mark the current one', () => {
+      expect(css).not.toMatch(startBar)
+      expect(css, 'the tint stays the link colour at 14%, 24% pinned').toMatch(/\.mcp-turn\[aria-current='step'\] \{\s*background: color-mix\(in srgb, var\(--color-link\) 14%, transparent\);/)
+      expect(css).toMatch(/\.mcp-turn\.is-pinned,\s*\.mcp-turn\[aria-current='step'\]\.is-pinned \{\s*background: color-mix\(in srgb, var\(--color-link\) 24%, transparent\);/)
+    })
+
+    it('has a control: the start-edge check does catch the bar it is for', () => {
+      expect('.mcp-turn[aria-current=\'step\'] { border-inline-start-color: var(--color-link); }').toMatch(startBar)
+      expect('.mcp-turn { border-inline-start: 3px solid transparent; }').toMatch(startBar)
+    })
+
+    it('sets the chat in the sans face, with sentence-case speaker labels on their own line and the prompt at body weight', () => {
+      expect(rule(css, '.mcp-replay__chat')).toMatch(/font-family: var\(--font-sans/)
+      expect(rule(css, '.mcp-turn__who')).toMatch(/display: block;/)
+      expect(rule(css, '.mcp-turn__who'), 'no uppercase label').not.toMatch(/text-transform/)
+      expect(rule(css, '.mcp-turn--user p')).toMatch(/font-weight: 400;/)
+      expect(rule(css, '.mcp-turn--user p'), 'the prompt is not bold').not.toMatch(/font-weight: [6-9]00/)
+      expect(rule(css, '.mcp-call'), 'tool names and arguments stay mono').toMatch(/font-family: var\(--mcp-mono\);/)
+    })
+
+    it('draws the tier as a square badge, not a pill', () => {
+      expect(rule(tier, '.mcp-tier')).toMatch(/border-radius: 0\.25rem;/)
+      expect(rule(tier, '.mcp-tier')).not.toMatch(/999px/)
+    })
+  })
+
   it('gives the rail a row of its own on a narrow bar, after the rule that sizes it beside the buttons', () => {
     const css = readFileSync(new URL('../src/styles/mcp-replay.css', import.meta.url), 'utf8')
     expect(css).toMatch(/\.mcp-replay__controls \{[^}]*flex-wrap: wrap;[^}]*container-type: inline-size;/)
@@ -732,6 +764,21 @@ describe('the replay component', () => {
     expect(frameShown(document)).toEqual([CALLS.rs])
     expect(document.querySelector('.is-pinned')).toBeNull()
     expect(document.querySelector('[data-hint]')!.textContent).not.toMatch(/^Pinned/)
+  })
+
+  it('names the speakers in sentence case, on lines of their own', async () => {
+    const { document } = await mount('ts')
+    expect([...document.querySelectorAll('.mcp-turn__who')].map((who) => who.textContent).slice(0, 3)).toEqual(['You', 'Agent', 'Agent'])
+  })
+
+  it('does not let focus or touch hover hold the preview, and ignores keys with a modifier', async () => {
+    const { win, document } = await mount('ts', { run: true, reduced: true })
+    const turn = document.querySelector('[data-turn="0"]')!
+    turn.dispatchEvent(new win.FocusEvent('focus') as unknown as Event)
+    expect(frameShown(document), 'focus does not preview').toEqual([CALLS.ts])
+    const body = document.querySelector('[data-body]')!
+    body.dispatchEvent(new win.KeyboardEvent('keydown', { key: 'ArrowLeft', altKey: true, bubbles: true }) as unknown as Event)
+    expect(frameShown(document), 'Alt+Left is the browser\'s').toEqual([CALLS.ts])
   })
 
   it('does not start by itself, even when opted in, once the reader has used a control before it was on screen', async () => {

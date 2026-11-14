@@ -122,9 +122,10 @@ html:not([data-js]) .mcp-replay .mcp-frame:not(:last-child) {
   min-height: 0;
   padding: 0.75rem 1rem;
   overflow-y: auto;
-  font-family: var(--mcp-mono);
-  font-size: 0.8125rem;
-  line-height: 1.5;
+  /* People's words, the prompt and the agent's captions, are set in the sans face; tool names, arguments and results stay in mono. */
+  font-family: var(--font-sans, inherit);
+  font-size: 0.875rem;
+  line-height: 1.55;
   overscroll-behavior: contain;
 }
 
@@ -155,9 +156,8 @@ html:not([data-js]) .mcp-replay .mcp-frame:not(:last-child) {
 /* Chat */
 .mcp-turn {
   margin: 0 0 var(--mcp-gap);
-  padding: 0.25rem 0.5rem;
-  border-inline-start: 3px solid transparent;
-  border-radius: 0.25rem;
+  padding: 0.5rem 0.625rem 0.625rem;
+  border-radius: 0.375rem;
 }
 
 .mcp-turn:last-child {
@@ -166,6 +166,7 @@ html:not([data-js]) .mcp-replay .mcp-frame:not(:last-child) {
 
 .mcp-turn p {
   margin: 0;
+  color: var(--text-color);
 }
 
 /* The pin button's room is there from the first paint, so binding the script does not rewrap a call. */
@@ -173,21 +174,23 @@ html[data-js] .mcp-replay .mcp-turn[data-turn]:not([data-turn='prompt']) {
   padding-inline-end: 2.25rem;
 }
 
-.mcp-replay[data-live] .mcp-turn[data-turn]:not([data-turn='prompt']):not([aria-current='step']):hover {
-  border-inline-start-color: var(--color-muted);
-  background: var(--color-surface-hover);
+/*
+ * Selecting text in a turn never changes the step: hovering one previews the
+ * tmux after it, and its pin button holds it. The call the tmux shows is
+ * tinted, as the Core player tints its current line; no bar marks the start
+ * edge of a current row.
+ */
+@media (hover: hover) {
+  .mcp-replay[data-live] .mcp-turn[data-turn]:not([data-turn='prompt']):not([aria-current='step']):hover {
+    background: var(--color-surface-hover);
+  }
 }
 
-/* The call the tmux shows: an accent edge, which is what tells it from the rest (a tint alone is too close to the panel), and the tint the Core player gives its current line. */
 .mcp-turn[aria-current='step'] {
-  border-inline-start-color: var(--color-link);
   background: color-mix(in srgb, var(--color-link) 14%, transparent);
 }
 
-.mcp-turn.is-pinned {
-  border-inline-start-color: var(--color-link);
-}
-
+.mcp-turn.is-pinned,
 .mcp-turn[aria-current='step'].is-pinned {
   background: color-mix(in srgb, var(--color-link) 24%, transparent);
 }
@@ -231,18 +234,27 @@ html[data-js] .mcp-replay .mcp-turn[data-turn]:not([data-turn='prompt']) {
   outline-offset: 1px;
 }
 
+/* A speaker's name, in sentence case on a line of its own. */
 .mcp-turn__who {
-  display: inline-block;
-  min-width: 3.25rem;
-  margin-inline-end: 0.5rem;
+  display: block;
+  margin: 0 0 0.125rem;
   color: var(--color-muted);
   font-size: 0.75rem;
-  text-transform: uppercase;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* The reader's prompt is a message: body weight in the full text colour, on the surface colour with an edge, not bold mono. */
+.mcp-turn--user {
+  padding: 0.625rem 0.75rem 0.75rem;
+  border: 1px solid var(--color-edge);
+  background: var(--color-surface);
 }
 
 .mcp-turn--user p {
-  display: inline;
-  font-weight: 600;
+  font-size: 0.9375rem;
+  font-weight: 400;
+  line-height: 1.55;
 }
 
 .mcp-call {
@@ -251,6 +263,12 @@ html[data-js] .mcp-replay .mcp-turn[data-turn]:not([data-turn='prompt']) {
   align-items: center;
   gap: 0.25rem 0.5rem;
   margin-top: 0.375rem;
+  font-family: var(--mcp-mono);
+  font-size: 0.8125rem;
+}
+
+.mcp-call__tool a {
+  font-weight: 500;
 }
 
 .mcp-call__dot {
@@ -279,6 +297,7 @@ html[data-js] .mcp-replay .mcp-turn[data-turn]:not([data-turn='prompt']) {
 .mcp-result > summary {
   cursor: pointer;
   color: var(--color-muted);
+  font-size: 0.8125rem;
 }
 
 /* The recorded result is the site's own highlighted JSON; the block scrolls inside the chat, whose height is fixed. */
@@ -288,6 +307,7 @@ html[data-js] .mcp-replay .mcp-turn[data-turn]:not([data-turn='prompt']) {
   overflow: auto;
   border: 1px solid var(--color-edge);
   border-radius: 0.375rem;
+  font-size: 0.8125rem;
 }
 
 /* Three classes, so they outrank Expressive Code's own frame and block rules; the body draws the one border. */

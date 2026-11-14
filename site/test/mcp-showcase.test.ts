@@ -398,7 +398,7 @@ describe('the showcase section', () => {
       expect(steps, port).toHaveLength(example!.steps.length)
       steps.forEach((item, index) => {
         const { caption, arguments: args, tool } = example!.steps[index]!
-        const lead = item.querySelector('.mcp-turn__say')!.textContent!.replace(/\s+/g, ' ').replace(/^agent/, '').trim()
+        const lead = item.querySelector('.mcp-turn__say')!.textContent!.replace(/\s+/g, ' ').replace(/^Agent/, '').trim()
         expect(lead, `${port} ${tool.name}`).toBe(caption)
         const call = parseCall(item.querySelector('.mcp-call')!)
         expect(call.arguments, `${port} ${tool.name}`).toEqual(args)

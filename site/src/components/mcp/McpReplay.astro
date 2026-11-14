@@ -77,12 +77,12 @@ const note = (frame: Frame) => {
       </div>
     )}
     <div class="mcp-replay__chat" data-chat>
-      <div class="mcp-turn mcp-turn--user" data-turn="prompt"><span class="mcp-turn__who">you</span><p>{example.prompt}</p></div>
+      <div class="mcp-turn mcp-turn--user" data-turn="prompt"><span class="mcp-turn__who">You</span><p>{example.prompt}</p></div>
       {example.steps.map((step, index) => {
         const tier = tierFor(step.tool)
         return (
           <article class="mcp-turn" data-turn={index} data-off={recording ? '' : undefined}>
-            <p class="mcp-turn__say"><span class="mcp-turn__who">agent</span>{step.caption}</p>
+            <p class="mcp-turn__say"><span class="mcp-turn__who">Agent</span>{step.caption}</p>
             <div class="mcp-call">
               <span class="mcp-call__dot" aria-hidden="true"></span>
               <span class="mcp-call__tool"><a href={step.tool.href}><code>{step.tool.name}</code></a></span>
@@ -102,7 +102,7 @@ const note = (frame: Frame) => {
       {recording && answers.length > 0 && (
         <div class="mcp-turn mcp-turn--answer" data-turn={total} data-off>
           <button type="button" class="mcp-turn__pin" data-pin aria-pressed="false" tabindex="-1" hidden aria-label="Pin the final tmux state"><svg class="mcp-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 2.5h6v11L8 11l-3 2.5z" /></svg></button>
-          <p class="mcp-turn__say"><span class="mcp-turn__who">agent</span>
+          <p class="mcp-turn__say"><span class="mcp-turn__who">Agent</span>
             {answers.map((answer, index) => <>{index > 0 && '; '}{answer.pane ? `in ${answer.pane} it` : 'It'} printed <q>{answer.line}</q></>)}.</p>
         </div>
       )}
