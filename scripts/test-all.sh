@@ -247,6 +247,19 @@ node scripts/verify-destinations.mjs --check
 step 'destination verification (negative)'
 node scripts/verify-destinations.negative.mjs
 
+# A Perl reference page links a declaration to its section of the POD on
+# MetaCPAN only where the latest CPAN release has that fragment. The record of
+# each release's documents, file digests and fragments is read from MetaCPAN's
+# API (node scripts/gen-perl-pod.mjs, re-checked weekly by the same workflow as
+# the destinations). This reads the committed file and requests nothing: a
+# distribution dropped, a digest that is not one, a package naming a missing
+# document and a repeated fragment all fail.
+step 'perl pod record'
+node scripts/gen-perl-pod.mjs --check --offline
+
+step 'perl pod record (negative)'
+node scripts/gen-perl-pod.negative.mjs
+
 # The standard-library and SDK links the reference pages, guides and glossary
 # make. Each lands on the page, fragment and symbol it names, as the host's own
 # page shows (node scripts/verify-api-destinations.mjs, re-run weekly by the

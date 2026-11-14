@@ -157,10 +157,20 @@ describe('prerelease notice ownership', () => {
 
   it('labels unreleased native packages as unreleased', async () => {
     for (const path of ['reference/libtmux-selection', 'workspace']) {
-      const html = await render(`/en/perl/latest/${path}/`, path, 'perl')
+      const html = await render(`/en/haskell/latest/${path}/`, path, 'haskell')
       expect(html).toContain('>Unreleased</strong>')
       expect(html).toContain('has not been released')
       expect(html).not.toContain('libtmux is released')
+    }
+  })
+
+  it('labels the Perl distributions CPAN carries as released', async () => {
+    expect(registryFor('perl')).toMatchObject({ status: 'release' })
+    for (const path of ['reference/libtmux-selection', 'workspace']) {
+      const html = await render(`/en/perl/latest/${path}/`, path, 'perl')
+      expect(html).toContain('libtmux is released')
+      expect(html).not.toContain('>Unreleased</strong>')
+      expect(html).not.toContain('has not been released')
     }
   })
 

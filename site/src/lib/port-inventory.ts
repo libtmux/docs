@@ -79,9 +79,13 @@ export type PublicationStatus = 'published' | 'configured-unpublished' | 'planne
 export type PackageHostId =
   | 'pypi' | 'rubygems' | 'luarocks' | 'powershell-gallery' | 'npm' | 'crates' | 'pkg-go-dev'
   | 'maven-central' | 'nuget' | 'swift-package-index' | 'hex'
+  | 'metacpan'
 export type ApiHostId = 'docs-rs' | 'pkg-go-dev' | 'javadoc-io' | 'swift-package-index' | 'hexdocs'
+  | 'metacpan'
 export type HostIcon = 'github' | 'pypi' | 'npm' | 'crates' | 'go' | 'maven' | 'nuget' | 'swift' | 'rubygems' | 'luarocks'
   | 'powershell' | 'docsrs' | 'javadoc' | 'docc' | 'hex' | 'hexdocs'
+  | 'cpan'
+  | 'pod'
 
 export interface HostIdentity {
   name: string
@@ -108,6 +112,7 @@ export const PACKAGE_HOSTS: Readonly<Record<PackageHostId, HostIdentity>> = {
   nuget: { name: 'NuGet', hostname: 'www.nuget.org', icon: 'nuget' },
   'swift-package-index': { name: 'Swift Package Index', hostname: 'swiftpackageindex.com', icon: 'swift' },
   hex: { name: 'Hex', hostname: 'hex.pm', icon: 'hex' },
+  metacpan: { name: 'MetaCPAN', hostname: 'metacpan.org', icon: 'cpan' },
 }
 
 export const API_HOSTS: Readonly<Record<ApiHostId, HostIdentity>> = {
@@ -118,6 +123,8 @@ export const API_HOSTS: Readonly<Record<ApiHostId, HostIdentity>> = {
   'swift-package-index': { name: 'Swift Package Index', hostname: 'swiftpackageindex.com', icon: 'docc' },
   // The package page wears the Hex mark; its HexDocs reference wears an open book, so the two chips differ at icon size.
   hexdocs: { name: 'HexDocs', hostname: 'hexdocs.pm', icon: 'hexdocs', subdomains: true },
+  // The distribution page wears the CPAN mark; the POD of its modules wears a page, so the two chips differ at icon size.
+  metacpan: { name: 'MetaCPAN POD', hostname: 'metacpan.org', icon: 'pod' },
 }
 
 export type InventoryProduct = 'core' | DocProduct
@@ -219,6 +226,12 @@ const hexPackage = (name: string): Located & Pick<InventoryEntry, 'api'> => ({
   package: { host: 'hex', url: `https://hex.pm/packages/${name}` },
   api: { host: 'hexdocs', url: `https://${name}.hexdocs.pm/` },
 })
+/** A CPAN distribution on MetaCPAN, and the POD of its main module, which MetaCPAN renders from the release. */
+const cpan = (dist: string, module: string): Located & Pick<InventoryEntry, 'api'> => ({
+  coordinate: dist,
+  package: { host: 'metacpan', url: `https://metacpan.org/dist/${dist}` },
+  api: { host: 'metacpan', url: `https://metacpan.org/pod/${module}` },
+})
 const MAVEN_GROUP = 'io.github.libtmux'
 const central = (artifact: string): Located => ({
   coordinate: `${MAVEN_GROUP}:${artifact}`,
@@ -254,6 +267,7 @@ const jvm = family('libtmux/libtmux-java')
 const dotnet = family('libtmux/libtmux-dotnet')
 const cxx = family('libtmux/libtmux-cxx')
 const swift = family('libtmux/libtmux-swift')
+const perl = family('libtmux/libtmux-perl')
 
 export type DestinationKind = 'source' | 'package' | 'api'
 
@@ -312,11 +326,17 @@ export const INVENTORY: Readonly<Record<string, readonly InventoryEntry[]>> = {
       aliases: ['tmux-workspace'], repo: 'libtmux/libtmux-ocaml', ref: 'master', path: 'cli', status: 'published' },
   ],
   perl: [
-    { id: 'LibTmux', kind: 'library', product: 'core', label: 'LibTmux', coordinate: 'LibTmux', aliases: ["LibTmux::Server"], repo: 'libtmux/libtmux-perl', ref: 'master', path: 'packages/core', status: 'configured-unpublished', sourceAvailable: true, note: 'Install from verified source; no CPAN release is published.' },
-    { id: 'LibTmux-Async', kind: 'companion', product: 'core', label: 'LibTmux-Async', coordinate: 'LibTmux-Async', aliases: ["LibTmux::Async::Server"], repo: 'libtmux/libtmux-perl', ref: 'master', path: 'packages/async', status: 'configured-unpublished', sourceAvailable: true, note: 'Install from verified source; no CPAN release is published.' },
-    { id: 'LibTmux-Workspace', kind: 'companion', product: 'workspace', label: 'LibTmux-Workspace', coordinate: 'LibTmux-Workspace', aliases: ["LibTmux::Workspace"], repo: 'libtmux/libtmux-perl', ref: 'master', path: 'packages/workspace', status: 'configured-unpublished', sourceAvailable: true, note: 'Install from verified source; no CPAN release is published.' },
-    { id: 'repository', kind: 'source', product: 'core', label: 'libtmux-perl', coordinate: 'libtmux/libtmux-perl', aliases: [], repo: 'libtmux/libtmux-perl', ref: 'master', status: 'published' },
-    { id: 'libtmux-workspace', kind: 'cli', product: 'workspace', label: 'libtmux-workspace', coordinate: 'libtmux-workspace', aliases: ['libtmux-workspace'], within: 'LibTmux-Workspace', unit: 'command', repo: 'libtmux/libtmux-perl', ref: 'master', path: 'packages/workspace/bin/libtmux-workspace', file: true, status: 'configured-unpublished', sourceAvailable: true, note: 'Install from verified source; no CPAN release is published.' },
+    perl({ id: 'LibTmux', kind: 'library', product: 'core', unit: 'distribution', label: 'LibTmux', ...cpan('LibTmux', 'LibTmux'),
+      aliases: ['LibTmux::Server'], path: 'packages/core' }),
+    perl({ id: 'LibTmux-Async', kind: 'companion', product: 'core', unit: 'distribution', label: 'LibTmux-Async', ...cpan('LibTmux-Async', 'LibTmux::Async'),
+      aliases: ['LibTmux::Async::Server'], path: 'packages/async' }),
+    perl({ id: 'LibTmux-Workspace', kind: 'companion', product: 'workspace', unit: 'distribution', label: 'LibTmux-Workspace', ...cpan('LibTmux-Workspace', 'LibTmux::Workspace'),
+      aliases: ['LibTmux::Workspace'], path: 'packages/workspace' }),
+    perl({ id: 'repository', kind: 'source', product: 'core', label: 'libtmux-perl', coordinate: 'libtmux/libtmux-perl' }),
+    // The command ships in the workspace distribution, so it is found on that distribution's page.
+    perl({ id: 'libtmux-workspace', kind: 'cli', product: 'workspace', label: 'libtmux-workspace', unit: 'command', within: 'LibTmux-Workspace',
+      aliases: ['libtmux-workspace'], path: 'packages/workspace/bin/libtmux-workspace', file: true,
+      coordinate: 'libtmux-workspace', package: { host: 'metacpan', url: 'https://metacpan.org/dist/LibTmux-Workspace' } }),
   ],
   py: [
     py({ id: 'libtmux', kind: 'library', product: 'core', label: 'libtmux', ...pypi('libtmux'), aliases: ['libtmux'] }),

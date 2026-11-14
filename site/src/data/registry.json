@@ -199,32 +199,28 @@
       "maturity": "unreleased"
     },
     "perl": {
-      "status": "unpublished",
-      "version": null,
-      "release": null,
-      "tag": null,
-      "maturity": "unreleased",
+      "status": "release",
+      "version": "0.003",
+      "release": "0.003",
+      "tag": "v0.003",
       "packages": {
         "LibTmux": {
-          "status": "unpublished",
-          "version": null,
-          "release": null,
-          "tag": null,
-          "maturity": "unreleased"
+          "status": "release",
+          "version": "0.003",
+          "release": "0.003",
+          "tag": "v0.003"
         },
         "LibTmux-Async": {
-          "status": "unpublished",
-          "version": null,
-          "release": null,
-          "tag": null,
-          "maturity": "unreleased"
+          "status": "release",
+          "version": "0.003",
+          "release": "0.003",
+          "tag": "v0.003"
         },
         "LibTmux-Workspace": {
-          "status": "unpublished",
-          "version": null,
-          "release": null,
-          "tag": null,
-          "maturity": "unreleased"
+          "status": "release",
+          "version": "0.003",
+          "release": "0.003",
+          "tag": "v0.003"
         }
       }
     }
