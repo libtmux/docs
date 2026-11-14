@@ -1080,9 +1080,10 @@ try {
           schemeLabelWidth: document.querySelector('.scheme-switch__label').getBoundingClientRect().width,
           headerControls: ['.site-header__search', '.scheme-switch, .scheme-cycle', '.site-header__menu-button'].map((selector) => {
             const control = [...document.querySelectorAll(selector)].find((node) => node.checkVisibility())
+            if (!control) return undefined
             const { top, height } = control.getBoundingClientRect()
             return { top, height }
-          }),
+          }).filter(Boolean),
           redundantHeaderLinks: document.querySelectorAll('.site-header__wide-link').length,
           columns: [...document.querySelectorAll('table')].flatMap((table) => {
             const head = [...(table.tHead?.rows[0]?.cells ?? [])]
