@@ -103,4 +103,56 @@ describe('code tabs', () => {
     expect(visible).toHaveLength(2)
     expect(visible.every((panel) => panel.dataset.port === 'cxx')).toBe(true)
   })
+  describe('keyboard and names', () => {
+    const press = (tab: Element, key: string) => {
+      const event = new window.KeyboardEvent('keydown', { key, bubbles: true, cancelable: true })
+      tab.dispatchEvent(event)
+      return event
+    }
+    const selectedPort = (group: Element) =>
+      group.querySelector('.code-tab[aria-selected="true"]')!.getAttribute('data-port')
+
+    it('moves to the first and last tab with Home and End, and keeps focus on it', () => {
+      const { document } = load()
+      const group = document.querySelector('libtmux-code-tabs')!
+      const tabs = [...group.querySelectorAll<HTMLElement>('.code-tab')]
+      expect(selectedPort(group)).toBe(tabs[0]!.dataset.port)
+      const end = press(tabs[0]!, 'End')
+      expect(end.defaultPrevented, 'the page does not scroll to its end').toBe(true)
+      expect(selectedPort(group)).toBe(tabs.at(-1)!.dataset.port)
+      expect(document.activeElement).toBe(tabs.at(-1))
+      expect(tabs.at(-1)!.tabIndex).toBe(0)
+      expect(tabs[0]!.tabIndex).toBe(-1)
+      press(tabs.at(-1)!, 'Home')
+      expect(selectedPort(group)).toBe(tabs[0]!.dataset.port)
+      expect(document.activeElement).toBe(tabs[0])
+    })
+
+    it('still wraps with the arrow keys and leaves other keys alone', () => {
+      const { document } = load()
+      const group = document.querySelector('libtmux-code-tabs')!
+      const tabs = [...group.querySelectorAll<HTMLElement>('.code-tab')]
+      press(tabs[0]!, 'ArrowLeft')
+      expect(selectedPort(group)).toBe(tabs.at(-1)!.dataset.port)
+      press(tabs.at(-1)!, 'ArrowRight')
+      expect(selectedPort(group)).toBe(tabs[0]!.dataset.port)
+      expect(press(tabs[0]!, 'a').defaultPrevented).toBe(false)
+    })
+
+    it('names what the tabs choose and pairs every tab with its panel', () => {
+      const { document } = load()
+      for (const group of document.querySelectorAll('libtmux-code-tabs')) {
+        expect(group.querySelector('[role="tablist"]')!.getAttribute('aria-label')).toBe('Programming language')
+        for (const tab of group.querySelectorAll('.code-tab')) {
+          const panel = group.querySelector(`#${tab.getAttribute('aria-controls')}`)!
+          expect(panel.getAttribute('role')).toBe('tabpanel')
+          expect(panel.getAttribute('aria-labelledby')).toBe(tab.id)
+          expect(panel.getAttribute('tabindex')).toBe('0')
+        }
+      }
+      const ids = [...document.querySelectorAll('[id^="code-tab"]')].map((element) => element.id)
+      expect(ids.length).toBeGreaterThan(8)
+      expect(new Set(ids).size, 'ids are unique across the groups of a page').toBe(ids.length)
+    })
+  })
 })

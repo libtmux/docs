@@ -49,6 +49,8 @@ const PORT_LABEL = {
 
 export function rehypeCodeTabs() {
   return (tree) => {
+    // Ids pair each tab with its panel; one number per group keeps them unique across a page.
+    let groups = 0
     // Both `root` and `element`: in a rendered Markdown fragment the top-level
     // blocks are children of the hast root, which is not an element — so
     // visiting elements alone finds every nested case and misses the only one
@@ -66,6 +68,8 @@ export function rehypeCodeTabs() {
           run = []
           return
         }
+        const group = groups++
+        const idOf = (kind, port) => `code-tab-${group}-${kind}-${port}`
         out.push({
           type: 'element',
           tagName: 'libtmux-code-tabs',
@@ -74,14 +78,16 @@ export function rehypeCodeTabs() {
             {
               type: 'element',
               tagName: 'div',
-              properties: { class: 'code-tabs-list', role: 'tablist' },
+              properties: { class: 'code-tabs-list', role: 'tablist', 'aria-label': 'Programming language' },
               children: run.map((r, i) => ({
                 type: 'element',
                 tagName: 'button',
                 properties: {
                   class: 'code-tab',
+                  id: idOf('tab', r.port),
                   type: 'button',
                   role: 'tab',
+                  'aria-controls': idOf('panel', r.port),
                   'data-port': r.port,
                   'aria-selected': i === 0 ? 'true' : 'false',
                   tabindex: i === 0 ? 0 : -1,
@@ -94,7 +100,10 @@ export function rehypeCodeTabs() {
               tagName: 'div',
               properties: {
                 class: 'code-tab-panel',
+                id: idOf('panel', r.port),
                 role: 'tabpanel',
+                'aria-labelledby': idOf('tab', r.port),
+                tabindex: 0,
                 'data-port': r.port,
                 hidden: i === 0 ? undefined : true,
               },
