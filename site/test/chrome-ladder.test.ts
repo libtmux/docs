@@ -3,7 +3,7 @@ vi.mock('astro:content', () => ({ getCollection: vi.fn(async () => []) }))
 import { buildDocumentationSurfaces, currentDocumentation, withLanguageHome } from '../src/lib/documentation-navigation'
 import { PORT_BY_SLUG, PORTS, portPageUrl, type DocProduct } from '../src/lib/ports'
 import { hasInstaller, pageCount, portRows, productRows, rowsFor, sidebarHead } from '../src/lib/sidebar-head'
-import type { SidebarItem } from '../src/lib/sidebar'
+import { pageBreadcrumbs, type SidebarItem } from '../src/lib/sidebar'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 import { parseHtml } from './header-page'
 
@@ -123,6 +123,20 @@ describe('the rows of each level', () => {
     const items = selected.section.items
     expect(rowsFor('go', head, surfaces, selected, items)).toBe(items)
     for (const group of items.filter((item) => item.type === 'group')) expect(group).toMatchObject({ overline: true })
+  })
+})
+
+describe('the breadcrumb', () => {
+  it('names the Core Library between the port and its sections', async () => {
+    const crumbs = await pageBreadcrumbs('Capturing output', 'guides/capturing-output', 'latest', 'go')
+    expect(crumbs.map((crumb) => crumb.name).slice(0, 2)).toEqual(['Go', 'Core Library'])
+    expect(crumbs[1]!.url).toBe('/go/latest/core/')
+  })
+
+  it('leaves the Core Home, a product page and a root page as they were', async () => {
+    expect((await pageBreadcrumbs('Core', 'core', 'latest', 'go')).map((crumb) => crumb.name)).toEqual(['Go', 'Core Library'])
+    expect((await pageBreadcrumbs('Tools', 'mcp/tools', 'latest', 'go')).map((crumb) => crumb.name)).not.toContain('Core Library')
+    expect((await pageBreadcrumbs('Servers', 'concepts/servers', 'latest')).map((crumb) => crumb.name)).not.toContain('Core Library')
   })
 })
 

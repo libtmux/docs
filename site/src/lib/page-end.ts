@@ -15,7 +15,7 @@ import { API_MODELS, referenceHref } from './api-models'
 import { equivalentMcpObject, mcpObjects, type McpObject } from './mcp-reference'
 import { isActivePath, type SidebarItem, type SidebarLinkItem } from './sidebar'
 import { PORT_BY_SLUG, portPageUrl, type ProductStatus } from './ports'
-import type { SidebarHeadData } from './sidebar-head'
+import { hasInstaller, type SidebarHeadData } from './sidebar-head'
 import { tmuxManual } from './tmux-manual-data'
 import { tmuxSymbolSends } from './tmux-reference'
 import { withRoot } from './site-root'
@@ -220,3 +220,18 @@ export function pageEnd(input: PageEndInput & { title: string }): PageEndData {
 }
 
 
+/**
+ * The one-line note under a page's title: what the page needs and where to install it.
+ *
+ * Every page of a product that teaches with code names the package it runs
+ * against and that package's maturity, and links the installer on the product's
+ * home. A section index, a reference and a concept page have no program to run
+ * and carry none.
+ */
+export function pageNeeds(port: string, surface: DocumentationSurface, section: DocumentationSection, pathname: string): { text: string; status?: ProductStatus; href?: string } | undefined {
+  const info = PORT_BY_SLUG[port]
+  if (!info || section.id === 'home' || section.id === 'reference' || section.id === 'concepts') return undefined
+  if (section.href && isActivePath(section.href, pathname)) return undefined
+  const text = surface.id === 'core' ? `libtmux for ${info.name}` : `the ${surface.id === 'mcp' ? 'MCP server' : surface.label} for ${info.name}`
+  return { text: `Needs ${text}`, ...(surface.status ? { status: surface.status } : {}), ...(hasInstaller(port, surface.id) ? { href: `${surface.href}#install` } : {}) }
+}

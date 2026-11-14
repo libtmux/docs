@@ -19,6 +19,8 @@ import SOURCES from '../data/example-sources.json'
 
 /**
  * What each product a port ships looks like in use, with its install widget.
+ * The installer opens each panel, above the example, so it is above the fold
+ * on the port home as it is on every product home (record 0026).
  *
  * Core API is the homepage's example block, fixed to the port's language.
  * MCP opens with one sentence, the install picker, then the MCP overview's
@@ -81,14 +83,14 @@ const panelId = (product: string) => `landing-panel-${product}`
     </details>
     return <div class="landing-panel" id={panelId(panel.product)} data-landing-panel={panel.product}>
     {panel.product === 'core' ? <>
-      <CoreShowcase port={port.slug} links={coreLinks} />
       <LandingInstall panel={panel} port={port.slug} />
+      <CoreShowcase port={port.slug} links={coreLinks} />
     </> : panel.product === 'mcp' ? <>
       <h2 class="sr-only">{panel.label}</h2>
+      <LandingInstall panel={panel} port={port.slug} />
       {showcase?.example && <div class="landing-example" data-landing-example="mcp">
         <McpReplay example={showcase.example} portName={port.name} level={3} />
       </div>}
-      <LandingInstall panel={panel} port={port.slug} />
       <ul class="landing-links">
         {showcase && <li><a href={`${panel.href}#${toolHeadings(showcase)[0]!.slug}`}>All tools{showcase.groups.some((group) => group.tier) ? ' by tier' : ''} →</a></li>}
         {showcase && <li><a href={showcase.toolsHref}>Every tool, with its arguments and result →</a></li>}
@@ -97,6 +99,7 @@ const panelId = (product: string) => `landing-panel-${product}`
       {excerpt}
     </> : <>
       <h2 class="sr-only">{panel.label}</h2>
+      <LandingInstall panel={panel} port={port.slug} />
       {workspace && workspaceExample && workspaceTopic && <div class="landing-example" data-landing-example="workspace">
         {offersPicker(workspace)
           ? <WorkspacePicker showcase={workspace} landing={{ first: workspaceExample.topic, program: workspaceProgram?.program }} />
@@ -110,7 +113,6 @@ const panelId = (product: string) => `landing-panel-${product}`
             <WorkspaceEvidence showcase={workspace} example={workspaceExample} program={workspaceProgram?.program} />
           </>}
       </div>}
-      <LandingInstall panel={panel} port={port.slug} />
       <ul class="landing-links">
         {workspace && <li><a href={`${panel.href}#example-workspaces`}>Example workspaces →</a></li>}
         {workspaceProgram && <li><a href={portPageUrl(port, version, workspaceProgram.path)}>The <code>{workspaceProgram.program} load</code> command →</a></li>}

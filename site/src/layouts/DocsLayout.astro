@@ -19,8 +19,9 @@ import DocumentationContext from '../components/docs/DocumentationContext.astro'
 import { getSidebar, pageBreadcrumbs, withSidebarBreadcrumbs, type BreadcrumbItem, type SidebarItem } from '../lib/sidebar'
 import { currentDocumentation, getDocumentationSurfaces } from '../lib/documentation-navigation'
 import { sidebarHead } from '../lib/sidebar-head'
-import { pageEnd } from '../lib/page-end'
+import { pageEnd, pageNeeds } from '../lib/page-end'
 import PageEnd from '../components/docs/PageEnd.astro'
+import PageNeeds from '../components/docs/PageNeeds.astro'
 import type { PagePortLink } from '../lib/page-port-links'
 import { pagePortsFor } from '../lib/page-ports-for'
 import ProductNotice from '../components/ProductNotice.astro'
@@ -193,10 +194,11 @@ const apiNavigation = requestedApiNavigation ?? (referenceInventory ? {
   inventory: referenceInventory, base: referenceUrl(PORT_BY_SLUG[port!], version, product), version: apiTreeVersion(API_MODELS[port!], []),
   selected: searchApi(referenceInventory, '').find((entry) => apiTreeHref(referenceUrl(PORT_BY_SLUG[port!], version, product), entry, referenceInventory.hrefs) === currentPath)?.id ?? '',
 } : undefined)
-// A port page ends with where to go next and the way up (record 0021).
+// A port page ends with where to go next and the way up (record 0021), and a page that runs code names what it needs.
 const ladder = port && selectedDocumentation ? sidebarHead(port, version, selectedDocumentation) : undefined
 const end = port && selectedDocumentation && ladder
   ? pageEnd({ port, version, pathname: currentPath, surfaces, selected: selectedDocumentation, head: ladder, pagePorts, title }) : undefined
+const needs = port && selectedDocumentation && !bare ? pageNeeds(port, selectedDocumentation.surface, selectedDocumentation.section, currentPath) : undefined
 const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && port ? [
   { name: PORT_BY_SLUG[port].name, url: portPageUrl(PORT_BY_SLUG[port], version) },
   { name: DOC_PRODUCTS[product].label, url: portPageUrl(PORT_BY_SLUG[port], version, product) },
@@ -320,6 +322,7 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
           ? <code class="not-prose symbol-title"><SymbolName name={title} /></code>
           : title}{subtitle && <span class="page-subtitle">{' '}{subtitle}</span>}</h1>}
         </div>
+        {needs && <PageNeeds {...needs} />}
         <slot />
       </article>
       )}

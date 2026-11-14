@@ -109,6 +109,9 @@ export async function pageBreadcrumbs(title: string, path: string, version: stri
     { name: 'API reference', url: url('reference') },
     ...referenceBreadcrumbs(model, API_NAV[port!], navTree(port!), symbol, url('reference'), (entry) => productApiHref(model, entry, version)),
   ]
+  // The Core Library is the level between a port and its sections (record 0021): `Go / Core Library / Guides / Capturing output`.
+  // A product's pages name the product instead, and the API reference keeps its own trail.
+  if (port && path && path !== 'core' && !/^(?:mcp|workspace|reference|api)(?:\/|$)/.test(path)) items.push({ name: 'Core Library', url: url('core') })
   const entries = docsEntriesAvailable(await getCollection('docs', (entry) => !entry.data.port || entry.data.port === port), port)
   const parts = path.split('/').filter(Boolean)
   for (let i = tmux ? 2 : 1; i < parts.length; i++) {

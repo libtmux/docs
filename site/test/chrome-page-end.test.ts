@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 vi.mock('astro:content', () => ({ getCollection: vi.fn(async () => []) }))
 import { buildDocumentationSurfaces, currentDocumentation, getDocumentationSurfaces, withLanguageHome } from '../src/lib/documentation-navigation'
-import { GROUP_LIMIT, pageEnd, sectionPages, sequence } from '../src/lib/page-end'
+import { GROUP_LIMIT, pageEnd, pageNeeds, sectionPages, sequence } from '../src/lib/page-end'
 import { PORT_BY_SLUG, portPageUrl, type DocProduct } from '../src/lib/ports'
 import type { PagePortLink } from '../src/lib/page-port-links'
 import { sidebarHead } from '../src/lib/sidebar-head'
@@ -158,5 +158,31 @@ describe('typed groups', () => {
     expect(languages.title).toBe('Other languages')
     expect(languages.count).toBeGreaterThan(0)
     expect(languages.items[0]!.label).toMatch(/^capture_pane in \d+ other servers?$/)
+  })
+})
+
+describe('the Needs note', () => {
+  const at = (slug: string, path: string) => {
+    const surfaces = withLanguageHome(slug, 'latest', buildDocumentationSurfaces(slug, 'latest', menus(slug)))
+    const { surface, section } = currentDocumentation(surfaces, path)
+    return pageNeeds(slug, surface, section, path)
+  }
+
+  it('names the package a page runs against with its maturity and links the product\'s installer', () => {
+    expect(at('go', '/go/latest/guides/sending-keys/')).toEqual({ text: 'Needs libtmux for Go', status: '0.x', href: '/go/latest/core/#install' })
+    expect(at('go', '/go/latest/mcp/guides/sending-keys/')).toEqual({ text: 'Needs the MCP server for Go', status: 'concept', href: '/go/latest/mcp/#install' })
+  })
+
+  it('is absent from a section index, a reference, a concept and a home', () => {
+    const surfaces = withLanguageHome('go', 'latest', buildDocumentationSurfaces('go', 'latest', menus('go')))
+    const core = surfaces.find((surface) => surface.id === 'core')!
+    const section = (id: string) => ({ id, label: id, href: `/go/latest/${id}/`, items: [page('A page', `/go/latest/${id}/a-page/`)] })
+    // A page in each kind of section, and the section's own index: only a page that runs code carries the note.
+    expect(pageNeeds('go', core, section('guides'), '/go/latest/guides/a-page/')).toBeDefined()
+    expect(pageNeeds('go', core, section('guides'), '/go/latest/guides/')).toBeUndefined()
+    expect(pageNeeds('go', core, section('reference'), '/go/latest/reference/a-page/')).toBeUndefined()
+    expect(pageNeeds('go', core, section('concepts'), '/go/latest/concepts/a-page/')).toBeUndefined()
+    expect(pageNeeds('go', core, { id: 'home', label: 'Home', href: core.href, items: [] }, '/go/latest/core/')).toBeUndefined()
+    expect(at('go', '/go/latest/')).toBeUndefined()
   })
 })
