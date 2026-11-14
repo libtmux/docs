@@ -30,6 +30,7 @@ import * as roots from '../src/lib/site-root'
 import * as sidebar from '../src/lib/sidebar'
 import * as documentation from '../src/lib/documentation-navigation'
 import * as sidebarHead from '../src/lib/sidebar-head'
+import * as pageEnd from '../src/lib/page-end'
 import * as pagePorts from '../src/lib/page-ports-for'
 import * as markdown from '../src/lib/markdown-twins'
 import * as manual from '../src/lib/tmux-manual-data'
@@ -65,7 +66,7 @@ async function components(stubs: Readonly<Record<string, string>> = {}) {
       'api-glossary': glossary, 'api-models': models, 'api-sections': sections, 'inventory-targets': inventory,
       'api-relationships': relationships, 'api-tmux-sections': tmuxSections, 'api-tree': tree, 'api-search': search, 'api-sidebar': apiSidebar,
       'api-labels': labels, 'word-break': wordBreak, 'native-name': nativeName, ports, 'product-api': products,
-      versions, 'site-root': roots, sidebar, 'documentation-navigation': documentation, 'sidebar-head': sidebarHead,
+      versions, 'site-root': roots, sidebar, 'documentation-navigation': documentation, 'sidebar-head': sidebarHead, 'page-end': pageEnd,
       'page-ports-for': pagePorts, 'markdown-twins': markdown, 'tmux-manual-data': manual, 'tmux-reference': reference, 'tmux-catalog': catalog,
       branding, 'mention-badge': mentionBadge, 'perl-pod': perlPod,
     }).map(([name, exports]) => [new URL(`../src/lib/${name}.ts`, import.meta.url).href, exports])),
