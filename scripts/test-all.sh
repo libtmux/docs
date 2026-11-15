@@ -72,7 +72,7 @@ step 'mention index'
 node scripts/gen-mentions.mjs --check
 
 # The commands, options and keys that workspace prose links to, read from the
-# CLI Manual and Configuration pages. The negative case is a unit test.
+# CLI manual and Configuration pages. The negative case is a unit test.
 step 'workspace entity index'
 node scripts/gen-workspace-entities.mjs --check
 

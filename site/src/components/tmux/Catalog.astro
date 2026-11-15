@@ -173,7 +173,7 @@ const typeChips = kind ? catalogTypeCounts(tmuxCatalogEntries(version, kind)) : 
               <a href={tmuxCatalogSourceUrl(version, site)} rel="nofollow noopener"><code>{site.file}:{site.line}</code></a>{site.call && <> in <code>{site.call}</code></>}
             </li>)}</ul></dd></>}
             {references.length > 0 && <><dt>C source reference</dt><dd>{references.map((reference, i) => <>{i > 0 && ', '}<a href={reference.href}><code>{reference.name}</code></a></>)}</dd></>}
-            {manualUrl && <><dt>CLI Manual</dt><dd><a href={manualUrl}>Original manual entry</a></dd></>}
+            {manualUrl && <><dt>CLI manual</dt><dd><a href={manualUrl}>Original manual entry</a></dd></>}
           </dl>
         </section>
 
@@ -243,7 +243,7 @@ const typeChips = kind ? catalogTypeCounts(tmuxCatalogEntries(version, kind)) : 
             </li>)}</ul>
           </section>)}
         </div>
-        <p class="mt-6">The <a href={tmuxManualUrl(version)}>CLI Manual</a> documents commands and flags; the catalog documents the names those commands take.</p>
+        <p class="mt-6">The <a href={tmuxManualUrl(version)}>CLI manual</a> documents commands and flags; the catalog documents the names those commands take.</p>
       </>}
     </div>
     {entry && <ApiPageContents sections={sections} related={[]} />}

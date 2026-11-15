@@ -2,7 +2,7 @@
 
 Prose across the site names tmux options (`destroy-unattached`), hooks
 (`session-created`) and format variables (`session_attached`) that the
-CLI Manual and the C source reference do not index. The catalog is a browser
+CLI manual and the C source reference do not index. The catalog is a browser
 for those names, built from the same data tmux uses, so any page can link to
 the entry for the tmux release it describes.
 
@@ -55,17 +55,17 @@ badges, and an entry page with facts, description, releases, source and
 "Used by". A name missing from another release links that release's section.
 
 The picker and the tmux sidebar list it as "Options, hooks and formats", a
-third section beside "CLI Manual" and "C source reference".
+third section beside "CLI manual" and "C source reference".
 
 ## Linking
 
 `tmuxEntityHref(kind, name, version)` in `site/src/lib/tmux-links.ts` is the one
-place a tmux name becomes a destination. A command resolves to its CLI Manual
+place a tmux name becomes a destination. A command resolves to its CLI manual
 page; an option, hook or format variable resolves to its catalog entry, and an
 entry page links back to the manual text through `tmuxManualEntityHref`.
 `tmuxMentions` finds the names in a run of text, and every surface uses it: API
 docstrings (`ApiDoc`), guides and topics (`rehype-api-links`), their Markdown
-exports (`prose-markdown`, `symbol-markdown`) and the CLI Manual HTML
+exports (`prose-markdown`, `symbol-markdown`) and the CLI manual HTML
 (`tmux-catalog-html.ts`). Hover cards for catalog links come from
 `<entry>.preview.json`.
 

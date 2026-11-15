@@ -338,7 +338,7 @@ export async function getSidebar(
     }),
   ).map(({ label, href, items }) => ({
     type: 'group' as const,
-    label: label === 'CLI reference' ? 'CLI Manual' : label,
+    label: label === 'CLI reference' ? 'CLI manual' : label,
     href,
     items: items.map((i): SidebarLinkItem => ({ type: 'link', label: i.label, href: i.href })),
   }))
@@ -359,7 +359,7 @@ export async function getSidebar(
   if (port === undefined && section === 'meta') return [...groups, ...ungrouped]
   // The tmux docs end with the three references every section points into.
   if (port === undefined) return [...groups,
-    { type: 'link', label: 'CLI Manual', href: tmuxManualUrl(version) },
+    { type: 'link', label: 'CLI manual', href: tmuxManualUrl(version) },
     { type: 'link', label: CATALOG_TITLE, href: tmuxCatalogUrl(version) },
     { type: 'link', label: 'C source reference', href: tmuxReferenceUrl(version) },
     ...ungrouped]

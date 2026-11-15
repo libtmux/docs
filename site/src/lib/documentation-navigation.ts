@@ -42,7 +42,7 @@ export interface DocumentationSurface {
 const labels: Record<string, string> = {
   home: 'Home', guides: 'Guides', tutorials: 'Tutorials', topics: 'Topics', concepts: 'Concepts',
   examples: 'Examples', reference: 'API reference', configuration: 'Configuration', internals: 'Internals',
-  async: 'Async', runtimes: 'Runtimes', manual: 'CLI Manual',
+  async: 'Async', runtimes: 'Runtimes', manual: 'CLI manual',
   ...MCP_SECTIONS,
 }
 const standardSections = ['home', 'guides', 'tutorials', 'topics', 'concepts', 'examples', 'manual', 'tools', 'prompts', 'resources', 'reference']
@@ -178,7 +178,7 @@ export function getDocumentationSurfaces(port: string | undefined, version: stri
         { id: 'home', label: current ? 'Home' : 'Current docs →', href: withPortRoot('/tmux/'), items: [] },
         ...(current ? menus : []).flatMap((item) => item.type === 'group' && item.href
           ? [{ id: item.label.toLowerCase(), label: item.label, href: item.href, items: item.items }] : []),
-        { id: 'manual', label: 'CLI Manual', href: tmuxManualUrl(version), items: [] },
+        { id: 'manual', label: 'CLI manual', href: tmuxManualUrl(version), items: [] },
         { id: 'catalog', label: CATALOG_TITLE, shortLabel: 'Catalog', href: tmuxCatalogUrl(version), items: [] },
         { id: 'reference', label: 'C source reference', shortLabel: 'C reference', href: tmuxReferenceUrl(version), items: [] },
       ]

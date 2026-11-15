@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Index the workspace commands, options and configuration keys that prose can
- * link to, so a code span naming one reaches its CLI Manual or Configuration
+ * link to, so a code span naming one reaches its CLI manual or Configuration
  * entry. The index is committed because the Markdown exports run bundled, with
  * no content directory beside them.
  *

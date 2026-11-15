@@ -21,7 +21,7 @@ function menus(slug: string, version = 'latest') {
     return [surface, [link('Overview', base()), link('Guides', base('guides')), link('Capturing output', base('guides/capturing-output')),
       link('Sending keys', base('guides/sending-keys')), link('Examples', base('examples')),
       link('API', base('reference')),
-      ...(surface === 'workspace' ? [link('CLI Manual', base('cli')), link('Load', base('cli/load'))] : []),
+      ...(surface === 'workspace' ? [link('CLI manual', base('cli')), link('Load', base('cli/load'))] : []),
       ...(surface === 'mcp' ? [link('Tools', base('tools')), link('Prompts', base('prompts')), link('Resources', base('resources'))] : []),
     ]]
   })) as Record<'core' | DocProduct, SidebarItem[]>

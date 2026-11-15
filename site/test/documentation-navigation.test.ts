@@ -12,7 +12,7 @@ const menus = (port: typeof PORTS[number], version: string) => Object.fromEntrie
   const base = (path = '') => portPageUrl(port, version, [surface === 'core' ? '' : surface, path].filter(Boolean).join('/'))
   return [surface, [link('Overview', base()), link('Guides', base('guides')), link('Examples', base('examples')),
     link('API', base('reference')), link('Third-party notices', base('meta/third-party-notices')),
-    ...(surface === 'workspace' ? [link('CLI Manual', base('cli')), link('Load', base('cli/load')),
+    ...(surface === 'workspace' ? [link('CLI manual', base('cli')), link('Load', base('cli/load')),
       link('Installation', base('guides/installation')), link('Internal guides', base('internals/guides')),
       link('Exit codes', base('reference/exit-codes')), link('Output', base('reference/output'))] : []),
     ...(surface === 'mcp' ? [link('Tools', base('tools')), link('Prompts', base('prompts')), link('Resources', base('resources'))] : []),
@@ -73,10 +73,10 @@ describe('documentation surface navigation', () => {
     expect(PORTS.some((port) => port.slug === 'tmux')).toBe(false)
   })
 
-  it('links the CLI Manual, the catalog and the C source reference from the tmux sidebar', async () => {
+  it('links the CLI manual, the catalog and the C source reference from the tmux sidebar', async () => {
     const { getSidebar } = await import('../src/lib/sidebar')
     expect((await getSidebar(undefined, '3.2a')).map((item) => [item.label, 'href' in item ? item.href : undefined])).toEqual([
-      ['CLI Manual', expect.stringMatching(/\/tmux\/3\.2a\/manual\/$/)],
+      ['CLI manual', expect.stringMatching(/\/tmux\/3\.2a\/manual\/$/)],
       ['Options, hooks and formats', expect.stringMatching(/\/tmux\/3\.2a\/catalog\/$/)],
       ['C source reference', expect.stringMatching(/\/tmux\/3\.2a\/reference\/$/)],
     ])
@@ -94,7 +94,7 @@ describe('documentation surface navigation', () => {
     const surfaces = await getDocumentationSurfaces(undefined, '3.2a')
     expect(surfaces[0].sections.map(({ label, href }) => ({ label, href }))).toEqual([
       { label: 'Current docs →', href: '/tmux/' },
-      { label: 'CLI Manual', href: '/tmux/3.2a/manual/' },
+      { label: 'CLI manual', href: '/tmux/3.2a/manual/' },
       { label: 'Options, hooks and formats', href: '/tmux/3.2a/catalog/' },
       { label: 'C source reference', href: '/tmux/3.2a/reference/' },
     ])
@@ -118,7 +118,7 @@ describe('documentation surface navigation', () => {
       expect(currentDocumentation(surfaces, `${surface.href}reference/example/`).section.id).toBe('reference')
       if (surface.id === 'workspace') {
         const manual = currentDocumentation(surfaces, `${surface.href}cli/load/`).section
-        expect(manual.label).toBe('CLI Manual')
+        expect(manual.label).toBe('CLI manual')
         expect(manual.href).toBe(`${surface.href}cli/`)
       }
     }
@@ -240,9 +240,9 @@ describe('documentation surface navigation', () => {
     const workspace = currentDocumentation(surfaces, portPageUrl(port, 'latest', 'workspace/cli/load'))
     expect(workspace.surface.id).toBe('workspace')
     expect(workspace.section.id).toBe('manual')
-    expect(workspace.section.label).toBe('CLI Manual')
+    expect(workspace.section.label).toBe('CLI manual')
     expect(workspace.section.href).toBe('/go/latest/workspace/cli/')
-    expect(workspace.section.items.map((item) => item.label)).toEqual(['CLI Manual', 'Load', 'Exit codes', 'Output'])
+    expect(workspace.section.items.map((item) => item.label)).toEqual(['CLI manual', 'Load', 'Exit codes', 'Output'])
     expect(currentDocumentation(surfaces, '/go/latest/workspace/reference/output/').section.id).toBe('manual')
     const api = currentDocumentation(surfaces, '/go/latest/workspace/reference/')
     expect(api.section.id).toBe('reference')
