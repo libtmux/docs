@@ -45,7 +45,7 @@ export interface SidebarLinkItem {
   quiet?: boolean
   /** Pages the row's section holds, muted at the row's end. Never zero: an empty section shows none. */
   count?: number
-  /** The row jumps to the product's installer, and carries the download mark. */
+  /** The row jumps to the product's installer; like every row, it draws no icon (record 0060). */
   install?: boolean
 }
 
