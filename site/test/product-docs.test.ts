@@ -871,7 +871,11 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         expect(document.querySelector('main .api-reference-layout--symbol'), object.id).not.toBeNull()
         const row = document.querySelector('[data-section-navigation] nav [aria-current="page"]')
         expect(row?.textContent?.trim(), `${object.id} current row`).toBe(object.name)
-        expect(row?.closest('details.sidebar-section')?.querySelector(':scope > summary')?.textContent?.trim(), `${object.id} group`).toBe(mcpObjectGroup(object))
+        // A protocol group is a label over its rows (SidebarSection `overline`), not a disclosure: the label is the
+        // nearest overline before the page's row, as mcp-protocol-sidebar.test.ts reads it from the source render.
+        let label = row?.previousElementSibling
+        while (label && !label.matches('[data-sidebar-overline]')) label = label.previousElementSibling
+        expect(label?.textContent?.trim(), `${object.id} group`).toBe(mcpObjectGroup(object))
         expect(document.querySelector('.api-reference-content h1 code')?.textContent).toBe(object.name)
         const declaration = document.getElementById(object.id)
         expect(declaration?.getAttribute('data-domain')).toBe('mcp')
