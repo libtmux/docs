@@ -138,8 +138,8 @@ export function instrumentHaskell(source, steps) {
   return lines.join('\n')
 }
 
-/** A capture is one `display-message` whose format frames each line with a random token (`g` and 64 hex digits), and which reports the daemon's pid and start time. */
-const scrub = (text) => text.replace(/\bg[0-9a-f]{64}\b/g, 'g0000').replace(/(server\.pid:)\d+/g, (_, name) => `${name}12345`).replace(/(server\.startedAt:)\d+/g, (_, name) => `${name}1700000000`)
+/** Fixed nonces and daemon identities keep repeat recordings comparable. */
+const scrub = (text) => text.replace(/\bg[0-9a-f]{64}\b/g, 'g0000').replace(/\b([0-9a-f]{64}):(#\{version\}):\1\b/g, '0000:$2:0000').replace(/(server\.pid:)\d+/g, (_, name) => `${name}12345`).replace(/(server\.startedAt:)\d+/g, (_, name) => `${name}1700000000`)
 
 /** Where cabal keeps its packages and store: the environment's own, as a reader's cabal finds it. The sandbox's home is not the reader's, so the launcher names it. */
 const cabalDir = () => process.env.CABAL_DIR ?? join(process.env.HOME ?? '', '.cabal')
@@ -166,7 +166,11 @@ export const RECIPES = {
     helpers: [{ file: 'DocsMark.hs', source: HASKELL_HELPER }],
     steps: STEPS,
     fence: () => false,
-    probe: ({ flags, commands }) => commands.length === 0 && flags.includes('-V'),
+    probe: ({ flags, commands }) => {
+      if (commands.length === 0) return flags.includes('-V')
+      const [command] = commands
+      return commands.length === 1 && command.length === 3 && command[0] === 'run-shell' && command[1] === '-C' && /^([0-9a-f]{64}):#\{version\}:\1$/.test(command[2])
+    },
     /** What differs on every run in what a capture sends and reads back: the token that frames its reply, and the daemon's process id and start time. */
     redact: scrub,
     reply: scrub,

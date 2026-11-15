@@ -18,8 +18,9 @@
     "typed-graph": {
       "program": {
         "file": "Main.hs",
-        "sha256": "85920272f0a6a65685c3a25b5950d39321fb685bbf9e7143730b77bac2003048"
+        "sha256": "dfd6f9876b43fbbc2471c2f2b2f11ec5a7ee366a7343fafb9e9fa8b0d21b6165"
       },
+      "revision": "282b89a86a6ef8bc511f040acdb0e1b557db1226",
       "stepMap": "hand-written",
       "printed": [
         "session: demo -> workspace",
@@ -79,6 +80,14 @@
             "panes": 1
           },
           "commands": [
+            {
+              "role": "probe",
+              "tmux": "run-shell -C 0000:#{version}:0000",
+              "mutates": false,
+              "exit": 1,
+              "stdout": "",
+              "stderr": ""
+            },
             {
               "role": "command",
               "tmux": "display-message -p -F 'g0000:O:1\ng0000:I\ng0000:F:server.pid:#{s/\\\\/\\\\\\\\/;s/g/\\\\147/:pid}:g0000\ng0000:F:server.startedAt:#{s/\\\\/\\\\\\\\/;s/g/\\\\147/:start_time}:g0000\ng0000:F:server.version:#{s/\\\\/\\\\\\\\/;s/g/\\\\147/:version}:g0000\ng0000:F:server.socketPath:#{s/\\\\/\\\\\\\\/;s/g/\\\\147/:socket_path}:g0000\ng0000:E\n#{S:g0000:S\ng0000:F:session.id:#{s/\\\\/\\\\\\\\/;s/g/\\\\147/:session_id}:g0000\ng0000:F:session.name:#{s/\\…",

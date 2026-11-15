@@ -9,6 +9,7 @@ import { RECIPES as OCAML, ocamlHelper, withoutMarks as withoutOcamlMarks } from
 import { RECIPES as HASKELL, withoutMarks as withoutHaskellMarks } from '../../scripts/lib/core-recipes/haskell.mjs'
 import { RECIPES as CLOJURE, clojureHelper, withoutMarks as withoutClojureMarks } from '../../scripts/lib/core-recipes/clojure.mjs'
 import { RECIPES as RAKU, withoutMarks as withoutRakuMarks } from '../../scripts/lib/core-recipes/raku.mjs'
+import { describeInvocation } from '../../scripts/lib/core-trace.mjs'
 import * as corePlayer from '../src/lib/core-player'
 import { playableCapability, tmuxChanges, viewSteps } from '../src/lib/core-player'
 import { recordingProblems, sha256, type CoreRecording } from '../src/lib/core-recording'
@@ -33,7 +34,7 @@ function expectPlayable(port: NewPort) {
   const entry = home[port]
   const stored = recording(port)
   expect(recordingProblems(stored, { programs: { 'typed-graph': shown(port) } })).toEqual([])
-  expect(stored.revision).toBe(entry.sourceRevision)
+  expect(capabilityOf(port).revision ?? stored.revision).toBe(entry.sourceRevision)
   expect(stored.repo).toBe(entry.sourceRepository)
   expect(capabilityOf(port).program.sha256).toBe(sha256(shown(port)))
   expect(capabilityOf(port).printed.join('\n') + '\n').toBe(entry.expectedOutput)
@@ -486,6 +487,21 @@ describe('Haskell recipe', () => {
   const code = home.haskell.files.find((file) => file.name === 'Main.hs')!.code
   const marked = recipe.instrument(code, recipe.steps)
 
+  it('recognises the hook-free version probe without treating ordinary shell commands as probes', () => {
+    const nonce = 'a'.repeat(64)
+    const command = ['run-shell', '-C', `${nonce}:#{version}:${nonce}`]
+    const describe = (argv: string[]) => describeInvocation({ argv, exit: 1, stdout: '', stderr: '' }, recipe)
+    const probe = describe(command)
+    expect(probe.role).toBe('probe')
+    expect(probe.tmux).not.toContain(nonce)
+    expect(describe(['-V']).role).toBe('probe')
+    for (const ordinary of [
+      ['run-shell', 'echo hello'],
+      ['run-shell', '-C', `${nonce}:#{version}:${'b'.repeat(64)}`],
+      [...command, ';', 'display-message', 'hello'],
+    ]) expect(describe(ordinary).role).toBe('command')
+  })
+
   it('adds only marker lines to the displayed program: the helper import after its imports, and a mark after each call', () => {
     expect(withoutHaskellMarks(marked)).toBe(code)
     const lines = marked.split('\n')
@@ -552,8 +568,9 @@ describe('the Haskell recording of the landing page program', () => {
   })
 
   it('shows no token or process id that differs on every run', () => {
-    expect(JSON.stringify(capability)).not.toMatch(/\bg[0-9a-f]{64}\b/)
-    expect(step('capture-before').commands[0]!.stdout).toContain('server.pid:12345:')
+    expect(JSON.stringify(capability.steps)).not.toMatch(/\bg?[0-9a-f]{64}\b/)
+    expect(step('capture-before').commands.filter((command) => command.role === 'probe')).toHaveLength(1)
+    expect(step('capture-before').commands.find((command) => command.role === 'command')!.stdout).toContain('server.pid:12345:')
   })
 
   it('draws the window linked twice as two labels, each with a view of its own, the second one current', async () => {
