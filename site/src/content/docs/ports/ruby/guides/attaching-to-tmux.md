@@ -10,9 +10,10 @@ sidebar:
 tableOfContents: true
 ---
 
-Connect a `Server` to an explicit socket and find the existing `work` session.
-The program prints its name and leaves the tmux server running. It reports an
-error if the connection fails or the session is absent.
+Bind a second `Server` to a running tmux server and find its `work` session.
+The program starts a private server to stand in for one you already run, prints
+the session name and stops that server on exit. It reports an error if the
+connection fails or the session is absent.
 
 This controls tmux from your program. To open a session in your terminal, use
 `tmux attach-session`; the [shared guide](../../../../tmux/guides/attaching-to-tmux/) covers
@@ -22,19 +23,32 @@ interactive attachment and detaching.
 
 ## Connect to an existing server
 
-Save the complete program as `connect.rb`. `LIBTMUX_SOCKET_PATH` selects
-the existing server. The launcher below supplies a private socket for trying
-the example.
+Save the complete program as `connect.rb`. `LibTmux::Server.start` owns the
+private server and stops it when its block exits, including after an error.
+`Server.new(endpoint: owner.endpoint)` binds a second connection to the same
+socket, as it would to a server you started elsewhere. Closing that binding
+leaves the daemon running.
 
 ```ruby title="connect.rb"
 require "libtmux"
 
-LibTmux::Server.open(socket_path: ENV.fetch("LIBTMUX_SOCKET_PATH")) do |server|
-  session = server.snapshot.sessions.find { |candidate| candidate.name == "work" }
-  raise "The work session does not exist" unless session
-  puts session.name
+LibTmux::Server.start do |owner|
+  owner.new_session(name: "work", command: ["/bin/cat"])
+  server = LibTmux::Server.new(endpoint: owner.endpoint)
+  begin
+    session = server.snapshot.sessions.find do |candidate|
+      candidate.name == "work"
+    end
+    raise "The work session does not exist" unless session
+    puts session.name
+  ensure
+    server.close
+  end
 end
 ```
+
+To attach to a server of your own, drop the `Server.start` block and open its
+socket with `LibTmux::Server.open(socket_path: "/path/to/socket")`.
 
 ## Setup and run
 
@@ -50,39 +64,6 @@ source "https://rubygems.org"
 gem "libtmux", path: "libtmux-source/gems/libtmux"
 ```
 
-Save the launcher as `run.sh`. It starts an isolated tmux server, runs the
-program, checks that the session still exists, then stops only that server.
-Cleanup runs after failures too. A failed shutdown keeps its socket directory
-and prints its location for inspection.
-
-```sh title="run.sh"
-#!/bin/sh
-set -eu
-
-binary=$(command -v tmux)
-directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-ruby-attach.XXXXXX")
-socket="$directory/tmux.sock"
-
-cleanup() {
-    status=$?
-    trap - 0 HUP INT TERM
-    if [ -S "$socket" ] && ! "$binary" -S "$socket" kill-server; then
-        printf 'Cannot stop tmux; kept %s\n' "$directory" >&2
-        exit 1
-    fi
-    rm -rf "$directory" || exit 1
-    exit "$status"
-}
-trap cleanup 0
-trap 'exit 1' HUP INT TERM
-
-unset TMUX TMUX_PANE
-export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
-"$binary" -S "$socket" -f /dev/null new-session -d -s work /bin/cat
-"$@"
-"$binary" -S "$socket" has-session -t '=work'
-```
-
 Fetch the verified library revision, build, and run:
 
 ```console
@@ -90,12 +71,11 @@ $ git clone https://github.com/libtmux/libtmux-ruby libtmux-source &&
   git -C libtmux-source checkout 2599d45369515aaf2fd5793bfe71cdc20de641b6 &&
   bundle config set --local path vendor/bundle &&
   bundle install &&
-  sh run.sh bundle exec ruby connect.rb
+  bundle exec ruby connect.rb
 ```
 
-The program prints `work`. To use an existing server of your own, set
-`LIBTMUX_SOCKET_PATH` to its socket and run the program without the launcher.
-That launcher is responsible for the demonstration server's lifetime.
+The program prints `work`. The server it started is gone when the program
+exits.
 
 <a id="finding-a-session-instead-of-always-creating-one"></a>
 
@@ -106,5 +86,5 @@ after an unsuccessful lookup, another client may create the same name between
 those operations. Handle the creation error instead of assuming the lookup
 reserves the name.
 
-For a complete program that starts and owns its server, see
+For a program that sends input and captures output, see
 [Capture pane output](/examples/capture-pane-output/).

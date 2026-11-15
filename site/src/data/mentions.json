@@ -17363,6 +17363,13 @@
   {
    "port": "ruby",
    "symbol": "LibTmux::Server.open",
+   "page": "/ruby/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Server.open",
    "page": "/ruby/latest/guides/core/",
    "title": "Server bindings",
    "section": "guides"
@@ -17386,6 +17393,13 @@
    "symbol": "LibTmux::Server.start",
    "page": "/ruby/latest/guides/async/",
    "title": "Async",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Server.start",
+   "page": "/ruby/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
    "section": "guides"
   },
   {
