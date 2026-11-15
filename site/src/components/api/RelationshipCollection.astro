@@ -39,9 +39,10 @@ const parts = (text: string) => text.split(/`([^`]+)`/)
     --collection-measure: var(--measure-prose, 72ch);
     --collection-control-border: var(--control-border, #7f8d9b);
     margin-block-start: 2rem;
-    /* The heading, the relation kind and the count share one row; everything after spans the section. */
+    /* The heading, the relation kind and the count share one row; everything after spans the section. The first two
+       columns shrink below their one-line width on a narrow screen, so the row wraps instead of widening the page. */
     display: grid;
-    grid-template-columns: max-content max-content minmax(0, 1fr);
+    grid-template-columns: minmax(0, max-content) minmax(0, max-content) minmax(0, 1fr);
     column-gap: .5rem;
     align-items: baseline;
   }
