@@ -223,7 +223,7 @@ describe('Perl recipe', () => {
     expect(withoutPerlMarks(marked)).toBe(code)
     const added = marked.split('\n').filter((line: string) => line.endsWith('docs:mark'))
     expect(added.filter((line: string) => line.trim().startsWith('docs_mark(')).map((line: string) => /docs_mark\("([^"]+)"/.exec(line)?.[1])).toEqual(recipe.steps.map((step: { id: string }) => step.id))
-    expect(marked.split('\n')[marked.split('\n').indexOf('use LibTmuxFixture;') + 1]).toBe('use JSON::PP (); # docs:mark')
+    expect(marked.split('\n')[marked.split('\n').indexOf('use LibTmux::Server;') + 1]).toBe('use JSON::PP (); # docs:mark')
   })
 
   it('puts the mark of a statement that goes on past its call after its last line', () => {
@@ -233,9 +233,18 @@ describe('Perl recipe', () => {
     expect(lines[mark - 1]).toMatch(/;$/)
   })
 
+  it('puts the mark of the cleanup call after its catch block, where the program goes on to report a failure', () => {
+    const lines = marked.split('\n')
+    const mark = lines.findIndex((line: string) => line.startsWith('docs_mark("kill-server"'))
+    expect(lines[mark - 1]).toBe('}')
+    expect(lines[mark + 1]).toBe('if (defined $failure) {')
+    expect(lines.slice(mark - 5, mark - 1).join('\n')).toContain('try { $server->kill_server }')
+  })
+
   it('refuses an anchor the program does not hold, and a program without the import to put the helper after', () => {
     expect(() => recipe.instrument(code, [{ id: 'x', anchor: '$server->nope(', value: 'undef' }])).toThrow(/not on exactly one line/)
-    expect(() => recipe.instrument(code.replace('use LibTmuxFixture;', ''), recipe.steps)).toThrow(/LibTmuxFixture/)
+    expect(() => recipe.instrument(code, [{ id: 'x', anchor: '$server->kill_server', before: 'if (defined $nope) {', value: 'undef' }])).toThrow(/before anchor/)
+    expect(() => recipe.instrument(code.replace('use LibTmux::Server;', ''), recipe.steps)).toThrow(/LibTmux::Server/)
   })
 
   it('finds every call on exactly one line of the displayed program, the second snapshot by its occurrence', () => {
@@ -257,7 +266,7 @@ describe('the Perl recording of the landing page program', () => {
     expect(capability.steps.map((each) => [each.id, each.label, each.anchor, each.type])).toEqual(PERL['typed-graph'].steps.map((each: { id: string; label: string; anchor: string; type: string }) => [each.id, each.label, each.anchor, each.type]))
   })
 
-  it('starts with no server, which the program\'s own fixture starts', () => {
+  it('starts with no server, which the program\'s first call starts', () => {
     expect(capability.tmuxBefore.sessions).toEqual([])
     expect(sent('new-session')).toContain('new-session')
   })
@@ -272,9 +281,14 @@ describe('the Perl recording of the landing page program', () => {
     expect(sent('rename')).toEqual(['rename-window'])
     expect(sent('select-pane')).toEqual(['select-pane'])
     expect(sent('select-window')).toContain('select-window')
-    expect(sent('kill-session')).toEqual(['kill-session'])
-    expect(sent('fixture'), 'the fixture stops the daemon after the last call').toEqual(['kill-server'])
     expect(sent('link'), 'reading a snapshot sends nothing').toEqual([])
+  })
+
+  it('ends with the call that stops the server, which sends kill-server and leaves no session', () => {
+    expect(capability.steps.at(-1)!.id).toBe('kill-server')
+    expect(sent('kill-server')).toEqual(['kill-server'])
+    expect(step('kill-server').tmux.sessions).toEqual([])
+    expect(step('kill-server').stopsServer, 'the library asked tmux to stop, so no step says the daemon was stopped by its process id').toBeUndefined()
   })
 
   it('shows the window named for the command that started it until the program renames it', () => {
@@ -287,8 +301,8 @@ describe('the Perl recording of the landing page program', () => {
     expect(split.tmux).toMatch(/ -- \/usr\/bin\/perl -e 'exec \{\$ARGV\[0\]\} @ARGV or exit 127' -- \/bin\/cat$/)
   })
 
-  it('plays every call in every view of the program, but kill_session in the views that leave out the cleanup', () => {
-    expectPlayedInEveryView('perl', { concise: ['kill-session'], errors: ['kill-session'] })
+  it('plays every call in every view of the program, but kill_server in the views that leave out the cleanup', () => {
+    expectPlayedInEveryView('perl', { concise: ['kill-server'], errors: ['kill-server'] })
   })
 
   it('is played for the program it records and for no other', async () => {

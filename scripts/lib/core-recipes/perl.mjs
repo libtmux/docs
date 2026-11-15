@@ -20,7 +20,7 @@ export { withoutMarks }
  */
 
 /**
- * The marker helper, a few lines of the marked copy after `use LibTmuxFixture`:
+ * The marker helper, a few lines of the marked copy after `use LibTmux::Server;`:
  * `docs_mark` runs `LIBTMUX_DOCS_MARK` with the step and the value as JSON, and
  * stops the program if that fails.
  */
@@ -39,7 +39,9 @@ const PANE = (name) => `{ id => ${name}->id }`
  * In the order the calls run. A call of a handle the library returned reads
  * what was captured, and sends tmux nothing. A step with an `end` is a
  * statement that goes on past the call its anchor names, so its mark goes
- * after the line the `end` anchor names.
+ * after the line the `end` anchor names. A step with a `before` is a call
+ * whose own line cannot take a mark (a `try` block that a `catch` follows), so
+ * its mark goes on the line before the one the `before` anchor names.
  */
 const STEPS = [
   { id: 'new-session', label: 'Server::new_session', anchor: '$server->new_session(', type: 'Session', value: NAMED('$session') },
@@ -55,15 +57,19 @@ const STEPS = [
   { id: 'panes', label: 'PaneSelection::grep', anchor: '$snapshot->windows->one(', end: '->grep(sub ($pane)', type: 'PaneSelection', value: '[ map { $_->id } $panes->@* ]' },
   { id: 'selected', label: 'PaneSelection::one', anchor: '$panes->one(', type: 'Pane', value: PANE('$selected') },
   { id: 'pane-window', label: 'Window::name', anchor: 'my $name = $selected->window->name;', type: 'string', value: '$name' },
-  { id: 'kill-session', label: 'Server::kill_session', anchor: '$server->kill_session(', type: 'undef', value: 'undef' },
-  // The fixture stops the daemon and waits for its children after the program's last call, as `run` returns.
-  { id: 'fixture', label: 'LibTmuxFixture::run', anchor: 'LibTmuxFixture->run(', type: 'undef', value: 'undef' },
+  // The call sits in a `try` that a `catch` follows, so its mark goes before the `if` that reports a failure.
+  { id: 'kill-server', label: 'Server::kill_server', anchor: '$server->kill_server', before: 'if (defined $failure) {', type: 'undef', value: 'undef' },
 ]
 
 /** Add the helper after the program's imports and a mark after each call's statement. */
 export function instrumentPerl(source, steps) {
   const syntax = syntaxOf('perl')
   const placed = steps.map((step) => {
+    if (step.before) {
+      const range = statementLines(source, step.before, syntax)
+      if (!range) throw new Error(`${step.id}: the before anchor ${JSON.stringify(step.before)} is not on exactly one line of the program`)
+      return { ...step, after: range[0] - 1 }
+    }
     if (!step.end) return step
     const range = statementLines(source, step.end, syntax)
     if (!range) throw new Error(`${step.id}: the end anchor ${JSON.stringify(step.end)} is not on exactly one line of the program`)
@@ -71,8 +77,8 @@ export function instrumentPerl(source, steps) {
   })
   const marked = instrumentLines(source, placed, (step) => `docs_mark(${JSON.stringify(step.id)}, ${step.value}); # docs:mark`, syntax)
   const lines = marked.split('\n')
-  const at = lines.indexOf('use LibTmuxFixture;')
-  if (at < 0) throw new Error('the program has no `use LibTmuxFixture;` line to put the marker helper after')
+  const at = lines.indexOf('use LibTmux::Server;')
+  if (at < 0) throw new Error('the program has no `use LibTmux::Server;` line to put the marker helper after')
   lines.splice(at + 1, 0, ...PREAMBLE)
   return lines.join('\n')
 }
@@ -80,8 +86,7 @@ export function instrumentPerl(source, steps) {
 /** The perl the checkout pins: the sandbox's home has no version manager configuration, so the shim would pick the system's. */
 const perl = (checkout) => execFileSync('mise', ['exec', `perl@${/^perl (\S+)$/m.exec(readFileSync(join(checkout, '.tool-versions'), 'utf8'))?.[1]}`, '--', 'sh', '-c', 'command -v perl'], { encoding: 'utf8' }).trim()
 
-/** The file the page shows beside the program, which the program loads, and the checkout the program was built against. */
-let fixture
+/** The checkout the program was built against. */
 let built
 
 export const RECIPES = {
@@ -89,11 +94,7 @@ export const RECIPES = {
     capability: 'typed-graph',
     file: 'examples/quickstart.pl',
     stepMap: 'hand-written',
-    source: (root) => {
-      const home = quickstartSource(root, 'perl', 'examples/quickstart.pl')
-      fixture = quickstartSource(root, 'perl', 'scripts/lib/LibTmuxFixture.pm').code
-      return home
-    },
+    source: (root) => quickstartSource(root, 'perl', 'examples/quickstart.pl'),
     /**
      * What a pane runs once it has settled: a one-word command is started through `perl -e 'exec ...'`, which becomes
      * the command. A window made with such a command keeps the name `perl`, which tmux does not change until the
@@ -101,8 +102,8 @@ export const RECIPES = {
      */
     paneCommands: ['cat'],
     checkout: (port, env, expand) => checkoutOf(port, env, expand),
-    /** The fixture makes its socket directory under TMPDIR as `libtmux-perl-fixture-<four characters>`. */
-    socket: { pattern: 'libtmux-perl-fixture-[A-Za-z0-9_]{4}', fixed: 'libtmux-perl-fixture-AbC1' },
+    /** The program makes its socket directory under TMPDIR with File::Temp, as `libtmux-perl-<six characters>`. */
+    socket: { pattern: 'libtmux-perl-[A-Za-z0-9_]{6}', fixed: 'libtmux-perl-AbC123' },
     helpers: [],
     steps: STEPS,
     fence: () => false,
@@ -113,17 +114,15 @@ export const RECIPES = {
     instrument: instrumentPerl,
     command: (dir) => ['/bin/sh', join(dir, 'program')],
     toolchain: () => ({ perl: /\(v([\d.]+)\)/.exec(execFileSync(perl(built), ['-v'], { encoding: 'utf8' }))?.[1] ?? 'unknown' }),
-    /** Write the displayed files, and the marked copy of the program beside them, with a launcher that puts the checkout's modules on the path. */
+    /** Write the displayed program, and the marked copy of it beside it, with a launcher that puts the checkout's modules on the path. */
     build({ sandbox, checkout, code, marked }) {
       built = checkout
       mkdirSync(join(sandbox, 'tmp'), { recursive: true })
       for (const [dir, source] of [['exact', code], ['marked', marked]]) {
         mkdirSync(join(sandbox, dir, 'examples'), { recursive: true })
-        mkdirSync(join(sandbox, dir, 'scripts/lib'), { recursive: true })
         writeFileSync(join(sandbox, dir, this.file), source)
-        writeFileSync(join(sandbox, dir, 'scripts/lib/LibTmuxFixture.pm'), fixture)
-        // A run stopped at a mark leaves the fixture's socket directory behind, and a second socket would make the sandbox ambiguous.
-        writeFileSync(join(sandbox, dir, 'program'), `#!/bin/sh\nTMPDIR=${JSON.stringify(join(sandbox, 'tmp'))}\nPERL5LIB=${JSON.stringify(join(checkout, 'packages/core/lib'))}\nLIBTMUX_DOCS_WINDOW_NAMES=perl\nexport TMPDIR PERL5LIB LIBTMUX_DOCS_WINDOW_NAMES\nunset PERL5OPT\nrm -rf ${JSON.stringify(join(sandbox, 'tmp'))}/libtmux-perl-fixture-*\nexec ${JSON.stringify(perl(checkout))} ${JSON.stringify(this.file)}\n`)
+        // A run stopped at a mark leaves the program's socket directory behind, and a second socket would make the sandbox ambiguous.
+        writeFileSync(join(sandbox, dir, 'program'), `#!/bin/sh\nTMPDIR=${JSON.stringify(join(sandbox, 'tmp'))}\nPERL5LIB=${JSON.stringify(join(checkout, 'packages/core/lib'))}\nLIBTMUX_DOCS_WINDOW_NAMES=perl\nexport TMPDIR PERL5LIB LIBTMUX_DOCS_WINDOW_NAMES\nunset PERL5OPT\nrm -rf ${JSON.stringify(join(sandbox, 'tmp'))}/libtmux-perl-*\nexec ${JSON.stringify(perl(checkout))} ${JSON.stringify(this.file)}\n`)
         chmodSync(join(sandbox, dir, 'program'), 0o755)
       }
     },
