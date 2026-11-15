@@ -152,8 +152,8 @@ jobs:
         run: |
           set -euo pipefail
           bundle install
-          "$GITHUB_WORKSPACE/docs-generator/scripts/apt-get.sh" update -qq
-          "$GITHUB_WORKSPACE/docs-generator/scripts/apt-get.sh" install --no-install-recommends -y -qq tmux
+          "$GITHUB_WORKSPACE/docs/scripts/apt-get.sh" update -qq
+          "$GITHUB_WORKSPACE/docs/scripts/apt-get.sh" install --no-install-recommends -y -qq tmux
           bundle exec ruby "$GITHUB_WORKSPACE/docs-generator/scripts/export-docs" \
             --source "$GITHUB_WORKSPACE/port" \
             --output "$GITHUB_WORKSPACE/port/docs/_build"
