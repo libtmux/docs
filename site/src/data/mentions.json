@@ -7499,10 +7499,10 @@
   },
   {
    "port": "java",
-   "symbol": "io.github.libtmux.mcp.Main.Main.main",
-   "page": "/kotlin/latest/examples/",
-   "title": "Examples",
-   "section": "examples"
+   "symbol": "io.github.libtmux.mcp.Main.Main",
+   "page": "/java/latest/mcp/guides/",
+   "title": "Connect a Java MCP client",
+   "section": "ports"
   },
   {
    "port": "java",
@@ -16564,13 +16564,6 @@
   },
   {
    "port": "rs",
-   "symbol": "test.TestServer",
-   "page": "/rs/latest/workspace/internals/examples/",
-   "title": "Rust workspace builder examples",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
    "symbol": "test.TestServer.server",
    "page": "/rs/latest/workspace/cli/shell/",
    "title": "Evaluate in a workspace",
@@ -20059,16 +20052,9 @@
   },
   {
    "port": "csharp",
-   "text": "ConnectAndBuild",
+   "text": "Attach.csproj",
    "page": "/csharp/latest/examples/attach-and-send-keys/",
-   "line": 37,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "java",
-   "text": "WatchPaneOutput",
-   "page": "/kotlin/latest/examples/",
-   "line": 15,
+   "line": 94,
    "why": "not defined in the stated port"
   },
   {
