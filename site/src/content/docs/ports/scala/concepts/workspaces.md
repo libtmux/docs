@@ -14,9 +14,9 @@ Build a tmux layout from Scala by creating a window, splitting a pane and select
 
 ## Setup and run
 
-Use an empty directory on Linux with Git, tmux 3.3a or newer, and JDK 25. Save the project files and launcher below, then save any complete program on this page. Each program has its own imports and entry point.
+Use an empty directory on Linux with tmux 3.3a or newer, JDK 25, and Gradle 9. Save the project files and launcher below, then save any complete program on this page. Each program has its own imports and entry point.
 
-The pinned source checkout supplies the Gradle wrapper. Gradle resolves the library from Maven Central.
+Gradle resolves `libtmux-scala_3` 0.1.2 from Maven Central ([source](https://github.com/libtmux/libtmux-java/tree/e8a39689d8d60968ac978a1dd2a89c6112333896/libtmux-scala)).
 
 ```kotlin title="settings.gradle.kts"
 rootProject.name = "connect"
@@ -33,7 +33,7 @@ plugins {
 repositories { mavenCentral() }
 dependencies {
     implementation("org.scala-lang:scala3-library_3:3.9.0")
-    implementation("io.github.libtmux:libtmux-scala_3:0.1.0")
+    implementation("io.github.libtmux:libtmux-scala_3:0.1.2")
 }
 java { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }
 sourceSets.main { scala.srcDir("."); scala.include("${example}.scala") }
@@ -53,8 +53,7 @@ The launcher creates two sessions on a private socket: `work-one` with an `edito
 set -eu
 
 binary=$(command -v tmux)
-mkdir -p /tmp/libtmux-java-dev
-directory=$(mktemp -d /tmp/libtmux-java-dev/query.XXXXXX)
+directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-query.XXXXXX")
 socket="$directory/tmux.sock"
 
 cleanup() {
@@ -76,13 +75,6 @@ export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
 "$binary" -S "$socket" new-session -d -s work-two -n logs /bin/cat
 "$@"
 "$binary" -S "$socket" has-session -t '=work-one'
-```
-
-Fetch the Gradle wrapper from the 0.1.0 release:
-
-```console
-$ git clone https://github.com/libtmux/libtmux-java libtmux-source &&
-  git -C libtmux-source checkout 5c181887918351119bfdb3a046719fa792048e59
 ```
 
 Each run starts from the same two-session fixture. Programs do not depend on another example having run first. Their assertions fail if the observed result differs.
@@ -125,8 +117,7 @@ object Layout {
 ```
 
 ```console
-$ sh run.sh ./libtmux-source/gradlew --project-dir . run \
-  -Pexample=Layout --console=plain --max-workers=2
+$ sh run.sh gradle --console=plain --no-daemon run -Pexample=Layout
 ```
 
 Expected program output:
@@ -175,8 +166,7 @@ object ReuseLayout {
 ```
 
 ```console
-$ sh run.sh ./libtmux-source/gradlew --project-dir . run \
-  -Pexample=ReuseLayout --console=plain --max-workers=2
+$ sh run.sh gradle --console=plain --no-daemon run -Pexample=ReuseLayout
 ```
 
 Expected program output:

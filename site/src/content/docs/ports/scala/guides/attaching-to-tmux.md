@@ -52,9 +52,11 @@ object Connect {
 
 ## Setup and run
 
-Use an empty directory on Linux with Git and tmux 3.3a or newer installed.
+Use an empty directory on Linux with tmux 3.3a or newer, JDK 25 and Gradle 9.
+The build file installs `libtmux-scala_3` 0.1.2 from Maven Central
+([source](https://github.com/libtmux/libtmux-java/tree/e8a39689d8d60968ac978a1dd2a89c6112333896/libtmux-scala)).
 
-This example was checked with JDK 25.0.3, Scala 3.9.0.
+This example was checked with JDK 25.0.3, Gradle 9.7.0 and Scala 3.9.0.
 
 Save this file beside the program using the displayed filename.
 
@@ -67,7 +69,7 @@ plugins {
 repositories { mavenCentral() }
 dependencies {
     implementation("org.scala-lang:scala3-library_3:3.9.0")
-    implementation("io.github.libtmux:libtmux-scala_3:0.1.0")
+    implementation("io.github.libtmux:libtmux-scala_3:0.1.2")
 }
 java { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }
 sourceSets.main { scala.srcDir("."); scala.include("Connect.scala") }
@@ -121,12 +123,10 @@ export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
 "$binary" -S "$socket" has-session -t '=work'
 ```
 
-Fetch the Gradle wrapper from the 0.1.0 release, build, and run:
+Build and run the program:
 
 ```console
-$ git clone https://github.com/libtmux/libtmux-java libtmux-source &&
-  git -C libtmux-source checkout 5c181887918351119bfdb3a046719fa792048e59 &&
-  sh run.sh ./libtmux-source/gradlew --project-dir . run --console=plain --max-workers=2
+$ sh run.sh gradle --console=plain --no-daemon run
 ```
 
 The program prints `work`. To use an existing server of your own, set

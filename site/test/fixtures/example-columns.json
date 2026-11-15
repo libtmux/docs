@@ -71,7 +71,7 @@
   "ports/scala/concepts/transports.md": 6,
   "ports/scala/concepts/workspaces.md": 3,
   "ports/scala/examples/capture-pane-output.md": 2,
-  "ports/scala/guides/attaching-to-tmux.md": 2,
+  "ports/scala/guides/attaching-to-tmux.md": 1,
   "ports/swift/concepts/queries.md": 1,
   "ports/swift/examples/capture-pane-output.md": 5,
   "ports/swift/guides/attaching-to-tmux.md": 2,
