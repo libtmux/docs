@@ -264,13 +264,15 @@ full-model digest. The digest also reads key order, so write `haskell.json`
 with `gen-api-model.mjs` from the exporter's artifact; a hand-patched copy
 with the same data digests differently.
 
-Capture selects `ReadSnapshot`, whose fixed queue reaches the native spawner.
-It sends `display-message` and `if-shell`; `list-clients` runs when sessions
-exist. Graph enumeration uses tmux format loops. The older private scalar and
-graph readers are not public capture paths. Recovery inspects or retires
-existing owners without redispatch. Caller-supplied `IO` in `withServer` and
-`tryTmux` is classified separately, and pure snapshot navigation has no send.
-The scalar-only API retains the ordinary reader and has no command entries.
+Capture selects `ReadSnapshot`, whose queue sends `display-message` and
+`if-shell`; `list-clients` runs when sessions exist. Graph enumeration uses
+tmux format loops. Server adoption probes the version with `run-shell -C`.
+Session creation sends `new-session`; renames and pane titles use
+`rename-session`, `rename-window` and `select-pane`. Recovery inspects or
+retires existing owners without redispatch. `withRuntime` and `tryTmux` run
+caller-supplied `IO`; pure snapshot navigation sends no command. The older
+private scalar and graph readers are not public capture paths. The scalar-only
+API retains the ordinary reader and has no command entries.
 
 ### Erlang compiler artifact
 

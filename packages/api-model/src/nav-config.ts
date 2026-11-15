@@ -839,13 +839,14 @@ const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
   // module's cleanup and recovery family by the words in each name.
   haskell: {
     server: [
-      ...['CaptureRecovery', 'CleanupRecovery', 'CleanupStatus', 'MutationOptions', 'MutationRecovery', 'Operation',
+      ...['CaptureRecovery', 'CleanupRecovery', 'CleanupStatus', 'CreationRecovery', 'MutationOptions', 'MutationRecovery', 'Operation',
         'Outcome', 'ReadRecovery', 'Stage', 'Status'].map((name) => `LibTmux.Server#t:${name}`),
-      ...['awaitCleanup', 'cleanupFailure', 'cleanupObservation', 'detachCaptureRecovery', 'inspectCaptureRecovery',
+      ...['awaitCleanup', 'cleanupFailure', 'cleanupObservation', 'creationReceipt', 'detachCaptureRecovery', 'inspectCaptureRecovery',
         'inspectCleanup', 'resumeCaptureRecovery', 'resumeCleanup'].map((name) => `LibTmux.Server#v:${name}`),
       // `serverGeneration` reports it, and a reference is valid for one.
       'LibTmux.Snapshot#t:Generation',
     ],
+    session: ['LibTmux.Creation'],
     snapshots: ['LibTmux.Snapshot#t:TmuxText'],
   },
   // Elixir's modules are named for what they do rather than for a tmux object.

@@ -6926,6 +6926,13 @@
   {
    "port": "haskell",
    "symbol": "LibTmux.Server",
+   "page": "/haskell/latest/guides/installation/",
+   "title": "Installation",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server",
    "page": "/haskell/latest/guides/status/",
    "title": "Implementation status",
    "section": "guides"
@@ -7138,6 +7145,20 @@
    "symbol": "LibTmux.Server#v:inspectMutationRecovery",
    "page": "/haskell/latest/guides/mutations/",
    "title": "Rename and set pane titles",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:InvalidConfiguration",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create a session",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:InvalidMutationArgument",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create a session",
    "section": "guides"
   },
   {
@@ -20132,6 +20153,27 @@
    "text": "LibTmux.Query.Json",
    "page": "/fsharp/latest/guides/supported-query-fields/",
    "line": 17,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "haskell",
+   "text": "X.Ya",
+   "page": "/haskell/latest/guides/typed-values/",
+   "line": 83,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "haskell",
+   "text": "X.Y-rc",
+   "page": "/haskell/latest/guides/typed-values/",
+   "line": 83,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "haskell",
+   "text": "next-X.Y",
+   "page": "/haskell/latest/guides/typed-values/",
+   "line": 83,
    "why": "not defined in the stated port"
   },
   {

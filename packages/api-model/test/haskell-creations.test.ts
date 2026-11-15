@@ -25,8 +25,10 @@ describe('the native Haskell creation profile', () => {
       modifiers: ['opaque'], source: { file: 'internal/LibTmux/Internal/Creation.hs' },
     })
     expect(model.symbols.some((entry) => entry.id.includes('Internal'))).toBe(false)
-    expect(navSidecar('haskell', structuredClone(model))!.diagnostics)
-      .toEqual({ unmatched: [], deadBuckets: [], ambiguous: [], staleUnsettled: [] })
+    const nav = navSidecar('haskell', structuredClone(model))!
+    expect(nav.diagnostics).toMatchObject({ unmatched: [], ambiguous: [], staleUnsettled: [] })
+    expect(nav.assignments.session.map((entry) => entry.id)).toContain('LibTmux.Creation')
+    expect(nav.assignments.server.map((entry) => entry.id)).toContain('LibTmux.Server#t:CreationRecovery')
   })
 
   it('resolves every native declaration and authored reference', () => {
