@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { createMarkdownProcessor } from '@astrojs/markdown-remark'
 import { Window } from 'happy-dom'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { remarkPortCode, resolvePortCode } from '../src/plugins/remark-port-code.mjs'
 import {
   ExcerptError,
@@ -13,6 +13,24 @@ import {
   stripBuildMarkers,
   withoutAttributes,
 } from '../src/lib/example-excerpt.ts'
+
+// No pinned port file marks a region with `region:` / `endregion` any more, so the
+// region path is covered by a small Rust source added to the revision-bound cache.
+vi.mock('../src/data/example-sources.json', async (importOriginal) => {
+  const { default: cache } = await importOriginal<{ default: Record<string, unknown> }>()
+  const content = [
+    'fn main() {',
+    '    let lines = pane.capture();',
+    '    // region: capture',
+    '    for line in lines.iter().filter(|line| !line.is_empty()) {',
+    '        println!("  | {line}");',
+    '    }',
+    '    // endregion',
+    '}',
+    '',
+  ].join('\n')
+  return { default: { ...cache, 'rs:examples/region.rs': { content } } }
+})
 
 const SCRIPT = [
   '#!/bin/sh',
@@ -396,12 +414,11 @@ describe('excerpts in a page', () => {
   })
 
   it('still cuts a region between its own markers, and shows nothing of a marker inside it', async () => {
-    const [block] = codeOf(await render('```rust file="crates/libtmux/examples/scratch.rs" region="capture"\n```\n'))
+    const [block] = codeOf(await render('```rust file="examples/region.rs" region="capture"\n```\n'))
     expect(block).toBe([
-      '            let lines = pane.capture().await?;',
-      '            for line in lines.iter().filter(|line| !line.as_bytes().is_empty()) {',
-      '                println!("  | {}", line.to_string_lossy());',
-      '            }',
+      '    for line in lines.iter().filter(|line| !line.is_empty()) {',
+      '        println!("  | {line}");',
+      '    }',
       '',
     ].join('\n'))
   })
