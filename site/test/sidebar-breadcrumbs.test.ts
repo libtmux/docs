@@ -92,6 +92,18 @@ describe('sidebar-derived breadcrumbs', () => {
     expect(withSidebarBreadcrumbs([], items, '/ja/julia/v0.46.2/mcp/reference/application/')).toEqual([])
   })
 
+  it('passes through a group drawn as a label over its rows: the tmux object over an MCP tool is not an ancestor', () => {
+    const items = [{ type: 'group' as const, label: 'Pane', overline: true, href: '/en/go/latest/mcp/tools/#tools-pane', items: [
+      { type: 'link' as const, label: 'capture_pane', kind: 'tool', quiet: true, href: '/en/go/latest/mcp/tools/capture_pane/' },
+    ] }]
+    expect(sidebarBreadcrumbs(items, '/en/go/latest/mcp/tools/capture_pane/').map((entry) => entry.name)).toEqual(['capture_pane'])
+    // A group that is a place, as a sectioned reference's, is still an ancestor.
+    const place = [{ ...items[0]!, overline: undefined }]
+    expect(sidebarBreadcrumbs(place, '/en/go/latest/mcp/tools/capture_pane/').map((entry) => entry.name)).toEqual(['Pane', 'capture_pane'])
+    const crumbs = [{ name: 'Go', url: '/en/go/latest/' }, { name: 'MCP', url: '/en/go/latest/mcp/' }, { name: 'Tools', url: '/en/go/latest/mcp/tools/' }, { name: 'capture_pane', url: '/en/go/latest/mcp/tools/capture_pane/' }]
+    expect(withSidebarBreadcrumbs(crumbs, items, '/en/go/latest/mcp/tools/capture_pane/').map((entry) => entry.name)).toEqual(['Go', 'MCP', 'Tools', 'capture_pane'])
+  })
+
   it('does not mistake disabled or external entries for the current page', () => {
     expect(sidebarBreadcrumbs([
       { type: 'link', label: 'Disabled', href: '/reference/member/', disabled: true },

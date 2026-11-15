@@ -78,9 +78,10 @@ export function sidebarBreadcrumbs(items: SidebarItem[], currentUrl: string): Br
     if (item.type === 'link' && (item.disabled || item.external)) continue
     const crumb = { name: item.label, url: item.href, ...(item.kind ? { symbol: true } : {}) }
     // A group may link to the page of one of its own rows, as a sectioned reference does; the row is the deeper match.
+    // A group drawn as a label over its rows, as the tmux object over an MCP tool, is not a place: the trail passes through it.
     if (item.type === 'group') {
       const children = sidebarBreadcrumbs(item.items, currentUrl)
-      if (children.length) return [crumb, ...children]
+      if (children.length) return item.overline ? children : [crumb, ...children]
     }
     if (item.href && matches(item.href)) return [crumb]
   }

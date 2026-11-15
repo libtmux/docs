@@ -9,7 +9,7 @@ import SymbolName from '../api/SymbolName.astro'
 import McpSchemaFields from './McpSchema.astro'
 import McpSchemaType from './McpSchemaType.astro'
 import { PORT_BY_SLUG, portPageUrl } from '../../lib/ports'
-import { MCP_REFERENCE, MCP_SECTIONS, mcpObjects, mcpObjectAt, mcpObjectGroup, mcpSectionGroups, mcpWraps, plainSummary, renderToolDescription, toolSummary, type McpSection } from '../../lib/mcp-reference'
+import { MCP_REFERENCE, MCP_SECTIONS, mcpObjects, mcpObjectAt, mcpSectionGroups, mcpWraps, plainSummary, renderToolDescription, toolSummary, type McpSection } from '../../lib/mcp-reference'
 import { schemaDefinitions, type McpSchema } from '../../lib/mcp-schema'
 import { TIERS, mcpToolFacts, type TierId } from '../../lib/mcp-showcase'
 import { referenceHref } from '../../lib/api-models'
@@ -32,7 +32,6 @@ const title = object?.name ?? MCP_SECTIONS[section]
 const base = portPageUrl(info, version, 'mcp')
 const pageUrl = portPageUrl(info, version, path)
 const groups = mcpSectionGroups(port, section)
-const currentBucket = groups.find((group) => group.objects.some((entry) => entry.id === object?.id))?.id
 const entries = mcpObjects(port).filter((entry) => entry.section === section)
 const catalogs = [
   { id: 'resources', label: 'Resources', kind: 'resource', section: 'resources', group: 'resources-fixed-resources' },
@@ -49,7 +48,6 @@ const breadcrumbs = [
   { name: info.name, url: portPageUrl(info, version) },
   { name: 'MCP', url: base },
   { name: MCP_SECTIONS[section], url: portPageUrl(info, version, `mcp/${section}`) },
-  ...(object && currentBucket ? [{ name: mcpObjectGroup(object), url: `${base}${section}/#${currentBucket}` }] : []),
   ...(object ? [{ name: object.name, url: pageUrl, symbol: true }] : []),
 ]
 const source = object?.tool?.source

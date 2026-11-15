@@ -98,12 +98,12 @@ describe('the menu sidebar on protocol reference pages', () => {
     expect(document.querySelector('#mobile-sidebar-close')).not.toBeNull()
   })
 
-  it('keeps the breadcrumb trail through the group of the object', async () => {
+  it('names four levels in the breadcrumb: the group the sidebar draws over the object is a label, not a place', async () => {
     const object = first('rs', 'resources')
     const document = await page('rs', 'resources', object)
     const trail = [...document.querySelectorAll('nav[aria-label="Breadcrumb"] [data-breadcrumb-item]')]
-    expect(trail.map((item) => item.textContent?.trim())).toEqual(['Rust', 'MCP', 'Resources', 'Fixed resources', object.name])
-    expect(trail.map((item) => item.getAttribute('href'))).toEqual(['/rs/next/', '/rs/next/mcp/', '/rs/next/mcp/resources/', '/rs/next/mcp/resources/#resources-fixed-resources', null])
+    expect(trail.map((item) => item.textContent?.trim())).toEqual(['Rust', 'MCP', 'Resources', object.name])
+    expect(trail.map((item) => item.getAttribute('href'))).toEqual(['/rs/next/', '/rs/next/mcp/', '/rs/next/mcp/resources/', null])
   })
 
   it('keeps the sidebar out of search, as the API tree was', async () => {
