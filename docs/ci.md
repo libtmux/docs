@@ -28,7 +28,7 @@ The current ownership split is:
 | C++ (`cxx`) | `port-docs.yml`, with Doxygen XML | `publishesOwnTree` |
 | Swift (`swift`) | `port-docs.yml`, with the symbol graph | `publishesOwnTree` |
 | Ruby (`ruby`) | its own exporter | `publishesOwnTree` |
-| Lua (`lua`) | its own exporter | `publishesOwnTree` |
+| Lua (`lua`) | `port-docs.yml`, with the exporter in the port's `scripts/docs` | `publishesOwnTree` |
 | Elixir (`elixir`) | `port-docs.yml`, with the exporter in `packages/api-model` | `publishesOwnTree` |
 | Python (`py`) | its own Sphinx build | `publishesOwnApi`; the shell publishes the rest |
 
@@ -140,8 +140,9 @@ Python also records the separate workspace and MCP source checkouts. Only the
 record itself is excluded from the inventory; symlinks are rejected.
 
 Ruby and Lua also record `nativeGenerator`: the native exporter's repository,
-commit, and dirty state. Their custom callers keep the source, exporter, and
-shared docs in separate checkouts and set `LIBTMUX_DOCS_GENERATOR_CHECKOUT`.
+commit, and dirty state. Ruby's custom caller and the Lua leg of `port-docs.yml`
+keep the source, exporter, and shared docs in separate checkouts and set
+`LIBTMUX_DOCS_GENERATOR_CHECKOUT`.
 Local native builds default to the exporter in the selected source checkout.
 The publisher requires a clean exporter from the port's owning repository.
 
@@ -343,8 +344,8 @@ limit.
 
 A custom builder must produce the same assembled tree and publication
 metadata as `port-docs.yml`. Its native exporter output alone is insufficient.
-Ruby and Lua still use their existing custom-builder contract; migrate their
-callers before selecting this publisher revision.
+Ruby still uses its existing custom-builder contract; migrate its caller
+before selecting this publisher revision.
 
 The required sequence is:
 

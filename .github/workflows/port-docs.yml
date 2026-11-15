@@ -202,7 +202,7 @@ jobs:
       # The caller's tooling can document an older selected source revision.
       # Record both checkouts before either native exporter produces files.
       - name: Check out native documentation tooling
-        if: matrix.port == 'powershell' || matrix.port == 'julia'
+        if: matrix.port == 'powershell' || matrix.port == 'julia' || matrix.port == 'lua'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # A port caller's generator is its own tooling at the caller's commit.
@@ -212,6 +212,12 @@ jobs:
           ref: ${{ inputs.source-repository && needs.identity.outputs.source-ref || github.sha }}
           path: docs-generator
           persist-credentials: false
+
+      # Lua's exporter and bootstrap are scripts in that checkout; it needs no
+      # runtime version read, only the identity the snapshot records.
+      - name: Record the Lua documentation tooling checkout
+        if: matrix.port == 'lua'
+        run: echo "LIBTMUX_DOCS_GENERATOR_CHECKOUT=$GITHUB_WORKSPACE/docs-generator" >> "$GITHUB_ENV"
 
       - name: Read native documentation toolchain
         if: matrix.port == 'powershell' || matrix.port == 'julia'
@@ -648,6 +654,33 @@ jobs:
       - name: Install the Raku usage scanner dependency
         if: matrix.port == 'raku'
         run: zef install --/test JSON::Fast
+
+      # Lua: mise supplies the `lua` that runs the tooling checkout's bootstrap,
+      # which builds the LuaJIT, rocks and pinned LuaLS the exporter runs on.
+      - name: Install the selected Lua tooling
+        if: matrix.port == 'lua'
+        uses: jdx/mise-action@2d8d4cafcbd33be2ea37d2b6f5ad595363d1f1ca # v5.1.1
+        with:
+          version: 2026.9.9
+          working_directory: port
+          cache: false
+      - name: Bootstrap the pinned LuaLS exporter and its LuaJIT
+        if: matrix.port == 'lua'
+        working-directory: docs-generator
+        run: |
+          set -euo pipefail
+          lua scripts/bootstrap/bootstrap.lua runtimes luajit
+          lua scripts/bootstrap/bootstrap.lua rocks dev live --lua=.cache/toolchains/luajit-2.1/bin/luajit
+          lua scripts/bootstrap/bootstrap.lua luals
+      - name: Export Lua API from the selected source
+        if: matrix.port == 'lua'
+        working-directory: docs-generator
+        run: |
+          set -euo pipefail
+          .cache/toolchains/luajit-2.1/bin/luajit scripts/docs/docs.lua export \
+            --source "$GITHUB_WORKSPACE/port" \
+            --luals "$GITHUB_WORKSPACE/docs-generator/.cache/tools/luals-3.19.1/bin/lua-language-server" \
+            --output "$GITHUB_WORKSPACE/port/docs/_build"
 
       - name: Install Common Lisp documentation toolchain
         if: matrix.port == 'lisp'

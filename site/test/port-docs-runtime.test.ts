@@ -490,6 +490,25 @@ if (argv.includes(process.env.FAILING_TASK)) process.exit(23)
   })
 })
 
+describe('Lua documentation producer', () => {
+  it('exports with the tooling checkout after the snapshot and before assembly', () => {
+    const step = (name: string) => workflow.split(/\n(?=      - )/).find((value) => value.includes(`name: ${name}\n`))!
+    const at = (name: string) => workflow.indexOf(`name: ${name}\n`)
+    const snapshot = at('Snapshot source inputs before native generation')
+    const names = ['Install the selected Lua tooling', 'Bootstrap the pinned LuaLS exporter and its LuaJIT', 'Export Lua API from the selected source']
+    expect(at('Record the Lua documentation tooling checkout')).toBeLessThan(snapshot)
+    const order = [snapshot, ...names.map(at), at("Build this port's tree")]
+    expect(order).toEqual(order.toSorted((a, b) => a - b))
+    expect(order[0]).toBeGreaterThan(-1)
+    expect(step('Check out native documentation tooling')).toContain("matrix.port == 'lua'")
+    for (const name of names) expect(step(name)).toContain("if: matrix.port == 'lua'")
+    for (const name of names.slice(1)) expect(step(name)).toContain('working-directory: docs-generator')
+    expect(step('Record the Lua documentation tooling checkout')).toContain('LIBTMUX_DOCS_GENERATOR_CHECKOUT=$GITHUB_WORKSPACE/docs-generator')
+    expect(script('Export Lua API from the selected source')).toContain('scripts/docs/docs.lua export')
+    expect(script('Export Lua API from the selected source')).toContain('--output "$GITHUB_WORKSPACE/port/docs/_build"')
+  })
+})
+
 describe('Erlang documentation producer', () => {
   function toolchain(source?: string) {
     const directory = mkdtempSync(join(tmpdir(), 'libtmux-erlang-toolchain-'))
