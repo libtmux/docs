@@ -22,12 +22,15 @@ import SOURCES from '../data/example-sources.json'
 
 /**
  * What each product a port ships looks like in use, with its install widget.
- * The installer opens each panel, above the example, so it is above the fold
- * on the port home as it is on every product home (record 0026).
+ * The demo opens each panel and the installer follows it (record 0059): the
+ * player, then the library install; the MCP replay, then the client installer;
+ * the workspace picker, then the workspace CLI install, just before the step
+ * that loads the file. A reader of the port home is still deciding; a
+ * product's own home follows the same order.
  *
  * Core API is the homepage's example block, fixed to the port's language.
- * MCP opens with one sentence, the install picker, then the MCP overview's
- * worked example: a prompt and the schema-checked calls an agent makes. A
+ * MCP opens with one sentence, then the MCP overview's worked example (a
+ * prompt and the schema-checked calls an agent makes) and the install picker. A
  * port with no worked example, or one served by another port's package,
  * shows the picker and the links, never invented calls. Workspace Manager
  * shows a workspace file one of the port's tests loads, the command that
@@ -88,15 +91,15 @@ const panelId = (product: string) => `landing-panel-${product}`
     const maturity = panel.product === 'core' ? undefined : productStatus(port, panel.product as DocProduct, REGISTRY)
     return <div class="landing-panel" id={panelId(panel.product)} data-landing-panel={panel.product}>
     {panel.product === 'core' ? <>
-      <LandingInstall panel={panel} port={port.slug} />
       <CoreShowcase port={port.slug} links={coreLinks} />
+      <LandingInstall panel={panel} port={port.slug} />
     </> : panel.product === 'mcp' ? <>
       <h2 class="sr-only">{panel.label}</h2>
       {maturity && <p class="landing-status" data-landing-status><StatusBadge status={maturity} /> <span>{productStatusLine(maturity)}</span></p>}
-      <LandingInstall panel={panel} port={port.slug} />
       {showcase?.example && <div class="landing-example" data-landing-example="mcp">
         <McpReplay example={showcase.example} portName={port.name} level={3} />
       </div>}
+      <LandingInstall panel={panel} port={port.slug} />
       <ul class="landing-links">
         {showcase && <li><a href={`${panel.href}#${toolHeadings(showcase)[0]!.slug}`}>All tools{showcase.groups.some((group) => group.tier) ? ' by tier' : ''} →</a></li>}
         {showcase && <li><a href={showcase.toolsHref}>Every tool, with its arguments and result →</a></li>}
@@ -106,20 +109,24 @@ const panelId = (product: string) => `landing-panel-${product}`
     </> : <>
       <h2 class="sr-only">{panel.label}</h2>
       {maturity && <p class="landing-status" data-landing-status><StatusBadge status={maturity} /> <span>{productStatusLine(maturity)}</span></p>}
-      <LandingInstall panel={panel} port={port.slug} />
-      {workspace && workspaceExample && workspaceTopic && <div class="landing-example" data-landing-example="workspace">
-        {offersPicker(workspace)
-          ? <WorkspacePicker showcase={workspace} landing={{ first: workspaceExample.topic, program: workspaceProgram?.program }} />
-          : <>
-            <h3>{workspaceTopic.title}</h3>
-            <p>{workspaceTopic.summary}</p>
-            <div class="ws-body">
-              <WorkspaceConfig id={`landing-${port.slug}-${workspaceExample.topic}`} yaml={workspaceExample.yaml} json={workspaceExample.json} note />
-              <WorkspaceWindows windows={workspaceWindows} />
-            </div>
-            <WorkspaceEvidence showcase={workspace} example={workspaceExample} program={workspaceProgram?.program} />
-          </>}
-      </div>}
+      {workspace && workspaceExample && workspaceTopic
+        ? <div class="landing-example" data-landing-example="workspace">
+          {offersPicker(workspace)
+            ? <WorkspacePicker showcase={workspace} landing={{ first: workspaceExample.topic, program: workspaceProgram?.program }}>
+              <LandingInstall slot="install" panel={panel} port={port.slug} />
+            </WorkspacePicker>
+            : <>
+              <h3>{workspaceTopic.title}</h3>
+              <p>{workspaceTopic.summary}</p>
+              <div class="ws-body">
+                <WorkspaceConfig id={`landing-${port.slug}-${workspaceExample.topic}`} yaml={workspaceExample.yaml} json={workspaceExample.json} note />
+                <WorkspaceWindows windows={workspaceWindows} />
+              </div>
+              <LandingInstall panel={panel} port={port.slug} />
+              <WorkspaceEvidence showcase={workspace} example={workspaceExample} program={workspaceProgram?.program} />
+            </>}
+        </div>
+        : <LandingInstall panel={panel} port={port.slug} />}
       <ul class="landing-links">
         {workspace && <li><a href={`${panel.href}#example-workspaces`}>Example workspaces →</a></li>}
         {workspaceProgram && <li><a href={portPageUrl(port, version, workspaceProgram.path)}>The <code>{workspaceProgram.program} load</code> command →</a></li>}

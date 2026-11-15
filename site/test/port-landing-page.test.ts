@@ -128,10 +128,10 @@ describe('the landing page markup', () => {
     expect(caption.textContent).toContain(entry.ci.command)
   })
 
-  it('opens the MCP tab with its maturity and the install picker, then the worked example, the links and the excerpt', async () => {
+  it('opens the MCP tab with its maturity and the worked example, then the install picker, the links and the excerpt (record 0059)', async () => {
     const document = await render('rs')
     const panel = document.querySelector('[data-landing-panel="mcp"]')!
-    const order = ['[data-landing-status]', '[data-mcp-install]', '[data-landing-example="mcp"]', '.landing-links', '[data-landing-excerpt]']
+    const order = ['[data-landing-status]', '[data-landing-example="mcp"]', '[data-mcp-install]', '.landing-links', '[data-landing-excerpt]']
     const found = order.map((selector) => panel.querySelector(selector))
     found.forEach((element, index) => expect(element, order[index]).not.toBeNull())
     for (let index = 1; index < found.length; index += 1) {
@@ -149,14 +149,20 @@ describe('the landing page markup', () => {
     expect(hrefs).toContain(showcase.toolsHref)
   })
 
-  it('puts every panel\'s installer above its example, so it is above the fold on the port home (record 0026)', async () => {
-    const document = await render('go')
+  it.each(['go', 'ts', 'rs', 'py'])('leads every %s panel with its demo and follows it with the install (record 0059)', async (slug) => {
+    const document = await render(slug)
+    const seen: string[] = []
     for (const panel of document.querySelectorAll('[data-landing-panel]')) {
-      const installer = panel.querySelector('[data-package-install], [data-mcp-install]')!
-      const example = panel.querySelector('[data-core-showcase], [data-landing-example]')!
-      expect(installer, panel.getAttribute('data-landing-panel')!).not.toBeNull()
-      expect(installer.compareDocumentPosition(example) & 4, `${panel.getAttribute('data-landing-panel')}: install precedes the example`).toBeTruthy()
+      const product = panel.getAttribute('data-landing-panel')!
+      const installers = panel.querySelectorAll('[data-package-install], [data-mcp-install]')
+      expect(installers, `${slug} ${product}: one installer, once`).toHaveLength(1)
+      const demo = panel.querySelector('[data-core-showcase], [data-landing-example]')
+      // A port with no worked example or tested file shows the installer alone, with nothing to lead it.
+      if (!demo) continue
+      seen.push(product)
+      expect(demo.compareDocumentPosition(installers[0]!) & (demo.contains(installers[0]!) ? 16 : 4), `${slug} ${product}: the install follows the demo`).toBeTruthy()
     }
+    expect(seen, `${slug} has a demo to lead with`).toContain('core')
   })
 
   it('names each companion product\'s maturity once beside it, and the core library\'s not at all', async () => {
@@ -217,8 +223,12 @@ describe('the landing page markup', () => {
       const program = claimed(slug, example)
       const command = [...body.querySelectorAll('pre')].map((pre) => pre.textContent!).find((text) => text.includes(' load workspace.yaml'))
       expect(command, slug).toBe(program ? `${program} load workspace.yaml` : undefined)
-      // The installer opens the panel (record 0026); the links and the excerpt follow the example.
-      expect(panel.querySelector('[data-package-install]')!.compareDocumentPosition(body) & 4, `${slug} install precedes the example`).toBeTruthy()
+      // The installer follows the drawing and stands just before the load step (record 0059); the links and the excerpt follow the example.
+      const installer = body.querySelector('[data-package-install]')!
+      expect(body.querySelector('.ws-windows')!.compareDocumentPosition(installer) & 4, `${slug} install follows the drawing`).toBeTruthy()
+      expect(installer.parentElement!.compareDocumentPosition(evidence) & 4, `${slug} install precedes the evidence`).toBeTruthy()
+      const lead = body.querySelector('.ws-evidence__lead')
+      if (lead) expect(installer.parentElement!.nextElementSibling, `${slug} install is the step before the load step`).toBe(lead)
       const after = ['.landing-links', '[data-landing-excerpt]'].map((selector) => panel.querySelector(selector))
       expect(body.compareDocumentPosition(after[0] ?? after[1]!) & 4, `${slug} links follow the example`).toBeTruthy()
     }
@@ -242,8 +252,14 @@ describe('the landing page markup', () => {
       // The overview's examples carry the files in full; the landing page shows each file once.
       expect(body.querySelector('[data-workspace-showcase], .ws-example'), slug).toBeNull()
       expect(body.querySelectorAll('.ws-config__panel--yaml'), `${slug} one copy of each file`).toHaveLength(showcase.examples.length)
-      // The installer opens the panel (record 0026); the links and the excerpt follow the picker.
-      expect(panel.querySelector('[data-package-install]')!.compareDocumentPosition(body) & 4, `${slug} install precedes the picker`).toBeTruthy()
+      // The installer is drawn once, in the picker's stage after the presets, and the stylesheet puts it between each preset's
+      // drawing and its load step (record 0059); the links and the excerpt follow the picker.
+      expect(body.querySelectorAll('[data-package-install]'), `${slug} one installer, not one for each preset`).toHaveLength(1)
+      const installer = body.querySelector('.ws-picker__stage > .ws-picker__install [data-package-install]')!
+      expect(installer.getAttribute('data-package-id'), slug).toBe('workspace')
+      const last = [...body.querySelectorAll('.ws-picker__stage > .ws-picker__panel')].at(-1)!
+      expect(last.compareDocumentPosition(installer.parentElement!) & 4, `${slug} install follows the presets`).toBeTruthy()
+      for (const item of body.querySelectorAll('.ws-picker__panel')) expect(item.querySelector(':scope > .ws-picker__evidence [data-landing-evidence]'), `${slug} ${item.getAttribute('data-preset')} keeps its own load step`).not.toBeNull()
       const after = ['.landing-links', '[data-landing-excerpt]'].map((selector) => panel.querySelector(selector))
       expect(body.compareDocumentPosition(after[0] ?? after[1]!) & 4, `${slug} links follow the picker`).toBeTruthy()
     })
@@ -315,6 +331,16 @@ describe('the landing page markup', () => {
     const css = readFileSync(new URL('../src/styles/workspace-picker.css', import.meta.url), 'utf8')
     expect(css).toMatch(/\.ws-picker__panel:not\(\[data-first\]\)\s*\{\s*display: none;/)
     expect(css).toMatch(/html\[data-js\] \.ws-picker__title\s*\{\s*display: none;/)
+  })
+
+  it('stands the installer between each preset\'s drawing and its load step with script, in rows as tall as the tallest preset (record 0059)', () => {
+    const css = readFileSync(new URL('../src/styles/workspace-picker.css', import.meta.url), 'utf8')
+    const rule = (selector: string) => new RegExp(`${selector.replace(/[.*+?^${}()|[\]\\>]/g, '\\$&')}\\s*\\{([^}]*)\\}`).exec(css)?.[1]
+    expect(rule('html[data-js] .ws-picker--landing .ws-picker__panel'), 'the panels take no box of their own').toMatch(/display: contents/)
+    expect(rule('html[data-js] .ws-picker--landing .ws-picker__stage > .ws-picker__panel > .ws-picker__head')).toMatch(/grid-area: 1 \/ 1/)
+    expect(rule('html[data-js] .ws-picker--landing .ws-picker__stage > .ws-picker__panel > .ws-body')).toMatch(/grid-area: 2 \/ 1/)
+    expect(rule('html[data-js] .ws-picker--landing .ws-picker__install'), 'the installer is the third row').toMatch(/grid-area: 3 \/ 1/)
+    expect(rule('html[data-js] .ws-picker--landing .ws-picker__stage > .ws-picker__panel > .ws-picker__evidence'), 'the load steps are the fourth').toMatch(/grid-area: 4 \/ 1/)
   })
 
   /** The Workspace tab's markup from its panel to the links under it, with code blocks reduced to their text. */

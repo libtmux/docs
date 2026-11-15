@@ -17,7 +17,12 @@
  * On a port's landing page (`landing`) nothing follows the picker, so each
  * preset carries its own summary, load command and evidence, the preset the
  * page opens on leads the menu, and the page's own heading stands in for the
- * section's. Without script the opening preset shows alone, complete.
+ * section's. Without script the opening preset shows alone, complete. The
+ * product's installer (the `install` slot) is drawn once, between the preset's
+ * drawing and its load step (record 0059): with script the panels take no box
+ * of their own, so the stage's rows are the drawings, the installer and the
+ * load steps, each row as tall as its tallest preset; without script the
+ * installer follows the opening preset.
  */
 import RerollButton from '../RerollButton.astro'
 import PickerSearch from '../docs/PickerSearch.astro'
@@ -125,9 +130,10 @@ const example = (id: string) => showcase.examples.find((item) => item.topic === 
                 </div>
               )}
             </div>
-            {landing && <WorkspaceEvidence showcase={showcase} example={example(preset.id)} program={landing.program} />}
+            {landing && <div class="ws-picker__evidence"><WorkspaceEvidence showcase={showcase} example={example(preset.id)} program={landing.program} /></div>}
           </section>
         ))}
+        {landing && Astro.slots.has('install') && <div class="ws-picker__install"><slot name="install" /></div>}
       </div>
       <div class="ws-tab-tip" id={`ws-tab-tip-${showcase.port}`} role="tooltip" data-tab-tip hidden></div>
     </libtmux-workspace-picker>
