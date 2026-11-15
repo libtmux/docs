@@ -314,7 +314,7 @@ export async function checkHeaderMenuSectionsFail(browser, base) {
     ['a heading with a pointer cursor', { css: '.header-picker__heading { cursor: pointer !important }' }, /no pointer cursor/],
     ['a heading with a hover state', { css: '.header-picker__heading:hover { background: #f00 !important }' }, /hovering a heading changes nothing/],
     ['item typography on a heading', { css: '.header-picker__heading { font-size: .8125rem !important; text-transform: none !important; color: inherit !important }' }, /heading typography is smaller/],
-    ['rows flush with their heading', { css: '.header-picker__group > .header-picker__option { margin-inline-start: 0 !important } .header-picker__heading { margin-inline: 1.2rem !important }' }, /rows are inset under the heading/],
+    ["a heading off its rows' edge", { css: '.header-picker__group > .header-picker__option { margin-inline-start: 0 !important } .header-picker__heading { margin-inline: 1.2rem !important }' }, /rows start on the heading's edge/],
     ['a paragraph under a kind heading', {
       script: () => document.querySelectorAll('[data-picker-group]').forEach((group) => group.querySelector('a').before(Object.assign(document.createElement('p'), { textContent: 'Maintained as a working example of core library usage and deployment. Example APIs, tools and configuration may change without a compatibility or product support commitment.' }))),
     }, /a text block in the menu holds/],
@@ -325,5 +325,5 @@ export async function checkHeaderMenuSectionsFail(browser, base) {
   for (const [name, sabotage, failure] of controls) {
     await assert.rejects(() => checkHeaderMenuSections(browser, base, { ...only, sabotage }), failure, `the check fails with ${name}`)
   }
-  console.log('Header menu sections: the check fails on origin/main markup and CSS, a paragraph in a menu, and focusable, pointer, hover, plain-typography, flush and unfiltered headings')
+  console.log('Header menu sections: the check fails on origin/main markup and CSS, a paragraph in a menu, and focusable, pointer, hover, plain-typography, off-edge and unfiltered headings')
 }

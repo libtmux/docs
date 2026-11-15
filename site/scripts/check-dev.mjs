@@ -346,9 +346,21 @@ async function checkSignatureLayouts(browser, base) {
           for (const declaration of declarations) assert(visibleText.includes(clean(declaration)),
             `${port}: native declaration survives at ${width}px`)
         } else {
-          assert.deepEqual(await signature.locator('.sig-param > :is(.n, .api-parameter-name)').allTextContents(),
-            model.signatures.flatMap((declaration) => declaration.params.map((param) => param.name)),
-            `${port}: all parameters survive at ${width}px`)
+          // A stub may name a family of repeated bool flags once ("12 more keyword flags"), because the parameter list shows each
+          // (design system Signature): every other parameter is shown, in order, and the summary counts exactly the bool flags left out.
+          const blocks = await signature.locator('.api-signature-parameters').evaluateAll((nodes) => nodes.map((node) => ({
+            names: [...node.querySelectorAll('.sig-param > :is(.n, .api-parameter-name)')].map((name) => name.textContent),
+            summarised: Number(/(\d+) more/.exec(node.querySelector('.api-signature-summary')?.textContent ?? '')?.[1] ?? 0),
+          })))
+          assert.equal(blocks.length, model.signatures.length, `${port}: one parameter list per declaration at ${width}px`)
+          for (const [index, declaration] of model.signatures.entries()) {
+            const { names, summarised } = blocks[index]
+            const shown = declaration.params.filter((param) => names.includes(param.name))
+            const left = declaration.params.filter((param) => !names.includes(param.name))
+            assert.deepEqual(names, shown.map((param) => param.name), `${port}: all parameters survive at ${width}px, in order`)
+            assert.equal(left.length, summarised, `${port}: the stub's summary counts every parameter it leaves out at ${width}px`)
+            assert(left.every((param) => /\bbool\b/.test(param.type ?? '')), `${port}: only bool flags are summarised at ${width}px: ${left.map((param) => param.name)}`)
+          }
           assert.deepEqual((await signature.locator('.sig-return-typehint').allTextContents()).map(clean),
             model.signatures.flatMap((declaration) => declaration.returns ? [clean(declaration.returns)] : []),
             `${port}: all return types survive at ${width}px`)
