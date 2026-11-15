@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 import {
   OTHER_LETTER,
   countStatus,
@@ -76,5 +77,31 @@ describe('row summaries', () => {
     expect(summaryLine(undefined)).toBeUndefined()
     expect(summaryLine('   ')).toBeUndefined()
     expect(summaryLine('x'.repeat(200))).toHaveLength(160)
+  })
+})
+
+describe('the A-Z page of a port build', () => {
+  afterEach(() => vi.unstubAllEnvs())
+
+  // check-canonicals walks every page under a port's reference tree and wants
+  // its canonical to name that page. The page reaches Seo through BaseLayout,
+  // so a port build must hand the layout its port and version.
+  it('gives the layout the port and version, and keeps the page out of the inventory', async () => {
+    vi.stubEnv('LIBTMUX_DOCS_PORT', 'go')
+    vi.stubEnv('LIBTMUX_DOCS_LOCALE', 'en')
+    vi.stubEnv('LIBTMUX_DOCS_VERSION', 'latest')
+    const page = await loadAstroTemplate('pages/reference/symbols/[letter].astro', {
+      stubs: {
+        'layouts/BaseLayout.astro': '---\nconst { portSlug, version, inventoryExclude } = Astro.props\n---\n<main data-port={portSlug} data-version={version} data-exclude={String(inventoryExclude)}><slot /></main>',
+        'components/api/SymbolIndex.astro': '---\n---\n<div></div>',
+      },
+      modules: { '../../../i18n/resolve': { buildLocale: () => 'en' } },
+    })
+    const html = await renderAstroTemplate(page, { url: 'https://libtmux.org/en/go/latest/reference/symbols/c/', props: {
+      letter: 'C', letters: ['C'], entries: [], total: 0, shared: [], port: 'go',
+    } })
+    expect(html).toContain('data-port="go"')
+    expect(html).toContain('data-version="latest"')
+    expect(html).toContain('data-exclude="true"')
   })
 })

@@ -103,6 +103,9 @@ const title = port ? `${portName} API index` : 'Symbol index'
   breadcrumbs={breadcrumbs}
   description={`Public ${portName ?? 'libtmux'} symbols beginning with ${letterLabel(letter)}.`}
   pagePath={`reference/symbols/${letter.toLowerCase()}`}
+  portSlug={port}
+  version={port ? buildTarget(process.env).version : undefined}
+  inventoryExclude={Boolean(port)}
   noindex={true}
 >
   <SymbolIndex
