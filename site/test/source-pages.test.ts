@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
+import { sourceUrl } from '@libtmux/api-model/reference'
 import { API_MODELS } from '../src/lib/api-models'
 import { hasSourceView, sourceFilesFor } from '../src/lib/api-source-pages'
 import { sourceIndex, sourceRoutes } from '../src/lib/source-declarations'
@@ -37,6 +38,21 @@ describe('source page routes', () => {
       const route = routes.find((candidate) => candidate.params.path === file)
       expect(route?.props.origin, file).toBeUndefined()
       expect(route?.props.content, file).toBe(model.generatedSources![file])
+    }
+  })
+
+  it.each(['java', 'kotlin', 'scala'])('links each embedded %s declaration to the page its route builds', (port) => {
+    const model = API_MODELS[port]!
+    const pages = new Set(sourceRoutes(port, model).map((route) => route.params.path))
+    const base = `/en/${port}/latest/reference/`
+    const embedded = model.symbols.filter((symbol) => model.generatedSources?.[symbol.source.file] !== undefined)
+    expect(embedded.length).toBeGreaterThan(0)
+    for (const symbol of embedded) {
+      const href = sourceUrl(model, symbol, base)!
+      const [, file, fragment] = href.match(/^\/en\/[a-z]+\/latest\/reference\/sources\/(.+)\/(#L\d+)?$/) ?? []
+      expect(file, href).toBe(symbol.source.file)
+      expect(pages.has(file!), href).toBe(true)
+      expect(fragment, href).toBe(symbol.source.line ? `#L${symbol.source.line}` : undefined)
     }
   })
 })

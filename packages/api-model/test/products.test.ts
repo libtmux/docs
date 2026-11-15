@@ -16,7 +16,7 @@ describe('product reference provenance', () => {
     const generated = { ...symbol, source: { file, line: 42 } }
     const sourceModel = { ...model, generatedSources: { [file]: 'extension (self: Pane)\ndef capture(): Unit' } }
     expect(sourceUrl(sourceModel, generated, '/en/scala/v1.0.0/reference/'))
-      .toBe(`/en/scala/v1.0.0/reference/sources/${file}`)
+      .toBe(`/en/scala/v1.0.0/reference/sources/${file}/#L42`)
     expect(sourceUrl(sourceModel, generated)).toBeUndefined()
   })
   it('links a separate product repository and revision', () => {
