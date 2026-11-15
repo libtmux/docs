@@ -229,16 +229,16 @@
     {
       "port": "kotlin",
       "language": "kotlin",
-      "sourceRevision": "5c181887918351119bfdb3a046719fa792048e59",
+      "sourceRevision": "e8a39689d8d60968ac978a1dd2a89c6112333896",
       "sourceRepository": "libtmux/libtmux-java",
       "files": [
         {
           "name": "Capture.kt",
-          "sha256": "afd4b19f973c95cb434a859e5a12aeb60ffbd97a15951a1c63f37958e1d1a85a"
+          "sha256": "89b73250d49691ce3fc29683553374ea04f28df05d594501696967e2e5e5848f"
         },
         {
           "name": "build.gradle.kts",
-          "sha256": "dcb4c29ed651d0f463ce0d19d4a4e85c79c59f50642f5341435f57414e7a091e"
+          "sha256": "7261d4697fce2b78829d8a69d8ec080621592a07b3492234a6c0019b3ef5f2d0"
         },
         {
           "name": "settings.gradle.kts",
@@ -251,7 +251,9 @@
       ],
       "toolchain": [
         "JDK 25.0.3",
-        "Kotlin 2.4.10"
+        "Gradle 9.7.0",
+        "Kotlin 2.4.10",
+        "libtmux-kotlin 0.1.2"
       ],
       "tmux": [
         "3.3a",
@@ -259,7 +261,7 @@
       ],
       "page": "ports/kotlin/examples/capture-pane-output",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-java libtmux-source &&\n  git -C libtmux-source checkout 5c181887918351119bfdb3a046719fa792048e59 &&\n  ./libtmux-source/gradlew --project-dir . run --console=plain --max-workers=2"
+        "gradle --console=plain --no-daemon run"
       ],
       "verification": {
         "platform": "Linux",
@@ -268,42 +270,42 @@
             "name": "positive-3.3a",
             "tmux": "3.3a",
             "exit": 0,
-            "seconds": 2.924,
+            "seconds": 39.497,
             "remainingSocketDirectories": 0
           },
           {
             "name": "positive-3.7c",
             "tmux": "3.7c",
             "exit": 0,
-            "seconds": 11.445,
+            "seconds": 34.173,
             "remainingSocketDirectories": 0
           },
           {
             "name": "negative-import",
             "tmux": "3.7c",
             "exit": 1,
-            "seconds": 2.197,
+            "seconds": 21.164,
             "remainingSocketDirectories": 0
           },
           {
             "name": "negative-runtime-build",
             "tmux": "3.7c",
             "exit": 0,
-            "seconds": 1.905,
+            "seconds": 28.495,
             "remainingSocketDirectories": 0
           },
           {
             "name": "negative-runtime",
             "tmux": "3.7c",
             "exit": 1,
-            "seconds": 6.772,
+            "seconds": 5.967,
             "remainingSocketDirectories": 0
           },
           {
             "name": "restored-build",
             "tmux": "3.7c",
             "exit": 0,
-            "seconds": 1.825,
+            "seconds": 30.023,
             "remainingSocketDirectories": 0
           }
         ]

@@ -245,6 +245,40 @@
           "| hello from tmux"
         ]
       ]
+    },
+    {
+      "port": "kotlin",
+      "page": "ports/kotlin/examples",
+      "language": "kotlin",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "e8a39689d8d60968ac978a1dd2a89c6112333896",
+      "files": [
+        {
+          "name": "WatchWithFlow.kt",
+          "sha256": "62dba5597eb6bfa2c378bb406a6479e16ecf0db7f40f595e25de9bdb98e63f57"
+        },
+        {
+          "name": "settings.gradle.kts",
+          "sha256": "67b9ddf02fbf04f40c1f4e3e2e1649c9212fe9db5f32b6989e389b6b348209ed"
+        },
+        {
+          "name": "build.gradle.kts",
+          "sha256": "5e431f05fc6239664cc6bffaddb07e187822b9d36205c8020221c05354ad50e6"
+        },
+        {
+          "name": "gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1"
+        }
+      ],
+      "shellRecipe": [
+        "gradle --console=plain --no-daemon run"
+      ],
+      "expectedOutputs": [
+        [
+          "echoed=true",
+          "cancelled=true"
+        ]
+      ]
     }
   ]
 }

@@ -561,7 +561,6 @@ describe('the example gate over what a reader copies', () => {
     const PORT_OWNED: Record<string, string[]> = {
       'home program perl examples/quickstart.pl': ['uses a helper of the repository'],
       'home program perl scripts/lib/LibTmuxFixture.pm': ['reads a variable only the repository tests set', 'uses a helper of the repository'],
-      'home setup kotlin': ['clones or checks out the library of a published port; install it from the registry'],
       'home setup scala': ['clones or checks out the library of a published port; install it from the registry'],
     }
 
