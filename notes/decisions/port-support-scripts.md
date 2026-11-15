@@ -54,6 +54,11 @@ interpreter its CI already uses:
 | raku | Raku | powershell | PowerShell |
 | ts | TypeScript on Bun | lisp | Common Lisp (`sbcl --script`) |
 
+Each of these runs a single file and can declare its dependencies there:
+Elixir with `Mix.install/2`, PowerShell with `#Requires -Modules`, Erlang
+escripts with a `main/1` entry point, and SBCL scripts by loading ASDF or
+Quicklisp explicitly, since `--script` skips init files.
+
 A compiled-language port (cxx, rs, go, java, dotnet, swift, haskell, ocaml)
 writes its scripts in Python. The library has no Python dependency, so a
 small typed Python script costs less than a second build system for tooling.
