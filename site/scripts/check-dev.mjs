@@ -21,7 +21,7 @@ import { checkLanguageIconScheme } from './check-language-icon-scheme.mjs'
 import { checkHomeExampleOptions } from './check-home-example-options.mjs'
 import { checkDevSample, checkRowPermalinks } from './check-dev-sample.mjs'
 import { checkCornerClear, checkDeclarationControlAlignment, checkDeclarationControlsLevel, checkMemberBodyInsets, checkNativeSignatureGeometry, checkNativeSignatureLinks } from './check-native-layout.mjs'
-import { checkBadgeCentring, checkChipGrowth, checkMentionDensity, checkUsageChips } from './check-badge-centring.mjs'
+import { checkBadgeCentring, checkMentionDensity, checkUsageChips } from './check-badge-centring.mjs'
 import { checkBlockLinksUndecorated, checkKindBadgeLinks, checkKindBadgeLinksFail, checkExternalLinkFirstPaint, checkRequiredAppearance, checkTmuxReferencePreviews, checkTmuxReferencePreviewsFail, checkWebAnalytics, checkWebAnalyticsTransitions } from './check-page-readiness.mjs'
 import { checkTypeParameters } from './check-type-parameters.mjs'
 import { checkTmuxKeys, TMUX_KEY_PAGES } from './check-tmux-keys.mjs'
@@ -668,22 +668,25 @@ async function checkReferenceAndHeroes(browser, base) {
     assert.equal(anchors.filter((id) => id === fullName).length, 1, 'Page title and declaration have distinct anchors')
     console.log('Qualified names: a row of the source and package disclosure, exact copied identity and clipboard refusal pass')
     await page.setViewportSize({ width: 1440, height: 900 })
-    const contents = page.getByRole('navigation', { name: 'On this page', exact: true })
+    // The section bar under the title is a symbol page's one outline (design system PageApiDetail, "Removed or moved").
+    const contents = page.getByRole('navigation', { name: 'Reference sections', exact: true })
     assert(await contents.isVisible(), 'Wide reference pages show section navigation')
+    assert.equal(await page.getByRole('navigation', { name: 'On this page', exact: true }).count(), 0, 'A symbol page draws no second outline')
     assert.deepEqual(await page.locator('[data-api-section-link]').evaluateAll((links) => links
       .map((link) => decodeURIComponent(link.hash.slice(1)))
       .filter((id) => [...document.querySelectorAll('[id]')].filter((element) => element.id === id).length !== 1)), [],
     'Every reference section link has exactly one target')
     await contents.getByRole('link', { name: 'Parameters', exact: true }).click()
-    await page.waitForFunction(() => document.querySelector('api-page-contents a[aria-current="location"]')?.textContent === 'Parameters')
+    await page.waitForFunction(() => document.querySelector('.api-section-links a[aria-current="location"]')?.firstChild?.textContent === 'Parameters')
     await page.goto(`${base}/kotlin/latest/reference/io-github-libtmux-kotlin-server/`)
     const memberNames = await page.locator('.api-member-link').allTextContents()
     assert.deepEqual(memberNames.slice(0, 3), ['sessions', 'windows', 'panes'])
     assert.equal(new Set(memberNames).size, memberNames.length, 'Grouped members appear once')
-    assert(await page.getByRole('navigation', { name: 'Related APIs' }).getByRole('link', { name: 'io.github.libtmux.kotlin.Session', exact: true }).count())
+    // The Related types cards are the one place a symbol page names its related types (PageApiDetail, "Removed or moved").
+    assert(await page.locator('.api-related-card > a[title="io.github.libtmux.kotlin.Session"]').count(), 'The Related types cards name Session')
     for (const width of [1440, 768, 390]) {
       await page.setViewportSize({ width, height: 900 })
-      assert.equal(await page.locator('api-page-contents').isVisible(), width >= 1360)
+      assert.equal(await page.locator('api-page-contents').isVisible(), false, `A symbol page draws no contents column at ${width}px`)
       assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `Reference columns fit at ${width}px`)
     }
     console.log('Reference contents: section targets, active links, related declarations and grouped member order pass')
@@ -868,7 +871,6 @@ try {
   } else if (badgeCentringOnly) {
     await retryReload(() => checkBadgeCentring(browser, base))
     await checkMentionDensity(browser, base)
-    await checkChipGrowth(browser, base)
     await checkUsageChips(browser, base)
   } else if (referencePreviewsOnly) {
     await retryReload(() => checkTmuxReferencePreviews(browser, base, { served: servedBuild(base) }))
@@ -970,7 +972,6 @@ try {
       .then(() => checkKindBadgeLinksFail(browser, base)))
     const badgeCentring = schedule(() => retryReload(() => checkBadgeCentring(browser, base, { sample: sampleOnly }))
       .then(() => checkMentionDensity(browser, base))
-      .then(() => checkChipGrowth(browser, base))
       .then(() => checkUsageChips(browser, base)))
     const blockLinks = schedule(() => retryReload(() => checkBlockLinksUndecorated(browser, base)))
     const referencePreviews = schedule(() => retryReload(() => checkTmuxReferencePreviews(browser, base, { served: servedBuild(base) }))

@@ -135,8 +135,9 @@ async function checkStatic(page, picker, where, scheme, expectTitled) {
     assert(head.textTransform !== item.textTransform, `${label}: heading typography differs in case (${head.textTransform} vs ${item.textTransform})`)
     assert(head.color !== item.color, `${label}: heading typography differs in colour (${head.color})`)
     assert(!head.clipped, `${label}: the heading is not clipped`)
-    // The heading owns the rows after it: rows sit inset from its text, close to it, and a larger gap precedes it.
-    assert(group.iconLeft - group.heading.left >= 4, `${label}: rows are inset under the heading (${group.iconLeft - group.heading.left}px)`)
+    // The heading owns the rows after it: a panel has two left edges, so a row's icon starts on the heading's text edge
+    // (SiteHeader, "Rows no longer step in under their heading"), close below it, and a larger gap precedes it.
+    assert(Math.abs(group.iconLeft - group.heading.left) <= 1, `${label}: rows start on the heading's edge (${group.iconLeft - group.heading.left}px)`)
     assert(group.firstRow.top >= group.heading.bottom - 1, `${label}: the heading precedes its rows`)
     if (index > 0) {
       const before = group.heading.top - groups[index - 1].lastRow.bottom

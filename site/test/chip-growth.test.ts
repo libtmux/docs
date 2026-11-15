@@ -1,10 +1,9 @@
 import { readFileSync } from 'node:fs'
-import { Window } from 'happy-dom'
-import { afterEach, describe, expect, it, vi } from 'vitest'
-import { judgeChipGrowth, railProblems } from '../scripts/check-badge-centring.mjs'
+import { describe, expect, it } from 'vitest'
+import { judgeChipGrowth } from '../scripts/check-badge-centring.mjs'
 
 /**
- * A linked API name in a run (In other ports, the tmux C API and command lists, Related APIs) is a kind mark and a
+ * A linked API name in a run (In other ports, the tmux C API and command lists) is a kind mark and a
  * dotted-underlined name, and nothing else: no chip around the pair, no surface under the name, no border, at rest or on
  * hover (record 0025 and record 0049 of the design system). The stylesheet rules that say so are read from `kind-marks.css`,
  * and the browser gate's judgement is exercised on boxes written down by hand, so each can be seen to fail without a browser.
@@ -131,63 +130,7 @@ describe('the linked-name growth check of the browser gate', () => {
 
   it('names a link on top of the one above it, and a link that leaves its column', () => {
     expect(judgeChipGrowth([oneLine(0), oneLine(14)])).toEqual(['name14: overlaps name0 by 4.0px'])
-    expect(judgeChipGrowth([oneLine(0, { rail: box(-10, 100, 0, 100) })])).toEqual(['name0: the link runs out of the Related APIs column'])
+    expect(judgeChipGrowth([oneLine(0, { rail: box(-10, 100, 0, 100) })])).toEqual(['name0: the link runs out of the list'])
   })
 })
 
-const windows: Window[] = []
-afterEach(async () => { vi.unstubAllGlobals(); for (const win of windows.splice(0)) await win.happyDOM.abort() })
-
-interface Spec { chip: Box; mark: Box; name: Box; drawn?: boolean; clipped?: boolean }
-/** The rail check reads the same boxes from the page, so here each one is placed by hand on a link in a `nav.api-related`. */
-async function rail(specs: Spec[]) {
-  const win = new Window()
-  windows.push(win)
-  const { document } = win
-  document.body.innerHTML = '<nav class="api-related"></nav>'
-  const place = (element: object, at: Box) => Object.defineProperty(element, 'getBoundingClientRect', {
-    value: () => ({ top: at.top, left: at.left, bottom: at.bottom, right: at.right, width: at.right - at.left, height: at.bottom - at.top }),
-  })
-  for (const [index, spec] of specs.entries()) {
-    const link = document.createElement('a')
-    link.innerHTML = `<span class="api-nav__kind">m</span><code>name${index}</code>`
-    link.setAttribute('style', spec.drawn ? 'border-top-width: 1px; background-color: rgb(238, 238, 238)' : 'border-top-width: 0px; background-color: rgba(0, 0, 0, 0)')
-    document.querySelector('nav')!.append(link)
-    place(link, spec.chip)
-    place(link.querySelector('.api-nav__kind')!, spec.mark)
-    place(link.querySelector('code')!, spec.name)
-    Object.defineProperty(link, 'offsetParent', { value: document.querySelector('nav') })
-    if (spec.clipped) Object.defineProperty(link, 'scrollWidth', { value: spec.chip.right - spec.chip.left + 40 })
-  }
-  vi.stubGlobal('document', document)
-  vi.stubGlobal('getComputedStyle', win.getComputedStyle.bind(win))
-  return (await railProblems({ evaluate: async (read: () => unknown) => read() })).problems
-}
-const one = (top: number): Spec => ({ chip: box(top, 18), mark: box(top, 18, 0, 18), name: box(top + 3, 12, 24, 100) })
-const grown = (top: number): Spec => ({ chip: box(top, 46), mark: box(top, 18, 0, 18), name: box(top + 2, 42, 24, 100) })
-
-describe('the related-links check of the browser gate', () => {
-  it('passes a one-line link and a link that grew, and no link draws a box', async () => {
-    expect(await rail([one(0), one(26), one(52)])).toEqual([])
-    expect(await rail([one(0), grown(26), one(80)])).toEqual([])
-  })
-
-  it('names a link that draws a chip: a border or a surface around its mark and name', async () => {
-    expect(await rail([{ ...one(0), drawn: true }, one(26)])).toEqual(['mname0: the link draws a box (a border or a surface) around its mark and name'])
-  })
-
-  it('lets a mark sit a pixel proud of its link, the raise that centres its ink, and names two', async () => {
-    expect(await rail([{ ...one(0), mark: box(-1, 18, 0, 18) }, one(26)])).toEqual([])
-    expect(await rail([{ ...one(0), mark: box(-2, 18, 0, 18) }, one(26)])).toEqual(["mname0: the link's box does not contain its mark"])
-  })
-
-  it('names a name running out of its link and a clipped link', async () => {
-    const squeezed: Spec = { chip: box(0, 18, 0, 48), mark: box(0, 18, 0, 18), name: box(3, 12, 24, 100), clipped: true }
-    expect(await rail([squeezed, one(26)])).toEqual(["mname0: the link's box does not contain its name", 'mname0: the link clips its content'])
-  })
-
-  it('names rows laid unevenly or on top of each other', async () => {
-    expect(await rail([one(0), one(14)])).toEqual(['mname1: overlaps the row above by 4.0px'])
-    expect(await rail([one(0), one(26), one(60)])).toEqual(['rows are unevenly spaced: gaps run 8.0 to 16.0px'])
-  })
-})

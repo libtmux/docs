@@ -39,7 +39,7 @@ const PAGES = [
   { label: 'TypeScript readonly attribute', path: '/ts/latest/reference/client-client-clientbrand/' },
 ]
 // The runs of linked API names: a mark and a dotted-underlined name, with no chip around them (record 0025).
-const LINKED = '.api-elsewhere-value, .api-command-related, .tmux-usage, nav.api-related'
+const LINKED = '.api-elsewhere-value, .api-command-related, .tmux-usage'
 // The mark that leads such a name. The badge that leads a mention in a note of the usage table or of an other-port entry is not one.
 const LINK_MARK = '.api-nav__kind:where(:not(.api-link-kind))'
 // A compact mark that leads a bare name: an index or tool card, a member list row, and a linked name in a run.
@@ -51,6 +51,14 @@ const SKIP = new Set(['p', '$'])
 
 /** The device pixels of an element and a margin around it, with what the measurement needs to know about it. */
 export async function sample(page, handle, kind) {
+  // A row in a member box is brought to the middle of the box, where neither its sticky heading nor its edge is in the clip.
+  await handle.evaluate((element) => {
+    const box = element.closest('.api-member-budget')
+    if (!box) return
+    const rect = element.getBoundingClientRect()
+    const frame = box.getBoundingClientRect()
+    box.scrollTop += rect.top - frame.top - (frame.height - rect.height) / 2
+  })
   await handle.scrollIntoViewIfNeeded()
   const info = await handle.evaluate((element, kind) => {
     const pick = kind === 'mark' || kind === 'row' || kind === 'mod' ? element.querySelector(':scope > .api-badge__label, .api-badge__label') : kind === 'leg' ? element.querySelector('.api-leg__g') : element.querySelector(':scope > .api-nav__kind > .api-badge__label')
@@ -151,6 +159,9 @@ export function measure({ info, clip, png }, kind) {
     const cap = info.wordFont * 0.698 * dpr
     out.baselineGap = baseline - inkBottom
     out.runCentre = (baseline - cap / 2) - (inner.top + inner.bottom) / 2
+    // A mark that leads a name is raised so its ink, not its box, shares the name's centre (kind-marks.css): an x-height letter
+    // sits low in its box by design.
+    if (kind === 'row') out.inkRunCentre = (baseline - cap / 2) - (inkTop + inkBottom) / 2
   }
   return out
 }
@@ -166,8 +177,8 @@ export function judge(label, result, kind, { skipBaseline = false } = {}) {
     // A modifier is one word in an outline: its capitals centre in the chip, as the legend chip's run does.
     if (Math.abs(result.runCentre) > 1) failures.push(`${label}: the word is ${result.runCentre.toFixed(1)} device px off the chip's centre`)
   } else if (kind === 'row') {
-    // The name's capitals centre on the mark, and the two do not touch.
-    if (Math.abs(result.runCentre) > 1.25) failures.push(`${label}: the name is ${result.runCentre.toFixed(1)} device px off the mark's centre`)
+    // The name's capitals centre on the mark's ink, and the two do not touch.
+    if (Math.abs(result.inkRunCentre) > 1.25) failures.push(`${label}: the name is ${result.inkRunCentre.toFixed(1)} device px off the mark's centre`)
     if (result.gap < 4) failures.push(`${label}: the mark is ${result.gap.toFixed(1)}px from the name`)
     else if (result.gap > 0.75 * result.font) failures.push(`${label}: the mark is ${result.gap.toFixed(1)}px from the name, more than the gap rule allows`)
   } else if (kind !== 'mark') {
@@ -179,49 +190,13 @@ export function judge(label, result, kind, { skipBaseline = false } = {}) {
 
 const GROUPS = [
   { kind: 'mark', selector: `.api-nav__kind:not(:is(${LINKED.split(', ').map((s) => `${s} a > ${LINK_MARK}`).join(', ')}))`, name: 'mark' },
-  { kind: 'leg', selector: '.api-leg', name: 'legend chip' },
+  // A legend chip's letter glyph and word; an action chip whose mark is an icon (the source button) has no glyph to centre. A chip in a
+  // declaration's corner tab is measured from its boxes instead (checkPage): its floor is open onto the declaration (record 0047).
+  { kind: 'leg', selector: '.api-leg:has(> .api-leg__m > .api-leg__g):not(.api-corner > *)', name: 'legend chip' },
   { kind: 'row', selector: ROW_MARKS, name: 'card, list and linked-name mark' },
-  { kind: 'mod', selector: '.api-badge--mod', name: 'modifier chip' },
+  { kind: 'mod', selector: '.api-badge--mod:not(.api-corner > *)', name: 'modifier chip' },
 ]
 
-
-/**
- * The Related APIs links in the contents column: each is a mark and a dotted-underlined name and nothing else (record 0025:
- * a linked API name carries the mark and the underline, never a chip around them), so a link draws no border and no
- * surface. Its box holds its mark and its name, no link overlaps the next, and the rows are evenly spaced. Measured from
- * the laid-out boxes, since the failure it guards is a box that does not hold its content, or one that draws a chip.
- */
-export async function railProblems(page) {
-  const rows = await page.evaluate(() => [...document.querySelectorAll('nav.api-related a:has(> .api-nav__kind)')].filter((a) => a.offsetParent).map((a) => {
-    const box = (node) => { const r = node.getBoundingClientRect(); return { top: r.top, bottom: r.bottom, left: r.left, right: r.right } }
-    const style = getComputedStyle(a)
-    const transparent = (colour) => colour === 'transparent' || /^rgba?\([^)]*,\s*0\)$/.test(colour) || /\/\s*0\s*\)$/.test(colour)
-    return {
-      chip: box(a), mark: box(a.querySelector(':scope > .api-nav__kind')), name: box(a.querySelector(':scope > code')), text: a.textContent.trim(),
-      drawn: ['Top', 'Right', 'Bottom', 'Left'].some((side) => parseFloat(style[`border${side}Width`]) > 0) || !transparent(style.backgroundColor),
-      clipped: a.scrollHeight > a.clientHeight + 1 || a.scrollWidth > a.clientWidth + 1,
-    }
-  }))
-  const problems = []
-  const slack = 0.51
-  // A mark whose letter is an x-height one sits up to a pixel proud of the link's box: the raise that centres its ink on the name's capitals.
-  const markSlack = 1.01
-  for (const row of rows) {
-    for (const part of ['mark', 'name']) {
-      const room = part === 'mark' ? markSlack : slack
-      const inside = row[part].top >= row.chip.top - room && row[part].bottom <= row.chip.bottom + room && row[part].left >= row.chip.left - room && row[part].right <= row.chip.right + room
-      if (!inside) problems.push(`${row.text}: the link's box does not contain its ${part}`)
-    }
-    // A linked name is a mark and an underline: no border, no surface.
-    if (row.drawn) problems.push(`${row.text}: the link draws a box (a border or a surface) around its mark and name`)
-    // Nothing is clipped by the link's edge.
-    if (row.clipped) problems.push(`${row.text}: the link clips its content`)
-  }
-  const gaps = rows.slice(1).map((row, index) => row.chip.top - rows[index].chip.bottom)
-  gaps.forEach((gap, index) => { if (gap < 0) problems.push(`${rows[index + 1].text}: overlaps the row above by ${(-gap).toFixed(1)}px`) })
-  if (gaps.length && Math.max(...gaps) - Math.min(...gaps) > 1) problems.push(`rows are unevenly spaced: gaps run ${Math.min(...gaps).toFixed(1)} to ${Math.max(...gaps).toFixed(1)}px`)
-  return { rows: rows.length, problems }
-}
 
 /**
  * What is wrong with a linked name that wraps, from its measured boxes. The link grows with a name that wraps, so the lines
@@ -232,7 +207,7 @@ export function judgeChipGrowth(chips) {
   const slack = 0.51
   const problems = []
   for (const chip of chips) {
-    const { text, box, mark, lines, rail, where = 'Related APIs column' } = chip
+    const { text, box, mark, lines, rail, where = 'list' } = chip
     if (!lines.length) { problems.push(`${text}: the name has no line to measure`); continue }
     if (lines[0].top < box.top - slack) problems.push(`${text}: the name starts ${(box.top - lines[0].top).toFixed(1)}px above the link's top edge`)
     if (lines.at(-1).bottom > box.bottom + slack) problems.push(`${text}: the name runs ${(lines.at(-1).bottom - box.bottom).toFixed(1)}px past the link's bottom edge`)
@@ -254,13 +229,13 @@ export function judgeChipGrowth(chips) {
 }
 
 /**
- * The boxes and lines of every chip of one list on the page, judged by `judgeChipGrowth`. The list is the Related APIs
- * rail unless `scope` names another: the `.tmux-usage` table of senders on a tmux command page. A line is the box of its
+ * The boxes and lines of every chip of one list on the page, judged by `judgeChipGrowth`: `scope` names the list, the
+ * `.tmux-usage` table of senders on a tmux command page. A line is the box of its
  * text, or with `ink` the box of its letters, from the cap height to the baseline that `text-box` trims the name to: the
  * usage table sets its names in a semibold face whose text box is taller than the chip's letters and not centred on them,
  * so the box of the text would put every name a little above its chip.
  */
-export async function chipGrowthProblems(page, scope = { list: 'nav.api-related', where: 'Related APIs column' }) {
+export async function chipGrowthProblems(page, scope) {
   const chips = await page.evaluate(({ list, where, ink }) => {
     const plain = (r) => ({ top: r.top, bottom: r.bottom, left: r.left, right: r.right })
     return [...document.querySelectorAll(`${list} a:has(> .api-nav__kind:where(:not(.api-link-kind)))`)].filter((a) => a.offsetParent).map((a) => {
@@ -357,43 +332,33 @@ export async function headingProblems(page) {
 
 
 /**
- * The protocol sidebar (MCP tools, prompts, resources) is the section menu. Its groups name their
- * kind, so a row carries a mark only in a group that mixes kinds, and the mark is inline at the
- * row's normal gap. There is no gutter: a row without a mark starts its text at the row's indent.
- * The kind stays on every row for assistive technology (`aria-description`).
+ * The protocol sidebar (MCP tools, prompts, resources) is the section menu: overline-headed groups of rows. A row is a label
+ * with an optional count and carries no icon or mark (design record 0060), and every row starts its label on one edge. The
+ * kind stays on each row for assistive technology (`aria-description`).
  */
 export function protocolSidebarProblems(page) {
   return page.evaluate(() => {
     const nav = [...document.querySelectorAll('[data-section-navigation] nav')].find((node) => node.offsetParent)
     if (!nav) return { groups: 0, marks: 0, rows: 0, problems: [] }
     const problems = []
-    let groups = 0, marks = 0, rows = 0
-    for (const group of nav.querySelectorAll('details.sidebar-section')) {
-      const entries = [...group.querySelectorAll(':scope > .sidebar-section__children > a.sidebar-link')].filter((row) => row.offsetParent)
-      if (!entries.length) continue
-      groups++
-      const label = group.querySelector(':scope > summary')?.textContent?.trim() ?? 'a group'
-      const kinds = new Set(entries.map((row) => row.getAttribute('aria-description')).filter(Boolean))
-      for (const row of entries) {
-        rows++
-        const mark = row.querySelector(':scope > .api-nav__kind')
-        const text = row.querySelector(':scope > span:not(.api-nav__kind)')
-        const name = text?.textContent?.trim() ?? ''
-        if (!row.hasAttribute('aria-description')) continue
-        if (mark) marks++
-        if (kinds.size <= 1 && mark) problems.push(`"${name}" under "${label}" repeats a kind the group already names`)
-        if (kinds.size > 1 && !mark) problems.push(`"${name}" under "${label}" has no mark in a group that mixes kinds`)
-        // No gutter: the first thing in the row starts at the row's own indent, and a mark is one gap from the name.
-        const indent = row.getBoundingClientRect().left + parseFloat(getComputedStyle(row).paddingLeft)
-        const lead = (mark ?? text).getBoundingClientRect().left
-        if (Math.abs(lead - indent) > 1) problems.push(`"${name}" under "${label}" starts ${(lead - indent).toFixed(1)}px from its indent: a gutter`)
-        if (mark) {
-          const gap = text.getBoundingClientRect().left - mark.getBoundingClientRect().right
-          if (gap < 3 || gap > 6) problems.push(`"${name}" under "${label}": the mark is ${gap.toFixed(1)}px from the name`)
-        }
-      }
+    const groups = [...nav.querySelectorAll('.sidebar-overline')].filter((heading) => heading.offsetParent).length
+    const entries = [...nav.querySelectorAll('a.sidebar-link[aria-description]')].filter((row) => row.offsetParent)
+    let marks = 0
+    const lead = (row) => {
+      const first = row.querySelector(':scope > :is(.api-nav__kind, img, svg, span)')
+      return (first ?? row).getBoundingClientRect().left
     }
-    return { groups, marks, rows, problems }
+    const edge = entries.length ? Math.min(...entries.map(lead)) : 0
+    for (const row of entries) {
+      const name = row.textContent.trim().slice(0, 40)
+      if (row.querySelector(':scope > :is(.api-nav__kind, img, svg)')) {
+        marks++
+        problems.push(`"${name}" carries a mark or icon; sidebar rows are labels (record 0060)`)
+      }
+      const offset = lead(row) - edge
+      if (Math.abs(offset) > 1) problems.push(`"${name}" starts ${offset.toFixed(1)}px off the rows' edge`)
+    }
+    return { groups, marks, rows: entries.length, problems }
   })
 }
 
@@ -439,9 +404,21 @@ async function checkPage(page, base, entry, scheme, results) {
     }
     results.counts[group.name] = (results.counts[group.name] ?? 0) + count
   }
-  const rail = await railProblems(page)
-  results.counts['related chip row'] = (results.counts['related chip row'] ?? 0) + rail.rows
-  results.failures.push(...rail.problems.map((problem) => `${entry.label} (${scheme}) related APIs: ${problem}`))
+  // A corner-tab chip: painted edges cannot find a box whose floor is open, so the word's cap box (its label is trimmed to cap
+  // height) is read against the tab between its borders.
+  const corner = await page.evaluate(() => [...document.querySelectorAll('.api-corner > .api-badge')].filter((chip) => chip.offsetParent).flatMap((chip) => {
+    const label = chip.querySelector('.api-leg__wl, .api-badge__label')
+    if (!label) return []
+    const style = getComputedStyle(chip)
+    const box = chip.getBoundingClientRect()
+    const word = label.getBoundingClientRect()
+    const centre = (box.top + Number.parseFloat(style.borderTopWidth) + box.bottom - Number.parseFloat(style.borderBottomWidth)) / 2
+    return [{ text: chip.textContent.trim().replace(/\s+/g, ' ').slice(0, 16), offset: (word.top + word.bottom) / 2 - centre }]
+  }))
+  results.counts['corner chip'] = (results.counts['corner chip'] ?? 0) + corner.length
+  for (const { text, offset } of corner) {
+    if (Math.abs(offset) > 0.75) results.failures.push(`${entry.label} (${scheme}) corner chip "${text}": the word's cap box is ${offset.toFixed(2)}px off the tab's centre`)
+  }
   const protocol = await protocolSidebarProblems(page)
   results.counts['protocol sidebar group'] = (results.counts['protocol sidebar group'] ?? 0) + protocol.groups
   results.counts['protocol sidebar row'] = (results.counts['protocol sidebar row'] ?? 0) + protocol.rows
@@ -478,73 +455,53 @@ async function negativeControl(page, base, results) {
   results.controlTested = tested
   assert(noticed > 0, 'The centring gate noticed no mark shifted by 2px: it cannot fail')
 
-  // Each way a related link can stop being a mark and an underlined name, and the problem the check must name for it.
-  await page.goto(`${base}${PAGES[6].path}`, { waitUntil: 'load' })
-  await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
-  const clean = await railProblems(page)
-  assert(clean.rows > 1 && clean.problems.length === 0, `The related links are not clean before the control: ${clean.problems.join('; ')}`)
-  const LINK = 'nav.api-related a:has(> .api-nav__kind)'
-  const broken = async (css, expected, why) => {
-    const style = await page.addStyleTag({ content: css })
-    const { problems } = await railProblems(page)
-    await style.evaluate((node) => node.remove())
-    assert(problems.some((problem) => expected.test(problem)), `The rail check did not notice ${why}; it said: ${problems.join('; ') || 'nothing'}`)
-    return problems.length
-  }
-  // A chip put back around the link: a border and a surface.
-  results.railControl = await broken(`${LINK} { border: 1px solid CanvasText !important; background: color-mix(in srgb, CanvasText 6%, transparent) !important; }`, /the link draws a box/, 'a chip around a linked name')
-  // A link too narrow for its name, which is held on one line: the name runs out of the link.
-  results.railControl += await broken(`${LINK} { inline-size: 3rem !important; } ${LINK} > code { white-space: nowrap !important; overflow-wrap: normal !important; }`, /the link's box does not contain its name/, 'a name running out of its link')
-  assert(results.railControl > 0, 'The rail check did not notice a link that does not contain its content')
-
   // A modifier word shifted two pixels inside its chip.
   await page.goto(`${base}${PAGES[10].path}`, { waitUntil: 'load' })
   await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
   await page.addStyleTag({ content: MEASURING_STYLE })
-  const chip = page.locator('.api-badge--mod').filter({ visible: true }).first()
+  // The page's modifier sits in a declaration's corner tab, at a fractional offset and with its floor open onto the declaration,
+  // where painted edges cannot hold a pixel; the control measures a copy of it in its own outline, on whole pixels.
+  await page.evaluate(() => {
+    const source = [...document.querySelectorAll('.api-badge--mod')].find((element) => element.getBoundingClientRect().width > 0)
+    const holder = Object.assign(document.createElement('div'), { id: 'mod-control' })
+    holder.style.cssText = 'position: absolute; top: 120px; left: 120px; z-index: 9999; padding: 8px; background: Canvas'
+    holder.append(source.cloneNode(true))
+    document.body.append(holder)
+  })
+  const chip = page.locator('#mod-control > .api-badge--mod')
   assert.deepEqual(judge('control', measure(await sample(page, await chip.elementHandle(), 'mod'), 'mod'), 'mod'), [], 'The modifier chip is not centred before the control')
   const shifted = await page.addStyleTag({ content: '.api-badge--mod > .api-badge__label { translate: 0 2px !important; }' })
   results.modControl = judge('control', measure(await sample(page, await chip.elementHandle(), 'mod'), 'mod'), 'mod').length
   await shifted.evaluate((node) => node.remove())
   assert(results.modControl > 0, 'The modifier check did not notice a word shifted off its chip\'s centre')
 
-  // The protocol sidebar: a redundant mark under a group of one kind must fail, and a mark in a mixed group must pass.
+  // The protocol sidebar: a mark put back on a row, and a row that leaves the shared edge, must each fail (record 0060).
   await page.goto(`${base}${PAGES[8].path}`, { waitUntil: 'load' })
   await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
   const sidebar = await protocolSidebarProblems(page)
-  assert(sidebar.groups > 0 && sidebar.problems.length === 0, `The protocol sidebar is not clean before the control (${sidebar.groups} groups): ${sidebar.problems.join('; ')}`)
-  // Rows copied out of an open group, with the kinds and marks the control gives them.
-  const addGroup = (kinds, drawn) => page.evaluate(([kinds, drawn]) => {
-    const source = [...document.querySelectorAll('[data-section-navigation] details.sidebar-section[open]')].find((group) => group.offsetParent && group.querySelector(':scope > .sidebar-section__children > a.sidebar-link'))
-    const group = source.cloneNode(true)
-    group.dataset.control = ''
-    const children = group.querySelector(':scope > .sidebar-section__children')
-    const leaves = [...children.querySelectorAll(':scope > a.sidebar-link')].slice(0, kinds.length)
-    for (const row of [...children.children]) if (!leaves.includes(row)) row.remove()
-    leaves.forEach((leaf, index) => {
-      leaf.querySelector('.api-nav__kind')?.remove()
-      leaf.setAttribute('aria-description', kinds[index])
-      if (drawn) {
-        const mark = document.createElement('span')
-        mark.className = `api-nav__kind api-badge--kind-${kinds[index]}`
-        mark.innerHTML = '<span class="api-badge__label" data-mark="cap">t</span>'
-        leaf.prepend(mark)
-      }
-    })
-    source.after(group)
-  }, [kinds, drawn])
-  const control = async (kinds, drawn) => {
-    await addGroup(kinds, drawn)
+  assert(sidebar.groups > 0 && sidebar.rows > 1 && sidebar.problems.length === 0, `The protocol sidebar is not clean before the control (${sidebar.groups} groups, ${sidebar.rows} rows): ${sidebar.problems.join('; ')}`)
+  const control = async (change) => {
+    await page.evaluate((change) => {
+      const rows = [...document.querySelectorAll('[data-section-navigation] nav a.sidebar-link[aria-description]')].filter((row) => row.offsetParent)
+      const row = rows[1]
+      row.dataset.controlRow = ''
+      if (change === 'mark') {
+        const mark = Object.assign(document.createElement('span'), { className: 'api-nav__kind', innerHTML: '<span class="api-badge__label" data-mark="cap">t</span>' })
+        mark.dataset.control = ''
+        row.prepend(mark)
+      } else row.style.paddingInlineStart = 'calc(var(--sidebar-row-indent, 0px) + 0.5rem)'
+    }, change)
     const found = (await protocolSidebarProblems(page)).problems
-    await page.evaluate(() => { document.querySelectorAll('[data-control]').forEach((node) => node.remove()) })
+    await page.evaluate(() => {
+      document.querySelectorAll('[data-control]').forEach((node) => node.remove())
+      document.querySelectorAll('[data-control-row]').forEach((row) => { row.style.paddingInlineStart = ''; delete row.dataset.controlRow })
+    })
     return found
   }
-  results.sidebarRedundant = (await control(['tool', 'tool'], true)).length
-  assert(results.sidebarRedundant > 0, 'The sidebar check did not notice a redundant mark under a group of one kind')
-  results.sidebarMixedBare = (await control(['tool', 'prompt'], false)).length
-  assert(results.sidebarMixedBare > 0, 'The sidebar check did not notice a mixed group without marks')
-  results.sidebarMixedMarked = (await control(['tool', 'prompt'], true)).length
-  assert(results.sidebarMixedMarked === 0, 'The sidebar check rejected marks in a group that mixes kinds')
+  results.sidebarMarked = (await control('mark')).length
+  assert(results.sidebarMarked > 0, 'The sidebar check did not notice a mark on a row')
+  results.sidebarOffEdge = (await control('indent')).length
+  assert(results.sidebarOffEdge > 0, 'The sidebar check did not notice a row off the shared edge')
 
   // The API tree: rows that stop indenting a level at a time must fail.
   await page.goto(`${base}${PAGES[6].path}`, { waitUntil: 'load' })
@@ -573,7 +530,7 @@ async function negativeControl(page, base, results) {
 }
 
 export async function checkBadgeCentring(browser, base, { sample: bounded = false } = {}) {
-  const results = { measured: 0, failures: [], counts: {}, control: 0, railControl: 0, headingControl: 0, rowControl: 0, sidebarRedundant: 0, sidebarMixedBare: 0, sidebarMixedMarked: 0, gutterControl: 0, modControl: 0 }
+  const results = { measured: 0, failures: [], counts: {}, control: 0, headingControl: 0, rowControl: 0, sidebarMarked: 0, sidebarOffEdge: 0, gutterControl: 0, modControl: 0 }
   // The bounded sample keeps one page for each thing the gate holds: an MCP and a guide page, the API type page (tree gutter, rail, rows) and an MCP tool (sidebar rule).
   const pages = bounded ? [PAGES[0], PAGES[1], PAGES[6], PAGES[8]] : PAGES
   const hi = await chromium.launch({ args: ['--force-device-scale-factor=2', '--window-size=1440,1000'] })
@@ -597,7 +554,7 @@ export async function checkBadgeCentring(browser, base, { sample: bounded = fals
   assert((results.counts['protocol sidebar group'] ?? 0) > 0, 'No protocol sidebar group was measured')
   assert((results.counts['API tree mark'] ?? 0) > 0, 'No API tree mark was measured, so the gutter was not checked')
   assert.deepEqual(results.failures, [], `Badge centring:\n${results.failures.join('\n')}`)
-  console.log(`Badge centring: ${results.measured} samples at 1x and a real 2x, light and dark (${Object.entries(results.counts).map(([k, v]) => `${v} ${k}`).join(', ')}); negative controls caught ${results.control} of ${results.controlTested} shifted marks, ${results.railControl} chip problems, ${results.headingControl} heading problem and ${results.rowControl} row problems, ${results.sidebarRedundant} redundant sidebar mark (a mixed group's marks: ${results.sidebarMixedMarked} complaints), ${results.gutterControl} broken indent, ${results.modControl} shifted modifier word PASS`)
+  console.log(`Badge centring: ${results.measured} samples at 1x and a real 2x, light and dark (${Object.entries(results.counts).map(([k, v]) => `${v} ${k}`).join(', ')}); negative controls caught ${results.control} of ${results.controlTested} shifted marks, ${results.headingControl} heading problem and ${results.rowControl} row problems, ${results.sidebarMarked} marked sidebar row and ${results.sidebarOffEdge} row off the edge, ${results.gutterControl} broken indent, ${results.modControl} shifted modifier word PASS`)
 }
 
 /**
@@ -645,57 +602,11 @@ export async function checkMentionDensity(browser, base) {
   } finally { await context.close() }
 }
 
-const CHIP_PAGES = ['server', 'session', 'window', 'pane', 'client'].map((name) => `/scala/latest/reference/io-github-libtmux-scaladsl-${name}/`)
-
-/**
- * The Related APIs chips of the Scala Server, Session, Window, Pane and Client pages, where the name `Session (io.github.libtmux.scaladsl)` wraps onto
- * three lines in the contents column: each chip grows to fit its name, its mark stays one line tall beside the first line, and nothing runs out
- * of a chip or onto the next. The controls put back the fixed height the chip once had, stretch the mark down the chip, take the name's first-line
- * offset away and lay one chip over another, and the check must name each.
- */
-export async function checkChipGrowth(browser, base) {
-  // The contents column, and the Related APIs in it, show from 85rem.
-  const context = await newCheckContext(browser, base, { viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' })
-  const page = await context.newPage()
-  page.setDefaultNavigationTimeout(60000)
-  const open = async (path) => {
-    await page.goto(`${base}${path}`, { waitUntil: 'load' })
-    await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
-  }
-  try {
-    let chips = 0
-    let wrapped = 0
-    for (const path of CHIP_PAGES) {
-      await open(path)
-      const found = await chipGrowthProblems(page)
-      assert(found.wrapped > 0, `No Related APIs chip wrapped its name at 1440px on ${path}, so growth was not measured there`)
-      assert.deepEqual(found.problems, [], `A Related APIs chip on ${path}:\n${found.problems.join('\n')}`)
-      chips += found.chips
-      wrapped += found.wrapped
-    }
-    // The Session page mixes one-line chips with wrapped ones, so a name that loses its first-line offset differs from its neighbours.
-    await open(CHIP_PAGES[1])
-    const CHIP = 'nav.api-related a:has(> .api-nav__kind)'
-    const caught = {}
-    const broken = async (label, css, expected) => {
-      const style = await page.addStyleTag({ content: css })
-      const { problems } = await chipGrowthProblems(page)
-      await style.evaluate((node) => node.remove())
-      for (const pattern of expected) assert(problems.some((problem) => pattern.test(problem)), `The link check did not notice ${label} (${pattern}); it said: ${problems.join('; ') || 'nothing'}`)
-      caught[label] = problems.length
-    }
-    await broken('a fixed height', `${CHIP} { height: 1.4em !important; overflow: hidden !important; }`, [/the name runs .* past the link's bottom edge/])
-    await broken('a first line that lost its offset', `${CHIP} > .api-nav__kind + code { margin-top: 14px !important; }`, [/the first line of the name is .* the centre of the mark/])
-    await broken('one chip over another', 'nav.api-related li:nth-child(2) a { translate: 0 -14px !important; }', [/overlaps/])
-    console.log(`Chip growth: ${chips} Related APIs chips (${wrapped} wrapped) on the Scala Server, Session, Window, Pane and Client pages each hold their name, keep the mark one line tall beside the first line and clear the next chip; controls caught ${Object.entries(caught).map(([label, count]) => `${label} (${count} problems)`).join(', ')} PASS`)
-  } finally { await context.close() }
-}
-
 const USAGE = { list: '.tmux-usage', where: 'usage table', ink: true }
 
 /**
  * The chips of the usage table on the page the maintainer saw them wrap on, `list-panes` at 1134px, and in a container narrow
- * enough to wrap a name onto three lines, each judged as the Related APIs chips are. A chip with a qualifier keeps the width its
+ * enough to wrap a name onto three lines, each judged by `judgeChipGrowth`. A chip with a qualifier keeps the width its
  * name needs. Each control breaks one thing and the check must name it: a chip pinned to one line's height, a name below its chip,
  * a chip squeezed by its qualifier and one chip moved onto another.
  */
@@ -785,7 +696,6 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   try {
     await checkBadgeCentring(browser, url, { sample: process.argv.includes('--sample') })
     await checkMentionDensity(browser, url)
-    await checkChipGrowth(browser, url)
     await checkUsageChips(browser, url)
   } finally { await browser.close() }
 }
