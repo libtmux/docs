@@ -104,4 +104,26 @@ describe('the A-Z page of a port build', () => {
     expect(html).toContain('data-version="latest"')
     expect(html).toContain('data-exclude="true"')
   })
+
+  // The shared shell build runs with LIBTMUX_DOCS_PORT set to the empty
+  // string. A port of '' must reach the layout as no port at all: its
+  // inventory scope falls back with `??`, and an empty scope fails the build.
+  it('gives the layout no port when the build names the empty port', async () => {
+    vi.stubEnv('LIBTMUX_DOCS_PORT', '')
+    vi.stubEnv('LIBTMUX_DOCS_LOCALE', 'en')
+    vi.stubEnv('LIBTMUX_DOCS_VERSION', 'latest')
+    const page = await loadAstroTemplate('pages/reference/symbols/[letter].astro', {
+      stubs: {
+        'layouts/BaseLayout.astro': '---\nconst { portSlug, version, inventoryExclude } = Astro.props\n---\n<main data-port={JSON.stringify(portSlug ?? null)} data-version={JSON.stringify(version ?? null)} data-exclude={String(inventoryExclude)}><slot /></main>',
+        'components/api/SymbolIndex.astro': '---\n---\n<div></div>',
+      },
+      modules: { '../../../i18n/resolve': { buildLocale: () => 'en' } },
+    })
+    const html = await renderAstroTemplate(page, { url: 'https://libtmux.org/en/reference/symbols/c/', props: {
+      letter: 'C', letters: ['C'], entries: [], total: 0, shared: [], port: '',
+    } })
+    expect(html).toContain('data-port="null"')
+    expect(html).toContain('data-version="null"')
+    expect(html).toContain('data-exclude="false"')
+  })
 })
