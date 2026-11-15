@@ -6,6 +6,7 @@ import { remarkPortCode, resolvePortCode } from '../src/plugins/remark-port-code
 import {
   ExcerptError,
   excerptRequest,
+  locateExcerpt,
   pageSource,
   parseFenceAttributes,
   sliceExcerpt,
@@ -134,6 +135,27 @@ describe('sliceExcerpt', () => {
     it('throws ExcerptError so a build can name the page', () => {
       expect(() => sliceExcerpt(SCRIPT, { from: 'absent' }, 'x')).toThrow(ExcerptError)
     })
+  })
+})
+
+describe('locateExcerpt', () => {
+  it('names the source lines an excerpt covers, counting from one', () => {
+    expect(locateExcerpt(SCRIPT, { from: 'cleanup() {', to: 'trap cleanup' }, 'x')).toEqual({
+      text: ['cleanup() {', '    tmux -S "$socket" kill-server', '}', 'trap cleanup 0'].join('\n'),
+      start: 5,
+      end: 8,
+    })
+    expect(locateExcerpt(SCRIPT, { from: 'set -eu' }, 'x')).toMatchObject({ start: 2, end: 2 })
+  })
+
+  it('counts CRLF sources by line and agrees with sliceExcerpt', () => {
+    expect(locateExcerpt('a\r\nb\r\nc\r\nd', { from: 'c', to: 'd' }, 'x')).toEqual({ text: 'c\nd', start: 3, end: 4 })
+    const request = { from: 'for attempt', to: 'done' }
+    expect(locateExcerpt(SCRIPT, request, 'x').text).toBe(sliceExcerpt(SCRIPT, request, 'x'))
+  })
+
+  it('fails the way sliceExcerpt does', () => {
+    expect(() => locateExcerpt(SCRIPT, { from: 'absent' }, 'x')).toThrow(ExcerptError)
   })
 })
 

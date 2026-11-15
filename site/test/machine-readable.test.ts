@@ -27,7 +27,8 @@ const json = (file: string) => JSON.parse(readFileSync(join(DATA, file), 'utf8')
 
 /** This repository, and every repository the site's data names as a source. */
 const REPOS = new Set<string>(['libtmux/docs', TMUX_REPOSITORY, ...PORTS.map((port) => port.repo)])
-for (const file of readdirSync(join(DATA, 'api')).filter((name) => name.endsWith('.json'))) {
+// A `<port>.behavior.json` is a sidecar of facts, not a model.
+for (const file of readdirSync(join(DATA, 'api')).filter((name) => name.endsWith('.json') && !name.endsWith('.behavior.json'))) {
   const model = json(`api/${file}`)
   for (const repo of [model.repo, ...(model.sources ?? []).map((source: { repo?: string }) => source.repo),
     ...(model.symbols ?? []).map((symbol: { source?: { repo?: string } }) => symbol.source?.repo)]) if (repo) REPOS.add(repo)

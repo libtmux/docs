@@ -9,13 +9,16 @@ import SymbolName from '../api/SymbolName.astro'
 import McpSchemaFields from './McpSchema.astro'
 import McpSchemaType from './McpSchemaType.astro'
 import { PORT_BY_SLUG, portPageUrl } from '../../lib/ports'
-import { MCP_REFERENCE, MCP_SECTIONS, mcpObjects, mcpObjectAt, mcpObjectGroup, mcpSectionGroups, plainSummary, renderToolDescription, toolSummary, type McpSection } from '../../lib/mcp-reference'
+import { MCP_REFERENCE, MCP_SECTIONS, mcpObjects, mcpObjectAt, mcpSectionGroups, mcpWraps, plainSummary, renderToolDescription, toolSummary, type McpSection } from '../../lib/mcp-reference'
 import { schemaDefinitions, type McpSchema } from '../../lib/mcp-schema'
+import { TIERS, mcpToolFacts, type TierId } from '../../lib/mcp-showcase'
+import { referenceHref } from '../../lib/api-models'
 import { pagePortsFor } from '../../lib/page-ports-for'
 import { getDocumentationSurfaces } from '../../lib/documentation-navigation'
 import { buildLocale } from '../../i18n/resolve'
 import { CONTRIBUTE_BRANCH, CONTRIBUTE_REPO } from '../../i18n/contribute'
 import '../../styles/api.css'
+import '../../styles/mcp-showcase.css'
 import '../../styles/vendor/gp-sphinx-api.css'
 
 interface Props { port: string; version: string; section: McpSection; itemSlug?: string }
@@ -29,7 +32,6 @@ const title = object?.name ?? MCP_SECTIONS[section]
 const base = portPageUrl(info, version, 'mcp')
 const pageUrl = portPageUrl(info, version, path)
 const groups = mcpSectionGroups(port, section)
-const currentBucket = groups.find((group) => group.objects.some((entry) => entry.id === object?.id))?.id
 const entries = mcpObjects(port).filter((entry) => entry.section === section)
 const catalogs = [
   { id: 'resources', label: 'Resources', kind: 'resource', section: 'resources', group: 'resources-fixed-resources' },
@@ -46,7 +48,6 @@ const breadcrumbs = [
   { name: info.name, url: portPageUrl(info, version) },
   { name: 'MCP', url: base },
   { name: MCP_SECTIONS[section], url: portPageUrl(info, version, `mcp/${section}`) },
-  ...(object && currentBucket ? [{ name: mcpObjectGroup(object), url: `${base}${section}/#${currentBucket}` }] : []),
   ...(object ? [{ name: object.name, url: pageUrl, symbol: true }] : []),
 ]
 const source = object?.tool?.source
@@ -94,7 +95,24 @@ const introductions: Record<McpSection, string> = {
   prompts: 'Browse the reusable workflows the server provides through prompts/get. Each prompt documents its arguments and the messages it returns.',
   resources: 'Browse the data the server exposes through resources/read. Resource templates describe URI patterns and the variables used to select a resource.',
 }
-const summaries = new Map(await Promise.all(entries.map(async (entry) => [entry.id, await renderToolDescription(toolSummary(entry.description), { port, version, objectId: entry.id })] as const)))
+// A server that names toolsets gets a tier on each tool; one that names none gets no guessed tier.
+const { capabilities, purposes } = await mcpToolFacts(port)
+const tiered = [...capabilities.values()].some((entry) => entry.toolset)
+const tierOf = (name: string) => TIERS.find((tier) => tier.id === capabilities.get(name)?.toolset)
+// A tool's card opens with what it does; the safety class its description opens with stays on the tool's page.
+const summaries = new Map(await Promise.all(entries.map(async (entry) => [entry.id, await renderToolDescription(entry.kind === 'tool' && purposes.get(entry.name) || toolSummary(entry.description), { port, version, objectId: entry.id })] as const)))
+const toolEntries = section === 'tools' ? entries.filter((entry) => entry.kind === 'tool') : []
+const tierCounts = new Map<TierId, number>(TIERS.map((tier) => [tier.id, toolEntries.filter((entry) => tierOf(entry.name)?.id === tier.id).length]))
+const tierHref = (id: TierId) => `${portPageUrl(info, version, 'mcp/tools')}?tier=${id}`
+// Which annotations a port's tools share, ignoring each one's own title: when all of them do, they cannot tell tools apart.
+const annotationKey = (entry: { tool?: { annotations?: Record<string, unknown> } }) => JSON.stringify(Object.entries(entry.tool?.annotations ?? {}).filter(([name]) => name !== 'title').sort(([a], [b]) => a.localeCompare(b)))
+const annotationsUniform = new Set(mcpObjects(port).filter((entry) => entry.kind === 'tool').map(annotationKey)).size === 1
+// A server that states nothing about a tool has no capability row for it.
+const stated = object?.tool ? capabilities.get(object.name) : undefined
+const capability = stated && Object.keys(stated).length > 0 ? stated : undefined
+const objectTier = object?.tool ? tierOf(object.name) : undefined
+const wraps = object?.tool ? mcpWraps(port, object.name) : undefined
+const wrapsHref = wraps ? referenceHref(port, wraps.call, version) : undefined
 ---
 <DocsLayout title={object ? title : `${info.name} MCP ${title}`} description={object ? plainSummary(object.description, port) : introductions[section]}
   inventoryId={`protocol:${object?.id ?? section}`}
@@ -103,8 +121,8 @@ const summaries = new Map(await Promise.all(entries.map(async (entry) => [entry.
   <div class:list={['api-reference-layout grid', object && 'api-reference-layout--symbol']}>
     <div class="api-reference-content min-w-0">
       <header id={object ? 'api-overview' : section} class:list={[object && 'api-reference-heading']}>
-        {object && <div class="api-reference-eyebrow"><ApiBadge label={object.kind.replace('-', ' ')} variant="kind" value={object.kind} /><span>MCP</span><span class="api-badge api-badge--mod api-reference-version"><span class="api-badge__label">{version}</span></span></div>}
-        <h1 class="scroll-mt-24 text-2xl font-semibold tracking-tight">{object ? <code><SymbolName name={title} /></code> : title}</h1>
+        {object && <div class="api-reference-eyebrow" data-pagefind-ignore="all"><ApiBadge label={object.kind.replace('-', ' ')} variant="kind" value={object.kind} /><span>MCP</span></div>}
+        <h1 class="scroll-mt-24 api-reference-title" data-pagefind-weight={object ? '10' : undefined}>{object ? <code><SymbolName name={title} /></code> : title}</h1>
         {!object && <p class="mt-3">{introductions[section]}</p>}
       </header>
       {object ? <>
@@ -115,7 +133,8 @@ const summaries = new Map(await Promise.all(entries.map(async (entry) => [entry.
               <div class="gp-sphinx-api-layout-left"><span class="gp-sphinx-api-signature">
                 {declaration ? <code class="api-native-signature">{declaration}</code> : <span class="mcp-signature"><strong class="sig-name descname">{object.name}</strong>({fields.length || parameterRows.length ? '\n' : ''}{fields.length ? fields.map(([name, value]) => <span>{'  '}<a href={`#${encodeURIComponent(`${object.id}.input/properties/${name.replaceAll('~', '~0').replaceAll('/', '~1')}`)}`}>{name}</a>{schema?.required?.includes(name) ? '' : '?'}: <McpSchemaType schema={value} root={input!} scope={`${object.id}.input`} />{','}{'\n'}</span>) : parameterRows.map((arg) => <span>{'  '}<a href={`#${encodeURIComponent(arg.id)}`}>{arg.name}</a>{arg.required ? '' : '?'},{'\n'}</span>)})</span>}
               </span></div>
-              <div class="gp-sphinx-api-layout-right"><ApiBadge label={object.kind.replace('-', ' ')} variant="kind" value={object.kind} />{sourceUrl && <span>[<a href={sourceUrl}>source</a>]</span>}<a class="headerlink" href={`#${encodeURIComponent(object.id)}`} aria-label={`Permalink to ${object.name}`}>¶</a></div>
+              {/* The kind and Source share the corner tab of every declaration header; the page is the entry, so it draws no pilcrow. */}
+              <div class="gp-sphinx-api-layout-right api-corner" role="group" aria-label={`${object.name}: kind and source`}><ApiBadge label={object.kind.replace('-', ' ')} variant="kind" value={object.kind} />{objectTier && <a class={`mcp-tier mcp-tier--${objectTier.id}`} href={tierHref(objectTier.id)} title={`${objectTier.tooltip}. Show every ${objectTier.label} tool.`} data-pagefind-ignore="all">{objectTier.label}</a>}{sourceUrl && <a class="api-badge api-leg api-leg--action api-source-anchor" href={sourceUrl} rel="nofollow noopener" aria-label={`Source of ${object.name} on GitHub at the pinned revision`}><span class="api-leg__m" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="m5.5 4.5-3.5 3.5 3.5 3.5M10.5 4.5l3.5 3.5-3.5 3.5" /></svg></span><span class="api-leg__w"><span class="api-leg__wl">source</span></span></a>}</div>
             </div>
           </dt>
           <dd class="api-overview mcp-overview">
@@ -124,6 +143,7 @@ const summaries = new Map(await Promise.all(entries.map(async (entry) => [entry.
               <span class="mcp-method-description">{object.kind === 'tool' ? <>Send <code>{object.name}</code> as the tool name, with the arguments below.</>
                 : object.kind === 'prompt' ? <>Send <code>{object.name}</code> as the prompt name, with the arguments below.</>
                 : <>Send the resource URI shown above.</>}</span></dd>
+              {wraps && <><dt>Wraps</dt><dd>{wrapsHref ? <a href={wrapsHref}><code>{wraps.call}</code></a> : <code>{wraps.call}</code>}<span class="mcp-method-description">The library call this tool makes: <a href={`https://github.com/${wraps.repo}/blob/${wraps.revision}/${wraps.source.replace(/:(\d+)$/, '#L$1')}`}><code>{wraps.source}</code></a>.</span></dd></>}
               {object.item?.mimeType && <><dt>MIME type</dt><dd><code>{object.item.mimeType}</code></dd></>}
               {object.tool?.enabledByDefault !== undefined && <><dt>Tool selection</dt><dd>{object.tool.enabledByDefault ? 'Enabled by default.' : <>Opt in with <code>{object.tool.enableOption ?? '--enable-tool'} {object.name}</code>.</>}</dd></>}
             </dl>
@@ -160,7 +180,23 @@ const summaries = new Map(await Promise.all(entries.map(async (entry) => [entry.
               </>)}
             </section>}
             {object.tool && <section id={`${object.id}.annotations`}><h2>Annotations<a class="headerlink" href={`#${encodeURIComponent(`${object.id}.annotations`)}`} aria-label="Permalink to annotations">#</a></h2>
-              {object.tool.annotations && Object.keys(object.tool.annotations).length ? <dl class="api-definition api-command-facts">{Object.entries(object.tool.annotations).map(([name, value]) => <><dt>{apiGlossaryHref(name, pageUrl) ? <a href={apiGlossaryHref(name, pageUrl)} data-link-preview><code>{name}</code></a> : <code>{name}</code>}</dt><dd><code>{JSON.stringify(value)}</code></dd></>)}</dl> : <p>No annotations are advertised.</p>}
+              <div class:list={['mcp-safety', capability && 'mcp-safety--capability']}>
+                <div class="mcp-safety__column">
+                  <h3>Advertised by the server</h3>
+                  {object.tool.annotations && Object.keys(object.tool.annotations).length ? <dl class="api-definition api-command-facts">{Object.entries(object.tool.annotations).map(([name, value]) => <><dt>{apiGlossaryHref(name, pageUrl) ? <a href={apiGlossaryHref(name, pageUrl)} data-link-preview><code>{name}</code></a> : <code>{name}</code>}</dt><dd><code>{JSON.stringify(value)}</code></dd></>)}</dl> : <p>No annotations are advertised.</p>}
+                </div>
+                {capability && <div class="mcp-safety__column" data-mcp-capability>
+                  <h3>Capability</h3>
+                  <dl class="api-definition api-command-facts">
+                    {objectTier && <><dt>Toolset</dt><dd><a class={`mcp-tier mcp-tier--${objectTier.id}`} href={tierHref(objectTier.id)} title={objectTier.tooltip}>{objectTier.label}</a> <span class="mcp-method-description">{objectTier.summary}</span></dd></>}
+                    {capability.processReach !== undefined && <><dt>Process reach</dt><dd><code>{capability.processReach}</code></dd></>}
+                    {capability.tmuxEffects && <><dt>tmux effects</dt><dd>{capability.tmuxEffects.length ? capability.tmuxEffects.map((effect) => <><code>{effect}</code>{' '}</>) : 'None'}</dd></>}
+                  </dl>
+                </div>}
+              </div>
+              {capability && <p class="mcp-safety__note">{annotationsUniform
+                ? <>Every {info.name} tool advertises the same annotations, so a host that approves by annotation cannot tell tools apart. The capability row is what tells them apart.</>
+                : <>The capability row states what this tool reads, changes and reaches; the annotations are as the server advertises them.</>}</p>}
             </section>}
             <section id={`${object.id}.schemas`}><span id="schemas" class="section-anchor-alias" /><h2>Protocol data<a class="headerlink" href={`#${encodeURIComponent(`${object.id}.schemas`)}`} aria-label="Permalink to protocol data">#</a></h2>
               <p>Use the complete advertised contract for validation and client integration.</p>
@@ -173,13 +209,27 @@ const summaries = new Map(await Promise.all(entries.map(async (entry) => [entry.
       </> : <>
         <p class="mt-3">The reference configuration advertises {entries.length} {section === 'resources' ? 'resources and resource templates' : section}. Your server’s available objects depend on its configuration.{setup?.href && <> <a href={setup.href}>Setup documentation</a> explains how to connect a client.</>}</p>
         {port === 'cxx' && <p class="mt-3">This catalog uses POSIX. See <a href={`${base}topics/`}>platform limits</a> for the Windows preview.</p>}
-        {groups.map((group) => <section class="mt-8" id={group.id}>
-          <h2 class="api-index-summary border-b border-edge pb-1 font-mono">{group.label}<span class="ml-2 text-xs font-sans opacity-60">{group.objects.length} {group.objects.length === 1 ? (section === 'resources' ? 'object' : section.slice(0, -1)) : section === 'resources' ? 'objects' : section}</span><a class="headerlink" href={`#${group.id}`} aria-label={`Permalink to ${group.label}`}>#</a></h2>
-          <div class="mt-3 grid gap-3 sm:grid-cols-2">{group.objects.map((entry) => <div class="api-index-card scroll-mt-24 rounded border border-edge p-3 hover:bg-surface-hover" id={entry.id}>
-            <a class="api-index-card__link font-mono font-semibold" href={portPageUrl(info, version, entry.path)}><ApiBadge label={entry.kind} variant="kind" value={entry.kind} compact /><SymbolName name={entry.name} /></a>
-            <div class="mt-1 text-sm opacity-75" set:html={summaries.get(entry.id)} />
-          </div>)}</div>
+        {section === 'tools' && tiered && <div class="mcp-tier-filter" role="group" aria-labelledby="mcp-tier-filter-label" data-pagefind-ignore="all" data-mcp-tier-filter>
+          <span id="mcp-tier-filter-label" class="mcp-tier-filter__label">Tier</span>
+          <label class="mcp-tier-filter__option"><input type="radio" name="tier" value="all" checked /><span>All <small>{toolEntries.length}</small></span></label>
+          {TIERS.filter((tier) => tierCounts.get(tier.id)).map((tier) => <label class="mcp-tier-filter__option" title={tier.tooltip}><input type="radio" name="tier" value={tier.id} /><span>{tier.label} <small>{tierCounts.get(tier.id)}</small></span></label>)}
+        </div>}
+        <div class="mcp-index" data-mcp-index>
+        {groups.map((group) => <section class="mcp-group mt-8" id={group.id}>
+          <h2 class="api-index-summary border-b border-edge pb-1 font-mono">{group.label}<span class="mcp-count ml-2 text-xs font-sans opacity-60" data-count="all">{group.objects.length} {group.objects.length === 1 ? (section === 'resources' ? 'object' : section.slice(0, -1)) : section === 'resources' ? 'objects' : section}</span>{tiered && section === 'tools' && TIERS.map((tier) => {
+            const n = group.objects.filter((entry) => tierOf(entry.name)?.id === tier.id).length
+            return n > 0 && <span class="mcp-count ml-2 text-xs font-sans opacity-60" data-count={tier.id}>{n} {n === 1 ? 'tool' : 'tools'}</span>
+          })}<a class="headerlink" href={`#${group.id}`} aria-label={`Permalink to ${group.label}`}>#</a></h2>
+          <div class="mt-3 grid gap-3 sm:grid-cols-2">{group.objects.map((entry) => {
+            const tier = section === 'tools' ? tierOf(entry.name) : undefined
+            return <div class:list={['api-index-card scroll-mt-24 rounded border border-edge p-3 hover:bg-surface-hover', section === 'tools' && 'mcp-tool-card', tier && 'mcp-tool-card--tier']} id={entry.id} data-tier={tier?.id}>
+              <a class="api-index-card__link font-mono font-semibold" href={portPageUrl(info, version, entry.path)}><ApiBadge label={entry.kind} variant="kind" value={entry.kind} compact /><SymbolName name={entry.name} /></a>
+              <div class="mt-1 text-sm opacity-75" set:html={summaries.get(entry.id)} />
+              {tier && <span class={`mcp-tier mcp-tier--${tier.id} mcp-tool-card__tier`} title={tier.tooltip}>{tier.label}</span>}
+            </div>
+          })}</div>
         </section>)}
+        </div>
         {!entries.length && <p class="mt-6">This server does not advertise {section} in the reference configuration.</p>}
         {section === 'tools' && <div class="mt-8 grid gap-3 sm:grid-cols-2">
           {catalogs.map((catalog) => <section id={catalog.id} class="api-index-card scroll-mt-24 rounded border border-edge p-3">
@@ -197,6 +247,27 @@ const summaries = new Map(await Promise.all(entries.map(async (entry) => [entry.
     </div>
     {object && <ApiPageContents sections={sections} related={[]} />}
   </div>
+<script>
+  /** `?tier=` opens the tools index on one tier, which the tool pages' tier badges link to; a change updates the address. */
+  function bindTierFilter() {
+    const filter = document.querySelector<HTMLElement>('[data-mcp-tier-filter]')
+    if (!filter || filter.dataset.live) return
+    filter.dataset.live = ''
+    const radios = [...filter.querySelectorAll<HTMLInputElement>('input[name="tier"]')]
+    const wanted = new URL(window.location.href).searchParams.get('tier')
+    const initial = radios.find((radio) => radio.value === wanted)
+    if (initial) initial.checked = true
+    filter.addEventListener('change', () => {
+      const url = new URL(window.location.href)
+      const value = radios.find((radio) => radio.checked)?.value
+      if (!value || value === 'all') url.searchParams.delete('tier')
+      else url.searchParams.set('tier', value)
+      history.replaceState(history.state, '', url)
+    })
+  }
+  bindTierFilter()
+  document.addEventListener('astro:after-swap', bindTierFilter)
+</script>
 </DocsLayout>
 <style>
   /* The menu sidebar is the layout's, so the page's grid is the content and its contents rail. */
@@ -219,4 +290,45 @@ const summaries = new Map(await Promise.all(entries.map(async (entry) => [entry.
   .api-overview details + details { margin-top: 1rem; }
   .api-overview summary { cursor: pointer; font-weight: 600; margin-bottom: .5rem; }
   .api-overview :global(.headerlink) { margin-inline-start: .4rem; }
+</style>
+<style is:global>
+  /* Tools index: a tier on each card, in its flush bottom-right corner, and a filter. The filter is radio buttons, so it works without script. */
+  .mcp-tool-card { position: relative; }
+  .mcp-tool-card--tier { padding-bottom: 1.75rem; }
+  .mcp-tool-card__tier { position: absolute; right: 0; bottom: 0; padding: 0 0.5rem; border-width: 1px 0 0 1px; border-radius: 0.25rem 0 0.25rem 0; }
+  .mcp-tier-filter { display: flex; flex-wrap: wrap; align-items: center; gap: 0.375rem; margin-top: 1.25rem; }
+  .mcp-tier-filter__label { margin-inline-end: 0.25rem; color: var(--color-muted); font-size: 0.8125rem; font-weight: 600; }
+  .mcp-tier-filter__option { position: relative; display: inline-flex; }
+  .mcp-tier-filter__option input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+  .mcp-tier-filter__option span { display: inline-flex; align-items: center; gap: 0.375rem; min-height: 2rem; padding: 0 0.625rem; border: 1px solid var(--control-border, var(--color-edge)); border-radius: 0.25rem; background: var(--background-color); font-size: 0.8125rem; }
+  .mcp-tier-filter__option small { color: var(--color-muted); font-size: 0.75rem; }
+  .mcp-tier-filter__option:hover span { background: var(--color-surface-hover); }
+  .mcp-tier-filter__option:has(:checked) span { border-color: var(--theme-primary); background: color-mix(in srgb, var(--theme-primary) 10%, transparent); color: var(--theme-primary); font-weight: 600; }
+  .mcp-tier-filter__option:has(:checked) small { color: inherit; }
+  .mcp-tier-filter__option:has(:focus-visible) span { outline: 2px solid var(--focus-ring-color, currentColor); outline-offset: 2px; }
+  /* A group's count is the whole group's until a tier is chosen, then that tier's. */
+  .mcp-index .mcp-count:not([data-count='all']) { display: none; }
+  .api-reference-content:has(input[name='tier'][value='inspect']:checked) .mcp-tool-card:not([data-tier='inspect']),
+  .api-reference-content:has(input[name='tier'][value='manage']:checked) .mcp-tool-card:not([data-tier='manage']),
+  .api-reference-content:has(input[name='tier'][value='execute']:checked) .mcp-tool-card:not([data-tier='execute']),
+  .api-reference-content:has(input[name='tier'][value='teardown']:checked) .mcp-tool-card:not([data-tier='teardown']) { display: none; }
+  .api-reference-content:has(input[name='tier'][value='inspect']:checked) .mcp-group:not(:has(.mcp-tool-card[data-tier='inspect'])),
+  .api-reference-content:has(input[name='tier'][value='manage']:checked) .mcp-group:not(:has(.mcp-tool-card[data-tier='manage'])),
+  .api-reference-content:has(input[name='tier'][value='execute']:checked) .mcp-group:not(:has(.mcp-tool-card[data-tier='execute'])),
+  .api-reference-content:has(input[name='tier'][value='teardown']:checked) .mcp-group:not(:has(.mcp-tool-card[data-tier='teardown'])) { display: none; }
+  .api-reference-content:has(input[name='tier'][value='inspect']:checked) .mcp-count[data-count='all'],
+  .api-reference-content:has(input[name='tier'][value='manage']:checked) .mcp-count[data-count='all'],
+  .api-reference-content:has(input[name='tier'][value='execute']:checked) .mcp-count[data-count='all'],
+  .api-reference-content:has(input[name='tier'][value='teardown']:checked) .mcp-count[data-count='all'] { display: none; }
+  .api-reference-content:has(input[name='tier'][value='inspect']:checked) .mcp-count[data-count='inspect'],
+  .api-reference-content:has(input[name='tier'][value='manage']:checked) .mcp-count[data-count='manage'],
+  .api-reference-content:has(input[name='tier'][value='execute']:checked) .mcp-count[data-count='execute'],
+  .api-reference-content:has(input[name='tier'][value='teardown']:checked) .mcp-count[data-count='teardown'] { display: inline; }
+  /* A tool page: the annotations as advertised beside the capability row that tells tools apart. */
+  .mcp-safety { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem 2rem; }
+  @media (min-width: 40rem) { .mcp-safety--capability { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .mcp-safety__column { min-width: 0; }
+  .mcp-safety__column h3 { margin: 0 0 0.5rem; color: var(--color-muted); font-size: 0.875rem; font-weight: 600; }
+  .mcp-safety__note { max-width: 72ch; margin-top: 0.75rem; color: var(--color-muted); font-size: 0.875rem; }
+  .gp-sphinx-api-layout-right .mcp-tier { text-decoration: none; }
 </style>

@@ -1,0 +1,14 @@
+{
+  "go": {
+    "repo": "libtmux/libtmux-go",
+    "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+    "tools": {
+      "capture_pane": { "call": "tmux.Pane.Capture", "source": "mcp/capture_tools.go:67" },
+      "split_window": { "call": "tmux.Pane.Split", "source": "mcp/layout_tools.go:63" },
+      "select_pane": { "call": "tmux.Pane.Select", "source": "mcp/layout_tools.go:183" },
+      "kill_session": { "call": "tmux.Session.Kill", "source": "mcp/lifecycle_tools.go:57" },
+      "kill_window": { "call": "tmux.Window.Kill", "source": "mcp/lifecycle_tools.go:101" },
+      "kill_pane": { "call": "tmux.Pane.Kill", "source": "mcp/lifecycle_tools.go:143" }
+    }
+  }
+}

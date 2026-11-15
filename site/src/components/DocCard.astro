@@ -1,13 +1,24 @@
 ---
+interface Corner {
+  /** One or two words: a status or a role. */
+  label: string
+  /** What the label says in full, for a reader who hovers or listens. */
+  title?: string
+  /** Which corner; the bottom right unless another is asked for. */
+  at?: 'tl' | 'tr' | 'bl'
+}
+
 interface Props {
   label: string
   body: string
   href?: string
   /** Marks an external destination and opens it in a new tab. */
   external?: boolean
+  /** A badge mounted in a corner of the card instead of in its text. */
+  corner?: Corner
 }
 
-const { label, body, href, external = false } = Astro.props as Props
+const { label, body, href, external = false, corner } = Astro.props as Props
 ---
 
 {
@@ -18,9 +29,12 @@ const { label, body, href, external = false } = Astro.props as Props
       rel={external ? 'noopener' : undefined}
       target={external ? '_blank' : undefined}
     >
+      {/* The corner slots come first, before the content; they take no width or line from it. */}
+      {external && <span class="lm-corner lm-corner--tr"><span class="lm-tab lm-tab--quiet" aria-hidden="true">&#8599;&#65038;</span></span>}
+      {corner && <span class:list={['lm-corner', corner.at && `lm-corner--${corner.at}`]}><span class="lm-tab" title={corner.title}>{corner.label}</span></span>}
       <h3 class="font-semibold">
         {label}
-        {external && <span aria-hidden="true"> &#8599;&#65038;</span>}
+        {external && <span class="sr-only"> (opens in a new tab)</span>}
       </h3>
       <p class="doc-card__body">{body}</p>
     </a>
@@ -43,8 +57,10 @@ const { label, body, href, external = false } = Astro.props as Props
    * an API entry instead of a near-miss of it.
    */
   .doc-card {
+    position: relative;
     display: block;
-    padding: 1rem;
+    padding: var(--gutter);
+    --gutter: 1rem;
     border: 1px solid var(--color-background-border);
     border-radius: var(--card-radius, 0.5rem);
     background: var(--color-background-secondary);
@@ -68,9 +84,73 @@ const { label, body, href, external = false } = Astro.props as Props
     margin: 0;
   }
 
+  /* 22px leading, so a two-line description sits close to its title. */
   .doc-card__body {
     margin-top: 0.25rem;
     font-size: 0.875rem;
+    line-height: 1.375rem;
     color: var(--color-foreground-muted);
+  }
+
+  /*
+   * A corner tab: flush on the card's inner edge and one pixel thinner than
+   * the padding on that edge, so it lives in the padding and text never meets
+   * it. The corner it sits in and the diagonal opposite round to the card's
+   * inner radius; the other two stay square. The card draws the edges a tab
+   * sits on, so the tab drops its own border there.
+   */
+  .doc-card > .lm-corner {
+    --corner-h: calc(var(--gutter) - 1px);
+    --tab-r: calc(var(--card-radius, 0.5rem) - 1px);
+    position: absolute;
+    z-index: 1;
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: auto;
+    display: flex;
+    align-items: stretch;
+    margin: 0;
+  }
+  .doc-card > .lm-corner--tl { top: 0; right: auto; bottom: auto; left: 0; }
+  .doc-card > .lm-corner--tr { top: 0; bottom: auto; }
+  .doc-card > .lm-corner--bl { right: auto; left: 0; }
+
+  .doc-card > .lm-corner > * {
+    box-sizing: border-box;
+    height: var(--corner-h);
+    border-radius: 0;
+  }
+  .doc-card > .lm-corner > :first-child { border-top-left-radius: var(--tab-r); }
+  .doc-card > .lm-corner > :last-child { border-bottom-right-radius: var(--tab-r); }
+  .doc-card > :is(.lm-corner--tr, .lm-corner--bl) > :first-child { border-top-left-radius: 0; border-bottom-left-radius: var(--tab-r); }
+  .doc-card > :is(.lm-corner--tr, .lm-corner--bl) > :last-child { border-bottom-right-radius: 0; border-top-right-radius: var(--tab-r); }
+  .doc-card > .lm-corner:not(.lm-corner--tl, .lm-corner--tr) > * { border-bottom-color: transparent; }
+  .doc-card > :is(.lm-corner--tl, .lm-corner--tr) > * { border-top-color: transparent; }
+  .doc-card > .lm-corner:not(.lm-corner--tl, .lm-corner--bl) > :last-child { border-right-color: transparent; }
+  .doc-card > :is(.lm-corner--tl, .lm-corner--bl) > :first-child { border-left-color: transparent; }
+
+  .doc-card > .lm-corner > .lm-tab {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 0.35rem;
+    border: 1px solid color-mix(in srgb, var(--text-color) 30%, transparent);
+    background: var(--color-surface);
+    color: var(--text-color);
+    font: 600 10.5px/1 var(--font-ibm-plex-sans, ui-sans-serif, system-ui, sans-serif);
+    white-space: nowrap;
+    user-select: none;
+  }
+  /* The arrow in the corner is the card's external-link mark; the shell's glyph after the text would be a second one, on a line of its own. */
+  .doc-card[data-external-link]::after {
+    content: none;
+  }
+
+  /* A quiet tab is a glyph in the corner with no box: an external card's arrow. */
+  .doc-card > .lm-corner > .lm-tab--quiet {
+    border-color: transparent;
+    background: transparent;
+    color: var(--color-foreground-muted);
+    font-size: 12px;
   }
 </style>

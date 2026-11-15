@@ -529,23 +529,46 @@ it('returns a clipped permalink heading to its source box while it owns keyboard
   expect(win.getComputedStyle(heading).clipPath).toBe('none')
 })
 
-it('tints a member bar for the anchor arrival cue instead of replacing its opaque surface', () => {
+it('draws no box when an anchor is reached: a member bar keeps its own opaque surface, with no tint, shadow or animation (record 0049)', () => {
   const page = mountMembers()
   const style = win.document.head.querySelector('style')!
   style.textContent += anchorCss
   const bars = [page.heading!, page.group('collections').querySelector('h3')!]
   for (const bar of bars) {
     bar.setAttribute('data-anchor-arrival', '')
-    expect(win.getComputedStyle(bar).animationName).toBe('api-member-bar-arrival')
+    expect(win.getComputedStyle(bar).animationName).not.toMatch(/arrival/)
+    expect(win.getComputedStyle(bar).boxShadow).not.toMatch(/\dpx/)
   }
-  const keyframes = css.match(/@keyframes api-member-bar-arrival \{([\s\S]*?)\n\}/)![1]
-  expect(keyframes.match(/background-color: [^;]*var\(--api-member-bar\)/g)).toHaveLength(2)
-  expect(css).toMatch(/prefers-reduced-motion: reduce\) \{\s*(?:\.api-field-table > h2\[data-anchor-arrival\],\s*)?\.api-members > h2\[data-anchor-arrival\][^{]*\{\s*background-color: [^;]*var\(--api-member-bar\)\) !important/)
-  // The same heading outside the owner section keeps the shared cue.
+  expect(css).not.toContain('api-member-bar-arrival')
+  // The same heading outside the owner section has no cue either.
   const outside = win.document.createElement('h3')
   outside.setAttribute('data-anchor-arrival', '')
   win.document.body.append(outside)
-  expect(win.getComputedStyle(outside).animationName).toBe('libtmux-heading-arrival')
+  expect(win.getComputedStyle(outside).animationName).not.toMatch(/arrival/)
+  expect(win.getComputedStyle(outside).boxShadow).not.toMatch(/\dpx/)
+})
+
+const uncommented = (source: string) => source.replace(/\/\*[\s\S]*?\*\//g, '')
+
+it('paints nothing on arrival: the shared stylesheet has no animation, tint or shadow for a destination or a :target', () => {
+  const plain = uncommented(anchorCss)
+  expect(plain).not.toMatch(/@keyframes|animation/)
+  const outsideForcedColours = plain.replace(/@media \(forced-colors: active\) \{[\s\S]*?\n\}/, '')
+  expect(outsideForcedColours).not.toMatch(/background|box-shadow|:target/)
+  expect(plain).not.toMatch(/data-anchor-arrival\][^{]*\{[^}]*(?:background|box-shadow)/)
+})
+
+it('keeps a 2px Highlight outline for the destination in forced colours, on a heading and on a declaration', () => {
+  const forced = /@media \(forced-colors: active\) \{([\s\S]*?)\n\}/.exec(uncommented(anchorCss))?.[1] ?? ''
+  expect(forced).toMatch(/h2[^{]*dt\.gp-sphinx-api-header[^{]*\):is\(:target, \[data-anchor-arrival\]\)/)
+  expect(forced).toMatch(/outline:\s*2px solid Highlight/)
+  expect(forced).toMatch(/outline-offset:\s*-2px/)
+})
+
+it('keeps a declaration\'s surface when it is the target: no target highlight behind the signature', () => {
+  expect(css, 'api.css leaves a target out of the declaration surface').not.toMatch(/gp-sphinx-api-header:not\(:target\)/)
+  // The vendored stylesheet still paints a `dl.py > dt:target`; the site's declaration rule is more specific, so it wins.
+  expect(css).toMatch(/\ndl\.py\.gp-sphinx-api-container > dt\.gp-sphinx-api-header \{\s*background: color-mix\(/)
 })
 
 it.each(['fonts-pending', 'link-hints-pending'])('keeps the member bars in flow while %s holds the page back', (pending) => {

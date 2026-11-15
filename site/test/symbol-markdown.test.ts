@@ -108,10 +108,12 @@ describe('API Markdown content parity', () => {
     const text = symbolMarkdown({ model, symbol })
     expect(text).toContain('## In other ports')
     expect(text).toContain('| PowerShell | [`LibTmux\\New-TmuxServer`]')
-    expect(text).toContain('(cmdlet). This cmdlet constructs a shared .NET `LibTmux.Server`')
+    expect(text).toContain('(cmdlet)')
+    expect(text).toContain('This cmdlet constructs a shared .NET `LibTmux.Server`')
     expect(text).toContain('| Julia | [`LibTmux.Server`]')
     expect(text).toContain('| F# | [`LibTmux.FSharp.Server`]')
-    expect(text).toContain('(module). This F# module provides functions')
+    expect(text).toContain('(module)')
+    expect(text).toContain('This F# module provides functions')
     const snapshot = API_MODELS.julia.symbols.find((symbol) => symbol.id === 'LibTmux.snapshot')!
     const acquisition = symbolMarkdown({ model: API_MODELS.julia, symbol: snapshot })
     expect(acquisition).toContain('Capture the tmux hierarchy')
@@ -293,7 +295,7 @@ describe('API Markdown content parity', () => {
     for (const name of ['session', 'window', 'pane']) {
       const symbol = model.symbols.find((entry) => entry.id === `io.github.libtmux.kotlin.Server.${name}`)!
       const text = symbolMarkdown({ model, symbol })
-      expect(text).toContain('## Raises')
+      expect(text).toContain('## Errors')
       expect(text).toContain('NoMatch')
       expect(text).toContain('MultipleMatches')
       expect(text).toContain('expression:')
@@ -391,8 +393,11 @@ describe('API Markdown content parity', () => {
     expect(text).toContain('## Parameters\n\n- `limit` (`number`)')
     expect(text).toContain('- `options` (`CaptureOptions`): Choose the line range. (added 1.2) (deprecated Use a range.)')
     expect(text).toContain('## Returns\n\nThe captured lines.')
-    expect(text).toContain('## Raises\n\n- `CaptureError`: The pane no longer exists.')
-    expect(text.indexOf('## Examples')).toBeLessThan(text.indexOf('## Parameters'))
+    expect(text).toContain('## Errors\n\n- `CaptureError`: The pane no longer exists.')
+    // The contract comes before the examples that use it, as on the page, and a deprecation is named before either.
+    expect(text.indexOf('## Errors')).toBeLessThan(text.indexOf('## Examples'))
+    expect(text.indexOf('## Parameters')).toBeLessThan(text.indexOf('## Examples'))
+    expect(text.indexOf('## Deprecated')).toBeLessThan(text.indexOf('## Parameters'))
   })
 
   for (const port of PORTS.filter((port) => port.slug !== 'lisp')) {

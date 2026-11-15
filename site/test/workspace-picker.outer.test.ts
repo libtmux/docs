@@ -863,9 +863,10 @@ describe('the workspace picker in Chromium', { timeout: 60_000 }, () => {
 
 /**
  * The picker as the landing page's Workspace tab: nothing follows it, so each
- * preset brings its own summary, load command and evidence. The panel is a
- * column whose configuration and drawing take what the tallest preset leaves,
- * so the evidence of every preset ends where the stage ends.
+ * preset brings its own summary, load command and evidence. The stage is four
+ * rows (record 0059): the summaries, the drawings, the product's installer and
+ * the load steps, each as tall as its tallest preset, so the load step of
+ * every preset stands where it stood, and ends where the stage ends.
  */
 describe('the workspace picker as a landing page tab in Chromium', { timeout: 60_000 }, () => {
   const ts = workspaceShowcase('ts')!
@@ -874,7 +875,7 @@ describe('the workspace picker as a landing page tab in Chromium', { timeout: 60
 
   async function landing(styles = `${STYLES}\n${EVIDENCE}`): Promise<string> {
     const picker = await renderAstroTemplate(await loadAstroTemplate('components/workspace/WorkspacePicker.astro', { real: REAL, modules, inlineScripts: true }),
-      { props: { showcase: ts, landing: { first: OPENING, program: 'tmux-workspace' } } })
+      { props: { showcase: ts, landing: { first: OPENING, program: 'tmux-workspace' } }, slots: { install: '<div data-installer style="block-size: 6rem">Install</div>' } })
     return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Landing</title>
 <script>document.documentElement.dataset.js = ''</script><style>${styles}</style></head>
 <body><p id="before">Tabs</p>${picker}<p id="after">After the picker</p>
@@ -882,16 +883,19 @@ describe('the workspace picker as a landing page tab in Chromium', { timeout: 60
 <script>${CLIENT}\ndefineWorkspacePicker()</script></body></html>`
   }
 
-  /** Where the evidence of the shown preset ends, against the stage, and what else a reader sees of it. */
+  /** Where the shown preset's drawing, the installer, the load step and its evidence stand, against the stage, and what else a reader sees of it. */
   const foot = (tab: Page) => tab.evaluate(() => {
     const stage = document.querySelector('.ws-picker__stage')!.getBoundingClientRect()
     const root = document.querySelector('libtmux-workspace-picker')!
     const panel = root.querySelector<HTMLElement>(`.ws-picker__panel[data-preset="${root.getAttribute('data-selected')}"]`)!
     const evidence = panel.querySelector('[data-landing-evidence]')!.getBoundingClientRect()
+    const step = panel.querySelector('.ws-picker__evidence')!.getBoundingClientRect()
+    const installer = document.querySelector('[data-installer]')!.getBoundingClientRect()
     const body = panel.querySelector('.ws-body')!.getBoundingClientRect()
     const shown = (selector: string) => panel.querySelector(selector)!.checkVisibility({ visibilityProperty: true })
     return {
-      stage: stage.height, stageBottom: stage.bottom, evidenceBottom: evidence.bottom, evidenceTop: evidence.top, bodyBottom: body.bottom, bodyHeight: body.height,
+      stage: stage.height, stageBottom: stage.bottom, evidenceBottom: evidence.bottom, stepTop: step.top, stepBottom: step.bottom,
+      installerTop: installer.top, installerBottom: installer.bottom, bodyBottom: body.bottom, bodyHeight: body.height,
       after: document.getElementById('after')!.getBoundingClientRect().top + scrollY,
       summary: shown('.ws-picker__summary'), title: shown('.ws-picker__title'), evidence: shown('[data-landing-evidence]'),
       sideways: document.documentElement.scrollWidth - document.documentElement.clientWidth,
@@ -902,7 +906,7 @@ describe('the workspace picker as a landing page tab in Chromium', { timeout: 60
   beforeAll(async () => { page = await landing() })
 
   for (const width of [1440, 768, 390]) {
-    it.concurrent(`ends every preset's evidence where the stage ends, and moves nothing below, at ${width} px`, async () => {
+    it.concurrent(`stands every preset's load step in the stage's last row, and moves nothing below, at ${width} px`, async () => {
       const context = await browser.newContext({ viewport: { width, height: 900 } })
       await context.addInitScript(layoutShift)
       const tab = await open(context, '', page)
@@ -913,8 +917,14 @@ describe('the workspace picker as a landing page tab in Chromium', { timeout: 60
         const now = await foot(tab)
         expect(now.stage, preset).toBe(first.stage)
         expect(now.after, preset).toBe(first.after)
-        expect(now.evidenceBottom, preset).toBeCloseTo(now.stageBottom, 0)
-        expect(now.bodyBottom, preset).toBeLessThanOrEqual(now.evidenceTop)
+        // The installer stands between the drawing and the load step, where it stood; a step that is shorter than the tallest
+        // starts at the same place and leaves the difference under it, so its row ends where the stage does.
+        expect(now.installerTop, preset).toBeCloseTo(first.installerTop, 0)
+        expect(now.installerTop, preset).toBeGreaterThanOrEqual(now.bodyBottom - 0.5)
+        expect(now.stepTop, preset).toBeGreaterThanOrEqual(now.installerBottom - 0.5)
+        expect(now.stepTop, preset).toBeCloseTo(first.stepTop, 0)
+        expect(now.stepBottom, preset).toBeCloseTo(now.stageBottom, 0)
+        expect(now.evidenceBottom, preset).toBeLessThanOrEqual(now.stepBottom + 0.5)
         expect(now.bodyHeight, preset).toBeGreaterThan(0)
         expect(now.sideways, preset).toBeLessThanOrEqual(0)
         // The menu names the preset, so the heading shows only without script.
@@ -942,13 +952,13 @@ describe('the workspace picker as a landing page tab in Chromium', { timeout: 60
     await context.close()
   })
 
-  it.concurrent('leaves the evidence off the foot of the stage when the panel is not a column, so the check can fail', async () => {
+  it.concurrent('leaves the load step off the foot of the stage when the panels keep a box of their own, so the check can fail', async () => {
     const bad = STYLES.replace(/html\[data-js\] \.ws-picker--landing \.ws-picker__panel \{[^}]*\}/, '')
     expect(bad).not.toBe(STYLES)
     const context = await browser.newContext({ viewport: { width: 1280, height: 900 } })
     const tab = await open(context, '', await landing(`${bad}\n${EVIDENCE}`))
     const now = await foot(tab)
-    expect(Math.abs(now.evidenceBottom - now.stageBottom)).toBeGreaterThan(1)
+    expect(Math.abs(now.stepBottom - now.stageBottom)).toBeGreaterThan(1)
     await context.close()
   })
 })

@@ -10,8 +10,12 @@ reference; copy their shape.
 
 1. One paragraph on the concept and what the program does. Say that each
    step block is a range of lines from the complete program.
-2. Steps as `## 1. Verb the thing` headings. Each step names one call or
-   idea in plain words, shows one small block, and says what to observe.
+2. Steps as `### 1. Verb the thing` headings under one `## Steps` heading
+   (or one H2 per phase when a complete file separates two runs of steps, as
+   in the workspace example). Steps are parts of one build-up, not sections,
+   so they are H3s; `site/test/example-steps.test.ts` fails on a numbered H2.
+   Each step names one call or idea in plain words, shows one small block, and
+   says what to observe.
 3. `## The complete program` with the tested file, exactly as the native run
    records it.
 4. The run command and its output, then the links the page already had.
@@ -55,6 +59,28 @@ missing or duplicated. A fence that names an excerpt and carries its own
 text is replaced by the excerpt; `scripts/check-example-blocks.mjs` fails
 on it for the pages that check scans. The
 Markdown and LLM exports carry the quoted lines, without the anchors.
+
+The frame says what the block is. An excerpt's header reads "Excerpt · lines
+59–78" and numbers its rows from the source's own lines, so a reader can find
+them in the tested file. The block an excerpt quotes, and a whole `file="..."`
+inclusion, read "Complete program". When an excerpt on the page quotes it, the
+program numbers every line from 1 and the excerpt's range links to its lines
+(`#L59-L78`), which highlight on arrival; a program nothing quotes stays
+unnumbered, since it is for copying. Three optional
+attributes adjust a frame: `role="program"` labels a block the page does not
+quote, `title="main.go"` names the file in the header (an excerpt takes its
+source's name), and `height="16"` stops a long block at that many lines with a
+"Show all N lines" button. A complete program of 40 lines or more takes a
+24-line cap; `height="full"` shows it whole. An excerpt always shows every
+line, Copy always copies every line, and print shows every line.
+
+The numbers hang outside the frame in a rail, at a negative margin, and never
+in the code's padding, so Copy and a text selection never have them and
+sideways scrolling leaves them in place. A layout states the margin it leaves
+left of its frames in `--code-hang-room` (1rem when it says nothing); a frame
+whose rail needs more moves in by the difference. A frame has one Copy button:
+a component that draws its own adds `copy="off"` to the fence, as the Core
+player does.
 
 Choose each range to be a whole unit: a statement, an `if` with its closing
 line, a loop with its `done`. The check rejects a range with unbalanced

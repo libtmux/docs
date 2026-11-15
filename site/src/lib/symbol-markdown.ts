@@ -5,7 +5,8 @@ import { aliasMembersTarget, aliasTarget, boundLabel, pageMembersOf, memberSigna
 import mentions from '../data/mentions.json'
 import { PORT_NAME } from './api-models'
 import { apiTmuxSections, type ApiTmuxSection } from './api-tmux-sections'
-import { aliasDeclaration, apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMemberGroups, apiMethodDetails, anonymousDeclarationLabel, hasFieldMembers, hasScalarMembers, memberTable, nativeSignatureText, parameterBindingText, signatureMultiline, signatureParameterText, usesNativeSignatures, variantPayloads, type VariantPayload } from './api-sections'
+import { genericAbsenceSentence, unmappedSentence } from './api-equivalents'
+import { aliasDeclaration, apiErrorsLabel, apiCommandFacts, apiCommandRelatedLinks, apiEntryFields, apiMemberGroups, apiMethodDetails, anonymousDeclarationLabel, hasFieldMembers, hasScalarMembers, memberTable, nativeSignatureText, parameterBindingText, signatureMultiline, signatureParameterText, usesNativeSignatures, variantPayloads, type VariantPayload } from './api-sections'
 import type { ResolvedUsage } from './tmux-reference'
 import { tmuxCommandMentions, tmuxMentionMarkdown } from './tmux-links'
 import { productApiIndex } from './product-api'
@@ -193,12 +194,17 @@ function tmuxSectionMarkdown(section: ApiTmuxSection): string[] {
     out.length = 2
     const cell = (text: string) => text.replaceAll('|', '\\|').replaceAll('\n', ' ')
     for (const group of section.groups) {
-      out.push(group.label, '', `| Language | ${group.table.groups[0].heading} |`, '| --- | --- |')
-      for (const row of group.table.groups[0].ports) {
-        const links = row.links.map((entry) => `${link(entry.label, entry.href)}${entry.kind ? ` (${entry.kind})` : ''}`)
-        out.push(`| ${row.name} | ${cell([...links, row.note].filter(Boolean).join(row.links.length && row.note ? '. ' : ''))} |`)
+      out.push(group.label, '', `| Port | API | Differs from ${group.rows[0].name} |`, '| --- | --- | --- |')
+      for (const row of group.rows) {
+        const api = row.href && !row.current ? `${link(row.qualifiedName ?? '', row.href)}${row.kind ? ` (${row.kind})` : ''}` : inlineCode(row.qualifiedName ?? '')
+        const differs = row.current ? 'This page' : [...row.chips, row.note].filter(Boolean).join('. ') || 'None recorded in the model'
+        out.push(`| ${row.name} | ${cell([api, row.summary].filter(Boolean).join('. '))} | ${cell(differs)} |`)
       }
-      out.push('', ...(group.table.absent ? [group.table.absent, ''] : []))
+      out.push('')
+      for (const row of group.absent) out.push(`No ${row.name} equivalent. ${row.reason}`, '')
+      const generic = genericAbsenceSentence(group.genericAbsent)
+      const unmapped = unmappedSentence(group.unmapped)
+      out.push(...(generic ? [generic, ''] : []), ...(unmapped ? [`Not mapped: ${unmapped}`, ''] : []))
     }
   }
   while (out.at(-1) === '') out.pop()
@@ -286,6 +292,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
     if (links.size) out.push(`Signature types: ${[...links.values()].map((link) => `[${inlineCode(link.text)}](${link.href})`).join(', ')}.`, '')
   }
 
+  if (symbol.doc?.deprecated) out.push('## Deprecated', '', symbol.doc.deprecated, '')
   if (symbol.doc?.summary) out.push(prose(symbol.doc.summary), '')
   if (symbol.doc?.body) out.push(prose(symbol.doc.body), '')
   if (symbol.command) {
@@ -317,27 +324,6 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
     }
   }
 
-  if (symbol.doc?.examples?.length) {
-    out.push('## Examples', '')
-    for (const ex of symbol.doc.examples) {
-      if (ex.intro) out.push(ex.intro, '')
-      if (ex.sourceUrl) out.push(`[Source example](${ex.sourceUrl}).`, '')
-      out.push(fencedCode(ex.code, ex.lang), '')
-      if (ex.outro) out.push(ex.outro, '')
-    }
-  }
-
-  if (symbol.doc?.references?.length) {
-    out.push('## References', '')
-    for (const reference of symbol.doc.references) out.push(`- [${reference.name}] ${reference.text}`)
-    out.push('')
-  }
-  if (symbol.doc?.deprecated) out.push('## Deprecated', '', symbol.doc.deprecated, '')
-  if (symbol.doc?.changed) out.push('## Changed', '', symbol.doc.changed, '')
-  for (const note of symbol.doc?.admonitions ?? []) {
-    out.push(`> **${note.kind}:** ${note.text.replaceAll('\n', '\n> ')}`, '')
-  }
-
   const { params, returns, raises, typeParameters } = apiEntryFields(symbol, language)
   const overloads = (labels: string[]) => labels.length ? ` (for ${labels.map(inlineCode).join('; ')})` : ''
   const inheritedTypeParameters = index?.inheritedTypeParameters(symbol) ?? []
@@ -364,7 +350,7 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
       const blockDoc = ['julia', 'ts'].includes(language ?? '') && p.doc?.includes('\n')
       out.push(`- ${inlineCode(p.name + (p.optional ? '?' : ''))}${p.type ? ` (${inlineCode(p.type.replaceAll('\n', ' '))})` : ''}${p.doc && !blockDoc ? `: ${p.doc}` : ''}${p.since ? ` (added ${p.since})` : ''}${p.deprecated ? ` (deprecated ${p.deprecated})` : ''}${overloads(p.overloads)}`)
       if (blockDoc) out.push('', ...p.doc!.split('\n').map((line) => `  ${line}`), '')
-      if (['julia', 'ts'].includes(language ?? '') && p.default !== undefined) out.push(`  Default: ${inlineCode(p.default)}.`)
+      if (p.default !== undefined && p.default !== '...') out.push(`  Default: ${inlineCode(p.default)}.`)
       const binding = parameterBindingText(p)
       if (binding) out.push(`  ${binding}`)
     }
@@ -377,13 +363,33 @@ export function symbolMarkdown(ctx: MarkdownContext): string {
   }
 
   if (raises.length) {
-    out.push('## Raises', '')
+    out.push(`## ${apiErrorsLabel(language)}`, '')
     for (const r of raises) {
       const href = index?.resolve(r.type, 'class', symbol)?.href
       const label = inlineCode(r.type)
       out.push(`- ${href ? `[${label}](${href})` : label}${r.doc ? `: ${r.doc}` : ''}${overloads(r.overloads)}`)
     }
     out.push('')
+  }
+
+  if (symbol.doc?.examples?.length) {
+    out.push('## Examples', '')
+    for (const ex of symbol.doc.examples) {
+      if (ex.intro) out.push(ex.intro, '')
+      if (ex.sourceUrl) out.push(`[Source example](${ex.sourceUrl}).`, '')
+      out.push(fencedCode(ex.code, ex.lang), '')
+      if (ex.outro) out.push(ex.outro, '')
+    }
+  }
+
+  if (symbol.doc?.references?.length) {
+    out.push('## References', '')
+    for (const reference of symbol.doc.references) out.push(`- [${reference.name}] ${reference.text}`)
+    out.push('')
+  }
+  if (symbol.doc?.changed) out.push('## Changed', '', symbol.doc.changed, '')
+  for (const note of symbol.doc?.admonitions ?? []) {
+    out.push(`> **${note.kind}:** ${note.text.replaceAll('\n', '\n> ')}`, '')
   }
 
   const signals = memberSignals(port ?? '', mentions.mentions)

@@ -178,8 +178,9 @@ describe('destination evidence', () => {
     expect(versionsOf('https://pkg.go.dev/github.com/libtmux/libtmux-go/mcp')).toEqual([manifest('github.com/libtmux/libtmux-go/mcp')])
     expect(versionsOf('https://pkg.go.dev/github.com/libtmux/libtmux-go/mcp/cmd/libtmux-mcp')).toEqual([manifest('github.com/libtmux/libtmux-go/mcp')])
     expect(versionsOf('https://pkg.go.dev/github.com/libtmux/libtmux-go/tmuxq')).toEqual([manifest('github.com/libtmux/libtmux-go')])
-    // The series differ, so a package of one module is not checked against another's.
-    expect(manifest('github.com/libtmux/libtmux-go/mcp')).not.toBe(manifest('github.com/libtmux/libtmux-go'))
+    // Each module is tagged on its own, so a package is checked against the manifest of its module even when the versions agree.
+    expect(checksOf('https://pkg.go.dev/github.com/libtmux/libtmux-go/mcp').map((check) => check.source)).toEqual(['libtmux/libtmux-go:mcp/go.mod'])
+    expect(checksOf('https://pkg.go.dev/github.com/libtmux/libtmux-go/tmuxq').map((check) => check.source)).toEqual(['libtmux/libtmux-go:go.mod'])
   })
 
   it('takes each version from the manifests, not the registry snapshot that trails the hosts', () => {

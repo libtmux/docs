@@ -44,6 +44,21 @@ async function frontPage() {
 const panelOf = (document: Document, slug: string) => document.querySelector(`.home-launcher-solution[data-home-language="${slug}"]`)!
 const rowsOf = (panel: Element) => [...panel.querySelectorAll<HTMLAnchorElement>('nav a[data-picker-option]')]
 
+describe('the front page without JavaScript', () => {
+  it('shows the first language on purpose and says so, naming where the others are (PageHome)', async () => {
+    vi.stubEnv('LIBTMUX_DOCS_PORT', '')
+    vi.stubEnv('LIBTMUX_DOCS_LOCALE', 'en')
+    const html = await renderAstroTemplate(page, { url: 'https://libtmux.org/en/' })
+    const note = [...html.matchAll(/<noscript[^>]*>([\s\S]*?)<\/noscript>/g)].map((match) => match[1]!.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim())
+      .find((text) => /^Without JavaScript/.test(text))
+    expect(note, 'a noscript note').toBe(`Without JavaScript this page shows ${PORTS[0]!.name}. Choose another language from the picker in the header.`)
+    // The panels that follow show that language and hide the rest, as the note says.
+    const document = open(html)
+    const shown = [...document.querySelectorAll('.home-intro > [data-home-language]')].filter((panel) => !panel.hasAttribute('hidden'))
+    expect(shown.map((panel) => panel.getAttribute('data-home-language'))).toEqual([PORTS[0]!.slug])
+  })
+})
+
 describe('the front page solution picker', () => {
   it('links the Haskell mutation example to its guides and gives every Core card one line', async () => {
     const document = await frontPage()

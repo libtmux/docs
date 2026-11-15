@@ -17,7 +17,9 @@ appears, and removes its server. [The complete script](#the-complete-script)
 follows the last step. It requires tmux 3.3a or newer and `sleep` with
 fractional seconds.
 
-## 1. Choose a private socket
+## Steps
+
+### 1. Choose a private socket
 
 Like the [attach example](/examples/attach-and-send-keys/), the script puts
 its server's socket in a fresh directory. A command that names that socket
@@ -26,7 +28,7 @@ reaches only that server, never the one you already use.
 ```sh excerpt="capture.sh" from='directory=$(mktemp' to="tmux.sock"
 ```
 
-## 2. Start a detached session
+### 2. Start a detached session
 
 `new-session -d` creates a session without attaching a terminal. `-f /dev/null`
 keeps your `tmux.conf` out of the private server, `-s capture` names the
@@ -39,7 +41,7 @@ session, and `'sh'` is the program in its pane.
 command's own output reaches the screen. The command returns once the session
 exists.
 
-## 3. Type a command that starts on a fresh row
+### 3. Type a command that starts on a fresh row
 
 `send-keys -l` types its argument literally. The target `capture:0.0` reads as
 session `capture`, window `0`, pane `0`. A new session has exactly one of each,
@@ -52,7 +54,7 @@ and its server holds no other session, so the bare name is unambiguous. Use
 The leading `\n` in the `printf` format puts the output on a fresh row even
 if the shell's first prompt arrives late.
 
-## 4. Press Enter
+### 4. Press Enter
 
 Without `-l`, `send-keys` reads `Enter` as the `Enter` key, so the shell runs
 the text from step 3.
@@ -60,7 +62,7 @@ the text from step 3.
 ```sh excerpt="capture.sh" from="capture:0.0 Enter"
 ```
 
-## 5. Read the screen
+### 5. Read the screen
 
 `capture-pane -p` prints the pane's visible rows to standard output, and
 `$(...)` stores them in `screen`.
@@ -74,7 +76,7 @@ The next step is why.
 <a id="wait-for-text-instead-of-guessing-a-delay"></a>
 <a id="wait-for-output-or-completion"></a>
 
-## 6. Capture until the line appears
+### 6. Capture until the line appears
 
 The shell may not have run the command yet, so the script captures again, up to
 100 times with a 50 millisecond pause. `grep -Fx` accepts only the complete
@@ -86,7 +88,7 @@ finishes.
 ```sh excerpt="capture.sh" from="attempt=0" to="done"
 ```
 
-## 7. Fail when the line never appears
+### 7. Fail when the line never appears
 
 If every attempt fails, the script reports the timeout on standard error and
 exits with status 1.
@@ -94,7 +96,7 @@ exits with status 1.
 ```sh excerpt="capture.sh" from="Timed out" to="exit 1"
 ```
 
-## 8. Clean up
+### 8. Clean up
 
 `kill-server` stops the private server, and `trap cleanup EXIT` runs `cleanup`
 on every exit, including the timeout in step 7. The second `trap` makes `HUP`,

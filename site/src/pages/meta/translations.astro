@@ -8,6 +8,7 @@ import { LOCALES, LOCALE_LABEL, DEFAULT_LOCALE, localeRoot } from '../../i18n/lo
 import { ALL_TRANSLATED, buildLocale, localeOf, localeStatusesFor, type LocaleStatus } from '../../i18n/resolve'
 import { t } from '../../i18n/ui'
 import { contributeLink } from '../../i18n/contribute'
+import '../../styles/meta.css'
 
 /**
  * Translation coverage: every shared prose page, and each locale's status for
@@ -78,10 +79,10 @@ const done = (l: string) => rows.filter((r) => r.statuses[l] === 'translated').l
   locale={locale}
   localeStatuses={ALL_TRANSLATED}
 >
-  <div class="mx-auto max-w-4xl px-4 py-10">
+  <div class="meta-page">
     <PageToolbar breadcrumbs={breadcrumbs} />
-    <h1 class="text-3xl font-bold tracking-tight">{t(locale, 'i18n.coverage')}</h1>
-    <p class="mt-3 text-muted">{t(locale, 'i18n.coverageIntro')}</p>
+    <h1>{t(locale, 'i18n.coverage')}</h1>
+    <p>{t(locale, 'i18n.coverageIntro')}</p>
 
 
     <ul class="mt-6 flex flex-wrap gap-x-6 gap-y-1 text-sm">
@@ -99,14 +100,14 @@ const done = (l: string) => rows.filter((r) => r.statuses[l] === 'translated').l
 
     <!-- Scrolls in its own box: a locale column per language means this table
          outgrows a phone long before the page does. -->
-    <div class="mt-8 overflow-x-auto">
-      <table class="w-full text-left text-sm">
+    <div class="meta-scroll" tabindex="0" role="region" aria-label="Translation coverage, scrollable">
+      <table>
         <thead>
-          <tr class="border-b">
-            <th scope="col" class="py-2 pr-4 font-semibold">{t(locale, 'i18n.page')}</th>
+          <tr>
+            <th scope="col">{t(locale, 'i18n.page')}</th>
             {
               columns.map((l) => (
-                <th scope="col" class="py-2 pr-4 font-semibold" lang={l}>
+                <th scope="col" lang={l}>
                   {LOCALE_LABEL[l]}
                 </th>
               ))
@@ -116,8 +117,8 @@ const done = (l: string) => rows.filter((r) => r.statuses[l] === 'translated').l
         <tbody>
           {
             rows.map((row) => (
-              <tr class="border-b/50 border-b">
-                <th scope="row" class="py-2 pr-4 font-normal">
+              <tr>
+                <th scope="row">
                   {/* Into the reader's own locale, not English: this page is
                       served per locale, so a Japanese reader following a row
                       should land on the Japanese page — a translation where
@@ -140,7 +141,7 @@ const done = (l: string) => rows.filter((r) => r.statuses[l] === 'translated').l
                       })
                     : undefined
                   return (
-                    <td class="py-2 pr-4" data-status={status}>
+                    <td data-status={status}>
                       {link ? (
                         <a class="underline" href={link.href} rel="noopener" target="_blank">
                           {t(locale, STATUS_KEY[status])}

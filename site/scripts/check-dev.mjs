@@ -20,8 +20,8 @@ import { checkColorScheme } from './check-color-scheme.mjs'
 import { checkLanguageIconScheme } from './check-language-icon-scheme.mjs'
 import { checkHomeExampleOptions } from './check-home-example-options.mjs'
 import { checkDevSample, checkRowPermalinks } from './check-dev-sample.mjs'
-import { checkDeclarationControlAlignment, checkDeclarationControlsLevel, checkMemberBodyInsets, checkNativeSignatureGeometry, checkNativeSignatureLinks } from './check-native-layout.mjs'
-import { checkBadgeCentring, checkChipGrowth, checkMentionDensity, checkUsageChips } from './check-badge-centring.mjs'
+import { checkCornerClear, checkDeclarationControlAlignment, checkDeclarationControlsLevel, checkMemberBodyInsets, checkNativeSignatureGeometry, checkNativeSignatureLinks } from './check-native-layout.mjs'
+import { checkBadgeCentring, checkMentionDensity, checkUsageChips } from './check-badge-centring.mjs'
 import { checkBlockLinksUndecorated, checkKindBadgeLinks, checkKindBadgeLinksFail, checkExternalLinkFirstPaint, checkRequiredAppearance, checkTmuxReferencePreviews, checkTmuxReferencePreviewsFail, checkWebAnalytics, checkWebAnalyticsTransitions } from './check-page-readiness.mjs'
 import { checkTypeParameters } from './check-type-parameters.mjs'
 import { checkTmuxKeys, TMUX_KEY_PAGES } from './check-tmux-keys.mjs'
@@ -346,9 +346,21 @@ async function checkSignatureLayouts(browser, base) {
           for (const declaration of declarations) assert(visibleText.includes(clean(declaration)),
             `${port}: native declaration survives at ${width}px`)
         } else {
-          assert.deepEqual(await signature.locator('.sig-param > :is(.n, .api-parameter-name)').allTextContents(),
-            model.signatures.flatMap((declaration) => declaration.params.map((param) => param.name)),
-            `${port}: all parameters survive at ${width}px`)
+          // A stub may name a family of repeated bool flags once ("12 more keyword flags"), because the parameter list shows each
+          // (design system Signature): every other parameter is shown, in order, and the summary counts exactly the bool flags left out.
+          const blocks = await signature.locator('.api-signature-parameters').evaluateAll((nodes) => nodes.map((node) => ({
+            names: [...node.querySelectorAll('.sig-param > :is(.n, .api-parameter-name)')].map((name) => name.textContent),
+            summarised: Number(/(\d+) more/.exec(node.querySelector('.api-signature-summary')?.textContent ?? '')?.[1] ?? 0),
+          })))
+          assert.equal(blocks.length, model.signatures.length, `${port}: one parameter list per declaration at ${width}px`)
+          for (const [index, declaration] of model.signatures.entries()) {
+            const { names, summarised } = blocks[index]
+            const shown = declaration.params.filter((param) => names.includes(param.name))
+            const left = declaration.params.filter((param) => !names.includes(param.name))
+            assert.deepEqual(names, shown.map((param) => param.name), `${port}: all parameters survive at ${width}px, in order`)
+            assert.equal(left.length, summarised, `${port}: the stub's summary counts every parameter it leaves out at ${width}px`)
+            assert(left.every((param) => /\bbool\b/.test(param.type ?? '')), `${port}: only bool flags are summarised at ${width}px: ${left.map((param) => param.name)}`)
+          }
           assert.deepEqual((await signature.locator('.sig-return-typehint').allTextContents()).map(clean),
             model.signatures.flatMap((declaration) => declaration.returns ? [clean(declaration.returns)] : []),
             `${port}: all return types survive at ${width}px`)
@@ -375,12 +387,14 @@ async function checkSignatureLayouts(browser, base) {
       await page.emulateMedia({ colorScheme })
       for (const width of [1440, 803, 390]) {
         await page.setViewportSize({ width, height: 900 })
-        const code = await module.locator('.gp-sphinx-api-layout-left').boundingBox()
+        const header = await module.boundingBox()
         const toolbar = await module.locator('.gp-sphinx-api-layout-right').boundingBox()
-        assert(Math.abs(code.y + code.height / 2 - toolbar.y - toolbar.height / 2) < 2,
-          `${colorScheme}/${width}px: module declaration and toolbar share a row`)
-        assert(code.x + code.width <= toolbar.x, `${colorScheme}/${width}px: declaration does not overlap controls`)
-        assert((await module.boundingBox()).height < 50, `${colorScheme}/${width}px: short module header stays compact`)
+        // Kind and source share a corner tab over the header's bottom padding; it takes neither width nor height from it.
+        assert(toolbar.x >= header.x && toolbar.x + toolbar.width <= header.x + header.width + 1
+          && toolbar.y >= header.y && toolbar.y + toolbar.height <= header.y + header.height + 1,
+        `${colorScheme}/${width}px: module corner tab sits inside its header`)
+        await checkCornerClear(module, `${colorScheme}/${width}px: module declaration`)
+        assert(header.height < 50, `${colorScheme}/${width}px: short module header stays compact`)
       }
     }
     await page.goto(`${base}/fsharp/latest/reference/libtmux-fsharp-server-tryfindclient/`, { waitUntil: 'load' })
@@ -428,18 +442,15 @@ async function checkSignatureLayouts(browser, base) {
       await page.emulateMedia({ colorScheme })
       for (const width of apiSignaturesOnly ? [1920, 1440, 803, 768, 390, 320] : [803, 390]) {
         await page.setViewportSize({ width, height: 1000 })
-        const code = await kotlin.locator('.gp-sphinx-api-layout-left').boundingBox()
+        const header = await kotlin.boundingBox()
         const toolbar = await kotlin.locator('.gp-sphinx-api-layout-right').boundingBox()
         if (width === 803 || width === 1920) {
-          const level = await checkDeclarationControlsLevel(kotlin, `${colorScheme}/${width}px: toolbar shares the declaration's first line`)
-          assert.equal(level.mode, 'beside', `${colorScheme}/${width}px: toolbar shares the declaration's first row when it fits`)
-          assert(code.x + code.width <= toolbar.x,
-            `${colorScheme}/${width}px: declaration leaves room for its toolbar`)
+          const level = await checkDeclarationControlsLevel(kotlin, `${colorScheme}/${width}px: corner tab badges share a row`)
+          assert.equal(level.mode, 'corner', `${colorScheme}/${width}px: kind and source share the declaration's corner tab`)
         }
-        if (width <= 390) {
-          assert(toolbar.y >= code.y + code.height,
-            `${colorScheme}/${width}px: toolbar follows the full-width signature`)
-        }
+        assert(toolbar.x >= header.x && toolbar.x + toolbar.width <= header.x + header.width + 1,
+          `${colorScheme}/${width}px: the corner tab stays inside the header`)
+        await checkCornerClear(kotlin, `${colorScheme}/${width}px: Kotlin declaration`)
         assert(toolbar.height < 30, `${colorScheme}/${width}px: badges and links stay in one compact row`)
         assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
           `${colorScheme}/${width}px: declaration and toolbar fit without clipping`)
@@ -447,7 +458,7 @@ async function checkSignatureLayouts(browser, base) {
     }
     console.log('Native browse layout: compact F# modules and linked Kotlin function cards work without JavaScript')
     const { measured } = await checkDeclarationControlAlignment(browser, base)
-    console.log(`Declaration controls: ${measured.length} sampled headers keep their controls level with the first signature line at 1440/768/500/390px`)
+    console.log(`Declaration controls: ${measured.length} sampled headers keep their controls level, beside the first line or in the corner tab, at 1440/768/500/390px`)
   } finally {
     await page.close()
   }
@@ -669,22 +680,25 @@ async function checkReferenceAndHeroes(browser, base) {
     assert.equal(anchors.filter((id) => id === fullName).length, 1, 'Page title and declaration have distinct anchors')
     console.log('Qualified names: a row of the source and package disclosure, exact copied identity and clipboard refusal pass')
     await page.setViewportSize({ width: 1440, height: 900 })
-    const contents = page.getByRole('navigation', { name: 'On this page', exact: true })
+    // The section bar under the title is a symbol page's one outline (design system PageApiDetail, "Removed or moved").
+    const contents = page.getByRole('navigation', { name: 'Reference sections', exact: true })
     assert(await contents.isVisible(), 'Wide reference pages show section navigation')
+    assert.equal(await page.getByRole('navigation', { name: 'On this page', exact: true }).count(), 0, 'A symbol page draws no second outline')
     assert.deepEqual(await page.locator('[data-api-section-link]').evaluateAll((links) => links
       .map((link) => decodeURIComponent(link.hash.slice(1)))
       .filter((id) => [...document.querySelectorAll('[id]')].filter((element) => element.id === id).length !== 1)), [],
     'Every reference section link has exactly one target')
     await contents.getByRole('link', { name: 'Parameters', exact: true }).click()
-    await page.waitForFunction(() => document.querySelector('api-page-contents a[aria-current="location"]')?.textContent === 'Parameters')
+    await page.waitForFunction(() => document.querySelector('.api-section-links a[aria-current="location"]')?.firstChild?.textContent === 'Parameters')
     await page.goto(`${base}/kotlin/latest/reference/io-github-libtmux-kotlin-server/`)
     const memberNames = await page.locator('.api-member-link').allTextContents()
     assert.deepEqual(memberNames.slice(0, 3), ['sessions', 'windows', 'panes'])
     assert.equal(new Set(memberNames).size, memberNames.length, 'Grouped members appear once')
-    assert(await page.getByRole('navigation', { name: 'Related APIs' }).getByRole('link', { name: 'io.github.libtmux.kotlin.Session', exact: true }).count())
+    // The Related types cards are the one place a symbol page names its related types (PageApiDetail, "Removed or moved").
+    assert(await page.locator('.api-related-card > a[title="io.github.libtmux.kotlin.Session"]').count(), 'The Related types cards name Session')
     for (const width of [1440, 768, 390]) {
       await page.setViewportSize({ width, height: 900 })
-      assert.equal(await page.locator('api-page-contents').isVisible(), width >= 1360)
+      assert.equal(await page.locator('api-page-contents').isVisible(), false, `A symbol page draws no contents column at ${width}px`)
       assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `Reference columns fit at ${width}px`)
     }
     console.log('Reference contents: section targets, active links, related declarations and grouped member order pass')
@@ -766,7 +780,7 @@ async function checkReferenceAndHeroes(browser, base) {
     }, 'Java manifest records source identity alongside its stable declaration URL')
     await page.goto(`${base}/kotlin/latest/reference/io-github-libtmux-kotlin-server/`)
     // The equivalent is a row of the In other ports table: the target's source name in code, led by its decorative kind badge.
-    const javaEquivalent = page.locator('section:has(> #api-other-ports) .tmux-usage a[href$="/java/latest/reference/io-github-libtmux-server-server/"]')
+    const javaEquivalent = page.locator('section:has(> #api-other-ports) .api-eq-table .api-elsewhere-value a[href$="/java/latest/reference/io-github-libtmux-server-server/"]')
     const assertJavaEquivalent = async () => {
       assert.equal(await javaEquivalent.count(), 1, 'The In other ports table links the Java equivalent')
       assert.equal(await javaEquivalent.locator(':scope > code').count(), 1, 'The Java equivalent names its target in code')
@@ -869,7 +883,6 @@ try {
   } else if (badgeCentringOnly) {
     await retryReload(() => checkBadgeCentring(browser, base))
     await checkMentionDensity(browser, base)
-    await checkChipGrowth(browser, base)
     await checkUsageChips(browser, base)
   } else if (referencePreviewsOnly) {
     await retryReload(() => checkTmuxReferencePreviews(browser, base, { served: servedBuild(base) }))
@@ -971,7 +984,6 @@ try {
       .then(() => checkKindBadgeLinksFail(browser, base)))
     const badgeCentring = schedule(() => retryReload(() => checkBadgeCentring(browser, base, { sample: sampleOnly }))
       .then(() => checkMentionDensity(browser, base))
-      .then(() => checkChipGrowth(browser, base))
       .then(() => checkUsageChips(browser, base)))
     const blockLinks = schedule(() => retryReload(() => checkBlockLinksUndecorated(browser, base)))
     const referencePreviews = schedule(() => retryReload(() => checkTmuxReferencePreviews(browser, base, { served: servedBuild(base) }))
@@ -1080,9 +1092,10 @@ try {
           schemeLabelWidth: document.querySelector('.scheme-switch__label').getBoundingClientRect().width,
           headerControls: ['.site-header__search', '.scheme-switch, .scheme-cycle', '.site-header__menu-button'].map((selector) => {
             const control = [...document.querySelectorAll(selector)].find((node) => node.checkVisibility())
+            if (!control) return undefined
             const { top, height } = control.getBoundingClientRect()
             return { top, height }
-          }),
+          }).filter(Boolean),
           redundantHeaderLinks: document.querySelectorAll('.site-header__wide-link').length,
           columns: [...document.querySelectorAll('table')].flatMap((table) => {
             const head = [...(table.tHead?.rows[0]?.cells ?? [])]
@@ -1098,7 +1111,9 @@ try {
         // tmux pages document tmux itself, so the libtmux release notice is absent there.
         if (path.startsWith('tmux/')) assert.equal(result.badgeForeground, null, `${path}: no libtmux release notice`)
         else assert.equal(result.badgeForeground, 'rgb(255, 255, 255)', 'Filled badge uses white foreground')
-        if (width < 1536) assert(result.schemeLabelWidth <= 1, 'Compact color-scheme controls hide their text visually')
+        // The labels share the chips' 80rem threshold (global.css).
+        if (width < 1280) assert(result.schemeLabelWidth <= 1, 'Compact color-scheme controls hide their text visually')
+        else assert(result.schemeLabelWidth > 1, 'Wide color-scheme controls show their text')
         assert(result.overflow <= 1, `${path} at ${width}px: page overflow ${result.overflow}px`)
         assert(result.columns.every((delta) => delta <= 1), `${path} at ${width}px: table columns misaligned`)
         if (hasSwitcher) {
@@ -1131,8 +1146,7 @@ try {
       assert(response?.ok(), `${path}: HTTP ${response?.status()}`)
       await page.evaluate(() => document.fonts.ready)
       // A product page's own equivalents are a table that is always open; its members are linked rows with none.
-      await page.locator('.api-elsewhere').evaluateAll((entries) => entries.forEach((entry) => { entry.open = true }))
-      assert(await page.locator('section:has(> #api-other-ports) .tmux-usage table').count() > 0, `${path}: no equivalents were open to measure`)
+      assert(await page.locator('section:has(> #api-other-ports) .api-eq-table').count() > 0, `${path}: no equivalents were open to measure`)
       for (const width of [1440, 768, 390]) {
         await page.setViewportSize({ width, height: 1000 })
         const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)

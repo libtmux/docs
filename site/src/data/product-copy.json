@@ -132,7 +132,7 @@
     },
     "go": {
       "repo": "libtmux/libtmux-go",
-      "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+      "revision": "3997274373dcc5b30435ecdc8ced2ceba7d2e11f",
       "verbs": [
         "load",
         "freeze",
@@ -539,7 +539,7 @@
     },
     "go": {
       "repo": "libtmux/libtmux-go",
-      "revision": "2de249b600d65218ee8b8fdc07c6b2b919242151",
+      "revision": "3997274373dcc5b30435ecdc8ced2ceba7d2e11f",
       "sdk": {
         "name": "MCP Go SDK",
         "href": "https://github.com/modelcontextprotocol/go-sdk"
@@ -550,7 +550,7 @@
           "find": [
             {
               "text": "github.com/modelcontextprotocol/go-sdk",
-              "line": 20
+              "line": 7
             }
           ],
           "absent": []

@@ -424,6 +424,15 @@ describe('topic definitions', () => {
     for (const id of ids) expect(id).toMatch(/^[a-z0-9-]+$/)
   })
 
+  it('gives each topic a picker line of six words or fewer that is not its summary', () => {
+    for (const topic of TOPICS) {
+      expect(topic.menu.split(/\s+/).length, `${topic.id}: ${topic.menu}`).toBeLessThanOrEqual(6)
+      expect(topic.menu, topic.id).not.toBe(topic.summary)
+      expect(topic.menu, topic.id).not.toMatch(/[.!?]$/)
+    }
+    expect(new Set(TOPICS.map((topic) => topic.menu)).size).toBe(TOPICS.length)
+  })
+
   it('starts with setup, which every other topic builds on', () => {
     expect(TOPICS[0]!.id).toBe('setup')
   })

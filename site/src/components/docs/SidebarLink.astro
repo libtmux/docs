@@ -15,9 +15,13 @@ interface Props {
   /** The kind stays on the row for assistive technology; its mark is not drawn. */
   quiet?: boolean
   disabled?: boolean
+  /** Pages in the row's section, muted and right-aligned. */
+  count?: number
+  /** Jumps to the product's installer. A row draws no icon (record 0060): its label starts at the edge Overview's does. */
+  install?: boolean
 }
 
-const { href, label, isActive = false, external = false, level = 1, kind, quiet = false, disabled = false } = Astro.props
+const { href, label, isActive = false, external = false, level = 1, kind, quiet = false, disabled = false, count } = Astro.props
 const Tag = disabled ? 'span' : 'a'
 ---
 
@@ -36,6 +40,7 @@ const Tag = disabled ? 'span' : 'a'
 >
   {kind && !quiet && <ApiBadge label={kind} variant="kind" value={kind} compact />}
   <span>{label}</span>
+  {count !== undefined && <span class="sidebar-link__count">{count}<span class="sr-only">{count === 1 ? ' page' : ' pages'}</span></span>}
   {
     external && (
       <span class="external-indicator" aria-hidden="true">
@@ -62,6 +67,12 @@ const Tag = disabled ? 'span' : 'a'
     color: var(--color-foreground-primary);
   }
 
+  /* The column scrolls, so the ring sits inside the row's edge rather than being clipped. */
+  .sidebar-link:focus-visible {
+    outline: 2px solid var(--focus-ring-color);
+    outline-offset: -2px;
+  }
+
   .sidebar-link:hover {
     color: var(--color-foreground-primary);
     background: var(--color-surface-hover);
@@ -74,12 +85,8 @@ const Tag = disabled ? 'span' : 'a'
 
   .sidebar-link.active {
     color: var(--theme-primary);
-    background: color-mix(in oklab, var(--theme-primary), transparent 90%);
-    font-weight: 500;
-  }
-
-  :global([data-theme-mode='dark']) .sidebar-link.active {
-    background: color-mix(in oklab, var(--theme-primary), transparent 85%);
+    background: var(--current-row-bg);
+    font-weight: 600;
   }
 
   .external-indicator {
@@ -92,4 +99,7 @@ const Tag = disabled ? 'span' : 'a'
     cursor: default;
     background: none;
   }
+  /* Page counts are muted and tabular, and never the row's accent: the current row keeps one colour. */
+  .sidebar-link__count { margin-left: auto; padding-left: .5rem; color: var(--color-foreground-muted); font-size: .75rem; line-height: 1; font-variant-numeric: tabular-nums; }
+  .sidebar-link.active .sidebar-link__count { color: inherit; }
 </style>

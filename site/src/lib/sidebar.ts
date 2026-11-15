@@ -43,6 +43,10 @@ export interface SidebarLinkItem {
   kind?: string
   /** The kind stays on the row for assistive technology, and its mark is not drawn: the group names it. */
   quiet?: boolean
+  /** Pages the row's section holds, muted at the row's end. Never zero: an empty section shows none. */
+  count?: number
+  /** The row jumps to the product's installer; like every row, it draws no icon (record 0060). */
+  install?: boolean
 }
 
 export interface SidebarGroupItem {
@@ -52,6 +56,10 @@ export interface SidebarGroupItem {
   href?: string
   kind?: string
   items: SidebarItem[]
+  /** The group starts open, as a product does in a port's own column. */
+  open?: boolean
+  /** The group is a label over its rows, not a row: it cannot be selected, as the tmux objects over MCP tools. */
+  overline?: boolean
 }
 
 export type SidebarItem = SidebarLinkItem | SidebarGroupItem
@@ -70,9 +78,10 @@ export function sidebarBreadcrumbs(items: SidebarItem[], currentUrl: string): Br
     if (item.type === 'link' && (item.disabled || item.external)) continue
     const crumb = { name: item.label, url: item.href, ...(item.kind ? { symbol: true } : {}) }
     // A group may link to the page of one of its own rows, as a sectioned reference does; the row is the deeper match.
+    // A group drawn as a label over its rows, as the tmux object over an MCP tool, is not a place: the trail passes through it.
     if (item.type === 'group') {
       const children = sidebarBreadcrumbs(item.items, currentUrl)
-      if (children.length) return [crumb, ...children]
+      if (children.length) return item.overline ? children : [crumb, ...children]
     }
     if (item.href && matches(item.href)) return [crumb]
   }
@@ -97,10 +106,15 @@ export async function pageBreadcrumbs(title: string, path: string, version: stri
   const items: BreadcrumbItem[] = [{ name: language?.name ?? (tmux ? 'tmux' : 'Documentation'), url: url(tmux ? 'tmux' : '') }]
   const model = port ? API_MODELS[port] : undefined
   const symbol = path.startsWith('reference/') ? model?.symbols.find((entry) => entry.slug === path.slice('reference/'.length)) : undefined
+  // Port / Product / Section / Page: the core library's reference names its product like every other trail does.
   if (symbol && model && API_NAV[port!]) return [...items,
+    { name: 'Core Library', url: url('core') },
     { name: 'API reference', url: url('reference') },
     ...referenceBreadcrumbs(model, API_NAV[port!], navTree(port!), symbol, url('reference'), (entry) => productApiHref(model, entry, version)),
   ]
+  // The Core Library is the level between a port and its sections (record 0021): `Go / Core Library / Guides / Capturing output`.
+  // The reference index and the glossary are the core library's, as the symbol pages above name it. A product's pages name the product instead.
+  if (port && path && path !== 'core' && !/^(?:mcp|workspace|api)(?:\/|$)/.test(path)) items.push({ name: 'Core Library', url: url('core') })
   const entries = docsEntriesAvailable(await getCollection('docs', (entry) => !entry.data.port || entry.data.port === port), port)
   const parts = path.split('/').filter(Boolean)
   for (let i = tmux ? 2 : 1; i < parts.length; i++) {
@@ -324,7 +338,7 @@ export async function getSidebar(
     }),
   ).map(({ label, href, items }) => ({
     type: 'group' as const,
-    label: label === 'CLI reference' ? 'CLI Manual' : label,
+    label: label === 'CLI reference' ? 'CLI manual' : label,
     href,
     items: items.map((i): SidebarLinkItem => ({ type: 'link', label: i.label, href: i.href })),
   }))
@@ -345,7 +359,7 @@ export async function getSidebar(
   if (port === undefined && section === 'meta') return [...groups, ...ungrouped]
   // The tmux docs end with the three references every section points into.
   if (port === undefined) return [...groups,
-    { type: 'link', label: 'CLI Manual', href: tmuxManualUrl(version) },
+    { type: 'link', label: 'CLI manual', href: tmuxManualUrl(version) },
     { type: 'link', label: CATALOG_TITLE, href: tmuxCatalogUrl(version) },
     { type: 'link', label: 'C source reference', href: tmuxReferenceUrl(version) },
     ...ungrouped]

@@ -41,8 +41,8 @@ export interface DocumentationSurface {
 
 const labels: Record<string, string> = {
   home: 'Home', guides: 'Guides', tutorials: 'Tutorials', topics: 'Topics', concepts: 'Concepts',
-  examples: 'Examples', reference: 'API Reference', configuration: 'Configuration', internals: 'Internals',
-  async: 'Async', runtimes: 'Runtimes', manual: 'CLI Manual',
+  examples: 'Examples', reference: 'API reference', configuration: 'Configuration', internals: 'Internals',
+  async: 'Async', runtimes: 'Runtimes', manual: 'CLI manual',
   ...MCP_SECTIONS,
 }
 const standardSections = ['home', 'guides', 'tutorials', 'topics', 'concepts', 'examples', 'manual', 'tools', 'prompts', 'resources', 'reference']
@@ -80,7 +80,7 @@ export function buildDocumentationSurfaces(
       section.items.push(link)
       sections.set(key, section)
     }
-    const reference: DocumentationSection = sections.get('reference') ?? { id: 'reference', label: 'API Reference', items: [] }
+    const reference: DocumentationSection = sections.get('reference') ?? { id: 'reference', label: 'API reference', items: [] }
     reference.href = referenceUrl(info, version, id)
     if (domain.product) {
       // Protocol tools and the implementation API retain their native URLs.
@@ -119,7 +119,8 @@ export function buildDocumentationSurfaces(
       // A group names its kind, so its rows need no mark; one that mixes kinds keeps them.
       section.items.push(...groups.map((group): SidebarItem => {
         const quiet = sharesOneKind(group.objects.map((object) => object.kind))
-        return { type: 'group', label: group.label, href: `${portPageUrl(info, version, `${prefix}${key}`)}#${group.id}`, items: group.objects.map((object) => ({
+        // The tmux object a tool acts on is a label over its rows, not a page: it links to its place on the index and cannot be selected.
+        return { type: 'group', overline: true, label: group.label, href: `${portPageUrl(info, version, `${prefix}${key}`)}#${group.id}`, items: group.objects.map((object) => ({
           type: 'link' as const, label: object.name, kind: object.kind, href: portPageUrl(info, version, object.path), ...(quiet ? { quiet } : {}),
         })) }
       }))
@@ -177,7 +178,7 @@ export function getDocumentationSurfaces(port: string | undefined, version: stri
         { id: 'home', label: current ? 'Home' : 'Current docs →', href: withPortRoot('/tmux/'), items: [] },
         ...(current ? menus : []).flatMap((item) => item.type === 'group' && item.href
           ? [{ id: item.label.toLowerCase(), label: item.label, href: item.href, items: item.items }] : []),
-        { id: 'manual', label: 'CLI Manual', href: tmuxManualUrl(version), items: [] },
+        { id: 'manual', label: 'CLI manual', href: tmuxManualUrl(version), items: [] },
         { id: 'catalog', label: CATALOG_TITLE, shortLabel: 'Catalog', href: tmuxCatalogUrl(version), items: [] },
         { id: 'reference', label: 'C source reference', shortLabel: 'C reference', href: tmuxReferenceUrl(version), items: [] },
       ]

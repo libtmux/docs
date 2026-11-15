@@ -10,16 +10,28 @@ interface Props {
   level?: number
   items: SidebarItem[]
   currentPath: string
+  /** Open before the reader opens it, as each product is in a port's own column. */
+  open?: boolean
+  /** A label over its rows rather than a row: it cannot be opened, closed or selected. */
+  overline?: boolean
 }
 
-const { label, href, kind, level = 1, items, currentPath } = Astro.props
+const { label, href, kind, level = 1, items, currentPath, open = false, overline = false } = Astro.props
 const current = Boolean(href && isActivePath(href, currentPath))
 const containsCurrent = (entries: SidebarItem[]): boolean => entries.some((item) =>
   Boolean(item.href && isActivePath(item.href, currentPath)) || (item.type === 'group' && containsCurrent(item.items)))
-const expanded = current || containsCurrent(items)
+const expanded = open || current || containsCurrent(items)
 ---
 
-{items.length ? (
+{overline ? (
+  <>
+    <p class="sidebar-overline" role="presentation" data-sidebar-overline>{label}</p>
+    {items.map((item) => item.type === 'group'
+      ? <Astro.self label={item.label} href={item.href} kind={item.kind} items={item.items} currentPath={currentPath} level={level} open={item.open} overline={item.overline} />
+      : <SidebarLink href={item.href} label={item.label} external={item.external} kind={item.kind} quiet={item.quiet} disabled={item.disabled}
+          count={item.count} install={item.install} isActive={isActivePath(item.href, currentPath)} level={level} />)}
+  </>
+) : items.length ? (
   <details class="sidebar-section" open={expanded}>
     <summary class="api-nav__row section-label" style={`--level:${level}`}>
       {href ? <a href={href} data-sidebar-label={label} class="api-nav__label" aria-current={current ? 'page' : undefined} aria-description={kind}>{kind && <ApiBadge label={kind} variant="kind" value={kind} compact />}{label}</a>
@@ -28,14 +40,15 @@ const expanded = current || containsCurrent(items)
     </summary>
     <div class="sidebar-section__children">
       {items.map((item) => item.type === 'group'
-        ? <Astro.self label={item.label} href={item.href} kind={item.kind} items={item.items} currentPath={currentPath} level={level + 1} />
+        ? <Astro.self label={item.label} href={item.href} kind={item.kind} items={item.items} currentPath={currentPath} level={level + 1} open={item.open} overline={item.overline} />
         : <SidebarLink href={item.href} label={item.label} external={item.external} kind={item.kind} quiet={item.quiet} disabled={item.disabled}
-            isActive={isActivePath(item.href, currentPath)} level={level + 1} />)}
+            count={item.count} install={item.install} isActive={isActivePath(item.href, currentPath)} level={level + 1} />)}
     </div>
   </details>
 ) : href && <SidebarLink href={href} label={label} kind={kind} isActive={current} level={level} />}
 
 <style>
+  .sidebar-overline { margin: .75rem 0 .125rem; padding-left: .75rem; color: var(--color-foreground-muted); font: 600 .6875rem/1.4 var(--font-sans); letter-spacing: .04em; text-transform: uppercase; }
   .sidebar-section { margin-block: 0.125rem; }
   .section-label { list-style: none; }
   .section-label > .api-nav__label { display: flex; align-items: center; gap: .25rem; min-width: 0; }
@@ -48,7 +61,8 @@ const expanded = current || containsCurrent(items)
     transform: translateY(0.1rem) rotate(225deg);
   }
   .sidebar-section:not([open]):has([aria-current='page']) > summary {
-    background: color-mix(in oklab, var(--theme-primary), transparent 90%);
+    background: var(--current-row-bg);
+    color: var(--theme-primary);
     font-weight: 600;
   }
 </style>

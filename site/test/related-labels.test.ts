@@ -219,7 +219,7 @@ describe('the rendered related lists', () => {
    * A page as its own components draw it. Only what a page shows beside the related section is real, as a harness that
    * renders a reference page lists it: the section is part of `ApiReference`, so no child has to be named for it to appear.
    */
-  const PAGE_COMPONENTS = ['components/api/ApiPageContents.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro', 'components/api/ApiRelationships.astro']
+  const PAGE_COMPONENTS = ['components/api/ApiPageContents.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro', 'components/api/ApiRelationships.astro', 'components/api/RelationshipCollection.astro']
 
   /** One related list as the reader sees it: the label and title of each link, and the label's markup. */
   function shown(root: Document, selector: string) {
@@ -268,7 +268,7 @@ describe('the rendered related lists', () => {
     return win.document
   }
 
-  it('draws the Related types cards of a page from ApiReference, beside the chips that name the same entries', async () => {
+  it('draws the Related types cards of a page from ApiReference, and no chip list beside them', async () => {
     const all = pages()
     // Every page where the rule changed a label, and the first page of each other port with a list to compare.
     const changed = all.filter((entry) => entry.links.some((link, i) => link.name !== entry.before[i]))
@@ -285,9 +285,10 @@ describe('the rendered related lists', () => {
       const ids = [...win.document.querySelectorAll('h2[id^="api-"]')].map((heading) => heading.id)
       expect(ids, where).toContain('api-related-types')
       const cards = shown(win.document, '.api-related-card > a')
-      const chips = shown(win.document, 'nav.api-related a')
       expect(cards.map((item) => item.label), where).toEqual(links.map((link) => link.name))
-      expect(chips.map((item) => item.label), where).toEqual(cards.map((item) => item.label))
+      // The right-hand "Related APIs" chips went with the "On this page" list (design system PageApiDetail,
+      // "Removed or moved"; adoption step 2): the cards are the one place a page names its related types.
+      expect(win.document.querySelector('nav.api-related'), where).toBeNull()
       expect(duplicates(cards.map((item) => item.label!)), where).toEqual([])
       for (const [i, link] of links.entries()) {
         expect(cards[i]!.title, where).toBe(link.identity)
@@ -306,7 +307,7 @@ describe('the rendered related lists', () => {
       cmd_list_panes_window: ['c:struct:cmd', 'c:struct:session', 'c:struct:winlink', 'c:struct:cmdq_item'],
     }
 
-    it.each(Object.entries(expected))('keeps the related types of %s, as a section of the page and in the chips', async (name, related) => {
+    it.each(Object.entries(expected))('keeps the related types of %s, as a section of the page and in no chip list', async (name, related) => {
       const model = tmuxSourceModel('latest')
       const byId = new Map(model.symbols.map((entry) => [entry.id, entry]))
       const symbol = model.symbols.find((entry) => entry.name === name)!
@@ -318,7 +319,7 @@ describe('the rendered related lists', () => {
       const labels = related.map((id) => byId.get(id)!.name)
       const cards = shown(document, '.api-related-card > a')
       expect(cards.map((item) => item.label)).toEqual(labels)
-      expect(shown(document, 'nav.api-related a').map((item) => item.label)).toEqual(labels)
+      expect(document.querySelector('nav.api-related')).toBeNull()
       for (const [i, item] of cards.entries()) {
         expect(item.markup, item.label!).toBe(item.label)
         expect(item.title, item.label!).toBe(item.label)

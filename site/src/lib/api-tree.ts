@@ -96,9 +96,13 @@ export function referenceBreadcrumbs(
   const root = entries.find((entry) => entry.id === (lineage[0]?.publicId ?? lineage[0]?.id))
   // An explicitly placed member can be a root even when its module is elsewhere.
   if (!root) lineage.splice(0, Math.max(0, lineage.length - 1))
-  return [...crumbs, ...lineage.map((entry, i) => ({ name: i === 0 && root ? root.name : entry.name,
+  const owners = lineage.map((entry, i) => ({ name: i === 0 && root ? root.name : entry.name,
     url: hrefFor(entry), symbol: true,
-  }))]
+  }))
+  // A bucket that shares its type's name ("Pane" holding `Pane`) is a section of the sidebar, and is labelled as one.
+  const last = crumbs.at(-1)
+  if (last && owners[0]?.name === last.name) crumbs[crumbs.length - 1] = { ...last, name: `${last.name} section` }
+  return [...crumbs, ...owners]
 }
 
 const productSymbols = (model: ApiModelBase) =>

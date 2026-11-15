@@ -106,6 +106,8 @@ async function run(dir) {
     XDG_CONFIG_HOME: join(sandbox, 'config'), XDG_CONFIG_DIRS: join(sandbox, 'config'), LANG: 'C.UTF-8', TERM: 'xterm-256color',
     LIBTMUX_DOCS_TRACE: trace, LIBTMUX_DOCS_REAL_TMUX: realTmux, LIBTMUX_DOCS_SANDBOX: sandboxReal, LIBTMUX_DOCS_MARK: join(sandbox, 'bin/docs-mark'),
     LIBTMUX_DOCS_PANE_COMMANDS: recipe.paneCommands.join(','), LIBTMUX_DOCS_PORT: only,
+    // The shim and the mark are node scripts started for every tmux command; a compile cache halves their start-up, which a program that races its own output relies on.
+    NODE_COMPILE_CACHE: join(sandbox, 'node-cache'),
   }
   // A program whose displayed setup starts the server it connects to: the setup is not a call of the program, so it runs
   // before tmux is read for the state before the first call, and without the shim, so that no step is credited with it.

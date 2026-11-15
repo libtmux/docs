@@ -78,6 +78,8 @@ export const STRUCTURAL_FIELDS: string[] = [
   // Parts of the doc comment that are not prose: the kind of an admonition, a reference's name, example code.
   '.doc.admonitions[].kind', '.doc.references[].name', '.doc.since',
   '.doc.examples[].code', '.doc.examples[].lang', '.doc.examples[].sourceUrl',
+  // Behaviour facts: the sentence is written into prose by `behaviorTexts`; the rest names where it stands.
+  '.behavior.*.text', '.behavior.*.origin', '.behavior.*.via', '.behavior.*.source.file', '.behavior.requires.tmux', '.behavior.requires.feature',
   // Extracted, and rendered by no component.
   // OCaml's original odoc comments are provenance; `.doc` holds their rendered prose.
   '.nativeDocumentation[]',
@@ -133,7 +135,8 @@ export const RENDERED_TEXTS: Record<string, string> = {
   'r.doc': '.signatures[].raises[].doc',
   'fact.value': 'commandFacts and parameterBindingFacts',
   'parameterBindingText(p)!': 'parameterBindingText',
-  'e.note': 'conceptNotes',
+  'row.note': 'conceptNotes',
+  'fact.text': 'behaviorFacts',
   'cell.note': 'conceptNotes',
   'block.text': 'ApiProse blocks',
   'item.text': 'ApiProse blocks',
@@ -218,11 +221,17 @@ export function parameterBindingFacts(param: Param): { label: string; value: str
   return facts
 }
 
+/** The sentences of a symbol's behaviour facts, which the entry draws under its signature. */
+export function behaviorTexts(symbol: ApiSymbol): string[] {
+  return Object.entries(symbol.behavior ?? {}).flatMap(([row, fact]) => row !== 'requires' && fact && 'text' in fact ? [fact.text] : [])
+}
+
 /** Every string of a symbol the site renders as documentation, with how it is laid out. */
 export function proseTexts(symbol: ApiSymbol): ProseText[] {
   const texts: ProseText[] = stringFields(symbol)
     .filter(({ path, text }) => isProseField(path) && text.trim() !== '')
     .map(({ path, text }) => ({ field: path, text, form: PROSE_FIELDS[path] }))
+  for (const fact of behaviorTexts(symbol)) texts.push({ field: 'behaviorFacts', text: fact, form: 'inline', derived: true })
   if (symbol.command) for (const fact of commandFacts(symbol.command)) texts.push({ field: 'commandFacts', text: fact.value, form: 'inline', derived: true })
   for (const signature of symbol.signatures ?? []) {
     for (const param of signature.params ?? []) {

@@ -144,7 +144,7 @@ describe('API glossary coverage', () => {
     const folder = new URL('../src/data/api/', import.meta.url)
     const missing: string[] = []
     let symbols = 0
-    for (const file of readdirSync(folder).filter((file) => file.endsWith('.json'))) {
+    for (const file of readdirSync(folder).filter((file) => file.endsWith('.json') && !file.endsWith('.behavior.json'))) {
       const model = JSON.parse(readFileSync(new URL(file, folder), 'utf8'))
       for (const symbol of model.symbols ?? []) {
         symbols++
@@ -178,7 +178,7 @@ describe('API glossary coverage', () => {
   })
 
   it('authors a native catalog for every extracted language without a generic fallback', () => {
-    const ports = readdirSync(new URL('../src/data/api/', import.meta.url)).filter((file) => file.endsWith('.json'))
+    const ports = readdirSync(new URL('../src/data/api/', import.meta.url)).filter((file) => file.endsWith('.json') && !file.endsWith('.behavior.json'))
       .flatMap((file) => {
         const model = JSON.parse(readFileSync(new URL(`../src/data/api/${file}`, import.meta.url), 'utf8'))
         return model.symbols ? [model.port] : []

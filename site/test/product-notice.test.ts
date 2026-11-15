@@ -10,6 +10,7 @@ import {
   productDescription, productInDevelopment, productIsConcept, releaseMaturity, type DocProduct,
 } from '../src/lib/ports'
 import { registryFor } from '../src/lib/registry'
+import { parseRules } from './css-rules'
 
 /**
  * A product's status is a dismissible bar under the header, the same kind of
@@ -198,6 +199,29 @@ describe('where a page puts the bar', () => {
     expect(source('layouts/DocsLayout.astro')).not.toContain('<ProductNotice port={port} product={product} overview')
     expect(source('components/mcp/ProtocolReference.astro')).not.toMatch(/<ProductNotice/)
     expect(source('components/mcp/Tools.astro')).not.toMatch(/<Aside/)
+  })
+})
+
+/**
+ * One banner, not two (PageProductHome, proposal 2): a concept product's own bar says the work can change, so the site's
+ * release bar, which promises the same, is hidden above it until the concept bar is dismissed.
+ */
+describe('one banner on a concept product\'s page', () => {
+  const rules = parseRules(/<style is:global>([\s\S]*?)<\/style>/.exec(source('components/ProductNotice.astro'))![1]!)
+  /** Whether a rule hides the release bar for a product bar with this id, while that bar has not been dismissed. */
+  const hidesRelease = (found: typeof rules, id: string) => found.some((rule) => rule.declarations.display === 'none'
+    && rule.selectors.some((selector) => selector.startsWith(`html:not([data-product-notice-dismissed~='${id}'])`)
+      && selector.includes('.prerelease-notice[data-prerelease-notice]') && selector.includes(`.product-notice[data-product-notice='${id}']`)))
+  const concepts = [...new Set(PRIMARY.flatMap((port) => PRODUCTS.map((product) => expectedStatus(port.slug, product)?.id)).filter((id): id is string => Boolean(id?.endsWith('-concept'))))]
+
+  it('hides the release bar above every concept bar the site draws', () => {
+    expect(concepts.sort()).toEqual(['mcp-concept', 'workspace-concept'])
+    for (const id of concepts) expect(hidesRelease(rules, id), id).toBe(true)
+  })
+
+  it('leaves the release bar over a bar that says something else, and fails for a concept bar that has no rule', () => {
+    expect(hidesRelease(rules, 'mcp-in-development')).toBe(false)
+    expect(hidesRelease(rules.filter((rule) => !rule.selectors.some((selector) => selector.includes('workspace-concept'))), 'workspace-concept')).toBe(false)
   })
 })
 

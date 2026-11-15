@@ -131,7 +131,7 @@ html[data-native-shell] #documentation-navigation { display: flex; }
   html[data-native-shell] #documentation-navigation { display: none; }
 }
 @media (max-width: 24rem) {
-  html[data-native-shell] .documentation-context[data-settings-enhanced]:not([data-settings-open]) #documentation-navigation { display: none; }
+  html[data-js][data-native-shell] .documentation-context:not([data-settings-open]) #documentation-navigation { display: none; }
 }
 /* No-script readers can tab to the native checkbox controls and their labels. */
 html.no-js[data-native-shell] .sidebar-toggle {

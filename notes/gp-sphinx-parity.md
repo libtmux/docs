@@ -12,7 +12,7 @@ Three checks hold the claim up, and all three run in `pnpm test`:
 |---|---|
 | `site/scripts/check-style-parity.mjs` | Computed styles match gp-sphinx's for the same element, on the one page both pipelines render |
 | `site/scripts/check-visual.mjs` | This site does not change appearance by accident — 30 committed baselines, 3 viewports, both themes |
-| `scripts/check-api-fidelity.mjs` | Every entry in all eight ports carries a permalink, a source link, the data hooks and both layouts |
+| `scripts/check-api-fidelity.mjs` | Every entry in all eight ports carries a source link, the data hooks, a layout, an id its URL reaches and, in a Sphinx entry, a permalink |
 
 ## What is shared
 
@@ -70,12 +70,24 @@ with Furo's mobile drawer. This site had neither, so `Server`'s 98 members and
 phone reader reached the first entry. It is a `<details>` now, open by default
 so it behaves without JavaScript.
 
-**No fold, no signature-collapse.** gp-sphinx emits `data-has-fold` and
-`data-signature-expanded` and ships JavaScript that acts on them. The hooks
-are emitted here with honest values — both `false` — because the CSS reads
-them, but nothing folds. A long signature wraps instead. This is a gap, not a
-decision, and the honest values are what will let it be closed without
-touching the markup.
+**A long signature wraps; nothing folds.** gp-sphinx folds a signature of ten or
+more parameters behind a summary and ships JavaScript that acts on
+`data-has-fold` and `data-signature-expanded`. This site decided on 2026-11-14
+(Signature, libtmux.org design system) that parameters are the contract and a
+reader should see them, so a signature wraps one parameter per line past 60
+columns and is never hidden. `data-has-fold` is not emitted;
+`data-signature-expanded` stays `false` because the vendored CSS reads it.
+
+**The declaration header draws one corner tab, no `[source]` and no `¶`.**
+gp-sphinx puts the kind badge, the modifiers, `[source]` and a pilcrow in a row
+beside the signature. Here the kind chip, the modifiers, the Source badge and
+the ecosystem reference share one tab, 15px high, flush in the card's
+bottom-right corner, over the header's unchanged .5rem bottom padding. It takes
+no width from the signature. The page is the entry, so its URL is the permalink
+and the header draws no pilcrow; `check-api-fidelity.mjs` therefore expects no
+permalink from an Astro entry and two from a paired Sphinx entry, and
+`check-style-parity.mjs`, which compares padding, minimum height and the
+signature's colour, is unaffected.
 
 **Domains are mapped, not claimed.** `data-domain` is `py` for Python, `cpp`
 for C++ and `js` for TypeScript, because those Sphinx domains exist and mean
@@ -227,7 +239,6 @@ changes the weight without restyling the heading scale.
 
 - **No cross-reference tooltips.** Furo shows a preview on hover for internal
   links.
-- **`data-has-fold` is always false**, as above.
 - **Source links name a line, not a range.** gp-sphinx emits
   `#L85-L120`, so GitHub highlights the whole declaration; this site emits
   `#L85` and highlights one line. The extractors all know where a declaration

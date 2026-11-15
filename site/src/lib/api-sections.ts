@@ -373,7 +373,29 @@ export function apiInheritedTypeParameters(symbol: ApiSymbol, index?: SymbolInde
   return index?.inheritedTypeParameters(symbol) ?? []
 }
 
-/** Only sections that the declaration actually renders, in reading order. */
+/** Past this many rows a member list keeps its place in the page and scrolls inside its own box (`--list-budget`, 28rem). */
+export const MEMBER_BUDGET = 14
+
+/**
+ * What a member collection says about itself: whether it outgrows the budget, the word its count uses, and whether it mixes
+ * kinds. The count is text beside the heading ("175 members", "12 properties"), and the kind word trails a row only where the
+ * kinds differ: in a list of one kind the mark already says it.
+ */
+export function memberCollectionFacts(members: ApiSymbol[], heading: string, kindOf: (member: ApiSymbol) => string) {
+  return {
+    budgeted: members.length > MEMBER_BUDGET,
+    countNoun: /^[A-Z][a-z]+$/.test(heading) ? heading.toLowerCase() : 'members',
+    mixed: new Set(members.map(kindOf)).size > 1,
+  }
+}
+
+/** "Errors" everywhere; Python keeps "Raises" because the language says so. */
+export const apiErrorsLabel = (port?: string) => port === 'py' ? 'Raises' : 'Errors'
+
+/**
+ * Only sections that the declaration actually renders, in reading order: the contract (type parameters, parameters,
+ * returns, errors), then the examples and references that illustrate it.
+ */
 export function apiEntrySections(symbol: ApiSymbol, port?: string, index?: SymbolIndex): ApiSection[] {
   const anchor = symbol.publicId ?? symbol.id
   const fields = apiEntryFields(symbol, port)
@@ -381,14 +403,14 @@ export function apiEntrySections(symbol: ApiSymbol, port?: string, index?: Symbo
   if (symbol.doc?.body) sections.push({ id: `${anchor}.description`, label: 'Description' })
   if (symbol.command) sections.push({ id: `${anchor}.command`, label: 'Command details' })
   if (apiMethodDetails(symbol, port).length) sections.push({ id: `${anchor}.methods`, label: 'Methods' })
-  if (symbol.doc?.examples?.length) sections.push({ id: `${anchor}.examples`, label: 'Examples' })
-  if (symbol.doc?.references?.length) sections.push({ id: `${anchor}.references`, label: 'References' })
   if (fields.typeParameters.length || apiInheritedTypeParameters(symbol, index).length) {
     sections.push({ id: `${anchor}.type-parameters`, label: 'Type parameters' })
   }
   if (fields.params.length) sections.push({ id: `${anchor}.parameters`, label: 'Parameters' })
   if (fields.returns.length) sections.push({ id: `${anchor}.returns`, label: 'Returns' })
-  if (fields.raises.length) sections.push({ id: `${anchor}.errors`, label: 'Errors' })
+  if (fields.raises.length) sections.push({ id: `${anchor}.errors`, label: apiErrorsLabel(port) })
+  if (symbol.doc?.examples?.length) sections.push({ id: `${anchor}.examples`, label: 'Examples' })
+  if (symbol.doc?.references?.length) sections.push({ id: `${anchor}.references`, label: 'References' })
   return sections
 }
 

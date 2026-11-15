@@ -1,6 +1,7 @@
 import { symbolsForProduct, type ApiSymbol } from '@libtmux/api-model/reference'
 import { headingTitle } from './branding'
-import { API_MODELS, pageSlug, referenceAlternatives, referenceHref } from './api-models'
+import { API_MODELS, pageSlug, referenceHref } from './api-models'
+import { equivalentsFor } from './api-equivalents'
 import { DOC_PRODUCTS, PORT_BY_SLUG, PORTS, portHomeUrl, portPageUrl, productAvailable, productExcluded, referenceUrl } from './ports'
 import { docsPath, docsRoutePath, type DocsPage } from './docs-paths'
 import { productApiHref } from './product-api'
@@ -86,7 +87,8 @@ export function pagePortLinks({
     ? symbolsByRoute.get(`${portSlug}/${productReference ? productReference[2] : (symbolSlug ?? '')}`)
     : undefined
   const symbolPort = portSlug
-  const alternatives = symbol ? referenceAlternatives(symbolPort!, symbol.publicId ?? symbol.id) : []
+  // The rows the equivalents table draws: the picker and the table read one list.
+  const alternatives = symbol ? equivalentsFor(symbolPort!, symbol) : []
   const own = docs.find((entry) => entry.data.port === portSlug && docsPath(entry) === path)
   const paths = [path, ...(own?.data.aliases ?? [])]
   const entries = own?.data.equivalence
@@ -115,7 +117,7 @@ export function pagePortLinks({
     } else if (symbol) {
       const targets = new Map<string, { label: string; note?: string }>()
       for (const alternative of alternatives) {
-        const match = alternative.ports.find((p) => p.port === port.slug)
+        const match = alternative.rows.find((row) => row.port === port.slug && row.status === 'mapped')
         // Resolve against the target port's version, which this caller knows.
         const targetSymbol = match?.publicId
           ? API_MODELS[port.slug]?.symbols.find((entry) => (entry.publicId ?? entry.id) === match.publicId) : undefined

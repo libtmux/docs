@@ -11,11 +11,13 @@
  * Error handling and Cleanup choices are `HomeExample.astro`'s, so each choice
  * plays the steps its view of the program holds (`lib/core-player.ts`).
  *
- * The page is drawn at the step the script first shows, the state before the
- * first call, so binding the script changes nothing on screen. Without script,
- * and until the script binds for a reader who asked for less motion (whose
- * player starts finished), the final tmux and every step's result show
- * instead; `core-player.css` swaps the two.
+ * The page is drawn at the step the script first shows, the first call, so
+ * binding the script changes nothing on screen. Nothing plays until the reader
+ * presses play, unless the instance sets `autoplay`; clicking or dragging in
+ * the code selects text, and a numbered marker beside each call's first line is
+ * the one way into a step from the code. The markers hang in a rail outside
+ * the player at a negative margin, never in the code's padding (record 0058). Without script the final tmux and
+ * every step's result show instead; `core-player.css` swaps the two.
  *
  * The caller decides whether the recording may be played at all
  * (`playableCapability`); with none, it keeps `HomeExample` on its own.
@@ -44,11 +46,15 @@ interface Props {
   options?: boolean
   /** Show the example's own "Run this example" section. */
   run?: boolean
+  /** Play by itself once the player is 40% on screen. Off by default; a reader's selection, scroll or focus stops it, and reduced motion never starts it. */
+  autoplay?: boolean
 }
-const { port, language, example, capability, capabilityId = 'typed-graph', options = true, run = true } = Astro.props as Props
+const { port, language, example, capability, capabilityId = 'typed-graph', options = true, run = true, autoplay = false } = Astro.props as Props
 const shownViews = options ? HOME_VIEWS : (['concise'] as const)
 const steps = capability.steps
 const total = steps.length
+// The player opens on the first call, with the program at its first line.
+const opening = Math.min(1, total)
 const frames = coreFrames(capability)
 // Where each call is in each view of the program: the views differ in the lines they add.
 const views = Object.fromEntries(shownViews.map((view) => [view, viewSteps(capability, homeProgram(example, view).replace(/\n$/, ''), port)]))
@@ -70,10 +76,10 @@ const noteParts = (index: number) => {
 const tips = steps.map((step, index) => ({ call: step.label, text: noteParts(index).rest.replace(/^: /, '').replace(/\.$/, '') }))
 ---
 <HomeExample port={port} language={language} example={example} heading={false} options={options} run={run} views={shownViews}>
-  <div slot="beside" class="core-player__side" data-core-plan={JSON.stringify(views)} data-core-tips={JSON.stringify(tips)}>
+  <div slot="beside" class="core-player__side" data-core-plan={JSON.stringify(views)} data-core-tips={JSON.stringify(tips)} data-core-autoplay={autoplay ? '' : undefined}>
     <div class="core-player__tmux" data-tmux role="group" aria-label="tmux state after the call shown">
       {frames.map((frame) => (
-        <div class="mcp-frame" data-frame={frame.done} data-off={frame.done === 0 ? undefined : ''}>
+        <div class="mcp-frame" data-frame={frame.done} data-off={frame.done === opening ? undefined : ''}>
           <TmuxScreen frame={frame} client marks={frame.done === 0 ? undefined : stepChanges(steps[frame.done - 1]!, before(frame.done - 1)).marks} idPrefix={`cp-${port}-${capabilityId}`} hadSessions={frames.some((earlier) => earlier.done < frame.done && earlier.sessions.length > 0)} />
           <p class="mcp-frame__note">{frame.done === 0 ? beforeNote : (() => {
             const note = noteParts(frame.done - 1)
@@ -82,20 +88,20 @@ const tips = steps.map((step, index) => ({ call: step.label, text: noteParts(ind
         </div>
       ))}
     </div>
-    <div class="core-player__results" data-results>
-      <section class="core-result" data-result="0">
-        <h3 class="core-result__title">Before the first call</h3>
+    <ol class="core-player__results" role="list" data-results>
+      <li class="core-result" data-result="0" data-off={opening === 0 ? undefined : ''} aria-current={opening === 0 ? 'step' : undefined}>
+        <p class="core-result__title">Before the first call</p>
         <p class="core-result__plain">{beforeText}</p>
-      </section>
+      </li>
       {steps.map((step, index) => {
         const { commands, probes } = visibleCommands(step)
         const changes = commands.filter((command) => command.mutates).length
         return (
-          <section class="core-result" data-result={index + 1} data-off>
-            <h3 class="core-result__title">
+          <li class="core-result" data-result={index + 1} data-off={index + 1 === opening ? undefined : ''} aria-current={index + 1 === opening ? 'step' : undefined}>
+            <p class="core-result__title">
               <span>{callLinks.get(step.label) ? <a href={callLinks.get(step.label)}><code>{step.label}</code></a> : <code>{step.label}</code>} returned <code>{typeText(port, step.type, links).map((part) => part.href ? <a href={part.href}>{part.text}</a> : part.text)}</code></span>
               <button type="button" class="core-result__pin" data-pin aria-pressed="false" hidden aria-label={`Pin the tmux state after ${step.label}`}><svg class="mcp-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 2.5h6v11L8 11l-3 2.5z" /></svg></button>
-            </h3>
+            </p>
             <div class="core-result__value"><Code code={returnedText(step)} lang="json" frame="none" wrap /></div>
             {commands.length === 0
               ? <p class="core-result__plain">The call sent no tmux command.</p>
@@ -121,12 +127,12 @@ const tips = steps.map((step, index) => ({ call: step.label, text: noteParts(ind
                 </ol>
               </details>
             )}
-          </section>
+          </li>
         )
       })}
-    </div>
+    </ol>
   </div>
-  <ReplayControls slot="controls" start="Show tmux before the first call" playable={views.concise!.length} marks={steps.map((step) => `Show the state after ${step.label}`)} />
+  <ReplayControls slot="controls" start="Show tmux before the first call" at={opening} playable={views.concise!.length} marks={steps.map((step) => `Show the state after ${step.label}`)} />
 </HomeExample>
 
 <script>
@@ -134,6 +140,8 @@ const tips = steps.map((step, index) => ({ call: step.label, text: noteParts(ind
 
   /** A call's place in a view: the step it is in the recording, and its lines in that view's code. */
   type Placed = { index: number; lines: [number, number] }
+
+  const COPY_ICON = '<svg class="mcp-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5" /><path d="M10.5 5.5v-2a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2" /></svg>'
 
   function bindCore(side: HTMLElement) {
     const root = side.closest<HTMLElement>('[data-home-example]')!
@@ -153,19 +161,19 @@ const tips = steps.map((step, index) => ({ call: step.label, text: noteParts(ind
     // A touch screen fires mouseenter on a tap and never mouseleave, so only a pointer that can hover previews.
     const canHover = window.matchMedia?.('(hover: hover)').matches ?? true
     // The program the reader sees depends on the two choices above it, which another script owns; read them whenever they matter.
-    const viewName = () => (errors?.checked ? (cleanup?.checked ? 'full' : 'errors') : (cleanup?.checked ? 'cleanup' : 'concise'))
+    // A program of a single view (`HomeExample`'s `singleView`) draws its one view, the full one, whatever the choices say.
+    const single = root.hasAttribute('data-single-view')
+    const viewName = () => (single ? 'full' : errors?.checked ? (cleanup?.checked ? 'full' : 'errors') : (cleanup?.checked ? 'cleanup' : 'concise'))
     const placed = () => plan[viewName()]!
+    // The step markers, which hang in each view's rail; the one beside the shown call is current.
+    const hung: { view: string; marker: HTMLElement; line: number }[] = []
     const codeLines = (view: string) => [...root.querySelectorAll<HTMLElement>(`[data-home-view="${view}"] .ec-line`)]
-    // The call a code line belongs to, as its position in the view's steps (1 is the first call).
-    const callAt = (line: HTMLElement) => {
-      const lines = codeLines(viewName())
-      const number = lines.indexOf(line) + 1
-      return number === 0 ? 0 : placed().findIndex((call) => number >= call.lines[0] && number <= call.lines[1]) + 1
-    }
 
     // The program is longer than its box: bring the call into the middle of it when the call changes, without moving the page.
+    // The program opens at its first line, and the first call is brought in only when the box is too short to show it there (a narrow stage).
     let revealed: Placed | undefined
-    const reveal = (call: Placed) => {
+    let opened = false
+    const reveal = (call: Placed, instant: boolean) => {
       const lines = codeLines(viewName())
       const first = lines[call.lines[0] - 1]
       const last = lines[call.lines[1] - 1]
@@ -175,7 +183,7 @@ const tips = steps.map((step, index) => ({ call: step.label, text: noteParts(ind
       const top = first.getBoundingClientRect().top - origin
       const bottom = last.getBoundingClientRect().bottom - origin
       if (top >= pre.scrollTop && bottom <= pre.scrollTop + pre.clientHeight) return
-      pre.scrollTo({ top: Math.max(0, top - (pre.clientHeight - (bottom - top)) / 2), behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
+      pre.scrollTo({ top: Math.max(0, top - (pre.clientHeight - (bottom - top)) / 2), behavior: instant || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
     }
 
     // Full screen takes the frame that holds the program, the tmux and the controls, not the choices above it or the setup below.
@@ -187,14 +195,22 @@ const tips = steps.map((step, index) => ({ call: step.label, text: noteParts(ind
     const player = bindReplay(root.querySelector<HTMLElement>('.home-example-player')!, {
       body,
       total: () => placed().length,
-      render({ shown, pinned }) {
+      opening: 1,
+      autoplay: side.hasAttribute('data-core-autoplay'),
+      content: root.querySelector<HTMLElement>('.home-example-code'),
+      render({ step, shown, pinned }) {
         matchProgramSize()
         const call = shown === 0 ? undefined : placed()[shown - 1]
         const frame = call ? call.index + 1 : 0
         if (frame !== drawnFrame) clientViews.reset()
         drawnFrame = frame
         frames.forEach((element) => { element.toggleAttribute('data-off', Number(element.dataset.frame) !== frame) })
-        results.forEach((element) => { element.toggleAttribute('data-off', Number(element.dataset.result) !== frame) })
+        results.forEach((element) => {
+          const current = Number(element.dataset.result) === frame
+          element.toggleAttribute('data-off', !current)
+          if (current) element.setAttribute('aria-current', 'step')
+          else element.removeAttribute('aria-current')
+        })
         pins.forEach((pin) => { pin.setAttribute('aria-pressed', String(pinned !== null && shown === pinned)) })
         // A dot names the call it shows in this view of the program, which the choices above it change.
         marks.forEach((mark) => {
@@ -209,8 +225,13 @@ const tips = steps.map((step, index) => ({ call: step.label, text: noteParts(ind
             line.classList.toggle('is-pinned', mine && pinned !== null)
           })
         }
-        if (call && call !== revealed) reveal(call)
+        for (const { view, marker, line } of hung) {
+          marker.classList.toggle('is-current', view === viewName() && call !== undefined && line >= call.lines[0] && line <= call.lines[1])
+        }
+        // A call the reader previews from a marker is on screen already, so only the step itself scrolls the program.
+        if (call && call !== revealed && shown === (pinned ?? step)) reveal(call, !opened)
         revealed = call
+        opened = true
       },
       ownsKey: (target) => target.hasAttribute('data-pin'),
       tip: (position) => {
@@ -221,27 +242,100 @@ const tips = steps.map((step, index) => ({ call: step.label, text: noteParts(ind
     })
     if (!player) return
 
-    // Every line of a call answers to it: hovering previews, clicking pins.
-    for (const [view, calls] of Object.entries(plan)) {
+    // Text in the code selects as anywhere else. A numbered marker beside each call's first line, a button with a name, is the one way into a step from the code:
+    // a pointer over it or focus on it previews that step and tints the call's lines, and pressing it goes there.
+    const tint = (view: string, call: Placed | undefined) => {
       codeLines(view).forEach((line, position) => {
-        if (calls.some((call) => position + 1 >= call.lines[0] && position + 1 <= call.lines[1])) line.classList.add('is-call')
+        line.classList.toggle('is-hover', call !== undefined && position + 1 >= call.lines[0] && position + 1 <= call.lines[1])
       })
     }
+    // The markers hang in a rail that is a sibling of the scrolling code, so the code's overflow does not clip them. The rail takes no column in the code,
+    // does not scroll sideways with it and follows its vertical scroll; each marker sits at its line by transform, so placing one shifts nothing.
+    for (const [view, calls] of Object.entries(plan)) {
+      const lines = codeLines(view)
+      const pre = lines[0]?.closest('pre')
+      if (!pre) continue
+      const rail = document.createElement('div')
+      rail.className = 'core-hang'
+      const track = document.createElement('div')
+      track.className = 'core-hang__in'
+      rail.append(track)
+      const markers: HTMLElement[] = []
+      // Calls on one line, as each pass of a loop is, share one marker, which goes to the first of them.
+      calls.forEach((call, position) => {
+        if (calls.findIndex((other) => other.lines[0] === call.lines[0]) !== position) return
+        const marker = document.createElement('button')
+        marker.type = 'button'
+        marker.className = 'core-step'
+        marker.dataset.stepMarker = String(position + 1)
+        marker.dataset.n = String(position + 1)
+        marker.dataset.line = String(call.lines[0])
+        marker.setAttribute('aria-label', `Step ${position + 1}: ${tips[call.index]!.call}`)
+        const preview = () => { tint(view, call); player.hover(position + 1) }
+        const release = () => { tint(view, undefined); player.hover(null) }
+        if (canHover) {
+          marker.addEventListener('mouseenter', preview)
+          marker.addEventListener('mouseleave', release)
+        }
+        marker.addEventListener('focus', preview)
+        marker.addEventListener('blur', release)
+        marker.addEventListener('click', () => { tint(view, undefined); player.go(position + 1) })
+        track.append(marker)
+        markers.push(marker)
+        hung.push({ view, marker, line: call.lines[0] })
+      })
+      pre.before(rail)
+      const follow = () => {
+        track.style.transform = `translateY(${-pre.scrollTop}px)`
+        // The code's own scrollbar is not code, so the rail stops above it.
+        rail.style.bottom = `${pre.offsetHeight - pre.clientHeight}px`
+      }
+      const place = () => {
+        const origin = pre.getBoundingClientRect().top - pre.scrollTop
+        for (const marker of markers) {
+          const box = lines[Number(marker.dataset.line) - 1]?.getBoundingClientRect()
+          if (box) marker.style.setProperty('--y', `${box.top - origin + (box.height - marker.offsetHeight) / 2}px`)
+        }
+        follow()
+      }
+      pre.addEventListener('scroll', follow, { passive: true })
+      // A view the choices above hide has no size until it shows, and a narrower column sets the code at another size.
+      new ResizeObserver(place).observe(pre)
+      place()
+    }
+    player.refresh()
+
+    // The program as shown, with the choices above it as selected, and never the markers.
+    for (const view of Object.keys(plan)) {
+      const frame = root.querySelector<HTMLElement>(`[data-home-view="${view}"] .expressive-code`)
+      if (!frame) continue
+      const button = document.createElement('button')
+      button.type = 'button'
+      button.className = 'core-copy'
+      button.setAttribute('aria-label', 'Copy the program')
+      button.title = 'Copy the program'
+      button.innerHTML = COPY_ICON
+      const said = document.createElement('span')
+      said.className = 'sr-only'
+      said.setAttribute('role', 'status')
+      said.setAttribute('aria-live', 'polite')
+      let reset: ReturnType<typeof setTimeout> | undefined
+      button.addEventListener('click', async () => {
+        const program = codeLines(view).map((line) => line.textContent).join('\n')
+        let copied = false
+        try { await navigator.clipboard.writeText(program); copied = true } catch { /* The reader can still select the code. */ }
+        said.textContent = copied ? 'Program copied.' : 'Copy failed. Select the code and copy it.'
+        if (!copied) return
+        button.toggleAttribute('data-copied', true)
+        button.title = 'Copied'
+        clearTimeout(reset)
+        reset = setTimeout(() => { button.removeAttribute('data-copied'); button.title = 'Copy the program' }, 1500)
+      })
+      frame.append(button, said)
+    }
+
     const code = root.querySelector<HTMLElement>('.home-example-stage')!
     new ResizeObserver(matchProgramSize).observe(code)
-    if (canHover) {
-      code.addEventListener('mouseover', (event) => {
-        const line = (event.target as HTMLElement).closest<HTMLElement>('.ec-line.is-call')
-        if (line) player.hover(callAt(line))
-      })
-      code.addEventListener('mouseout', (event) => {
-        if ((event.target as HTMLElement).closest('.ec-line.is-call')) player.hover(null)
-      })
-    }
-    code.addEventListener('click', (event) => {
-      const line = (event.target as HTMLElement).closest<HTMLElement>('.ec-line.is-call')
-      if (line) player.togglePin(callAt(line))
-    })
     pins.forEach((pin) => {
       pin.hidden = false
       pin.addEventListener('click', () => player.togglePin(player.state().shown))

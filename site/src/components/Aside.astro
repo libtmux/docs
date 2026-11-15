@@ -4,16 +4,20 @@
  *
  * Ported from social-embed's Aside. `type` sets the colour and icon;
  * `variant` sets the container, and the icon's style and size unless
- * `iconStyle` or `iconSize` override them. The default, `hybrid`, is a left
- * accent on a fading background with a solid icon badge. Styles live in
+ * `iconStyle` or `iconSize` override them. The default, `compact`, is a run-in
+ * note: a start edge on a faint tint, the title leading the first line. The
+ * block variants stay available by prop. `ink` (on by default) sets the title
+ * in the aside's ink token instead of its hue. Styles live in
  * `styles/aside.css`; `/demo/ux/aside/` shows every combination.
  */
 import {
+  ASIDE_DEFAULT_VARIANT,
   ASIDE_ICONS,
   ASIDE_TITLES,
   ASIDE_VARIANT_DEFAULTS,
   asideClass,
   asideIconClass,
+  asideTitle,
   type AsideIconSize,
   type AsideIconStyle,
   type AsideType,
@@ -26,21 +30,22 @@ interface Props {
   variant?: AsideVariant
   iconStyle?: AsideIconStyle
   iconSize?: AsideIconSize
+  ink?: boolean
 }
 
-const { type = 'note', title, variant = 'hybrid' } = Astro.props as Props
+const { type = 'note', title, variant = ASIDE_DEFAULT_VARIANT, ink = true } = Astro.props as Props
 const iconStyle = Astro.props.iconStyle ?? ASIDE_VARIANT_DEFAULTS[variant].iconStyle
 const iconSize = Astro.props.iconSize ?? ASIDE_VARIANT_DEFAULTS[variant].iconSize
 ---
 
-<aside class={asideClass(type, variant)} role="note">
+<aside class={asideClass(type, variant, ink)} role="note">
   <p class="lm-aside__title">
     <span class={asideIconClass(iconStyle, iconSize)}>
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
         <path d={ASIDE_ICONS[type]}></path>
       </svg>
     </span>
-    <span>{title ?? ASIDE_TITLES[type]}</span>
+    <span>{asideTitle(variant, title ?? ASIDE_TITLES[type])}</span>
   </p>
   <div class="lm-aside__content">
     <slot />

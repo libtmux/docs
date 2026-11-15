@@ -4,20 +4,18 @@
  * One derivation feeds the HTML sections (`ApiTmuxSections.astro`), the "On this page" entries and the Markdown export,
  * so the three cannot list different rows. A section with nothing to say is not returned.
  */
-import { qualifiedNameOf, type ApiSymbol } from '@libtmux/api-model/reference'
-import { API_MODELS, PORT_NAME, mentionsOf, referenceAlternatives } from './api-models'
+import type { ApiSymbol } from '@libtmux/api-model/reference'
+import { mentionsOf, referenceAlternatives } from './api-models'
+import { equivalentsFor, type EquivalentsGroup } from './api-equivalents'
 import { proseHref } from './docs-paths'
 import type { ApiRelationshipPath } from './api-relationships'
-import { PORTS } from './ports'
-import { productApiIndex } from './product-api'
 import { SITE_ROOT } from './site-root'
 import { CATALOG_KINDS, tmuxCatalogKindsForSymbol, tmuxCatalogUrl, type CatalogKind } from './tmux-catalog'
 import { tmuxCommandsFor, tmuxManualUrl } from './tmux-manual-data'
 import {
   tmuxCommandItems, tmuxDirectDeclarations, tmuxCommandRows, tmuxReferencePaths, tmuxReferenceUrl, tmuxSymbolSends,
-  type CommandItem, type UsageTable,
+  type CommandItem,
 } from './tmux-reference'
-import { defaultVersionFor } from './versions'
 
 export interface CApiItem { id: string; name: string; href: string; kind: string }
 
@@ -34,47 +32,14 @@ export interface TmuxCApiSection extends Base {
 }
 export interface TmuxCatalogSection extends Base { type: 'catalog'; catalog: CatalogKind; items: { name: string; href: string }[] }
 export interface GuidesSection extends Base { type: 'guides'; groups: { id: string; label: string; items: { title: string; href: string }[] }[] }
-export interface OtherPortsSection extends Base { type: 'ports'; groups: { label: string; table: UsageTable }[] }
+export interface OtherPortsSection extends Base { type: 'ports'; groups: EquivalentsGroup[] }
 export type ApiTmuxSection = TmuxCommandSection | TmuxCApiSection | TmuxCatalogSection | GuidesSection | OtherPortsSection
 
 type Alternatives = ReturnType<typeof referenceAlternatives>
 
 const VERSION = 'latest'
-/** The sentence the concept table writes for every language it has no mapping or reason for. */
-const GENERIC_ABSENCE = /^No source-verified .+ equivalent is recorded for this operation\.$/
 
-const order = (slug: string) => PORTS.findIndex((entry) => entry.slug === slug)
 const capitalize = (text: string) => text[0].toUpperCase() + text.slice(1)
-
-/** Each concept's equivalents as a Language | Equivalent table; a language with nothing to say joins one closing sentence. */
-function otherPorts(port: string, alternatives: Alternatives): OtherPortsSection['groups'] {
-  return alternatives.map((group) => {
-    const ports = group.ports.filter((entry) => entry.port !== port).map((entry) => {
-      const target = entry.publicId ? API_MODELS[entry.port]?.symbols.find((symbol) => (symbol.publicId ?? symbol.id) === entry.publicId) : undefined
-      const qualified = target ? qualifiedNameOf(target) : entry.publicId
-      return { entry, qualified }
-    })
-    const noteIndex = (slug: string) => API_MODELS[slug] ? productApiIndex(API_MODELS[slug], defaultVersionFor(slug)) : undefined
-    const rows = ports.flatMap(({ entry, qualified }) => {
-      if (entry.href) {
-        return [{ port: entry.port, name: entry.name, links: [{ href: entry.href, kind: entry.kind ?? '', label: qualified! }],
-          ...(entry.note ? { note: entry.note, noteIndex: noteIndex(entry.port) } : {}) }]
-      }
-      // A reason says why this language has none; a language with no reason is one of the closing sentence's.
-      return entry.absent && !GENERIC_ABSENCE.test(entry.absent) ? [{ port: entry.port, name: entry.name, links: [], note: entry.absent }] : []
-    })
-    const bare = ports.filter(({ entry }) => !entry.href && !(entry.absent && !GENERIC_ABSENCE.test(entry.absent)))
-      .sort((a, b) => order(a.entry.port) - order(b.entry.port)).map(({ entry }) => entry.name)
-    return {
-      label: group.label,
-      table: {
-        command: group.label, caption: `Equivalents of ${group.label} in other languages`,
-        absent: bare.length ? `No equivalent is recorded in ${new Intl.ListFormat('en-GB', { type: 'disjunction' }).format(bare)}.` : null,
-        groups: [{ heading: 'Equivalent', ports: rows.sort((a, b) => order(a.port) - order(b.port)) }],
-      } satisfies UsageTable,
-    }
-  })
-}
 
 export function apiTmuxSections(
   port: string | undefined, symbol: ApiSymbol, alternatives: Alternatives = port ? referenceAlternatives(port, symbol.publicId ?? symbol.id) : [],
@@ -134,11 +99,10 @@ export function apiTmuxSections(
       intro: `Pages that discuss \`${symbol.name}\`.` })
   }
 
-  const tables = otherPorts(port, alternatives)
-  if (tables.length) {
-    sections.push({ type: 'ports', id: 'api-other-ports', label: 'In other ports', groups: tables,
-      // The rows the tables draw: a language with a link or a reason, and not the languages of the closing sentence.
-      count: tables.reduce((total, group) => total + group.table.groups[0].ports.length, 0),
+  const groups = equivalentsFor(port, symbol, alternatives)
+  if (groups.length) {
+    sections.push({ type: 'ports', id: 'api-other-ports', label: 'In other ports', groups,
+      count: groups.reduce((total, group) => total + group.mappedCount, 0),
       intro: `Equivalents of \`${symbol.name}\` in the other languages.` })
   }
   return sections

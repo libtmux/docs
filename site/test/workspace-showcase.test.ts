@@ -418,14 +418,17 @@ describe('the overview page', () => {
     expect(page).toContain('const workspaceExampleLeads = Boolean(workspaceExamples && !offersPicker(workspaceExamples))')
     // A port with one preset renders no picker, so its table of contents lists no "Explore tmux layout" either.
     expect(page).toContain("...(workspaceExamples && offersPicker(workspaceExamples) ? [{ depth: 2, slug: 'explore-tmux-layout-workspace-possibilities', text: 'Explore tmux layout / workspace possibilities' }] : []),")
-    // With no picker to open the page, the one example opens it, before Install; behind a picker it follows the prose.
+    // The demo follows the intro and the installer follows the demo (record 0059): the picker, or with no picker the one example, then install; behind a picker the full examples follow the prose.
     const leads = page.indexOf('{!placeholderLocale && workspaceExamples && workspaceExampleLeads && <WorkspaceShowcase')
     const follows = page.indexOf('{!placeholderLocale && workspaceExamples && !workspaceExampleLeads && <WorkspaceShowcase')
+    const install = page.indexOf('<h2 id="install">Install</h2>\n      <p>Install the workspace package')
+    expect(page.indexOf('<WorkspacePicker showcase={workspaceExamples} />'), 'the picker leads').toBeLessThan(install)
+    expect(leads, 'the one example of a port with no picker leads').toBeLessThan(install)
     expect(leads).toBeGreaterThan(page.indexOf('<WorkspacePicker showcase={workspaceExamples} />'))
-    expect(leads).toBeLessThan(page.indexOf('<h2 id="install">Install</h2>\n      <p>Install the workspace package'))
     expect(page.indexOf('<Content />')).toBeLessThan(follows)
     const toc = page.slice(page.indexOf('headings={'), page.indexOf('pagePath={publicPagePath}'))
-    expect(toc.indexOf('workspaceExampleLeads ? workspaceHeadings')).toBeLessThan(toc.indexOf("slug: 'install'"))
+    expect(toc.indexOf("slug: 'install'"), 'the contents list names install after the demo').toBeGreaterThan(toc.indexOf('workspaceExampleLeads ? workspaceHeadings'))
+    expect(toc.indexOf("slug: 'install'")).toBeGreaterThan(toc.indexOf("slug: 'explore-tmux-layout-workspace-possibilities'"))
     expect(toc.indexOf('!workspaceExampleLeads ? workspaceHeadings')).toBeGreaterThan(toc.indexOf('...headings,'))
   })
 })
@@ -517,7 +520,7 @@ describe('the showcase section', () => {
     // Go's catalog is read by the library's parser and by the loader the load command calls.
     const go = lines(await section('go'))
     expect(go.find((line) => line.includes('TestEveryTmuxpExampleParses'))).toContain('parsed by the library in a test')
-    expect(go.find((line) => line.includes('TestEveryTmuxpExampleNormalizes'))).toContain('loaded by the library in a test')
+    expect(go.find((line) => line.includes('TestEveryTmuxpExampleMatchesTheStructureTmuxpBuilds'))).toContain('loaded by the library in a test')
     // The Rust parity script is a scheduled run, not a test that gates a pull request.
     const rs = lines(await section('rs'))
     expect(rs.filter((line) => line.includes('a scheduled parity run loads it')).length).toBeGreaterThan(0)

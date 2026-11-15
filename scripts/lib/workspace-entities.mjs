@@ -1,6 +1,6 @@
 /**
  * What a port's workspace documentation names that has its own place to land:
- * the commands of its CLI Manual, the options its tables define, and the
+ * the commands of its CLI manual, the options its tables define, and the
  * configuration keys its Configuration reference defines.
  *
  * The rendered page numbers table rows with `createRowAnchors`, which this

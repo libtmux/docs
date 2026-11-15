@@ -9,7 +9,8 @@ import * as showcaseLibrary from '../src/lib/workspace-showcase'
 import { loadCommand } from '../src/lib/workspace-links'
 import { STORAGE_PREFIX } from '../src/lib/workspace-picker'
 import { landingExcerpt, landingProducts, type CachedSource, type LandingExcerpt, type LandingTable } from '../src/lib/port-landing'
-import { PORTS, PORT_BY_SLUG, type DocProduct } from '../src/lib/ports'
+import { PICKER_GROUP_LABEL, PORTS, PORT_BY_SLUG, portPageUrl, productStatus, productStatusLine, type DocProduct } from '../src/lib/ports'
+import { REGISTRY } from '../src/lib/registry'
 import LANDING from '../src/data/landing-examples.json'
 import SOURCES from '../src/data/example-sources.json'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
@@ -24,14 +25,14 @@ const table = LANDING as LandingTable
 const cache = SOURCES as Record<string, CachedSource>
 
 // The page brings its own copy of the code-block component; this stands in with a marked element.
-const Code = createComponent((_result: unknown, props: { code: string; lang: string; title?: string }) =>
-  renderTemplate`<pre data-lang="${props.lang}" data-title="${props.title ?? ''}">${props.code}</pre>`)
+const Code = createComponent((_result: unknown, props: { code: string; lang: string; title?: string; meta?: string }) =>
+  renderTemplate`<pre data-lang="${props.lang}" data-title="${props.title ?? ''}" data-meta="${props.meta ?? ''}">${props.code}</pre>`)
 const REAL = [
   'components/landing/LandingInstall.astro', 'components/mcp/McpReplay.astro',
   'components/replay/TmuxScreen.astro', 'components/replay/ReplayControls.astro',
   'components/workspace/WorkspaceConfig.astro', 'components/workspace/WorkspaceWindows.astro',
   'components/workspace/WorkspaceEvidence.astro', 'components/workspace/WorkspacePicker.astro',
-  'components/RerollButton.astro', 'components/docs/PickerSearch.astro',
+  'components/RerollButton.astro', 'components/docs/PickerSearch.astro', 'components/StatusBadge.astro',
 ]
 const stubs = {
   'components/HomeExample.astro': '---\nconst { port, language } = Astro.props\n---\n<div data-home-example={port} data-language={language} />',
@@ -73,6 +74,60 @@ async function render(slug: string) {
   window.document.body.innerHTML = await renderHtml(slug)
   return window.document as unknown as Document
 }
+
+/**
+ * The product tabs are the landing's one chooser (record 0061, adoption step 42). Each panel opens with the task it serves,
+ * its maturity and a link to the product's home, and a command belongs to the installer, not to this line (record 0028).
+ */
+describe('the task line of each panel', () => {
+  const task = (panel: Element) => panel.querySelector('[data-landing-task]')!
+
+  it('replaces the "What do you want to do?" cards, so the tabs are the only chooser', async () => {
+    for (const slug of ['go', 'powershell', 'lua']) {
+      const document = await render(slug)
+      expect(document.querySelector('[data-landing-tasks]'), slug).toBeNull()
+      expect(document.body.textContent, slug).not.toContain('What do you want to do?')
+    }
+  })
+
+  it('opens each panel with its task, its maturity and a link to the product home, before the demo and the installer', async () => {
+    const document = await render('go')
+    const go = PORT_BY_SLUG.go!
+    const panels = [...document.querySelectorAll('[data-landing-panel]')]
+    expect(panels.map((panel) => task(panel).querySelector('strong')!.textContent)).toEqual(['Control tmux from Go code', 'Give an assistant tmux tools', 'Load a workspace file'])
+    for (const [index, product] of (['core', 'mcp', 'workspace'] as const).entries()) {
+      const panel = panels[index]!
+      const line = task(panel)
+      expect(panel.querySelectorAll('[data-landing-task]'), `${product}: the line, once`).toHaveLength(1)
+      const status = productStatus(go, product, REGISTRY)!
+      expect(line.querySelector('.status-badge')!.getAttribute('data-status'), `${product}: maturity`).toBe(status)
+      expect(line.textContent, `${product}: the badge explains itself`).toContain(productStatusLine(status))
+      const home = [...line.children].find((child) => child.localName === 'a')!
+      expect(home.getAttribute('href'), `${product}: home`).toBe(portPageUrl(go, 'latest', product))
+      expect(home.textContent, `${product}: home`).toBe(`${PICKER_GROUP_LABEL[product]} home →`)
+      // A command inside a link or a line cannot be selected, copied or highlighted: the installer holds it.
+      expect([...line.querySelectorAll('code, pre, kbd')].filter((element) => !element.closest('.status-toggletip__card')), `${product}: no command`).toEqual([])
+      expect(line.textContent, `${product}: no command`).not.toMatch(/go get|go install|npm |pip |cargo /)
+      for (const later of panel.querySelectorAll('[data-core-showcase], [data-landing-example], [data-package-install], [data-mcp-install]')) {
+        expect(line.compareDocumentPosition(later) & 4, `${product}: the line leads`).toBeTruthy()
+      }
+    }
+    // The installer says how to install; the picker's load step is the one place a workspace file is loaded.
+    expect(panels[2]!.querySelector('.landing-install')!.textContent).not.toMatch(/load/i)
+  })
+
+  it('names each product\'s maturity once, in its task line', async () => {
+    const document = await render('go')
+    expect(document.querySelector('[data-landing-status]')).toBeNull()
+    for (const panel of document.querySelectorAll('[data-landing-panel]')) expect(panel.querySelectorAll('[data-landing-task] .status-badge')).toHaveLength(1)
+  })
+
+  it('leaves out a product the port has not published, and the line where there is only one product', async () => {
+    const lines = async (slug: string) => [...(await render(slug)).querySelectorAll('[data-landing-task] strong')].map((title) => title.textContent!.trim())
+    expect(await lines('powershell')).toEqual(['Control tmux from PowerShell code', 'Load a workspace file'])
+    for (const slug of ['lua', 'elixir', 'kotlin', 'scala', 'fsharp']) expect(await lines(slug), slug).toEqual([])
+  })
+})
 
 describe('the landing page markup', () => {
   it('offers Core API, MCP and Workspace Manager as a selector for a port that ships all three', async () => {
@@ -120,16 +175,18 @@ describe('the landing page markup', () => {
     expect(block.textContent).toBe(resolved.code)
     expect(block.getAttribute('data-title')).toBe(entry.file)
     expect(block.getAttribute('data-lang')).toBe('go')
+    // The frame says it is an excerpt and which lines of the file it quotes.
+    expect(block.getAttribute('data-meta')).toBe(`role="excerpt" lines="${resolved.ranges.map(({ start, end }) => start === end ? start : `${start}-${end}`).join(',')}"`)
     const caption = disclosure.querySelector('.landing-source')!
     expect(caption.querySelector('a')!.getAttribute('href')).toBe(resolved.sourceUrl)
     expect(caption.textContent).toContain(entry.ci.workflow)
     expect(caption.textContent).toContain(entry.ci.command)
   })
 
-  it('opens the MCP tab with a sentence, the worked example, the install picker, then the links and the excerpt', async () => {
+  it('opens the MCP tab with its task line and the worked example, then the install picker, the links and the excerpt (records 0059, 0061)', async () => {
     const document = await render('rs')
     const panel = document.querySelector('[data-landing-panel="mcp"]')!
-    const order = ['[data-landing-example="mcp"]', '[data-mcp-install]', '.landing-links', '[data-landing-excerpt]']
+    const order = ['[data-landing-task]', '[data-landing-example="mcp"]', '[data-mcp-install]', '.landing-links', '[data-landing-excerpt]']
     const found = order.map((selector) => panel.querySelector(selector))
     found.forEach((element, index) => expect(element, order[index]).not.toBeNull())
     for (let index = 1; index < found.length; index += 1) {
@@ -145,6 +202,22 @@ describe('the landing page markup', () => {
     const hrefs = [...panel.querySelectorAll('.landing-links a')].map((link) => link.getAttribute('href'))
     expect(hrefs).toContain('/rs/latest/mcp/#tools-by-tier')
     expect(hrefs).toContain(showcase.toolsHref)
+  })
+
+  it.each(['go', 'ts', 'rs', 'py'])('leads every %s panel with its demo and follows it with the install (record 0059)', async (slug) => {
+    const document = await render(slug)
+    const seen: string[] = []
+    for (const panel of document.querySelectorAll('[data-landing-panel]')) {
+      const product = panel.getAttribute('data-landing-panel')!
+      const installers = panel.querySelectorAll('[data-package-install], [data-mcp-install]')
+      expect(installers, `${slug} ${product}: one installer, once`).toHaveLength(1)
+      const demo = panel.querySelector('[data-core-showcase], [data-landing-example]')
+      // A port with no worked example or tested file shows the installer alone, with nothing to lead it.
+      if (!demo) continue
+      seen.push(product)
+      expect(demo.compareDocumentPosition(installers[0]!) & (demo.contains(installers[0]!) ? 16 : 4), `${slug} ${product}: the install follows the demo`).toBeTruthy()
+    }
+    expect(seen, `${slug} has a demo to lead with`).toContain('core')
   })
 
   it('names the MCP and Workspace panels with a screen-reader label, not a visible heading under the tab', async () => {
@@ -195,8 +268,14 @@ describe('the landing page markup', () => {
       const program = claimed(slug, example)
       const command = [...body.querySelectorAll('pre')].map((pre) => pre.textContent!).find((text) => text.includes(' load workspace.yaml'))
       expect(command, slug).toBe(program ? `${program} load workspace.yaml` : undefined)
-      const after = ['[data-package-install]', '.landing-links', '[data-landing-excerpt]'].map((selector) => panel.querySelector(selector))
-      expect(body.compareDocumentPosition(after[0] ?? after[1]!) & 4, `${slug} install follows the example`).toBeTruthy()
+      // The installer follows the drawing and stands just before the load step (record 0059); the links and the excerpt follow the example.
+      const installer = body.querySelector('[data-package-install]')!
+      expect(body.querySelector('.ws-windows')!.compareDocumentPosition(installer) & 4, `${slug} install follows the drawing`).toBeTruthy()
+      expect(installer.parentElement!.compareDocumentPosition(evidence) & 4, `${slug} install precedes the evidence`).toBeTruthy()
+      const lead = body.querySelector('.ws-evidence__lead')
+      if (lead) expect(installer.parentElement!.nextElementSibling, `${slug} install is the step before the load step`).toBe(lead)
+      const after = ['.landing-links', '[data-landing-excerpt]'].map((selector) => panel.querySelector(selector))
+      expect(body.compareDocumentPosition(after[0] ?? after[1]!) & 4, `${slug} links follow the example`).toBeTruthy()
     }
   })
 
@@ -218,8 +297,16 @@ describe('the landing page markup', () => {
       // The overview's examples carry the files in full; the landing page shows each file once.
       expect(body.querySelector('[data-workspace-showcase], .ws-example'), slug).toBeNull()
       expect(body.querySelectorAll('.ws-config__panel--yaml'), `${slug} one copy of each file`).toHaveLength(showcase.examples.length)
-      const after = ['[data-package-install]', '.landing-links', '[data-landing-excerpt]'].map((selector) => panel.querySelector(selector))
-      expect(body.compareDocumentPosition(after[0] ?? after[1]!) & 4, `${slug} install follows the picker`).toBeTruthy()
+      // The installer is drawn once, in the picker's stage after the presets, and the stylesheet puts it between each preset's
+      // drawing and its load step (record 0059); the links and the excerpt follow the picker.
+      expect(body.querySelectorAll('[data-package-install]'), `${slug} one installer, not one for each preset`).toHaveLength(1)
+      const installer = body.querySelector('.ws-picker__stage > .ws-picker__install [data-package-install]')!
+      expect(installer.getAttribute('data-package-id'), slug).toBe('workspace')
+      const last = [...body.querySelectorAll('.ws-picker__stage > .ws-picker__panel')].at(-1)!
+      expect(last.compareDocumentPosition(installer.parentElement!) & 4, `${slug} install follows the presets`).toBeTruthy()
+      for (const item of body.querySelectorAll('.ws-picker__panel')) expect(item.querySelector(':scope > .ws-picker__evidence [data-landing-evidence]'), `${slug} ${item.getAttribute('data-preset')} keeps its own load step`).not.toBeNull()
+      const after = ['.landing-links', '[data-landing-excerpt]'].map((selector) => panel.querySelector(selector))
+      expect(body.compareDocumentPosition(after[0] ?? after[1]!) & 4, `${slug} links follow the picker`).toBeTruthy()
     })
   })
 
@@ -289,6 +376,16 @@ describe('the landing page markup', () => {
     const css = readFileSync(new URL('../src/styles/workspace-picker.css', import.meta.url), 'utf8')
     expect(css).toMatch(/\.ws-picker__panel:not\(\[data-first\]\)\s*\{\s*display: none;/)
     expect(css).toMatch(/html\[data-js\] \.ws-picker__title\s*\{\s*display: none;/)
+  })
+
+  it('stands the installer between each preset\'s drawing and its load step with script, in rows as tall as the tallest preset (record 0059)', () => {
+    const css = readFileSync(new URL('../src/styles/workspace-picker.css', import.meta.url), 'utf8')
+    const rule = (selector: string) => new RegExp(`${selector.replace(/[.*+?^${}()|[\]\\>]/g, '\\$&')}\\s*\\{([^}]*)\\}`).exec(css)?.[1]
+    expect(rule('html[data-js] .ws-picker--landing .ws-picker__panel'), 'the panels take no box of their own').toMatch(/display: contents/)
+    expect(rule('html[data-js] .ws-picker--landing .ws-picker__stage > .ws-picker__panel > .ws-picker__head')).toMatch(/grid-area: 1 \/ 1/)
+    expect(rule('html[data-js] .ws-picker--landing .ws-picker__stage > .ws-picker__panel > .ws-body')).toMatch(/grid-area: 2 \/ 1/)
+    expect(rule('html[data-js] .ws-picker--landing .ws-picker__install'), 'the installer is the third row').toMatch(/grid-area: 3 \/ 1/)
+    expect(rule('html[data-js] .ws-picker--landing .ws-picker__stage > .ws-picker__panel > .ws-picker__evidence'), 'the load steps are the fourth').toMatch(/grid-area: 4 \/ 1/)
   })
 
   /** The Workspace tab's markup from its panel to the links under it, with code blocks reduced to their text. */

@@ -84,6 +84,14 @@ export function initializeDocumentationSidebar(nav: HTMLElement | null) {
       if (query) group.open = !group.hidden
       else if (searchSaved) group.open = searchSaved[groups.indexOf(group)]
     }
+    // A label over its rows hides with them.
+    for (const overline of nav.querySelectorAll<HTMLElement>('.sidebar-nav .sidebar-overline')) {
+      let shown = false
+      for (let row = overline.nextElementSibling; row && !row.classList.contains('sidebar-overline'); row = row.nextElementSibling) {
+        if (row.matches('[data-sidebar-label]') && !(row as HTMLElement).hidden) shown = true
+      }
+      overline.hidden = !shown
+    }
     if (!query) searchSaved = undefined
     nav.querySelector<HTMLElement>('[data-section-empty]')!.hidden = links.some((link) => !link.hidden)
   }, { signal })

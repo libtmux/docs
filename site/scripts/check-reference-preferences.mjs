@@ -219,7 +219,8 @@ export async function checkHeaderLinksFail(browser, base) {
       await page.waitForSelector('details[data-header-picker][data-enhanced]', { state: 'attached' })
       if (css) await page.addStyleTag({ content: css })
       if (script) await page.evaluate(script)
-      await page.locator('.site-header__menu > summary').click()
+      // From 48rem the Menu is absent under a ContextStrip, so there is nothing to open.
+      if (await page.locator('.site-header__menu > summary').isVisible()) await page.locator('.site-header__menu > summary').click()
       await checkHeaderLinks(page, path, width, true)
     } finally {
       await context.close()
@@ -417,7 +418,8 @@ export async function checkGlobalHeader(browser, base) {
           await page.setViewportSize({ width, height: 900 })
           assert.equal(await page.locator('header nav[aria-label="Documentation destinations"]').count(), 0)
           const menu = page.locator('.site-header__menu')
-          await menu.locator(':scope > summary').click()
+          // The Menu holds something the bar lacks only below 48rem, or on a page with no ContextStrip.
+          if (await menu.locator(':scope > summary').isVisible()) await menu.locator(':scope > summary').click()
           assert.equal(await menu.locator('[data-port-home]').count(), 0)
           const geometry = await page.evaluate(() => {
             const brand = document.querySelector('.site-header__mark').getBoundingClientRect()
@@ -428,18 +430,21 @@ export async function checkGlobalHeader(browser, base) {
               frame: { left: bar.left, width: bar.width, height: bar.height, wordmark: brand.left, controls: controls.left, menu: menu.left },
               wordmarkVisible: brand.width > 40 && brand.height > 20
                 && getComputedStyle(document.querySelector('.site-header__wordmark')).clipPath === 'none',
-              separate: brand.right <= controls.left && controls.right <= menu.left }
+              separate: brand.right <= controls.left && (menu.width === 0 || controls.right <= menu.left) }
           })
           assert(geometry.fits && geometry.separate, `${path} at ${width}px: header controls fit without overlap`)
           assert(geometry.wordmarkVisible, `${path} at ${width}px: the wordmark remains a visible home link`)
           // The probe renders a TypeScript reference page, so it has a port.
           if (HEADER_PAGES[path]) await checkHeaderLinks(page, path, width, javaScriptEnabled)
           else assert.equal(await page.locator('details[data-header-picker], a[data-header-action]').count(), 0, `${path}: pages without a port have no repository or package links`)
+          // The Menu button shows only when it holds something the header does not (SiteHeader, decided 2026-11-14), so
+          // the controls have one place with it and one without; pages of the same kind keep the same place.
           if (width >= 1600) {
-            if (!headerFrames.has(width)) headerFrames.set(width, geometry.frame)
-            assert.deepEqual(geometry.frame, headerFrames.get(width), `${path} at ${width}px: global controls keep their homepage positions`)
+            const key = `${width}:${geometry.frame.menu > 0 ? 'menu' : 'no-menu'}`
+            if (!headerFrames.has(key)) headerFrames.set(key, geometry.frame)
+            assert.deepEqual(geometry.frame, headerFrames.get(key), `${path} at ${width}px: global controls keep the positions of the first page with the same Menu state`)
           }
-          await menu.locator(':scope > summary').click()
+          if (await menu.locator(':scope > summary').isVisible()) await menu.locator(':scope > summary').click()
         }
       }
       await page.setViewportSize({ width: 280, height: 900 })
@@ -500,7 +505,15 @@ export async function checkScrollbarStability(browser, base) {
         const reference = await frame()
         assert(reference.scrolls && reference.scrollbar > 0, `${label}: the reference exercises a real classic scrollbar: ${JSON.stringify(reference)}`)
         assert(!reference.overflow, `${label}: the reference has no horizontal overflow`)
-        assert.deepEqual(reference.controls, home.controls, `${label}: a classic scrollbar does not move the shared header`)
+        // The Menu button shows only where it holds something the bar lacks (SiteHeader, decided 2026-11-14): the homepage has
+        // no ContextStrip and keeps it, a port page drops it from 48rem. The bar, the wordmark and the trailing edge of the last
+        // control stay put either way; the toolbar and Menu are compared whole when both pages draw the Menu alike.
+        const trailing = ({ toolbar, menu }) => Math.round((menu.width > 0 ? menu.x + menu.width : toolbar.x + toolbar.width) * 100) / 100
+        assert.deepEqual([reference.controls.bar, reference.controls.wordmark, trailing(reference.controls)],
+          [home.controls.bar, home.controls.wordmark, trailing(home.controls)], `${label}: a classic scrollbar does not move the shared header`)
+        if ((reference.controls.menu.width > 0) === (home.controls.menu.width > 0)) {
+          assert.deepEqual(reference.controls, home.controls, `${label}: a classic scrollbar does not move the shared header`)
+        }
         // At 280px the homepage picker shares its row with the solution control.
         if (width >= 628) assert.equal(reference.pickerWidth, home.pickerWidth, `${label}: the unconstrained language picker keeps its width`)
         await page.locator('.site-header__mark').click()

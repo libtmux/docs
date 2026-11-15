@@ -40,7 +40,7 @@ sidebar:
   order: 0
 tableOfContents: true
 cards:
-  - label: CLI Manual
+  - label: CLI manual
     href: ./cli/
     body: Commands, options and machine output.
   - label: Configuration

@@ -1,0 +1,168 @@
+---
+/**
+ * "In other ports": the same task in every other port, with the differences the model records.
+ *
+ * One table replaces the three renderings this page used to carry (the per-entry disclosure, the tmux-section
+ * table and the "Other languages" row). `equivalentsFor` builds the rows; the header picker reads the same data.
+ * Recorded absences with a reason are blocks of their own, the concept table's generic sentence is one line, and
+ * ports the table says nothing about are "Not mapped", which is not evidence of absence.
+ */
+import ApiBadge from './ApiBadge.astro'
+import ApiDoc from './ApiDoc.astro'
+import SymbolName from './SymbolName.astro'
+import RelationshipCollection from './RelationshipCollection.astro'
+import { API_MODELS, PORT_NAME } from '../../lib/api-models'
+import { FILTER_AFTER_ROWS, genericAbsenceSentence, unmappedSentence, type EquivalentsGroup } from '../../lib/api-equivalents'
+import { productApiIndex } from '../../lib/product-api'
+import { defaultVersionFor } from '../../lib/versions'
+
+interface Props {
+  groups: EquivalentsGroup[]
+  /** The page's own port, which names the differences column ("Differs from Go"). */
+  port: string
+  /** The section's id, so the contents list and `#api-other-ports` links land on it. */
+  id?: string
+  /** Heading level; the API page's sections are h2, an entry inside a card is h3. */
+  level?: 2 | 3
+}
+const { groups, port, id, level = 2 } = Astro.props as Props
+const portName = PORT_NAME[port] ?? port
+// A reason names symbols of another language in backticks, which render as code.
+const reasonParts = (text: string) => text.split(/`([^`]+)`/)
+const noteIndex = (slug: string) => API_MODELS[slug] ? productApiIndex(API_MODELS[slug], defaultVersionFor(slug)) : undefined
+const total = groups.reduce((sum, group) => sum + group.mappedCount, 0)
+const countText = (count: number) => `${count} other ${count === 1 ? 'port' : 'ports'} mapped`
+---
+<RelationshipCollection class="api-equivalents" id={id ?? 'api-equivalents'} label="In other ports" kind="task equivalence" level={level} count={groups.length === 1 ? countText(total) : undefined}>
+  {groups.map((group) => {
+    const filterable = group.rows.length > FILTER_AFTER_ROWS
+    const generic = genericAbsenceSentence(group.genericAbsent)
+    const unmapped = unmappedSentence(group.unmapped)
+    return <div class="api-eq-group" data-eq-group>
+      <p class="api-eq-why">
+        Source-verified mappings for <b>{group.label}</b>.{groups.length > 1 && <> <span class="api-eq-count">{countText(group.mappedCount)}</span>.</>} A mapping says these APIs perform the same task. It does not say they share defaults, errors or completion: check each page.
+      </p>
+      {filterable && <div class="api-eq-chipset" role="group" aria-label="Show" data-eq-filter hidden>
+        <button type="button" aria-pressed="true" data-eq-show="all">All mapped</button>
+        <button type="button" aria-pressed="false" data-eq-show="diff">Only with differences</button>
+      </div>}
+      <div class="api-eq-wrap">
+        <table class="api-eq-table">
+          <caption class="sr-only">{group.label} in each port</caption>
+          <thead><tr><th scope="col">Port</th><th scope="col">API</th><th scope="col">Differs from {portName}</th></tr></thead>
+          <tbody>
+            {group.rows.map((row) => <tr aria-current={row.current ? 'true' : undefined} data-port={row.port} data-differs={row.chips.length || row.note ? '' : undefined}>
+              <th scope="row">{row.name}</th>
+              <td class="api-elsewhere-value">
+                {row.href || row.current
+                  ? <a href={row.current ? Astro.url.pathname : row.href} aria-current={row.current ? 'page' : undefined}>{row.kind && <ApiBadge label={row.kind} value={row.kind} variant="kind" compact preview={false} />}<code><SymbolName name={row.qualifiedName ?? ''} /></code></a>
+                  : <span class="api-eq-name">{row.kind && <ApiBadge label={row.kind} value={row.kind} variant="kind" compact preview={false} />}<code><SymbolName name={row.qualifiedName ?? ''} /></code></span>}
+                {row.summary && <div class="api-eq-sum">{row.summary}</div>}
+              </td>
+              <td>
+                {row.current
+                  ? <span class="api-eq-muted">This page</span>
+                  : row.chips.length
+                    ? <span class="api-eq-chips">{row.chips.map((chip) => <span class="api-eq-diff">{chip}</span>)}</span>
+                    : !row.note && <span class="api-eq-muted">None recorded in the model</span>}
+                {row.note && <div class="api-eq-note">{noteIndex(row.port) ? <ApiDoc text={row.note} index={noteIndex(row.port)!} /> : row.note}</div>}
+              </td>
+            </tr>)}
+          </tbody>
+        </table>
+      </div>
+      {(group.absent.length > 0 || generic || unmapped) && <div class="api-eq-absent">
+        {group.absent.map((row) => <div class="api-eq-state">
+          <strong>No {row.name} equivalent.</strong>
+          <p>{reasonParts(row.reason ?? '').map((part, i) => i % 2 ? <code>{part}</code> : part)}</p>
+        </div>)}
+        {generic && <p class="api-eq-line">{generic}</p>}
+        {unmapped && <p class="api-eq-line"><span class="api-eq-avail">Not mapped</span> {unmapped}</p>}
+      </div>}
+    </div>
+  })}
+</RelationshipCollection>
+<script>
+  /** "Only with differences": the page's own row stays, every other row is kept or hidden. Without script the chips never show. */
+  function mount(root: HTMLElement) {
+    const bar = root.querySelector<HTMLElement>('[data-eq-filter]')
+    if (!bar || bar.dataset.ready) return
+    bar.dataset.ready = 'true'
+    bar.hidden = false
+    bar.addEventListener('click', (event) => {
+      const button = (event.target as Element).closest<HTMLButtonElement>('[data-eq-show]')
+      if (!button) return
+      for (const other of bar.querySelectorAll('button')) other.setAttribute('aria-pressed', String(other === button))
+      const only = button.dataset.eqShow === 'diff'
+      for (const row of root.querySelectorAll<HTMLElement>('tbody tr')) row.hidden = only && !row.hasAttribute('aria-current') && !row.hasAttribute('data-differs')
+    })
+  }
+  const run = () => document.querySelectorAll<HTMLElement>('[data-eq-group]').forEach(mount)
+  document.addEventListener('astro:page-load', run)
+</script>
+<style is:global>
+  .api-equivalents {
+    --eq-diff-bg: var(--diff-bg, #fdf3d8);
+    --eq-diff-ink: var(--aside-caution-ink, oklch(0.48 0.12 70));
+    --eq-control-border: var(--control-border, #7f8d9b);
+    --eq-measure: var(--measure-prose, 72ch);
+  }
+  html[data-theme-mode='dark'] .api-equivalents {
+    --eq-diff-bg: var(--diff-bg, #3a2c0c);
+    --eq-diff-ink: var(--aside-caution-ink, oklch(0.85 0.12 85));
+    --eq-control-border: var(--control-border, #718294);
+  }
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme-mode]):not([data-theme='light']) .api-equivalents {
+      --eq-diff-bg: var(--diff-bg, #3a2c0c);
+      --eq-diff-ink: var(--aside-caution-ink, oklch(0.85 0.12 85));
+      --eq-control-border: var(--control-border, #718294);
+    }
+  }
+  .api-eq-count { font: 400 12px/1 var(--font-sans, sans-serif); color: var(--color-foreground-muted); font-variant-numeric: tabular-nums; }
+  .api-eq-why { margin: 0 0 .5rem; max-inline-size: var(--eq-measure); font-size: 13px; line-height: 19.5px; color: var(--color-foreground-muted); }
+  .api-eq-why b { font-weight: 600; color: var(--text-color); }
+  .api-eq-chipset { display: flex; flex-wrap: wrap; gap: 4px; margin-block-end: .5rem; }
+  .api-eq-chipset[hidden] { display: none; }
+  .api-eq-chipset button { display: inline-flex; align-items: center; gap: 5px; min-height: 26px; padding: 0 8px; border: 1px solid var(--eq-control-border); border-radius: 9999px; background: var(--background-color); color: var(--text-color); font: inherit; font-size: 12px; cursor: pointer; }
+  .api-eq-chipset button:hover { background: var(--color-api-background-hover, var(--color-surface-hover)); }
+  .api-eq-chipset button[aria-pressed='true'] { background: color-mix(in srgb, var(--color-link) 12%, var(--background-color)); border-color: color-mix(in srgb, var(--color-link) 45%, transparent); color: var(--color-link); font-weight: 600; }
+  .api-eq-chipset button:focus-visible { outline: 2px solid var(--focus-ring-color, var(--theme-primary)); outline-offset: 1px; }
+  /* A table wider than its column scrolls inside its own bordered box. */
+  .api-eq-wrap {
+    overflow-x: auto; border: 1px solid var(--color-background-border); border-radius: var(--radius-md, 6px);
+    /* A fade at a clipped edge says there is more to scroll to; it follows the scroll position. */
+    background:
+      linear-gradient(to right, var(--background-color) 30%, transparent) left / 2rem 100% no-repeat local,
+      linear-gradient(to left, var(--background-color) 30%, transparent) right / 2rem 100% no-repeat local,
+      linear-gradient(to right, color-mix(in srgb, var(--text-color) 14%, transparent), transparent) left / .75rem 100% no-repeat scroll,
+      linear-gradient(to left, color-mix(in srgb, var(--text-color) 14%, transparent), transparent) right / .75rem 100% no-repeat scroll;
+  }
+  .api-eq-table { display: table; inline-size: 100%; min-inline-size: 44rem; border-collapse: collapse; font-size: 14px; margin: 0; }
+  .api-eq-table :is(th, td) { padding: 8px 10px; border: 0; border-block-start: 1px solid var(--color-background-border); text-align: start; vertical-align: top; }
+  .api-eq-table thead th { border-block-start: 0; font: 600 12px/16px var(--font-sans, sans-serif); letter-spacing: .04em; text-transform: uppercase; color: var(--color-foreground-muted); }
+  .api-eq-table tbody th { font-weight: 600; white-space: nowrap; }
+  .api-eq-table :is(th:first-child, td:first-child) { position: sticky; inset-inline-start: 0; background: var(--background-color); }
+  .api-eq-table tr[aria-current] :is(th, td) { background: var(--color-background-secondary); }
+  .api-eq-table td code { font-size: 13px; overflow-wrap: anywhere; }
+  .api-eq-name { display: inline-flex; align-items: baseline; gap: .3rem; }
+  /* Kind marks are neutral ink inside a table: the chip keeps its shape, and the hue stays out of a grid of rows. */
+  .api-eq-table .api-elsewhere-value a > .api-nav__kind {
+    --mk-fill: color-mix(in srgb, var(--color-foreground-primary, currentColor) 7%, transparent);
+    --mk-ink: var(--color-foreground-primary, currentColor);
+    border-inline-end-color: color-mix(in srgb, var(--color-foreground-primary, currentColor) 14%, transparent);
+  }
+  .api-eq-sum, .api-eq-note { margin-block-start: 2px; font-size: 13px; line-height: 19.5px; color: var(--color-foreground-muted); }
+  .api-eq-note { margin-block-start: 4px; }
+  .api-eq-muted { color: var(--color-foreground-muted); }
+  .api-eq-chips { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+  .api-eq-diff { display: inline-flex; align-items: center; gap: 4px; padding: 1px 6px; border-radius: var(--radius-xs, 4px); background: var(--eq-diff-bg); color: var(--eq-diff-ink); font-size: 12px; font-weight: 600; }
+  .api-eq-absent { display: grid; gap: 8px; margin-block-start: 12px; }
+  .api-eq-state { display: grid; gap: 6px; justify-items: start; padding: 16px; border: 1px dashed var(--eq-control-border); border-radius: var(--radius-md, 6px); font-size: 14px; }
+  .api-eq-state strong { font-size: 15px; font-weight: 600; }
+  .api-eq-state p { margin: 0; color: var(--color-foreground-muted); line-height: 21px; }
+  .api-eq-line { margin: 0; font-size: 14px; }
+  .api-eq-avail { display: inline-flex; align-items: center; gap: 5px; font: 400 12px/16px var(--font-sans, sans-serif); color: var(--color-foreground-muted); white-space: nowrap; }
+  .api-eq-avail::before { content: ''; inline-size: 8px; block-size: 8px; border-radius: 50%; border: 1.5px dashed var(--color-foreground-muted); }
+  @media print { .api-eq-chipset { display: none; } .api-eq-wrap { overflow: visible; } }
+</style>

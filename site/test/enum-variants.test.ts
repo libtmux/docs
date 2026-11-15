@@ -138,7 +138,7 @@ async function page(id: string) {
   }))
   return win.document
 }
-const contents = (document: Window['document']) => [...document.querySelectorAll('nav[aria-label="On this page"] a')].map((link) => [link.getAttribute('href'), link.textContent])
+const contents = (document: Window['document']) => [...document.querySelectorAll('nav.api-section-links a')].map((link) => [link.getAttribute('href'), link.firstChild?.textContent])
 
 const without = (id: string) => model.symbols.filter((entry) => entry.id !== id)
 const retyped = (id: string, type: string) => model.symbols.map((entry) => entry.id === id ? { ...entry, type } : entry)
@@ -279,7 +279,7 @@ describe('an enum page', () => {
     // The rest of the members keep their heading, count and list; no variant is in it.
     const members = document.querySelector('.api-members > h2#api-members')!
     expect(members.firstChild?.textContent).toBe('Members')
-    expect(members.querySelector('.api-section-count')?.textContent).toBe(String(methods.length))
+    expect(members.querySelector('.api-section-count')?.textContent).toBe(`${methods.length} members`)
     expect([...document.querySelectorAll('.api-members .api-member-link')].map((link) => link.textContent).toSorted()).toEqual(methods.map((entry) => entry.name).toSorted())
     expect(heading.compareDocumentPosition(members) & 4, 'Variants come before Members').toBeGreaterThan(0)
   }, 60_000)
@@ -312,7 +312,7 @@ describe('an enum page', () => {
     expect(document.querySelector('#api-variants')).toBeNull()
     const heading = document.querySelector('.api-members > h2#api-members')!
     expect(heading.firstChild?.textContent).toBe('Variants')
-    expect(heading.querySelector('.api-section-count')?.textContent).toBe(String(rawVariants('window.SplitDirection').length))
+    expect(heading.querySelector('.api-section-count')?.textContent).toBe(`${rawVariants('window.SplitDirection').length} variants`)
     expect(heading.querySelector('a.api-heading-link')?.getAttribute('aria-label')).toBe('Link to Variants')
     expect(contents(document)).toContainEqual(['#api-members', 'Variants'])
     expect(document.querySelector('.api-members caption')?.textContent).toBe('SplitDirection variants')

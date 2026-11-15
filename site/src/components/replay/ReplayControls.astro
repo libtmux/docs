@@ -6,7 +6,7 @@
  * to page it. A host that says what each dot shows
  * (`ReplayOptions.tip`) gets a tooltip over the dot a pointer or focus is on. The markup is what
  * `lib/replay-player.ts` binds, so the MCP replay and the Core API player
- * share both. It is drawn at the state before the first call, and takes its
+ * share both. It is drawn at the step the player opens on, and takes its
  * place from the first paint, so binding it moves nothing; a page without
  * script (`html:not([data-js])`) hides it and keeps no dead buttons.
  */
@@ -19,10 +19,10 @@ interface Props {
   marks: string[]
   /** How many of the calls the page first plays when a choice of the reader's drops the last (the dots and the count are drawn for those); every call by default. */
   playable?: number
+  /** The step the bar is drawn at, which the player opens on: 0, the state before the first call, by default. */
+  at?: number
 }
-const { start, marks, playable = marks.length } = Astro.props as Props
-// The page is drawn at the state before the first call, where the player starts.
-const at = 0
+const { start, marks, playable = marks.length, at = 0 } = Astro.props as Props
 const total = playable
 // A program with this many dots or more can outrun the widest bar's track, so its buttons keep their place on a wide bar too.
 const LONG = 15

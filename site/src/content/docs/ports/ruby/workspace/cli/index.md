@@ -5,7 +5,7 @@ port: ruby
 product: workspace
 sidebar:
   group: CLI reference
-  label: CLI Manual
+  label: CLI manual
   order: 0
 tableOfContents: true
 ---

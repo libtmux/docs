@@ -310,15 +310,16 @@ describe('the worked example', () => {
 describe('the overview page', () => {
   const page = readFileSync(new URL('../src/components/docs/DocPage.astro', import.meta.url), 'utf8')
 
-  it('opens the MCP overview with the worked example, then install, and closes it with the tools', () => {
+  it('opens the MCP overview with the worked example, then install, and closes it with the tools (record 0059)', () => {
     expect(page).toContain("const mcpTools = isMcpOverview && port ? await mcpShowcase(port, version ?? buildTarget(process.env).version) : undefined")
     const example = page.indexOf('<McpShowcase showcase={mcpTools} part="example" />')
     const install = page.indexOf('<h2 id="install">Install</h2>')
     const tools = page.indexOf('<McpShowcase showcase={mcpTools} part="tools" />')
+    // The demo follows the intro and leads the page; the installer follows the demo, on every port, as it does in a port home's panel.
     expect(page.indexOf('productIntro && <ProductIntro parts={productIntro} />'), 'the example follows the intro').toBeLessThan(example)
     expect(example, 'the example comes before install').toBeLessThan(install)
-    expect(install).toBeLessThan(page.indexOf('placeholderLocale && <Content />'))
-    expect(page.indexOf('placeholderLocale && <Content />'), 'the tool grid follows the prose').toBeLessThan(tools)
+    expect(install).toBeLessThan(page.indexOf('placeholderLocale && !introFirst && <Content />'))
+    expect(page.indexOf('placeholderLocale && !introFirst && <Content />'), 'the tool grid follows the prose').toBeLessThan(tools)
     expect(page).toContain('!placeholderLocale && mcpTools && <McpShowcase')
   })
 
@@ -398,7 +399,7 @@ describe('the showcase section', () => {
       expect(steps, port).toHaveLength(example!.steps.length)
       steps.forEach((item, index) => {
         const { caption, arguments: args, tool } = example!.steps[index]!
-        const lead = item.querySelector('.mcp-turn__say')!.textContent!.replace(/\s+/g, ' ').replace(/^agent/, '').trim()
+        const lead = item.querySelector('.mcp-turn__say')!.textContent!.replace(/\s+/g, ' ').replace(/^Agent/, '').trim()
         expect(lead, `${port} ${tool.name}`).toBe(caption)
         const call = parseCall(item.querySelector('.mcp-call')!)
         expect(call.arguments, `${port} ${tool.name}`).toEqual(args)

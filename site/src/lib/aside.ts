@@ -9,7 +9,7 @@
 export const ASIDE_TYPES = ['note', 'tip', 'caution', 'danger'] as const
 export type AsideType = (typeof ASIDE_TYPES)[number]
 
-export const ASIDE_VARIANTS = ['classic', 'refined', 'card', 'minimal', 'hybrid'] as const
+export const ASIDE_VARIANTS = ['compact', 'slim', 'classic', 'minimal', 'refined', 'card', 'hybrid'] as const
 export type AsideVariant = (typeof ASIDE_VARIANTS)[number]
 
 export const ASIDE_ICON_STYLES = ['inline', 'soft', 'solid'] as const
@@ -33,8 +33,16 @@ export const ASIDE_TITLES: Record<AsideType, string> = {
   danger: 'Danger',
 }
 
+/** The variant every aside uses unless a page asks for another (record 0036). */
+export const ASIDE_DEFAULT_VARIANT: AsideVariant = 'compact'
+
+/** Run-in variants put the title in the first line of the text instead of on a row of its own. */
+export const ASIDE_RUN_IN: ReadonlySet<AsideVariant> = new Set(['compact', 'slim'])
+
 /** The icon each variant draws unless the caller overrides its style or size. */
 export const ASIDE_VARIANT_DEFAULTS: Record<AsideVariant, { iconStyle: AsideIconStyle; iconSize: AsideIconSize }> = {
+  compact: { iconStyle: 'inline', iconSize: 'sm' },
+  slim: { iconStyle: 'inline', iconSize: 'sm' },
   classic: { iconStyle: 'inline', iconSize: 'md' },
   refined: { iconStyle: 'soft', iconSize: 'md' },
   card: { iconStyle: 'solid', iconSize: 'md' },
@@ -43,15 +51,22 @@ export const ASIDE_VARIANT_DEFAULTS: Record<AsideVariant, { iconStyle: AsideIcon
 }
 
 export const ASIDE_VARIANT_DESCRIPTIONS: Record<AsideVariant, string> = {
+  compact: 'A 3px start edge on a faint flat tint, with the title run into the first line. The default.',
+  slim: 'A 2px start edge and no tint, with the title run in, for asides inside dense reference blocks.',
   classic: 'Left border on a flat background.',
   refined: 'Left border on a background that fades right, with a soft icon badge.',
   card: 'Bordered card with a solid icon badge and no left border.',
   minimal: 'Top border and an uppercase title, for editorial pages.',
-  hybrid: 'Left border on a fading background, with a solid icon badge. The default.',
+  hybrid: 'Left border on a fading background, with a solid icon badge. The style before compact.',
 }
 
-export const asideClass = (type: AsideType, variant: AsideVariant): string =>
-  `lm-aside lm-aside--${type} lm-aside--${variant}`
+/** Titles read in the ink tokens unless `ink` is false: the hue as title text measures 2.0:1 to 2.6:1 in the light theme. */
+export const asideClass = (type: AsideType, variant: AsideVariant, ink = true): string =>
+  `lm-aside lm-aside--${type} lm-aside--${variant}${ink ? ' lm-aside--ink' : ''}`
+
+/** A run-in title is a lead that ends in a full stop; a block title stands as written. */
+export const asideTitle = (variant: AsideVariant, title: string): string =>
+  ASIDE_RUN_IN.has(variant) && !/[.!?:]$/.test(title) ? `${title}.` : title
 
 export const asideIconClass = (style: AsideIconStyle, size: AsideIconSize): string =>
   `lm-aside__icon lm-aside__icon--${style} lm-aside__icon--${size}`
@@ -87,12 +102,11 @@ export const asideFor = (kind: string): { type: AsideType; title: string } =>
  * The body keeps its own blank lines so it is parsed as Markdown, not as raw
  * HTML.
  */
-export function asideMarkdown(type: AsideType, title: string, body: string): string {
-  const variant = 'hybrid'
+export function asideMarkdown(type: AsideType, title: string, body: string, variant: AsideVariant = ASIDE_DEFAULT_VARIANT): string {
   const { iconStyle, iconSize } = ASIDE_VARIANT_DEFAULTS[variant]
   return [
     `<aside class="${asideClass(type, variant)}" role="note">`,
-    `<p class="lm-aside__title"><span class="${asideIconClass(iconStyle, iconSize)}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${ASIDE_ICONS[type]}"></path></svg></span><span>${title}</span></p>`,
+    `<p class="lm-aside__title"><span class="${asideIconClass(iconStyle, iconSize)}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${ASIDE_ICONS[type]}"></path></svg></span><span>${asideTitle(variant, title)}</span></p>`,
     '<div class="lm-aside__content">', '', body, '', '</div>', '</aside>',
   ].join('\n')
 }

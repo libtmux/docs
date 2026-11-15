@@ -47,8 +47,8 @@ const breadcrumbs = [
     >
       <main class="mx-auto max-w-5xl px-4 py-12">
         <PageToolbar breadcrumbs={breadcrumbs} />
-        <h1 class="text-3xl font-semibold tracking-tight">Agent prompts</h1>
-        <p class="mt-4 max-w-3xl text-base leading-relaxed opacity-80">
+        <h1 class="text-[2rem] leading-[2.375rem] font-semibold tracking-tight">Agent prompts</h1>
+        <p class="mt-4 max-w-[72ch] text-base leading-7 opacity-80">
           Each prompt installs libtmux in the repository you are in, checks the
           install against a real tmux server, and points your agent at this
           site's machine-readable index so it reads the API rather than guessing
@@ -61,7 +61,7 @@ const breadcrumbs = [
         </div>
 
         <section class="mt-12">
-          <h2 class="text-xl font-semibold">Every task</h2>
+          <h2 class="text-2xl font-semibold">Every task</h2>
           <div class="mt-4 grid gap-4 sm:grid-cols-2">
             {TOPICS.map((item) => (
               <a
@@ -76,8 +76,8 @@ const breadcrumbs = [
         </section>
 
         <section class="mt-12">
-          <h2 class="text-xl font-semibold">For programs</h2>
-          <p class="mt-2 max-w-3xl text-sm opacity-80">
+          <h2 class="text-2xl font-semibold">For programs</h2>
+          <p class="mt-2 max-w-[72ch] text-sm opacity-80">
             Every prompt is published as a plain-text file as well as on a page,
             so an eval runner or a script can fetch one without parsing HTML.
             <a class="underline" href={withRoot('/prompts.json')}>
@@ -96,24 +96,25 @@ const breadcrumbs = [
 <BaseLayout title={`${topic.label} prompt`} description={topic.summary} breadcrumbs={breadcrumbs}>
   <main class="mx-auto max-w-5xl px-4 py-12">
     <PageToolbar breadcrumbs={breadcrumbs} />
-    <h1 class="mt-2 text-3xl font-semibold tracking-tight">{topic.label}</h1>
-    <p class="mt-4 max-w-3xl text-base leading-relaxed opacity-80">{topic.summary}</p>
+    <h1 class="mt-2 text-[2rem] leading-[2.375rem] font-semibold tracking-tight">{topic.label}</h1>
+    <p class="mt-4 max-w-[72ch] text-base leading-7 opacity-80">{topic.summary}</p>
 
     <div class="mt-8">
-      <AgentPrompt defaultTopic={topic.id} />
+      {/* The summary stands under the heading; the widget does not state it a second time. */}
+      <AgentPrompt defaultTopic={topic.id} showSummary={false} />
     </div>
 
     <section class="mt-12">
-      <h2 class="text-xl font-semibold">As plain text</h2>
-      <p class="mt-2 max-w-3xl text-sm opacity-80">
+      <h2 class="text-2xl font-semibold">As plain text</h2>
+      <p class="mt-2 max-w-[72ch] text-sm opacity-80">
         The same prompt per language, as a file rather than a page.
       </p>
-      <ul class="mt-4 grid gap-2 sm:grid-cols-2">
+      <ul class="mt-4 grid gap-x-4 gap-y-1 [grid-template-columns:repeat(auto-fill,minmax(9.5rem,1fr))]" data-plain-text-languages>
         {
           PORTS.map((port) => (
             <li>
               <a
-                class="font-mono text-sm hover:underline underline"
+                class="text-sm underline decoration-1 underline-offset-2 text-[var(--color-link)]"
                 href={withRoot(`/${textPath(port.slug, topic.id)}`)}
               >
                 {port.name}
@@ -125,8 +126,8 @@ const breadcrumbs = [
     </section>
 
     <section class="mt-12">
-      <h2 class="text-xl font-semibold">What it reads</h2>
-      <p class="mt-2 max-w-3xl text-sm opacity-80">
+      <h2 class="text-2xl font-semibold">What it reads</h2>
+      <p class="mt-2 max-w-[72ch] text-sm opacity-80">
         This prompt anchors the work in these pages, and tells the agent to use
         them rather than guess API names.
       </p>

@@ -2080,7 +2080,7 @@
     },
     "go": {
       "repo": "libtmux/libtmux-go",
-      "revision": "a0592f87f33974f502aafd1e6c1eb2dde839d356",
+      "revision": "3997274373dcc5b30435ecdc8ced2ceba7d2e11f",
       "support": {
         "presets": {
           "2-pane-synchronized": {
@@ -2218,11 +2218,11 @@
               "checks": "Parses every fixture in the directory with workspace.Parse."
             },
             {
-              "path": "workspace/internal/cli/document_test.go",
-              "name": "TestEveryTmuxpExampleNormalizes",
-              "line": 391,
+              "path": "workspace/internal/cli/tmuxp_structure_test.go",
+              "name": "TestEveryTmuxpExampleMatchesTheStructureTmuxpBuilds",
+              "line": 556,
               "via": "loader",
-              "checks": "Reads every fixture in the directory with the loader the load command calls."
+              "checks": "Reads every fixture in the directory with the loader the load command calls, and compares the plan with the structure tmuxp's own loader builds from it."
             }
           ]
         },
@@ -2245,11 +2245,11 @@
               "checks": "Parses every fixture in the directory with workspace.Parse."
             },
             {
-              "path": "workspace/internal/cli/document_test.go",
-              "name": "TestEveryTmuxpExampleNormalizes",
-              "line": 391,
+              "path": "workspace/internal/cli/tmuxp_structure_test.go",
+              "name": "TestEveryTmuxpExampleMatchesTheStructureTmuxpBuilds",
+              "line": 556,
               "via": "loader",
-              "checks": "Reads every fixture in the directory with the loader the load command calls."
+              "checks": "Reads every fixture in the directory with the loader the load command calls, and compares the plan with the structure tmuxp's own loader builds from it."
             }
           ]
         },
@@ -2274,11 +2274,11 @@
               "checks": "Parses every fixture in the directory with workspace.Parse."
             },
             {
-              "path": "workspace/internal/cli/document_test.go",
-              "name": "TestEveryTmuxpExampleNormalizes",
-              "line": 391,
+              "path": "workspace/internal/cli/tmuxp_structure_test.go",
+              "name": "TestEveryTmuxpExampleMatchesTheStructureTmuxpBuilds",
+              "line": 556,
               "via": "loader",
-              "checks": "Reads every fixture in the directory with the loader the load command calls."
+              "checks": "Reads every fixture in the directory with the loader the load command calls, and compares the plan with the structure tmuxp's own loader builds from it."
             }
           ]
         },
@@ -2303,11 +2303,11 @@
               "checks": "Parses every fixture in the directory with workspace.Parse."
             },
             {
-              "path": "workspace/internal/cli/document_test.go",
-              "name": "TestEveryTmuxpExampleNormalizes",
-              "line": 391,
+              "path": "workspace/internal/cli/tmuxp_structure_test.go",
+              "name": "TestEveryTmuxpExampleMatchesTheStructureTmuxpBuilds",
+              "line": 556,
               "via": "loader",
-              "checks": "Reads every fixture in the directory with the loader the load command calls."
+              "checks": "Reads every fixture in the directory with the loader the load command calls, and compares the plan with the structure tmuxp's own loader builds from it."
             }
           ]
         },
@@ -2332,11 +2332,11 @@
               "checks": "Parses every fixture in the directory with workspace.Parse."
             },
             {
-              "path": "workspace/internal/cli/document_test.go",
-              "name": "TestEveryTmuxpExampleNormalizes",
-              "line": 391,
+              "path": "workspace/internal/cli/tmuxp_structure_test.go",
+              "name": "TestEveryTmuxpExampleMatchesTheStructureTmuxpBuilds",
+              "line": 556,
               "via": "loader",
-              "checks": "Reads every fixture in the directory with the loader the load command calls."
+              "checks": "Reads every fixture in the directory with the loader the load command calls, and compares the plan with the structure tmuxp's own loader builds from it."
             }
           ]
         },
@@ -2385,11 +2385,11 @@
               "checks": "Parses every fixture in the directory with workspace.Parse."
             },
             {
-              "path": "workspace/internal/cli/document_test.go",
-              "name": "TestEveryTmuxpExampleNormalizes",
-              "line": 391,
+              "path": "workspace/internal/cli/tmuxp_structure_test.go",
+              "name": "TestEveryTmuxpExampleMatchesTheStructureTmuxpBuilds",
+              "line": 556,
               "via": "loader",
-              "checks": "Reads every fixture in the directory with the loader the load command calls."
+              "checks": "Reads every fixture in the directory with the loader the load command calls, and compares the plan with the structure tmuxp's own loader builds from it."
             }
           ]
         },
@@ -2412,11 +2412,11 @@
               "checks": "Parses every fixture in the directory with workspace.Parse."
             },
             {
-              "path": "workspace/internal/cli/document_test.go",
-              "name": "TestEveryTmuxpExampleNormalizes",
-              "line": 391,
+              "path": "workspace/internal/cli/tmuxp_structure_test.go",
+              "name": "TestEveryTmuxpExampleMatchesTheStructureTmuxpBuilds",
+              "line": 556,
               "via": "loader",
-              "checks": "Reads every fixture in the directory with the loader the load command calls."
+              "checks": "Reads every fixture in the directory with the loader the load command calls, and compares the plan with the structure tmuxp's own loader builds from it."
             }
           ]
         },
@@ -2441,11 +2441,11 @@
               "checks": "Parses every fixture in the directory with workspace.Parse."
             },
             {
-              "path": "workspace/internal/cli/document_test.go",
-              "name": "TestEveryTmuxpExampleNormalizes",
-              "line": 391,
+              "path": "workspace/internal/cli/tmuxp_structure_test.go",
+              "name": "TestEveryTmuxpExampleMatchesTheStructureTmuxpBuilds",
+              "line": 556,
               "via": "loader",
-              "checks": "Reads every fixture in the directory with the loader the load command calls."
+              "checks": "Reads every fixture in the directory with the loader the load command calls, and compares the plan with the structure tmuxp's own loader builds from it."
             }
           ]
         },
@@ -2463,11 +2463,11 @@
           "json": "{\n  \"start_directory\": \"${PWD}/test\",\n  \"shell_command_before\": \"echo ${PWD}\",\n  \"before_script\": \"${MY_ENV_VAR}/test3.sh\",\n  \"session_name\": \"session - ${USER} (${MY_ENV_VAR})\",\n  \"windows\": [\n    {\n      \"window_name\": \"editor\",\n      \"panes\": [\n        {\n          \"shell_command\": [\n            \"tail -F /var/log/syslog\"\n          ]\n        }\n      ],\n      \"start_directory\": \"/var/log\"\n    },\n    {\n      \"window_name\": \"logging for ${USER}\",\n      \"options\": {\n        \"automatic-rename\": true\n      },\n      \"panes\": [\n        {\n          \"shell_command\": [\n            \"htop\",\n            \"ls $PWD\"\n          ]\n        }\n      ]\n    }\n  ]\n}",
           "tests": [
             {
-              "path": "workspace/internal/cli/document_test.go",
-              "name": "TestEveryTmuxpExampleNormalizes",
-              "line": 391,
+              "path": "workspace/internal/cli/tmuxp_structure_test.go",
+              "name": "TestEveryTmuxpExampleMatchesTheStructureTmuxpBuilds",
+              "line": 556,
               "via": "loader",
-              "checks": "Reads every fixture in the directory with the loader the load command calls."
+              "checks": "Reads every fixture in the directory with the loader the load command calls, and compares the plan with the structure tmuxp's own loader builds from it."
             }
           ]
         },
@@ -2492,11 +2492,11 @@
               "checks": "Parses every fixture in the directory with workspace.Parse."
             },
             {
-              "path": "workspace/internal/cli/document_test.go",
-              "name": "TestEveryTmuxpExampleNormalizes",
-              "line": 391,
+              "path": "workspace/internal/cli/tmuxp_structure_test.go",
+              "name": "TestEveryTmuxpExampleMatchesTheStructureTmuxpBuilds",
+              "line": 556,
               "via": "loader",
-              "checks": "Reads every fixture in the directory with the loader the load command calls."
+              "checks": "Reads every fixture in the directory with the loader the load command calls, and compares the plan with the structure tmuxp's own loader builds from it."
             }
           ]
         },
@@ -2523,11 +2523,11 @@
               "checks": "Parses every fixture in the directory with workspace.Parse."
             },
             {
-              "path": "workspace/internal/cli/document_test.go",
-              "name": "TestEveryTmuxpExampleNormalizes",
-              "line": 391,
+              "path": "workspace/internal/cli/tmuxp_structure_test.go",
+              "name": "TestEveryTmuxpExampleMatchesTheStructureTmuxpBuilds",
+              "line": 556,
               "via": "loader",
-              "checks": "Reads every fixture in the directory with the loader the load command calls."
+              "checks": "Reads every fixture in the directory with the loader the load command calls, and compares the plan with the structure tmuxp's own loader builds from it."
             }
           ]
         },
@@ -2550,11 +2550,11 @@
               "checks": "Parses every fixture in the directory with workspace.Parse."
             },
             {
-              "path": "workspace/internal/cli/document_test.go",
-              "name": "TestEveryTmuxpExampleNormalizes",
-              "line": 391,
+              "path": "workspace/internal/cli/tmuxp_structure_test.go",
+              "name": "TestEveryTmuxpExampleMatchesTheStructureTmuxpBuilds",
+              "line": 556,
               "via": "loader",
-              "checks": "Reads every fixture in the directory with the loader the load command calls."
+              "checks": "Reads every fixture in the directory with the loader the load command calls, and compares the plan with the structure tmuxp's own loader builds from it."
             }
           ]
         },
@@ -2581,11 +2581,11 @@
               "checks": "Parses every fixture in the directory with workspace.Parse."
             },
             {
-              "path": "workspace/internal/cli/document_test.go",
-              "name": "TestEveryTmuxpExampleNormalizes",
-              "line": 391,
+              "path": "workspace/internal/cli/tmuxp_structure_test.go",
+              "name": "TestEveryTmuxpExampleMatchesTheStructureTmuxpBuilds",
+              "line": 556,
               "via": "loader",
-              "checks": "Reads every fixture in the directory with the loader the load command calls."
+              "checks": "Reads every fixture in the directory with the loader the load command calls, and compares the plan with the structure tmuxp's own loader builds from it."
             }
           ]
         },
@@ -2601,11 +2601,11 @@
           "json": "{\n  \"session_name\": \"Pane shell example\",\n  \"windows\": [\n    {\n      \"window_name\": \"first\",\n      \"window_shell\": \"/usr/bin/python2\",\n      \"layout\": \"even-vertical\",\n      \"suppress_history\": false,\n      \"options\": {\n        \"remain-on-exit\": true\n      },\n      \"panes\": [\n        {\n          \"shell\": \"/usr/bin/python3\",\n          \"shell_command\": [\n            \"print('This is python 3')\"\n          ]\n        },\n        {\n          \"shell\": \"/usr/bin/vim -u none\",\n          \"shell_command\": [\n            \"iAll panes have the `remain-on-exit` setting on.\",\n            \"When you exit out of the shell or application, the panes will remain.\",\n            \"Use tmux command `:kill-pane` to remove the pane.\",\n            \"Use tmux command `:respawn-pane` to restart the shell in the pane.\",\n            \"Use <Escape> and then `:q!` to get out of this vim window. :-)\"\n          ]\n        },\n        {\n          \"shell_command\": [\n            \"print('Hello World 2')\"\n          ]\n        },\n        {\n          \"shell\": \"/usr/bin/top\"\n        }\n      ]\n    }\n  ]\n}",
           "tests": [
             {
-              "path": "workspace/internal/cli/document_test.go",
-              "name": "TestEveryTmuxpExampleNormalizes",
-              "line": 391,
+              "path": "workspace/internal/cli/tmuxp_structure_test.go",
+              "name": "TestEveryTmuxpExampleMatchesTheStructureTmuxpBuilds",
+              "line": 556,
               "via": "loader",
-              "checks": "Reads every fixture in the directory with the loader the load command calls."
+              "checks": "Reads every fixture in the directory with the loader the load command calls, and compares the plan with the structure tmuxp's own loader builds from it."
             }
           ]
         },
@@ -2628,11 +2628,11 @@
               "checks": "Parses every fixture in the directory with workspace.Parse."
             },
             {
-              "path": "workspace/internal/cli/document_test.go",
-              "name": "TestEveryTmuxpExampleNormalizes",
-              "line": 391,
+              "path": "workspace/internal/cli/tmuxp_structure_test.go",
+              "name": "TestEveryTmuxpExampleMatchesTheStructureTmuxpBuilds",
+              "line": 556,
               "via": "loader",
-              "checks": "Reads every fixture in the directory with the loader the load command calls."
+              "checks": "Reads every fixture in the directory with the loader the load command calls, and compares the plan with the structure tmuxp's own loader builds from it."
             }
           ]
         },
@@ -2655,11 +2655,11 @@
               "checks": "Parses every fixture in the directory with workspace.Parse."
             },
             {
-              "path": "workspace/internal/cli/document_test.go",
-              "name": "TestEveryTmuxpExampleNormalizes",
-              "line": 391,
+              "path": "workspace/internal/cli/tmuxp_structure_test.go",
+              "name": "TestEveryTmuxpExampleMatchesTheStructureTmuxpBuilds",
+              "line": 556,
               "via": "loader",
-              "checks": "Reads every fixture in the directory with the loader the load command calls."
+              "checks": "Reads every fixture in the directory with the loader the load command calls, and compares the plan with the structure tmuxp's own loader builds from it."
             }
           ]
         },
@@ -2682,11 +2682,11 @@
               "checks": "Parses every fixture in the directory with workspace.Parse."
             },
             {
-              "path": "workspace/internal/cli/document_test.go",
-              "name": "TestEveryTmuxpExampleNormalizes",
-              "line": 391,
+              "path": "workspace/internal/cli/tmuxp_structure_test.go",
+              "name": "TestEveryTmuxpExampleMatchesTheStructureTmuxpBuilds",
+              "line": 556,
               "via": "loader",
-              "checks": "Reads every fixture in the directory with the loader the load command calls."
+              "checks": "Reads every fixture in the directory with the loader the load command calls, and compares the plan with the structure tmuxp's own loader builds from it."
             }
           ]
         },
@@ -2709,11 +2709,11 @@
               "checks": "Parses every fixture in the directory with workspace.Parse."
             },
             {
-              "path": "workspace/internal/cli/document_test.go",
-              "name": "TestEveryTmuxpExampleNormalizes",
-              "line": 391,
+              "path": "workspace/internal/cli/tmuxp_structure_test.go",
+              "name": "TestEveryTmuxpExampleMatchesTheStructureTmuxpBuilds",
+              "line": 556,
               "via": "loader",
-              "checks": "Reads every fixture in the directory with the loader the load command calls."
+              "checks": "Reads every fixture in the directory with the loader the load command calls, and compares the plan with the structure tmuxp's own loader builds from it."
             }
           ]
         },
@@ -2738,11 +2738,11 @@
               "checks": "Parses every fixture in the directory with workspace.Parse."
             },
             {
-              "path": "workspace/internal/cli/document_test.go",
-              "name": "TestEveryTmuxpExampleNormalizes",
-              "line": 391,
+              "path": "workspace/internal/cli/tmuxp_structure_test.go",
+              "name": "TestEveryTmuxpExampleMatchesTheStructureTmuxpBuilds",
+              "line": 556,
               "via": "loader",
-              "checks": "Reads every fixture in the directory with the loader the load command calls."
+              "checks": "Reads every fixture in the directory with the loader the load command calls, and compares the plan with the structure tmuxp's own loader builds from it."
             }
           ]
         },
@@ -2765,11 +2765,11 @@
               "checks": "Parses every fixture in the directory with workspace.Parse."
             },
             {
-              "path": "workspace/internal/cli/document_test.go",
-              "name": "TestEveryTmuxpExampleNormalizes",
-              "line": 391,
+              "path": "workspace/internal/cli/tmuxp_structure_test.go",
+              "name": "TestEveryTmuxpExampleMatchesTheStructureTmuxpBuilds",
+              "line": 556,
               "via": "loader",
-              "checks": "Reads every fixture in the directory with the loader the load command calls."
+              "checks": "Reads every fixture in the directory with the loader the load command calls, and compares the plan with the structure tmuxp's own loader builds from it."
             }
           ]
         },
@@ -2792,11 +2792,11 @@
               "checks": "Parses every fixture in the directory with workspace.Parse."
             },
             {
-              "path": "workspace/internal/cli/document_test.go",
-              "name": "TestEveryTmuxpExampleNormalizes",
-              "line": 391,
+              "path": "workspace/internal/cli/tmuxp_structure_test.go",
+              "name": "TestEveryTmuxpExampleMatchesTheStructureTmuxpBuilds",
+              "line": 556,
               "via": "loader",
-              "checks": "Reads every fixture in the directory with the loader the load command calls."
+              "checks": "Reads every fixture in the directory with the loader the load command calls, and compares the plan with the structure tmuxp's own loader builds from it."
             }
           ]
         }

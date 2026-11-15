@@ -176,7 +176,7 @@ function initSearch(nav: HTMLElement, tree: HTMLElement, signal: AbortSignal) {
       }
     } catch {
       if (generation === ownGeneration && !signal.aborted) {
-        status.textContent = 'API names could not load. Try again.'
+        status.textContent = 'The API names did not load. The tree below still works.'
         if (retry) retry.hidden = false
       }
     }
@@ -557,7 +557,15 @@ function initPresentation(nav: HTMLElement, tree: HTMLElement, signal: AbortSign
   if (!nav.dataset.presentation) return
   const present = (work: Promise<unknown>) => waitForAppearance(work.catch(() => {
     const status = nav.querySelector<HTMLElement>('[data-api-search-status]')
-    if (status) status.textContent = 'Sidebar could not load. Try again from its menu.'
+    if (status) {
+      // Name what failed, say the page is whole, and give the route that needs no script.
+      const fact = document.createElement('strong')
+      fact.textContent = 'The sidebar did not load.'
+      const link = document.createElement('a')
+      link.href = nav.dataset.base ?? ''
+      link.textContent = 'Open the API index'
+      status.replaceChildren(fact, ' The page is complete without it. ', link, '.')
+    }
   }))
   initApiOwnerPicker(nav, signal)
   const actions = nav.querySelector<HTMLDetailsElement>('[data-api-actions]')

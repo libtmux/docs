@@ -35,8 +35,10 @@ export interface PromptTopic {
   id: string
   /** Picker label. */
   label: string
-  /** One line for the picker and the index page. */
+  /** One line for the index page and the summary beside the picker. */
   summary: string
+  /** What a picker row says under the label: six words or fewer, so a menu holds labels, not paragraphs. The picker's search still matches `summary`. */
+  menu: string
   /** The prompt's opening instruction, which states the outcome. */
   opening: string
   /**
@@ -109,6 +111,7 @@ export const TOPICS: readonly PromptTopic[] = [
     id: SETUP_ID,
     label: 'Set up libtmux',
     summary: 'Install libtmux into a new or existing project and prove it drives a real tmux server.',
+    menu: 'Install libtmux and prove it works',
     opening: 'Set up libtmux in this repository and verify it against a real tmux server.',
     body: '',
     pages: ['guides/getting-started', 'concepts/server-session-window-pane'],
@@ -117,6 +120,7 @@ export const TOPICS: readonly PromptTopic[] = [
     id: 'agent-orchestrator',
     label: 'Agent orchestrator',
     summary: 'Run several coding agents in their own panes, stream their output, and notice when each finishes.',
+    menu: 'Run agents in parallel panes',
     opening: 'Then build an orchestrator that runs several coding agents side by side in tmux.',
     body: `What it does:
 - Takes a list of tasks and starts one agent per task, each in its own pane of
@@ -146,6 +150,7 @@ Constraints:
     id: 'eval-sweep',
     label: 'Eval sweep',
     summary: 'Send one prompt to every agent CLI on this machine in parallel panes and compare the transcripts.',
+    menu: 'One prompt to every agent CLI',
     opening: 'Then build an eval sweep that runs one prompt across every coding agent on this machine.',
     body: `What it does:
 - Finds which agent CLIs are actually on PATH and reports the ones it found,
@@ -169,6 +174,7 @@ Constraints:
     id: 'service-manager',
     label: 'Detached service manager',
     summary: 'Start Jupyter and other long-running services in a detached session at login, and reattach later.',
+    menu: 'Keep services running in a session',
     opening: 'Then build a manager that keeps long-running services in a detached tmux session.',
     body: `What it does:
 - Reads a small config listing services to run, each with a name, a working
@@ -193,6 +199,7 @@ Constraints:
     id: 'session-switcher',
     label: 'Session switcher',
     summary: 'A fuzzy picker over every session, window and pane, that attaches or switches to the selection.',
+    menu: 'Pick any session, window or pane',
     opening: 'Then build a tmux session switcher.',
     body: `What it does:
 - Lists every session on the server with its windows, and shows what each
@@ -215,6 +222,7 @@ Constraints:
     id: 'session-freezer',
     label: 'Session freezer',
     summary: 'Snapshot a running session to a workspace file, then rebuild it later on any machine.',
+    menu: 'Save a session, rebuild it later',
     opening: 'Then build a session freezer that snapshots a running tmux session and rebuilds it later.',
     body: `What it does:
 - Reads a live session and writes a workspace file describing it: windows,
@@ -236,6 +244,7 @@ Constraints:
     id: 'session-supervisor',
     label: 'Session supervisor',
     summary: 'Declare the sessions you want, reconcile what is running, and restart what died.',
+    menu: 'Keep declared sessions running',
     opening: 'Then build a supervisor that reconciles running tmux sessions against a declared set.',
     body: `What it does:
 - Reads a declared set of sessions and windows from a file.
@@ -258,6 +267,7 @@ Constraints:
     id: 'test-fixtures',
     label: 'Test fixtures',
     summary: 'Give each test its own isolated tmux server, torn down afterwards.',
+    menu: 'A private tmux server per test',
     opening: 'Then set up tmux test fixtures so this project can test code that drives tmux.',
     body: `What it does:
 - Gives each test an isolated tmux server on its own socket, so tests do not
@@ -293,6 +303,7 @@ Constraints:
     id: 'output-watcher',
     label: 'Output watcher',
     summary: 'Wait for text to appear in a pane, then act on it, without polling on a timer.',
+    menu: 'Wait for text in a pane',
     opening: 'Then build a watcher that waits for output in a tmux pane and acts on it.',
     body: `What it does:
 - Watches one or more panes for a pattern I give it.

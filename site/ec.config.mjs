@@ -1,6 +1,7 @@
 import { defineEcConfig } from 'astro-expressive-code'
 import { shellPrompt, shellThemes } from './src/plugins/ec-shell-prompt.mjs'
 import { copyReadiness } from './src/plugins/ec-copy-readiness.mjs'
+import { codeFrame } from './src/plugins/ec-code-frame.mjs'
 import { tmuxUsage } from './src/lib/tmux-usage.mjs'
 import { tmuxShell } from './src/lib/tmux-shell.mjs'
 import { tmuxConfig } from './src/lib/tmux-config.mjs'
@@ -28,7 +29,7 @@ export default defineEcConfig({
       { scope: ['constant.language.json', 'constant.numeric.json'], settings: { foreground: dark ? '#c3a6f4' : '#6840a0' } },
     )
   },
-  plugins: [shellPrompt(), copyReadiness()],
+  plugins: [shellPrompt(), copyReadiness(), codeFrame()],
   shiki: { langs: [tmuxUsage, ...bash, tmuxShell, tmuxConfig, properties, ...haskell],
     langAlias: { dune: 'lisp', sbt: 'scala', tmux: 'tmux-config', properties: properties.name } },
   useDarkModeMediaQuery: false,
@@ -42,7 +43,8 @@ export default defineEcConfig({
     codePaddingBlock: '1rem',
     codePaddingInline: '1rem',
     codeFontFamily: 'var(--font-ibm-plex-mono)',
-    codeFontSize: '0.875rem',
+    // 13px: the design sets frame code a step under the 14px of signature headers (record 0032).
+    codeFontSize: '0.8125rem',
     codeLineHeight: '1.7',
     uiFontFamily: 'var(--font-ibm-plex-sans)',
     uiFontSize: '0.875rem',

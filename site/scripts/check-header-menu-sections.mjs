@@ -135,8 +135,9 @@ async function checkStatic(page, picker, where, scheme, expectTitled) {
     assert(head.textTransform !== item.textTransform, `${label}: heading typography differs in case (${head.textTransform} vs ${item.textTransform})`)
     assert(head.color !== item.color, `${label}: heading typography differs in colour (${head.color})`)
     assert(!head.clipped, `${label}: the heading is not clipped`)
-    // The heading owns the rows after it: rows sit inset from its text, close to it, and a larger gap precedes it.
-    assert(group.iconLeft - group.heading.left >= 4, `${label}: rows are inset under the heading (${group.iconLeft - group.heading.left}px)`)
+    // The heading owns the rows after it: a panel has two left edges, so a row's icon starts on the heading's text edge
+    // (SiteHeader, "Rows no longer step in under their heading"), close below it, and a larger gap precedes it.
+    assert(Math.abs(group.iconLeft - group.heading.left) <= 1, `${label}: rows start on the heading's edge (${group.iconLeft - group.heading.left}px)`)
     assert(group.firstRow.top >= group.heading.bottom - 1, `${label}: the heading precedes its rows`)
     if (index > 0) {
       const before = group.heading.top - groups[index - 1].lastRow.bottom
@@ -313,7 +314,7 @@ export async function checkHeaderMenuSectionsFail(browser, base) {
     ['a heading with a pointer cursor', { css: '.header-picker__heading { cursor: pointer !important }' }, /no pointer cursor/],
     ['a heading with a hover state', { css: '.header-picker__heading:hover { background: #f00 !important }' }, /hovering a heading changes nothing/],
     ['item typography on a heading', { css: '.header-picker__heading { font-size: .8125rem !important; text-transform: none !important; color: inherit !important }' }, /heading typography is smaller/],
-    ['rows flush with their heading', { css: '.header-picker__group > .header-picker__option { margin-inline-start: 0 !important } .header-picker__heading { margin-inline: 1.2rem !important }' }, /rows are inset under the heading/],
+    ["a heading off its rows' edge", { css: '.header-picker__group > .header-picker__option { margin-inline-start: 0 !important } .header-picker__heading { margin-inline: 1.2rem !important }' }, /rows start on the heading's edge/],
     ['a paragraph under a kind heading', {
       script: () => document.querySelectorAll('[data-picker-group]').forEach((group) => group.querySelector('a').before(Object.assign(document.createElement('p'), { textContent: 'Maintained as a working example of core library usage and deployment. Example APIs, tools and configuration may change without a compatibility or product support commitment.' }))),
     }, /a text block in the menu holds/],
@@ -324,5 +325,5 @@ export async function checkHeaderMenuSectionsFail(browser, base) {
   for (const [name, sabotage, failure] of controls) {
     await assert.rejects(() => checkHeaderMenuSections(browser, base, { ...only, sabotage }), failure, `the check fails with ${name}`)
   }
-  console.log('Header menu sections: the check fails on origin/main markup and CSS, a paragraph in a menu, and focusable, pointer, hover, plain-typography, flush and unfiltered headings')
+  console.log('Header menu sections: the check fails on origin/main markup and CSS, a paragraph in a menu, and focusable, pointer, hover, plain-typography, off-edge and unfiltered headings')
 }

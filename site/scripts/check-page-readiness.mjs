@@ -400,7 +400,7 @@ const SIDEBAR_BADGE_LINKS = [
 /** An equivalent in another port, in the In other ports table of a symbol's page. */
 const EQUIVALENT_BADGE_LINK = {
   label: 'API equivalent', path: '/py/v0.46.2/workspace/reference/tmuxp-workspace-builder-classicworkspacebuilder-build/',
-  badges: 'section:has(> #api-other-ports) .tmux-usage a > .api-nav__kind', gap: false, sample: true,
+  badges: 'section:has(> #api-other-ports) .api-eq-table .api-elsewhere-value a > .api-nav__kind', gap: false, sample: true,
 }
 const BADGE_LINKS = [
   { label: 'prose link', path: '/rs/latest/concepts/server-session-window-pane/', badges: 'p a > .api-link-kind', line: true, fixtures: true, sample: true },
@@ -414,7 +414,6 @@ const BADGE_LINKS = [
   { label: 'navigation tree link', path: '/java/latest/reference/io-github-libtmux-server-server/', badges: 'a.api-nav__leaf > .api-nav__kind', gap: false },
   { label: 'navigation tree row', path: '/java/latest/reference/io-github-libtmux-server-server/', badges: 'div.api-nav__row > .api-nav__kind', gap: false },
   { label: 'related type card', path: '/java/latest/reference/io-github-libtmux-server-server/', badges: '.api-related-card a > .api-nav__kind' },
-  { label: 'related API contents', path: '/java/latest/reference/io-github-libtmux-server-server/', badges: 'nav.api-related a > .api-nav__kind', gap: false },
   { label: 'command related API', path: '/powershell/latest/reference/libtmux-enter-tmuxsession/', badges: '.api-command-related a > .api-nav__kind', gap: false },
   { label: 'navigation search result', path: '/lua/latest/reference/libtmux-server/', badges: '[data-api-search-results] a strong > .api-nav__kind', gap: false,
     prepare: async (page) => {
@@ -613,7 +612,10 @@ function dottedDecorations() {
     if (!link) continue
     const display = getComputedStyle(link).display
     const wrapped = link.querySelector(blocks)
-    const reason = !/^(inline|inline-flex|inline-block)$/.test(display) ? `a ${display} link`
+    // A flex or grid row blockifies its items, so a link that holds only inline content there (PageEnd's mark and code
+    // rows) is still an inline link form, not a card.
+    const blockified = /(^|-)(flex|grid)$/.test(getComputedStyle(link.parentElement).display) && !wrapped
+    const reason = !/^(inline|inline-flex|inline-block)$/.test(display) && !blockified ? `a ${display} link`
       : wrapped ? `a link wrapping <${wrapped.tagName.toLowerCase()}>` : ''
     found.push({ element: `${element.tagName.toLowerCase()}${element.className ? `.${String(element.className).split(' ')[0]}` : ''}`,
       href: link.getAttribute('href'), reason })

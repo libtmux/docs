@@ -54,12 +54,16 @@ export function initializePageReadiness(decorate: (win: Window) => unknown, mask
     outlet = document.createElement('div')
     outlet.id = 'page-load-status'
     outlet.setAttribute('role', 'alert')
-    outlet.textContent = 'This page could not finish loading. '
+    // The fact in bold, one sentence that says what is held back and why, then the action: the shared failure layout.
+    const fact = document.createElement('strong')
+    fact.textContent = 'The page did not finish loading.'
+    const reason = document.createElement('span')
+    reason.textContent = 'Its fonts or styles did not arrive, so the page is held back. Reload to try again.'
     const reload = document.createElement('button')
     reload.type = 'button'
     reload.textContent = 'Reload'
     reload.addEventListener('click', () => location.reload())
-    outlet.append(reload)
+    outlet.append(fact, reason, reload)
     document.body.append(outlet)
   }
   const fail = (error: unknown) => {

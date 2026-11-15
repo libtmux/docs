@@ -7,22 +7,33 @@ import WorkspaceConfig from './workspace/WorkspaceConfig.astro'
 import WorkspaceEvidence from './workspace/WorkspaceEvidence.astro'
 import WorkspacePicker from './workspace/WorkspacePicker.astro'
 import WorkspaceWindows from './workspace/WorkspaceWindows.astro'
-import { portPageUrl, type Port } from '../lib/ports'
+import StatusBadge from './StatusBadge.astro'
+import { PICKER_GROUP_LABEL, portPageUrl, productStatus, type DocProduct, type Port } from '../lib/ports'
+import { REGISTRY } from '../lib/registry'
 import { landingPanels, type CachedSource, type LandingTable } from '../lib/port-landing'
 import { mcpShowcase, toolHeadings } from '../lib/mcp-showcase'
 import { loadCommand } from '../lib/workspace-links'
 import { landingExample, offersPicker, previewWindows, TOPICS, workspaceShowcase } from '../lib/workspace-showcase'
 import { QUICKSTARTS, homeCodeColumns } from '../lib/quickstarts'
+import { excerptMeta } from '../lib/code-frame.mjs'
 import { documentationSectionsFor } from '../lib/port-documentation'
 import LANDING from '../data/landing-examples.json'
 import SOURCES from '../data/example-sources.json'
 
 /**
  * What each product a port ships looks like in use, with its install widget.
+ * The product tabs are the page's one chooser (record 0061): each panel opens
+ * with the task it serves, its maturity and a link to the product's home, and
+ * a command belongs to the installer, not to that line (record 0028). The demo
+ * follows and the installer follows the demo (record 0059): the
+ * player, then the library install; the MCP replay, then the client installer;
+ * the workspace picker, then the workspace CLI install, just before the step
+ * that loads the file. A reader of the port home is still deciding; a
+ * product's own home follows the same order.
  *
  * Core API is the homepage's example block, fixed to the port's language.
- * MCP opens with one sentence, the install picker, then the MCP overview's
- * worked example: a prompt and the schema-checked calls an agent makes. A
+ * MCP opens with one sentence, then the MCP overview's worked example (a
+ * prompt and the schema-checked calls an agent makes) and the install picker. A
  * port with no worked example, or one served by another port's package,
  * shows the picker and the links, never invented calls. Workspace Manager
  * shows a workspace file one of the port's tests loads, the command that
@@ -58,6 +69,9 @@ const coreLinks = [
   { href: portPageUrl(port, version, moreExamples ? 'examples' : 'guides'), label: moreExamples ? `More ${port.name} examples →` : `${port.name} guides →` },
 ]
 const panelId = (product: string) => `landing-panel-${product}`
+// The line each panel opens with, where the tabs make a choice of it: what the product is for, in the reader's words.
+const taskLabel = (product: 'core' | DocProduct) => product === 'core' ? `Control tmux from ${port.language} code`
+  : product === 'mcp' ? 'Give an assistant tmux tools' : 'Load a workspace file'
 ---
 <section class="port-landing mt-10" aria-label={`Start with ${port.name}`} data-port-landing={port.slug}>
   {panels.length > 1 && <fieldset class="landing-products">
@@ -72,19 +86,29 @@ const panelId = (product: string) => `landing-panel-${product}`
     const excerpt = panel.excerpt && <details class="landing-excerpt" data-landing-excerpt={panel.product}
       style={`--home-code-columns: ${homeCodeColumns(panel.excerpt.code)}`}>
       <summary>{panel.product === 'mcp' ? 'Embed the server in a program' : 'Build the workspace from a program'}</summary>
-      <Code code={panel.excerpt.code} lang={panel.excerpt.lang} title={panel.excerpt.file} frame="code" />
+      <Code code={panel.excerpt.code} lang={panel.excerpt.lang} title={panel.excerpt.file} frame="code" meta={excerptMeta({ ranges: panel.excerpt.ranges })} />
       <p class="landing-source">
         Excerpt of <a href={panel.excerpt.sourceUrl}><code>{panel.excerpt.file}</code></a>,
         which <code>{panel.excerpt.ci.command}</code> runs in the repository's CI
         (<code>{panel.excerpt.ci.workflow}</code>).
       </p>
     </details>
+    // Where there are tabs, each panel opens with its task, its maturity once and a link to the product's home.
+    const product = panel.product as 'core' | DocProduct
+    const maturity = productStatus(port, product, REGISTRY)
+    const task = panels.length > 1 && <p class="landing-task" data-landing-task={product}>
+      <strong>{taskLabel(product)}</strong>
+      {maturity && <StatusBadge status={maturity} product={PICKER_GROUP_LABEL[product]} id={`landing-status-${product}`} />}
+      <a href={portPageUrl(port, version, product)}>{PICKER_GROUP_LABEL[product]} home →</a>
+    </p>
     return <div class="landing-panel" id={panelId(panel.product)} data-landing-panel={panel.product}>
     {panel.product === 'core' ? <>
+      {task}
       <CoreShowcase port={port.slug} links={coreLinks} />
       <LandingInstall panel={panel} port={port.slug} />
     </> : panel.product === 'mcp' ? <>
       <h2 class="sr-only">{panel.label}</h2>
+      {task}
       {showcase?.example && <div class="landing-example" data-landing-example="mcp">
         <McpReplay example={showcase.example} portName={port.name} level={3} />
       </div>}
@@ -97,20 +121,25 @@ const panelId = (product: string) => `landing-panel-${product}`
       {excerpt}
     </> : <>
       <h2 class="sr-only">{panel.label}</h2>
-      {workspace && workspaceExample && workspaceTopic && <div class="landing-example" data-landing-example="workspace">
-        {offersPicker(workspace)
-          ? <WorkspacePicker showcase={workspace} landing={{ first: workspaceExample.topic, program: workspaceProgram?.program }} />
-          : <>
-            <h3>{workspaceTopic.title}</h3>
-            <p>{workspaceTopic.summary}</p>
-            <div class="ws-body">
-              <WorkspaceConfig id={`landing-${port.slug}-${workspaceExample.topic}`} yaml={workspaceExample.yaml} json={workspaceExample.json} note />
-              <WorkspaceWindows windows={workspaceWindows} />
-            </div>
-            <WorkspaceEvidence showcase={workspace} example={workspaceExample} program={workspaceProgram?.program} />
-          </>}
-      </div>}
-      <LandingInstall panel={panel} port={port.slug} />
+      {task}
+      {workspace && workspaceExample && workspaceTopic
+        ? <div class="landing-example" data-landing-example="workspace">
+          {offersPicker(workspace)
+            ? <WorkspacePicker showcase={workspace} landing={{ first: workspaceExample.topic, program: workspaceProgram?.program }}>
+              <LandingInstall slot="install" panel={panel} port={port.slug} />
+            </WorkspacePicker>
+            : <>
+              <h3>{workspaceTopic.title}</h3>
+              <p>{workspaceTopic.summary}</p>
+              <div class="ws-body">
+                <WorkspaceConfig id={`landing-${port.slug}-${workspaceExample.topic}`} yaml={workspaceExample.yaml} json={workspaceExample.json} note />
+                <WorkspaceWindows windows={workspaceWindows} />
+              </div>
+              <LandingInstall panel={panel} port={port.slug} />
+              <WorkspaceEvidence showcase={workspace} example={workspaceExample} program={workspaceProgram?.program} />
+            </>}
+        </div>
+        : <LandingInstall panel={panel} port={port.slug} />}
       <ul class="landing-links">
         {workspace && <li><a href={`${panel.href}#example-workspaces`}>Example workspaces →</a></li>}
         {workspaceProgram && <li><a href={portPageUrl(port, version, workspaceProgram.path)}>The <code>{workspaceProgram.program} load</code> command →</a></li>}
@@ -157,7 +186,8 @@ const panelId = (product: string) => `landing-panel-${product}`
 </script>
 
 <style>
-  .port-landing { container-type: inline-size; max-width: 56rem; }
+  /* One content edge: the hero, install and player take the full column, as the cards below them do. */
+  .port-landing { container-type: inline-size; }
   .landing-products {
     display: flex; flex-wrap: wrap; gap: .125rem; margin: 0 0 1.25rem; padding: 0;
     border: 0; border-bottom: 1px solid var(--color-edge);
@@ -181,9 +211,6 @@ const panelId = (product: string) => `landing-panel-${product}`
   .port-landing:has([data-landing-product][value="mcp"]:checked) .landing-panel[data-landing-panel="mcp"],
   .port-landing:has([data-landing-product][value="workspace"]:checked) .landing-panel[data-landing-panel="workspace"] { display: block; }
 
-  .landing-excerpt :global(.expressive-code) {
-    --ec-codeFontSize: clamp(.8125rem, calc((100cqi - 2rem) / (var(--home-code-columns) * .625)), .9375rem);
-  }
   /* An excerpt is short by construction, so it shows whole; a complete program scrolls past the homepage's height. */
   .landing-note { font-size: .875rem; color: var(--color-muted); }
   .landing-excerpt :global(.expressive-code pre) { overflow: auto; tab-size: 8; }
@@ -197,6 +224,10 @@ const panelId = (product: string) => `landing-panel-${product}`
   .landing-example :global(h3) { margin: 0 0 .5rem; font-weight: 600; line-height: 1.4; }
   .landing-example > :global(p:not(.mcp-replay-note)) { margin: 0 0 1rem; }
   .landing-note { margin: 0 0 1rem; }
+  /* The line a panel opens with: the task in the reader's words, its maturity and the way to the product's home. */
+  .landing-task { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .75rem; margin: 0 0 1rem; font-size: .875rem; color: var(--color-muted); }
+  .landing-task > strong { color: var(--text-color); font-size: 1rem; font-weight: 600; }
+  .landing-task > a { color: var(--color-link); }
   .landing-links { margin: 1.25rem 0 0; padding: 0; list-style: none; display: grid; gap: .35rem; font-size: .875rem; }
   .landing-links a { color: var(--color-link); }
   .landing-excerpt { margin-top: 1.25rem; }

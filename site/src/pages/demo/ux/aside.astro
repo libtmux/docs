@@ -9,6 +9,7 @@
 import Aside from '../../../components/Aside.astro'
 import DemoLayout from '../../../components/demo/DemoLayout.astro'
 import {
+  ASIDE_DEFAULT_VARIANT,
   ASIDE_ICON_SIZES,
   ASIDE_ICON_STYLES,
   ASIDE_ICONS,
@@ -22,7 +23,7 @@ const segment =
   'relative flex h-8 min-w-8 cursor-pointer select-none items-center justify-center gap-1 rounded-md px-2 text-xs transition-colors hover:bg-surface-hover has-[:checked]:bg-[var(--background-color)] has-[:checked]:shadow-sm'
 const group = 'inline-flex flex-wrap gap-0.5 rounded-lg border border-edge bg-surface p-0.5'
 const legend = 'mb-1 text-xs font-medium text-muted'
-const defaults = ASIDE_VARIANT_DEFAULTS.hybrid
+const defaults = ASIDE_VARIANT_DEFAULTS[ASIDE_DEFAULT_VARIANT]
 ---
 
 <DemoLayout title="Aside demo" description="Aside variants and types." current="/demo/ux/aside/">
@@ -38,10 +39,10 @@ const defaults = ASIDE_VARIANT_DEFAULTS.hybrid
         <label class="flex flex-col">
           <span class={legend}>Variant</span>
           <select name="variant" class="rounded-md border border-edge bg-[var(--background-color)] px-2 py-1 text-sm">
-            {ASIDE_VARIANTS.map((variant) => <option value={variant} selected={variant === 'hybrid'}>{variant}</option>)}
+            {ASIDE_VARIANTS.map((variant) => <option value={variant} selected={variant === ASIDE_DEFAULT_VARIANT}>{variant}</option>)}
           </select>
           <span class="mt-1 text-xs text-muted" data-variant-description>
-            {ASIDE_VARIANT_DESCRIPTIONS.hybrid}
+            {ASIDE_VARIANT_DESCRIPTIONS[ASIDE_DEFAULT_VARIANT]}
           </span>
         </label>
         <fieldset>
@@ -98,13 +99,17 @@ const defaults = ASIDE_VARIANT_DEFAULTS.hybrid
             </div>
           </fieldset>
         </div>
+        <label class="flex items-center gap-2 text-xs text-muted">
+          <input type="checkbox" name="ink" checked />
+          Title in the ink token
+        </label>
         <p class="text-xs text-muted">A dot marks the variant's default.</p>
       </div>
     </form>
 
     <div class="min-w-0 flex-1" data-aside-preview>
       <code class="rounded bg-surface-hover px-1.5 py-0.5 text-xs" data-aside-code>
-        &lt;Aside type="note" variant="hybrid"&gt;
+        &lt;Aside type="note" variant="compact"&gt;
       </code>
       <Aside>
         <p>
@@ -138,6 +143,7 @@ const defaults = ASIDE_VARIANT_DEFAULTS.hybrid
   import {
     ASIDE_ICONS,
     ASIDE_TITLES,
+    asideTitle,
     ASIDE_VARIANT_DEFAULTS,
     ASIDE_VARIANT_DESCRIPTIONS,
     asideClass,
@@ -154,16 +160,17 @@ const defaults = ASIDE_VARIANT_DEFAULTS.hybrid
     const type = data.get('type') as AsideType
     const style = data.get('icon-style') as AsideIconStyle | 'auto'
     const size = data.get('icon-size') as AsideIconSize | 'auto'
+    const ink = data.has('ink')
     const defaults = ASIDE_VARIANT_DEFAULTS[variant]
 
     const aside = root.querySelector<HTMLElement>('[data-aside-preview] .lm-aside')
     const icon = aside?.querySelector<HTMLElement>('.lm-aside__icon')
     if (!aside || !icon) return
-    aside.className = asideClass(type, variant)
+    aside.className = asideClass(type, variant, ink)
     icon.className = asideIconClass(style === 'auto' ? defaults.iconStyle : style, size === 'auto' ? defaults.iconSize : size)
     icon.querySelector('path')?.setAttribute('d', ASIDE_ICONS[type])
     const title = aside.querySelector('.lm-aside__title > span:last-child')
-    if (title) title.textContent = ASIDE_TITLES[type]
+    if (title) title.textContent = asideTitle(variant, ASIDE_TITLES[type])
 
     const name = root.querySelector('[data-aside-type-name]')
     if (name) name.textContent = type
@@ -176,6 +183,7 @@ const defaults = ASIDE_VARIANT_DEFAULTS.hybrid
     const props = [`type="${type}"`, `variant="${variant}"`]
     if (style !== 'auto') props.push(`iconStyle="${style}"`)
     if (size !== 'auto') props.push(`iconSize="${size}"`)
+    if (!ink) props.push('ink={false}')
     const code = root.querySelector('[data-aside-code]')
     if (code) code.textContent = `<Aside ${props.join(' ')}>`
   }

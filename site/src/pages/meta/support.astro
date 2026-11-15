@@ -4,6 +4,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
 import PageToolbar from '../../components/PageToolbar.astro'
 import { withRoot } from '../../lib/site-root'
 import { tmuxManualUrl } from '../../lib/tmux-manual-data'
+import '../../styles/meta.css'
 
 const breadcrumbs = [{ name: 'libtmux', url: withRoot('/') }, { name: 'Support and release stages', url: withRoot('/meta/support/') }]
 ---
@@ -14,28 +15,28 @@ const breadcrumbs = [{ name: 'libtmux', url: withRoot('/') }, { name: 'Support a
   description="What the concept badge and the release stages on libtmux.org mean, and how to report a failing example."
   localeStatuses={ALL_TRANSLATED}
 >
-  <main class="mx-auto max-w-3xl px-4 py-12">
+  <main class="meta-page">
     <PageToolbar breadcrumbs={breadcrumbs} />
-    <h1 class="text-3xl font-semibold tracking-tight">Support and release stages</h1>
-    <p class="mt-3">
+    <h1>Support and release stages</h1>
+    <p>
       Menus and install pages label each product with a badge. This page says what the badges mean.
     </p>
 
-    <h2 id="concept-and-alpha" class="mt-10 text-xl font-semibold">Concept and alpha</h2>
-    <p class="mt-3">
+    <h2 id="concept-and-alpha">Concept and alpha</h2>
+    <p>
       <strong>Concept</strong> is a support scope. The MCP servers and workspace builders for every
       language except Python are maintained examples of using libtmux in a real application. They
       carry no support or compatibility commitment, and their APIs, MCP tools, command output and
       workspace configuration can change. Pin an example and the core library together when you adapt
       one.
     </p>
-    <p class="mt-3">
+    <p>
       <strong>Alpha</strong> is a release stage. Publishing a package or adding commands does not
       change an example's concept scope, so an alpha core library can have concept examples beside it.
     </p>
 
-    <h2 id="release-stages" class="mt-10 text-xl font-semibold">Release stages</h2>
-    <p class="mt-3">
+    <h2 id="release-stages">Release stages</h2>
+    <p>
       A badge shows the prerelease stage that the package's registry declares, or the stage of the
       newest version the registry lists: <strong>pre-alpha</strong>, <strong>alpha</strong>,
       <strong>beta</strong> or <strong>rc</strong>. A final release shows its series instead, such as
@@ -51,32 +52,32 @@ const breadcrumbs = [{ name: 'libtmux', url: withRoot('/') }, { name: 'Support a
       tags its repository holds, and so does a package with no release and no release tag. A language
       without an implementation has no badge.
     </p>
-    <p class="mt-3">
+    <p>
       Python's <code>tmuxp</code> workspace loader and Python MCP server show their own PyPI release
       stage or series instead of <strong>concept</strong>.
     </p>
 
-    <h2 id="use-an-example" class="mt-10 text-xl font-semibold">Use an example</h2>
-    <p class="mt-3">
+    <h2 id="use-an-example">Use an example</h2>
+    <p>
       Open the MCP or Workspace Manager entry for your language. Its install page names the package or
       source build, the runtime it needs and the tmux endpoint it talks to.
     </p>
-    <p class="mt-3">
+    <p>
       An MCP tool can send shell input, and a workspace file can configure shell commands. Keep tmux
       access local or behind access controls you own. A concept badge adds no authentication,
       authorization or isolation. If you run an example in production, you own its configuration
       compatibility, upgrades, access controls and monitoring.
     </p>
 
-    <h2 id="report-a-failure" class="mt-10 text-xl font-semibold">Report a failure</h2>
-    <p class="mt-3">
+    <h2 id="report-a-failure">Report a failure</h2>
+    <p>
       An example has to work at its documented revision. Load a workspace and inspect the session, or
       connect an MCP client and call a tool, against a
-      <a class="underline" href={`${tmuxManualUrl('latest', 'full')}#DESCRIPTION`}>separate tmux server</a>
+      <a href={`${tmuxManualUrl('latest', 'full')}#DESCRIPTION`}>separate tmux server</a>
       so your own sessions stay untouched. A page that renders or a package that installs does not
       show that the example works.
     </p>
-    <p class="mt-3">
+    <p>
       Report the revision, the tmux version, the smallest input that fails and the error you saw. If
       the failure comes from the core library, reduce it to a core API call: an example's concept
       scope does not excuse a broken core contract.

@@ -80,7 +80,7 @@ describe('shared API prose blocks', () => {
     const model = API_MODELS.go
     const symbol = model.symbols.find((entry) => entry.id === 'tmuxq.Matching')!
     const expected = 'active, err := tmuxq.Matching(snapshot.Panes(), tmux.PaneActiveIs(true))'
-    expect(symbol.source.revision).toBe('2de249b600d65218ee8b8fdc07c6b2b919242151')
+    expect(symbol.source.revision).toBe(model.revision)
     const blocks = parseApiProse(symbol.doc!.body!)
     expect(blocks).toEqual([{ kind: 'code', lang: 'go', code: expected }])
     const block = blocks[0]
@@ -410,6 +410,35 @@ describe('a Haskell module\'s export groups', () => {
     for (const module of model.symbols.filter((symbol) => symbol.kind === 'module' && !grouped.includes(symbol))) {
       expect(module.doc?.body ?? '', module.id).not.toContain('What is on here')
     }
+  })
+})
+
+describe('a Go type\'s capability directory', () => {
+  const model = API_MODELS.go
+  const owner = model.symbols.find((symbol) => symbol.id === 'tmux.Server')!
+
+  it('folds tmux.Server\'s headed groups into the directory other ports show, one row per heading', () => {
+    const blocks = groupDirectory(parseApiProse(owner.doc!.body!), 'go')
+    const directory = blocks.find((block) => block.kind === 'directory')
+    if (directory?.kind !== 'directory') throw new Error('tmux.Server has no directory')
+    expect(directory.rows.map((row) => row.title)).toEqual([
+      'Connecting', 'Finding one thing', 'Listing everything', 'Querying things and getting around', 'Changing things',
+      'Options and hooks', 'Everything else tmux keeps', 'Things that need a terminal',
+    ])
+    for (const row of directory.rows) {
+      expect(row.guidance, row.title).not.toBe('')
+      expect(row.groups.length, row.title).toBeGreaterThan(0)
+    }
+    expect(blocks.some((block) => block.kind === 'rubric' && block.text === 'What is on here')).toBe(true)
+  })
+
+  it('lists only references that resolve to a declaration of the model', () => {
+    const directory = groupDirectory(parseApiProse(owner.doc!.body!), 'go').find((block) => block.kind === 'directory')
+    if (directory?.kind !== 'directory') throw new Error('tmux.Server has no directory')
+    const ids = new Set(model.symbols.map((symbol) => symbol.id))
+    const refs = directory.rows.flatMap((row) => row.groups.flatMap((group) => group.refs))
+    expect(refs.length).toBeGreaterThan(30)
+    for (const ref of refs) expect(ids.has(`tmux.${ref.slice(1, -1)}`), ref).toBe(true)
   })
 })
 

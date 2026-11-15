@@ -1,0 +1,27 @@
+---
+/**
+ * The supporting pane that shows a declaration's pinned source beside a
+ * reference page: a right column from 72rem, an overlay below it and full
+ * width on a phone. It sits in the page's layout grid and stays hidden until
+ * a source control opens it; the script draws everything else.
+ */
+import '../../styles/source.css'
+---
+
+<aside class="lm-pane" data-source-pane hidden aria-label="Source" data-pagefind-ignore="all">
+  <div class="lm-pane__head">
+    <button type="button" class="lm-source-action" data-pane-back hidden></button>
+    <h2 data-pane-title></h2>
+    <button type="button" class="lm-source-action lm-iconbtn" data-pane-close aria-label="Close source pane">
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="m3 3 10 10M13 3 3 13" /></svg>
+    </button>
+  </div>
+  <div class="lm-pane__prov" data-pane-prov></div>
+  <div class="lm-pane__body" data-pane-body></div>
+  <div class="lm-pane__foot">Trail: <span data-pane-crumbs></span> <span aria-hidden="true">&middot;</span> Esc closes</div>
+  <p class="sr-only" role="status" data-pane-live></p>
+</aside>
+
+<script>
+  import '../../lib/source-pane-browser'
+</script>

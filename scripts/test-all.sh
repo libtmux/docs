@@ -72,7 +72,7 @@ step 'mention index'
 node scripts/gen-mentions.mjs --check
 
 # The commands, options and keys that workspace prose links to, read from the
-# CLI Manual and Configuration pages. The negative case is a unit test.
+# CLI manual and Configuration pages. The negative case is a unit test.
 step 'workspace entity index'
 node scripts/gen-workspace-entities.mjs --check
 
@@ -140,6 +140,22 @@ node scripts/gen-example-sources.mjs --check
 
 step 'example sources (negative)'
 node scripts/gen-example-sources.negative.mjs
+
+# Behaviour facts are sentences of each declaration's doc comment, kept with their line at the model's revision.
+# CI has no checkout, so the committed facts are held to the evidence lines they recorded.
+step 'behaviour facts'
+node scripts/gen-api-behavior.mjs --check
+
+step 'behaviour facts (negative)'
+node scripts/gen-api-behavior.negative.mjs
+
+# Source pages and the source pane show pinned copies of the files each API model cites; the cache is committed
+# with a digest per file, and the check compares it against the models' revisions.
+step 'api sources'
+node scripts/gen-api-sources.mjs --check
+
+step 'api sources (negative)'
+node scripts/gen-api-sources.negative.mjs
 
 # The workspace showcase quotes configurations a port's own tests load, read
 # at the revision its API model records. Without the checkouts this verifies

@@ -24,7 +24,7 @@ const shortName = tmux ? 'tmux' : PORT_BY_SLUG[portSlug ?? '']?.shortName ?? nam
 const families = portFamilies(entries.map((entry) => entry.port))
 ---
 <details class="doc-picker" data-page-port-switcher data-doc-picker>
-  <summary aria-label={label ?? `${name}: choose a language or tmux documentation`} data-reserve-label-width={reserveLabelWidth || undefined}>
+  <summary aria-label={label ?? `${name}: choose a programming language or tmux documentation`} data-reserve-label-width={reserveLabelWidth || undefined}>
     <span class:list={['page-port-icon', { 'home-language-icon': homeLanguageIcons }]} aria-hidden="true">
       {tmux ? <img data-terminal-icon src={withRoot('/brand/tools/terminal/icon.svg')} width="24" height="24" alt="" /> : !homeLanguageIcons && portSlug && PORT_BY_SLUG[portSlug] ? <img
         data-language-icon={portSlug}
@@ -37,14 +37,14 @@ const families = portFamilies(entries.map((entry) => entry.port))
         width="24" height="24" alt="" loading="eager" decoding="sync" />)}
     </span>
     <span class="page-port-name">{homeLanguageIcons ? <>
-      <span data-home-unselected-name>Language</span>
+      <span data-home-unselected-name>Port</span>
       {entries.map((entry) => <span data-home-port-name={entry.port}>{entry.name}</span>)}
     </> : name}</span><span class="page-port-short-name" aria-hidden="true">{homeLanguageIcons ? <>
       <span data-home-unselected-name>Port</span>
       {entries.map((entry) => <span data-home-port-name={entry.port}>{entry.name}</span>)}
     </> : shortName}</span>
     {reserveLabelWidth && <span class="page-port-label-sizer" aria-hidden="true" style="visibility: hidden; height: 0; overflow: hidden;">
-      <span class="page-port-sizer-default">{homeLanguageIcons ? 'Language' : name}</span>
+      <span class="page-port-sizer-default">{homeLanguageIcons ? 'Port' : name}</span>
       {entries.map((entry) => <span>{entry.name}</span>)}
     </span>}
     <svg class="doc-picker-caret" viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
@@ -74,13 +74,13 @@ const families = portFamilies(entries.map((entry) => entry.port))
             aria-label={link.label ? `${entry.name}: ${link.label}` : undefined}
             title={link.label ? `${entry.name}: ${link.label}` : undefined}
             aria-current={entry.port === portSlug ? 'page' : undefined}>
-            <img class="port-artwork" src={withRoot(branding(entry.port).asset('logo.svg'))} width="26" height="26" alt="" />
+            <img class="port-artwork" src={withRoot(branding(entry.port).asset('logo.svg'))} width="20" height="20" alt="" />
             <span>{entry.name}{links.length > 1 && link.label && <small>{link.label}</small>}</span>
             {entry.port === portSlug && <span class="doc-picker-check" aria-hidden="true">✓</span>}
           </a>) : <div class="doc-picker-option doc-picker-option--unmatched" data-port={entry.port} data-port-name={entry.name}
             data-home-href={home?.href} data-home-label={home?.label}
             data-picker-option data-match={`${entry.port} ${entry.name} ${overview?.label ?? ''}`}>
-            <img class="port-artwork" src={withRoot(branding(entry.port).asset('logo.svg'))} width="26" height="26" alt="" />
+            <img class="port-artwork" src={withRoot(branding(entry.port).asset('logo.svg'))} width="20" height="20" alt="" />
             <span>{entry.name}<small>No matching page</small></span>
             {home && <a class="doc-picker-home" data-picker-home href={home.href}
               aria-label={home.label} title={home.label}>
@@ -95,7 +95,7 @@ const families = portFamilies(entries.map((entry) => entry.port))
       <a class="doc-picker-option" href={withPortRoot('/tmux/')} data-picker-option
         data-match="just tmux cli terminal manual commands guides topics reference"
         aria-current={tmux ? 'location' : undefined}>
-        <TmuxLogo size={26} /><span>tmux CLI</span>
+        <TmuxLogo size={20} /><span>tmux CLI</span>
         <span class="tmux-destination" aria-hidden="true">
           {tmux && <span class="doc-picker-check">✓</span>}<span>→</span>
         </span>
@@ -126,8 +126,12 @@ const families = portFamilies(entries.map((entry) => entry.port))
   }
   .page-port-short-name { display: none; }
   .port-family + .port-family { margin-top: .65rem; }
-  .port-family h3 { margin: .75rem .4rem .25rem; font-size: .6875rem; font-weight: 400; text-transform: uppercase; letter-spacing: .025em; color: var(--color-muted); }
-  .port-artwork { flex: none; width: 1.625rem; height: 1.625rem; object-fit: contain; }
+  .port-family h3 { margin: .75rem var(--picker-inset) .25rem; font-size: .6875rem; font-weight: 400; text-transform: uppercase; letter-spacing: .025em; color: var(--color-muted); }
+  /* 32rem holds two columns of one-line rows; the mark is 20px so a row is a label and one muted line (record 0030). */
+  .port-picker-panel { --picker-width: 32rem; }
+  .port-artwork { flex: none; width: 1.25rem; height: 1.25rem; object-fit: contain; }
+  .port-picker-panel .doc-picker-option small { overflow: hidden; margin-top: 0; text-overflow: ellipsis; white-space: nowrap; }
+  .port-picker-panel .doc-picker-option > span { overflow-wrap: normal; }
   .tmux-area { margin-top: .75rem; padding-top: .5rem; border-top: 1px solid var(--color-edge); }
   .tmux-destination { display: inline-flex; align-items: center; gap: .5rem; margin-left: auto; }
 </style>

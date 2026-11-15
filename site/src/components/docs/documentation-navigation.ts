@@ -1,3 +1,5 @@
+import { below } from '../../lib/breakpoints'
+
 let controller: AbortController | undefined
 
 export function initDocumentationNavigation() {
@@ -9,8 +11,9 @@ export function initDocumentationNavigation() {
     const back = context.querySelector<HTMLButtonElement>('[data-context-settings-back]')!
     const settings = context.querySelector<HTMLElement>('[data-context-settings]')!
     if (!toggle || !back || !settings) continue
-    const compact = window.matchMedia('(max-width: 24rem)')
-    context.dataset.settingsEnhanced = ''
+    const compact = window.matchMedia(below('phone'))
+    // Under 22rem the navigation buttons also fold into the settings view.
+    const narrow = window.matchMedia('(max-width: 21.875rem)')
     toggle.hidden = back.hidden = false
     const closeSettings = () => {
       for (const picker of settings.querySelectorAll<HTMLDetailsElement>('[data-doc-picker][open]')) picker.open = false
@@ -31,12 +34,12 @@ export function initDocumentationNavigation() {
       closeSettings()
       toggle.focus({ preventScroll: true })
     }, { signal })
-    compact.addEventListener('change', () => {
+    const resized = () => {
       const focused = document.activeElement
       const navigationOpen = context.querySelector('.documentation-context-navigation > :is(button, [role="button"])[aria-expanded="true"]')
       closeSettings()
       // A drawer must still have a visible opener to restore focus on close.
-      if (compact.matches && navigationOpen) {
+      if (narrow.matches && navigationOpen) {
         context.dataset.settingsOpen = ''
         toggle.setAttribute('aria-expanded', 'true')
       }
@@ -44,7 +47,9 @@ export function initDocumentationNavigation() {
       if (focused instanceof HTMLElement && context.contains(focused) && !focused.getClientRects().length) {
         (compact.matches ? toggle : settings.querySelector<HTMLElement>('summary'))?.focus({ preventScroll: true })
       }
-    }, { signal })
+    }
+    compact.addEventListener('change', resized, { signal })
+    narrow.addEventListener('change', resized, { signal })
   }
   for (const picker of document.querySelectorAll<HTMLDetailsElement>('[data-doc-picker]')) {
     const panel = picker.querySelector<HTMLElement>('[data-picker-panel]')!

@@ -450,11 +450,10 @@ html[data-js] .ws-layout__stack > .ws-win:not([data-active]) {
 /*
  * The landing page's picker (WorkspacePicker `landing`). It sits straight under
  * the product tabs, and nothing follows it, so each preset brings its own
- * heading, one-line summary and evidence. The panel becomes a column in which
- * the configuration and the drawing take the height the tallest preset
- * leaves, so the evidence of a short preset sits at the foot of the stage as
- * a tall one's does. The menu names the preset, so the heading shows only
- * where there is no menu.
+ * heading, one-line summary and evidence. The configuration and the drawing
+ * take the height the tallest preset leaves, and the load step below stands
+ * where a tall preset's does (the rows are set out below). The menu names the
+ * preset, so the heading shows only where there is no menu.
  */
 .ws-picker--landing {
   margin-block: 0;
@@ -479,13 +478,37 @@ html[data-js] .ws-picker__title {
   display: none;
 }
 
+/*
+ * On a landing the product's installer stands between each preset's drawing and its load step (record 0059). The panels take
+ * no box of their own, so their summaries share the stage's first row, their drawings the second, the installer takes the
+ * third and their load steps share the fourth; every row is as tall as its tallest preset, so choosing a preset moves nothing.
+ * Visibility, which the selected panel sets, is inherited by what it holds.
+ */
 html[data-js] .ws-picker--landing .ws-picker__panel {
-  display: flex;
-  flex-direction: column;
+  display: contents;
+}
+
+html[data-js] .ws-picker--landing .ws-picker__stage > .ws-picker__panel > .ws-picker__head {
+  grid-area: 1 / 1;
+  min-inline-size: 0;
+}
+
+html[data-js] .ws-picker--landing .ws-picker__stage > .ws-picker__panel > .ws-body {
+  grid-area: 2 / 1;
+  min-inline-size: 0;
+}
+
+html[data-js] .ws-picker--landing .ws-picker__install {
+  grid-area: 3 / 1;
+  min-inline-size: 0;
+}
+
+html[data-js] .ws-picker--landing .ws-picker__stage > .ws-picker__panel > .ws-picker__evidence {
+  grid-area: 4 / 1;
+  min-inline-size: 0;
 }
 
 .ws-picker--landing .ws-picker__panel > .ws-body {
-  flex: 1 1 auto;
   block-size: auto;
   min-block-size: 0;
 }

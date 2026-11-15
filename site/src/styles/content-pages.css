@@ -1,0 +1,71 @@
+/*
+ * Typesetting of the reading pages: examples, guides, topics and concepts
+ * (`data-content` on the article, set from `contentKind` in `lib/docs-paths.ts`).
+ *
+ * The design system sets one scale for every page family (15-typesetting.md,
+ * record 0012). The prose scale itself lives in global.css; these rules are
+ * the ones that belong to how a page of code and prose is laid out:
+ *
+ * - an example keeps the 72-character measure as a whole, so its steps,
+ *   prose and code frames share one right edge (PageExample);
+ * - the other reading pages cap their prose at the measure and leave code
+ *   frames, tables and figures the full column;
+ * - an example's steps are H3s, parts of one build-up under a grouping H2;
+ * - inline code is body weight, and a linked API name carries a kind mark and
+ *   a dotted underline instead of a code chip as well (record 0025).
+ *
+ * Unlayered, so they outrank the typography plugin and global.css, whose
+ * prose rules sit in cascade layers.
+ */
+
+/* An example is read top to bottom as one column. */
+article[data-content='example'] {
+  max-width: var(--measure-prose, 72ch);
+}
+
+/* Prose on the other reading pages stops at the measure; code frames and tables use the column. */
+article[data-content='reading'] > :is(p, ul, ol, blockquote, h2, h3, h4, dl) {
+  max-width: var(--measure-prose, 72ch);
+}
+
+article[data-content] :is(p, li) {
+  text-wrap: pretty;
+}
+
+/* A section is 24/32 semibold, a step 18/26: each step down is 75% of the one above. */
+article[data-content='example'] h2 {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+article[data-content='example'] h3 {
+  font-size: 1.125rem;
+  line-height: 1.625rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+/* The first step follows its grouping heading closely. */
+article[data-content='example'] h2 + h3 {
+  margin-top: 0;
+}
+
+/* Inline code is body weight, a step under the text, with its padding inside the chip so "editor;" does not read as "editor ;". */
+article[data-content] :is(p, li, dd, td, th, blockquote) code:not(pre code) {
+  font-size: 0.875em;
+  font-weight: 400;
+  padding: 0.125rem 0.1875rem;
+}
+
+/* A linked name is a kind mark and a dotted underline. It is code that is a link, so it takes no chip. */
+article[data-content] a.api-mention code {
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  font-size: 0.875em;
+  font-weight: 400;
+}

@@ -19,17 +19,19 @@ describe('sidebar-derived breadcrumbs', () => {
     const symbol = model.symbols.find((entry) => entry.id === 'io.github.libtmux.scaladsl.generated.PaneFields.active')!
     const crumbs = await pageBreadcrumbs('PaneFields.active', `reference/${symbol.slug}`, 'latest', 'scala')
     const base = referenceUrl(PORT_BY_SLUG.scala, 'latest')
-    expect(crumbs.map((entry) => entry.name)).toEqual(['Scala', 'API reference', 'Queries', 'Fields', 'PaneFields', 'active'])
-    expect(crumbs[2].url).toBe(`${base}#section-queries`)
-    expect(crumbs[3].url).toBe(`${base}#section-queries-fields`)
-    expect(crumbs[4].url).toBe(`${base}io-github-libtmux-scaladsl-generated-panefields/`)
+    // Port / Product / Section / Page: the product is named, as the MCP and Workspace Manager trails name theirs.
+    expect(crumbs.map((entry) => entry.name)).toEqual(['Scala', 'Core Library', 'API reference', 'Queries', 'Fields', 'PaneFields', 'active'])
+    expect(crumbs[1].url).toBe('/scala/latest/core/')
+    expect(crumbs[3].url).toBe(`${base}#section-queries`)
+    expect(crumbs[4].url).toBe(`${base}#section-queries-fields`)
+    expect(crumbs[5].url).toBe(`${base}io-github-libtmux-scaladsl-generated-panefields/`)
     expect(crumbs.at(-1)?.url).toBe(`${base}${symbol.slug}/`)
   })
 
   it('uses a cmdlet’s own sidebar placement rather than its unrelated module', async () => {
     const symbol = API_MODELS.powershell.symbols.find((entry) => entry.name === 'Get-TmuxPane')!
     const crumbs = await pageBreadcrumbs(symbol.name, `reference/${symbol.slug}`, 'latest', 'powershell')
-    expect(crumbs.map((entry) => entry.name)).toEqual(['PowerShell', 'API reference', 'Pane', 'Get-TmuxPane'])
+    expect(crumbs.map((entry) => entry.name)).toEqual(['PowerShell', 'Core Library', 'API reference', 'Pane', 'Get-TmuxPane'])
   })
 
   it.each(['rs', 'cxx', 'kotlin'])('names the %s Core Library home by its short label, not its heading', async (slug) => {
@@ -41,7 +43,7 @@ describe('sidebar-derived breadcrumbs', () => {
   it('uses a canonical Julia function placement instead of a contextual shortcut', async () => {
     const symbol = API_MODELS.julia.symbols.find((entry) => entry.id === 'LibTmux.snapshot')!
     const crumbs = await pageBreadcrumbs(symbol.name, `reference/${symbol.slug}`, 'latest', 'julia')
-    expect(crumbs.map((entry) => entry.name)).toEqual(['Julia', 'API reference', 'Snapshots', 'snapshot'])
+    expect(crumbs.map((entry) => entry.name)).toEqual(['Julia', 'Core Library', 'API reference', 'Snapshots', 'snapshot'])
   })
 
   it('includes the native C reference category and owning declaration', () => {
@@ -88,6 +90,18 @@ describe('sidebar-derived breadcrumbs', () => {
     expect(crumbs.at(-1)?.symbol).toBe(true)
     expect(sidebarBreadcrumbs(items, '/ja/julia/latest/mcp/reference/application-close/')).toEqual([])
     expect(withSidebarBreadcrumbs([], items, '/ja/julia/v0.46.2/mcp/reference/application/')).toEqual([])
+  })
+
+  it('passes through a group drawn as a label over its rows: the tmux object over an MCP tool is not an ancestor', () => {
+    const items = [{ type: 'group' as const, label: 'Pane', overline: true, href: '/en/go/latest/mcp/tools/#tools-pane', items: [
+      { type: 'link' as const, label: 'capture_pane', kind: 'tool', quiet: true, href: '/en/go/latest/mcp/tools/capture_pane/' },
+    ] }]
+    expect(sidebarBreadcrumbs(items, '/en/go/latest/mcp/tools/capture_pane/').map((entry) => entry.name)).toEqual(['capture_pane'])
+    // A group that is a place, as a sectioned reference's, is still an ancestor.
+    const place = [{ ...items[0]!, overline: undefined }]
+    expect(sidebarBreadcrumbs(place, '/en/go/latest/mcp/tools/capture_pane/').map((entry) => entry.name)).toEqual(['Pane', 'capture_pane'])
+    const crumbs = [{ name: 'Go', url: '/en/go/latest/' }, { name: 'MCP', url: '/en/go/latest/mcp/' }, { name: 'Tools', url: '/en/go/latest/mcp/tools/' }, { name: 'capture_pane', url: '/en/go/latest/mcp/tools/capture_pane/' }]
+    expect(withSidebarBreadcrumbs(crumbs, items, '/en/go/latest/mcp/tools/capture_pane/').map((entry) => entry.name)).toEqual(['Go', 'MCP', 'Tools', 'capture_pane'])
   })
 
   it('does not mistake disabled or external entries for the current page', () => {

@@ -152,7 +152,7 @@
         "job": "test",
         "step": "Test ${{ matrix.module }}",
         "directory": "${{ matrix.module }}",
-        "command": "go test -race -count=1",
+        "command": "\"$GITHUB_WORKSPACE/scripts/test-module.sh\" \"${{ matrix.module }}\" -race -count=1",
         "where": "examples"
       },
       "checkedBy": [
@@ -162,7 +162,7 @@
         },
         {
           "file": "examples/control-mode-subscribe/example_test.go",
-          "contains": "exampletest.Server(t, run)"
+          "contains": "exampletest.Server(t, func(ctx context.Context, server tmux.Server) error {"
         },
         {
           "file": ".github/workflows/tests.yml",
@@ -186,7 +186,7 @@
         "job": "test",
         "step": "Test ${{ matrix.module }}",
         "directory": "${{ matrix.module }}",
-        "command": "go test -race -count=1",
+        "command": "\"$GITHUB_WORKSPACE/scripts/test-module.sh\" \"${{ matrix.module }}\" -race -count=1",
         "where": "examples"
       },
       "checkedBy": [
