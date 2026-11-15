@@ -143,7 +143,7 @@ describe('the member search and group filter (MemberCollection, record 0056)', (
     const mixed = members.map((member, position) => (position % 5 === 0 ? { ...member, kind: 'property' } as ApiSymbol : member))
     const { document } = await list({ mixed: true }, mixed)
     const kinds = chips(document, 'kinds')
-    expect(kinds.map(([label]) => label).sort((a, b) => a.localeCompare(b))).toEqual(['All', 'Methods', 'Properties'])
+    expect(kinds.map(([label]) => String(label)).sort((a, b) => a.localeCompare(b))).toEqual(['All', 'Methods', 'Properties'])
     expect(kinds.slice(1).reduce((sum, [, figure]) => sum + Number(figure), 0)).toBe(members.length)
   })
 
