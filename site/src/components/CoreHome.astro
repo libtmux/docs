@@ -55,7 +55,10 @@ const rest = (group: keyof typeof CAPABILITY_GROUPS) => home.capabilities[group]
 ---
 <p>{coreLead(port)}</p>
 
-{/* The installer comes first, above the fold: the sections to go on to follow it (record 0026). */}
+<h2 id="what-it-does">What it does</h2>
+{(example || showcase.length > 0) && <div class="not-prose"><CoreShowcase port={port} /></div>}
+
+{/* The installer follows the player (record 0059); the sections to go on to follow it. */}
 <h2 id="install">Install</h2>
 <div class="not-prose"><Code code={install.code} lang={install.lang} frame="none" /></div>
 {sourceInstall?.note && <p>{sourceInstall.note}</p>}
@@ -92,9 +95,6 @@ const rest = (group: keyof typeof CAPABILITY_GROUPS) => home.capabilities[group]
   </table>
 </div>
 </>}
-
-<h2 id="what-it-does">What it does</h2>
-{(example || showcase.length > 0) && <div class="not-prose"><CoreShowcase port={port} /></div>}
 
 {Object.entries(CAPABILITY_GROUPS).map(([group, title]) => {
   const rows = rest(group as keyof typeof CAPABILITY_GROUPS)

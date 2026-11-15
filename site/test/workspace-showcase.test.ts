@@ -418,14 +418,17 @@ describe('the overview page', () => {
     expect(page).toContain('const workspaceExampleLeads = Boolean(workspaceExamples && !offersPicker(workspaceExamples))')
     // A port with one preset renders no picker, so its table of contents lists no "Explore tmux layout" either.
     expect(page).toContain("...(workspaceExamples && offersPicker(workspaceExamples) ? [{ depth: 2, slug: 'explore-tmux-layout-workspace-possibilities', text: 'Explore tmux layout / workspace possibilities' }] : []),")
-    // The installer follows the intro (record 0026). With no picker to open the page, the one example follows it, ahead of the prose; behind a picker it follows the prose.
+    // The demo follows the intro and the installer follows the demo (record 0059): the picker, or with no picker the one example, then install; behind a picker the full examples follow the prose.
     const leads = page.indexOf('{!placeholderLocale && workspaceExamples && workspaceExampleLeads && <WorkspaceShowcase')
     const follows = page.indexOf('{!placeholderLocale && workspaceExamples && !workspaceExampleLeads && <WorkspaceShowcase')
+    const install = page.indexOf('<h2 id="install">Install</h2>\n      <p>Install the workspace package')
+    expect(page.indexOf('<WorkspacePicker showcase={workspaceExamples} />'), 'the picker leads').toBeLessThan(install)
+    expect(leads, 'the one example of a port with no picker leads').toBeLessThan(install)
     expect(leads).toBeGreaterThan(page.indexOf('<WorkspacePicker showcase={workspaceExamples} />'))
-    expect(leads).toBeGreaterThan(page.indexOf('<h2 id="install">Install</h2>\n      <p>Install the workspace package'))
     expect(page.indexOf('<Content />')).toBeLessThan(follows)
     const toc = page.slice(page.indexOf('headings={'), page.indexOf('pagePath={publicPagePath}'))
-    expect(toc.indexOf('workspaceExampleLeads ? workspaceHeadings')).toBeGreaterThan(toc.indexOf("slug: 'install'"))
+    expect(toc.indexOf("slug: 'install'"), 'the contents list names install after the demo').toBeGreaterThan(toc.indexOf('workspaceExampleLeads ? workspaceHeadings'))
+    expect(toc.indexOf("slug: 'install'")).toBeGreaterThan(toc.indexOf("slug: 'explore-tmux-layout-workspace-possibilities'"))
     expect(toc.indexOf('!workspaceExampleLeads ? workspaceHeadings')).toBeGreaterThan(toc.indexOf('...headings,'))
   })
 })

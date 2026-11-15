@@ -32,6 +32,7 @@ describe('Core Library home data', () => {
     }
     expect(coreHomeMarkdown(slug, 'latest', 'https://libtmux.org')).toContain('## At a glance')
     expect(coreHomeHeadings(slug, 'latest').map((heading) => heading.slug)).toContain('at-a-glance')
+    expect(coreHomeHeadings(slug, 'latest').map((heading) => heading.slug).slice(0, 3), `${slug} lists the headings in the order the page draws`).toEqual(['what-it-does', 'install', 'at-a-glance'])
   })
 
   it('lists a capability only for the ports that have one', () => {
@@ -144,7 +145,7 @@ describe('Core Library home page', () => {
     expect(doc.body.textContent).not.toMatch(/Documentation version/)
     expect(doc.querySelector('[data-example]')?.getAttribute('data-fixed') ?? 'true').toBe('true')
     const order = [...doc.querySelectorAll('h2')].map((heading) => heading.id)
-    expect(order.slice(0, 3)).toEqual(['install', 'at-a-glance', 'what-it-does'])
+    expect(order.slice(0, 3), 'the player, then the install, then the sections to go on to (record 0059)').toEqual(['what-it-does', 'install', 'at-a-glance'])
     expect(doc.querySelectorAll('[data-code]').length, 'one install block, not a card in a card').toBeGreaterThanOrEqual(1)
     expect([...doc.querySelectorAll('[data-core-home-objects] tr[data-role]')].map((row) => row.getAttribute('data-role'))).toEqual([...CORE_ROLES])
     const hrefs = [...doc.querySelectorAll('[data-core-home-objects] a, [data-core-home-capabilities] a')].map((a) => a.getAttribute('href'))

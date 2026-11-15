@@ -165,10 +165,10 @@ const productIntro = isProductOverview && port && coreHome
   product={entry.data.product}
   version={version}
   headings={placeholderLocale ? [] : [
-    ...(isMcpOverview || isWorkspaceOverview ? [{ depth: 2, slug: 'install', text: 'Install' }] : []),
     ...(workspaceExamples && offersPicker(workspaceExamples) ? [{ depth: 2, slug: 'explore-tmux-layout-workspace-possibilities', text: 'Explore tmux layout / workspace possibilities' }] : []),
     ...(workspaceExamples && workspaceExampleLeads ? workspaceHeadings(workspaceExamples) : []),
     ...(mcpTools ? mcpExampleHeadings(mcpTools) : []),
+    ...(isMcpOverview || isWorkspaceOverview ? [{ depth: 2, slug: 'install', text: 'Install' }] : []),
     ...(isCoreHome ? coreHomeHeadings(port!, version ?? buildTarget(process.env).version) : []),
     ...headings,
     ...(workspaceExamples && !workspaceExampleLeads ? workspaceHeadings(workspaceExamples) : []),
@@ -269,15 +269,17 @@ const productIntro = isProductOverview && port && coreHome
     <code>{packageSource.package}</code>{packageSource.version ? ` ${packageSource.version}` : ''} · <a href={`https://github.com/${packageSource.repo}/tree/${packageSource.revision}`}>Source</a>
   </p>}
   {/*
-    What the product is, then install, then the MCP worked example, then the
-    preset picker where a workspace has several, then the way in, then the
-    prose: a reader who landed on a product overview came to get the thing, and
-    the boxes are where they go next. The example and install used to follow
-    the whole page, below the fold; install now sits above the example, in the
-    place the port home and every other product home put it.
+    What the product is, then its demo (the MCP worked example, or the workspace
+    preset picker, or the one example a port with a single preset has), then
+    install, then the way in, then the prose: a reader who landed on a product
+    overview came to see the thing work first, and the installer follows it
+    (record 0059), as it does in a product's panel on the port home.
   */}
   {!placeholderLocale && productIntro && <ProductIntro parts={productIntro} />}
-  {/* The installer follows the intro, above the example, so it is above the fold on every product home (record 0026). */}
+  {!placeholderLocale && mcpTools && <McpShowcase showcase={mcpTools} part="example" />}
+  {!placeholderLocale && workspaceExamples && <WorkspacePicker showcase={workspaceExamples} />}
+  {!placeholderLocale && workspaceExamples && workspaceExampleLeads && <WorkspaceShowcase showcase={workspaceExamples} />}
+  {/* The installer follows the demo (record 0059). */}
   {!placeholderLocale && isMcpOverview && port && (
     <>
       <h2 id="install">Install</h2>
@@ -300,9 +302,6 @@ const productIntro = isProductOverview && port && coreHome
       </div>
     </>
   )}
-  {!placeholderLocale && mcpTools && <McpShowcase showcase={mcpTools} part="example" />}
-  {!placeholderLocale && workspaceExamples && <WorkspacePicker showcase={workspaceExamples} />}
-  {!placeholderLocale && workspaceExamples && workspaceExampleLeads && <WorkspaceShowcase showcase={workspaceExamples} />}
   {!placeholderLocale && isCoreHome && <CoreHome port={port!} version={version ?? buildTarget(process.env).version} cards={cards} />}
   {!placeholderLocale && introFirst && <Content />}
   {!placeholderLocale && !isCoreHome && directory === 'cards' && (
