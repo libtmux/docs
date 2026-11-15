@@ -54,7 +54,9 @@ it('has committed recordings that name neither this machine nor the sandbox, and
     }
   })
 
-describe('what a finished recording is scanned for before it is written', () => {
+// These tests run the recorder's whole pipeline over every committed recording, so a loaded runner needs more
+// than the default.
+describe('what a finished recording is scanned for before it is written', { timeout: 20_000 }, () => {
   // The checkout is outside the home directory, so a piece of it is not already a place of its own.
   const HOST = { sandbox: '/tmp/t239-ts-AbC123', home: '/home/d', checkout: '/srv/ports/libtmux-ts', listed: '4242:1700000000', user: 'd', machine: 'tony-box' }
   const MARKS = { paths: [['/tmp/t239-ts-AbC123/project', '/home/user/project'], ['4242:1700000000', '3f9a1c']] as [string, string][], names: ['tony-box', 'd'] }

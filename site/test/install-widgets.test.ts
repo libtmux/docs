@@ -474,7 +474,8 @@ describeIfMcp('MCP install picker', () => {
 
 const describeIfGoMcp = SITE_BUILT && existsSync(GO_MCP) ? describe : describe.skip
 
-describeIfGoMcp('MCP install picker, Go', () => {
+// Each test loads a built page of over a megabyte, so a loaded runner needs more than the default.
+describeIfGoMcp('MCP install picker, Go', { timeout: 20_000 }, () => {
   it('renders no cooldown control for a port whose toolchain has none', () => {
     const { document } = load(GO_MCP, `https://libtmux.org/${SITE_PREFIX}go/latest/mcp/`)
     expect(document.querySelectorAll('.lm-mcp-install__cooldown-control').length).toBe(0)
@@ -484,7 +485,7 @@ describeIfGoMcp('MCP install picker, Go', () => {
 
 // No page in an assembled preview carries the Python picker since the cross-port /mcp/
 // page went away: Python's MCP page is built from its own Sphinx tree. Render the picker.
-describe('MCP install picker, Python', () => {
+describe('MCP install picker, Python', { timeout: 20_000 }, () => {
   it('still offers uvx and its cooldown control', async () => {
     // The picker renders 126 panels, each through Shiki. This test reads tabs and
     // controls, not highlighted markup, so highlight nothing.
