@@ -7,8 +7,9 @@ import WorkspaceConfig from './workspace/WorkspaceConfig.astro'
 import WorkspaceEvidence from './workspace/WorkspaceEvidence.astro'
 import WorkspacePicker from './workspace/WorkspacePicker.astro'
 import WorkspaceWindows from './workspace/WorkspaceWindows.astro'
+import DocCard from './DocCard.astro'
 import StatusBadge from './StatusBadge.astro'
-import { portPageUrl, productStatus, productStatusLine, type DocProduct, type Port } from '../lib/ports'
+import { PICKER_GROUP_LABEL, portPageUrl, productStatus, productStatusLine, type DocProduct, type Port } from '../lib/ports'
 import { REGISTRY } from '../lib/registry'
 import { landingPanels, type CachedSource, type LandingTable } from '../lib/port-landing'
 import { mcpShowcase, toolHeadings } from '../lib/mcp-showcase'
@@ -66,8 +67,27 @@ const coreLinks = [
   { href: portPageUrl(port, version, moreExamples ? 'examples' : 'guides'), label: moreExamples ? `More ${port.name} examples →` : `${port.name} guides →` },
 ]
 const panelId = (product: string) => `landing-panel-${product}`
+// "What do you want to do?": the reader's choice, one card for each product the port ships. A card says what the product
+// is for and its maturity; a command belongs to the installer (record 0028), so none is written here.
+const tasks = panels.length > 1 ? panels.map((panel) => {
+  const product = panel.product as 'core' | DocProduct
+  const status = productStatus(port, product, REGISTRY)
+  const line = product === 'core' ? 'guides, examples and the API reference.'
+    : product === 'mcp' ? 'needs an MCP client and tmux on PATH.'
+    : workspaceProgram ? `the ${workspaceProgram.program} command.` : 'workspace files for tmux.'
+  return {
+    href: portPageUrl(port, version, product),
+    label: product === 'core' ? `Control tmux from ${port.language} code` : product === 'mcp' ? 'Give an assistant tmux tools' : 'Load a workspace file',
+    body: `${PICKER_GROUP_LABEL[product]} · ${line}`,
+    ...(status ? { corner: { label: status, title: productStatusLine(status) } } : {}),
+  }
+}) : []
 ---
 <section class="port-landing mt-10" aria-label={`Start with ${port.name}`} data-port-landing={port.slug}>
+  {tasks.length > 0 && <section class="landing-tasks" aria-labelledby="landing-tasks-title" data-landing-tasks>
+    <h2 id="landing-tasks-title">What do you want to do?</h2>
+    <ul style={`--tasks: ${tasks.length}`}>{tasks.map((task) => <li><DocCard {...task} /></li>)}</ul>
+  </section>}
   {panels.length > 1 && <fieldset class="landing-products">
     <legend class="sr-only">Product</legend>
     {panels.map((panel, index) => <label>
@@ -175,6 +195,13 @@ const panelId = (product: string) => `landing-panel-${product}`
 <style>
   /* One content edge: the hero, install and player take the full column, as the cards below them do. */
   .port-landing { container-type: inline-size; }
+  /* The reader's choice leads the page: three cards in a row from 40rem, one column below. */
+  .landing-tasks { margin: 0 0 2rem; }
+  .landing-tasks h2 { margin: 0 0 .75rem; font-size: 1.5rem; line-height: 2rem; font-weight: 600; letter-spacing: -.01em; }
+  .landing-tasks ul { display: grid; gap: .75rem; margin: 0; padding: 0; list-style: none; grid-template-columns: minmax(0, 1fr); }
+  .landing-tasks li { display: flex; margin: 0; }
+  .landing-tasks li > :global(a) { flex: 1; }
+  @container (min-width: 40rem) { .landing-tasks ul { grid-template-columns: repeat(var(--tasks), minmax(0, 1fr)); } }
   .landing-products {
     display: flex; flex-wrap: wrap; gap: .125rem; margin: 0 0 1.25rem; padding: 0;
     border: 0; border-bottom: 1px solid var(--color-edge);

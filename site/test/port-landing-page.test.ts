@@ -9,7 +9,8 @@ import * as showcaseLibrary from '../src/lib/workspace-showcase'
 import { loadCommand } from '../src/lib/workspace-links'
 import { STORAGE_PREFIX } from '../src/lib/workspace-picker'
 import { landingExcerpt, landingProducts, type CachedSource, type LandingExcerpt, type LandingTable } from '../src/lib/port-landing'
-import { PORTS, PORT_BY_SLUG, productStatusLine, type DocProduct } from '../src/lib/ports'
+import { PORTS, PORT_BY_SLUG, portPageUrl, productStatus, productStatusLine, type DocProduct } from '../src/lib/ports'
+import { REGISTRY } from '../src/lib/registry'
 import LANDING from '../src/data/landing-examples.json'
 import SOURCES from '../src/data/example-sources.json'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
@@ -31,7 +32,7 @@ const REAL = [
   'components/replay/TmuxScreen.astro', 'components/replay/ReplayControls.astro',
   'components/workspace/WorkspaceConfig.astro', 'components/workspace/WorkspaceWindows.astro',
   'components/workspace/WorkspaceEvidence.astro', 'components/workspace/WorkspacePicker.astro',
-  'components/RerollButton.astro', 'components/docs/PickerSearch.astro',
+  'components/RerollButton.astro', 'components/docs/PickerSearch.astro', 'components/DocCard.astro',
 ]
 const stubs = {
   'components/HomeExample.astro': '---\nconst { port, language } = Astro.props\n---\n<div data-home-example={port} data-language={language} />',
@@ -73,6 +74,40 @@ async function render(slug: string) {
   window.document.body.innerHTML = await renderHtml(slug)
   return window.document as unknown as Document
 }
+
+/** "What do you want to do?" (PageLanding, record 0028): the reader's choice comes before any demo, and a command belongs to the installer. */
+describe('the task cards', () => {
+  const titles = (document: Document) => [...document.querySelectorAll('[data-landing-tasks] a.doc-card h3')].map((title) => title.textContent!.trim())
+
+  it('open the page with a card for each product the port ships, linked to its home, with its maturity and one prerequisite line', async () => {
+    const document = await render('go')
+    const section = document.querySelector('[data-landing-tasks]')!
+    expect(section.querySelector('h2')!.textContent).toBe('What do you want to do?')
+    expect(titles(document)).toEqual(['Control tmux from Go code', 'Give an assistant tmux tools', 'Load a workspace file'])
+    const go = PORT_BY_SLUG.go!
+    const cards = [...section.querySelectorAll<HTMLAnchorElement>('a.doc-card')]
+    expect(cards.map((card) => card.getAttribute('href'))).toEqual([portPageUrl(go, 'latest', 'core'), portPageUrl(go, 'latest', 'mcp'), portPageUrl(go, 'latest', 'workspace')])
+    expect(cards.map((card) => card.querySelector('.lm-tab')?.textContent)).toEqual((['core', 'mcp', 'workspace'] as const).map((product) => productStatus(go, product, REGISTRY)))
+    const lines = cards.map((card) => card.querySelector('.doc-card__body')!.textContent!)
+    expect(lines[0]).toBe('Core Library · guides, examples and the API reference.')
+    expect(lines[1]).toBe('MCP · needs an MCP client and tmux on PATH.')
+    expect(lines[2]).toBe(`Workspace Manager · the ${loadCommand('go')!.program} command.`)
+    // The reader chooses before the page demonstrates: the cards precede the product switch and every panel.
+    const first = document.querySelector('.landing-products, [data-landing-panel]')!
+    expect(section.compareDocumentPosition(first) & 4, 'cards come first').toBeTruthy()
+  })
+
+  it('carry no command: an install line inside a link card cannot be selected, copied or highlighted', async () => {
+    const section = (await render('go')).querySelector('[data-landing-tasks]')!
+    expect(section.querySelector('code, pre, kbd')).toBeNull()
+    expect(section.textContent).not.toMatch(/go get|go install|npm |pip |cargo /)
+  })
+
+  it('leave out a product the port has not published, and the choice where there is only one', async () => {
+    expect(titles(await render('powershell'))).toEqual(['Control tmux from PowerShell code', 'Load a workspace file'])
+    for (const slug of ['lua', 'elixir', 'kotlin', 'scala', 'fsharp']) expect((await render(slug)).querySelector('[data-landing-tasks]'), slug).toBeNull()
+  })
+})
 
 describe('the landing page markup', () => {
   it('offers Core API, MCP and Workspace Manager as a selector for a port that ships all three', async () => {
