@@ -598,7 +598,7 @@
         "cabal": "3.18.2.0",
         "compiler": "ghc-9.14.1",
         "platform": "x86_64-linux",
-        "unit": "libtmux-haskell-0.1.0.0-inplace"
+        "unit": "libtmux-haskell-0.0.1.0-inplace"
       },
       "interfaceStream": "stderr",
       "name": "Haddock public interface export",
@@ -649,7 +649,7 @@
         },
         {
           "path": "LibTmux-Server.html",
-          "sha256": "23c260f61c5a5c5e99367af71439aa6f244ce0673a0fe6502cb87afc16dd0cbd"
+          "sha256": "516f654eb61f0f1c3ba8109510a711934061ebf88660a242d134d580d918b4da"
         },
         {
           "path": "LibTmux-Snapshot-Fixture.html",
@@ -657,7 +657,7 @@
         },
         {
           "path": "LibTmux-Snapshot.html",
-          "sha256": "4ec213653502b99ca25676aac064b8f08a77dcba98dda016ec6e49f1831ddb4e"
+          "sha256": "d49312a5ffdc68d707c9364e96d1edc58f881b17fd1924e95248c12ad2c9d70a"
         },
         {
           "path": "LibTmux-Value.html",
@@ -665,67 +665,67 @@
         },
         {
           "path": "LibTmux-Version.html",
-          "sha256": "a42e7c6cb2d375ed07f9beee73030be13ae3409246222cd11682854f254739ee"
+          "sha256": "c495ff9b60578a5c6af7e7cf15e00658aedd8beaec8a179c728c04171a9cb1a6"
         },
         {
           "path": "LibTmux.html",
-          "sha256": "db1ba5b3a68b5d1f1e7b8514432dc8ee6b57cd6b48ab607b6b458ea6993b268e"
+          "sha256": "3922d0b19bb7562d2d3dd550d0fb596424008c9df9a8470f6b7b577d3926384a"
         },
         {
           "path": "interface.haddock",
-          "sha256": "e4ead1339cd03208a6a744af94d13def2d9966b0e1074d162a5cd0682b6fc512"
+          "sha256": "626b681a6f10c33bf8c5246b325acdecb1fd450b239c32aac8363115503d16bc"
         },
         {
           "path": "interface.json",
-          "sha256": "017226aefe48e69a2bc2cff3cf4d7eb7072ef7872bb0a4046a4bcd22d7b43df5"
+          "sha256": "defb3565705593d4d311b89f4432c963f4615eab18f2ce060c2370d7daca5a66"
         },
         {
           "path": "src/LibTmux.Creation.html",
-          "sha256": "5aaaba11005597f95e75a42d8ab755647a9563ada39d8458899506c169d69a65"
+          "sha256": "9c544149813df4dc5ebf316d2ca4c0cc5b9b5847e1a35501809f7169352b6093"
         },
         {
           "path": "src/LibTmux.Id.html",
-          "sha256": "549962d87a2da0cf45a0176854fa08d0ea65d0c1ee0557e8bbc42b1ddc6e4283"
+          "sha256": "e38479e8dc71d471717871c8bea3e7c7f250f1fc4889911d2bdfae084cf513ec"
         },
         {
           "path": "src/LibTmux.Internal.Capture.html",
-          "sha256": "adde78313043d4805434d1fbe97913ce6635b19ca96e9c5b27c0253b677ed61b"
+          "sha256": "007cc274bc27e9122e0d1d40c8c022bfa280b67292e59d6f6e7a1b365da13a2c"
         },
         {
           "path": "src/LibTmux.Internal.Creation.html",
-          "sha256": "b63254e838b245bae19c91fc31b3abbc24d2b592636bfd798e3f412a2b40a727"
+          "sha256": "13166453f79a85dde75eae3e73c28012d00bea69399603adf8a519e8a8db4cdc"
         },
         {
           "path": "src/LibTmux.Internal.Field.html",
-          "sha256": "098d2740167b6968bde565b1d582c9d7f084e70bb4c1fbd9c7bb6804918ca971"
+          "sha256": "9cf23b3cfdd01ff1bb53bedfebefa5476042343185da6b13442d7108bcde3a27"
         },
         {
           "path": "src/LibTmux.Internal.Graph.html",
-          "sha256": "3d728b2767fc4d940d5a53dbfe6f542c6533f24036b1402eb0debfefec4569d0"
+          "sha256": "26ed9b56c2c354822a5d09688c3460eccee65c098f62c5e16d5bd06349958612"
         },
         {
           "path": "src/LibTmux.Internal.Mutation.html",
-          "sha256": "a9f8ea31e1025a9efb6b4a459a8e52f7dbafb351ec14543316b2ef95ed50bcd4"
+          "sha256": "db7daff4922fe73c3764c71b7459a6351f8227491e220aa7f300115558adeb1f"
         },
         {
           "path": "src/LibTmux.Internal.Query.html",
-          "sha256": "ccd911ddc01fa4acdbf851c3086dfee14d13347ee1621cd11f9d89bf0292b5f0"
+          "sha256": "e9d1cc3e360fa82110f4119c6616c0bf8581f83edca04fc6c82594c654e15141"
         },
         {
           "path": "src/LibTmux.Internal.Runtime.html",
-          "sha256": "8bac2fa87a923ac3154f4e7a6a1e94ae5f43972dc896cb2fb0869606e190e4c1"
+          "sha256": "1b11079b3cf2d39d2e75f6bbce6b33dab849eeefb5ab134e857c968638d07df1"
         },
         {
           "path": "src/LibTmux.Internal.Scheduler.html",
-          "sha256": "0338df392b06e8d51cf6c58502a2937c7b7f1454e51301b84c0037dcd0004e82"
+          "sha256": "dd9aac6e65e1cad5ecdb19971c77474690c4edda3f5698a5ce3da4c99aa1a5e5"
         },
         {
           "path": "src/LibTmux.Internal.Scope.html",
-          "sha256": "fd44d5e099bb5af59cb254ca9dca12cdff5f536afcab968f117fa05884d42fae"
+          "sha256": "a87c9e7850480f2d60f239c92626b2a10349c5e67e81323b388a37d622f2ac36"
         },
         {
           "path": "src/LibTmux.Internal.TmuxText.html",
-          "sha256": "7b5543bf893316d875c55b4490dca55f569a2fcd3ab2d2aa5ae8574dcfe921dc"
+          "sha256": "9cf4b4c3a5dbaf6612bcc7fde18356e93efee361b47a2396ca50fbc1e17b236f"
         },
         {
           "path": "src/LibTmux.Query.Client.html",
@@ -761,36 +761,36 @@
         },
         {
           "path": "src/LibTmux.Query.html",
-          "sha256": "2b2940c5efcab7201c2053f880bcf3f37f012a86ea6736c46ae64e9a18cb9d28"
+          "sha256": "364667ca85f44cf80c63593c51a61d31ee755941e9c7530099f2bbe6990601ea"
         },
         {
           "path": "src/LibTmux.Server.html",
-          "sha256": "54d379ebd681d520277ed37d5cd78f03c4dcf0bd7aadf1c5544f14e9e6b44eaa"
+          "sha256": "bb7410ae453a35f7ea5f7255370a0d6f090b24c9c90756e6ce5f6f64255ee49b"
         },
         {
           "path": "src/LibTmux.Snapshot.Fixture.html",
-          "sha256": "02e29bd320e2770a73a539c4653df4aabd131f6b86896637c09b9bf005e2f067"
+          "sha256": "546106b10b6980b92be27b2af5d58a00e395f83fc44e901f1255b16f64741b0c"
         },
         {
           "path": "src/LibTmux.Snapshot.html",
-          "sha256": "1a2ebef9c7077b8cb41c629c3f4ace716c4c8bc38907fd2d3f14c899a7b824ab"
+          "sha256": "cf5ae9044d4a5b71720905503b9e8574b6bb16ce9698e72e00d717d1922266ef"
         },
         {
           "path": "src/LibTmux.Value.html",
-          "sha256": "76b93347da3487e209a93e705cc373a29ed1e3232a9b0834e94f27b95a89afd8"
+          "sha256": "12f1fb08990a2833acc8d989fc3b68be21d009c0e4a363b8b10f56b5cd01509b"
         },
         {
           "path": "src/LibTmux.Version.html",
-          "sha256": "282693b29683d09d0a2a53bf0c0c487869467c1d61b80006dc419dfc35d3569b"
+          "sha256": "bb5676709fb21536b4cd1445e66440d252118b239c6819450f574799a9498070"
         },
         {
           "path": "src/LibTmux.html",
-          "sha256": "feb933927272f8a3650acac4f6d4eb844407c3bb48ed6681dccf3c0d280b5f4d"
+          "sha256": "74694ead8ccbdf4d1745e0f833c4dab69ab0ca62e5e2ab7d9e53a85750192899"
         }
       ],
       "path": "packages/api-model/scripts/export-haskell.py",
       "repository": "libtmux/docs",
-      "revision": "ddc46a3e7dbbafdc4f86b77cddbea8ab0783ab1b",
+      "revision": "7f5c4e2501d768ffa42730dd645df723378ebf62",
       "sha256": "250b17c6ffb9a356a0a3d65a2a185c71fd1877abe8064b3e4a68c3649d199a31",
       "version": 5
     },
@@ -805,11 +805,11 @@
       },
       {
         "path": "libtmux-haskell.cabal",
-        "sha256": "a794dc015599286cdf7cb8cb56320e86f777f28a9d11b2374fa92afc48a131e1"
+        "sha256": "847d42939052813ab732363ef3474be7d5d7f48b33d2cc3ffac89fff5aaa033b"
       },
       {
         "path": "src/LibTmux.hs",
-        "sha256": "38fb168b503a2cd419e013481c7c1ad32121faf4e6ff05dced653616017948b7"
+        "sha256": "f3c7e915fc8ec64f6b13a387e581ad2a78335ff6e232d9aa1fdcfe9f4316a3c5"
       },
       {
         "path": "src/LibTmux/Creation.hs",
@@ -857,7 +857,7 @@
       },
       {
         "path": "src/LibTmux/Server.hs",
-        "sha256": "335b62a0bc99dd6208b53eb3bf30c1b5019486545efcb0dd39e5128083802c01"
+        "sha256": "f419a20f75eb79880009ebc94894fd0632931f899e9741d0f3ab51302afe73bd"
       },
       {
         "path": "src/LibTmux/Snapshot.hs",
@@ -873,7 +873,7 @@
       },
       {
         "path": "src/LibTmux/Version.hs",
-        "sha256": "301f0640ab26f5fdf2361cd47929808debceb1fe5893b188c9a3c0e1dc6ddd7b"
+        "sha256": "8314ada1a5bd8c16a12d8d90df7e834ee253a39afba3699156aabe2c55e9a325"
       },
       {
         "path": "internal/LibTmux/Internal/Capture.hs",
@@ -885,7 +885,7 @@
       },
       {
         "path": "internal/LibTmux/Internal/Graph.hs",
-        "sha256": "ec5c4f489d1f2269da0a645e45266b0bdb797f4245418975fd9dd5b96f754a68"
+        "sha256": "ef5b6c4c55b0de0f732d3f2db83d918bf443c62deefeab3936d7ab1ed6c2d131"
       },
       {
         "path": "internal/LibTmux/Internal/Query.hs",
@@ -893,7 +893,7 @@
       },
       {
         "path": "internal/LibTmux/Internal/Runtime.hs",
-        "sha256": "896af185c1b84bfa9a8613b7d5332faa66982016cd2ccd11c0367a45647573e0"
+        "sha256": "696c1269f06d8bdfca8bafb2031d6f5a5defe93797576e4646ffe20fb1c8ced4"
       },
       {
         "path": "internal/LibTmux/Internal/Scheduler.hs",
@@ -901,7 +901,7 @@
       },
       {
         "path": "internal/LibTmux/Internal/Scope.hs",
-        "sha256": "a71bd0b7066a4269bd5ec59ebe98c2b115af8e44fe173a21a8abade80b17a423"
+        "sha256": "57ce9e3b7dde5ac2f893e07fbc04c3766007e7cce9000fa900e4618ddd151e3e"
       },
       {
         "path": "internal/LibTmux/Internal/TmuxText.hs",
@@ -909,7 +909,7 @@
       },
       {
         "path": "internal/LibTmux/Internal/Mutation.hs",
-        "sha256": "770a3184c82e071509a8814286684d2db71cd0df160ae4110953d7888f755a4c"
+        "sha256": "e3eaeb13ae95ca490af0817f06ed9f160b631e44e81c0f5f7cbdc721d1e65697"
       },
       {
         "path": "internal/LibTmux/Internal/Creation.hs",
@@ -938,19 +938,19 @@
       "LibTmux.Version"
     ],
     "name": "libtmux-haskell",
-    "version": "0.1.0.0"
+    "version": "0.0.1.0"
   },
   "port": "haskell",
   "profile": "creations/1",
   "repo": "libtmux/libtmux-haskell",
-  "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29",
+  "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49",
   "schema": "libtmux.haskell-api/5",
   "symbols": [
     {
       "apiScope": "exported",
       "definingModule": "LibTmux",
       "doc": {
-        "body": ":obj:`LibTmux.Server <LibTmux.Server>` documents ownership and failure recovery. Typed IDs,\n checked dimensions and supported releases have their own pure modules.\n :obj:`LibTmux.Query <LibTmux.Query>` provides qualified typed descriptions over the same\n snapshots; query source names are separate from collection access here.",
+        "body": ":obj:`LibTmux.Server <LibTmux.Server>` documents ownership and failure recovery. Typed IDs,\n checked dimensions and release admission have their own pure modules.\n :obj:`LibTmux.Query <LibTmux.Query>` provides qualified typed descriptions over the same\n snapshots; query source names are separate from collection access here.",
         "summary": "Capture tmux state in IO and process detached observations with ordinary\n Haskell collections. Start with :obj:`withServer <LibTmux.Server#v:withServer>` and :obj:`capture <LibTmux.Server#v:capture>`; navigation and\n field access from :obj:`LibTmux.Snapshot <LibTmux.Snapshot>` perform no external operations.\n :obj:`renameSession <LibTmux.Server#v:renameSession>`, :obj:`renameWindow <LibTmux.Server#v:renameWindow>` and :obj:`setPaneTitle <LibTmux.Server#v:setPaneTitle>` act on explicit references\n in IO; detached observations change only when acquired again with :obj:`capture <LibTmux.Server#v:capture>`.\n :obj:`createSession <LibTmux.Server#v:createSession>` returns the actual initial references; :obj:`LibTmux.Creation <LibTmux.Creation>`\n describes its options and historical receipt. Capture again for observations."
       },
       "id": "LibTmux",
@@ -966,7 +966,7 @@
       "signatures": [],
       "source": {
         "file": "src/LibTmux.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -989,7 +989,7 @@
       "signatures": [],
       "source": {
         "file": "src/LibTmux/Creation.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -1012,7 +1012,7 @@
       "signatures": [],
       "source": {
         "file": "src/LibTmux/Id.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -1035,7 +1035,7 @@
       "signatures": [],
       "source": {
         "file": "src/LibTmux/Query.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -1058,7 +1058,7 @@
       "signatures": [],
       "source": {
         "file": "src/LibTmux/Query/Client.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -1081,7 +1081,7 @@
       "signatures": [],
       "source": {
         "file": "src/LibTmux/Query/ClientAttachment.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -1104,7 +1104,7 @@
       "signatures": [],
       "source": {
         "file": "src/LibTmux/Query/Link.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -1127,7 +1127,7 @@
       "signatures": [],
       "source": {
         "file": "src/LibTmux/Query/Occurrence.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -1150,7 +1150,7 @@
       "signatures": [],
       "source": {
         "file": "src/LibTmux/Query/Pane.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -1173,7 +1173,7 @@
       "signatures": [],
       "source": {
         "file": "src/LibTmux/Query/ServerInfo.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -1196,7 +1196,7 @@
       "signatures": [],
       "source": {
         "file": "src/LibTmux/Query/Session.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -1219,7 +1219,7 @@
       "signatures": [],
       "source": {
         "file": "src/LibTmux/Query/Window.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -1242,7 +1242,7 @@
       "signatures": [],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -1265,7 +1265,7 @@
       "signatures": [],
       "source": {
         "file": "src/LibTmux/Snapshot.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -1288,7 +1288,7 @@
       "signatures": [],
       "source": {
         "file": "src/LibTmux/Snapshot/Fixture.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -1311,15 +1311,15 @@
       "signatures": [],
       "source": {
         "file": "src/LibTmux/Value.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
       "apiScope": "exported",
       "definingModule": "LibTmux.Version",
       "doc": {
-        "body": "These functions consume supplied text. They neither execute `tmux -V`\n nor contact a server. Admission checks the inclusive 3.3a through 3.8 range;\n individual features still need capability and conformance checks.\n\nUse :obj:`parseVersion <LibTmux.Version#v:parseVersion>` for input, :obj:`requireSupported <LibTmux.Version#v:requireSupported>` for supported-range\n admission and :obj:`renderVersion <LibTmux.Version#v:renderVersion>` for canonical output.\n\n\n\n```haskell\n>>> :set -XOverloadedStrings\n>>> fmap renderVersion (parseVersion \"tmux 3.3a\\n\" >>= requireSupported)\nRight \"3.3a\"\n```",
-        "summary": "Parse stable tmux releases and check the supported release range."
+        "body": "These functions consume supplied text. They neither execute `tmux -V`\n nor contact a server. Admission is a floor: every release at or above\n 3.3a passes, with no upper bound. Admission says nothing about which\n releases the project has tested, and individual features still need\n capability and conformance checks.\n\nUse :obj:`parseVersion <LibTmux.Version#v:parseVersion>` for input, :obj:`requireSupported <LibTmux.Version#v:requireSupported>` for minimum-version\n admission and :obj:`renderVersion <LibTmux.Version#v:renderVersion>` for the spelling tmux reports.\n\n\n\n```haskell\n>>> :set -XOverloadedStrings\n>>> fmap renderVersion (parseVersion \"tmux 3.3a\\n\" >>= requireSupported)\nRight \"3.3a\"\n```\n\nNumeric components compare as numbers, and a patch letter follows its\n release:\n\n\n\n```haskell\n>>> (<) <$> parseVersion \"3.9\" <*> parseVersion \"3.10\"\nRight True\n>>> (<) <$> parseVersion \"3.10\" <*> parseVersion \"3.10a\"\nRight True\n```\n\nA development build or release candidate ranks below the release it\n precedes:\n\n\n\n```haskell\n>>> (<) <$> parseVersion \"next-3.10\" <*> parseVersion \"3.10-rc\"\nRight True\n>>> (<) <$> parseVersion \"3.10-rc2\" <*> parseVersion \"3.10\"\nRight True\n```",
+        "summary": "Parse and order tmux release identities, and check the minimum release."
       },
       "id": "LibTmux.Version",
       "kind": "module",
@@ -1334,7 +1334,7 @@
       "signatures": [],
       "source": {
         "file": "src/LibTmux/Version.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -1363,7 +1363,7 @@
           "source": {
             "file": "src/LibTmux/Creation.hs",
             "line": 47,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -1402,7 +1402,7 @@
       "source": {
         "file": "src/LibTmux/Creation.hs",
         "line": 38,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -1439,7 +1439,7 @@
       "source": {
         "file": "src/LibTmux/Creation.hs",
         "line": 38,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -1494,7 +1494,7 @@
       "source": {
         "file": "src/LibTmux/Creation.hs",
         "line": 39,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -1550,7 +1550,7 @@
       "source": {
         "file": "src/LibTmux/Creation.hs",
         "line": 40,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -1605,7 +1605,7 @@
       "source": {
         "file": "src/LibTmux/Creation.hs",
         "line": 41,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -1660,7 +1660,7 @@
       "source": {
         "file": "src/LibTmux/Creation.hs",
         "line": 42,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -1716,7 +1716,7 @@
       "source": {
         "file": "src/LibTmux/Creation.hs",
         "line": 43,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -1772,7 +1772,7 @@
       "source": {
         "file": "src/LibTmux/Creation.hs",
         "line": 44,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -1817,7 +1817,7 @@
       "source": {
         "file": "src/LibTmux/Creation.hs",
         "line": 45,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -1863,7 +1863,7 @@
       "source": {
         "file": "src/LibTmux/Creation.hs",
         "line": 46,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -1892,7 +1892,7 @@
           "source": {
             "file": "src/LibTmux/Creation.hs",
             "line": 32,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -1931,7 +1931,7 @@
       "source": {
         "file": "src/LibTmux/Creation.hs",
         "line": 28,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -1970,7 +1970,7 @@
       "source": {
         "file": "src/LibTmux/Creation.hs",
         "line": 29,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -2016,7 +2016,7 @@
       "source": {
         "file": "src/LibTmux/Creation.hs",
         "line": 30,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -2079,7 +2079,7 @@
       "source": {
         "file": "src/LibTmux/Creation.hs",
         "line": 31,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -2125,7 +2125,7 @@
       "source": {
         "file": "src/LibTmux/Creation.hs",
         "line": 52,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -2155,7 +2155,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 92,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -2176,7 +2176,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 91,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -2197,7 +2197,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 91,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -2238,7 +2238,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 85,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -2283,7 +2283,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 86,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -2329,7 +2329,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 87,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -2375,7 +2375,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 88,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -2421,7 +2421,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 89,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -2467,7 +2467,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 90,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -2496,7 +2496,7 @@
           "source": {
             "file": "src/LibTmux/Id.hs",
             "line": 47,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -2517,7 +2517,7 @@
           "source": {
             "file": "src/LibTmux/Id.hs",
             "line": 46,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -2538,7 +2538,7 @@
           "source": {
             "file": "src/LibTmux/Id.hs",
             "line": 46,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -2559,7 +2559,7 @@
           "source": {
             "file": "src/LibTmux/Id.hs",
             "line": 46,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -2600,7 +2600,7 @@
       "source": {
         "file": "src/LibTmux/Id.hs",
         "line": 45,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -2629,7 +2629,7 @@
           "source": {
             "file": "src/LibTmux/Id.hs",
             "line": 53,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -2650,7 +2650,7 @@
           "source": {
             "file": "src/LibTmux/Id.hs",
             "line": 52,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -2671,7 +2671,7 @@
           "source": {
             "file": "src/LibTmux/Id.hs",
             "line": 52,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -2692,7 +2692,7 @@
           "source": {
             "file": "src/LibTmux/Id.hs",
             "line": 52,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -2733,7 +2733,7 @@
       "source": {
         "file": "src/LibTmux/Id.hs",
         "line": 51,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -2762,7 +2762,7 @@
           "source": {
             "file": "src/LibTmux/Id.hs",
             "line": 59,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -2783,7 +2783,7 @@
           "source": {
             "file": "src/LibTmux/Id.hs",
             "line": 58,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -2804,7 +2804,7 @@
           "source": {
             "file": "src/LibTmux/Id.hs",
             "line": 58,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -2825,7 +2825,7 @@
           "source": {
             "file": "src/LibTmux/Id.hs",
             "line": 58,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -2866,7 +2866,7 @@
       "source": {
         "file": "src/LibTmux/Id.hs",
         "line": 57,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -2895,7 +2895,7 @@
           "source": {
             "file": "src/LibTmux/Id.hs",
             "line": 67,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -2916,7 +2916,7 @@
           "source": {
             "file": "src/LibTmux/Id.hs",
             "line": 67,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -2955,7 +2955,7 @@
       "source": {
         "file": "src/LibTmux/Id.hs",
         "line": 63,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -2992,7 +2992,7 @@
       "source": {
         "file": "src/LibTmux/Id.hs",
         "line": 63,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -3037,7 +3037,7 @@
       "source": {
         "file": "src/LibTmux/Id.hs",
         "line": 64,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -3082,7 +3082,7 @@
       "source": {
         "file": "src/LibTmux/Id.hs",
         "line": 65,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -3150,7 +3150,7 @@
       "source": {
         "file": "src/LibTmux/Id.hs",
         "line": 71,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -3218,7 +3218,7 @@
       "source": {
         "file": "src/LibTmux/Id.hs",
         "line": 75,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -3286,7 +3286,7 @@
       "source": {
         "file": "src/LibTmux/Id.hs",
         "line": 79,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -3339,7 +3339,7 @@
       "source": {
         "file": "src/LibTmux/Id.hs",
         "line": 83,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -3392,7 +3392,7 @@
       "source": {
         "file": "src/LibTmux/Id.hs",
         "line": 87,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -3445,7 +3445,7 @@
       "source": {
         "file": "src/LibTmux/Id.hs",
         "line": 91,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -3498,7 +3498,7 @@
       "source": {
         "file": "src/LibTmux/Id.hs",
         "line": 95,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -3551,7 +3551,7 @@
       "source": {
         "file": "src/LibTmux/Id.hs",
         "line": 99,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -3604,7 +3604,7 @@
       "source": {
         "file": "src/LibTmux/Id.hs",
         "line": 103,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -3655,7 +3655,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Field.hs",
         "line": 29,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -3706,7 +3706,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 100,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -3757,7 +3757,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 120,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -3807,7 +3807,7 @@
       ],
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -3858,7 +3858,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 55,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -3909,7 +3909,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 63,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -3960,7 +3960,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 75,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -4014,7 +4014,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 219,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -4068,7 +4068,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 222,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -4122,7 +4122,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 225,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -4176,7 +4176,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 228,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -4230,7 +4230,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 231,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -4284,7 +4284,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 234,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -4338,7 +4338,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 237,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -4402,7 +4402,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 151,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -4466,7 +4466,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 156,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -4537,7 +4537,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 161,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -4608,7 +4608,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 166,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -4679,7 +4679,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 167,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -4750,7 +4750,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 168,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -4821,7 +4821,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 169,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -4893,7 +4893,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 175,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -4965,7 +4965,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 176,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -5037,7 +5037,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 180,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -5109,7 +5109,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 181,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -5181,7 +5181,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 185,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -5253,7 +5253,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 186,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -5310,7 +5310,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 191,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -5367,7 +5367,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 192,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -5424,7 +5424,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 196,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -5489,7 +5489,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 203,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -5554,7 +5554,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 204,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -5619,7 +5619,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 205,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -5684,7 +5684,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 210,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -5749,7 +5749,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 215,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -5814,7 +5814,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 241,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -5879,7 +5879,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 247,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -5943,7 +5943,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 252,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -6007,7 +6007,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 253,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -6071,7 +6071,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 258,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -6100,7 +6100,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Query.hs",
             "line": 140,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -6121,7 +6121,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Query.hs",
             "line": 140,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -6160,7 +6160,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 133,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -6197,7 +6197,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 133,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -6242,7 +6242,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 134,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -6290,7 +6290,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 135,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -6338,7 +6338,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 136,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -6386,7 +6386,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 137,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -6441,7 +6441,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 138,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -6495,7 +6495,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 275,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -6524,7 +6524,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Query.hs",
             "line": 130,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -6545,7 +6545,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Query.hs",
             "line": 130,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -6584,7 +6584,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 124,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -6630,7 +6630,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 125,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -6676,7 +6676,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 126,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -6738,7 +6738,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 127,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -6784,7 +6784,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 128,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -6838,7 +6838,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 129,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -6910,7 +6910,7 @@
       "source": {
         "file": "src/LibTmux/Query.hs",
         "line": 70,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -6990,7 +6990,7 @@
       "source": {
         "file": "src/LibTmux/Query.hs",
         "line": 82,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -7019,7 +7019,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Query.hs",
             "line": 36,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -7040,7 +7040,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Query.hs",
             "line": 36,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -7079,7 +7079,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 33,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -7118,7 +7118,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 34,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -7157,7 +7157,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 35,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -7213,7 +7213,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 42,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -7276,7 +7276,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Query.hs",
         "line": 49,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -7337,7 +7337,7 @@
       "source": {
         "file": "src/LibTmux/Query/Client.hs",
         "line": 17,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -7398,7 +7398,7 @@
       "source": {
         "file": "src/LibTmux/Query/Client.hs",
         "line": 21,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -7469,7 +7469,7 @@
       "source": {
         "file": "src/LibTmux/Query/Client.hs",
         "line": 25,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -7531,7 +7531,7 @@
       "source": {
         "file": "src/LibTmux/Query/Client.hs",
         "line": 30,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -7593,7 +7593,7 @@
       "source": {
         "file": "src/LibTmux/Query/ClientAttachment.hs",
         "line": 19,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -7655,7 +7655,7 @@
       "source": {
         "file": "src/LibTmux/Query/ClientAttachment.hs",
         "line": 23,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -7717,7 +7717,7 @@
       "source": {
         "file": "src/LibTmux/Query/ClientAttachment.hs",
         "line": 27,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -7779,7 +7779,7 @@
       "source": {
         "file": "src/LibTmux/Query/ClientAttachment.hs",
         "line": 31,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -7841,7 +7841,7 @@
       "source": {
         "file": "src/LibTmux/Query/ClientAttachment.hs",
         "line": 35,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -7903,7 +7903,7 @@
       "source": {
         "file": "src/LibTmux/Query/ClientAttachment.hs",
         "line": 39,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -7965,7 +7965,7 @@
       "source": {
         "file": "src/LibTmux/Query/ClientAttachment.hs",
         "line": 43,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -8027,7 +8027,7 @@
       "source": {
         "file": "src/LibTmux/Query/Link.hs",
         "line": 17,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -8089,7 +8089,7 @@
       "source": {
         "file": "src/LibTmux/Query/Link.hs",
         "line": 21,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -8151,7 +8151,7 @@
       "source": {
         "file": "src/LibTmux/Query/Link.hs",
         "line": 25,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -8212,7 +8212,7 @@
       "source": {
         "file": "src/LibTmux/Query/Link.hs",
         "line": 29,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -8274,7 +8274,7 @@
       "source": {
         "file": "src/LibTmux/Query/Link.hs",
         "line": 33,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -8336,7 +8336,7 @@
       "source": {
         "file": "src/LibTmux/Query/Link.hs",
         "line": 37,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -8398,7 +8398,7 @@
       "source": {
         "file": "src/LibTmux/Query/Link.hs",
         "line": 41,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -8460,7 +8460,7 @@
       "source": {
         "file": "src/LibTmux/Query/Occurrence.hs",
         "line": 14,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -8522,7 +8522,7 @@
       "source": {
         "file": "src/LibTmux/Query/Occurrence.hs",
         "line": 18,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -8584,7 +8584,7 @@
       "source": {
         "file": "src/LibTmux/Query/Pane.hs",
         "line": 25,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -8646,7 +8646,7 @@
       "source": {
         "file": "src/LibTmux/Query/Pane.hs",
         "line": 29,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -8708,7 +8708,7 @@
       "source": {
         "file": "src/LibTmux/Query/Pane.hs",
         "line": 33,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -8770,7 +8770,7 @@
       "source": {
         "file": "src/LibTmux/Query/Pane.hs",
         "line": 37,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -8832,7 +8832,7 @@
       "source": {
         "file": "src/LibTmux/Query/Pane.hs",
         "line": 41,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -8893,7 +8893,7 @@
       "source": {
         "file": "src/LibTmux/Query/Pane.hs",
         "line": 45,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -8954,7 +8954,7 @@
       "source": {
         "file": "src/LibTmux/Query/Pane.hs",
         "line": 49,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -9015,7 +9015,7 @@
       "source": {
         "file": "src/LibTmux/Query/Pane.hs",
         "line": 53,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -9076,7 +9076,7 @@
       "source": {
         "file": "src/LibTmux/Query/Pane.hs",
         "line": 57,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -9137,7 +9137,7 @@
       "source": {
         "file": "src/LibTmux/Query/Pane.hs",
         "line": 61,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -9199,7 +9199,7 @@
       "source": {
         "file": "src/LibTmux/Query/Pane.hs",
         "line": 65,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -9260,7 +9260,7 @@
       "source": {
         "file": "src/LibTmux/Query/ServerInfo.hs",
         "line": 16,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -9321,7 +9321,7 @@
       "source": {
         "file": "src/LibTmux/Query/ServerInfo.hs",
         "line": 20,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -9383,7 +9383,7 @@
       "source": {
         "file": "src/LibTmux/Query/ServerInfo.hs",
         "line": 24,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -9444,7 +9444,7 @@
       "source": {
         "file": "src/LibTmux/Query/ServerInfo.hs",
         "line": 28,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -9506,7 +9506,7 @@
       "source": {
         "file": "src/LibTmux/Query/Session.hs",
         "line": 18,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -9567,7 +9567,7 @@
       "source": {
         "file": "src/LibTmux/Query/Session.hs",
         "line": 22,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -9628,7 +9628,7 @@
       "source": {
         "file": "src/LibTmux/Query/Session.hs",
         "line": 26,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -9690,7 +9690,7 @@
       "source": {
         "file": "src/LibTmux/Query/Session.hs",
         "line": 30,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -9752,7 +9752,7 @@
       "source": {
         "file": "src/LibTmux/Query/Session.hs",
         "line": 34,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -9814,7 +9814,7 @@
       "source": {
         "file": "src/LibTmux/Query/Window.hs",
         "line": 19,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -9876,7 +9876,7 @@
       "source": {
         "file": "src/LibTmux/Query/Window.hs",
         "line": 23,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -9938,7 +9938,7 @@
       "source": {
         "file": "src/LibTmux/Query/Window.hs",
         "line": 27,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -10000,7 +10000,7 @@
       "source": {
         "file": "src/LibTmux/Query/Window.hs",
         "line": 31,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -10062,7 +10062,7 @@
       "source": {
         "file": "src/LibTmux/Query/Window.hs",
         "line": 35,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -10124,7 +10124,7 @@
       "source": {
         "file": "src/LibTmux/Query/Window.hs",
         "line": 39,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -10172,7 +10172,7 @@
       "source": {
         "file": "src/LibTmux/Server.hs",
         "line": 96,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -10200,8 +10200,8 @@
           ],
           "source": {
             "file": "src/LibTmux/Server.hs",
-            "line": 149,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "line": 150,
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -10221,8 +10221,8 @@
           ],
           "source": {
             "file": "src/LibTmux/Server.hs",
-            "line": 149,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "line": 150,
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -10260,8 +10260,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 143,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 144,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -10297,8 +10297,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 143,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 144,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -10342,8 +10342,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 144,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 145,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -10387,8 +10387,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 145,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 146,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -10432,8 +10432,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 146,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 147,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -10477,8 +10477,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 147,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 148,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -10530,15 +10530,15 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 155,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 156,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
       "apiScope": "exported",
       "definingModule": "LibTmux.Server",
       "doc": {
-        "summary": "Pin the endpoint, validate its supported daemon version, run the callback,\n then perform bounded owned cleanup. Version observation runs no command hook.\n Unsupported or unrecognized replies fail before entering the callback.\n Cleanup never replaces a callback exception. Incomplete cleanup raises\n :obj:`CleanupFailed <LibTmux.Server#v:CleanupFailed>` after success, or annotates the original callback failure\n with a reachable :obj:`CleanupRecovery <LibTmux.Server#t:CleanupRecovery>`. No daemon shutdown is requested."
+        "summary": "Pin the endpoint, check the daemon release against the 3.3a admission\n minimum, run the callback, then perform bounded owned cleanup. Version\n observation runs no command hook. A release older than 3.3a or an\n unrecognized reply fails before entering the callback.\n Cleanup never replaces a callback exception. Incomplete cleanup raises\n :obj:`CleanupFailed <LibTmux.Server#v:CleanupFailed>` after success, or annotates the original callback failure\n with a reachable :obj:`CleanupRecovery <LibTmux.Server#t:CleanupRecovery>`. No daemon shutdown is requested."
       },
       "id": "LibTmux.Server#v:withServer",
       "kind": "function",
@@ -10601,8 +10601,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 164,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 166,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -10662,8 +10662,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 189,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 191,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -10716,8 +10716,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 199,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 201,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -10745,8 +10745,8 @@
           ],
           "source": {
             "file": "src/LibTmux/Server.hs",
-            "line": 206,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "line": 208,
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -10766,8 +10766,8 @@
           ],
           "source": {
             "file": "src/LibTmux/Server.hs",
-            "line": 206,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "line": 208,
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -10805,8 +10805,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 203,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 205,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -10842,8 +10842,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 203,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 205,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -10887,8 +10887,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 204,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 206,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -10933,8 +10933,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 210,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 212,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -11002,15 +11002,15 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 217,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 219,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
       "apiScope": "exported",
       "definingModule": "LibTmux.Server",
       "doc": {
-        "summary": "Create with one :obj:`timeout <LibTmux.Server#v:MutationOptions.timeout>` covering caller-context acquisition, admission\n and completion. :obj:`MutationAppliedWithErrors <LibTmux.Server#v:MutationAppliedWithErrors>`, cancellation and timeout may\n retain a :obj:`CreationRecovery <LibTmux.Server#t:CreationRecovery>` with known IDs. A missing receipt proves no\n absence. Creation never retries and never starts a replacement daemon."
+        "summary": "Create with one :obj:`timeout <LibTmux.Server#v:MutationOptions.timeout>` covering caller-context acquisition, admission\n and completion. :obj:`MutationAppliedWithErrors <LibTmux.Server#v:MutationAppliedWithErrors>`, cancellation and timeout may\n retain a :obj:`CreationRecovery <LibTmux.Server#t:CreationRecovery>` with known IDs. A missing receipt proves no\n absence. Creation never retries and never starts a replacement daemon.\n Oversized options raise :obj:`InvalidMutationArgument <LibTmux.Server#v:InvalidMutationArgument>` before admission. A caller\n environment beyond the native launch budget raises :obj:`InvalidConfiguration <LibTmux.Server#v:InvalidConfiguration>`\n without admitting an operation."
       },
       "id": "LibTmux.Server#v:createSessionWith",
       "kind": "function",
@@ -11079,8 +11079,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 224,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 229,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -11150,8 +11150,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 234,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 239,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -11229,8 +11229,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 240,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 245,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -11301,8 +11301,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 247,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 252,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -11381,8 +11381,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 253,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 258,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -11452,8 +11452,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 259,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 264,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -11531,8 +11531,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 265,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 270,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -11580,7 +11580,7 @@
       "source": {
         "file": "src/LibTmux/Server.hs",
         "line": 101,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -11644,7 +11644,7 @@
       "source": {
         "file": "src/LibTmux/Server.hs",
         "line": 112,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -11652,7 +11652,7 @@
       "definingModule": "LibTmux.Server",
       "doc": {
         "body": "Failed adoption can retain a :obj:`CleanupRecovery <LibTmux.Server#t:CleanupRecovery>` before a :obj:`Server <LibTmux.Server#t:Server>` exists.\n Inspection, retry and waiting through that owner stay scoped to the failed\n adoption. Cleanup preserves application exceptions, incoming masking state\n and cancellation; known acquisition failures use :obj:`TmuxException <LibTmux.Server#t:TmuxException>`.",
-        "summary": "Adopt one endpoint within an existing Runtime and close only that handle\n after the callback. Other handles remain admitted under the shared limits;\n each adoption has its own :obj:`serverGeneration <LibTmux.Server#v:serverGeneration>`. Use :obj:`withServer <LibTmux.Server#v:withServer>` for one handle.\n Opening validates the daemon's supported version before the callback."
+        "summary": "Adopt one endpoint within an existing Runtime and close only that handle\n after the callback. Other handles remain admitted under the shared limits;\n each adoption has its own :obj:`serverGeneration <LibTmux.Server#v:serverGeneration>`. Use :obj:`withServer <LibTmux.Server#v:withServer>` for one handle.\n Before the callback, opening refuses a daemon release older than 3.3a or an\n unrecognized version reply."
       },
       "id": "LibTmux.Server#v:withServerIn",
       "kind": "function",
@@ -11723,8 +11723,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 126,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 127,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -11753,7 +11753,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Scope.hs",
             "line": 37,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -11774,7 +11774,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Scope.hs",
             "line": 36,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -11813,7 +11813,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scope.hs",
         "line": 23,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -11852,7 +11852,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scope.hs",
         "line": 24,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -11891,7 +11891,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scope.hs",
         "line": 25,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -11937,7 +11937,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scope.hs",
         "line": 26,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -11983,7 +11983,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scope.hs",
         "line": 27,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -12029,14 +12029,14 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scope.hs",
         "line": 28,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
       "apiScope": "exported",
       "definingModule": "LibTmux.Internal.Scope",
       "doc": {
-        "summary": "Daemon release failed supported-range admission."
+        "summary": "Daemon release is older than the supported minimum."
       },
       "id": "LibTmux.Server#v:UnsupportedTmuxVersion",
       "kind": "function",
@@ -12076,7 +12076,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scope.hs",
         "line": 29,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -12122,7 +12122,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scope.hs",
         "line": 30,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -12168,7 +12168,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scope.hs",
         "line": 31,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -12214,7 +12214,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scope.hs",
         "line": 32,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -12253,7 +12253,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scope.hs",
         "line": 33,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -12299,7 +12299,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scope.hs",
         "line": 34,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -12363,7 +12363,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scope.hs",
         "line": 35,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -12439,8 +12439,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 325,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 330,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -12469,7 +12469,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Scope.hs",
             "line": 57,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -12490,7 +12490,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Scope.hs",
             "line": 55,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -12531,7 +12531,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scope.hs",
         "line": 54,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -12560,7 +12560,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Scope.hs",
             "line": 48,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -12599,7 +12599,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scope.hs",
         "line": 41,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -12636,7 +12636,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scope.hs",
         "line": 41,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -12681,7 +12681,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scope.hs",
         "line": 42,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -12726,7 +12726,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scope.hs",
         "line": 43,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -12771,7 +12771,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scope.hs",
         "line": 44,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -12828,7 +12828,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scope.hs",
         "line": 45,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -12876,7 +12876,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scope.hs",
         "line": 46,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -12931,8 +12931,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 332,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 337,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -12992,7 +12992,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scope.hs",
         "line": 99,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -13046,7 +13046,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scope.hs",
         "line": 103,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -13107,7 +13107,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scope.hs",
         "line": 107,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -13168,7 +13168,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scope.hs",
         "line": 112,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -13229,7 +13229,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scope.hs",
         "line": 120,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -13296,8 +13296,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 337,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 342,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -13326,7 +13326,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Capture.hs",
             "line": 55,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -13347,7 +13347,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Capture.hs",
             "line": 52,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -13388,7 +13388,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Capture.hs",
         "line": 51,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -13443,8 +13443,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 341,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 346,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -13497,8 +13497,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 345,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 350,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -13551,8 +13551,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 349,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 354,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -13581,7 +13581,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Runtime.hs",
             "line": 137,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -13620,7 +13620,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Runtime.hs",
         "line": 131,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -13657,7 +13657,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Runtime.hs",
         "line": 131,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -13703,7 +13703,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Runtime.hs",
         "line": 132,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -13748,7 +13748,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Runtime.hs",
         "line": 133,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -13803,7 +13803,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Runtime.hs",
         "line": 134,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -13848,7 +13848,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Runtime.hs",
         "line": 135,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -13903,7 +13903,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Runtime.hs",
         "line": 136,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -13963,8 +13963,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 354,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 359,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -14019,8 +14019,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 358,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 363,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -14079,8 +14079,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 362,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 367,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -14109,7 +14109,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Creation.hs",
             "line": 36,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -14130,7 +14130,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Creation.hs",
             "line": 33,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -14171,7 +14171,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Creation.hs",
         "line": 32,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -14226,8 +14226,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 287,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 292,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -14280,8 +14280,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 291,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 296,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -14334,8 +14334,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 295,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 300,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -14405,8 +14405,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 301,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 306,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -14466,8 +14466,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 305,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 310,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -14522,8 +14522,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 309,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 314,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -14583,8 +14583,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 314,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 319,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -14643,8 +14643,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 319,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 324,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -14672,8 +14672,8 @@
           ],
           "source": {
             "file": "internal/LibTmux/Internal/Mutation.hs",
-            "line": 35,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "line": 37,
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -14693,8 +14693,8 @@
           ],
           "source": {
             "file": "internal/LibTmux/Internal/Mutation.hs",
-            "line": 32,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "line": 34,
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -14734,8 +14734,8 @@
       ],
       "source": {
         "file": "internal/LibTmux/Internal/Mutation.hs",
-        "line": 31,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 33,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -14790,8 +14790,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 368,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 373,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -14844,8 +14844,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 373,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 378,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -14898,8 +14898,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 377,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 382,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -14959,8 +14959,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 383,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 388,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -15015,8 +15015,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 388,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 393,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -15076,8 +15076,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 394,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 399,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -15136,8 +15136,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 399,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 404,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -15166,7 +15166,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Scheduler.hs",
             "line": 45,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -15187,7 +15187,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Scheduler.hs",
             "line": 47,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -15228,7 +15228,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scheduler.hs",
         "line": 44,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -15257,7 +15257,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Scheduler.hs",
             "line": 87,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -15278,7 +15278,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Scheduler.hs",
             "line": 87,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -15317,7 +15317,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scheduler.hs",
         "line": 82,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -15354,7 +15354,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scheduler.hs",
         "line": 82,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -15400,7 +15400,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scheduler.hs",
         "line": 83,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -15456,7 +15456,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scheduler.hs",
         "line": 84,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -15501,7 +15501,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scheduler.hs",
         "line": 85,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -15530,7 +15530,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Scheduler.hs",
             "line": 68,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -15551,7 +15551,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Scheduler.hs",
             "line": 68,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -15590,7 +15590,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scheduler.hs",
         "line": 67,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -15627,7 +15627,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scheduler.hs",
         "line": 67,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -15664,7 +15664,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scheduler.hs",
         "line": 67,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -15701,7 +15701,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scheduler.hs",
         "line": 67,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -15738,7 +15738,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scheduler.hs",
         "line": 67,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -15775,7 +15775,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scheduler.hs",
         "line": 67,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -15804,7 +15804,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Scheduler.hs",
             "line": 78,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -15825,7 +15825,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Scheduler.hs",
             "line": 78,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -15864,7 +15864,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scheduler.hs",
         "line": 72,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -15903,7 +15903,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scheduler.hs",
         "line": 73,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -15942,7 +15942,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scheduler.hs",
         "line": 74,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -15981,7 +15981,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scheduler.hs",
         "line": 75,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -16020,7 +16020,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scheduler.hs",
         "line": 76,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -16059,7 +16059,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Scheduler.hs",
         "line": 77,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -16119,8 +16119,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Server.hs",
-        "line": 403,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 408,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -16149,7 +16149,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 211,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -16170,7 +16170,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 210,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -16191,7 +16191,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 210,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -16232,7 +16232,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 209,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -16261,7 +16261,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 167,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -16282,7 +16282,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 166,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -16303,7 +16303,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 166,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -16342,7 +16342,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 159,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -16379,7 +16379,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 159,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -16424,7 +16424,7 @@
       ],
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -16468,7 +16468,7 @@
       ],
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -16513,14 +16513,14 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 162,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
       "apiScope": "exported",
       "definingModule": "LibTmux.Internal.Graph",
       "doc": {
-        "summary": "Stable release admitted by :obj:`LibTmux.Version <LibTmux.Version>`."
+        "summary": "Release admitted by :obj:`LibTmux.Version <LibTmux.Version>`."
       },
       "id": "LibTmux.Snapshot#v:ServerInfo.version",
       "kind": "property",
@@ -16559,7 +16559,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 163,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -16604,7 +16604,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 164,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -16633,7 +16633,7 @@
           "source": {
             "file": "src/LibTmux/Snapshot.hs",
             "line": 60,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -16654,7 +16654,7 @@
           "source": {
             "file": "src/LibTmux/Snapshot.hs",
             "line": 60,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -16675,7 +16675,7 @@
           "source": {
             "file": "src/LibTmux/Snapshot.hs",
             "line": 60,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -16714,7 +16714,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot.hs",
         "line": 57,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -16753,7 +16753,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot.hs",
         "line": 58,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -16799,7 +16799,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot.hs",
         "line": 59,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -16853,7 +16853,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot.hs",
         "line": 65,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -16907,7 +16907,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 216,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -16968,7 +16968,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 238,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -16997,7 +16997,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 232,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -17018,7 +17018,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 231,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -17039,7 +17039,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 231,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -17078,7 +17078,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 227,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -17115,7 +17115,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 227,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -17160,7 +17160,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 228,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -17205,7 +17205,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 229,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -17234,7 +17234,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 103,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -17255,7 +17255,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 102,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -17276,7 +17276,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 102,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -17315,7 +17315,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 97,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -17352,7 +17352,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 97,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -17397,7 +17397,7 @@
       ],
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -17441,7 +17441,7 @@
       ],
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -17486,7 +17486,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 100,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -17515,7 +17515,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 114,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -17536,7 +17536,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 113,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -17557,7 +17557,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 113,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -17596,7 +17596,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 107,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -17633,7 +17633,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 107,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -17678,7 +17678,7 @@
       ],
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -17723,7 +17723,7 @@
       ],
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -17768,7 +17768,7 @@
       ],
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -17813,7 +17813,7 @@
       ],
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -17842,7 +17842,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 132,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -17863,7 +17863,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 131,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -17884,7 +17884,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 131,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -17923,7 +17923,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 119,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -17960,7 +17960,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 119,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -18005,7 +18005,7 @@
       ],
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -18050,7 +18050,7 @@
       ],
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -18095,7 +18095,7 @@
       ],
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -18140,7 +18140,7 @@
       ],
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -18185,7 +18185,7 @@
       ],
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -18229,7 +18229,7 @@
       ],
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -18274,7 +18274,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 126,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -18319,7 +18319,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 127,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -18364,7 +18364,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 128,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -18409,7 +18409,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 129,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -18438,7 +18438,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 145,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -18459,7 +18459,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 144,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -18480,7 +18480,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 144,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -18519,7 +18519,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 138,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -18556,7 +18556,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 138,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -18601,7 +18601,7 @@
       ],
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -18646,7 +18646,7 @@
       ],
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -18691,7 +18691,7 @@
       ],
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -18735,7 +18735,7 @@
       ],
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -18764,7 +18764,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 154,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -18785,7 +18785,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 153,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -18806,7 +18806,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 153,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -18845,7 +18845,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 149,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -18882,7 +18882,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 149,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -18927,7 +18927,7 @@
       ],
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -18973,7 +18973,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 151,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -19002,7 +19002,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 192,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -19023,7 +19023,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 191,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -19044,7 +19044,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 191,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -19083,7 +19083,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 185,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -19120,7 +19120,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 185,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -19164,7 +19164,7 @@
       ],
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -19208,7 +19208,7 @@
       ],
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -19262,7 +19262,7 @@
       ],
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -19318,7 +19318,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 189,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -19347,7 +19347,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 180,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -19368,7 +19368,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 179,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -19389,7 +19389,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 179,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -19428,7 +19428,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 174,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -19465,7 +19465,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 174,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -19510,7 +19510,7 @@
       ],
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -19555,7 +19555,7 @@
       ],
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -19600,7 +19600,7 @@
       ],
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -19629,7 +19629,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 50,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -19650,7 +19650,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 49,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -19671,7 +19671,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 49,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -19692,7 +19692,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 49,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -19733,7 +19733,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 47,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -19762,7 +19762,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 58,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -19783,7 +19783,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 57,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -19804,7 +19804,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 57,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -19825,7 +19825,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 57,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -19866,7 +19866,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 56,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -19895,7 +19895,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 65,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -19916,7 +19916,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 64,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -19937,7 +19937,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 64,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -19958,7 +19958,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 64,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -19999,7 +19999,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 63,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -20028,7 +20028,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 72,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -20049,7 +20049,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 71,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -20070,7 +20070,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 71,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -20091,7 +20091,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 71,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -20132,7 +20132,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 70,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -20186,7 +20186,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot.hs",
         "line": 71,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -20240,7 +20240,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot.hs",
         "line": 75,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -20294,7 +20294,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot.hs",
         "line": 79,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -20351,7 +20351,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot.hs",
         "line": 83,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -20408,7 +20408,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot.hs",
         "line": 87,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -20465,7 +20465,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot.hs",
         "line": 91,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -20522,7 +20522,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot.hs",
         "line": 95,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -20579,7 +20579,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot.hs",
         "line": 99,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -20636,7 +20636,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 223,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -20665,7 +20665,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 269,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -20686,7 +20686,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/Graph.hs",
             "line": 269,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -20725,7 +20725,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 264,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -20764,7 +20764,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 265,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -20811,7 +20811,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 266,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -20858,7 +20858,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 267,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -20905,7 +20905,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/Graph.hs",
         "line": 268,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -20982,7 +20982,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot.hs",
         "line": 103,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -21059,7 +21059,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot.hs",
         "line": 107,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -21136,7 +21136,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot.hs",
         "line": 111,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -21216,7 +21216,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot.hs",
         "line": 115,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -21296,7 +21296,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot.hs",
         "line": 119,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -21373,7 +21373,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot.hs",
         "line": 124,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -21450,7 +21450,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot.hs",
         "line": 128,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -21527,7 +21527,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot.hs",
         "line": 132,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -21556,7 +21556,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/TmuxText.hs",
             "line": 24,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -21577,7 +21577,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/TmuxText.hs",
             "line": 22,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -21598,7 +21598,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/TmuxText.hs",
             "line": 22,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -21619,7 +21619,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/TmuxText.hs",
             "line": 27,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -21640,7 +21640,7 @@
           "source": {
             "file": "internal/LibTmux/Internal/TmuxText.hs",
             "line": 22,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -21681,7 +21681,7 @@
       "source": {
         "file": "internal/LibTmux/Internal/TmuxText.hs",
         "line": 21,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -21734,7 +21734,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot.hs",
         "line": 136,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -21787,7 +21787,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot.hs",
         "line": 140,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -21854,7 +21854,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot.hs",
         "line": 144,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -21883,7 +21883,7 @@
           "source": {
             "file": "src/LibTmux/Snapshot/Fixture.hs",
             "line": 38,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -21904,7 +21904,7 @@
           "source": {
             "file": "src/LibTmux/Snapshot/Fixture.hs",
             "line": 38,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -21925,7 +21925,7 @@
           "source": {
             "file": "src/LibTmux/Snapshot/Fixture.hs",
             "line": 38,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -21966,7 +21966,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot/Fixture.hs",
         "line": 37,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -22019,7 +22019,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot/Fixture.hs",
         "line": 42,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -22073,7 +22073,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot/Fixture.hs",
         "line": 47,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -22135,7 +22135,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot/Fixture.hs",
         "line": 51,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -22197,7 +22197,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot/Fixture.hs",
         "line": 55,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -22259,7 +22259,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot/Fixture.hs",
         "line": 59,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -22288,7 +22288,7 @@
           "source": {
             "file": "src/LibTmux/Snapshot/Fixture.hs",
             "line": 71,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -22309,7 +22309,7 @@
           "source": {
             "file": "src/LibTmux/Snapshot/Fixture.hs",
             "line": 71,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -22348,7 +22348,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot/Fixture.hs",
         "line": 63,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -22385,7 +22385,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot/Fixture.hs",
         "line": 63,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -22431,7 +22431,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot/Fixture.hs",
         "line": 64,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -22480,7 +22480,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot/Fixture.hs",
         "line": 65,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -22529,7 +22529,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot/Fixture.hs",
         "line": 66,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -22578,7 +22578,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot/Fixture.hs",
         "line": 67,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -22627,7 +22627,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot/Fixture.hs",
         "line": 68,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -22676,7 +22676,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot/Fixture.hs",
         "line": 69,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -22705,7 +22705,7 @@
           "source": {
             "file": "src/LibTmux/Snapshot/Fixture.hs",
             "line": 85,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -22726,7 +22726,7 @@
           "source": {
             "file": "src/LibTmux/Snapshot/Fixture.hs",
             "line": 85,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -22765,7 +22765,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot/Fixture.hs",
         "line": 76,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -22802,7 +22802,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot/Fixture.hs",
         "line": 76,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -22847,7 +22847,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot/Fixture.hs",
         "line": 77,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -22892,7 +22892,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot/Fixture.hs",
         "line": 78,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -22947,7 +22947,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot/Fixture.hs",
         "line": 79,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -22993,7 +22993,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot/Fixture.hs",
         "line": 80,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -23039,7 +23039,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot/Fixture.hs",
         "line": 81,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -23085,7 +23085,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot/Fixture.hs",
         "line": 82,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -23131,7 +23131,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot/Fixture.hs",
         "line": 83,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -23193,7 +23193,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot/Fixture.hs",
         "line": 91,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -23222,7 +23222,7 @@
           "source": {
             "file": "src/LibTmux/Snapshot/Fixture.hs",
             "line": 100,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -23243,7 +23243,7 @@
           "source": {
             "file": "src/LibTmux/Snapshot/Fixture.hs",
             "line": 100,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -23282,7 +23282,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot/Fixture.hs",
         "line": 97,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -23328,7 +23328,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot/Fixture.hs",
         "line": 98,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -23374,7 +23374,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot/Fixture.hs",
         "line": 99,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -23451,7 +23451,7 @@
       "source": {
         "file": "src/LibTmux/Snapshot/Fixture.hs",
         "line": 106,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -23480,7 +23480,7 @@
           "source": {
             "file": "src/LibTmux/Value.hs",
             "line": 37,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -23501,7 +23501,7 @@
           "source": {
             "file": "src/LibTmux/Value.hs",
             "line": 36,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -23522,7 +23522,7 @@
           "source": {
             "file": "src/LibTmux/Value.hs",
             "line": 36,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -23543,7 +23543,7 @@
           "source": {
             "file": "src/LibTmux/Value.hs",
             "line": 36,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -23584,7 +23584,7 @@
       "source": {
         "file": "src/LibTmux/Value.hs",
         "line": 35,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -23613,7 +23613,7 @@
           "source": {
             "file": "src/LibTmux/Value.hs",
             "line": 43,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -23634,7 +23634,7 @@
           "source": {
             "file": "src/LibTmux/Value.hs",
             "line": 42,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -23655,7 +23655,7 @@
           "source": {
             "file": "src/LibTmux/Value.hs",
             "line": 42,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -23676,7 +23676,7 @@
           "source": {
             "file": "src/LibTmux/Value.hs",
             "line": 42,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -23717,7 +23717,7 @@
       "source": {
         "file": "src/LibTmux/Value.hs",
         "line": 41,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -23746,7 +23746,7 @@
           "source": {
             "file": "src/LibTmux/Value.hs",
             "line": 49,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -23767,7 +23767,7 @@
           "source": {
             "file": "src/LibTmux/Value.hs",
             "line": 48,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -23788,7 +23788,7 @@
           "source": {
             "file": "src/LibTmux/Value.hs",
             "line": 48,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -23809,7 +23809,7 @@
           "source": {
             "file": "src/LibTmux/Value.hs",
             "line": 48,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -23850,7 +23850,7 @@
       "source": {
         "file": "src/LibTmux/Value.hs",
         "line": 47,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -23879,7 +23879,7 @@
           "source": {
             "file": "src/LibTmux/Value.hs",
             "line": 55,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -23900,7 +23900,7 @@
           "source": {
             "file": "src/LibTmux/Value.hs",
             "line": 55,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -23939,7 +23939,7 @@
       "source": {
         "file": "src/LibTmux/Value.hs",
         "line": 52,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -23985,7 +23985,7 @@
       "source": {
         "file": "src/LibTmux/Value.hs",
         "line": 53,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -24031,7 +24031,7 @@
       "source": {
         "file": "src/LibTmux/Value.hs",
         "line": 54,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -24099,7 +24099,7 @@
       "source": {
         "file": "src/LibTmux/Value.hs",
         "line": 59,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -24167,7 +24167,7 @@
       "source": {
         "file": "src/LibTmux/Value.hs",
         "line": 65,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -24235,7 +24235,7 @@
       "source": {
         "file": "src/LibTmux/Value.hs",
         "line": 71,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -24288,7 +24288,7 @@
       "source": {
         "file": "src/LibTmux/Value.hs",
         "line": 77,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -24341,7 +24341,7 @@
       "source": {
         "file": "src/LibTmux/Value.hs",
         "line": 81,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
@@ -24394,14 +24394,14 @@
       "source": {
         "file": "src/LibTmux/Value.hs",
         "line": 85,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
       "apiScope": "exported",
       "definingModule": "LibTmux.Version",
       "doc": {
-        "summary": "A stable release, constructed by :obj:`parseVersion <LibTmux.Version#v:parseVersion>` and rendered by\n :obj:`renderVersion <LibTmux.Version#v:renderVersion>`. Ordering compares numeric components before the patch letter."
+        "summary": "A tmux release, release candidate or development build, constructed by\n :obj:`parseVersion <LibTmux.Version#v:parseVersion>` and rendered by :obj:`renderVersion <LibTmux.Version#v:renderVersion>`. Ordering compares the numeric\n components, then `next-X.Y < X.Y-rc < X.Y-rcN < X.Y < X.Ya`. Rendering\n reproduces the accepted spelling, so `X.Y-rc` and `X.Y-rc1` are distinct."
       },
       "id": "LibTmux.Version#t:TmuxVersion",
       "instances": [
@@ -24422,8 +24422,8 @@
           ],
           "source": {
             "file": "src/LibTmux/Version.hs",
-            "line": 35,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "line": 56,
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -24443,8 +24443,8 @@
           ],
           "source": {
             "file": "src/LibTmux/Version.hs",
-            "line": 33,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "line": 54,
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -24464,8 +24464,8 @@
           ],
           "source": {
             "file": "src/LibTmux/Version.hs",
-            "line": 33,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "line": 54,
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -24485,8 +24485,8 @@
           ],
           "source": {
             "file": "src/LibTmux/Version.hs",
-            "line": 33,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "line": 54,
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -24526,15 +24526,15 @@
       ],
       "source": {
         "file": "src/LibTmux/Version.hs",
-        "line": 32,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 53,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
       "apiScope": "exported",
       "definingModule": "LibTmux.Version",
       "doc": {
-        "summary": "Invalid release syntax or a release outside the supported range."
+        "summary": "Invalid release syntax or a release below the supported minimum."
       },
       "id": "LibTmux.Version#t:VersionError",
       "instances": [
@@ -24555,8 +24555,8 @@
           ],
           "source": {
             "file": "src/LibTmux/Version.hs",
-            "line": 42,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "line": 78,
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         },
         {
@@ -24576,8 +24576,8 @@
           ],
           "source": {
             "file": "src/LibTmux/Version.hs",
-            "line": 42,
-            "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+            "line": 78,
+            "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
           }
         }
       ],
@@ -24615,15 +24615,15 @@
       ],
       "source": {
         "file": "src/LibTmux/Version.hs",
-        "line": 39,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 75,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
       "apiScope": "exported",
       "definingModule": "LibTmux.Version",
       "doc": {
-        "summary": "Bounded copy of input that is not a stable release."
+        "summary": "Bounded copy of input that is not a tmux release identity."
       },
       "id": "LibTmux.Version#v:MalformedVersion",
       "kind": "function",
@@ -24661,15 +24661,15 @@
       ],
       "source": {
         "file": "src/LibTmux/Version.hs",
-        "line": 40,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 76,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
       "apiScope": "exported",
       "definingModule": "LibTmux.Version",
       "doc": {
-        "summary": "A stable release outside 3.3a through 3.8."
+        "summary": "A release older than 3.3a."
       },
       "id": "LibTmux.Version#v:UnsupportedVersion",
       "kind": "function",
@@ -24708,15 +24708,15 @@
       ],
       "source": {
         "file": "src/LibTmux/Version.hs",
-        "line": 41,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 77,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
       "apiScope": "exported",
       "definingModule": "LibTmux.Version",
       "doc": {
-        "summary": "Parse a stable release or the output of `tmux -V`, allowing one final LF.\n Development builds and trailing data are rejected rather than assigned\n capabilities from a guessed stable version. Diagnostics retain at most 64 chars."
+        "summary": "Parse a release identity or the output of `tmux -V`, allowing a leading\n `tmux ` and one final LF. The accepted forms are `X.Y`, `X.Ya`, `X.Y-rc`,\n `X.Y-rcN` and `next-X.Y`. Unknown suffixes, including a bare `master`, are\n rejected rather than assigned a guessed release. Diagnostics retain at most\n 64 chars."
       },
       "id": "LibTmux.Version#v:parseVersion",
       "kind": "function",
@@ -24776,15 +24776,15 @@
       ],
       "source": {
         "file": "src/LibTmux/Version.hs",
-        "line": 48,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 86,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
       "apiScope": "exported",
       "definingModule": "LibTmux.Version",
       "doc": {
-        "summary": "Render the canonical release without the executable name or newline."
+        "summary": "Render the release as tmux spells it, without the executable name or\n newline. Parsing the result returns an equal value."
       },
       "id": "LibTmux.Version#v:renderVersion",
       "kind": "function",
@@ -24829,15 +24829,15 @@
       ],
       "source": {
         "file": "src/LibTmux/Version.hs",
-        "line": 77,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 134,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     },
     {
       "apiScope": "exported",
       "definingModule": "LibTmux.Version",
       "doc": {
-        "summary": "Admit every stable release from 3.3a through 3.8, including intermediate\n releases. Versions outside that range fail. Individual features need their own\n capability checks; passing this check does not qualify an entire release."
+        "summary": "Admit every release at or above 3.3a, including intermediate releases,\n newer releases and the development builds and candidates ranked above it.\n Plain 3.3 and older releases fail. The check has no upper bound, so passing\n it does not mean the project tested that release. Individual features need\n their own capability checks; passing this check does not qualify an entire\n release."
       },
       "id": "LibTmux.Version#v:requireSupported",
       "kind": "function",
@@ -24898,8 +24898,8 @@
       ],
       "source": {
         "file": "src/LibTmux/Version.hs",
-        "line": 84,
-        "revision": "bcd17ddf57ee290bd2bcf385538c028a4306bf29"
+        "line": 149,
+        "revision": "4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49"
       }
     }
   ]

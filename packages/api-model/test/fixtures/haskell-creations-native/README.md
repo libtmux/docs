@@ -1,10 +1,10 @@
 # Native session creation interface fixture
 
 These Haddock pages and installed interface describe
-[the recorded Haskell source](https://github.com/libtmux/libtmux-haskell/commit/bcd17ddf57ee290bd2bcf385538c028a4306bf29).
+[the recorded Haskell source](https://github.com/libtmux/libtmux-haskell/commit/4bc620669cf31c1a7bb3a589d94d0b75cc5b3a49).
 Each consumed source page matches the committed bytes. `provenance.json`
 records public modules, defining origins and source hashes.
-The committed [producer](https://github.com/libtmux/docs/commit/ddc46a3e7dbbafdc4f86b77cddbea8ab0783ab1b)
+The committed [producer](https://github.com/libtmux/docs/commit/7f5c4e2501d768ffa42730dd645df723378ebf62)
 and its native input hashes are recorded separately from the library revision.
 
 The creation profile adds options, process modes, historical target references

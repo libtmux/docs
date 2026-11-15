@@ -19,6 +19,7 @@ lint = [
     "ty>=0.0.35",
 ]
 testing = [
+    "pytest>=9.2.0,<10",
     "sphinx>=9.1.0,<10",
     "myst-parser>=5.1.0,<6",
 ]
