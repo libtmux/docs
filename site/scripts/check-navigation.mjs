@@ -680,8 +680,8 @@ export async function checkApiAnchorArrival(browser, base) {
               viewport: innerHeight, overflow: document.documentElement.scrollWidth - innerWidth }
           }, fragment)
           assert(arrival.ownsFragment && arrival.target, `${path}: ${fragment} targets the declaration`)
-          assert(arrival.color !== idleColor && arrival.color !== 'rgba(0, 0, 0, 0)' && arrival.color !== 'transparent',
-            `${path}#${fragment}: arrival changes the declaration background`)
+          // Arrival draws nothing around the declaration (design record 0049): the section bar marks the section.
+          assert.equal(arrival.color, idleColor, `${path}#${fragment}: arrival leaves the declaration background as it was`)
           assert(arrival.top >= arrival.header - 1 && arrival.top < arrival.viewport && arrival.overflow <= 1,
             `${path}#${fragment} at ${width}px (JavaScript ${javaScriptEnabled}): the declaration is visible below the header without overflow: ${JSON.stringify(arrival)}`)
         }
@@ -706,7 +706,7 @@ export async function checkPermalinkReveal(browser, base, { only, sabotage } = {
   // A hash beside a heading that owns its id, beside a heading whose section wrapper owns it, and on a parameter line.
   const pages = [
     ['swift/latest/reference/server/', [['the Members heading', '.api-members > h2 a.api-heading-link'],
-      ['a member group heading', '.api-members > .api-member-group > h3[id] a.api-heading-link']]],
+      ['a member group heading', '.api-members .api-member-group > h3[id] a.api-heading-link']]],
     ['py/latest/reference/libtmux-server-new_session/', [['a heading in a section wrapper', '.gp-sphinx-api-description > h2 a.api-heading-link'],
       ['a parameter line', 'ul.api-parameters > li[id] > p > a.api-heading-link']]],
   ]
@@ -1045,12 +1045,6 @@ export async function checkApiStickyHeadings(browser, base, { only, sabotage } =
     await page.evaluate((top) => window.scrollTo({ top, behavior: 'instant' }), top)
     await quiet(page)
   }
-  const groupsOf = (page) => page.evaluate(() => [...document.querySelectorAll('.api-members > .api-member-group')]
-    .flatMap((group) => {
-      const heading = group.querySelector(':scope > h3[id]')
-      const { top, height } = group.getBoundingClientRect()
-      return heading ? [{ id: heading.id, top: top + scrollY, height }] : []
-    }))
   // Where a heading sits against the line below the bars above it, and whether anything covers it.
   const landing = (page, id) => page.evaluate((id) => {
     const heading = document.getElementById(id)
@@ -1071,25 +1065,6 @@ export async function checkApiStickyHeadings(browser, base, { only, sabotage } =
     assert(Math.abs(arrival.start - arrival.top) <= 2, `${engine}: ${label} lands at the start of its group, not its end: ${where}`)
     assert(!arrival.covered, `${engine}: ${label} is not covered by the bars above it: ${where}`)
   }
-  // Sample the scroll position after each frame has rendered, so a corrected jump is not mistaken for a painted one.
-  const track = (page) => page.evaluate(() => {
-    window.__frames = []
-    const sample = () => requestAnimationFrame(() => setTimeout(() => {
-      window.__frames.push(Math.round(scrollY))
-      if (window.__frames.length < 180) sample()
-    }, 0))
-    sample()
-  })
-  // The page scrolls once to its destination and never paints the end of the group on the way.
-  const movedOnce = async (page, from, label) => {
-    const frames = await page.evaluate(() => window.__frames)
-    const moved = frames.findIndex((y) => Math.abs(y - from) > 1)
-    const final = frames.at(-1)
-    assert(moved >= 0, `${engine}: ${label} scrolls: ${JSON.stringify(frames)}`)
-    assert(frames.slice(moved).every((y) => Math.abs(y - final) <= 2),
-      `${engine}: ${label} scrolls once from ${from} to its destination: ${JSON.stringify(frames.slice(moved))}`)
-  }
-  const link = (page, selector) => page.locator(selector).filter({ visible: true }).first()
   // Keep the main thread busy through the next click, as a loaded page does.
   const hold = (page, busy) => page.evaluate((busy) => addEventListener('click', () => {
     for (const end = performance.now() + busy; performance.now() < end;);
@@ -1105,22 +1080,64 @@ export async function checkApiStickyHeadings(browser, base, { only, sabotage } =
     await page.mouse.click(x, y)
   }
 
+  // A long member list scrolls in its own box (design system README: collections longer than `list-budget` scroll inside
+  // their own box), and its group headings stick to the top of that box. The Members heading above the box still sticks
+  // under the page's bars. Positions inside the box are measured from the box's top edge.
+  const boxOf = (page) => page.evaluate(() => {
+    const box = document.querySelector('.api-members > .api-member-budget')
+    if (!box) return null
+    const edge = box.getBoundingClientRect().top - box.scrollTop
+    const groups = [...box.querySelectorAll(':scope > .api-member-group')].flatMap((group) => {
+      const heading = group.querySelector(':scope > h3[id]')
+      const rect = group.getBoundingClientRect()
+      return heading ? [{ id: heading.id, top: Math.round(rect.top - edge), height: Math.round(rect.height) }] : []
+    })
+    return { groups, clientHeight: box.clientHeight }
+  })
+  const showBox = async (page) => {
+    await page.evaluate(() => document.querySelector('.api-members > .api-member-budget').scrollIntoView({ block: 'center', behavior: 'instant' }))
+    await quiet(page)
+  }
+  const scrollBox = async (page, top) => {
+    await page.evaluate((top) => { document.querySelector('.api-members > .api-member-budget').scrollTop = top }, top)
+    await quiet(page)
+  }
+  // Where a group sits in the box once it is reached, and whether its heading is the thing a reader sees there.
+  const boxLanding = (page, id) => page.evaluate((id) => {
+    const box = document.querySelector('.api-members > .api-member-budget')
+    const heading = document.getElementById(id)
+    const top = box.getBoundingClientRect().top
+    const rect = heading.getBoundingClientRect()
+    const hit = document.elementFromPoint(rect.left + 20, rect.top + rect.height / 2)
+    return { scrollTop: Math.round(box.scrollTop), start: Math.round(heading.parentElement.getBoundingClientRect().top - top),
+      heading: Math.round(rect.top - top), covered: !(hit && heading.contains(hit)), inBox: box.contains(heading) }
+  }, id)
+  const boxReached = (arrival, label) => {
+    const where = JSON.stringify(arrival)
+    assert(arrival.inBox, `${engine}: ${label} names a group of the member box: ${where}`)
+    assert(Math.abs(arrival.start) <= 2, `${engine}: ${label} lands at the start of its group, not inside it: ${where}`)
+    assert(!arrival.covered, `${engine}: ${label} is not covered by the bars above it: ${where}`)
+  }
+
   const desktop = { width: 1800, height: 1000 }
   for (const viewport of only ? [desktop] : [desktop, { width: 390, height: 844 }]) {
     const phone = viewport.width < 600
     const size = `${viewport.width}px`
 
-    // Tabbing backward through a stuck group leaves each stop clear of the bars.
+    // Tabbing backward through a group in the box leaves each stop clear of the group heading stuck above it.
     if (wants('focus')) {
       const { context, page } = await open(viewport)
       try {
-        const groups = await groupsOf(page)
-        assert(groups.length >= 3, `${engine}: the Swift Server page keeps grouped members: ${JSON.stringify(groups)}`)
-        const tall = groups.reduce((a, b) => a.height > b.height ? a : b)
-        await scrollTo(page, tall.top + tall.height / 2)
+        const box = await boxOf(page)
+        assert(box && box.groups.length >= 3, `${engine}: the Swift Server page keeps grouped members in a box: ${JSON.stringify(box)}`)
+        const tall = box.groups.reduce((a, b) => a.height > b.height ? a : b)
+        await showBox(page)
+        await scrollBox(page, tall.top + tall.height / 2)
         await page.evaluate(() => {
-          const links = [...document.querySelectorAll('.api-members .api-member-group a[href]:not(.api-heading-link)')]
-          links.find((a) => a.getBoundingClientRect().top >= innerHeight * 0.6).focus({ preventScroll: true })
+          const box = document.querySelector('.api-members > .api-member-budget')
+          const { top, height } = box.getBoundingClientRect()
+          const links = [...box.querySelectorAll('.api-member-group a[href]:not(.api-heading-link)')]
+          links.find((a) => a.getBoundingClientRect().top >= top + height * 0.6).focus({ preventScroll: true })
         })
         let stops = 0
         for (let tab = 0; tab < 14; tab++) {
@@ -1128,13 +1145,13 @@ export async function checkApiStickyHeadings(browser, base, { only, sabotage } =
           await quiet(page)
           const stop = await page.evaluate(() => {
             const active = document.activeElement
-            if (!active?.closest('.api-members')) return null
+            if (!active?.closest('.api-member-budget .api-member-group')) return null
             const rect = active.getClientRects()[0]
             const x = rect.left + Math.min(rect.width / 2, 30)
-            // Which of five points down the control show the control itself rather than a bar.
+            // Which of five points down the control show the control itself rather than a stuck heading or bar.
             const shown = [2, rect.height * 0.25, rect.height * 0.5, rect.height * 0.75, rect.height - 2]
               .map((offset) => active.contains(document.elementFromPoint(x, rect.top + offset)))
-            return { y: Math.round(scrollY), top: Math.round(rect.top), shown, name: (active.getAttribute('aria-label') || active.textContent).trim().slice(0, 24) }
+            return { top: Math.round(rect.top), shown, name: (active.getAttribute('aria-label') || active.textContent).trim().slice(0, 24) }
           })
           if (!stop) break
           stops++
@@ -1145,7 +1162,7 @@ export async function checkApiStickyHeadings(browser, base, { only, sabotage } =
         }
         assert(stops >= 10, `${engine}/${size}: tabbing backward crosses a stuck group (${stops} stops)`)
         // Keyboard focus returns the Members bar to flow; the gap cover must not paint over it.
-        await scrollTo(page, tall.top + tall.height / 2)
+        await showBox(page)
         await page.keyboard.press('Shift')
         await page.evaluate(() => document.querySelector('.api-members > h2 a.api-heading-link').focus())
         await quiet(page)
@@ -1163,76 +1180,51 @@ export async function checkApiStickyHeadings(browser, base, { only, sabotage } =
       }
     }
 
-    // A link to an earlier group, from inside a later one, is the first navigation on the page. The
-    // second pass keeps the main thread busy through the click, so a frame renders before the URL changes.
-    for (const busy of wants('link') ? [0, 30] : []) {
-      const { context, page } = await open(viewport)
-      try {
-        const groups = await groupsOf(page)
-        const [first, second] = groups
-        await scrollTo(page, second.top + second.height / 2)
-        // Phones keep the owner link in the section row; groups are in the rail.
-        const id = phone ? 'api-members' : first.id
-        const label = `a link to ${id} from a later group${busy ? ' on a busy page' : ''}`
-        const anchor = link(page, `a[data-api-section-link][href="#${id}"]`)
-        const start = await page.evaluate(() => Math.round(scrollY))
-        await track(page)
-        await hold(page, busy)
-        await press(page, anchor)
-        await quiet(page)
-        reached(await landing(page, id), label)
-        await movedOnce(page, start, label)
-      } finally {
-        await context.close()
-      }
-    }
+    // The outline that linked each group went with the "On this page" list (PageApiDetail, "Removed or moved"), so a group
+    // is reached by its own permalink or by its hash, below.
 
-    // A link to the heading that is already the page's hash returns to the group's start every time,
-    // from the middle of the group and from its trailing edge, where the release displaces the bar.
+    // The permalink of a group heading stuck at the top of the box opens the box at the group's start, every time, also on a busy page.
     if (!phone && wants('permalink')) {
       const { context, page } = await open(viewport)
       try {
-        const tall = (await groupsOf(page)).reduce((a, b) => a.height > b.height ? a : b)
+        const tall = (await boxOf(page)).groups.reduce((a, b) => a.height > b.height ? a : b)
         const permalink = page.locator(`[id="${tall.id}"] a.api-heading-link`)
-        const rail = link(page, `a[data-api-section-link][href="#${tall.id}"]`)
-        await scrollTo(page, tall.top + tall.height / 2)
+        await showBox(page)
+        await scrollBox(page, tall.top + tall.height / 2)
         await press(page, permalink); await quiet(page)
-        const once = await landing(page, tall.id)
-        reached(once, 'a permalink to a stuck group heading')
-        await scrollTo(page, tall.top + tall.height * 0.75)
+        const once = await boxLanding(page, tall.id)
+        boxReached(once, 'a permalink to a stuck group heading')
+        await scrollBox(page, tall.top + tall.height * 0.75)
         await hold(page, 30)
         await press(page, permalink); await quiet(page)
-        const again = await landing(page, tall.id)
-        reached(again, 'the same permalink clicked again on a busy page')
-        assert(Math.abs(again.y - once.y) <= 2, `${engine}: the repeated permalink returns to ${once.y}, not ${again.y}`)
-        const edge = await page.evaluate(() => document.querySelector('.api-section-links').getBoundingClientRect().bottom +
-          (Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16) * 0.75)
-        await scrollTo(page, tall.top + tall.height - edge)
-        await press(page, rail); await quiet(page)
-        const last = await landing(page, tall.id)
-        reached(last, 'the same link clicked from the end of the group')
-        assert(Math.abs(last.y - once.y) <= 2, `${engine}: the link from the end of the group returns to ${once.y}, not ${last.y}`)
+        const again = await boxLanding(page, tall.id)
+        boxReached(again, 'the same permalink clicked again on a busy page')
+        assert(Math.abs(again.scrollTop - once.scrollTop) <= 2, `${engine}: the repeated permalink returns to ${once.scrollTop}, not ${again.scrollTop}`)
       } finally {
         await context.close()
       }
     }
 
-    // A typed or scripted hash for a group above the viewport follows the same rule as a click.
+    // A typed or scripted hash follows the same rule: a group opens the box at its start, and the Members heading lands at the
+    // reading line under the page's bars.
     for (const kind of wants('typed') ? ['group', 'owner'] : []) {
       const { context, page } = await open(viewport)
       try {
-        const groups = await groupsOf(page)
+        const { groups } = await boxOf(page)
         const last = groups.at(-1)
+        await showBox(page)
+        await scrollBox(page, last.top + last.height / 2)
+        if (kind === 'owner') await scrollTo(page, await page.evaluate(() => Math.round(scrollY + innerHeight / 2)))
         const id = kind === 'owner' ? 'api-members' : groups[0].id
-        await scrollTo(page, last.top + Math.min(last.height / 2, 600))
         await page.evaluate((id) => { location.hash = `#${id}` }, id)
         await quiet(page)
-        reached(await landing(page, id), `a typed hash for ${id}`)
+        if (kind === 'owner') reached(await landing(page, id), `a typed hash for ${id}`)
+        else boxReached(await boxLanding(page, id), `a typed hash for ${id}`)
       } finally {
         await context.close()
       }
     }
-    if (!only) console.log(`API sticky headings: ${engine} at ${size} keeps focus clear and lands links and typed hashes at the start of their group`)
+    if (!only) console.log(`API sticky headings: ${engine} at ${size} keeps focus clear in the member box and lands permalinks and typed hashes at the start of their group`)
   }
 }
 

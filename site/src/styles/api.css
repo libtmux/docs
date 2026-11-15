@@ -1239,6 +1239,10 @@ html[data-api-sections-measured] .api-section-links {
   .api-members[data-api-sticky-members] :where(a[href], button, summary, input, select, textarea, [tabindex]) {
     scroll-margin-top: var(--api-bar-clearance);
   }
+  /* A group heading inside the member box sticks to the box's own top, so nothing covers it there: a hash or a focused
+     permalink reaches it at that top, not a Members bar's height below it (where the end of the group before shows). */
+  .api-members[data-api-sticky-members] .api-member-budget > .api-member-group > h3[id] { scroll-margin-top: 0; }
+  .api-members[data-api-sticky-members] .api-member-budget > .api-member-group > h3 { --api-bar-clearance: 0px; }
 }
 @media print {
   .api-page-contents, .api-glossary-contents, .api-section-links { display: none; }

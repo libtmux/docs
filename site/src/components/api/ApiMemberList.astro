@@ -201,4 +201,27 @@ const box = budget ? { class: 'api-member-budget', role: 'region', tabindex: 0, 
   }
   mount()
   document.addEventListener('astro:after-swap', mount)
+
+  // A group heading inside the box is sticky, so a browser that reaches it while it is stuck sees it in view and leaves the box
+  // wherever it was, deep inside the group. Reaching a group, by its permalink or a typed hash, opens the box at the group's start.
+  function revealGroup(id: string) {
+    const heading = id ? document.getElementById(id) : null
+    const box = heading?.closest<HTMLElement>('.api-member-budget')
+    if (!box || !heading!.matches('.api-member-group > h3')) return
+    box.scrollTop += heading!.parentElement!.getBoundingClientRect().top - box.getBoundingClientRect().top
+  }
+  const hashId = () => { try { return decodeURIComponent(location.hash.slice(1)) } catch { return '' } }
+  addEventListener('hashchange', () => revealGroup(hashId()))
+  // The permalink of a group in the box sets the hash itself, before the client router can scroll on its own and report nothing:
+  // a new hash arrives through hashchange above, and the hash that is already set (which changes nothing) opens the group here.
+  document.addEventListener('click', (event) => {
+    const target = event.target
+    const link = target instanceof Element ? target.closest<HTMLAnchorElement>('.api-member-budget .api-member-group > h3 a.api-heading-link') : null
+    if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+    event.preventDefault()
+    if (link.hash === location.hash) revealGroup(hashId())
+    else location.hash = link.hash
+  }, { capture: true })
+  revealGroup(hashId())
+  document.addEventListener('astro:after-swap', () => revealGroup(hashId()))
 </script>
