@@ -846,7 +846,10 @@ const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
       // `serverGeneration` reports it, and a reference is valid for one.
       'LibTmux.Snapshot#t:Generation',
     ],
-    session: ['LibTmux.Creation'],
+    session: [
+      'LibTmux.Creation',
+      ...['InitialProcess', 'SessionOptions'].map((name) => `LibTmux.Creation#t:${name}`),
+    ],
     snapshots: ['LibTmux.Snapshot#t:TmuxText'],
   },
   // Elixir's modules are named for what they do rather than for a tmux object.

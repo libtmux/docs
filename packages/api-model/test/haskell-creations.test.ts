@@ -27,7 +27,9 @@ describe('the native Haskell creation profile', () => {
     expect(model.symbols.some((entry) => entry.id.includes('Internal'))).toBe(false)
     const nav = navSidecar('haskell', structuredClone(model))!
     expect(nav.diagnostics).toMatchObject({ unmatched: [], ambiguous: [], staleUnsettled: [] })
-    expect(nav.assignments.session.map((entry) => entry.id)).toContain('LibTmux.Creation')
+    expect(nav.assignments.session.map((entry) => entry.id)).toEqual(expect.arrayContaining([
+      'LibTmux.Creation', 'LibTmux.Creation#t:SessionOptions', 'LibTmux.Creation#t:InitialProcess',
+    ]))
     expect(nav.assignments.server.map((entry) => entry.id)).toContain('LibTmux.Server#t:CreationRecovery')
   })
 
