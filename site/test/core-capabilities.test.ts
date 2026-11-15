@@ -564,12 +564,6 @@ describe('the example gate over what a reader copies', () => {
       'home setup java': ['clones or checks out the library of a published port; install it from the registry'],
       'home setup kotlin': ['clones or checks out the library of a published port; install it from the registry'],
       'home setup scala': ['clones or checks out the library of a published port; install it from the registry'],
-      'landing py/mcp tests/test_window_tools.py': ['is a test file of the repository', 'is test code of the repository'],
-      'landing ruby/workspace examples/workspace_apply.rb': ['uses a helper of the repository'],
-      'landing rs/workspace crates/tmux-workspace/examples/build.rs': ['is test code of the repository'],
-      'landing java/workspace libtmux-workspace/src/test/java/io/github/libtmux/workspace/WorkspaceBuilderTest.java': ['is a test file of the repository'],
-      'landing cxx/mcp apps/mcp/tests/mcp_test.cpp': ['is a test file of the repository', 'uses a helper of the repository', 'is test code of the repository'],
-      'landing cxx/workspace examples/workspace/tests/tmuxp_test.cpp': ['is a test file of the repository'],
       'page program ports/rs/examples/attach-and-send-keys.md crates/libtmux/examples/scratch.rs': ['uses a helper of the repository'],
     }
 

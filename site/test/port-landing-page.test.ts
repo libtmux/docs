@@ -8,7 +8,7 @@ import { citedTest, landingExample, offersPicker, presetOptions, revisionUrl, su
 import * as showcaseLibrary from '../src/lib/workspace-showcase'
 import { loadCommand } from '../src/lib/workspace-links'
 import { STORAGE_PREFIX } from '../src/lib/workspace-picker'
-import { landingExcerpt, landingProducts, type CachedSource, type LandingExcerpt, type LandingTable } from '../src/lib/port-landing'
+import { isGap, landingExcerpt, landingProducts, type CachedSource, type LandingExcerpt, type LandingTable } from '../src/lib/port-landing'
 import { PICKER_GROUP_LABEL, PORTS, PORT_BY_SLUG, portPageUrl, productStatus, productStatusLine, type DocProduct } from '../src/lib/ports'
 import { REGISTRY } from '../src/lib/registry'
 import LANDING from '../src/data/landing-examples.json'
@@ -442,13 +442,13 @@ describe('the landing page markup', () => {
   })
 
   it('shows the install and links, no workspace file, for a port with none tested', async () => {
-    // Every port that ships a workspace manager now has a tested file, so this renders Java as though it had none.
+    // Every port that ships a workspace manager now has a tested file, so this renders Swift as though it had none.
     const window = openWindow()
-    window.document.body.innerHTML = await renderHtml('java', { '../lib/workspace-showcase': { ...showcaseLibrary, workspaceShowcase: () => undefined } })
+    window.document.body.innerHTML = await renderHtml('swift', { '../lib/workspace-showcase': { ...showcaseLibrary, workspaceShowcase: () => undefined } })
     const panel = window.document.querySelector('[data-landing-panel="workspace"]')!
     expect(panel.querySelector('[data-landing-example]')).toBeNull()
     expect(panel.querySelector('[data-package-install]')).not.toBeNull()
-    expect(panel.querySelector('a[href="/java/latest/workspace/"]')).not.toBeNull()
+    expect(panel.querySelector('a[href="/swift/latest/workspace/"]')).not.toBeNull()
     expect(panel.querySelector('[data-landing-excerpt]'), 'the excerpt stays behind its link').not.toBeNull()
   })
 
@@ -473,7 +473,7 @@ describe('the landing page markup', () => {
     it.each(PORTS)('$slug', async (port) => {
       const document = await render(port.slug)
       for (const product of landingProducts(port).filter((candidate): candidate is DocProduct => candidate !== 'core')) {
-        const gap = port.slug === 'julia' && product === 'mcp'
+        const gap = isGap(table[port.slug]![product]!)
         const excerpt = document.querySelector(`[data-landing-panel="${product}"] [data-landing-excerpt]`)
         expect(excerpt === null, `${port.slug} ${product}`).toBe(gap)
         if (excerpt) expect(excerpt.querySelector('pre')!.textContent, `${port.slug} ${product}`).toBe(landingExcerpt(port, product, table, cache)!.code)

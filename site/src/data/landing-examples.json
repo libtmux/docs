@@ -1,14 +1,7 @@
 {
   "py": {
     "mcp": {
-      "file": "tests/test_window_tools.py",
-      "lang": "python",
-      "from": "from fastmcp import Client",
-      "to": "result = asyncio.run(_call())",
-      "ci": {
-        "workflow": ".github/workflows/tests.yml",
-        "command": "uv run py.test"
-      }
+      "missing": "No Python program that embeds the MCP server is an example its CI runs. The CI-run code, tests/test_window_tools.py in libtmux-mcp, is a pytest module that takes its server and session from the mcp_server and mcp_session fixtures, so an excerpt of it does not stand alone. The port must supply a standalone program that its CI runs."
     },
     "workspace": {
       "file": "src/tmuxp/workspace/builder/classic.py",
@@ -23,20 +16,13 @@
   },
   "ruby": {
     "mcp": {
-      "file": "examples/mcp_protocol.rb",
-      "lang": "ruby",
-      "from": "application = LibTmux::MCP::Application.new(",
-      "to": "runner = parent.async { transport.run }",
-      "ci": {
-        "workflow": ".github/workflows/compatibility.yml",
-        "command": "bundle exec scripts/matrix"
-      }
+      "missing": "No standalone Ruby program that embeds the MCP server is an example its CI runs. The CI-run program, examples/mcp_protocol.rb, runs inside the repository's Example.run harness, which supplies its server and async scope, so an excerpt of it does not stand alone. The port must supply a standalone program that its CI runs."
     },
     "workspace": {
-      "file": "examples/workspace_apply.rb",
+      "file": "examples/api/workspace_apply.rb",
       "lang": "ruby",
-      "from": "workspace = LibTmux::Workspace.load(",
-      "to": "\"workspace apply failed\"",
+      "from": "require \"libtmux\"",
+      "to": "=  end",
       "ci": {
         "workflow": ".github/workflows/compatibility.yml",
         "command": "bundle exec scripts/matrix"
@@ -116,20 +102,7 @@
       }
     },
     "workspace": {
-      "file": "crates/tmux-workspace/examples/build.rs",
-      "lang": "rust",
-      "from": "const WORKSPACE: &str = \"",
-      "to": "=\";",
-      "more": [
-        {
-          "from": "let workspace = Workspace::from_yaml(WORKSPACE)?;",
-          "to": "builder.build(&workspace)"
-        }
-      ],
-      "ci": {
-        "workflow": ".github/workflows/ci.yml",
-        "command": "just check"
-      }
+      "missing": "No Rust program that builds a workspace is an example its CI runs without the repository's test server. The CI-run program, crates/tmux-workspace/examples/build.rs, starts its tmux through libtmux::test::TestServer, which a reader's program does not have. The port must supply a standalone program that its CI runs."
     }
   },
   "go": {
@@ -172,32 +145,12 @@
       }
     },
     "workspace": {
-      "file": "libtmux-workspace/src/test/java/io/github/libtmux/workspace/WorkspaceBuilderTest.java",
-      "lang": "java",
-      "from": "private static final String WORKSPACE = \"\"\"",
-      "to": "=            \"\"\";",
-      "more": [
-        {
-          "from": "void theDescribedSessionIsWhatGetsBuilt(Server server)",
-          "to": "=    }"
-        }
-      ],
-      "ci": {
-        "workflow": ".github/workflows/ci.yml",
-        "command": "./gradlew :libtmux-mcp:test check"
-      }
+      "missing": "No standalone Java program that builds a workspace is an example its CI runs. The CI-run code, WorkspaceBuilderTest in libtmux-workspace, is a JUnit test that receives its Server from the test framework, so an excerpt of it does not stand alone. The port must supply a standalone program that its CI runs."
     }
   },
   "csharp": {
     "mcp": {
-      "file": "examples/LibTmux.Examples/Snippets/Mcp.cs",
-      "lang": "csharp",
-      "from": "Dictionary<string, string?> environment =",
-      "to": "cancellationToken: ct);",
-      "ci": {
-        "workflow": ".github/workflows/dotnet.yml",
-        "command": "dotnet test --project tests/LibTmux.ExampleTests/LibTmux.ExampleTests.csproj"
-      }
+      "missing": "No standalone C# program that connects to the MCP server is an example its CI runs. The CI-run fragments, examples/LibTmux.Examples/Snippets/Mcp.cs, read LIBTMUX_MCP_COMMAND, which only the example harness sets, and use server and ct values that harness declares. The port must supply a standalone program that its CI runs."
     },
     "workspace": {
       "file": "src/LibTmux.Workspace.Cli/README.md",
@@ -212,24 +165,10 @@
   },
   "cxx": {
     "mcp": {
-      "file": "apps/mcp/tests/mcp_test.cpp",
-      "lang": "cpp",
-      "from": "TEST(McpToolsTmux, ListsTheSessionsOfARealServer) {",
-      "to": "=}",
-      "ci": {
-        "workflow": ".github/workflows/ci.yml",
-        "command": "ctest --preset cxx-dev"
-      }
+      "missing": "No C++ program that uses the MCP consumer is an example its CI runs. The CI-run code, apps/mcp/tests/mcp_test.cpp, is a gtest suite built on the repository's ScopedTmuxServer, so an excerpt of it does not stand alone. The port must supply a standalone program that its CI runs."
     },
     "workspace": {
-      "file": "examples/workspace/tests/tmuxp_test.cpp",
-      "lang": "yaml",
-      "from": "=session_name: work",
-      "to": "=      -",
-      "ci": {
-        "workflow": ".github/workflows/ci.yml",
-        "command": "ctest --preset cxx-dev"
-      }
+      "missing": "No C++ program that loads a workspace is an example its CI runs. The only CI-run code that holds a workspace file, examples/workspace/tests/tmuxp_test.cpp, is a gtest suite, and the file it holds is a string in that test. The port must supply a standalone program that its CI runs."
     }
   },
   "perl": {

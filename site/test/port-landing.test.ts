@@ -46,11 +46,15 @@ const PRODUCTS: Record<string, LandingProduct[]> = {
 }
 
 /**
- * The shipped products that have no program their port's CI runs. Naming them
- * here makes a new gap a reviewed change, and a closed gap a reminder to
- * remove the entry.
+ * The shipped products that have no program a reader can run on its own. The
+ * port's CI runs code for each, but it is a test that needs the repository's
+ * harness, so the page shows no excerpt until the port supplies a standalone
+ * program. Naming them here makes a new gap a reviewed change, and a closed gap
+ * a reminder to remove the entry.
  */
-const GAPS: readonly string[] = ['julia/mcp']
+const GAPS: readonly string[] = [
+  'csharp/mcp', 'cxx/mcp', 'cxx/workspace', 'java/workspace', 'julia/mcp', 'py/mcp', 'rs/workspace', 'ruby/mcp',
+]
 
 /**
  * The program each excerpt quotes. Moving a landing example to another program
@@ -59,25 +63,18 @@ const GAPS: readonly string[] = ['julia/mcp']
 const EXCERPT_FILES: Record<string, string> = {
   'ocaml/workspace': 'examples/showcase_graph.ml',
   'perl/workspace': 'examples/workspace.pl',
-  'py/mcp': 'tests/test_window_tools.py',
   'py/workspace': 'src/tmuxp/workspace/builder/classic.py',
-  'ruby/mcp': 'examples/mcp_protocol.rb',
-  'ruby/workspace': 'examples/workspace_apply.rb',
+  'ruby/workspace': 'examples/api/workspace_apply.rb',
   'powershell/workspace': 'examples/Guides.ps1',
   'julia/workspace': 'packages/LibTmuxWorkspace/examples/owned_load.jl',
   'lisp/workspace': 'examples/workspace.lisp',
   'ts/mcp': 'examples/mcp-agent/mcp-agent.ts',
   'ts/workspace': 'examples/workspace/workspace.ts',
   'rs/mcp': 'crates/tmux-mcp/examples/readonly.rs',
-  'rs/workspace': 'crates/tmux-workspace/examples/build.rs',
   'go/mcp': 'mcp/examples/agent-workflow/main.go',
   'go/workspace': 'workspace/examples/build-workspace/main.go',
   'java/mcp': 'examples/src/main/java/io/github/libtmux/examples/ServeTmuxOverMcp.java',
-  'java/workspace': 'libtmux-workspace/src/test/java/io/github/libtmux/workspace/WorkspaceBuilderTest.java',
-  'csharp/mcp': 'examples/LibTmux.Examples/Snippets/Mcp.cs',
   'csharp/workspace': 'src/LibTmux.Workspace.Cli/README.md',
-  'cxx/mcp': 'apps/mcp/tests/mcp_test.cpp',
-  'cxx/workspace': 'examples/workspace/tests/tmuxp_test.cpp',
   'swift/mcp': 'Examples/Sources/ExampleCode/MCPEmbedding.swift',
   'swift/workspace': 'Examples/Sources/ExampleCode/Workspaces.swift',
 }
