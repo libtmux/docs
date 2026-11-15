@@ -665,6 +665,11 @@ html[data-theme="purple"][data-theme-mode="dark"] {
     max-width: var(--measure-prose, 72ch);
   }
 
+  /* An API declaration drawn inside prose reads at the reference measure (README "Space, size and density"). */
+  .prose dl.gp-sphinx-api-container {
+    max-width: var(--measure-reference, 100ch);
+  }
+
   /* Even right edges: a paragraph with several mentions fills its lines. */
   .prose :where(p) {
     text-wrap: pretty;

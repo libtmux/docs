@@ -64,6 +64,11 @@ describe('heading scale', () => {
     expect(rule('.prose :where(p, ul, ol, dl, blockquote)')['max-width']).toBe('var(--measure-prose, 72ch)')
     expect(rule('.prose :where(table)')['max-width']).toBe('100%')
   })
+
+  it('gives an API declaration inside prose the reference measure, not the prose one', () => {
+    // README "Space, size and density": reference entries read at measure-reference (100ch).
+    expect(rule('.prose dl.gp-sphinx-api-container')['max-width']).toBe('var(--measure-reference, 100ch)')
+  })
 })
 
 describe('section index', () => {
