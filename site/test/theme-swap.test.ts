@@ -31,7 +31,7 @@ function navigate(win: Window) {
   win.document.dispatchEvent(event)
   const root = win.document.documentElement
   for (const { name } of [...root.attributes]) root.removeAttribute(name)
-  for (const { name, value } of [...next.documentElement.attributes]) root.setAttribute(name, value)
+  for (const { name, value } of [...next.documentElement.attributes]) root.setAttribute(name, value ?? '')
   return root
 }
 
