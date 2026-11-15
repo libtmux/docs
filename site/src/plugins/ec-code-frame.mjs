@@ -7,12 +7,13 @@ import { formatLines, lineNumbers, parseLines, rangeFragment, requestedCap, role
  * - A role label after the file name: "Excerpt · lines 59–78" or "Complete
  *   program" (`role` and `lines` in the fence's info string).
  * - The source's own line numbers on an excerpt, so a reader can find the
- *   lines in the tested file. The numbers hang in a rail beside the code, never
- *   in a column inside it (record 0055): outside the frame where the layout sets
- *   `--code-hang-out: 1`, inside the code's start padding otherwise. The rail is
- *   a sibling of the `<pre>`, so the pre's overflow does not clip it; it follows
- *   a capped frame's vertical scroll and stays put when the code scrolls sideways.
- *   Copy never has the numbers.
+ *   lines in the tested file. The numbers hang in a rail outside the frame, at a
+ *   negative margin, and never in the code's padding (records 0055, 0058): the
+ *   layout states its free margin in `--code-hang-room` and a frame whose rail
+ *   needs more moves in by the difference. The rail is a sibling of the `<pre>`,
+ *   so the pre's overflow does not clip it; it follows a capped frame's vertical
+ *   scroll and stays put when the code scrolls sideways. Copy never has the
+ *   numbers.
  * - On the complete program an excerpt of the page cites (`cite`), the same
  *   numbers from line 1. The excerpt's range links to its lines (`#L63-L72`),
  *   which highlight on arrival. A program nothing cites stays unnumbered,
@@ -86,23 +87,24 @@ export function codeFrame() {
       .frame .header .role a { color: var(--color-link, inherit); text-decoration: underline dotted; text-underline-offset: 0.2em; }
       .frame .header .role a:hover { text-decoration-style: solid; }
       /*
-       * The source's line numbers hang in a rail before the code (record 0055). Out, a layout that leaves room left of its frames
-       * sets --code-hang-out: 1 and the numbers sit in that margin; in, the rail takes the code's start padding, which widens by
-       * the rail only then, and has the code's ground so code scrolled sideways does not show under the numbers.
-       * The rail is positioned where it would sit in flow, so it meets the top of the code whatever the header's height.
+       * The source's line numbers hang in a rail outside the frame at a negative margin, and never in the code's padding
+       * (record 0058). A layout states the margin it leaves left of its frames in --code-hang-room (default 1rem); a frame
+       * whose rail needs more moves in by the difference, so the numbers stay on the page. The rail is the width of the numbers
+       * and a gap of 1.25 characters; the move counts them as 0.6em characters of the code's font, which the frame's own
+       * font is not, plus a quarter rem. The rail is positioned where it would sit in flow, so it meets the top of the code
+       * whatever the header's height.
        */
-      .frame { --rail-gap: 1.25ch; }
-      .frame > .rail { position: absolute; z-index: 1; box-sizing: border-box; overflow: hidden; width: calc(var(--ln-width, 2ch) + (1 - var(--code-hang-out, 0)) * (var(--ec-codePadInl) + var(--rail-gap))); padding-inline: calc((1 - var(--code-hang-out, 0)) * var(--ec-codePadInl)) calc((1 - var(--code-hang-out, 0)) * var(--rail-gap)); inset-inline-start: calc((1 - var(--code-hang-out, 0)) * var(--ec-brdWd) - var(--code-hang-out, 0) * (var(--ln-width, 2ch) + var(--rail-gap))); border-end-start-radius: var(--ec-brdRad); background-color: color-mix(in srgb, var(--ec-codeBg) calc(100% * (1 - var(--code-hang-out, 0))), transparent); color: var(--color-foreground-muted, var(--color-muted)); font-family: var(--ec-codeFontFml); font-size: var(--ec-codeFontSize); line-height: var(--ec-codeLineHt); font-variant-numeric: tabular-nums; user-select: none; -webkit-user-select: none; pointer-events: none; }
+      .frame > .rail { position: absolute; z-index: 1; box-sizing: border-box; overflow: hidden; width: var(--ln-width, 2ch); inset-inline-start: calc(-1 * (var(--ln-width, 2ch) + 1.25ch)); color: var(--color-foreground-muted, var(--color-muted)); font-family: var(--ec-codeFontFml); font-size: var(--ec-codeFontSize); line-height: var(--ec-codeLineHt); font-variant-numeric: tabular-nums; user-select: none; -webkit-user-select: none; pointer-events: none; }
+      .frame:has(> .rail) { margin-inline-start: max(0px, calc((var(--ln-digits, 2) + 1.25) * 0.6 * var(--ec-codeFontSize) + 0.25rem - var(--code-hang-room, 1rem))); }
       .frame:not(.has-title) > .rail { margin-block-start: var(--ec-brdWd); }
       .frame > .rail .rail-in { padding-block: var(--ec-codePadBlk); }
       .frame > .rail .ln { display: block; height: calc(var(--ec-codeLineHt) * var(--ec-codeFontSize)); text-align: end; }
-      .frame > .rail ~ pre .ec-line .code { --ecGtrBrdWd: 0px; padding-inline-start: calc(var(--ecIndent, 0ch) + var(--ec-codePadInl) + (1 - var(--code-hang-out, 0)) * (var(--ln-width, 2ch) + var(--rail-gap))); }
       /* A cap on a long frame, where a script can lift it. Without one the frame shows every line. */
       @media (scripting: enabled) {
         .frame[data-cap] { scroll-margin-top: 4rem; }
         .frame[data-cap] pre { max-height: calc(var(--cap-lines) * var(--ec-codeLineHt) * var(--ec-codeFontSize) + 2 * var(--ec-codePadBlk)); overflow-y: auto; scrollbar-gutter: stable; border-end-start-radius: 0; border-end-end-radius: 0; }
         .frame[data-cap][data-expanded] pre { max-height: none; overflow-y: visible; }
-        .frame[data-cap] > .rail { max-height: calc(var(--cap-lines) * var(--ec-codeLineHt) * var(--ec-codeFontSize) + 2 * var(--ec-codePadBlk)); border-end-start-radius: 0; }
+        .frame[data-cap] > .rail { max-height: calc(var(--cap-lines) * var(--ec-codeLineHt) * var(--ec-codeFontSize) + 2 * var(--ec-codePadBlk)); }
         .frame[data-cap][data-expanded] > .rail { max-height: none; }
         .cap { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.375rem 0.75rem 0.375rem 1rem; border: var(--ec-brdWd) solid var(--ec-brdCol); border-top: 0; border-end-start-radius: calc(var(--ec-brdRad) + var(--ec-brdWd)); border-end-end-radius: calc(var(--ec-brdRad) + var(--ec-brdWd)); background: var(--color-surface, var(--color-background-secondary)); font-size: 0.8125rem; line-height: 1.5; color: var(--color-foreground-muted, var(--color-muted)); }
         .cap-count[hidden] + button { margin-inline-start: auto; }
@@ -117,7 +119,7 @@ export function codeFrame() {
         .frame[data-cap] pre { max-height: none !important; overflow: visible !important; }
         .cap { display: none !important; }
         .frame > .rail { display: none; }
-        .frame > .rail ~ pre .ec-line .code { padding-inline-start: calc(var(--ecIndent, 0ch) + var(--ec-codePadInl)); }
+        .frame:has(> .rail) { margin-inline-start: 0; }
         pre .ec-line .code { white-space: pre-wrap; overflow-wrap: anywhere; }
       }
     `,
@@ -239,7 +241,7 @@ export function codeFrame() {
         const rows = rowsOf(codeBlock)
         if (rows.length) {
           const digits = String(Math.max(...rows.filter((row) => row !== undefined))).length
-          figure.properties.style = [figure.properties.style, `--ln-width: ${digits}ch`].filter(Boolean).join(';')
+          figure.properties.style = [figure.properties.style, `--ln-width: ${digits}ch`, `--ln-digits: ${digits}`].filter(Boolean).join(';')
           const rail = h('div.rail', { 'aria-hidden': 'true', 'data-pagefind-ignore': '' }, [
             h('div.rail-in', rows.map((row) => h('span.ln', row === undefined ? [] : [String(row)]))),
           ])

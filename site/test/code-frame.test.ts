@@ -146,7 +146,7 @@ describe('Expressive Code frames', () => {
     })
   })
 
-  describe('source line numbers (record 0055)', () => {
+  describe('source line numbers (records 0055, 0058)', () => {
     const numbers = (ast: unknown) => selectAll('.rail .ln', ast as never).map((ln) => toHtml(ln.children))
 
     it('numbers an excerpt in a rail beside the code, never in a column inside it, and leaves the numbers out of Copy', async () => {
@@ -180,18 +180,30 @@ describe('Expressive Code frames', () => {
       expect(toHtml(select('.role', ast)!)).toContain('lines 59–78')
     })
 
-    it('hangs the rail inside the start padding, and outside the frame where a layout sets --code-hang-out: 1', () => {
+    it('hangs the rail outside the frame at a negative margin, and never in the code\'s padding (record 0058)', () => {
+      expect(baseStyles, 'the fallback inside the padding is gone').not.toMatch(/--code-hang-out/)
       const rail = /\.frame > \.rail\s*\{([^}]*)\}/.exec(baseStyles)
       expect(rail, 'a rule for the rail').not.toBeNull()
-      expect(rail![1], 'the rail moves out of the frame by the layout\'s say').toMatch(/inset-inline-start:[^;]*var\(--code-hang-out, 0\)/)
-      expect(rail![1], 'inside, the rail has the code\'s ground, so code scrolled sideways does not show under the numbers').toMatch(/background-color:[^;]*var\(--ec-codeBg\)[^;]*var\(--code-hang-out, 0\)/)
-      const code = /\.rail ~ pre \.ec-line \.code\s*\{([^}]*)\}/.exec(baseStyles)
-      expect(code, 'the code\'s start padding widens by the rail only when the rail is inside').not.toBeNull()
-      expect(code![1]).toMatch(/padding-inline-start:[^;]*\(1 - var\(--code-hang-out, 0\)\)/)
+      expect(rail![1]).toMatch(/inset-inline-start:\s*calc\(-1 \* /)
+      expect(rail![1], 'nothing sits under the numbers, so the rail needs no ground').not.toMatch(/background/)
+      expect(baseStyles, 'the code keeps the frame\'s standard start padding').not.toMatch(/\.rail ~ pre \.ec-line \.code\s*\{[^}]*padding-inline-start/)
+    })
+
+    it('moves the frame in by whatever the layout\'s room lacks', () => {
+      const frame = /\.frame:has\(> \.rail\)\s*\{([^}]*)\}/.exec(baseStyles)
+      expect(frame, 'a rule for a frame that has a rail').not.toBeNull()
+      expect(frame![1]).toMatch(/margin-inline-start:\s*max\(0px, calc\([^;]*- var\(--code-hang-room, 1rem\)\)\)/)
+      expect(frame![1], 'the rail\'s width is a count of code characters, read in the code font').toMatch(/var\(--ln-digits, 2\)[^;]*var\(--ec-codeFontSize\)/)
+    })
+
+    it('gives the frame the width of the numbers both as ch for the rail and as a count for the margin', async () => {
+      const ast = await rendered(go(3, 98), 'title="main.go" frame="code" role="excerpt" lines="98-100"')
+      expect(select('figure.frame', ast)!.properties.style).toContain('--ln-digits: 3')
     })
 
     it('leaves numbers out of print, where the rows wrap and the rail cannot follow them', () => {
       expect(/@media print\s*\{[^@]*\.rail\s*\{\s*display:\s*none/.exec(baseStyles)).not.toBeNull()
+      expect(/@media print\s*\{[^@]*\.frame:has\(> \.rail\)\s*\{\s*margin-inline-start:\s*0/.exec(baseStyles), 'and the frame stays where it was').not.toBeNull()
     })
   })
 
@@ -409,6 +421,16 @@ describe('Expressive Code frames', () => {
       button.click()
       expect(document.querySelector('.copy button')!.getAttribute('data-code')).toBe(code.replace(/\n/g, '\x7f'))
     })
+  })
+})
+
+describe('the room a layout leaves for hanging numbers (record 0058)', () => {
+  const read = (path: string) => readFileSync(new URL(`../src/${path}`, import.meta.url), 'utf8')
+
+  it('leaves no layout asking for the inside fallback record 0058 removed', () => {
+    for (const file of ['styles/global.css', 'styles/core-player.css', 'plugins/ec-code-frame.mjs', 'layouts/DocsLayout.astro']) {
+      expect(read(file), file).not.toMatch(/--code-hang-out/)
+    }
   })
 })
 
