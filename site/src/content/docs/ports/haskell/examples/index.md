@@ -16,6 +16,8 @@ README's private demonstration server and a `tmux` binary. `mutate-graph` and
 `create-session` change that server. `typed-values` and `offline-graph` need no
 server.
 
+Start a fresh demonstration server before `mutate-graph` or `create-session`.
+
 | Program | What it demonstrates | Guide |
 | --- | --- | --- |
 | [typed-values](https://github.com/libtmux/libtmux-haskell/blob/282b89a86a6ef8bc511f040acdb0e1b557db1226/examples/typed-values/Main.hs) | Parse a window ID and a supported tmux release, construct a checked dimension and print them. Opens no socket and starts no process. | [Typed values](../guides/typed-values/) |

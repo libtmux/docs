@@ -792,7 +792,7 @@ const CORE_PORTS: readonly Port[] = [
       prerelease: HASKELL_GIT_INSTALL,
       git: HASKELL_GIT_INSTALL,
     },
-    installNote: 'The source provides session creation, scoped Server handles, snapshots, typed queries, checked renames and pane titles, and validated offline fixtures. Events and workspace tooling remain in development; MCP is excluded.',
+    installNote: 'Create sessions, capture snapshots, run typed queries, rename sessions and windows, and set pane titles. Start and stop the daemon yourself. Additional server, window and pane commands, events and workspace tooling are planned; MCP is excluded.',
   },
   {
     slug: 'lisp',
