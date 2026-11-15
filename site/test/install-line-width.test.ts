@@ -21,9 +21,6 @@ const SHELL = new Set(['console', 'sh', 'bash', 'shell'])
 /** The lines of a shell command wider than the limit. */
 const tooWide = (code: string) => code.split('\n').filter((line) => line.length > MAX_WIDTH)
 
-/** What the copy button copies from a console block: the text without its `$ ` prompts (see mcp-install.js `copyPanelCode`). */
-const copied = (shown: string) => shown.replace(/^\$ /gm, '')
-
 /** Whether a shell accepts `text` as a complete command, without running it. */
 const parses = (text: string) => spawnSync('bash', ['-n'], { input: text, encoding: 'utf8' }).status === 0
 
@@ -52,7 +49,7 @@ function commands(): Command[] {
     for (const panel of buildPanels(spec, 'a'.repeat(40))) {
       const where = `${spec.port} mcp ${panel.client.id}/${panel.method.id}/${panel.scope.id}`
       const fill = withDefaultCooldown
-      if (panel.language === 'console') found.push({ where, text: copied(fill(panel.body)) })
+      if (panel.language === 'console') found.push({ where, text: fill(panel.body) })
       if (panel.pipPrereq) found.push({ where: `${where} prerequisite`, text: fill(panel.pipPrereq) })
     }
   }

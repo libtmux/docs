@@ -136,8 +136,8 @@ export interface Panel {
   scope: Scope
   cooldown: Cooldown
   language: 'console' | 'json' | 'toml'
-  /** Command/config text, "$ "-prefixed for console panels. May contain
-   *  COOLDOWN_DURATION_SENTINEL or COOLDOWN_DATE_SENTINEL — see
+  /** Command/config text. A console command carries no prompt: the installer draws it.
+   *  May contain COOLDOWN_DURATION_SENTINEL or COOLDOWN_DATE_SENTINEL — see
    *  bodySegments(). */
   body: string
   /** The build or install step this cell needs first, where it needs one. */
@@ -818,14 +818,13 @@ export function buildPanels(spec: ServerSpec, sourceRevision?: string): Panel[] 
         spec.cooldowns.forEach((cooldown, cooldownIndex) => {
           const server = spec.resolve(method, cooldown, sourceRevision)
           const raw = bodyFor(client, scope, server)
-          const body = raw.language === 'console' ? `$ ${raw.body}` : raw.body
           panels.push({
             client,
             method,
             scope,
             cooldown,
             language: raw.language,
-            body,
+            body: raw.body,
             pipPrereq: server.prereq ?? null,
             note: raw.note,
             isDefault: clientIndex === 0 && methodIndex === 0 && scopeIndex === 0 && cooldownIndex === 0,

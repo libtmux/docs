@@ -89,7 +89,8 @@ const slot = (attr: string, value: string) =>
 const bodyHtml = new Map(
   await Promise.all(
     panels.map(async (panel) => {
-      const text = panel.body
+      // The data carries no prompt; a console command is shown with one, and Copy takes it off.
+      const text = (panel.language === 'console' ? `$ ${panel.body}` : panel.body)
         .replaceAll(COOLDOWN_DURATION_SENTINEL, DURATION_VALUE)
         .replaceAll(COOLDOWN_DATE_SENTINEL, DATE_VALUE)
       let html = await highlightWithCooldownSlots(text, panel.language, DEFAULT_COOLDOWN_DAYS)
