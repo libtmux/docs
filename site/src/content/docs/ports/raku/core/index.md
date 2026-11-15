@@ -9,7 +9,7 @@ cards:
     body: Install LibTmux, create and split panes, and find them through typed snapshots.
   - label: Examples
     href: ../examples/programs/
-    body: Run six complete programs against private tmux servers and compare their output.
+    body: Run eight complete programs against private tmux servers and compare their output.
   - label: tmux compatibility
     href: ../topics/compatibility/
     body: Check the supported tmux releases and how the library handles newer ones.
