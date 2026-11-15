@@ -45,6 +45,7 @@ function forcedRowViolations(rows: string[], a11y: string): string[] {
     if (important(own.declarations.background) !== 'Highlight') found.push(`${row}: the row does not take Highlight`)
     if (important(own.declarations.color) !== 'HighlightText') found.push(`${row}: its text does not take HighlightText`)
     if (!own.declarations.background?.endsWith('!important')) found.push(`${row}: a scoped component rule outranks it without !important`)
+    if (own.declarations['forced-color-adjust'] !== 'none') found.push(`${row}: Chromium puts a Canvas backplate under its text unless it opts out of the forced palette`)
     const inside = forced.find((rule) => rule.selectors.includes(`${row} *`))
     if (important(inside?.declarations.color) !== 'HighlightText') found.push(`${row}: what it holds keeps a colour that Highlight hides`)
   }
@@ -83,6 +84,7 @@ describe('forced colours', () => {
     expect(forcedRowViolations(rows, without).length).toBeGreaterThan(0)
     expect(forcedRowViolations([...rows, '.a-new-row[aria-current]'], a11y)).toEqual(['.a-new-row[aria-current]: no forced-colours rule'])
     expect(forcedRowViolations(rows, a11y.replace(/background: Highlight !important/g, 'background: Canvas !important')).length).toBeGreaterThan(0)
+    expect(forcedRowViolations(rows, a11y.replace(/forced-color-adjust: none;\n/g, '')).length).toBeGreaterThan(0)
   })
 
   it('draws the kind mark of a current row as an inverse chip with a border, so it stays visible on the highlight', () => {
@@ -93,6 +95,9 @@ describe('forced colours', () => {
       expect(important(mark!.declarations.background), row).toBe('HighlightText')
       expect(important(mark!.declarations.color), row).toBe('Highlight')
       expect(important(mark!.declarations['border-color']), row).toBe('HighlightText')
+      // The glyph is a child of the mark: the row's "what it holds" rule would draw it in the mark's own fill.
+      const glyph = forced.find((rule) => rule.selectors.includes(`${row} > .api-nav__kind *`))
+      expect(important(glyph?.declarations.color), `${row} glyph`).toBe('Highlight')
     }
   })
 
@@ -103,6 +108,7 @@ describe('forced colours', () => {
     const pressed = all.find((rule) => rule.selectors.includes("[aria-pressed='true']"))
     expect(important(pressed?.declarations.background)).toBe('Highlight')
     expect(important(pressed?.declarations.color)).toBe('HighlightText')
+    expect(pressed?.declarations['forced-color-adjust']).toBe('none')
   })
 
   it('draws every focus ring in Highlight', () => {
@@ -120,11 +126,14 @@ function printViolations(a11y: string, chrome: string[]): string[] {
   for (const selector of chrome) if (!hidden.has(selector)) found.push(`${selector} is not hidden`)
   const code = print.find((rule) => rule.selectors.includes('.expressive-code pre'))
   if (important(code?.declarations['max-height']) !== 'none' || important(code?.declarations.overflow) !== 'visible') found.push('a code block keeps its height cap')
+  if (important(code?.declarations.height) !== 'auto') found.push('a player keeps the fixed height of its program')
   if (important(code?.declarations['white-space']) !== 'pre-wrap') found.push('a long code line scrolls instead of wrapping')
   const details = print.find((rule) => rule.selectors.includes('details:not([open])::details-content'))
   if (important(details?.declarations['content-visibility']) !== 'visible') found.push('a collapsed section stays collapsed')
   const external = print.find((rule) => rule.selectors.some((selector) => /a\[href\^='http'\]/.test(selector) && selector.endsWith('::after')))
   if (!/attr\(href\)/.test(external?.declarations.content ?? '')) found.push('an external link prints no address')
+  // The shell's own glyph is a masked box with a width: it has to give way to text.
+  else if (important(external.declarations.mask) !== 'none' || important(external.declarations['inline-size']) !== 'auto') found.push('an external link keeps its glyph over the address')
   return found
 }
 
@@ -162,6 +171,7 @@ describe('print', () => {
   it('fails for a page that keeps its chrome, caps its code, collapses a section or hides an address', () => {
     expect(printViolations(a11y.replace(/\.site-header,\s*\n/, ''), chrome)).toEqual(['.site-header is not hidden'])
     expect(printViolations(a11y.replace('max-height: none !important', 'max-height: 20rem'), chrome)).toEqual(['a code block keeps its height cap'])
+    expect(printViolations(a11y.replace('height: auto !important;\n    max-height', 'max-height'), chrome)).toEqual(['a player keeps the fixed height of its program'])
     expect(printViolations(a11y.replace('content-visibility: visible', 'content-visibility: hidden'), chrome)).toEqual(['a collapsed section stays collapsed'])
     expect(printViolations(a11y.replace("attr(href)", "''"), chrome)).toEqual(['an external link prints no address'])
   })
