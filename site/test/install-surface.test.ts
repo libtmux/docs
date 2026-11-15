@@ -1,6 +1,7 @@
 import { Window } from 'happy-dom'
 import { afterEach, describe, expect, it } from 'vitest'
 import { buildPanels, markPlaceholders, SERVERS } from '../src/lib/install-matrix'
+import { addedLines, channelForms, markAddedLines, promptFor, targetParts, withPrompt } from '../src/lib/install-surface'
 import { formTarget, PORTS, type InstallCommand } from '../src/lib/ports'
 import { installsFor } from '../src/lib/registry'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
@@ -102,5 +103,70 @@ describe('placeholder paths', () => {
   it('finds the placeholder in the MCP servers that build from source', () => {
     const bodies = Object.values(SERVERS).flatMap((spec) => buildPanels(spec, 'a'.repeat(40)).map((panel) => panel.body))
     expect(bodies.filter((body) => body.includes('/absolute/path/to/')).length).toBeGreaterThan(20)
+  })
+})
+
+describe('what the surface draws around the code', () => {
+  it('draws the prompt of the place the code runs', () => {
+    expect(promptFor('Terminal', 'console')).toBe('$')
+    expect(promptFor('PowerShell', 'powershell')).toBe('PS>')
+    expect(promptFor('Package Manager Console', 'powershell')).toBe('PM>')
+    expect(promptFor('pom.xml', 'xml')).toBe('')
+    expect(promptFor('Julia REPL', 'julia')).toBe('')
+  })
+
+  it('puts the prompt before the first line only', () => {
+    const html = '<span class="line"><span>Install-Module</span></span>\n<span class="line"><span>-Name X</span></span>'
+    const shown = withPrompt(html, 'PS>')
+    expect(shown.startsWith('<span class="line"><span class="lm-shell-prompt"')).toBe(true)
+    expect(shown.match(/class="lm-shell-prompt"/g)).toHaveLength(1)
+    expect(shown).toContain('PS&gt; </span><span>Install-Module</span>')
+  })
+
+  it('cuts a long file target at its folder and never at its file name', () => {
+    expect(targetParts('~/.gemini/config/mcp_config.json')).toEqual({ dir: '~/.gemini/config/', base: 'mcp_config.json' })
+    expect(targetParts('pom.xml')).toEqual({ dir: '', base: 'pom.xml' })
+    expect(targetParts('Package Manager Console')).toEqual({ dir: '', base: 'Package Manager Console' })
+  })
+
+  it('marks the lines a cooldown adds to the plain command, as a diff marks an insertion', () => {
+    const plain = 'npm install libtmux'
+    const cooldown = 'npm install \\\n    --min-release-age=<COOLDOWN_DAYS> \\\n    --min-release-age-exclude=libtmux \\\n    libtmux'
+    expect(addedLines(plain, cooldown)).toEqual([1, 2])
+    expect(addedLines('npx -y @libtmux/workspace-cli --help', 'npx -y --min-release-age=0 @libtmux/workspace-cli --help')).toEqual([0])
+    expect(addedLines(plain, plain)).toEqual([])
+  })
+
+  it('adds the mark to those lines of the highlighted code', () => {
+    const html = '<span class="line">a</span>\n<span class="line">b</span>\n<span class="line">c</span>'
+    expect(markAddedLines(html, [1])).toBe('<span class="line">a</span>\n<span class="line is-added">b</span>\n<span class="line">c</span>')
+    expect(markAddedLines(html, [])).toBe(html)
+  })
+})
+
+describe('release channels', () => {
+  const port = (slug: string) => PORTS.find((entry) => entry.slug === slug)!
+  const entry = (status: 'release' | 'prerelease' | 'unpublished', fields: { version?: string | null; tag?: string | null } = {}) =>
+    ({ status, version: fields.version ?? null, release: status === 'release' ? fields.version ?? null : null, tag: fields.tag ?? null })
+
+  it('offers From Git beside a final release, with its tag filled, and no pre-release to point at', () => {
+    const channels = channelForms(port('py'), entry('release', { version: '0.62.0', tag: 'v0.62.0' }))
+    expect(channels.map((channel) => channel.id)).toEqual(['git'])
+    expect(channels[0]!.label).toBe('From Git')
+    expect(channels[0]!.code).toContain('v0.62.0')
+    expect(channels[0]!.code).not.toContain('{tag}')
+  })
+
+  it('offers the pre-release when the newest version on the registry is one, with its version filled', () => {
+    const channels = channelForms(port('py'), entry('prerelease', { version: '0.63.0a1', tag: 'v0.63.0a1' }))
+    expect(channels.map((channel) => channel.id)).toEqual(['prerelease', 'git'])
+    expect(channels[0]!.label).toBe('Pre-release')
+    expect(channels[0]!.code).toContain('0.63.0a1')
+    expect(channels[0]!.target).toBe('Terminal')
+  })
+
+  it('names where a source install goes, and offers nothing it cannot fill', () => {
+    expect(channelForms(port('cxx'), entry('unpublished', { tag: 'v0.1.0' })).find((channel) => channel.id === 'git')!.target).toBe('CMakeLists.txt')
+    expect(channelForms(port('py'), entry('unpublished'))).toEqual([])
   })
 })
