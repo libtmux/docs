@@ -37,14 +37,14 @@ const families = portFamilies(entries.map((entry) => entry.port))
         width="24" height="24" alt="" loading="eager" decoding="sync" />)}
     </span>
     <span class="page-port-name">{homeLanguageIcons ? <>
-      <span data-home-unselected-name>Language</span>
+      <span data-home-unselected-name>Port</span>
       {entries.map((entry) => <span data-home-port-name={entry.port}>{entry.name}</span>)}
     </> : name}</span><span class="page-port-short-name" aria-hidden="true">{homeLanguageIcons ? <>
       <span data-home-unselected-name>Port</span>
       {entries.map((entry) => <span data-home-port-name={entry.port}>{entry.name}</span>)}
     </> : shortName}</span>
     {reserveLabelWidth && <span class="page-port-label-sizer" aria-hidden="true" style="visibility: hidden; height: 0; overflow: hidden;">
-      <span class="page-port-sizer-default">{homeLanguageIcons ? 'Language' : name}</span>
+      <span class="page-port-sizer-default">{homeLanguageIcons ? 'Port' : name}</span>
       {entries.map((entry) => <span>{entry.name}</span>)}
     </span>}
     <svg class="doc-picker-caret" viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
