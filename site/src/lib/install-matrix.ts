@@ -142,8 +142,10 @@ export interface Panel {
   body: string
   /** The build or install step this cell needs first, where it needs one. */
   pipPrereq: string | null
-  /** A caveat: a cooldown a method cannot honour, a path only you know. */
+  /** A caveat that holds whatever the cooldown: a path only you know. */
   note: string | null
+  /** Why a cooldown mode changes nothing for this method, where it changes nothing; the installer says it beside the command. */
+  cooldownReason: string | null
   isDefault: boolean
 }
 
@@ -254,11 +256,7 @@ const PY_METHODS: readonly Method[] = [
 /** One-line caveat for cells whose snippet does not actually enforce cooldown. */
 function pyCooldownNote(method: Method, cooldown: Cooldown): string | undefined {
   if ((method.id === 'pipx' || method.id === 'pip') && (cooldown.id === 'days' || cooldown.id === 'bypass')) {
-    return (
-      'pip has no per-package cooldown override, so this snippet runs without cooldown enforcement. ' +
-      'Switch to the uvx tab — it applies the cooldown to transitive deps via `--exclude-newer` while ' +
-      'exempting libtmux-mcp itself via `--exclude-newer-package`.'
-    )
+    return `${method.id} has no per-package cooldown override, so this snippet runs without cooldown enforcement.`
   }
   return undefined
 }
@@ -392,7 +390,7 @@ export const SERVERS: Readonly<Record<string, ServerSpec>> = {
           // npx resolves the package before it reads the exclusion, so a
           // cooldown would hold back @libtmux/mcp itself.
           note: cooldown.id === 'days'
-            ? 'npx ignores --min-release-age-exclude, so a cooldown here would also hold back the release it runs; this runs without one. The Global install tab applies a cooldown to the server\'s dependencies.'
+            ? 'npx ignores --min-release-age-exclude, so a cooldown here would also hold back the release it runs; this runs without one.'
             : undefined,
         }
       }
@@ -825,15 +823,22 @@ function bodyFor(client: Client, scope: Scope, server: ServerCommand): RawBody {
   return { body: wrapShell(cliBody(client, scope, server)), language: 'console', note }
 }
 
+/** What a cooldown mode changes in a command: the same server, spelled with the same arguments, prerequisite and environment. */
+const sameCommand = (a: ServerCommand, b: ServerCommand) =>
+  JSON.stringify([a.command, a.args, a.configArgs, a.env, a.prereq]) === JSON.stringify([b.command, b.args, b.configArgs, b.env, b.prereq])
+
 /** Pre-compute every legal (client, method, scope, cooldown) panel for one port. */
 export function buildPanels(spec: ServerSpec, sourceRevision?: string): Panel[] {
   const panels: Panel[] = []
   CLIENTS.forEach((client, clientIndex) => {
     spec.methods.forEach((method, methodIndex) => {
       client.scopes.forEach((scope, scopeIndex) => {
+        const plain = spec.resolve(method, COOLDOWNS[0]!, sourceRevision)
         spec.cooldowns.forEach((cooldown, cooldownIndex) => {
           const server = spec.resolve(method, cooldown, sourceRevision)
           const raw = bodyFor(client, scope, server)
+          // A mode that leaves the command as it was says why, and what it says is not a caveat on the command.
+          const refused = cooldown.id !== 'off' && sameCommand(server, plain) && server.note !== plain.note
           panels.push({
             client,
             method,
@@ -842,7 +847,8 @@ export function buildPanels(spec: ServerSpec, sourceRevision?: string): Panel[] 
             language: raw.language,
             body: raw.body,
             pipPrereq: server.prereq ?? null,
-            note: raw.note,
+            note: refused ? plain.note ?? null : raw.note,
+            cooldownReason: refused ? server.note ?? null : null,
             isDefault: clientIndex === 0 && methodIndex === 0 && scopeIndex === 0 && cooldownIndex === 0,
           })
         })

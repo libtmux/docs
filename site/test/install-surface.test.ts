@@ -84,6 +84,30 @@ describe('where each install goes', () => {
   })
 })
 
+describe('MCP cooldown refusals', () => {
+  const panel = (port: string, method: string, cooldown: string, client = 'claude-code') =>
+    buildPanels(SERVERS[port]!, 'a'.repeat(40)).find((entry) => entry.client.id === client && entry.method.id === method && entry.cooldown.id === cooldown)!
+
+  it('gives the reason where a method cannot take the cooldown, apart from the panel\'s own note', () => {
+    expect(panel('py', 'pipx', 'days').cooldownReason).toBe('pipx has no per-package cooldown override, so this snippet runs without cooldown enforcement.')
+    expect(panel('py', 'pip', 'bypass').cooldownReason).toMatch(/^pip has no per-package cooldown override/)
+    expect(panel('ts', 'npx', 'days').cooldownReason).toMatch(/^npx ignores --min-release-age-exclude/)
+    expect(panel('py', 'pipx', 'days').note).toBeNull()
+  })
+
+  it('gives none where the cooldown changes the command, or where it is off', () => {
+    expect(panel('py', 'uvx', 'days').cooldownReason).toBeNull()
+    expect(panel('py', 'uvx', 'bypass').cooldownReason).toBeNull()
+    expect(panel('ts', 'global', 'days').cooldownReason).toBeNull()
+    expect(panel('ts', 'npx', 'bypass').cooldownReason).toBeNull()
+    expect(panel('py', 'pipx', 'off').cooldownReason).toBeNull()
+  })
+
+  it('keeps a caveat that holds whatever the cooldown', () => {
+    expect(panel('ts', 'global', 'days').note).toMatch(/^The package installs a `libtmux-mcp` binary/)
+  })
+})
+
 describe('placeholder paths', () => {
   const source = '<span class="line"><span style="--shiki-light:#032f62">"/absolute/path/to/project/bin/libtmux-mcp"</span><span> --socket /absolute/path/to/tmux.sock</span></span>'
 
