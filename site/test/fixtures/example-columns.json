@@ -55,7 +55,6 @@
   "ports/kotlin/concepts/transports.md": 4,
   "ports/kotlin/concepts/workspaces.md": 3,
   "ports/kotlin/guides/attaching-to-tmux.md": 1,
-  "ports/lua/examples/capture-pane-output.md": 3,
   "ports/lua/guides/attaching-to-tmux.md": 3,
   "ports/py/examples/capture-pane-output.md": 1,
   "ports/py/guides/attaching-to-tmux.md": 1,

@@ -518,59 +518,57 @@
     {
       "port": "lua",
       "language": "lua",
-      "sourceRevision": "5baa3f9b830ebdbc76fb50b5b3d7a5ad3f76d443",
+      "sourceRevision": "d68f829fe097e38dcbbf7147e276666fe615f0cf",
       "sourceRepository": "libtmux/libtmux-lua",
       "files": [
         {
           "name": "capture.lua",
-          "sha256": "a557a96fa3513a318cf6c17ac286d5629b1ffc05c53a466658a22a41891da89f"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "33f7e048ee0682965314f47ff29ae8f57e5c67ab5466f49338b0aae7491c2b5a"
+          "sha256": "bb8941240ea2cc1348be4079b279d058c6e42857f51143e500e0b39cd90fb00e"
         }
       ],
       "toolchain": [
         "Lua 5.5.1",
-        "luv 1.52.1-0"
+        "luv 1.52.1-0",
+        "libtmux 0.1.1-1"
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "page": "ports/lua/examples/capture-pane-output",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-lua libtmux-source &&\n  git -C libtmux-source checkout 5baa3f9b830ebdbc76fb50b5b3d7a5ad3f76d443 &&\n  luarocks --tree ./rocks install luv 1.52.1-0 &&\n  (cd libtmux-source &&\n    luarocks --tree ../rocks make rockspecs/libtmux-scm-1.rockspec) &&\n  eval \"$(luarocks --tree ./rocks path)\" &&\n  sh run.sh"
+        "luarocks --tree .rocks install luv 1.52.1-0 &&\n  luarocks --tree .rocks install libtmux 0.1.1-1",
+        "eval \"$(luarocks --tree .rocks path)\" &&\n  lua capture.lua"
       ],
       "verification": {
         "platform": "Linux",
         "checks": [
           {
-            "name": "positive-3.2a",
-            "tmux": "3.2a",
+            "name": "positive-3.3a",
+            "tmux": "3.3a",
             "exit": 0,
-            "seconds": 0.316,
+            "seconds": 0.083,
             "remainingSocketDirectories": 0
           },
           {
             "name": "positive-3.7c",
             "tmux": "3.7c",
             "exit": 0,
-            "seconds": 0.243,
+            "seconds": 0.083,
             "remainingSocketDirectories": 0
           },
           {
             "name": "negative-import",
             "tmux": "3.7c",
             "exit": 1,
-            "seconds": 0.23,
+            "seconds": 0.044,
             "remainingSocketDirectories": 0
           },
           {
             "name": "negative-runtime",
             "tmux": "3.7c",
             "exit": 1,
-            "seconds": 0.272,
+            "seconds": 0.079,
             "remainingSocketDirectories": 0
           }
         ]

@@ -407,15 +407,16 @@
     {
       "port": "lua",
       "language": "lua",
-      "sourceRevision": "5baa3f9b830ebdbc76fb50b5b3d7a5ad3f76d443",
+      "sourceRevision": "d68f829fe097e38dcbbf7147e276666fe615f0cf",
       "sourceRepository": "libtmux/libtmux-lua",
       "toolchain": [
         "Lua 5.5.1",
-        "luv 1.52.1-0"
+        "luv 1.52.1-0",
+        "libtmux 0.1.1-1"
       ],
       "page": "ports/lua/guides/attaching-to-tmux",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-lua libtmux-source &&\n  git -C libtmux-source checkout 5baa3f9b830ebdbc76fb50b5b3d7a5ad3f76d443 &&\n  luarocks --tree ./rocks install luv 1.52.1-0 &&\n  (cd libtmux-source &&\n    luarocks --tree ../rocks make rockspecs/libtmux-scm-1.rockspec) &&\n  eval \"$(luarocks --tree ./rocks path)\" &&\n  sh run.sh lua connect.lua"
+        "luarocks --tree .rocks install luv 1.52.1-0 &&\n  luarocks --tree .rocks install libtmux 0.1.1-1 &&\n  eval \"$(luarocks --tree .rocks path)\" &&\n  sh run.sh lua connect.lua"
       ],
       "expectedOutput": "work",
       "files": [
@@ -429,7 +430,7 @@
         }
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ]
     },
