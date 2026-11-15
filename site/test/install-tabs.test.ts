@@ -92,7 +92,7 @@ describe('the row in a page', () => {
   function fixture(options: { clientWidth?: number; noun?: string; scrollLeft?: number } = {}) {
     const window = new Window()
     windows.push(window)
-    const { document } = window
+    const document = window.document as unknown as Document
     const noun = options.noun ?? 'clients'
     document.body.innerHTML = `<div data-install-row data-fits>
       <button type="button" data-install-more="-1" data-noun="${noun}" disabled><span data-n></span></button>
@@ -170,7 +170,7 @@ describe('the row in a page', () => {
 
   it('pages on a press, smoothly, or at once for a reader who asks for less motion', () => {
     const { window, document, row, scrolls, update, buttons } = fixture()
-    watchTabRows(document as unknown as Document)
+    watchTabRows(document)
     update()
     buttons[1]!.click()
     expect(scrolls).toEqual([{ left: 176, behavior: 'smooth' }])
@@ -183,7 +183,7 @@ describe('the row in a page', () => {
 
   it('does nothing for a disabled button', () => {
     const { document, scrolls, update, buttons } = fixture()
-    watchTabRows(document as unknown as Document)
+    watchTabRows(document)
     update()
     buttons[0]!.click()
     expect(scrolls).toEqual([])
