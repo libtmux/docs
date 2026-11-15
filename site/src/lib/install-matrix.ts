@@ -528,7 +528,7 @@ export function serverSpec(port = 'py'): ServerSpec {
  * prompt. The install blocks show about 80 columns before they scroll, so a
  * wider line hides the end of a step the reader has to read before running it.
  */
-export const SHELL_MAX_WIDTH = 78
+export const SHELL_MAX_WIDTH = 80
 
 /** `text` as the page shows it by default: each cooldown slot holds the default day count in its tool's unit. */
 export function withDefaultCooldown(text: string): string {
@@ -537,33 +537,169 @@ export function withDefaultCooldown(text: string): string {
     .replaceAll(COOLDOWN_DATE_SENTINEL, defaultCooldownDate(DEFAULT_COOLDOWN_DAYS))
 }
 
-const SHELL_TOKEN = /(?:[^\s"']+|"[^"]*"|'[^']*')+/g
+/**
+ * A command's words, split at unquoted spaces only, so no break ever falls
+ * inside a quoted word. Null where the text cannot be read that way: a
+ * backslash it already carries, or a quote it leaves open.
+ */
+function shellWords(command: string): string[] | null {
+  const words: string[] = []
+  let current = ''
+  let quote = ''
+  for (const char of command) {
+    if (quote) {
+      current += char
+      if (char === quote) quote = ''
+    } else if (char === "'" || char === '"') {
+      quote = char
+      current += char
+    } else if (char === '\\') {
+      return null
+    } else if (char === ' ') {
+      if (current) words.push(current)
+      current = ''
+    } else current += char
+  }
+  if (quote) return null
+  if (current) words.push(current)
+  return words
+}
+
+/** A quoted program's statements: its text split at each `;` outside strings and brackets. */
+function statements(program: string): string[] {
+  const found: string[] = []
+  let current = ''
+  let quote = ''
+  let depth = 0
+  for (let i = 0; i < program.length; i++) {
+    const char = program[i]!
+    if (quote) {
+      current += char
+      if (char === quote && program[i - 1] !== '\\') quote = ''
+      continue
+    }
+    if (char === '"') quote = char
+    else if ('([{'.includes(char)) depth++
+    else if (')]}'.includes(char)) depth--
+    else if (char === ';' && depth === 0) {
+      if (current.trim()) found.push(current.trim())
+      current = ''
+      continue
+    }
+    current += char
+  }
+  if (current.trim()) found.push(current.trim())
+  return found
+}
+
+/** A statement wider than the line opens its shallowest bracket that holds a list, one item per line. */
+function openList(statement: string, indent: string, width: number): string {
+  if (indent.length + statement.length <= width) return statement
+  interface Open { at: number; depth: number; commas: number[]; end: number }
+  const stack: Open[] = []
+  let best: Open | undefined
+  let quote = ''
+  for (let i = 0; i < statement.length; i++) {
+    const char = statement[i]!
+    if (quote) {
+      if (char === quote && statement[i - 1] !== '\\') quote = ''
+    } else if (char === '"') quote = char
+    else if ('([{'.includes(char)) stack.push({ at: i, depth: stack.length, commas: [], end: -1 })
+    else if (')]}'.includes(char)) {
+      const open = stack.pop()
+      if (open?.commas.length && (!best || open.depth < best.depth)) best = { ...open, end: i }
+    } else if (char === ',' && stack.length) stack.at(-1)!.commas.push(i)
+  }
+  if (!best) return statement
+  const cuts = [best.at + 1, ...best.commas.map((comma) => comma + 1), best.end]
+  const items = cuts.slice(0, -1).map((cut, k) => statement.slice(cut, k === cuts.length - 2 ? cuts[k + 1] : cuts[k + 1]! - 1).trim())
+  return `${statement.slice(0, best.at + 1)}\n${items.map((item) => `${indent}  ${item}`).join(',\n')}\n${indent}${statement.slice(best.end)}`
+}
+
+/** A quoted program after -e or -c: one statement per line. */
+function quotedProgram(word: string, indent: string, width: number): string {
+  if (word[0] !== "'" || word.length + indent.length <= width) return word
+  const lines = statements(word.slice(1, -1))
+  if (lines.length < 2) return word
+  return `'\n${lines.map((line) => indent + openList(line, indent, width)).join('\n')}'`
+}
+
+/**
+ * One command's words as lines: the command's own words; each flag with its
+ * value; consecutive positional arguments together; and after `--` the
+ * program it runs, its words on one line and its own flags one level deeper.
+ */
+function commandLines(words: string[], indent: string, width: number): { text: string; deep: boolean }[] {
+  const lines: { text: string; deep: boolean }[] = []
+  let i = 0
+  let deep = false
+  const head: string[] = []
+  while (i < words.length && !words[i]!.startsWith('-') && !(head.length && /[/@]/.test(words[i]!))) head.push(words[i++]!)
+  if (head.length) lines.push({ text: head.join(' '), deep })
+  const flag = (): string => {
+    const word = words[i++]!
+    const value = words[i]
+    if (!word.includes('=') && value !== undefined && !value.startsWith('-')) {
+      i++
+      return `${word} ${/^-(?:e|c)$|^--eval$/.test(word) ? quotedProgram(value, `${indent}  `, width) : value}`
+    }
+    return word
+  }
+  while (i < words.length) {
+    const word = words[i]!
+    if (word === '--') {
+      i++
+      const program: string[] = []
+      while (i < words.length && !words[i]!.startsWith('-')) program.push(words[i++]!)
+      lines.push({ text: `--${program.length ? ` ${program.join(' ')}` : i < words.length ? ` ${flag()}` : ''}`, deep })
+      deep = true
+    } else if (word.startsWith('-')) lines.push({ text: flag(), deep })
+    else {
+      const positional: string[] = []
+      while (i < words.length && !words[i]!.startsWith('-')) positional.push(words[i++]!)
+      lines.push({ text: positional.join(' '), deep })
+    }
+  }
+  return lines
+}
 
 /**
  * One shell command broken across lines with a trailing backslash, which a
  * shell reads as the same command, so the copied text runs as the one line did.
  *
- * A line that fits, or one that already ends in a backslash, is left alone, so
- * a command written over several lines keeps its own breaks. A flag stays on the line of its value, and quoted words are never split.
- * A cooldown slot is measured at the default day count's width.
+ * A command that fits, or one already written over several lines, is left
+ * alone. Otherwise (WRITING.md, Code blocks) a flag stays on the line of its
+ * value, positional arguments come last and stay together, and a chain breaks
+ * before each `&&` or `||`. Breaks fall only at unquoted spaces. After `--`,
+ * the program it runs takes one line and its flags go one level deeper; a
+ * quoted program after `-e` or `-c` puts one statement on each line. A
+ * cooldown slot is measured at the default day count's width.
  */
 export function wrapShell(command: string, width = SHELL_MAX_WIDTH): string {
-  if (command.includes('\n')) return command.split('\n').map((line) => (line.endsWith('\\') ? line : wrapShell(line, width))).join('\n')
   const measure = (text: string) => withDefaultCooldown(text).length
-  if (measure(command) <= width) return command
-  const lines: string[][] = [[]]
-  for (const token of command.match(SHELL_TOKEN) ?? []) {
-    const line = lines.at(-1)!
-    const indent = lines.length > 1 ? 4 : 0
-    const next = measure([...line, token].join(' ')) + indent + 2
-    if (line.length && next > width) {
-      const last = line.at(-1)!
-      // Keep a flag with its value rather than ending a line on it.
-      if (line.length > 1 && /^-/.test(last) && last !== '--' && !token.startsWith('-')) lines.push([line.pop()!, token])
-      else lines.push([token])
-    } else line.push(token)
+  if (command.includes('\n') || measure(command) <= width) return command
+  const words = shellWords(command)
+  if (!words) return command
+  const segments: string[][] = [[]]
+  for (const word of words) {
+    if (word === '&&' || word === '||') segments.push([word])
+    else segments.at(-1)!.push(word)
   }
-  return lines.map((line) => line.join(' ')).join(' \\\n    ')
+  const lines: string[] = []
+  segments.forEach((segment, index) => {
+    const operator = index ? `${segment.shift()!} ` : ''
+    const lead = index ? '  ' : ''
+    const whole = operator + segment.join(' ')
+    if (measure(lead + whole) <= width) {
+      lines.push(lead + whole)
+      return
+    }
+    const indent = index ? '      ' : '    '
+    commandLines(segment, indent, width).forEach((line, k) => {
+      lines.push(k ? indent + (line.deep ? '    ' : '') + line.text : lead + operator + line.text)
+    })
+  })
+  return lines.join(' \\\n')
 }
 
 /** `command` and its arguments as one shell line. */
