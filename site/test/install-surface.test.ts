@@ -799,3 +799,15 @@ describe('code in the surface is highlighted like every other block on the site'
     expect(palette(plain.querySelector('code') as unknown as Element).size).toBe(0)
   })
 })
+
+describe('where the code goes keeps its file name', () => {
+  it('does not share the squeeze with the tabs, so a long file name is not cut under Copy', () => {
+    const rule = readFileSync(new URL('install-surface.css', widgets), 'utf8').split('.lm-install__headend {')[1]!.split('}')[0]!
+    expect(rule).toMatch(/flex:\s*0 0 auto/)
+    expect(rule).toMatch(/max-width:\s*45%/)
+  })
+
+  it('has a control: a header end that shrinks with the tabs is found', () => {
+    expect('.lm-install__headend { flex: 0 1 auto; }').not.toMatch(/flex:\s*0 0 auto/)
+  })
+})

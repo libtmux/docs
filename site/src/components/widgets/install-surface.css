@@ -142,8 +142,10 @@ html[data-theme-mode='dark'] .lm-install {
   white-space: nowrap;
 }
 
+/* Where the code goes keeps its width and gives way only to its 45% cap, where the folder ellipsizes; sharing
+ * the squeeze with the tabs cut a file name such as claude_desktop_config.json under Copy. */
 .lm-install__headend {
-  flex: 0 1 auto;
+  flex: 0 0 auto;
   min-width: 0;
   max-width: 45%;
 }
