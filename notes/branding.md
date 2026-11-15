@@ -15,6 +15,12 @@ The library sharing cards use asset kit revision
 `4b86a9d9158d7c6d52cd635d59c92a04b48b960f`. Each card includes a native
 query excerpt. The GitHub preview uses the light Python library card.
 
+Perl, Raku, and Haskell library sharing cards use asset kit revision
+`a6377dd4fbfe0d5e59271ceefb21cb503646dbc0`. Their native examples were verified on
+private tmux servers. A file-level `revision` in each language's `source.json`
+overrides its default revision for refreshed exports; other files and manifest
+overrides retain their recorded sources.
+
 F#, Kotlin, and Scala declarations use their own palettes when the route
 names that package.
 
@@ -38,8 +44,8 @@ or claim that workspace/MCP consumers are implemented. Clojure's library
 card uses the facade in the Java repository.
 
 Perl includes the same three product sets, with Linguist's `#0298C3` primary
-and neutral reading surfaces. Its library cards describe the repository
-scaffold without an API example. Provenance is recorded in
+and neutral reading surfaces. Its library cards show a native session query.
+Provenance is recorded in
 [`perl/source.json`](../site/public/brand/perl/source.json).
 
 Raku uses the library set from assets revision
