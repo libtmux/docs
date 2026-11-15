@@ -29,6 +29,9 @@ Describe the current behavior. Keep implementation deliberation and branch
 history in commit messages. Explain tickets and decisions when referring to
 them; an identifier alone is not context.
 
+Say "programming language" and "translation language" in interface labels,
+never the bare word "Language".
+
 ## Who you are writing for
 
 The default reader uses libtmux in one language and needs to accomplish a
@@ -42,7 +45,10 @@ contributor sections and link to them when needed.
 - Name tradeoffs in observable terms: blocking, extra commands, cleanup,
   portability, or latency. Explain what the reader gains for that cost.
 - Describe each port's actual semantics. Similar names do not prove matching
-  behavior, defaults, errors, or async guarantees.
+  behavior, defaults, errors, or async guarantees. Equivalence tables name
+  recorded differences (async, owner, overloads) and separate a recorded
+  absence from an unmapped port: write "Not mapped", never "not supported",
+  when no mapping exists.
 
 Use prose for explanations and sections for distinct ideas. Use lists for
 steps or parallel facts; do not turn paragraphs into oversized bullets.
@@ -71,6 +77,10 @@ operation returns, what the caller owns, and what needs cleanup. Keep
 implementation details only when they affect a reader's choice.
 
 ## Documented examples that run
+
+Every code frame states its role. An excerpt names its file and source line
+range and links the complete program on the same page; a complete program
+shows its files, setup commands and expected output.
 
 Use real public imports, valid names, and explicit prerequisites. Show
 necessary error handling and cleanup. Avoid placeholders that a reader must
@@ -281,6 +291,10 @@ free of routine narration.
   Verify the rendered link instead of assuming a doc dialect works here.
 - Keep public examples runnable and preserve their collection markers.
 
+When a declaration's completion, ownership, errors, transport or tmux version
+requirement is documented, the extractor records it as a behaviour fact with
+its source line, so the reference can show it beside the signature.
+
 ## Source comments
 
 Keep a source comment only when it passes all three gates:
@@ -317,6 +331,10 @@ doctest prompts, and other text that tooling interprets.
 Name the failed operation, the relevant input, and a corrective action when
 one is known. Avoid empty messages such as "an error occurred", blame, and
 speculative fixes. Keep published examples free of private paths and data.
+
+Interface states name what failed and what still works ("The sidebar did not
+load. The page is complete without it.") and link the next-widest place to
+go.
 
 Document defaults, units, empty-value semantics, filesystem effects, and
 exit statuses where they affect using a script. Verify which stream carries
