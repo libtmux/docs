@@ -23,6 +23,11 @@ import { homeCodeColumns } from '../lib/quickstarts'
  * the example toggles alone. Every example is a program the port's CI runs, listed
  * in the page footer; see `lib/core-capabilities.ts`.
  *
+ * Nothing here changes size after the first paint. The dropdown is drawn closed, and
+ * a wide page shows its list through `::details-content` without waiting for the script
+ * to open it; each tab reserves the width of its semibold form, so moving the current
+ * tab moves no other.
+ *
  * A port whose only example is its quickstart gets that one panel, with no
  * list. Returns nothing when the port has neither.
  */
@@ -54,7 +59,7 @@ const version = buildTarget(process.env).version
 const apis = new Map(shown.map((item) => [item.id, apisUsed(port, CORE_APIS[port]?.[item.id] ?? [], item.quickstart ? quickstartCode : item.code, version, `${port}/${item.id}`)]))
 ---
 {shown.length > 0 && <div class="core-showcase" data-core-showcase={port}>
-  {shown.length > 1 && <details class="core-showcase__picker" open>
+  {shown.length > 1 && <details class="core-showcase__picker">
     <summary><span class="sr-only">Capability: </span><span data-capability-current>{shown[0]!.label}</span>
       <svg class="doc-picker-caret" width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
     </summary>
@@ -62,7 +67,7 @@ const apis = new Map(shown.map((item) => [item.id, apisUsed(port, CORE_APIS[port
       <nav aria-label="Capabilities">
         {shown.map((item, index) => <a class="core-showcase__option" href={`?capability=${item.id}`} data-capability-option={item.id}
           aria-current={index === 0 ? 'true' : undefined}>
-          <span>{item.label}{item.tmux && <small class="core-showcase__tmux">tmux {item.tmux}</small>}</span>
+          <span><span class="core-showcase__label" data-text={item.label}>{item.label}</span>{item.tmux && <small class="core-showcase__tmux">tmux {item.tmux}</small>}</span>
         </a>)}
       </nav>
     </div>
@@ -138,7 +143,7 @@ const apis = new Map(shown.map((item) => [item.id, apisUsed(port, CORE_APIS[port
       const id = new URL(location.href).searchParams.get('capability')
       select(id && ids.includes(id) ? id : ids[0]!)
     }
-    // The list is always open beside the example on a wide page, and a dropdown on a narrow one.
+    // The list is always open beside the example on a wide page (the stylesheet shows it before this runs), and a dropdown on a narrow one.
     const layout = () => { picker.open = wide.matches }
     root.addEventListener('click', (event) => {
       const link = (event.target as Element).closest<HTMLAnchorElement>('[data-capability-option]')
@@ -173,6 +178,9 @@ const apis = new Map(shown.map((item) => [item.id, apisUsed(port, CORE_APIS[port
   .core-showcase__option { display: block; padding: .45rem .75rem; border-radius: .35rem; font-size: .875rem; color: inherit; text-decoration: none; }
   .core-showcase__option:hover { background: var(--color-surface-hover); }
   .core-showcase__option[aria-current='true'] { font-weight: 600; background: var(--color-surface-hover); }
+  /* A tab takes the width of its label in semibold, so the current tab's weight change moves nothing beside it. */
+  .core-showcase__label { display: inline-flex; flex-direction: column; }
+  .core-showcase__label::after { content: attr(data-text); height: 0; overflow: hidden; visibility: hidden; font-weight: 600; user-select: none; pointer-events: none; }
   /* The panels share one grid cell, so the column is as tall as the tallest and switching moves nothing below. */
   .core-showcase__panels { display: grid; container-type: inline-size; }
   .core-showcase__panel { grid-area: 1 / 1; visibility: hidden; }
@@ -202,6 +210,8 @@ const apis = new Map(shown.map((item) => [item.id, apisUsed(port, CORE_APIS[port
   }
   .core-showcase :global(.expressive-code pre) { overflow: auto; tab-size: 8; }
   @media (min-width: 56rem) {
+    /* The list shows closed or open: the server draws the dropdown closed, which is right for a phone, and a wide page needs no script to open it. */
+    .core-showcase__picker::details-content { content-visibility: visible; }
     .core-showcase__picker > summary { display: none !important; }
     .core-showcase__panel-list nav { display: flex; flex-wrap: wrap; gap: .375rem; }
     .core-showcase__option { border: 1px solid var(--color-edge); }
