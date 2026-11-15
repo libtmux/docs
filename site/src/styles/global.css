@@ -16,6 +16,8 @@
 @import "./image-loading.css" layer(components);
 /* Unlayered, like the widgets, so prose margins cannot outrank it. */
 @import "./aside.css";
+/* Forced colours and print, after the files whose rules they override. */
+@import "./a11y-print.css";
 @plugin "@tailwindcss/typography";
 @plugin "@libtmux/theme";
 
