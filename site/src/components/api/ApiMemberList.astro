@@ -209,6 +209,11 @@ const box = budget ? { class: 'api-member-budget', role: 'region', tabindex: 0, 
     const box = heading?.closest<HTMLElement>('.api-member-budget')
     if (!box || !heading!.matches('.api-member-group > h3')) return
     box.scrollTop += heading!.parentElement!.getBoundingClientRect().top - box.getBoundingClientRect().top
+    // The heading keeps no scroll margin (it sticks to the box's top), so the page can leave the box's top under the Members
+    // bar that sticks above it: bring the box down to that bar's lower edge.
+    const bar = box.closest('.api-members')?.querySelector<HTMLElement>(':scope > h2')
+    const covered = bar ? bar.getBoundingClientRect().bottom - box.getBoundingClientRect().top : 0
+    if (covered > 0) window.scrollBy({ top: -covered, behavior: 'instant' })
   }
   const hashId = () => { try { return decodeURIComponent(location.hash.slice(1)) } catch { return '' } }
   addEventListener('hashchange', () => revealGroup(hashId()))
