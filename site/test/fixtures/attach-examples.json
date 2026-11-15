@@ -132,15 +132,16 @@
     {
       "port": "java",
       "language": "java",
-      "sourceRevision": "842228310449e879ebcaa3f910597757c9dbffd6",
+      "sourceRevision": "e8a39689d8d60968ac978a1dd2a89c6112333896",
       "sourceRepository": "libtmux/libtmux-java",
       "toolchain": [
         "JDK 25.0.3",
-        "library bytecode target Java 21"
+        "Gradle 9.7.0",
+        "libtmux 0.1.2"
       ],
       "page": "ports/java/guides/attaching-to-tmux",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-java libtmux &&\n  git -C libtmux checkout 842228310449e879ebcaa3f910597757c9dbffd6 &&\n  (cd libtmux && ./gradlew :libtmux:jar) &&\n  sh run.sh java --class-path 'libtmux/libtmux/build/libs/*' Connect.java"
+        "sh run.sh gradle --console=plain --no-daemon run"
       ],
       "expectedOutput": "work",
       "files": [
@@ -149,12 +150,20 @@
           "sha256": "0dd7f4fef844f89ed6b6f424f3bce74daa43beb5280f43b12ab44cc1f4bf56a3"
         },
         {
+          "name": "build.gradle.kts",
+          "sha256": "389c9468baff66b644a026e320b86b4e2ae9ac5ff758fbd0c34a4857e1d44384"
+        },
+        {
+          "name": "settings.gradle.kts",
+          "sha256": "8a9a1cef4b025e20741219b949c5a591444f9f3b850534f1cc5b2f9164b9c126"
+        },
+        {
           "name": "run.sh",
           "sha256": "c7c6c6c7798d10dd389beaa6a5843f145a1bf0497acae99e229468cf0add072d"
         }
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ]
     },

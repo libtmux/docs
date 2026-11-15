@@ -16,7 +16,7 @@ deadline so a failed command cannot leave the program waiting forever.
 
 This complete program creates a private tmux server, captures its output, and
 cleans up. Follow the [setup and run instructions](#setup-and-run) below. You need
-tmux and a Unix environment; no existing tmux session is required.
+tmux 3.3a or newer and a Unix environment; no existing tmux session is required.
 
 ## Read what's on screen
 
@@ -87,22 +87,42 @@ explains why sending and waiting are separate operations.
 
 ## Setup and run
 
-Use an empty directory. The commands pin the library
-revision used to verify the program.
+Use an empty directory and save the files using the displayed names. You need
+JDK 25 and Gradle 9. The build file installs `io.github.libtmux:libtmux` 0.1.2
+from Maven Central.
 
-Save the program as `Capture.java`. Use JDK 21 or newer. The repository's Gradle
-wrapper builds the library; the Java source launcher runs the complete program.
+Save `settings.gradle.kts` beside `Capture.java`.
+
+```kotlin title="settings.gradle.kts"
+rootProject.name = "capture"
+```
+
+Save `build.gradle.kts` beside `Capture.java`.
+
+```kotlin title="build.gradle.kts"
+plugins {
+    application
+}
+
+repositories { mavenCentral() }
+dependencies {
+    implementation("io.github.libtmux:libtmux:0.1.2")
+}
+java { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }
+sourceSets.main { java.srcDir("."); java.include("Capture.java") }
+application { mainClass.set("Capture") }
+```
+
+Build and run the program:
 
 ```console
-$ git clone https://github.com/libtmux/libtmux-java libtmux &&
-  git -C libtmux checkout 842228310449e879ebcaa3f910597757c9dbffd6 &&
-  (cd libtmux && ./gradlew :libtmux:jar) &&
-  java --class-path 'libtmux/libtmux/build/libs/*' Capture.java
+$ gradle --console=plain --no-daemon run
 ```
 
 <a id="source-inclusion"></a>
 
 ## Where this comes from
 
-This complete program was run against the library revision pinned above.
-The displayed code is checked against the bytes from that run.
+This program uses `io.github.libtmux:libtmux` 0.1.2 from Maven Central. Its
+[source](https://github.com/libtmux/libtmux-java/tree/e8a39689d8d60968ac978a1dd2a89c6112333896/libtmux)
+is on GitHub.

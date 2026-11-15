@@ -149,7 +149,7 @@
     {
       "port": "java",
       "language": "java",
-      "sourceRevision": "5c181887918351119bfdb3a046719fa792048e59",
+      "sourceRevision": "e8a39689d8d60968ac978a1dd2a89c6112333896",
       "sourceRepository": "libtmux/libtmux-java",
       "files": [
         {
@@ -162,12 +162,13 @@
         },
         {
           "name": "build.gradle.kts",
-          "sha256": "3a4a1b65c6e47f61751532440ba4909b186813771565c6c35567c8c20d1f65b5"
+          "sha256": "24328025d384da6e584f438f39a723d31daf885edfb5fdb95b5c80751f006bd1"
         }
       ],
       "toolchain": [
         "JDK 25.0.3+9",
-        "Gradle wrapper from the 0.1.0 release"
+        "Gradle 9.7.0",
+        "libtmux-mcp 0.1.2"
       ],
       "tmux": [
         "3.3a",
@@ -175,34 +176,43 @@
       ],
       "page": "ports/java/mcp/examples",
       "shellRecipe": [
-        "mkdir java-mcp-example && cd java-mcp-example && \\\n    git init libtmux-source && \\\n    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-java.git && \\\n    git -C libtmux-source fetch --depth=1 origin 5c181887918351119bfdb3a046719fa792048e59 && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD && \\\n    mkdir -p src/main/java",
-        "./libtmux-source/gradlew --no-daemon --max-workers=2 -p . installDist",
+        "mkdir -p java-mcp-example/src/main/java && cd java-mcp-example",
+        "gradle --console=plain --no-daemon installDist",
         "./build/install/mcp-example/bin/mcp-example"
       ]
     },
     {
       "port": "java",
       "language": "sh",
-      "sourceRevision": "842228310449e879ebcaa3f910597757c9dbffd6",
+      "sourceRevision": "e8a39689d8d60968ac978a1dd2a89c6112333896",
       "sourceRepository": "libtmux/libtmux-java",
       "files": [
         {
+          "name": "settings.gradle.kts",
+          "sha256": "0714b53c34a0d0d191cd7c52dc0f75f8821bc8d87fa567e0a9da9c1cdb8347e0"
+        },
+        {
+          "name": "build.gradle.kts",
+          "sha256": "ee2f9d76719195761685a5bde12d8d89cf42420e08a641fd119771b38fc64c16"
+        },
+        {
           "name": "run-mcp.sh",
-          "sha256": "e3b697676591e62e98769a988d0002efcfa693474feb228656589a472b0744f4"
+          "sha256": "74c371248dc84b1ec2fc89013ec570912dd35c096177bfb2b49833901d14484a"
         }
       ],
       "toolchain": [
         "JDK 25.0.3+9",
-        "Gradle wrapper at selected source"
+        "Gradle 9.7.0",
+        "libtmux-mcp 0.1.2"
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "page": "ports/java/mcp/guides",
       "shellRecipe": [
         "mkdir java-mcp-client && cd java-mcp-client",
-        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-java.git && \\\n    git -C libtmux-source fetch --depth=1 origin 842228310449e879ebcaa3f910597757c9dbffd6 && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD && \\\n    ./libtmux-source/gradlew --no-daemon --max-workers=2 \\\n    -p libtmux-source :libtmux-mcp:installDist",
+        "gradle --console=plain --no-daemon installDist",
         "sh run-mcp.sh"
       ]
     },
@@ -529,6 +539,40 @@
       "shellRecipe": [
         "mkdir dotnet-workspace-example\ncd dotnet-workspace-example",
         "dotnet run --project WorkspaceExample.csproj --configuration Release"
+      ]
+    },
+    {
+      "port": "java",
+      "page": "ports/java/workspace/internals/examples",
+      "files": [
+        {
+          "name": "src/main/java/WorkspaceExample.java",
+          "sha256": "a101b043418dc270516f1d37b3e0983bc5a1ea9c1c67d96273f1f91deda14eaa"
+        },
+        {
+          "name": "settings.gradle.kts",
+          "sha256": "3776b17444ee5a3bd3a72ec3aea9498337a5e670c679093fabfb6efc16d7f476"
+        },
+        {
+          "name": "build.gradle.kts",
+          "sha256": "cd2d2be7a82ccb5c1c9c9ea4f244f149baf03aef6e847164b7448e25857b6405"
+        }
+      ],
+      "shellRecipe": [
+        "mkdir -p java-workspace-example/src/main/java\ncd java-workspace-example",
+        "gradle --console=plain --no-daemon run"
+      ],
+      "language": "java",
+      "sourceRevision": "e8a39689d8d60968ac978a1dd2a89c6112333896",
+      "sourceRepository": "libtmux/libtmux-java",
+      "toolchain": [
+        "JDK 25.0.3+9",
+        "Gradle 9.7.0",
+        "libtmux-workspace 0.1.2"
+      ],
+      "tmux": [
+        "3.3a",
+        "3.7c"
       ]
     }
   ],

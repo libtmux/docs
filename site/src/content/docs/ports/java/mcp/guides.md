@@ -1,6 +1,6 @@
 ---
 title: Connect a Java MCP client
-description: Build the Java MCP launcher and connect it to a private tmux server.
+description: Build the Java MCP launcher from Maven Central and connect it to a private tmux server.
 port: java
 product: mcp
 equivalence: mcp-client-setup
@@ -9,35 +9,59 @@ sidebar:
   order: 2
 ---
 
-Build the Java distribution and let your MCP client launch the script below.
+Build the Java launcher and let your MCP client launch the script below.
 It creates its own tmux session, exposes only `list_sessions`, and stops that
 private server when the MCP process exits.
 
 ## Build the launcher
 
-Use JDK 25, Git, and tmux 3.3a or newer on a Unix host. Create an empty directory:
+Use JDK 25, Gradle 9, and tmux 3.3a or newer on a Unix host. Create an empty
+directory:
 
 ```console
 $ mkdir java-mcp-client && cd java-mcp-client
 ```
 
-Fetch the source revision used by this guide and build its distribution:
+Save the settings file:
 
-```console
-$ git init libtmux-source && \
-    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-java.git && \
-    git -C libtmux-source fetch --depth=1 origin 842228310449e879ebcaa3f910597757c9dbffd6 && \
-    git -C libtmux-source checkout --detach FETCH_HEAD && \
-    ./libtmux-source/gradlew --no-daemon --max-workers=2 \
-    -p libtmux-source :libtmux-mcp:installDist
+```kotlin title="settings.gradle.kts"
+rootProject.name = "libtmux-mcp-launcher"
 ```
 
-The selected build downloads its Temurin 21 compiler when needed. The resulting
-application contains the launcher and required JARs; keep its directory intact.
+Save the build file. Gradle resolves `libtmux-mcp` 0.1.2 and its dependencies
+from Maven Central, and `installDist` writes a start script for the MCP
+server's `io.github.libtmux.mcp.Main`
+([source](https://github.com/libtmux/libtmux-java/blob/e8a39689d8d60968ac978a1dd2a89c6112333896/libtmux-mcp/src/main/java/io/github/libtmux/mcp/Main.java)):
+
+```kotlin title="build.gradle.kts"
+plugins {
+    application
+}
+
+repositories { mavenCentral() }
+dependencies {
+    implementation("io.github.libtmux:libtmux-mcp:0.1.2")
+    runtimeOnly("org.slf4j:slf4j-nop:2.0.17")
+}
+java { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }
+application {
+    mainClass.set("io.github.libtmux.mcp.Main")
+    applicationName = "libtmux-mcp"
+}
+```
+
+Build the launcher:
+
+```console
+$ gradle --console=plain --no-daemon installDist
+```
+
+The resulting application contains the start script and required JARs; keep
+its directory intact.
 
 ## Save the private-server launcher
 
-Save the following file alongside the source checkout. It clears inherited
+Save the following file beside `build.gradle.kts`. It clears inherited
 endpoint, caller and tool-selection settings before choosing its own. The trap
 reports cleanup failures and retains a socket that could not be stopped.
 
@@ -73,7 +97,7 @@ tmux -S "$directory/s" -f /dev/null \
     set-environment -g BASH_ENV '' \; \
     new-session -d -s mcp-example 'exec /bin/cat'
 LIBTMUX_TMUX_CONFIG=/dev/null LIBTMUX_TOOLSETS= LIBTMUX_TOOLS=list_sessions \
-    "$project/libtmux-source/libtmux-mcp/build/install/libtmux-mcp/bin/libtmux-mcp" \
+    "$project/build/install/libtmux-mcp/bin/libtmux-mcp" \
     --socket "$directory/s" --tmux tmux
 ```
 
@@ -111,5 +135,5 @@ owns, pass `--socket` with its path or `--socket-name` with its name.
 
 The [complete Java client example](../examples/) includes public imports,
 project files, bounded requests, and owned-server cleanup. The
-[launcher contract](https://github.com/libtmux/libtmux-java/blob/842228310449e879ebcaa3f910597757c9dbffd6/libtmux-mcp/README.md)
+[launcher contract](https://github.com/libtmux/libtmux-java/blob/e8a39689d8d60968ac978a1dd2a89c6112333896/libtmux-mcp/README.md)
 describes the direct command's flags and environment.

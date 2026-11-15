@@ -215,6 +215,36 @@
           "| hello from tmux"
         ]
       ]
+    },
+    {
+      "port": "java",
+      "page": "ports/java/examples/attach-and-send-keys",
+      "language": "java",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "e8a39689d8d60968ac978a1dd2a89c6112333896",
+      "files": [
+        {
+          "name": "AttachAndSendKeys.java",
+          "sha256": "fa92975054f704ea879982f06e8000f298c3af988a5887820877b6633d32066e"
+        },
+        {
+          "name": "settings.gradle.kts",
+          "sha256": "06140f6acac35d3b36accf88ca6d6337356a403128ba7fe36eb44b43c9a703a4"
+        },
+        {
+          "name": "build.gradle.kts",
+          "sha256": "547bdbe57add0837a0a1c9fb482260966969e2da3060ba2c46ad7ebce058cbd3"
+        }
+      ],
+      "shellRecipe": [
+        "gradle --console=plain --no-daemon run"
+      ],
+      "expectedOutputs": [
+        [
+          "the pane printed it",
+          "| hello from tmux"
+        ]
+      ]
     }
   ]
 }

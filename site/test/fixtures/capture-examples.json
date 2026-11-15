@@ -111,24 +111,34 @@
     {
       "port": "java",
       "language": "java",
-      "sourceRevision": "842228310449e879ebcaa3f910597757c9dbffd6",
+      "sourceRevision": "e8a39689d8d60968ac978a1dd2a89c6112333896",
       "sourceRepository": "libtmux/libtmux-java",
       "files": [
         {
           "name": "Capture.java",
           "sha256": "91433bad174fb4db9330e36307db8face5739963bae754d94862cbbdbbec6c63"
+        },
+        {
+          "name": "settings.gradle.kts",
+          "sha256": "623c7967842d9b0330b5016fab47d4351151dc1cffcf295a9298c7378b7561aa"
+        },
+        {
+          "name": "build.gradle.kts",
+          "sha256": "fa3c58a36f6b11ac5818a7b3a59a192365c8f62f12ab9f12dc9dd7a49fc5394c"
         }
       ],
       "toolchain": [
         "JDK 25.0.3",
-        "library bytecode target Java 21"
+        "Gradle 9.7.0",
+        "libtmux 0.1.2"
       ],
       "tmux": [
+        "3.3a",
         "3.7c"
       ],
       "page": "ports/java/examples/capture-pane-output",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-java libtmux &&\n  git -C libtmux checkout 842228310449e879ebcaa3f910597757c9dbffd6 &&\n  (cd libtmux && ./gradlew :libtmux:jar) &&\n  java --class-path 'libtmux/libtmux/build/libs/*' Capture.java"
+        "gradle --console=plain --no-daemon run"
       ]
     },
     {

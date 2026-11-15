@@ -12,20 +12,15 @@ tableOfContents: true
 ---
 
 Build a two-window workspace, inspect its panes, and remove the private tmux
-server. Use a POSIX host with tmux on `PATH` and JDK 25.
+server. Use a POSIX host with tmux 3.3a or newer on `PATH`, JDK 25 and Gradle 9.
 
 ## Create the project
 
-In a new directory, fetch the 0.1.0 release, which supplies the Gradle wrapper:
+Create an empty project:
 
 ```console
-$ mkdir java-workspace-example
+$ mkdir -p java-workspace-example/src/main/java
 $ cd java-workspace-example
-$ git init -q libtmux-source
-$ git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-java.git
-$ git -C libtmux-source fetch --depth=1 origin 5c181887918351119bfdb3a046719fa792048e59
-$ git -C libtmux-source checkout --detach FETCH_HEAD
-$ mkdir -p src/main/java
 ```
 
 Save the following settings file:
@@ -34,7 +29,7 @@ Save the following settings file:
 rootProject.name = "workspace-example"
 ```
 
-Save the following build file. Gradle resolves the workspace module and its core dependency from Maven Central:
+Save the following build file. Gradle resolves `libtmux-workspace` 0.1.2 and its core dependency from Maven Central:
 
 ```kotlin title="build.gradle.kts"
 plugins {
@@ -46,7 +41,7 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.libtmux:libtmux-workspace:0.1.0")
+    implementation("io.github.libtmux:libtmux-workspace:0.1.2")
 }
 
 java {
@@ -104,10 +99,10 @@ public final class WorkspaceExample {
 }
 ```
 
-Use the checked-out Gradle wrapper to run the application:
+Run the application:
 
 ```console
-$ ./libtmux-source/gradlew --no-daemon --max-workers=2 -p . run
+$ gradle --console=plain --no-daemon run
 ```
 
 The application prints `built: 2 windows` and `editor: 2 panes`. Its unique
@@ -125,4 +120,4 @@ those programs to finish. Keep the session running instead of calling
 <a id="where-this-comes-from"></a>
 <a id="source-inclusion"></a>
 
-[Workspace API source](https://github.com/libtmux/libtmux-java/tree/5c181887918351119bfdb3a046719fa792048e59/libtmux-workspace/src/main/java/io/github/libtmux/workspace)
+[Workspace API source](https://github.com/libtmux/libtmux-java/tree/e8a39689d8d60968ac978a1dd2a89c6112333896/libtmux-workspace/src/main/java/io/github/libtmux/workspace)
