@@ -41,7 +41,7 @@ export interface DocumentationSurface {
 
 const labels: Record<string, string> = {
   home: 'Home', guides: 'Guides', tutorials: 'Tutorials', topics: 'Topics', concepts: 'Concepts',
-  examples: 'Examples', reference: 'API Reference', configuration: 'Configuration', internals: 'Internals',
+  examples: 'Examples', reference: 'API reference', configuration: 'Configuration', internals: 'Internals',
   async: 'Async', runtimes: 'Runtimes', manual: 'CLI Manual',
   ...MCP_SECTIONS,
 }
@@ -80,7 +80,7 @@ export function buildDocumentationSurfaces(
       section.items.push(link)
       sections.set(key, section)
     }
-    const reference: DocumentationSection = sections.get('reference') ?? { id: 'reference', label: 'API Reference', items: [] }
+    const reference: DocumentationSection = sections.get('reference') ?? { id: 'reference', label: 'API reference', items: [] }
     reference.href = referenceUrl(info, version, id)
     if (domain.product) {
       // Protocol tools and the implementation API retain their native URLs.

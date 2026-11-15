@@ -363,7 +363,7 @@ async function referenceSidebar(inventory: ApiTreeJson, selectedSymbol: string) 
   const window = new Window()
   window.document.body.innerHTML = await renderAstroTemplate(template, { props: {
     presentation: 'outline', inventory, selectedSymbol, referenceBase: '/reference/', portName: 'Sample', tree: [], members: [],
-    withMembers: new Set(), currentPath: '/reference/', version: 'test', treeLabel: 'Sample: API Reference',
+    withMembers: new Set(), currentPath: '/reference/', version: 'test', treeLabel: 'Sample: API reference',
   } })
   return window
 }
@@ -697,7 +697,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
           new URL(link.getAttribute('href')!, urlFor(page.path)).pathname === guide), `${page.path} native example guide`).toBe(true)
       }
       const section = page.section === 'source-guide' ? 'guides' : page.section.split('/')[0] || 'home'
-      const sectionLabel = section === 'reference' ? 'API Reference' : section[0].toUpperCase() + section.slice(1)
+      const sectionLabel = section === 'reference' ? 'API reference' : section[0].toUpperCase() + section.slice(1)
       expect(picker?.querySelector('.surface-current .surface-label')?.textContent, `${page.path} current app`).toBe(surface)
       expect(picker?.querySelectorAll('.surface-current .status-badge').length).toBe(1)
       expect(picker?.querySelector('.surface-current .status-badge')?.getAttribute('data-status'), `${page.path} badge`)

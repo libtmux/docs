@@ -180,7 +180,7 @@ describe('documentation surface navigation', () => {
       ['tutorials', '/csharp/latest/tutorials/first-session/'],
       ['reference', '/csharp/latest/reference/'],
     ])
-    expect(core.sections[0].items.map((item) => item.label)).toEqual(['Overview', 'Guides', 'Tutorials', 'API Reference'])
+    expect(core.sections[0].items.map((item) => item.label)).toEqual(['Overview', 'Guides', 'Tutorials', 'API reference'])
   })
 
   it.each(PORTS)('sends the $slug Core Library home to core/ and keeps its sibling pages in the surface', (port) => {

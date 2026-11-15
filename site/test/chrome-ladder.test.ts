@@ -83,7 +83,7 @@ describe('the rows of each level', () => {
     // Two guide pages beside the section's own overview.
     expect(rows.find((row) => row.label === 'Guides')).toMatchObject({ count: 2 })
     // A reference holds declarations, not pages.
-    expect(rows.find((row) => row.label === 'API Reference')).not.toHaveProperty('count')
+    expect(rows.find((row) => row.label === 'API reference')).not.toHaveProperty('count')
   })
 
   it('shows an empty section without a count, never "0"', () => {

@@ -694,7 +694,7 @@ it('names each product reference navigation by its product and marks the declara
       props: { model, symbol, version: 'latest' }, request: new Request(`https://libtmux.org${href}`),
     })
     const navigation = [...win.document.querySelectorAll('.api-nav nav')]
-    expect(navigation.map((nav) => nav.getAttribute('aria-label')), `${port} ${product}`).toEqual([`${label[product]}: API Reference`])
+    expect(navigation.map((nav) => nav.getAttribute('aria-label')), `${port} ${product}`).toEqual([`${label[product]}: API reference`])
     expect(navigation[0]!.querySelector('[aria-current="page"]')?.getAttribute('href'), `${port} ${product} current declaration`).toBe(href)
   }
 }, 120_000)
