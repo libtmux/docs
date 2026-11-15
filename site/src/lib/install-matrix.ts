@@ -1015,7 +1015,7 @@ const CLIENT_TAB_ACTIVE_DECL = '{color:var(--text-color);box-shadow:inset 0 -2px
 
 const SEGMENT_TAB_ACTIVE_DECL =
   '{background:var(--lm-install-raised);color:var(--text-color);' +
-  'box-shadow:0 0 0 1px var(--lm-install-edge),0 1px 2px rgb(0 0 0 / 8%)}'
+  'box-shadow:0 0 0 1px var(--lm-install-edge),var(--lm-install-lift)}'
 
 const SCOPE_GROUP_ACTIVE_DECL = '{display:flex}'
 

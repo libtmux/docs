@@ -50,7 +50,7 @@ describe('NuGet installation recipes', () => {
   })
 
   it('fills additional fragments when a recipe needs its version there', () => {
-    const port = { ...PORT_BY_SLUG.fsharp, installs: [{ label: 'CPM', code: 'main', lang: 'xml', additionalBlocks: [{ code: '{version}', lang: 'xml' }] }] }
+    const port = { ...PORT_BY_SLUG.fsharp, installs: [{ label: 'CPM', target: 'Directory.Packages.props', code: 'main', lang: 'xml', additionalBlocks: [{ code: '{version}', lang: 'xml' }] }] }
     expect(installsFor(port, { version: '1.2.3' })[0].additionalBlocks?.[0].code).toBe('1.2.3')
   })
 })
@@ -218,7 +218,7 @@ describe('NuGet widget rendering and copied fragments', () => {
     const win = await render(slug, '3'), doc = win.document
     // The surface draws each choice in its header (where the code goes and Copy), its body and, where it has one, its note.
     const panels = [...doc.querySelectorAll('.lm-install__body .lm-pkg-install__cmd')]
-    const shown = (cmd: Element) => win.getComputedStyle(cmd).display !== 'none'
+    const shown = (cmd: Parameters<typeof win.getComputedStyle>[0]) => win.getComputedStyle(cmd).display !== 'none'
     expect([...doc.querySelectorAll('.lm-pkg-install__cmd')].filter(shown).map((panel) => panel.getAttribute('data-manager'))).toEqual(['3', '3', '3'])
     expect(panels.filter(shown).map((panel) => panel.getAttribute('data-manager'))).toEqual(['3'])
     const cpm = panels[3], blocks = [...cpm.querySelectorAll('[data-install-code]')]

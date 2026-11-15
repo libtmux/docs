@@ -527,7 +527,10 @@
   }
 
   .lm-pkg-install--surface .lm-pkg-install__manager {
-    padding: 0.8rem 0 0.7rem;
+    display: inline-flex;
+    align-items: center;
+    height: 2.625rem;
+    padding: 0;
     border: 0;
     border-radius: 0;
     box-shadow: inset 0 -2px transparent;

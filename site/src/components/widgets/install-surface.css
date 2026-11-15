@@ -16,6 +16,7 @@
   --lm-install-add-bg: rgb(5 150 105 / 10%);
   --lm-install-add-edge: #047857; /* emerald-700 */
   --lm-install-muted: var(--color-foreground-muted);
+  --lm-install-lift: 0 1px 2px rgb(0 0 0 / 8%);
   container: lm-install / inline-size;
   overflow: hidden;
   border: 1px solid var(--lm-install-edge);
@@ -58,6 +59,10 @@ html[data-theme-mode='dark'] .lm-install {
 
 .lm-install__tabs {
   position: relative;
+  display: flex;
+  align-items: center;
+  /* The row is as tall with tabs as with one tool's name or a channel's, so a choice never moves what is below it. */
+  min-height: 2.625rem;
   flex: 1 1 auto;
   min-width: 0;
   overflow-x: auto;
@@ -88,6 +93,7 @@ html[data-theme-mode='dark'] .lm-install {
   display: block;
   font: 500 13px/1 var(--font-sans);
   color: var(--text-color);
+  white-space: nowrap;
 }
 
 .lm-install__headend {
@@ -235,7 +241,7 @@ html[data-theme-mode='dark'] .lm-install {
 .lm-install__seg button[aria-pressed='true'] {
   background: var(--lm-install-raised);
   color: var(--text-color);
-  box-shadow: 0 0 0 1px var(--lm-install-edge), 0 1px 2px rgb(0 0 0 / 8%);
+  box-shadow: 0 0 0 1px var(--lm-install-edge), var(--lm-install-lift);
 }
 
 .lm-install__seg button:focus-visible,
@@ -272,7 +278,7 @@ html[data-theme-mode='dark'] .lm-install {
 
 .lm-install__glyph {
   display: inline-block;
-  min-width: 0.8em;
+  width: 1em;
   text-align: center;
 }
 

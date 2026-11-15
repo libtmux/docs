@@ -591,3 +591,25 @@ describe('driving the MCP installer', () => {
     expect(copied).toEqual(['claude mcp add tmux \\\n    -- /absolute/path/to/project/bin/libtmux-mcp \\\n        --socket /absolute/path/to/tmux.sock'])
   })
 })
+
+describe('the surface does not move when a choice is made', () => {
+  const css = (name: string) => readFileSync(new URL(name, widgets), 'utf8')
+  /** The height a rule gives its elements, in rem, or undefined where it gives none. */
+  const heightOf = (source: string, selector: string) => {
+    const body = source.split(selector).slice(1).map((rest) => rest.slice(0, rest.indexOf('}'))).find((rule) => /\bheight:/.test(rule))
+    return body?.match(/(?<![-\w])(?:min-)?height:\s*([\d.]+rem)/)?.[1]
+  }
+
+  it('holds the tab row as tall as a tool\'s name or a channel\'s, so a choice never moves what is below it', () => {
+    const surface = css('install-surface.css')
+    const row = heightOf(surface, '.lm-install__tabs {')
+    expect(row).toBe('2.625rem')
+    expect(heightOf(css('package-install.css'), '.lm-pkg-install--surface .lm-pkg-install__manager {')).toBe(row)
+    expect(heightOf(css('mcp-install.css'), '.lm-mcp-install__tabs--clients .lm-mcp-install__tab {')).toBe(row)
+  })
+
+  it('has a control: a tab taller than the row is found', () => {
+    expect(heightOf('.lm-pkg-install--surface .lm-pkg-install__manager { padding: .8rem 0 .7rem; }', '.lm-pkg-install--surface .lm-pkg-install__manager {')).toBeUndefined()
+    expect(heightOf('.lm-install__tabs { min-height: 2.5rem; }', '.lm-install__tabs {')).not.toBe('2.625rem')
+  })
+})

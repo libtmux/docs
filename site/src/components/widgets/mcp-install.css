@@ -89,7 +89,10 @@ html[data-theme-mode='dark'] .lm-mcp-install {
 }
 
 .lm-mcp-install__tabs--clients .lm-mcp-install__tab {
-  padding: 0.8rem 0 0.7rem;
+  display: inline-flex;
+  align-items: center;
+  height: 2.625rem;
+  padding: 0;
   box-shadow: inset 0 -2px transparent;
   font-size: 13px;
   line-height: 1.3;
@@ -109,7 +112,7 @@ html[data-theme-mode='dark'] .lm-mcp-install {
 .lm-install__seg .lm-mcp-install__tab[aria-selected='true'] {
   background: var(--lm-install-raised);
   color: var(--text-color);
-  box-shadow: 0 0 0 1px var(--lm-install-edge), 0 1px 2px rgb(0 0 0 / 8%);
+  box-shadow: 0 0 0 1px var(--lm-install-edge), var(--lm-install-lift);
 }
 
 .lm-mcp-install__tab:hover {
