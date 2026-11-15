@@ -87,7 +87,7 @@
   "ports/ts/concepts/queries.md": 30,
   "ports/ts/concepts/workspaces.md": 1,
   "ports/ts/guides/attaching-to-tmux.md": 1,
-  "ports/ts/mcp/examples.md": 3,
-  "ports/ts/workspace/internals/examples.md": 3,
+  "ports/ts/mcp/examples.md": 1,
+  "ports/ts/workspace/internals/examples.md": 1,
   "topics/waiting-and-retry.md": 1
 }

@@ -4,7 +4,7 @@
     {
       "port": "ts",
       "language": "typescript",
-      "sourceRevision": "3fe1ca654b81b8cbf4a13b777a001a3298c87a6f",
+      "sourceRevision": "9a6b695471fbb77ac1e494b879ee9bc59adc201d",
       "sourceRepository": "libtmux/libtmux-ts",
       "files": [
         {
@@ -13,20 +13,21 @@
         },
         {
           "name": "package.json",
-          "sha256": "cb9213ba62a6270ff81c9cf124ccc9c0bfe82d8b72712393e8c09b0baf75c374"
+          "sha256": "98c480efa84c39cd7c73f50590779db49e9a4edc142244793bc632d55e3ce53d"
         }
       ],
       "toolchain": [
-        "Bun 1.4.2"
+        "Bun 1.4.2",
+        "libtmux 0.1.2",
+        "@libtmux/workspace 0.1.2"
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "page": "ports/ts/workspace/internals/examples",
       "shellRecipe": [
         "mkdir workspace-example && cd workspace-example",
-        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-ts.git && \\\n    git -C libtmux-source fetch --depth 1 origin 3fe1ca654b81b8cbf4a13b777a001a3298c87a6f && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD",
         "bun install --production",
         "bun run workspace.ts"
       ]
@@ -34,7 +35,7 @@
     {
       "port": "ts",
       "language": "typescript",
-      "sourceRevision": "3fe1ca654b81b8cbf4a13b777a001a3298c87a6f",
+      "sourceRevision": "9a6b695471fbb77ac1e494b879ee9bc59adc201d",
       "sourceRepository": "libtmux/libtmux-ts",
       "files": [
         {
@@ -43,20 +44,21 @@
         },
         {
           "name": "package.json",
-          "sha256": "0ae56500bcb2a1e16d6406476e09577d5ee284740bb4cb7eb04d53af2952e854"
+          "sha256": "3536fcd4ed60255c1d68f302d66bc56687769ba22f4d5e0576e4c43c7e3a9940"
         }
       ],
       "toolchain": [
-        "Bun 1.4.2"
+        "Bun 1.4.2",
+        "libtmux 0.1.2",
+        "@libtmux/mcp 0.1.2"
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "page": "ports/ts/mcp/examples",
       "shellRecipe": [
         "mkdir mcp-example && cd mcp-example",
-        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-ts.git && \\\n    git -C libtmux-source fetch --depth 1 origin 3fe1ca654b81b8cbf4a13b777a001a3298c87a6f && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD",
         "bun install --production",
         "bun run mcp.ts"
       ]

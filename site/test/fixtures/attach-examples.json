@@ -33,14 +33,15 @@
     {
       "port": "ts",
       "language": "typescript",
-      "sourceRevision": "3fe1ca654b81b8cbf4a13b777a001a3298c87a6f",
+      "sourceRevision": "9a6b695471fbb77ac1e494b879ee9bc59adc201d",
       "sourceRepository": "libtmux/libtmux-ts",
       "toolchain": [
-        "Bun 1.4.2"
+        "Bun 1.4.2",
+        "libtmux 0.1.2"
       ],
       "page": "ports/ts/guides/attaching-to-tmux",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-ts libtmux &&\n  git -C libtmux checkout 3fe1ca654b81b8cbf4a13b777a001a3298c87a6f &&\n  bun install &&\n  sh run.sh bun run connect.ts"
+        "bun install &&\n  sh run.sh bun run connect.ts"
       ],
       "expectedOutput": "work",
       "files": [
@@ -50,7 +51,7 @@
         },
         {
           "name": "package.json",
-          "sha256": "acb06879bf3e3e5ce85125d64a72ff5b2579e87a66085961b1f7b88eaa813020"
+          "sha256": "26d88a6feea572fe35fd80ae3bab9f99290f491c6398ce9b761218a7442cbf5f"
         },
         {
           "name": "run.sh",
@@ -58,7 +59,7 @@
         }
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ]
     },

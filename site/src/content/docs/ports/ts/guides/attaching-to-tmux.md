@@ -39,14 +39,14 @@ console.log(session.name);
 
 ## Setup and run
 
-Use an empty directory on Linux with Git and tmux 3.3a or newer installed.
+Use an empty directory on Linux with Bun 1.4.2 or newer and tmux 3.3a or
+newer installed.
 
-This example was checked with Bun 1.4.2.
-
-Save this file beside the program using the displayed filename.
+Save this file beside the program using the displayed filename. It installs
+`libtmux` 0.1.2 from npm ([source](https://github.com/libtmux/libtmux-ts/tree/9a6b695471fbb77ac1e494b879ee9bc59adc201d)).
 
 ```json title="package.json"
-{"type":"module","dependencies":{"libtmux":"file:./libtmux/packages/libtmux"}}
+{"type":"module","private":true,"dependencies":{"libtmux":"0.1.2"}}
 ```
 
 Save the launcher as `run.sh`. It starts an isolated tmux server, runs the
@@ -82,12 +82,10 @@ export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
 "$binary" -S "$socket" has-session -t '=work'
 ```
 
-Fetch the verified library revision, build, and run:
+Install the library and run the program:
 
 ```console
-$ git clone https://github.com/libtmux/libtmux-ts libtmux &&
-  git -C libtmux checkout 3fe1ca654b81b8cbf4a13b777a001a3298c87a6f &&
-  bun install &&
+$ bun install &&
   sh run.sh bun run connect.ts
 ```
 
