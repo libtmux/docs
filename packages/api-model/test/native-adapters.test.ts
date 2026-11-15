@@ -174,7 +174,7 @@ describe('Lua native documentation adapter', () => {
     schema: 1,
     port: 'lua',
     source: { repository: 'libtmux/libtmux-lua', revision: REVISION },
-    exporter: { name: 'scripts/export-docs', version: 1, luals: '3.19.1' },
+    exporter: { name: 'scripts/docs/docs.lua', version: 1, luals: '3.19.1' },
     package: { name: 'libtmux', version: '0.1.0alpha1-1', source_tag: 'v0.1.0alpha1' },
     declarations: [
       {
