@@ -51,11 +51,10 @@ export const TOPICS: readonly { id: TopicId; title: string; summary: string }[] 
 ]
 
 /**
- * How the file is reached: a test that runs the command, a test that calls the
- * code the command is built on, or a scheduled run that is no gate on a pull
- * request.
+ * How the file is reached: a test that runs the command, or a test that calls
+ * the code the command is built on.
  */
-export type TestVia = 'cli' | 'loader' | 'builder' | 'library' | 'scheduled'
+export type TestVia = 'cli' | 'loader' | 'builder' | 'library'
 
 export interface ShowcaseTest {
   path: string
@@ -397,7 +396,6 @@ export const VIA: Readonly<Record<TestVia, string>> = {
   loader: 'loaded by the library in a test; the command is not run',
   builder: 'built by the library in a test; the command is not run',
   library: 'parsed by the library in a test; the command is not run',
-  scheduled: 'a scheduled parity run loads it, and no pull request runs it',
 }
 
 /**

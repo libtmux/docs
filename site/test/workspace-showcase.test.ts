@@ -76,7 +76,7 @@ describe('the workspace showcase data source', () => {
         expect(test.path, `${port} ${example.topic}`).not.toBe('')
         expect(test.name).not.toBe('')
         expect(test.line).toBeGreaterThan(0)
-        expect(['cli', 'loader', 'builder', 'library', 'scheduled']).toContain(test.via)
+        expect(['cli', 'loader', 'builder', 'library']).toContain(test.via)
         expect(test.checks.endsWith('.'), `${port} ${test.name}`).toBe(true)
       }
     }
@@ -521,12 +521,8 @@ describe('the showcase section', () => {
     const go = lines(await section('go'))
     expect(go.find((line) => line.includes('TestEveryTmuxpExampleParses'))).toContain('parsed by the library in a test')
     expect(go.find((line) => line.includes('TestEveryTmuxpExampleMatchesTheStructureTmuxpBuilds'))).toContain('loaded by the library in a test')
-    // The Rust parity script is a scheduled run, not a test that gates a pull request.
-    const rs = lines(await section('rs'))
-    expect(rs.filter((line) => line.includes('a scheduled parity run loads it')).length).toBeGreaterThan(0)
-    expect(rs.filter((line) => line.includes('run_fixture')).every((line) => line.includes('a scheduled parity run loads it'))).toBe(true)
     // Every way the data reaches a file has words of its own, on the line of the test that does.
-    const phrase = { cli: 'a test runs the command', loader: 'loaded by the library in a test', builder: 'built by the library in a test', library: 'parsed by the library in a test', scheduled: 'a scheduled parity run loads it' }
+    const phrase = { cli: 'a test runs the command', loader: 'loaded by the library in a test', builder: 'built by the library in a test', library: 'parsed by the library in a test' }
     for (const port of Object.keys(data.ports).filter((name) => workspaceShowcase(name))) {
       const document = await section(port)
       for (const example of workspaceShowcase(port)!.examples) {

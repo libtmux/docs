@@ -84,11 +84,11 @@ try {
 
   // How a test reaches its file is a value the page can describe.
   for (const via of VIA) assert.doesNotThrow(() => read({ tests: [{ ...example.tests[0], via }] }), via)
-  assert.ok(VIA.includes('scheduled'))
+  assert.throws(() => read({ tests: [{ ...example.tests[0], via: 'scheduled' }] }), /via "scheduled" is none of/)
   assert.throws(() => read({ tests: [{ ...example.tests[0], via: 'carrier-pigeon' }] }), /via "carrier-pigeon" is none of/)
   assert.throws(() => read({ tests: [{ ...example.tests[0], via: undefined }] }), /is none of/)
   assert.throws(() => assertVia('fixture', { via: 'CLI' }), /is none of/)
-  console.log('ok   a test must reach its file by a listed route, scheduled runs included')
+  console.log('ok   a test must reach its file by a listed route, and a scheduled run is none of them')
 
   // A file that is byte-identical to a tmuxp example says so, and only then.
   const digest = (text) => createHash('sha256').update(text).digest('hex')
@@ -135,7 +135,7 @@ try {
   const withTest = (change) => ({ ...block, examples: [{ ...good, tests: [{ ...good.tests[0], ...change }] }] })
   assert.equal(trustedBlock(withTest({}), wanted, digests), true)
   assert.equal(trustedBlock(withTest({ via: 'loader' }), wanted, digests), false)
-  assert.equal(trustedBlock(withTest({ via: 'scheduled' }), wanted, digests), false)
+  assert.equal(trustedBlock(withTest({ via: 'builder' }), wanted, digests), false)
   assert.equal(trustedBlock(withTest({ checks: 'Loads the file and checks nothing else.' }), wanted, digests), false)
   assert.equal(trustedBlock(withTest({ checks: `${good.tests[0].checks} ` }), wanted, digests), false)
   assert.equal(trustedBlock({ ...block, examples: [{ ...good, note: 'Added by hand.' }] }, wanted, digests), false)
@@ -208,10 +208,10 @@ try {
     assert.match(result.output, new RegExp(`${port}: no verified cache for `), result.output)
   }
   refused('go', (data) => { first(data, 'go', (test) => test.via === 'loader').test.via = 'builder' })
-  refused('rs', (data) => { first(data, 'rs', (test) => test.via === 'scheduled').test.via = 'cli' })
+  refused('rs', (data) => { first(data, 'rs', (test) => test.via === 'library').test.via = 'cli' })
   console.log('ok   a hand-edited via is refused')
   refused('py', (data) => { data.ports.py.examples[0].tests[0].checks += ' Hand edited.' })
-  refused('rs', (data) => { first(data, 'rs', (test) => test.via === 'scheduled').test.checks = 'Runs on every pull request.' })
+  refused('rs', (data) => { first(data, 'rs', (test) => test.via === 'library').test.checks = 'Runs on every pull request.' })
   console.log('ok   hand-edited checks text is refused')
   // The JSON tab is converted from the YAML, so a JSON that is not what the YAML converts to is refused.
   refused('go', (data) => { data.ports.go.examples[0].json = data.ports.go.examples[0].json.replace(/"(\w+)":/, '"$1_edited":') })

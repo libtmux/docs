@@ -25,8 +25,6 @@
  *   `builder`    calls the session builder the command is built on.
  *   `library`    calls a library parser that shares the grammar with the
  *                command but is not the code the command runs.
- *   `scheduled`  a scheduled parity run loads the file; no test gate on pull
- *                requests runs it.
  * `checks` must say the same: a `loader`, `builder` or `library` row reads
  * "calls", never "runs the command".
  */
@@ -34,7 +32,7 @@
 import { basename } from 'node:path'
 
 /** Every value `via` may take; the generator refuses any other. */
-export const VIA = ['cli', 'loader', 'builder', 'library', 'scheduled']
+export const VIA = ['cli', 'loader', 'builder', 'library']
 
 /**
  * The presets, in the order the page shows them: the tmuxp classics, then the
@@ -91,16 +89,6 @@ const file = (path) => ({ path })
 
 /** A document quoted inside a file, between a literal opening and closing marker. */
 const inside = (path, open, close, { after } = {}) => ({ path, extract: { open, close, ...(after ? { after } : {}) } })
-
-/** The scheduled parity run: a CI job on a weekly schedule, not a test that gates pull requests. */
-const PARITY = {
-  path: 'scripts/tmuxp-parity.py',
-  name: 'run_fixture',
-  find: '[str(args.binary), "load", "-d", "-y", "-L", WORKSPACE_SOCKET',
-  needles: ['crates/tmux-workspace/tests/fixtures/tmuxp'],
-  via: 'scheduled',
-  checks: 'Loads each fixture in the directory with tmux-workspace load and with tmuxp, each on its own tmux server, and compares the sessions, windows and panes tmux reports. A scheduled CI job runs it each week; pull requests do not.',
-}
 
 const RS_FIXTURES = 'crates/tmux-workspace/tests/fixtures/tmuxp'
 
@@ -335,19 +323,19 @@ export const SOURCES = {
 
   rs: {
     examples: [
-      { topic: 'shorthand', also: [], source: file('crates/tmux-workspace/tests/fixtures/tmuxp/shorthands.yaml'), tests: [RS_PARSES, PARITY] },
-      { topic: 'two-pane', also: [], source: file('crates/tmux-workspace/tests/fixtures/tmuxp/2-pane-vertical.yaml'), tests: [RS_PARSES, PARITY] },
+      { topic: 'shorthand', also: [], source: file('crates/tmux-workspace/tests/fixtures/tmuxp/shorthands.yaml'), tests: [RS_PARSES] },
+      { topic: 'two-pane', also: [], source: file('crates/tmux-workspace/tests/fixtures/tmuxp/2-pane-vertical.yaml'), tests: [RS_PARSES] },
       {
         topic: 'three-pane', also: ['shell-command-before'],
-        source: file('crates/tmux-workspace/tests/fixtures/tmuxp/3-pane.yaml'), tests: [RS_PARSES, PARITY],
+        source: file('crates/tmux-workspace/tests/fixtures/tmuxp/3-pane.yaml'), tests: [RS_PARSES],
       },
       {
         topic: 'four-pane', also: ['tiled'],
-        source: file('crates/tmux-workspace/tests/fixtures/tmuxp/4-pane.yaml'), tests: [RS_PARSES, PARITY],
+        source: file('crates/tmux-workspace/tests/fixtures/tmuxp/4-pane.yaml'), tests: [RS_PARSES],
       },
-      { topic: 'main-horizontal', also: ['three-pane'], source: file('crates/tmux-workspace/tests/fixtures/tmuxp/main-pane-height.yaml'), tests: [RS_PARSES, PARITY] },
-      { topic: 'environment', also: [], source: file('crates/tmux-workspace/tests/fixtures/tmuxp/session-environment.yaml'), tests: [RS_PARSES, PARITY] },
-      { topic: '2-pane-synchronized', also: [], source: file(`${RS_FIXTURES}/2-pane-synchronized.yaml`), tests: [RS_PARSES, PARITY] },
+      { topic: 'main-horizontal', also: ['three-pane'], source: file('crates/tmux-workspace/tests/fixtures/tmuxp/main-pane-height.yaml'), tests: [RS_PARSES] },
+      { topic: 'environment', also: [], source: file('crates/tmux-workspace/tests/fixtures/tmuxp/session-environment.yaml'), tests: [RS_PARSES] },
+      { topic: '2-pane-synchronized', also: [], source: file(`${RS_FIXTURES}/2-pane-synchronized.yaml`), tests: [RS_PARSES] },
       {
         topic: 'blank-panes', also: ['start-directory'], source: file(`${RS_FIXTURES}/blank-panes.yaml`),
         tests: [
@@ -356,10 +344,9 @@ export const SOURCES = {
             checks: 'Builds the minimal and blank-pane examples on a real tmux server.',
           },
           RS_PARSES,
-          PARITY,
         ],
       },
-      { topic: 'env-variables', also: ['start-directory'], source: file(`${RS_FIXTURES}/env-variables.yaml`), tests: [RS_PARSES, PARITY] },
+      { topic: 'env-variables', also: ['start-directory'], source: file(`${RS_FIXTURES}/env-variables.yaml`), tests: [RS_PARSES] },
       {
         topic: 'focus-window-and-panes', also: ['shell-command-before'], source: file(`${RS_FIXTURES}/focus-window-and-panes.yaml`),
         tests: [
@@ -368,10 +355,9 @@ export const SOURCES = {
             checks: 'Parses the example and checks the panes it declares.',
           },
           RS_PARSES,
-          PARITY,
         ],
       },
-      { topic: 'main-pane-height-percentage', also: ['three-pane', 'main-horizontal', 'start-directory'], source: file(`${RS_FIXTURES}/main-pane-height-percentage.yaml`), tests: [RS_PARSES, PARITY] },
+      { topic: 'main-pane-height-percentage', also: ['three-pane', 'main-horizontal', 'start-directory'], source: file(`${RS_FIXTURES}/main-pane-height-percentage.yaml`), tests: [RS_PARSES] },
       {
         topic: 'minimal', also: [], source: file(`${RS_FIXTURES}/minimal.yaml`),
         tests: [
@@ -380,18 +366,17 @@ export const SOURCES = {
             checks: 'Builds the minimal and blank-pane examples on a real tmux server.',
           },
           RS_PARSES,
-          PARITY,
         ],
       },
-      { topic: 'options', also: ['main-horizontal', 'three-pane', 'start-directory'], source: file(`${RS_FIXTURES}/options.yaml`), tests: [RS_PARSES, PARITY] },
-      { topic: 'pane-shell', also: [], source: file(`${RS_FIXTURES}/pane-shell.yaml`), tests: [RS_PARSES, PARITY] },
-      { topic: 'skip-send', also: [], source: file(`${RS_FIXTURES}/skip-send.yaml`), tests: [RS_COMMAND_SETTINGS('skip-send.yaml'), RS_PARSES, PARITY] },
-      { topic: 'skip-send-pane-level', also: [], source: file(`${RS_FIXTURES}/skip-send-pane-level.yaml`), tests: [RS_COMMAND_SETTINGS('skip-send-pane-level.yaml'), RS_PARSES, PARITY] },
-      { topic: 'sleep', also: [], source: file(`${RS_FIXTURES}/sleep.yaml`), tests: [RS_COMMAND_SETTINGS('sleep.yaml'), RS_PARSES, PARITY] },
-      { topic: 'sleep-pane-level', also: [], source: file(`${RS_FIXTURES}/sleep-pane-level.yaml`), tests: [RS_COMMAND_SETTINGS('sleep-pane-level.yaml'), RS_PARSES, PARITY] },
+      { topic: 'options', also: ['main-horizontal', 'three-pane', 'start-directory'], source: file(`${RS_FIXTURES}/options.yaml`), tests: [RS_PARSES] },
+      { topic: 'pane-shell', also: [], source: file(`${RS_FIXTURES}/pane-shell.yaml`), tests: [RS_PARSES] },
+      { topic: 'skip-send', also: [], source: file(`${RS_FIXTURES}/skip-send.yaml`), tests: [RS_COMMAND_SETTINGS('skip-send.yaml'), RS_PARSES] },
+      { topic: 'skip-send-pane-level', also: [], source: file(`${RS_FIXTURES}/skip-send-pane-level.yaml`), tests: [RS_COMMAND_SETTINGS('skip-send-pane-level.yaml'), RS_PARSES] },
+      { topic: 'sleep', also: [], source: file(`${RS_FIXTURES}/sleep.yaml`), tests: [RS_COMMAND_SETTINGS('sleep.yaml'), RS_PARSES] },
+      { topic: 'sleep-pane-level', also: [], source: file(`${RS_FIXTURES}/sleep-pane-level.yaml`), tests: [RS_COMMAND_SETTINGS('sleep-pane-level.yaml'), RS_PARSES] },
       {
         topic: 'sleep-virtualenv', also: ['shell-command-before'], source: file(`${RS_FIXTURES}/sleep-virtualenv.yaml`),
-        tests: [RS_COMMAND_SETTINGS('sleep-virtualenv.yaml'), RS_PARSES, PARITY],
+        tests: [RS_COMMAND_SETTINGS('sleep-virtualenv.yaml'), RS_PARSES],
       },
       {
         topic: 'suppress-history', also: [], source: file(`${RS_FIXTURES}/suppress-history.yaml`),
@@ -401,10 +386,9 @@ export const SOURCES = {
             checks: 'Builds the example and checks which commands reach the shell history.',
           },
           RS_PARSES,
-          PARITY,
         ],
       },
-      { topic: 'window-index', also: [], source: file(`${RS_FIXTURES}/window-index.yaml`), tests: [RS_PARSES, PARITY] },
+      { topic: 'window-index', also: [], source: file(`${RS_FIXTURES}/window-index.yaml`), tests: [RS_PARSES] },
       {
         topic: 'start-directory', also: [],
         source: file('crates/tmux-workspace/tests/fixtures/tmuxp/start-directory.yaml'),
@@ -415,7 +399,6 @@ export const SOURCES = {
             checks: 'Builds the file on a real tmux server and checks the directory of each window\'s first pane.',
           },
           RS_PARSES,
-          PARITY,
         ],
       },
     ],

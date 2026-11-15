@@ -33,7 +33,7 @@ const sections = new Set(examples.map((example) => example.topic))
   <h2 id="example-workspaces">Example workspaces</h2>
   <p>
     Each workspace below is a file that <a href={`https://github.com/${showcase.repo}/tree/${showcase.revision}`}><code>{showcase.repo}</code></a>
-    loads in a test or a scheduled run, as the list under it says. The drawing shows the panes of each window and the commands each pane receives.
+    loads in a test, as the list under it says. The drawing shows the panes of each window and the commands each pane receives.
   </p>
   {examples.map((example) => {
     const topic = TOPICS.find((entry) => entry.id === example.topic)!
