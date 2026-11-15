@@ -14,7 +14,6 @@ export function initDocumentationNavigation() {
     const compact = window.matchMedia(below('phone'))
     // Under 22rem the navigation buttons also fold into the settings view.
     const narrow = window.matchMedia('(max-width: 21.875rem)')
-    context.dataset.settingsEnhanced = ''
     toggle.hidden = back.hidden = false
     const closeSettings = () => {
       for (const picker of settings.querySelectorAll<HTMLDetailsElement>('[data-doc-picker][open]')) picker.open = false

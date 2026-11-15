@@ -45,8 +45,8 @@ const tmuxVersions = !port ? TMUX_VERSIONS.map((entry) => ({
         <VersionSwitcher portSlug={port} version={version} entries={tmuxVersions} label={catalog ? 'tmux catalog version' : sourceReference ? 'tmux source version' : 'tmux manual version'} />
         <LocaleSwitcher locale={locale} sourcePath={sourcePath} localeStatuses={localeStatuses ?? { [locale]: 'translated' }} />
       </div>
-      {/* Below 30rem the version and the translation language fold into this one trigger: "latest · EN". */}
-      <button type="button" class="context-settings-toggle" data-context-settings-toggle hidden
+      {/* Below 30rem the version and the translation language fold into this one trigger: "latest · EN". The stylesheet draws it from the first paint on a page with script (`[data-js]` on the root, set in the head), so binding the script moves nothing; without script its base rule hides it and the two pickers stay. */}
+      <button type="button" class="context-settings-toggle" data-context-settings-toggle
         aria-label={`${t(locale, 'navigation.version')} ${version}, ${LOCALE_LABEL[locale]}. ${t(locale, 'navigation.change')}`}
         aria-controls="documentation-settings documentation-navigation" aria-expanded="false">
         <span class="context-settings-summary" aria-hidden="true">{version} · {locale.toUpperCase()}</span>
@@ -98,8 +98,8 @@ const tmuxVersions = !port ? TMUX_VERSIONS.map((entry) => ({
   }
   /* bp-phone (30rem): the version and the translation language fold into one trigger, and open into the bar's settings view. */
   @media (max-width: 29.999rem) {
-    .documentation-context[data-settings-enhanced] .documentation-context-settings { display: none; }
-    .documentation-context[data-settings-enhanced] .context-settings-toggle { display: inline-flex; }
+    :global([data-js]) .documentation-context .documentation-context-settings { display: none; }
+    :global([data-js]) .documentation-context .context-settings-toggle { display: inline-flex; }
     .documentation-context[data-settings-open] .documentation-context-surface,
     .documentation-context[data-settings-open] .context-settings-toggle { display: none; }
     .documentation-context[data-settings-open] .documentation-context-selectors { flex: 1; padding-inline: var(--site-gutter) .2rem; }
@@ -109,7 +109,7 @@ const tmuxVersions = !port ? TMUX_VERSIONS.map((entry) => ({
   /* Below 22rem there is no room for the navigation buttons beside the surface: they live in the settings view. */
   @media (max-width: 21.875rem) {
     .documentation-context-inner { min-height: 3rem; }
-    .documentation-context[data-settings-enhanced] .documentation-context-navigation { display: none; }
+    :global([data-js]) .documentation-context .documentation-context-navigation { display: none; }
     .documentation-context[data-settings-open] .documentation-context-navigation:not(:empty) { display: flex; padding-right: var(--site-gutter); }
   }
   @media (max-width: 20rem) {

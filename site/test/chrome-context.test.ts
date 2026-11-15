@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { Window, type HTMLButtonElement, type HTMLElement } from 'happy-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { initDocumentationNavigation } from '../src/components/docs/documentation-navigation'
@@ -47,7 +48,8 @@ describe('the context trigger below bp-phone', () => {
     expect(summary.textContent).toBe('latest · EN')
     // The accessible name carries it; the short text is for sighted readers.
     expect(summary.getAttribute('aria-hidden')).toBe('true')
-    expect(toggle.hasAttribute('hidden')).toBe(true)
+    // Hidden by the stylesheet until the page has script, not by an attribute the script removes after the first paint.
+    expect(toggle.hasAttribute('hidden')).toBe(false)
   })
 
   it('names the translation-language picker for what it chooses', async () => {
@@ -95,5 +97,29 @@ describe('the context trigger below bp-phone', () => {
     toggle.dispatchEvent(new win.Event('click'))
     expect(context.hasAttribute('data-settings-open')).toBe(false)
     await win.happyDOM.abort()
+  })
+})
+
+/** Zero layout shift: the fold is drawn by the stylesheet on the first paint, not by the script that binds the trigger afterwards. */
+describe('the context strip below bp-phone, before its script runs', () => {
+  const strip = readFileSync(new URL('../src/components/docs/DocumentationContext.astro', import.meta.url), 'utf8')
+  const phoneRules = (css: string) => css.slice(css.indexOf('@media (max-width: 29.999rem)'), css.indexOf('/* Below 22rem'))
+  /** True when the fold waits for the script: the two pickers show on the first paint and the trigger replaces them after it. */
+  const foldsAfterScript = (css: string) => phoneRules(css).includes('data-settings-enhanced')
+
+  it('folds the version and language into one trigger from the first paint, keyed on the flag the head sets', () => {
+    expect(foldsAfterScript(strip), 'a script that sets data-settings-enhanced moves the selectors after the first paint').toBe(false)
+    expect(phoneRules(strip)).toMatch(/:global\(\[data-js\]\) \.documentation-context \.documentation-context-settings \{ display: none; \}/)
+    expect(phoneRules(strip)).toMatch(/:global\(\[data-js\]\) \.documentation-context \.context-settings-toggle \{ display: inline-flex; \}/)
+  })
+
+  it('leaves a page without script its two pickers: the trigger is hidden by its base rule, not by an attribute the script removes', () => {
+    expect(strip).not.toMatch(/data-context-settings-toggle hidden/)
+    expect(strip).toMatch(/\.context-settings-toggle, \.context-settings-back \{ display: none;/)
+  })
+
+  it('has a negative case: the fold that waits for the script is what the check refuses', () => {
+    const before = '@media (max-width: 29.999rem) {\n .documentation-context[data-settings-enhanced] .context-settings-toggle { display: inline-flex; }\n}\n/* Below 22rem */'
+    expect(foldsAfterScript(before)).toBe(true)
   })
 })
