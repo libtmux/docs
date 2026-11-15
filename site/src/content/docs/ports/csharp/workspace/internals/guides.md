@@ -15,7 +15,7 @@ to create its session, windows, and panes. Parsing needs no running tmux server;
 building requires tmux on a Unix host.
 
 Start with the [complete workspace example](../examples/). It includes the
-program, project file, dependency checkout, and run command for the .NET 10 SDK.
+program, project file, package references, and run command for the .NET 10 SDK.
 The example creates a private server and removes it when the owned scope ends.
 
 ## Create an isolated workspace
@@ -42,7 +42,7 @@ instead of creating an owned scope. A failed build can leave a partial session.
 Inspect `WorkspaceBuildException.PartialResult` and decide what to remove;
 the builder does not roll back changes automatically.
 
-The [builder source](https://github.com/libtmux/libtmux-dotnet/blob/320dc64f4b8b7815842471327a5e6b84a1499bf8/src/LibTmux.Workspace/WorkspaceBuilder.cs)
+The [builder source](https://github.com/libtmux/libtmux-dotnet/blob/8d47af7d89638ad267528ac56897cec67df597f7/src/LibTmux.Workspace/WorkspaceBuilder.cs)
 describes the build result and partial-failure behavior. See
-[owned server lifetime](https://github.com/libtmux/libtmux-dotnet/blob/320dc64f4b8b7815842471327a5e6b84a1499bf8/src/LibTmux/Server.Lifecycle.cs)
+[owned server lifetime](https://github.com/libtmux/libtmux-dotnet/blob/8d47af7d89638ad267528ac56897cec67df597f7/src/LibTmux/Server.Lifecycle.cs)
 for scope cleanup.

@@ -134,28 +134,29 @@
     {
       "port": "csharp",
       "language": "csharp",
-      "sourceRevision": "320dc64f4b8b7815842471327a5e6b84a1499bf8",
+      "sourceRevision": "8d47af7d89638ad267528ac56897cec67df597f7",
       "sourceRepository": "libtmux/libtmux-dotnet",
       "files": [
         {
           "name": "Program.cs",
-          "sha256": "4fd0396a237012636ed7c8d74760a4ddd2614104c78d2dc211a5b1882cb6fc40"
+          "sha256": "35403baf712e2a7c0be1edea7e7d33942d5003213c02767ed926c9fee66ea67d"
         },
         {
           "name": "Capture.csproj",
-          "sha256": "badc813042195a1ac170ad3952437994fe7a85425b09b888f3e1e20f6fa71d15"
+          "sha256": "606ee1d6da184663df6dbd0a8cd9df1810e9a52a32b8427f3053115b23965dd2"
         }
       ],
       "toolchain": [
-        ".NET SDK 10.0.302"
+        ".NET SDK 10.0.403",
+        "LibTmux 0.1.1"
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "page": "ports/csharp/examples/capture-pane-output",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet libtmux-source &&\n  git -C libtmux-source checkout 320dc64f4b8b7815842471327a5e6b84a1499bf8 &&\n  dotnet build Capture.csproj --maxcpucount:1 &&\n  dotnet run --project Capture.csproj --no-build"
+        "dotnet build Capture.csproj --maxcpucount:1 &&\n  dotnet run --project Capture.csproj --no-build"
       ]
     },
     {

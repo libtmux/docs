@@ -500,6 +500,36 @@
         "go mod tidy",
         "go run ."
       ]
+    },
+    {
+      "port": "csharp",
+      "language": "csharp",
+      "sourceRevision": "8d47af7d89638ad267528ac56897cec67df597f7",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "files": [
+        {
+          "name": "WorkspaceExample.csproj",
+          "sha256": "ce8ce5c81b4382ee79b68f8282fbba4e4aafecfe0fe619464bfd3577549d324b"
+        },
+        {
+          "name": "Program.cs",
+          "sha256": "1baafdb59e275e24ee368546f777e6ca1e3e500e217139acb50e1a8cd97073e1"
+        }
+      ],
+      "toolchain": [
+        ".NET SDK 10.0.403",
+        "LibTmux 0.1.1",
+        "LibTmux.Workspace 0.1.1"
+      ],
+      "tmux": [
+        "3.3a",
+        "3.7c"
+      ],
+      "page": "ports/csharp/workspace/internals/examples",
+      "shellRecipe": [
+        "mkdir dotnet-workspace-example\ncd dotnet-workspace-example",
+        "dotnet run --project WorkspaceExample.csproj --configuration Release"
+      ]
     }
   ],
   "rootWorkspace": {

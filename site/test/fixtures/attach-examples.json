@@ -161,14 +161,15 @@
     {
       "port": "csharp",
       "language": "csharp",
-      "sourceRevision": "320dc64f4b8b7815842471327a5e6b84a1499bf8",
+      "sourceRevision": "8d47af7d89638ad267528ac56897cec67df597f7",
       "sourceRepository": "libtmux/libtmux-dotnet",
       "toolchain": [
-        ".NET SDK 10.0.302"
+        ".NET SDK 10.0.403",
+        "LibTmux 0.1.1"
       ],
       "page": "ports/csharp/guides/attaching-to-tmux",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet libtmux-source &&\n  git -C libtmux-source checkout 320dc64f4b8b7815842471327a5e6b84a1499bf8 &&\n  dotnet build Connect.csproj --maxcpucount:1 &&\n  sh run.sh dotnet run --project Connect.csproj --no-build"
+        "dotnet build Connect.csproj --maxcpucount:1 &&\n  sh run.sh dotnet run --project Connect.csproj --no-build"
       ],
       "expectedOutput": "work",
       "files": [
@@ -178,7 +179,7 @@
         },
         {
           "name": "Connect.csproj",
-          "sha256": "badc813042195a1ac170ad3952437994fe7a85425b09b888f3e1e20f6fa71d15"
+          "sha256": "606ee1d6da184663df6dbd0a8cd9df1810e9a52a32b8427f3053115b23965dd2"
         },
         {
           "name": "run.sh",
@@ -186,7 +187,7 @@
         }
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ]
     },

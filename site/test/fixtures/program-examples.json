@@ -189,6 +189,32 @@
           "| hello from tmux"
         ]
       ]
+    },
+    {
+      "port": "csharp",
+      "page": "ports/csharp/examples/attach-and-send-keys",
+      "language": "csharp",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "sourceRevision": "8d47af7d89638ad267528ac56897cec67df597f7",
+      "files": [
+        {
+          "name": "Program.cs",
+          "sha256": "67d58c899e75b7ebebe70f3cb9542d7a6d8b4282b9488b97bc42be4392656848"
+        },
+        {
+          "name": "Attach.csproj",
+          "sha256": "606ee1d6da184663df6dbd0a8cd9df1810e9a52a32b8427f3053115b23965dd2"
+        }
+      ],
+      "shellRecipe": [
+        "dotnet build Attach.csproj --maxcpucount:1 &&\n  dotnet run --project Attach.csproj --no-build"
+      ],
+      "expectedOutputs": [
+        [
+          "the pane printed it",
+          "| hello from tmux"
+        ]
+      ]
     }
   ]
 }

@@ -13,7 +13,7 @@
   "ports/csharp/topics/format-tokens.md": 1,
   "ports/csharp/topics/options-and-hooks.md": 1,
   "ports/csharp/topics/socket-and-servers.md": 1,
-  "ports/csharp/workspace/internals/examples.md": 6,
+  "ports/csharp/workspace/internals/examples.md": 3,
   "ports/cxx/concepts/queries.md": 1,
   "ports/cxx/examples/capture-pane-output.md": 1,
   "ports/cxx/guides/attaching-to-tmux.md": 1,
