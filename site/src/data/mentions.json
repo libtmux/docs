@@ -20156,27 +20156,6 @@
    "why": "not defined in the stated port"
   },
   {
-   "port": "haskell",
-   "text": "X.Ya",
-   "page": "/haskell/latest/guides/typed-values/",
-   "line": 83,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "haskell",
-   "text": "X.Y-rc",
-   "page": "/haskell/latest/guides/typed-values/",
-   "line": 83,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "haskell",
-   "text": "next-X.Y",
-   "page": "/haskell/latest/guides/typed-values/",
-   "line": 83,
-   "why": "not defined in the stated port"
-  },
-  {
    "port": "kotlin",
    "text": "@kotlin.Metadata",
    "page": "/kotlin/latest/guides/coroutines/",
