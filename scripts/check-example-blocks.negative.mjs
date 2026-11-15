@@ -41,8 +41,9 @@ const landingCases = [
   { name: 'a landing anchor that matches no line', table: landingWith('ts', 'mcp', { from: 'export async function connectAgents' }), trips: /landing page of ts, mcp: .*from anchor "export async function connectAgents" matches no line/ },
   { name: 'a landing anchor that matches several lines', table: landingWith('ts', 'workspace', { from: 'sleep 30' }), trips: /landing page of ts, workspace: .*from anchor "sleep 30" is ambiguous/ },
   { name: 'a landing range that ends inside a block', table: landingWith('go', 'mcp', { to: '=\t}' }), trips: /landing page of go, mcp: .*opens \{ it never closes/ },
-  { name: 'a later landing range that matches no line', table: landingWith('java', 'workspace', { more: [{ from: 'void theDescribedSessionIsWhatGetsBuilds', to: '=    }' }] }), trips: /landing page of java, workspace: .*from anchor "void theDescribedSessionIsWhatGetsBuilds" matches no line/ },
-  { name: 'a later landing range that ends inside a block', table: landingWith('java', 'workspace', { more: [{ from: 'void theDescribedSessionIsWhatGetsBuilt', to: 'assertEquals("built"' }] }), trips: /landing page of java, workspace: .*opens \{ it never closes/ },
+  // Go's workspace panel quotes a standalone program with a later range; Java's names a gap and quotes nothing.
+  { name: 'a later landing range that matches no line', table: landingWith('go', 'workspace', { more: [{ from: 'func runs(ctx context.Context)', to: '=}' }] }), trips: /landing page of go, workspace: .*from anchor "func runs\(ctx context\.Context\)" matches no line/ },
+  { name: 'a later landing range that ends inside a block', table: landingWith('go', 'workspace', { more: [{ from: 'func run(ctx context.Context)', to: 'defer func() {' }] }), trips: /landing page of go, workspace: .*opens \{ it never closes/ },
   { name: 'a landing file missing from the example cache', table: landingWith('rs', 'mcp', { file: 'crates/tmux-mcp/examples/gone.rs' }), trips: /landing page of rs, mcp: crates\/tmux-mcp\/examples\/gone\.rs is not in the example cache/ },
 ]
 
