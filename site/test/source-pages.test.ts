@@ -70,7 +70,7 @@ describe('sourceLines', () => {
     expect(html).toContain('x &lt; y')
     expect(html).toContain('<a href="/ref/a/" title="Documented as a.A"')
     expect(html).toContain('id="L3-L5"')
-    expect(css).toContain('.lm-src:has(#L3-L5:target)>span:nth-child(n+3):nth-child(-n+5)')
+    expect(css, 'the tint is the code block\'s, never the numbers\'').toContain('.lm-src:has(#L3-L5:target)>span:nth-child(n+3):nth-child(-n+5)>code{background:var(--color-highlight-on-target)}')
   })
 
   it('writes one class per colour pair rather than a style on every token', async () => {
@@ -82,16 +82,30 @@ describe('sourceLines', () => {
 
 describe('the source view\'s numbers and marks (record 0058)', () => {
   const css = readFileSync(new URL('../src/styles/source.css', import.meta.url), 'utf8')
+  const rule = (selector: string) => new RegExp(`\\n${selector.replace(/[.*+?^${}()|[\]\\>]/g, '\\$&')} \\{([^}]*)\\}`).exec(css)?.[1]
 
-  it('keeps them in the column left of the code block, which carries the code ground and an edge of its own', () => {
-    const rule = /\n\.lm-src \{([^}]*)\}/.exec(css)
-    expect(rule, 'a rule for the numbered lines').not.toBeNull()
-    expect(rule![1], 'the column is as wide as the marks, the numbers and their gaps').toMatch(/--lm-src-edge:\s*calc\(22px \+ 6\.75ch\)/)
-    expect(rule![1], 'the code ground starts at the edge, so the column is the page\'s').toMatch(/background:[^;]*var\(--lm-src-bg\)[^;]*var\(--lm-src-edge\)/)
-    expect(rule![1], 'a hairline marks the edge').toMatch(/var\(--color-background-border\)[^;]*var\(--lm-src-edge\)/)
+  it('hangs the marks and the numbers 12px in from the column\'s edge, the view\'s own line padding', () => {
+    expect(rule('.lm-src > span'), 'a rule for a numbered line').toMatch(/padding: 0 0 0 12px/)
+    expect(rule('.lm-src > span')).toMatch(/grid-template-columns: 22px calc\(6ch \+ 12px\) minmax\(0, 1fr\)/)
   })
 
-  it('leaves the pane\'s scrolling column on the page\'s ground, so its numbers do not sit on the code\'s', () => {
-    expect(/\.lm-pane__body \{([^}]*)\}/.exec(css)![1]).toMatch(/background: var\(--background-color\)/)
+  it('moves the code block right by the rail\'s width and 24px, and gives it the code ground and a hairline', () => {
+    const lines = rule('.lm-src')!
+    expect(lines, 'the rail is a mark, a gap, the number and a gap, 12px each side').toMatch(/--lm-src-edge:\s*calc\(46px \+ 6ch\)/)
+    expect(lines, 'the code ground starts at the edge, so the column is the page\'s').toMatch(/background:[^;]*var\(--lm-src-bg\)[^;]*var\(--lm-src-edge\)/)
+    expect(lines, 'a hairline marks the edge').toMatch(/var\(--color-background-border\)[^;]*var\(--lm-src-edge\)/)
+    expect(rule('.lm-src > span > code'), 'the code keeps 12px either side').toMatch(/padding: 0 12px/)
+  })
+
+  it('keeps the target line\'s tint inside the code block, never under the marks and numbers', () => {
+    expect(rule('.lm-src > span.hl > code')).toMatch(/background: var\(--color-highlight-on-target\)/)
+    expect(rule('.lm-src > span:target > code')).toMatch(/background: var\(--color-highlight-on-target\)/)
+    expect(rule('.lm-src > span.hl'), 'the row itself takes no tint').toBeUndefined()
+    expect(rule('.lm-src > span:target')).toBeUndefined()
+  })
+
+  it('leaves the pane\'s scrolling column on the page\'s ground and its lines on the page\'s columns', () => {
+    expect(rule('.lm-pane__body')).toMatch(/background: var\(--background-color\)/)
+    expect(rule('.lm-pane__body .lm-src > span'), 'the pane overrides only the scroll margin').not.toMatch(/grid-template-columns/)
   })
 })

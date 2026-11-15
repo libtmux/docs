@@ -26,12 +26,13 @@ html[data-theme-mode='dark'] {
 /* ---- Numbered lines, shared by the page and the pane ---- */
 
 /*
- * The marks and the numbers keep their column on the page's ground (record 0058); the code block starts where the column ends,
- * carries the code ground and a hairline of its own. The column is the mark (22px), then the number (4.5ch) and the gaps
- * either side of it, and the block starts 0.75ch before its text.
+ * The marks and the numbers hang outside the code block in a column on the page's ground (record 0058): 12px in from the
+ * column's edge, the view's own line padding, as a mark (22px), a gap, the number (4.5ch) and 12px more. The code block starts
+ * where that column ends, so it moves right by the rail's width and 24px, carries the code ground and a hairline of its own,
+ * and keeps the line tints to itself.
  */
 .lm-src {
-  --lm-src-edge: calc(22px + 6.75ch);
+  --lm-src-edge: calc(46px + 6ch);
   margin: 0;
   padding: 12px 0;
   background:
@@ -45,9 +46,9 @@ html[data-theme-mode='dark'] {
 .lm-src > span {
   position: relative;
   display: grid;
-  grid-template-columns: 22px 4.5ch minmax(0, 1fr);
-  gap: 0 1.5ch;
-  padding: 0 12px 0 0;
+  grid-template-columns: 22px calc(6ch + 12px) minmax(0, 1fr);
+  gap: 0;
+  padding: 0 0 0 12px;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   scroll-margin-top: 6rem;
@@ -56,17 +57,19 @@ html[data-theme-mode='dark'] {
   content: attr(data-n);
   grid-column: 2;
   grid-row: 1;
+  box-sizing: border-box;
+  padding-inline: 1.5ch 12px;
   text-align: right;
   color: var(--lm-src-muted);
   user-select: none;
   -webkit-user-select: none;
 }
-.lm-src > span > code { grid-column: 3; grid-row: 1; padding: 0; background: none; font: inherit; color: inherit; }
+.lm-src > span > code { grid-column: 3; grid-row: 1; padding: 0 12px; background: none; font: inherit; color: inherit; }
 .lm-src > span > .gm { grid-column: 1; grid-row: 1; display: inline-flex; align-items: center; justify-content: center; font-weight: 400; }
 .lm-src > span > .gm a { display: inline-flex; border-radius: .2em; text-decoration: none; }
 .lm-src > span > .gm a:focus-visible { outline: 2px solid var(--focus-ring-color, currentColor); outline-offset: 1px; }
-.lm-src > span.hl { background: var(--color-highlight-on-target); }
-.lm-src > span:target { background: var(--color-highlight-on-target); }
+.lm-src > span.hl > code { background: var(--color-highlight-on-target); }
+.lm-src > span:target > code { background: var(--color-highlight-on-target); }
 .lm-src code > span { color: var(--shiki-light); }
 html[data-theme-mode='dark'] .lm-src code > span { color: var(--shiki-dark); }
 /* A range anchor takes no room: it only gives a fragment such as #L112-L129 a place to scroll to. */
@@ -200,7 +203,7 @@ html[data-theme-mode='dark'] .lm-src code > span { color: var(--shiki-dark); }
 .lm-pane__prov a { color: var(--color-link); font-family: var(--font-sans, ui-sans-serif, system-ui, sans-serif); }
 .lm-pane__body { position: relative; overflow: auto; overscroll-behavior: contain; min-height: 0; background: var(--background-color); }
 .lm-pane__body .lm-src { overflow: visible; }
-.lm-pane__body .lm-src > span { grid-template-columns: 22px 4.5ch minmax(0, 1fr); scroll-margin-top: .5rem; }
+.lm-pane__body .lm-src > span { scroll-margin-top: .5rem; }
 .lm-pane__body[aria-busy='true'] { opacity: .6; }
 .lm-pane__state { margin: .75rem; font-size: 13px; line-height: 19.5px; color: var(--lm-src-fg); }
 .lm-pane__state p { margin: .25rem 0 0; color: var(--color-foreground-muted); }

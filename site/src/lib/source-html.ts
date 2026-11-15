@@ -80,7 +80,7 @@ export async function sourceLines(
     if (to <= from || seen.has(id)) continue
     seen.add(id)
     anchors.set(from, [...(anchors.get(from) ?? []), `<i class="lm-range" id="${id}" aria-hidden="true"></i>`])
-    targets.push(`.lm-src:has(#${id}:target)>span:nth-child(n+${from}):nth-child(-n+${to})`)
+    targets.push(`.lm-src:has(#${id}:target)>span:nth-child(n+${from}):nth-child(-n+${to})>code`)
   }
   const html = rows.map((row, index) => {
     const number = index + 1
