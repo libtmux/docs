@@ -441,7 +441,7 @@ if (process.argv[2] === process.env.FAILING_TASK) process.exit(23)
 })
 
 describe('OCaml documentation producer', () => {
-  it.each(['', 'install', 'build', 'tools/export_api.py'])('exports installed interfaces and stops on task %j failure', (failure) => {
+  it.each(['', 'install', 'build', 'scripts/export_api/export_api.py'])('exports installed interfaces and stops on task %j failure', (failure) => {
     const directory = mkdtempSync(join(tmpdir(), 'libtmux-ocaml-export-'))
     try {
       const source = join(directory, 'selected source')
@@ -462,7 +462,7 @@ if (argv.includes(process.env.FAILING_TASK)) process.exit(23)
       const expected = [
         ['install', '.', '--deps-only', '--with-doc', '--yes'],
         ['exec', '--', 'dune', 'build', '@install', 'tools/api_export.exe'],
-        ['exec', '--', 'python3', 'tools/export_api.py', '--output', '_build/docs/ocaml.json'],
+        ['exec', '--', 'uv', 'run', 'scripts/export_api/export_api.py', '--output', '_build/docs/ocaml.json'],
       ]
       expect(result.status, result.stderr).toBe(failure ? 23 : 0)
       expect(commands).toEqual(expected.slice(0, failure === 'install' ? 1 : failure === 'build' ? 2 : 3)
