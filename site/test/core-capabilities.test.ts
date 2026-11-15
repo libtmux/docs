@@ -558,10 +558,7 @@ describe('the example gate over what a reader copies', () => {
   // The data a reader copies from. Text the ports own is listed with the rule that flags it: a port repository
   // has to change, and the entry leaves this list when its pinned revision does. A new violation fails here.
   describe('over the current data', () => {
-    const PORT_OWNED: Record<string, string[]> = {
-      'home program perl examples/quickstart.pl': ['uses a helper of the repository'],
-      'home program perl scripts/lib/LibTmuxFixture.pm': ['reads a variable only the repository tests set', 'uses a helper of the repository'],
-    }
+    const PORT_OWNED: Record<string, string[]> = {}
 
     const flagged = (): Record<string, string[]> => {
       const found: Record<string, string[]> = {}
