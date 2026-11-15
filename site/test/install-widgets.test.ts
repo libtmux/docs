@@ -29,7 +29,7 @@ describe('Julia source installation', () => {
     try {
       const server = product === 'mcp-server'
       const template = await loadAstroTemplate(`components/widgets/${server ? 'McpInstall' : 'PackageInstall'}.astro`, {
-        real: ['components/widgets/InstallCode.astro'],
+        real: ['InstallCode', 'InstallCooldown', 'InstallFacts', 'InstallWhere'].map((name) => `components/widgets/${name}.astro`),
         modules: {
           '../../lib/api-models': { API_MODELS: {} },
           'astro-expressive-code/components': { Code: () => '' },
@@ -38,7 +38,7 @@ describe('Julia source installation', () => {
       window.document.body.innerHTML = await renderAstroTemplate(template, {
         props: server ? { port: 'julia' } : { ports: ['julia'], packageId: product },
       })
-      const code = window.document.querySelector(server ? '.lm-mcp-install__code--prereq code' : '.lm-pkg-install__cmd code')?.textContent
+      const code = window.document.querySelector(server ? '.lm-install__body .lm-mcp-install__panel[data-default] .lm-mcp-install__code--strip code' : '.lm-install__body .lm-pkg-install__cmd code')?.textContent
       expect(code, 'the setup command is visible').toBeTruthy()
       expect(code).toContain(`"${revision}"`)
       expect(code).not.toContain('"master"')
@@ -432,8 +432,9 @@ describeIfMcp('MCP install picker', () => {
     const cooldown = html.getAttribute('data-mcp-install-cooldown-enabled') === '1'
       ? (html.getAttribute('data-mcp-install-cooldown-type') ?? 'days')
       : 'off'
+    // A panel is drawn in the surface's header, body and notes; the command is in the body.
     const panel = (mode: string) => document.querySelector<HTMLElement>(
-      `.lm-mcp-install__panel[data-client="${client}"][data-method="${method}"]` +
+      `.lm-install__body .lm-mcp-install__panel[data-client="${client}"][data-method="${method}"]` +
         `[data-scope="${scope}"][data-cooldown="${mode}"]`,
     )
     // A port without a cooldown axis renders only its `off` panels.
@@ -448,9 +449,9 @@ describeIfMcp('MCP install picker', () => {
 
   it('offers npm\'s cooldown and bypass', () => {
     const { document } = load(TS_MCP, url)
-    expect(document.querySelectorAll('.lm-mcp-install__cooldown-control').length).toBe(1)
+    expect(document.querySelectorAll('[data-mcp-cooldown="toggle"]').length).toBe(1)
     const cell = (method: string, cooldown: string) =>
-      document.querySelector(`.lm-mcp-install__panel[data-client="claude-code"][data-method="${method}"][data-scope="local"][data-cooldown="${cooldown}"]`)?.textContent ?? ''
+      document.querySelector(`.lm-install__body .lm-mcp-install__panel[data-client="claude-code"][data-method="${method}"][data-scope="local"][data-cooldown="${cooldown}"]`)?.textContent ?? ''
     expect(cell('npx', 'bypass')).toContain('npx -y --min-release-age=0 @libtmux/mcp')
     expect(cell('global', 'days')).toContain('--min-release-age=7 \\')
     expect(cell('global', 'days')).toContain('--min-release-age-exclude=@libtmux/mcp \\')
@@ -504,8 +505,8 @@ const describeIfGoMcp = SITE_BUILT && existsSync(GO_MCP) ? describe : describe.s
 describeIfGoMcp('MCP install picker, Go', () => {
   it('renders no cooldown control for a port whose toolchain has none', () => {
     const { document } = load(GO_MCP, `https://libtmux.org/${SITE_PREFIX}go/latest/mcp/`)
-    expect(document.querySelectorAll('.lm-mcp-install__cooldown-control').length).toBe(0)
-    expect(document.querySelectorAll('.lm-mcp-install__body--settings').length).toBe(0)
+    expect(document.querySelectorAll('[data-mcp-cooldown]').length).toBe(0)
+    expect(document.querySelectorAll('[data-cooldown-family="mcp"]').length).toBe(0)
   })
 })
 
@@ -526,6 +527,6 @@ describe('MCP install picker, Python', () => {
       ...document.querySelectorAll('.lm-mcp-install__tab[data-tab-kind="method"]'),
     ].map((t) => t.getAttribute('data-tab-value'))
     expect(methods).toEqual(['uvx', 'pipx', 'pip'])
-    expect(document.querySelectorAll('.lm-mcp-install__cooldown-control').length).toBe(1)
+    expect(document.querySelectorAll('[data-mcp-cooldown="toggle"]').length).toBe(1)
   })
 })

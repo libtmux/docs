@@ -18,10 +18,10 @@
  *   - `cooldown.type`    ("days" | "bypass"): cooldown flavor when enabled
  *   - `cooldown.days`    int: day count when type=days
  *
- * The checkbox in the method-tab row flips `enabled` only — it does *not*
- * change the install/settings view. The "Configure cooldowns" label is the
- * only entry point to the settings view. Inside settings, touching the
- * radio or days input auto-sets enabled=1 (implicit activation).
+ * The "+ Cooldown" toggle in the options bar flips `enabled`. Turned on, a
+ * strip above the command (design record 0064) holds the days in its sentence,
+ * Bypass instead (the type) and Remove; typing a day count enables the
+ * cooldown and sets the type to days (implicit activation).
  *
  * Days slots come in two flavors: uvx days bodies embed a duration slot
  * (`P<N>D`, self-refreshing in uv and pip 26.1+), pipx days bodies embed an
@@ -140,10 +140,7 @@
       // the prehydrate script already pushed onto <html>.
       applyCooldownToWidget(widget, enabled, type, days)
     })
-    // Settings view is transient — always reset to install view on first
-    // load and every swap. (The user wouldn't expect to land mid-form on a
-    // new page.)
-    setView('install')
+    watchTabRows()
   }
 
   function onClick(e) {
@@ -152,80 +149,73 @@
       var widget = action.closest('.lm-mcp-install')
       if (widget && handleAction(widget, action, e)) return
     }
+    var toggle = e.target.closest('[data-mcp-cooldown="toggle"]')
+    if (toggle) {
+      setCooldownEnabled(!readCooldownEnabled(), { persist: true, broadcast: true })
+      return
+    }
+    var strip = e.target.closest('[data-cooldown-family="mcp"] [data-cooldown-action]')
+    var owner = strip && strip.closest('.lm-mcp-install')
+    if (strip && owner) {
+      handleStripAction(owner, strip)
+      return
+    }
     var tab = e.target.closest('.lm-mcp-install__tab')
     if (!tab) return
     var tabWidget = tab.closest('.lm-mcp-install')
     if (!tabWidget) return
     select(tabWidget, tab.dataset.tabKind, tab.dataset.tabValue, { persist: true, broadcast: true })
-    // Tab clicks are an install-side action — if the user was mid-
-    // configuring cooldowns, the click implies they want to see the
-    // snippet for their new selection. Return to install view so the
-    // updated panel is visible.
-    setView('install')
   }
 
   function handleAction(widget, el, event) {
-    var action = el.dataset.action
-    if (action === 'copy') {
+    if (el.dataset.action === 'copy') {
       copyPanelCode(el)
-      event.preventDefault()
-      return true
-    }
-    if (action === 'cooldown-toggle') {
-      // Native checkbox change runs through onChange. Don't double-handle.
-      return false
-    }
-    if (action === 'cooldown-open') {
-      var current = document.documentElement.getAttribute('data-mcp-install-view')
-      setView(current === 'settings' ? 'install' : 'settings')
-      event.preventDefault()
-      return true
-    }
-    if (action === 'cooldown-help') {
-      setView('settings')
-      var details = widget.querySelector('.lm-mcp-install__cooldown-explainer')
-      if (details) details.open = true
-      event.preventDefault()
-      return true
-    }
-    if (action === 'cooldown-back') {
-      setView('install')
       event.preventDefault()
       return true
     }
     return false
   }
 
+  // The control the reader just used keeps the focus, or the one that takes its place when it leaves.
+  function focusVisible(scope, selector) {
+    var next = Array.prototype.slice.call(scope.querySelectorAll(selector)).find(function (el) {
+      return el.getClientRects().length > 0
+    })
+    if (next) next.focus({ preventScroll: true })
+  }
+
+  function handleStripAction(widget, el) {
+    var kind = el.dataset.cooldownAction
+    if (kind === 'bypass') {
+      setCooldownType('bypass', { persist: true, broadcast: true })
+      if (!readCooldownEnabled()) setCooldownEnabled(true, { persist: true, broadcast: true })
+      focusVisible(widget, '[data-cooldown-action="days-mode"]')
+    } else if (kind === 'days-mode') {
+      setCooldownType('days', { persist: true, broadcast: true })
+      if (!readCooldownEnabled()) setCooldownEnabled(true, { persist: true, broadcast: true })
+      focusVisible(widget, '[data-cooldown-action="bypass"]')
+    } else if (kind === 'remove') {
+      setCooldownEnabled(false, { persist: true, broadcast: true })
+      var toggle = widget.querySelector('[data-mcp-cooldown="toggle"]')
+      if (toggle) toggle.focus({ preventScroll: true })
+    } else if (kind === 'alt' && el.dataset.cooldownAlt) {
+      select(widget, 'method', el.dataset.cooldownAlt, { persist: true, broadcast: true })
+      var tab = widget.querySelector('.lm-mcp-install__tab[data-tab-kind="method"][aria-selected="true"]')
+      if (tab) tab.focus({ preventScroll: true })
+    }
+  }
+
   function onChange(e) {
-    var el = e.target.closest('[data-action]')
+    var el = e.target.closest('[data-cooldown-family="mcp"] [data-cooldown-action="days"]')
     if (!el) return
-    var widget = el.closest('.lm-mcp-install')
-    if (!widget) return
-    var action = el.dataset.action
-    if (action === 'cooldown-toggle') {
-      // Master on/off only. Does NOT change view. Does NOT change type or
-      // days. Just flips `cooldown.enabled`.
-      setCooldownEnabled(el.checked, { persist: true, broadcast: true })
-      return
+    // Days input in the strip -> set days, force type=days, auto-enable.
+    var n = clampDays(parseInt(el.value, 10))
+    setCooldownDays(n, { persist: true, broadcast: true })
+    if (readCooldownType() !== 'days') {
+      setCooldownType('days', { persist: true, broadcast: true })
     }
-    if (action === 'cooldown-mode') {
-      // Radio selection in settings -> set type, auto-enable.
-      setCooldownType(el.value, { persist: true, broadcast: true })
-      if (!readCooldownEnabled()) {
-        setCooldownEnabled(true, { persist: true, broadcast: true })
-      }
-      return
-    }
-    if (action === 'cooldown-days') {
-      // Days input in settings -> set days, auto-enable, force type=days.
-      var n = clampDays(parseInt(el.value, 10))
-      setCooldownDays(n, { persist: true, broadcast: true })
-      if (readCooldownType() !== 'days') {
-        setCooldownType('days', { persist: true, broadcast: true })
-      }
-      if (!readCooldownEnabled()) {
-        setCooldownEnabled(true, { persist: true, broadcast: true })
-      }
+    if (!readCooldownEnabled()) {
+      setCooldownEnabled(true, { persist: true, broadcast: true })
     }
   }
 
@@ -235,10 +225,8 @@
     // updates in real time even before the user blurs the field.
     // localStorage write happens only on `change` (see onChange) to avoid
     // hammering writes.
-    var el = e.target.closest('[data-action="cooldown-days"]')
+    var el = e.target.closest('[data-cooldown-family="mcp"] [data-cooldown-action="days"]')
     if (!el) return
-    var widget = el.closest('.lm-mcp-install')
-    if (!widget) return
     var n = parseInt(el.value, 10)
     if (!isNaN(n) && n >= 1) {
       updateAllCooldownSlots(n)
@@ -311,6 +299,7 @@
     // tab (the others read from the widget's existing aria-selected
     // state).
     syncHtmlAttrs(widget)
+    if (kind === 'client') watchTabRows()
 
     if (opts.persist) {
       if (kind === 'scope') {
@@ -405,15 +394,16 @@
   // here once.
 
   function copyPanelCode(button) {
-    var wrap = button.closest('.lm-mcp-install__code')
+    // Copy in the surface's header sits outside the code it takes, so it names that code by key.
+    var key = button.getAttribute('data-copy-key')
+    var scope = button.closest('[data-copy-scope]')
+    var wrap = key && scope ? scope.querySelector('[data-code-key="' + key + '"]') : button.closest('.lm-mcp-install__code')
     var codeEl = wrap && wrap.querySelector('code')
     if (!codeEl) return
     var text = codeEl.textContent || ''
-    if (wrap.getAttribute('data-language') === 'console') {
-      // Strip the leading "$ " prompt on every line, same convention
-      // sphinx-copybutton applied via gp-sphinx's prompt-strip regex.
-      text = text.replace(/^\$ /gm, '')
-    }
+    // The prompt is drawn, never copied (sphinx-copybutton did the same via gp-sphinx's prompt-strip regex).
+    var prompt = wrap.getAttribute('data-prompt') || (wrap.getAttribute('data-language') === 'console' ? '$' : '')
+    if (prompt) text = text.replace(new RegExp('^' + prompt.replace(/[$.*+?^{}()|[\]\\]/g, '\\$&') + ' ', 'gm'), '')
     writeClipboardText(text, button)
   }
 
@@ -580,18 +570,13 @@
   }
 
   function applyCooldownToWidget(widget, enabled, type, days) {
-    // Checkbox: checked iff enabled.
-    var toggle = widget.querySelector('.lm-mcp-install__cooldown-toggle')
-    if (toggle) toggle.checked = !!enabled
-    // Radio: the matching radio in the settings form.
-    widget.querySelectorAll('[data-action="cooldown-mode"]').forEach(function (radio) {
-      radio.checked = radio.value === type
+    // The toggle reads pressed iff a cooldown is on.
+    var toggle = widget.querySelector('[data-mcp-cooldown="toggle"]')
+    if (toggle) toggle.setAttribute('aria-pressed', String(!!enabled))
+    // Days inputs in the strips (don't clobber one while typing).
+    widget.querySelectorAll('[data-cooldown-action="days"]').forEach(function (input) {
+      if (document.activeElement !== input) input.value = String(days)
     })
-    // Days input value (don't clobber while typing).
-    var daysInput = widget.querySelector('[data-action="cooldown-days"]')
-    if (daysInput && document.activeElement !== daysInput) {
-      daysInput.value = String(days)
-    }
     // Slot contents for this widget's panels (other widgets get updated by
     // their own applyCooldownToWidget call). Both duration and date slots
     // are refreshed — only one kind is visible per panel.
@@ -606,9 +591,36 @@
     })
   }
 
-  function setView(view) {
-    var prev = document.documentElement.getAttribute('data-mcp-install-view')
-    if (prev === view) return
-    document.documentElement.setAttribute('data-mcp-install-view', view)
+  // -------- tool tabs ----------------------------------------------------
+  //
+  // A row of tabs scrolls sideways and never wraps. It fades on the side that has more tabs
+  // (`data-more`), and the selected tab is scrolled into view, so a client saved from a later
+  // visit is never out of sight.
+
+  function updateEdges(row) {
+    var start = row.scrollLeft > 1
+    var end = row.scrollLeft + row.clientWidth < row.scrollWidth - 1
+    if (start || end) row.dataset.more = start && end ? 'both' : start ? 'start' : 'end'
+    else delete row.dataset.more
   }
+
+  function revealSelected(row) {
+    var selected = row.querySelector('[aria-selected="true"]')
+    if (selected) row.scrollLeft = Math.max(0, selected.offsetLeft - row.clientWidth / 2 + selected.offsetWidth / 2)
+    updateEdges(row)
+  }
+
+  function watchTabRows() {
+    document.querySelectorAll('.lm-mcp-install [data-install-scroll]').forEach(function (row) {
+      if (row.dataset.watched !== 'true') {
+        row.dataset.watched = 'true'
+        row.addEventListener('scroll', function () { updateEdges(row) }, { passive: true })
+      }
+      revealSelected(row)
+    })
+  }
+
+  window.addEventListener('resize', function () {
+    document.querySelectorAll('.lm-mcp-install [data-install-scroll]').forEach(updateEdges)
+  })
 })()

@@ -308,8 +308,8 @@ html[data-mcp-install-cooldown-enabled='1'] .lm-install__cdtoggle:not(:disabled)
   vertical-align: 2px;
 }
 
-html[data-mcp-install-cooldown-enabled='1']:not([data-mcp-install-cooldown-type='bypass']) .lm-install__tabs [data-no-days] .lm-install__dot,
-html[data-mcp-install-cooldown-enabled='1'][data-mcp-install-cooldown-type='bypass'] .lm-install__tabs [data-no-bypass] .lm-install__dot {
+html[data-mcp-install-cooldown-enabled='1']:not([data-mcp-install-cooldown-type='bypass']) .lm-install [data-no-days] .lm-install__dot,
+html[data-mcp-install-cooldown-enabled='1'][data-mcp-install-cooldown-type='bypass'] .lm-install [data-no-bypass] .lm-install__dot {
   display: inline-block;
 }
 

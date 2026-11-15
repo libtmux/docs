@@ -993,17 +993,29 @@ function panelActiveSelectors(spec: ServerSpec): string {
 
 // Deactivated tabs: any tab still carrying the SSR `aria-selected="true"`
 // once `<html>` has been tagged (i.e. every page load once JS has run)
-// repaints muted, regardless of which one the browser thinks is selected.
-// The matching "active" rule below wins the specificity tie on the one tab
-// that is genuinely still selected, by coming later in the stylesheet.
-const TAB_DEACTIVATE_RULE =
-  'html[data-mcp-install-client] .lm-mcp-install__tab[data-tab-kind="client"][aria-selected="true"],' +
-  'html[data-mcp-install-method] .lm-mcp-install__tab[data-tab-kind="method"][aria-selected="true"],' +
-  'html[data-mcp-install-scope] .lm-mcp-install__tab[data-tab-kind="scope"][aria-selected="true"]' +
-  '{color:var(--lm-mcp-install-fg-muted);border-color:transparent;background:transparent}'
+// repaints as unselected, regardless of which one the browser thinks is
+// selected. The matching "active" rule below wins the specificity tie on the
+// one tab that is genuinely still selected, by coming later in the stylesheet.
+//
+// The client tabs sit in the surface's header, underlined; Run with and Scope
+// sit in its bar as a segmented control. Each is painted its own way.
+const CLIENT_TAB = '.lm-mcp-install__tab[data-tab-kind="client"]'
+const SEGMENT_TABS = ['method', 'scope'].map((kind) => `.lm-mcp-install__tab[data-tab-kind="${kind}"]`)
 
-const TAB_ACTIVE_DECL =
-  '{color:var(--lm-mcp-install-accent);border-color:var(--lm-mcp-install-accent);background:transparent}'
+const TAB_DEACTIVATE_RULE =
+  `html[data-mcp-install-client] ${CLIENT_TAB}[aria-selected="true"]` +
+  '{color:var(--lm-mcp-install-fg-muted);box-shadow:inset 0 -2px transparent}' +
+  [
+    `html[data-mcp-install-method] ${SEGMENT_TABS[0]}[aria-selected="true"]`,
+    `html[data-mcp-install-scope] ${SEGMENT_TABS[1]}[aria-selected="true"]`,
+  ].join(',') +
+  '{background:transparent;color:var(--lm-mcp-install-fg-muted);box-shadow:none}'
+
+const CLIENT_TAB_ACTIVE_DECL = '{color:var(--text-color);box-shadow:inset 0 -2px var(--lm-mcp-install-accent)}'
+
+const SEGMENT_TAB_ACTIVE_DECL =
+  '{background:var(--lm-install-raised);color:var(--text-color);' +
+  'box-shadow:0 0 0 1px var(--lm-install-edge),0 1px 2px rgb(0 0 0 / 8%)}'
 
 const SCOPE_GROUP_ACTIVE_DECL = '{display:flex}'
 
@@ -1015,31 +1027,17 @@ const PANEL_DEFAULT_OVERRIDE_RULE = 'html[data-mcp-install-client] .lm-mcp-insta
 
 const PANEL_ACTIVE_DECL = '{display:block}'
 
-// The checkbox's *checked* visual only — the unchecked baseline lives in
-// mcp-install.css since it doesn't depend on `<html>` state. A native
-// checkbox's rendered glyph follows its `.checked` DOM property, which
-// only mcp-install.js can set (after DOMContentLoaded), so without this
-// the box would flip unchecked -> checked on every reload where cooldown
-// was previously enabled.
-const COOLDOWN_TOGGLE_CHECKED_RULES =
-  'html[data-mcp-install-cooldown-enabled="1"] .lm-mcp-install__cooldown-toggle' +
-  '{background:var(--lm-mcp-install-accent);border-color:var(--lm-mcp-install-accent)}' +
-  'html[data-mcp-install-cooldown-enabled="1"] .lm-mcp-install__cooldown-toggle::after' +
-  '{content:"\\2713";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;' +
-  'color:#fff;font-size:0.85em;font-weight:700;line-height:1}'
-
 function buildPrehydrateStyle(spec: ServerSpec): string {
   const clientIds = CLIENTS.map((c) => c.id)
   const methodIds = spec.methods.map((m) => m.id)
   const rules = [
     TAB_DEACTIVATE_RULE,
-    tabActiveSelectors('client', clientIds) + TAB_ACTIVE_DECL,
-    tabActiveSelectors('method', methodIds) + TAB_ACTIVE_DECL,
-    scopeTabActiveSelectors() + TAB_ACTIVE_DECL,
+    tabActiveSelectors('client', clientIds) + CLIENT_TAB_ACTIVE_DECL,
+    tabActiveSelectors('method', methodIds) + SEGMENT_TAB_ACTIVE_DECL,
+    scopeTabActiveSelectors() + SEGMENT_TAB_ACTIVE_DECL,
     scopeGroupVisibleSelectors() + SCOPE_GROUP_ACTIVE_DECL,
     PANEL_DEFAULT_OVERRIDE_RULE,
     panelActiveSelectors(spec) + PANEL_ACTIVE_DECL,
-    COOLDOWN_TOGGLE_CHECKED_RULES,
   ]
   return `<style>${rules.join('')}</style>`
 }

@@ -1,4 +1,9 @@
 ---
+import InstallCode from './InstallCode.astro'
+import InstallCooldown from './InstallCooldown.astro'
+import InstallFacts from './InstallFacts.astro'
+import InstallWhere from './InstallWhere.astro'
+import './install-surface.css'
 import './mcp-install.css'
 import {
   buildMcpInstallPrehydrateSnippet,
@@ -9,17 +14,21 @@ import {
   DEFAULT_COOLDOWN_TYPE,
   DEFAULT_SCOPES,
   defaultCooldownDate,
+  markPlaceholders,
   serverSpec,
+  wrapShell,
   COOLDOWN_DURATION_SENTINEL,
   COOLDOWN_DATE_SENTINEL,
 } from '../../lib/install-matrix'
 import { highlightWithCooldownSlots } from '../../lib/highlight'
-import { installSelection } from '../../lib/registry'
-import { PORT_BY_SLUG } from '../../lib/ports'
+import { addedLines, markAddedLines } from '../../lib/install-surface'
+import { installSelection, REGISTRY } from '../../lib/registry'
+import { PORT_BY_SLUG, productStatus } from '../../lib/ports'
 
 /**
  * Client x install-method x config-scope x dependency-cooldown picker for
- * the libtmux MCP server. Ported from
+ * the libtmux MCP server, drawn as the installer's one code surface (design
+ * records 0063 and 0064). Ported from
  * ~/work/python/libtmux-mcp/docs/_widgets/mcp-install/widget.html (Jinja)
  * — see install-matrix.ts for the data/body-building port and
  * mcp-install.{css,js} for the near-verbatim behavioural port. This file
@@ -34,17 +43,14 @@ import { PORT_BY_SLUG } from '../../lib/ports'
  * *switching* was never in scope). With JavaScript enabled, the prehydrate
  * snippet below picks the reader's last selection before first paint, and
  * mcp-install.js keeps it in sync afterward.
+ *
+ * What a panel shows is split across the surface: where the code goes and
+ * Copy in its header, the First strip, the cooldown strip and the command in
+ * its body, and the caveats under it. The three are the same panel three
+ * times, and one set of prehydrate rules shows the matching one of each.
  */
 interface Props {
   variant?: 'full' | 'compact'
-  /**
-   * Where each block's copy button sits. `gutter` gives it a column beside the
-   * code, so a long command cannot scroll under it; `overlay` floats it over
-   * the block's corner. `auto`, the default, chooses per block: a one-line
-   * command gets a gutter, and a config of several lines, which a whole
-   * column beside it would only narrow, gets the overlay.
-   */
-  copyButton?: 'auto' | 'gutter' | 'overlay'
   /**
    * Which port's server to install. Defaults to Python, the reference
    * implementation.
@@ -56,8 +62,7 @@ interface Props {
    */
   port?: string
 }
-const { variant = 'full', port = 'py', copyButton = 'auto' } = Astro.props as Props
-const copyLayout = (code: string) => (copyButton === 'auto' ? (code.includes('\n') ? 'overlay' : 'gutter') : copyButton)
+const { variant = 'full', port = 'py' } = Astro.props as Props
 
 const spec = serverSpec(port)
 const panels = buildPanels(spec, installSelection(PORT_BY_SLUG[port]!, [], process.env).revision)
@@ -86,6 +91,16 @@ const DATE_VALUE = defaultCooldownDate(DEFAULT_COOLDOWN_DAYS)
 const slot = (attr: string, value: string) =>
   `<span class="lm-mcp-install__cooldown-days" ${attr}>${value}</span>`
 
+/** The panel with the cooldown off: what the lines a cooldown adds are measured against. */
+const plainOf = new Map(
+  panels.filter((panel) => panel.cooldown.id === 'off').map((panel) => [`${panel.client.id}/${panel.method.id}/${panel.scope.id}`, panel] as const),
+)
+const plainFor = (panel: (typeof panels)[number]) => plainOf.get(`${panel.client.id}/${panel.method.id}/${panel.scope.id}`)!
+
+/** Where the code goes: the terminal for a command, else the scope's file, without its gloss. */
+const targetOf = (panel: (typeof panels)[number]) =>
+  panel.language === 'console' ? 'Terminal' : panel.scope.configFile.replace(/\s*\(.*\)$/, '')
+
 const bodyHtml = new Map(
   await Promise.all(
     panels.map(async (panel) => {
@@ -100,7 +115,8 @@ const bodyHtml = new Map(
       if (panel.body.includes(COOLDOWN_DATE_SENTINEL)) {
         html = html.replace(DATE_VALUE, slot('data-cooldown-date-slot', DATE_VALUE))
       }
-      return [panelKey(panel), html] as const
+      if (panel.cooldown.id !== 'off') html = markAddedLines(html, addedLines(plainFor(panel).body, panel.body))
+      return [panelKey(panel), markPlaceholders(html)] as const
     }),
   ),
 )
@@ -109,10 +125,13 @@ const prereqHtml = new Map(
   await Promise.all(
     panels
       .filter((panel) => panel.pipPrereq)
-      .map(async (panel) => [
-        panelKey(panel),
-        await highlightWithCooldownSlots(`$ ${panel.pipPrereq}`, 'console', DEFAULT_COOLDOWN_DAYS),
-      ] as const),
+      .map(async (panel) => {
+        const text = wrapShell(panel.pipPrereq!)
+        let html = await highlightWithCooldownSlots(`$ ${text}`, 'console', DEFAULT_COOLDOWN_DAYS)
+        // A cooldown that rewrites the install marks its lines in the strip that carries it.
+        if (panel.cooldown.id !== 'off') html = markAddedLines(html, addedLines(wrapShell(plainFor(panel).pipPrereq ?? ''), text))
+        return [panelKey(panel), markPlaceholders(html)] as const
+      }),
   ),
 )
 const prehydrateSnippet = buildMcpInstallPrehydrateSnippet(spec)
@@ -120,218 +139,175 @@ const scopedClients = CLIENTS.filter((c) => c.scopes.length > 1)
 // Python's and TypeScript's. The other ports' toolchains have no release-age
 // gate, so a control that could only ever say "off" is not a control.
 const hasCooldowns = spec.cooldowns.length > 1
+
+/** The package the server is, as its registry knows it: the MCP package of the port, else what the spec names. */
+const porter = PORT_BY_SLUG[port]!
+const mcpPackage = porter.packages?.find((entry) => entry.id === 'mcp')
+const found = mcpPackage && REGISTRY.ports[port]?.packages?.[mcpPackage.name]
+const facts = {
+  name: mcpPackage?.name ?? spec.package,
+  version: found?.version ?? null,
+  status: mcpPackage ? productStatus(porter, 'mcp', REGISTRY) : undefined,
+  registry: mcpPackage?.registry ? { url: mcpPackage.registry } : undefined,
+  unpublished: found ? found.status === 'unpublished' : !mcpPackage?.registry,
+}
+
+/** A method the cooldown cannot reach, in a mode: the same for every client and scope. */
+const refuses = (method: string, mode: 'days' | 'bypass') =>
+  panels.some((panel) => panel.method.id === method && panel.cooldown.id === mode && panel.cooldownReason)
+/** The method that can take a cooldown, which one that cannot offers as the way forward. */
+const alternative = (panel: (typeof panels)[number]) =>
+  panels.find((other) => other.client.id === panel.client.id && other.scope.id === panel.scope.id
+    && other.cooldown.id === 'days' && !other.cooldownReason)?.method
+const exemptClause = (panel: (typeof panels)[number]) =>
+  /exclude=libtmux(?:\s|\\|$)/.test(panel.pipPrereq ?? '') ? `${spec.package} and libtmux stay current` : `${spec.package} itself stays current`
+
+/** The caveats under a panel: where it writes, what the scope asks, what the method needs, and the panel's own. */
+const notesOf = (panel: (typeof panels)[number]) => [
+  panel.language === 'console' ? `Writes ${panel.scope.configFile}.` : '',
+  panel.scope.note ?? '',
+  panel.method.docUrl && !panel.pipPrereq ? 'doc' : '',
+  panel.note ?? '',
+].filter(Boolean)
+
+/** One panel's attributes, shared by the three places it is drawn. */
+const panelAttrs = (panel: (typeof panels)[number]) => ({
+  'data-client': panel.client.id,
+  'data-method': panel.method.id,
+  'data-scope': panel.scope.id,
+  'data-cooldown': panel.cooldown.id,
+  'data-default': panel.isDefault ? true : undefined,
+})
 ---
 
 <Fragment set:html={prehydrateSnippet} />
 <div
   class={`lm-mcp-install lm-mcp-install--${variant}`}
   data-port={spec.port}
+  data-copy-scope
   data-default-scopes={JSON.stringify(DEFAULT_SCOPES)}
   data-default-cooldown-enabled={DEFAULT_COOLDOWN_ENABLED ? '1' : '0'}
   data-default-cooldown-type={DEFAULT_COOLDOWN_TYPE}
   data-default-cooldown-days={DEFAULT_COOLDOWN_DAYS}
 >
-  <div class="lm-mcp-install__tabs lm-mcp-install__tabs--clients" role="tablist" aria-label="MCP client">
-    {
-      CLIENTS.map((client, i) => (
-        <button
-          type="button"
-          class="lm-mcp-install__tab"
-          role="tab"
-          data-tab-kind="client"
-          data-tab-value={client.id}
-          aria-selected={i === 0 ? 'true' : 'false'}
-          tabindex={i === 0 ? '0' : '-1'}
-        >
-          {client.label}
-        </button>
-      ))
-    }
-  </div>
-
-  <div class="lm-mcp-install__tabs lm-mcp-install__tabs--methods" role="tablist" aria-label="Install method">
-    {
-      spec.methods.map((method, i) => (
-        <button
-          type="button"
-          class="lm-mcp-install__tab"
-          role="tab"
-          data-tab-kind="method"
-          data-tab-value={method.id}
-          aria-selected={i === 0 ? 'true' : 'false'}
-          tabindex={i === 0 ? '0' : '-1'}
-        >
-          {method.label}
-        </button>
-      ))
-    }
-
-    {hasCooldowns && (
-      <div class="lm-mcp-install__cooldown-control">
-        <input
-          type="checkbox"
-          id="lm-mcp-install__cooldown-toggle"
-          class="lm-mcp-install__cooldown-toggle"
-          data-action="cooldown-toggle"
-          aria-label="Apply a dependency cooldown"
-        />
-        <button
-          type="button"
-          class="lm-mcp-install__cooldown-label-text"
-          data-action="cooldown-open"
-          aria-label="Toggle cooldown settings"
-        >
-          Configure cooldowns
-        </button>
-        <button
-          type="button"
-          class="lm-mcp-install__cooldown-help"
-          data-action="cooldown-help"
-          aria-label="What are cooldowns?"
-          title="What are cooldowns?"
-        >
-          ?
-        </button>
+  <div class="lm-install">
+    <div class="lm-install__head">
+      <div class="lm-install__tabs" data-install-scroll>
+        <div class="lm-mcp-install__tabs lm-mcp-install__tabs--clients" role="tablist" aria-label="MCP client">
+          {
+            CLIENTS.map((client, i) => (
+              <button
+                type="button"
+                class="lm-mcp-install__tab"
+                role="tab"
+                data-tab-kind="client"
+                data-tab-value={client.id}
+                aria-selected={i === 0 ? 'true' : 'false'}
+                tabindex={i === 0 ? '0' : '-1'}
+              >
+                {client.label}
+              </button>
+            ))
+          }
+        </div>
       </div>
-    )}
-  </div>
-
-  <div class="lm-mcp-install__tabs lm-mcp-install__tabs--scopes" role="tablist" aria-label="Config scope">
-    {
-      scopedClients.map((client) => (
-        <div class="lm-mcp-install__scopes-group" data-scope-client={client.id}>
-          {client.scopes.map((scope, i) => (
-            <button
-              type="button"
-              class="lm-mcp-install__tab"
-              role="tab"
-              data-tab-kind="scope"
-              data-tab-client={client.id}
-              data-tab-value={scope.id}
-              aria-selected={i === 0 ? 'true' : 'false'}
-              tabindex={i === 0 ? '0' : '-1'}
-            >
-              {scope.label}
-            </button>
-          ))}
-        </div>
-      ))
-    }
-  </div>
-
-  <div class="lm-mcp-install__body lm-mcp-install__body--install">
-    {
-      panels.map((panel) => (
-        <div
-          class="lm-mcp-install__panel"
-          role="tabpanel"
-          data-client={panel.client.id}
-          data-method={panel.method.id}
-          data-scope={panel.scope.id}
-          data-cooldown={panel.cooldown.id}
-          data-default={panel.isDefault ? true : undefined}
-          tabindex="0"
-        >
-          {panel.method.docUrl ? (
-            <p class="lm-mcp-install__preamble">
-              With
-              {' '}
-              <a href={panel.method.docUrl} target="_blank" rel="noopener">
-                {panel.method.label}
-              </a>
-              {' '}
-              installed:
-            </p>
-          ) : panel.pipPrereq ? (
-            <>
-              <p class="lm-mcp-install__preamble">{panel.method.id === 'pip' ? 'Install the packages first:' : 'Build or install the server first:'}</p>
-              <div class={`lm-mcp-install__code lm-mcp-install__code--prereq lm-mcp-install__code--${copyLayout(panel.pipPrereq ?? '')}`} data-language="console"><pre><code set:html={prereqHtml.get(panelKey(panel))} /></pre><button type="button" class="lm-mcp-install__copy" data-action="copy" aria-label="Copy to clipboard">Copy</button></div>
-              <p class="lm-mcp-install__preamble">Then {panel.client.kind === 'cli' ? 'register' : 'use this config'}:</p>
-            </>
-          ) : null}
-
-          {panel.scope.note && <p class="lm-mcp-install__preamble lm-mcp-install__preamble--manual">{panel.scope.note}</p>}
-
-          <div class={`lm-mcp-install__code lm-mcp-install__code--${copyLayout(panel.body)}`} data-language={panel.language}><pre><code set:html={bodyHtml.get(panelKey(panel))} /></pre><button type="button" class="lm-mcp-install__copy" data-action="copy" aria-label="Copy to clipboard">Copy</button></div>
-
-          {panel.note && <p class="lm-mcp-install__cooldown-note">{panel.note}</p>}
-
-          {(variant !== 'compact' || panel.client.kind === 'json') && (
-            <p class="lm-mcp-install__config-file">
-              Config file: <code>{panel.scope.configFile}</code>
-            </p>
-          )}
-        </div>
-      ))
-    }
-  </div>
-
-  {hasCooldowns && <div class="lm-mcp-install__body lm-mcp-install__body--settings" role="dialog" aria-label="Cooldown settings">
-    <div class="lm-mcp-install__settings-header">
-      <button type="button" class="lm-mcp-install__back" data-action="cooldown-back" aria-label="Back to installer">
-        <span class="lm-mcp-install__back-icon" aria-hidden="true">
-          &larr;
-        </span>
-        <span class="lm-mcp-install__back-text">Back</span>
-      </button>
-      <h3 class="lm-mcp-install__settings-title">Dependency cooldowns</h3>
+      <div class="lm-install__headend">
+        {panels.map((panel) => (
+          <div class="lm-mcp-install__panel" {...panelAttrs(panel)}>
+            <InstallWhere family="mcp" target={targetOf(panel)} lang={panel.language} copyKey={panelKey(panel)} />
+          </div>
+        ))}
+      </div>
     </div>
-    <p class="lm-mcp-install__settings-help">
-      Use the <em>Configure cooldowns</em> checkbox above to enable or disable. These settings choose how cooldown behaves
-      once enabled.
-    </p>
-    <fieldset class="lm-mcp-install__settings-modes">
-      <legend class="lm-mcp-install__sr-only">Cooldown type</legend>
-      <label class="lm-mcp-install__settings-mode">
-        <input
-          type="radio"
-          name="cooldown-mode"
-          value="days"
-          data-action="cooldown-mode"
-          checked={DEFAULT_COOLDOWN_TYPE === 'days'}
-        />
-        <span>
-          Apply a cooldown of
-          <input
-            type="number"
-            min="1"
-            max="365"
-            value={DEFAULT_COOLDOWN_DAYS}
-            class="lm-mcp-install__cooldown-days-input"
-            data-action="cooldown-days"
-            aria-label="Cooldown in days"
-          />
-          days
+
+    <div class="lm-install__bar">
+      <InstallFacts {...facts} />
+      <span class="lm-install__opts">
+        {spec.methods.length > 1 && (
+          <div class="lm-mcp-install__tabs lm-mcp-install__tabs--methods lm-install__seg" role="tablist" aria-label="Run with">
+            {
+              spec.methods.map((method, i) => (
+                <button
+                  type="button"
+                  class="lm-mcp-install__tab"
+                  role="tab"
+                  data-tab-kind="method"
+                  data-tab-value={method.id}
+                  data-no-days={hasCooldowns && refuses(method.id, 'days') ? '' : undefined}
+                  data-no-bypass={hasCooldowns && refuses(method.id, 'bypass') ? '' : undefined}
+                  aria-selected={i === 0 ? 'true' : 'false'}
+                  tabindex={i === 0 ? '0' : '-1'}
+                >
+                  {method.label}{hasCooldowns && <span class="lm-install__dot" title={`The cooldown does not reach ${method.label}`}><span class="sr-only"> (no cooldown)</span></span>}
+                </button>
+              ))
+            }
+          </div>
+        )}
+        {
+          scopedClients.map((client) => (
+            <div class="lm-mcp-install__scopes-group lm-install__seg" role="tablist" aria-label={`${client.label} scope`} data-scope-client={client.id}>
+              {client.scopes.map((scope, i) => (
+                <button
+                  type="button"
+                  class="lm-mcp-install__tab"
+                  role="tab"
+                  data-tab-kind="scope"
+                  data-tab-client={client.id}
+                  data-tab-value={scope.id}
+                  aria-selected={i === 0 ? 'true' : 'false'}
+                  tabindex={i === 0 ? '0' : '-1'}
+                >
+                  {scope.label}
+                </button>
+              ))}
+            </div>
+          ))
+        }
+      </span>
+      {hasCooldowns && (
+        <span class="lm-install__cd">
+          <button type="button" class="lm-install__cdtoggle" data-mcp-cooldown="toggle" aria-pressed="false" title="Applies to every installer on libtmux.org">
+            <span class="lm-install__glyph" aria-hidden="true"></span>Cooldown
+          </button>
         </span>
-      </label>
-      <label class="lm-mcp-install__settings-mode">
-        <input
-          type="radio"
-          name="cooldown-mode"
-          value="bypass"
-          data-action="cooldown-mode"
-          checked={DEFAULT_COOLDOWN_TYPE === 'bypass'}
-        />
-        <span>
-          Bypass any global cooldown
-        </span>
-      </label>
-    </fieldset>
-    <details class="lm-mcp-install__cooldown-explainer">
-      <summary>What are cooldowns?</summary>
-      <p>
-        Cooldowns delay picking up newly uploaded packages so the community has time to spot supply-chain attacks before
-        you install. Most package managers don't apply one by default &mdash; you opt in via a global setting in your
-        tool's config.
-      </p>
-      <p>
-        Learn more at <a href="https://cooldowns.dev/" target="_blank" rel="noopener">cooldowns.dev</a> &middot;{' '}
-        <a href="https://securitylabs.datadoghq.com/articles/dependency-cooldowns/" target="_blank" rel="noopener">
-          Datadog Security Labs writeup
-        </a>.
-      </p>
-    </details>
-  </div>}
+      )}
+    </div>
+
+    <div class="lm-install__body">
+      {panels.map((panel) => {
+        const key = panelKey(panel)
+        const alt = panel.cooldown.id === 'days' && panel.cooldownReason ? alternative(panel) : undefined
+        return (
+          <div class="lm-mcp-install__panel" role="tabpanel" {...panelAttrs(panel)}>
+            {panel.pipPrereq && <InstallCode family="mcp" html={prereqHtml.get(key)!} language="console" layout="strip" strip="First" prompt="$" label="server install" />}
+            {panel.cooldown.id !== 'off' && hasCooldowns && <InstallCooldown
+              family="mcp"
+              mode={panel.cooldown.id === 'bypass' ? 'bypass' : 'days'}
+              tool={panel.method.label}
+              exempt={exemptClause(panel)}
+              reason={panel.cooldownReason ?? undefined}
+              alt={alt ? { id: alt.id, label: alt.label } : undefined}
+            />}
+            <InstallCode family="mcp" html={bodyHtml.get(key)!} language={panel.language} layout="plain" prompt={panel.language === 'console' ? '$' : undefined} codeKey={key} />
+          </div>
+        )
+      })}
+    </div>
+  </div>
+
+  <div class="lm-install__notes">
+    {panels.map((panel) => {
+      const notes = notesOf(panel)
+      return notes.length > 0 && (
+        <div class="lm-mcp-install__panel" {...panelAttrs(panel)}>
+          {notes.map((note) => note === 'doc'
+            ? <p class="lm-mcp-install__note">With <a href={panel.method.docUrl!} target="_blank" rel="noopener">{panel.method.label}</a> installed.</p>
+            : <p class="lm-mcp-install__note">{note.split(/`([^`]+)`/).map((part, i) => (i % 2 ? <code>{part}</code> : part))}</p>)}
+        </div>
+      )
+    })}
+  </div>
   <span class="sr-only" data-copy-status role="status" aria-live="polite" aria-atomic="true" />
 </div>
 

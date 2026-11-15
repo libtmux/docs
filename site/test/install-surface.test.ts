@@ -29,18 +29,6 @@ describe('MCP install data', () => {
     expect(consoles.length).toBeGreaterThan(100)
     expect(consoles.filter((panel) => /^\$ /m.test(panel.body)).map((panel) => `${panel.client.id}/${panel.method.id}`)).toEqual([])
   })
-
-  it('draws the prompt once, and copies the command without it', async () => {
-    const picker = await loadAstroTemplate('components/widgets/McpInstall.astro', {
-      modules: { '../../lib/highlight': { highlightWithCooldownSlots: async (code: string) => code } },
-    })
-    const window = openWindow()
-    const document = window.document as unknown as Document
-    document.body.innerHTML = await renderAstroTemplate(picker, { props: { port: 'py' } })
-    const shown = document.querySelector('.lm-mcp-install__panel[data-default] .lm-mcp-install__code[data-language="console"] code')?.textContent
-    expect(shown).toMatch(/^\$ claude mcp add tmux/)
-    expect(shown).not.toMatch(/\$ \$/)
-  })
 })
 
 /** Every install the pickers offer, with the port and package it belongs to. */
@@ -417,5 +405,189 @@ describe('driving the cooldown strip', () => {
     await Promise.resolve()
     expect(copied).toHaveLength(1)
     expect(copied[0]).toMatch(/^NuGet\\Install-Package LibTmux/)
+  })
+})
+
+/** The MCP installer, rendered with its real parts; each body is split into one `line` span per line, as Shiki does. */
+async function renderMcp(port: string, options: { saved?: Record<string, string>; scripts?: boolean } = {}) {
+  const lines = (code: string) => code.replace(/<COOLDOWN_[A-Z]+>/g, '7').split('\n').map((line) => `<span class="line">${line.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</span>`).join('\n')
+  const template = await loadAstroTemplate('components/widgets/McpInstall.astro', {
+    real: ['InstallCode', 'InstallCooldown', 'InstallFacts', 'InstallWhere'].map((name) => `components/widgets/${name}.astro`),
+    modules: { '../../lib/highlight': { highlightWithCooldownSlots: async (code: string) => lines(code), highlightInline: async (code: string) => lines(code) } },
+  })
+  const window = openWindow()
+  for (const [key, value] of Object.entries(options.saved ?? {})) window.localStorage.setItem(key, value)
+  window.document.body.innerHTML = await renderAstroTemplate(template, { props: { port } })
+  if (options.scripts) {
+    window.eval(readFileSync(new URL('mcp-install.js', widgets), 'utf8'))
+    hydrate(window, new URL('InstallCode.astro', widgets))
+  }
+  return { window, document: window.document as unknown as Document }
+}
+
+describe('the MCP installer draws one code surface', () => {
+  const key = (client: string, method: string, scope: string, cooldown: string) => `[data-client="${client}"][data-method="${method}"][data-scope="${scope}"][data-cooldown="${cooldown}"]`
+  const body = (document: Document, selector: string) => document.querySelector(`.lm-install__body .lm-mcp-install__panel${selector}`)!
+
+  it('puts the client tabs, where the code goes and one Copy in the header', async () => {
+    const { document } = await renderMcp('py')
+    const head = document.querySelector('.lm-install__head')!
+    expect([...head.querySelectorAll('.lm-install__tabs [role="tab"]')].map(text)).toEqual(['Claude Code', 'Claude Desktop', 'Codex CLI', 'Gemini CLI', 'Cursor', 'Grok CLI', 'Antigravity', 'opencode'])
+    const where = (selector: string) => head.querySelector(`.lm-install__headend .lm-mcp-install__panel${selector}`)!
+    expect(text(where(key('claude-code', 'uvx', 'local', 'off')).querySelector('.lm-install__target'))).toBe('Terminal')
+    expect(text(where(key('cursor', 'uvx', 'global', 'off')).querySelector('.lm-install__target'))).toBe('~/.cursor/mcp.json')
+    expect(where(key('cursor', 'uvx', 'global', 'off')).querySelector('[data-copy-key]')?.getAttribute('data-copy-key')).toBe('cursor/uvx/global/off')
+    // A long file target cuts its folder, never its file name.
+    const long = where(key('antigravity', 'uvx', 'global', 'off')).querySelector('.lm-install__target')!
+    expect(text(long.querySelector('.lm-install__dir'))).toBe('~/.gemini/config/')
+    expect(text(long.querySelector('.lm-install__base'))).toBe('mcp_config.json')
+  })
+
+  it('puts the package facts, Run with and Scope in the bar, and the cooldown at its right edge', async () => {
+    const { document } = await renderMcp('py')
+    const bar = document.querySelector('.lm-install__bar')!
+    expect([...bar.children].map((child) => child.className)).toEqual(['lm-install__facts', 'lm-install__opts', 'lm-install__cd'])
+    expect(text(bar.querySelector('.lm-install__facts code'))).toBe('libtmux-mcp')
+    expect([...bar.querySelectorAll('[data-tab-kind="method"]')].map((tab) => text(tab).replace(' (no cooldown)', ''))).toEqual(['uvx', 'pipx', 'pip install'])
+    expect([...bar.querySelectorAll('[data-scope-client="claude-code"] [data-tab-kind="scope"]')].map(text)).toEqual(['Local', 'User', 'Project'])
+    expect(bar.querySelector('[data-mcp-cooldown="toggle"]')?.getAttribute('aria-pressed')).toBe('false')
+  })
+
+  it('carries a caution dot on the method the cooldown cannot reach', async () => {
+    const { document } = await renderMcp('py')
+    const method = (id: string) => document.querySelector(`.lm-install__bar [data-tab-kind="method"][data-tab-value="${id}"]`)!
+    expect(method('pipx').hasAttribute('data-no-days')).toBe(true)
+    expect(method('pip').hasAttribute('data-no-bypass')).toBe(true)
+    expect(method('uvx').hasAttribute('data-no-days')).toBe(false)
+  })
+
+  it('draws no cooldown control for a port whose toolchain has none', async () => {
+    const { document } = await renderMcp('go')
+    expect(document.querySelector('[data-mcp-cooldown]')).toBeNull()
+    expect(document.querySelector('.lm-install__cd')).toBeNull()
+  })
+
+  it('attaches the server to install as a First strip with its own Copy, above the command', async () => {
+    const { document } = await renderMcp('py')
+    const panel = body(document, key('claude-code', 'pip', 'local', 'off'))
+    const first = panel.querySelector('.lm-mcp-install__code--strip')!
+    expect(text(first.querySelector('.lm-install__k'))).toBe('First')
+    expect(text(first.querySelector('code'))).toBe('$ pip install --user --upgrade libtmux libtmux-mcp')
+    expect(first.querySelector('[data-action="copy"]')).not.toBeNull()
+    expect(first.compareDocumentPosition(panel.querySelector('.lm-mcp-install__code--plain')!) & 4).toBeTruthy()
+  })
+
+  it('marks a path the reader replaces and copies it as written', async () => {
+    const { document } = await renderMcp('julia')
+    const code = body(document, key('claude-code', 'pkg', 'local', 'off')).querySelector('.lm-mcp-install__code--plain code')!
+    const slots = [...code.querySelectorAll('.lm-install__slot')].map(text)
+    expect(slots).toEqual(['/absolute/path/to/project/bin/libtmux-mcp', '/absolute/path/to/tmux.sock'])
+    expect(text(code)).toContain('/absolute/path/to/project/bin/libtmux-mcp')
+  })
+
+  it('draws the prompt once', async () => {
+    const { document } = await renderMcp('py')
+    const shown = text(body(document, '[data-default]').querySelector('.lm-mcp-install__code--plain code'))
+    expect(shown).toMatch(/^\$ claude mcp add tmux/)
+    expect(shown).not.toMatch(/\$ \$/)
+  })
+
+  it('says where a command writes, and keeps one prompt', async () => {
+    const { document } = await renderMcp('py')
+    const note = document.querySelector(`.lm-install__notes .lm-mcp-install__panel${key('claude-code', 'uvx', 'user', 'off')}`)!
+    expect(text(note)).toContain('Writes ~/.claude.json (all projects).')
+    expect(text(body(document, key('claude-code', 'uvx', 'user', 'off')).querySelector('code'))).toBe('$ claude mcp add tmux --scope user -- uvx libtmux-mcp')
+  })
+
+  it('draws the code a note marks with backticks as code', async () => {
+    const { document } = await renderMcp('ts')
+    const note = document.querySelector(`.lm-install__notes .lm-mcp-install__panel${key('claude-code', 'global', 'local', 'off')}`)!
+    expect([...note.querySelectorAll('code')].map(text)).toEqual(['libtmux-mcp'])
+    expect(note.textContent).not.toContain('`')
+  })
+
+  it('says the cooldown in a strip, and marks the lines it adds in the command or its prerequisite', async () => {
+    const { document } = await renderMcp('py')
+    const uvx = body(document, key('claude-code', 'uvx', 'local', 'days'))
+    expect(uvx.querySelector('.lm-install__cooldown')?.getAttribute('data-tone')).toBe('on')
+    expect(uvx.querySelectorAll('.line.is-added').length).toBeGreaterThan(0)
+    const ts = (await renderMcp('ts')).document
+    const global = body(ts, key('claude-code', 'global', 'local', 'days'))
+    expect([...global.querySelectorAll('.lm-mcp-install__code--strip .line.is-added')].map(text)).toEqual([
+      '--min-release-age=7 \\',
+      '--min-release-age-exclude=@libtmux/mcp \\',
+      '--min-release-age-exclude=libtmux \\',
+    ])
+  })
+
+  it('turns caution for a method that cannot take one, gives the reason and offers the one that can', async () => {
+    const { document } = await renderMcp('py')
+    const pipx = body(document, key('claude-code', 'pipx', 'local', 'days')).querySelector('.lm-install__cooldown')!
+    expect(pipx.getAttribute('data-tone')).toBe('caution')
+    expect(text(pipx.querySelector('.lm-install__cooldown-body'))).toBe('pipx has no per-package cooldown override, so this snippet runs without cooldown enforcement. Use uvx')
+    expect(pipx.querySelector('[data-cooldown-action="alt"]')?.getAttribute('data-cooldown-alt')).toBe('uvx')
+    const ts = (await renderMcp('ts')).document
+    expect(text(body(ts, key('claude-code', 'npx', 'local', 'days')).querySelector('[data-cooldown-action="alt"]'))).toBe('Use Global install')
+    expect(body(document, key('claude-code', 'pipx', 'local', 'days')).querySelectorAll('.line.is-added')).toHaveLength(0)
+  })
+})
+
+describe('driving the MCP installer', () => {
+  const store = (window: Window, name: string) => window.localStorage.getItem(`libtmux-docs.mcp-install.${name}`)
+  const click = (document: Document, selector: string) => (document.querySelector(selector) as HTMLElement).click()
+
+  it('switches the client, the method and the scope from the tabs, and remembers them', async () => {
+    const { window, document } = await renderMcp('py', { scripts: true })
+    click(document, '.lm-install__tabs [data-tab-kind="client"][data-tab-value="cursor"]')
+    expect(document.documentElement.getAttribute('data-mcp-install-client')).toBe('cursor')
+    expect(document.documentElement.getAttribute('data-mcp-install-scope')).toBe('project')
+    click(document, '.lm-install__bar [data-tab-kind="scope"][data-tab-client="cursor"][data-tab-value="global"]')
+    expect(document.documentElement.getAttribute('data-mcp-install-scope')).toBe('global')
+    click(document, '.lm-install__bar [data-tab-kind="method"][data-tab-value="pipx"]')
+    expect(store(window, 'client')).toBe('cursor')
+    expect(store(window, 'scope.cursor')).toBe('global')
+    expect(store(window, 'method.py')).toBe('pipx')
+  })
+
+  it('turns the cooldown on from the toggle and back off from the strip, for every installer', async () => {
+    const { window, document } = await renderMcp('py', { scripts: true })
+    click(document, '[data-mcp-cooldown="toggle"]')
+    expect(document.documentElement.getAttribute('data-mcp-install-cooldown-enabled')).toBe('1')
+    expect(document.querySelector('[data-mcp-cooldown="toggle"]')!.getAttribute('aria-pressed')).toBe('true')
+    expect(store(window, 'cooldown.enabled')).toBe('1')
+    click(document, '[data-cooldown-family="mcp"] [data-cooldown-action="bypass"]')
+    expect(store(window, 'cooldown.type')).toBe('bypass')
+    click(document, '[data-cooldown-family="mcp"] [data-cooldown-action="days-mode"]')
+    expect(store(window, 'cooldown.type')).toBe('days')
+    click(document, '[data-cooldown-family="mcp"] [data-cooldown-action="remove"]')
+    expect(store(window, 'cooldown.enabled')).toBe('0')
+    expect(document.querySelector('[data-mcp-cooldown="toggle"]')!.getAttribute('aria-pressed')).toBe('false')
+  })
+
+  it('writes the day count into the command as an ISO duration', async () => {
+    const { window, document } = await renderMcp('py', { scripts: true })
+    const input = document.querySelector<HTMLInputElement>('[data-cooldown-family="mcp"] [data-cooldown-action="days"]')!
+    input.value = '14'
+    input.dispatchEvent(new window.Event('change', { bubbles: true }) as unknown as Event)
+    expect(store(window, 'cooldown.days')).toBe('14')
+    expect(store(window, 'cooldown.enabled')).toBe('1')
+  })
+
+  it('moves to the method that can, from the strip that says the method cannot', async () => {
+    const { window, document } = await renderMcp('py', { scripts: true })
+    click(document, '.lm-install__bar [data-tab-kind="method"][data-tab-value="pipx"]')
+    click(document, '[data-mcp-cooldown="toggle"]')
+    click(document, '.lm-install__body .lm-mcp-install__panel[data-client="claude-code"][data-method="pipx"][data-scope="local"][data-cooldown="days"] [data-cooldown-action="alt"]')
+    expect(document.documentElement.getAttribute('data-mcp-install-method')).toBe('uvx')
+    expect(store(window, 'method.py')).toBe('uvx')
+  })
+
+  it('copies the command as written, without its prompt, from the header', async () => {
+    const { window, document } = await renderMcp('julia', { scripts: true })
+    const copied: string[] = []
+    Object.defineProperty(window.navigator, 'clipboard', { value: { writeText: async (value: string) => { copied.push(value) } } })
+    click(document, '.lm-install__headend [data-client="claude-code"][data-method="pkg"][data-scope="local"][data-cooldown="off"] [data-copy-key]')
+    await Promise.resolve()
+    expect(copied).toEqual(['claude mcp add tmux \\\n    -- /absolute/path/to/project/bin/libtmux-mcp \\\n        --socket /absolute/path/to/tmux.sock'])
   })
 })
