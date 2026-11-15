@@ -74,12 +74,12 @@ source's name), and `height="16"` stops a long block at that many lines with a
 24-line cap; `height="full"` shows it whole. An excerpt always shows every
 line, Copy always copies every line, and print shows every line.
 
-The numbers hang beside the code in a rail, not in a column inside it, so Copy
-and a text selection never have them and sideways scrolling leaves them in
-place. A layout with about 2.5rem of margin left of its frames sets
-`--code-hang-out: 1` and the numbers sit in that margin; elsewhere, and on a
-phone, they sit in the frame's start padding. A frame has one Copy button: a
-component that draws its own adds `copy="off"` to the fence, as the Core
+The numbers hang outside the frame in a rail, at a negative margin, and never
+in the code's padding, so Copy and a text selection never have them and
+sideways scrolling leaves them in place. A layout states the margin it leaves
+left of its frames in `--code-hang-room` (1rem when it says nothing); a frame
+whose rail needs more moves in by the difference. A frame has one Copy button:
+a component that draws its own adds `copy="off"` to the fence, as the Core
 player does.
 
 Choose each range to be a whole unit: a statement, an `if` with its closing
