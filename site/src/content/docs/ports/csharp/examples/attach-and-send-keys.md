@@ -91,7 +91,7 @@ Use an empty directory with tmux 3.3a or newer and the .NET 10 SDK. The project
 file installs `LibTmux` 0.1.1 from NuGet. It disables implicit imports, so every
 required import appears in the program.
 
-Save the program as `Program.cs` and this file as `Attach.csproj`:
+Save the program as `Program.cs`. Save this file as `Attach.csproj`:
 
 ```xml title="Attach.csproj"
 <Project Sdk="Microsoft.NET.Sdk">

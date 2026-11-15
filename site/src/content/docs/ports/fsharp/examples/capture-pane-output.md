@@ -102,9 +102,9 @@ and exits unsuccessfully if an operation fails.
 ## Setup and run
 
 Use an empty directory and save the files using the displayed names. You need
-the .NET 10 SDK. The project file installs `LibTmux.FSharp` 0.1.1 from NuGet.
+the .NET 10 SDK. The project file installs [`LibTmux.FSharp`](https://www.nuget.org/packages/LibTmux.FSharp/0.1.1) 0.1.1 from NuGet.
 
-Save `Capture.fsproj` beside `Program.fs`.
+Save this file as `Capture.fsproj`, beside `Program.fs`.
 
 ```xml title="Capture.fsproj"
 <Project Sdk="Microsoft.NET.Sdk">
@@ -128,5 +128,5 @@ $ dotnet build Capture.fsproj --maxcpucount:1 &&
 
 ## Where this comes from
 
-This program uses `LibTmux.FSharp` 0.1.1 from NuGet. Its [source](https://github.com/libtmux/libtmux-dotnet/tree/8d47af7d89638ad267528ac56897cec67df597f7/src/LibTmux.FSharp)
+This program uses [`LibTmux.FSharp`](https://www.nuget.org/packages/LibTmux.FSharp/0.1.1) 0.1.1 from NuGet. Its [source](https://github.com/libtmux/libtmux-dotnet/tree/8d47af7d89638ad267528ac56897cec67df597f7/src/LibTmux.FSharp)
 is on GitHub.

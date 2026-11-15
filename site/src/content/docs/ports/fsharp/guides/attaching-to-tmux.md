@@ -57,7 +57,7 @@ let main _ =
 ## Setup and run
 
 Use an empty directory on Linux with tmux 3.3a or newer installed. The project
-file installs `LibTmux.FSharp` 0.1.1 from NuGet ([source](https://github.com/libtmux/libtmux-dotnet/tree/8d47af7d89638ad267528ac56897cec67df597f7/src/LibTmux.FSharp)).
+file installs [`LibTmux.FSharp`](https://www.nuget.org/packages/LibTmux.FSharp/0.1.1) 0.1.1 from NuGet ([source](https://github.com/libtmux/libtmux-dotnet/tree/8d47af7d89638ad267528ac56897cec67df597f7/src/LibTmux.FSharp)).
 
 This example was checked with .NET SDK 10.0.403.
 
