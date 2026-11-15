@@ -4,15 +4,13 @@ import { attachCompleteLuaExamples, type LuaExampleManifest } from '../src/langu
 
 const source = { repository: 'libtmux/libtmux-lua', revision: 'a'.repeat(40) }
 const program = 'local text = "<literal>"\nprint(text)\n'
-const launcher = '#!/bin/sh\nset -eu\nlua "$1"\n'
 const files = [
   { path: 'examples/api/connect.lua', content: program },
-  { path: 'examples/api/run.sh', content: launcher },
   { path: 'examples/ordinary.lua', content: 'print("not a complete example")\n' },
 ]
 const manifest = (): LuaExampleManifest => ({
   schema: 1,
-  setup: { lua: '5.5.1', luv: '1.52.1-0', launcher: 'examples/api/run.sh' },
+  setup: { lua: '5.5.1', luv: '1.52.1-0' },
   examples: [{ id: 'connect', symbols: ['libtmux.Runtime:connect'], file: 'examples/api/connect.lua',
     description: 'Connect to a tmux daemon.', stdout: 'connected\n' }],
 })
@@ -23,23 +21,24 @@ const target = (): ApiSymbol => ({
 })
 
 describe('complete Lua API examples from native artifacts', () => {
-  it('retains native docs, exact full files, registry setup, and both source links', () => {
+  it('retains native docs, exact full files, registry setup, and the program source link', () => {
     const symbol = target()
     attachCompleteLuaExamples([symbol], manifest(), files, source)
     expect(symbol.doc?.summary).toBe('Existing native documentation.')
     const examples = symbol.doc!.examples!
-    expect(examples).toHaveLength(4)
-    expect(examples[1].code).toBe(launcher)
-    expect(examples[2].code).toBe(program)
-    expect(examples[1].sourceUrl).toBe(`https://github.com/${source.repository}/blob/${source.revision}/examples/api/run.sh`)
-    expect(examples[2].sourceUrl).toBe(`https://github.com/${source.repository}/blob/${source.revision}/examples/api/connect.lua`)
+    expect(examples.map((example) => example.lang)).toEqual(['console', 'lua', 'console'])
+    expect(examples[1].code).toBe(program)
+    expect(examples[1].sourceUrl).toBe(`https://github.com/${source.repository}/blob/${source.revision}/examples/api/connect.lua`)
     expect(examples[0].code).toBe('$ luarocks --tree ./rocks install luv &&\n' +
       '  luarocks --tree ./rocks install libtmux &&\n' +
       '  eval "$(luarocks --tree ./rocks path)"\n')
     expect(examples[0].intro).toContain('Lua 5.1 or newer')
     expect(examples[0].intro).not.toMatch(/git|clone/i)
-    expect(examples[2].intro).toContain('`connect.lua`')
-    expect(examples[3].code).toBe('$ eval "$(luarocks --tree ./rocks path)" &&\n  sh run.sh connect.lua\n')
+    expect(examples[1].intro).toContain('`connect.lua`')
+    expect(examples[1].intro).toContain('starts its own private tmux server')
+    expect(examples[1].intro).not.toMatch(/launcher/i)
+    expect(examples[2].code).toBe('$ eval "$(luarocks --tree ./rocks path)" &&\n  lua connect.lua\n')
+    expect(examples.some((example) => example.lang === 'sh' || example.code.includes('run.sh'))).toBe(false)
     expect(examples.some((example) => example.code.includes('not a complete example'))).toBe(false)
   })
 
@@ -51,7 +50,7 @@ describe('complete Lua API examples from native artifacts', () => {
   })
 
   it('rejects missing or ambiguous full-file payloads and changed line endings', () => {
-    for (const invalid of [files.slice(0, 1), [...files, files[0]],
+    for (const invalid of [files.slice(1), [...files, files[0]],
       files.map((file) => ({ ...file, content: file.content.replaceAll('\n', '\r\n') }))]) {
       expect(() => attachCompleteLuaExamples([target()], manifest(), invalid, source)).toThrow()
     }
@@ -66,7 +65,6 @@ describe('complete Lua API examples from native artifacts', () => {
 
   it('rejects unsafe paths and absent runtime or output contracts', () => {
     for (const mutate of [
-      (value: LuaExampleManifest) => { value.setup.launcher = '../run.sh' },
       (value: LuaExampleManifest) => { value.examples[0].file = '../../connect.lua' },
       (value: LuaExampleManifest) => { value.setup.lua = 'latest' },
       (value: LuaExampleManifest) => { value.setup.luv = 'latest' },
@@ -81,5 +79,15 @@ describe('complete Lua API examples from native artifacts', () => {
       .toThrow(/full revision/)
     expect(() => attachCompleteLuaExamples([target()], manifest(), files, { ...source, repository: 'other/repo' }))
       .toThrow(/Lua repository/)
+  })
+
+  it('refuses a manifest that still names a launcher', () => {
+    // Programs written for a launcher fail as `lua <name>.lua`; a refusal beats instructions that do not run.
+    for (const launcher of ['examples/api/run.sh', '../run.sh', '']) {
+      const value = manifest()
+      ;(value.setup as Record<string, unknown>).launcher = launcher
+      const withLauncher = [...files, { path: 'examples/api/run.sh', content: '#!/bin/sh\nlua "$1"\n' }]
+      expect(() => attachCompleteLuaExamples([target()], value, withLauncher, source)).toThrow(/launcher/)
+    }
   })
 })

@@ -2,7 +2,7 @@ import type { ApiSymbol, DocBlock } from '../model.ts'
 
 export interface LuaExampleManifest {
   schema: number
-  setup: { lua: string; luv: string; launcher: string }
+  setup: { lua: string; luv: string }
   examples: { id: string; symbols: string[]; file: string; description: string; stdout: string }[]
 }
 
@@ -23,7 +23,8 @@ export function attachCompleteLuaExamples(
     'unsupported or empty manifest')
   require(/^5\.[1-5]\.\d+$/.test(manifest.setup?.lua ?? '') &&
     /^\d+\.\d+\.\d+-\d+$/.test(manifest.setup?.luv ?? ''), 'runtime versions must be pinned')
-  require(manifest.setup.launcher === 'examples/api/run.sh', 'unexpected launcher path')
+  // Programs behind a launcher expect it to own the daemon and fail as `lua <name>.lua`: refuse, don't drop it.
+  require(!('launcher' in manifest.setup), 'setup.launcher is unsupported; examples must start their own server')
   const read = (path: string): string => {
     const matches = files?.filter((file) => file.path === path) ?? []
     require(matches.length === 1, `source file must resolve once: ${path}`)
@@ -32,7 +33,6 @@ export function attachCompleteLuaExamples(
       `source file must retain complete LF bytes: ${path}`)
     return code
   }
-  const launcher = read(manifest.setup.launcher)
   const url = (path: string) => `https://github.com/${source.repository}/blob/${source.revision}/${path}`
   const seen = new Set<string>()
   const ids = new Set<string>()
@@ -55,21 +55,15 @@ export function attachCompleteLuaExamples(
           '  eval "$(luarocks --tree ./rocks path)"\n',
       },
       {
-        lang: 'sh',
-        intro: 'Save this complete launcher as `run.sh`. It starts a private tmux daemon and cleans up after success or failure. A failed daemon shutdown reports and retains its socket directory.',
-        sourceUrl: url(manifest.setup.launcher),
-        code: launcher,
-      },
-      {
         lang: 'lua',
-        intro: `Save the complete program as \`${name}\`. Closing the library connection leaves the daemon running; the launcher owns its lifetime.`,
+        intro: `Save the complete program as \`${name}\`. It starts its own private tmux server and stops it before exiting, including after a failure.`,
         sourceUrl: url(example.file),
         code,
       },
       {
         lang: 'console',
-        intro: 'Run the saved files. Assertions and operation errors produce a failing exit status:',
-        code: `$ eval "$(luarocks --tree ./rocks path)" &&\n  sh run.sh ${name}\n`,
+        intro: 'Run the saved program. It uses `/usr/bin/tmux` unless `TMUX_BIN` names another absolute path. Assertions and operation errors produce a failing exit status:',
+        code: `$ eval "$(luarocks --tree ./rocks path)" &&\n  lua ${name}\n`,
       },
     ]
     for (const id of example.symbols) {
