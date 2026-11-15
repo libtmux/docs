@@ -373,15 +373,16 @@
     {
       "port": "ruby",
       "language": "ruby",
-      "sourceRevision": "2599d45369515aaf2fd5793bfe71cdc20de641b6",
+      "sourceRevision": "46474e8a2f03e39fc2b0ff73b6a841777b79c4d2",
       "sourceRepository": "libtmux/libtmux-ruby",
       "toolchain": [
         "Ruby 4.0.7",
-        "Bundler"
+        "Bundler",
+        "libtmux 0.1.2"
       ],
       "page": "ports/ruby/guides/attaching-to-tmux",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-ruby libtmux-source &&\n  git -C libtmux-source checkout 2599d45369515aaf2fd5793bfe71cdc20de641b6 &&\n  bundle config set --local path vendor/bundle &&\n  bundle install &&\n  sh run.sh bundle exec ruby connect.rb"
+        "bundle config set --local path vendor/bundle &&\n  bundle install &&\n  sh run.sh bundle exec ruby connect.rb"
       ],
       "expectedOutput": "work",
       "files": [
@@ -391,7 +392,7 @@
         },
         {
           "name": "Gemfile",
-          "sha256": "c0139fb5c549a7f4ccf72cf4ebf921de0497dbe9ea9a2e7c5756504ed5bf2f7c"
+          "sha256": "6634416a9f2b1f3bafc69333bec5ee1a4cbd67e0ab7443e9c567f35498e20444"
         },
         {
           "name": "run.sh",
@@ -399,7 +400,7 @@
         }
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ]
     },

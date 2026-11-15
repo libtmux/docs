@@ -456,7 +456,7 @@
     {
       "port": "ruby",
       "language": "ruby",
-      "sourceRevision": "2599d45369515aaf2fd5793bfe71cdc20de641b6",
+      "sourceRevision": "46474e8a2f03e39fc2b0ff73b6a841777b79c4d2",
       "sourceRepository": "libtmux/libtmux-ruby",
       "files": [
         {
@@ -465,50 +465,51 @@
         },
         {
           "name": "Gemfile",
-          "sha256": "c0139fb5c549a7f4ccf72cf4ebf921de0497dbe9ea9a2e7c5756504ed5bf2f7c"
+          "sha256": "6634416a9f2b1f3bafc69333bec5ee1a4cbd67e0ab7443e9c567f35498e20444"
         }
       ],
       "toolchain": [
         "Ruby 4.0.7",
-        "Bundler"
+        "Bundler",
+        "libtmux 0.1.2"
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "page": "ports/ruby/examples/capture-pane-output",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-ruby libtmux-source &&\n  git -C libtmux-source checkout 2599d45369515aaf2fd5793bfe71cdc20de641b6 &&\n  bundle config set --local path vendor/bundle &&\n  bundle install &&\n  bundle exec ruby capture.rb"
+        "bundle config set --local path vendor/bundle &&\n  bundle install &&\n  bundle exec ruby capture.rb"
       ],
       "verification": {
         "platform": "Linux",
         "checks": [
           {
-            "name": "positive-3.2a",
-            "tmux": "3.2a",
+            "name": "positive-3.3a",
+            "tmux": "3.3a",
             "exit": 0,
-            "seconds": 0.529,
+            "seconds": 0.279,
             "remainingSocketDirectories": 0
           },
           {
             "name": "positive-3.7c",
             "tmux": "3.7c",
             "exit": 0,
-            "seconds": 0.411,
+            "seconds": 0.264,
             "remainingSocketDirectories": 0
           },
           {
             "name": "negative-import",
             "tmux": "3.7c",
             "exit": 1,
-            "seconds": 0.455,
+            "seconds": 0.236,
             "remainingSocketDirectories": 0
           },
           {
             "name": "negative-runtime",
             "tmux": "3.7c",
             "exit": 1,
-            "seconds": 5.416,
+            "seconds": 5.32,
             "remainingSocketDirectories": 0
           }
         ]

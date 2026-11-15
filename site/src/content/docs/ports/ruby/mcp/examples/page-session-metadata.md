@@ -19,40 +19,37 @@ server, use the [client guide](../../guides/connect-client/).
 
 ## Prepare the project
 
-Use Ruby 4.0.7 with its development headers, Bundler, Git, a C compiler and
-Make, and tmux 3.3a or newer on a Unix host. The locked bundle includes native
+Use Ruby 3.3 or newer with its development headers, Bundler, a C compiler and
+Make, and tmux 3.3a or newer on a Unix host. The bundle includes native
 extensions. Start with an empty directory:
 
 ```console
 $ mkdir ruby-mcp-pages && cd ruby-mcp-pages
 ```
 
-Fetch the source:
+Save the dependency file. It installs `libtmux-mcp` 0.1.2 from RubyGems:
 
-```console
-$ git clone https://github.com/libtmux/libtmux-ruby libtmux-source
+```ruby title="Gemfile"
+source "https://rubygems.org"
+
+gem "libtmux-mcp", "0.1.2"
 ```
 
-Select the documented revision:
+Install the gems into the project:
 
 ```console
-$ git -C libtmux-source checkout 9b1545562a112353c2c893a1d3e8c0d9b4b51f8d
-```
-
-Install the locked dependencies:
-
-```console
-$ BUNDLE_FROZEN=true BUNDLE_GEMFILE=./libtmux-source/Gemfile bundle install
+$ bundle config set --local path vendor/bundle &&
+  bundle install
 ```
 
 ## Run the complete example
 
-Save this file beside the source checkout:
+Save this file beside the `Gemfile`:
 
 ```ruby title="snapshot-sessions.rb"
 # frozen_string_literal: true
 
-ENV["BUNDLE_GEMFILE"] = File.expand_path("libtmux-source/Gemfile", __dir__)
+ENV["BUNDLE_GEMFILE"] = File.expand_path("Gemfile", __dir__)
 require "bundler/setup"
 require "libtmux/mcp"
 
@@ -183,6 +180,6 @@ data. Shutdown first closes the application, then its Async scope, then the
 owned daemon. Each cleanup attempt still runs if an earlier operation or
 cleanup fails, and the program reports the collected errors.
 
-The [pinned application implementation](https://github.com/libtmux/libtmux-ruby/blob/9b1545562a112353c2c893a1d3e8c0d9b4b51f8d/gems/libtmux-mcp/lib/libtmux/mcp/application.rb)
-and [Async scope](https://github.com/libtmux/libtmux-ruby/blob/9b1545562a112353c2c893a1d3e8c0d9b4b51f8d/gems/libtmux-async/lib/libtmux/async.rb)
+The [application implementation](https://github.com/libtmux/libtmux-ruby/blob/46474e8a2f03e39fc2b0ff73b6a841777b79c4d2/gems/libtmux-mcp/lib/libtmux/mcp/application.rb)
+and [Async scope](https://github.com/libtmux/libtmux-ruby/blob/46474e8a2f03e39fc2b0ff73b6a841777b79c4d2/gems/libtmux-async/lib/libtmux/async.rb)
 define these ownership and request contracts.

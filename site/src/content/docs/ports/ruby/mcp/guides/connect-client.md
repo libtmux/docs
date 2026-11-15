@@ -1,6 +1,6 @@
 ---
 title: Connect a Ruby MCP client
-description: Launch a pinned Ruby MCP server on its own private tmux socket, inspect the default tools, and close it with the client.
+description: Launch the Ruby MCP server on its own private tmux socket, inspect the default tools, and close it with the client.
 port: ruby
 product: mcp
 equivalence: mcp-client-setup
@@ -17,11 +17,10 @@ the connection.
 
 ## Prepare the project
 
-Use Ruby 4.0.7 with its development headers, Bundler, Git, a C compiler and
+Use Ruby 3.3 or newer with its development headers, Bundler, a C compiler and
 Make, and tmux 3.3a or newer on a Unix host. The bundle includes native
-extensions such as `io-event`, `json`, and `fiddle`. This recipe uses the
-source revision whose MCP contract is documented here; it does not
-assume that a newer checkout and an installed release have identical APIs.
+extensions such as `io-event`, `json`, and `fiddle`. This recipe installs
+`libtmux-mcp` 0.1.2, the release whose MCP contract is documented here.
 
 Create an empty directory:
 
@@ -29,27 +28,24 @@ Create an empty directory:
 $ mkdir ruby-mcp-client && cd ruby-mcp-client
 ```
 
-Fetch the source:
+Save the dependency file:
 
-```console
-$ git clone https://github.com/libtmux/libtmux-ruby libtmux-source
+```ruby title="Gemfile"
+source "https://rubygems.org"
+
+gem "libtmux-mcp", "0.1.2"
 ```
 
-Select the documented revision:
+Install the gems into the project:
 
 ```console
-$ git -C libtmux-source checkout 9b1545562a112353c2c893a1d3e8c0d9b4b51f8d
+$ bundle config set --local path vendor/bundle &&
+  bundle install
 ```
 
-Install the dependencies from its lockfile:
-
-```console
-$ BUNDLE_FROZEN=true BUNDLE_GEMFILE=./libtmux-source/Gemfile bundle install
-```
-
-This installs the source checkout's core and MCP gems together. Keep the
-checkout beside the launcher so the client's working directory does not affect
-which gems it loads.
+This installs `libtmux-mcp` with the matching `libtmux` and `libtmux-async`
+gems. The launcher below selects this directory's `Gemfile`, so the client's
+working directory does not affect which gems it loads.
 
 ## Save the launcher
 
@@ -58,7 +54,7 @@ Save this complete program as `run-mcp.rb` in the project directory:
 ```ruby title="run-mcp.rb"
 # frozen_string_literal: true
 
-ENV["BUNDLE_GEMFILE"] = File.expand_path("libtmux-source/Gemfile", __dir__)
+ENV["BUNDLE_GEMFILE"] = File.expand_path("Gemfile", __dir__)
 require "bundler/setup"
 require "libtmux/mcp/cli"
 
@@ -172,6 +168,6 @@ that daemon. The application's lifecycle remains responsible for it.
 
 [Tool reference](../../tools/) describes the argument and result schemas.
 [Source-owned MCP guide](../../source-guide/) explains policy, observation and
-shell enrollment. The pinned [CLI implementation](https://github.com/libtmux/libtmux-ruby/blob/9b1545562a112353c2c893a1d3e8c0d9b4b51f8d/gems/libtmux-mcp/lib/libtmux/mcp/cli.rb)
-and [owned-server implementation](https://github.com/libtmux/libtmux-ruby/blob/9b1545562a112353c2c893a1d3e8c0d9b4b51f8d/gems/libtmux/lib/libtmux/owned.rb)
+shell enrollment. The [CLI implementation](https://github.com/libtmux/libtmux-ruby/blob/46474e8a2f03e39fc2b0ff73b6a841777b79c4d2/gems/libtmux-mcp/lib/libtmux/mcp/cli.rb)
+and [owned-server implementation](https://github.com/libtmux/libtmux-ruby/blob/46474e8a2f03e39fc2b0ff73b6a841777b79c4d2/gems/libtmux/lib/libtmux/owned.rb)
 define these lifecycle boundaries.

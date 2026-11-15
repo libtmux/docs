@@ -38,16 +38,16 @@ end
 
 ## Setup and run
 
-Use an empty directory on Linux with Git and tmux 3.3a or newer installed.
+Use an empty directory on Linux with Ruby 3.3 or newer, Bundler, and tmux 3.3a
+or newer installed.
 
-This example was checked with Ruby 4.0.7, Bundler.
-
-Save this file beside the program using the displayed filename.
+Save this file beside the program using the displayed filename. It installs
+`libtmux` 0.1.2 from RubyGems ([source](https://github.com/libtmux/libtmux-ruby/tree/46474e8a2f03e39fc2b0ff73b6a841777b79c4d2)).
 
 ```ruby title="Gemfile"
 source "https://rubygems.org"
 
-gem "libtmux", path: "libtmux-source/gems/libtmux"
+gem "libtmux", "0.1.2"
 ```
 
 Save the launcher as `run.sh`. It starts an isolated tmux server, runs the
@@ -83,12 +83,10 @@ export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
 "$binary" -S "$socket" has-session -t '=work'
 ```
 
-Fetch the verified library revision, build, and run:
+Install the gem and run the program:
 
 ```console
-$ git clone https://github.com/libtmux/libtmux-ruby libtmux-source &&
-  git -C libtmux-source checkout 2599d45369515aaf2fd5793bfe71cdc20de641b6 &&
-  bundle config set --local path vendor/bundle &&
+$ bundle config set --local path vendor/bundle &&
   bundle install &&
   sh run.sh bundle exec ruby connect.rb
 ```
