@@ -175,7 +175,7 @@ html[data-theme-mode='dark'] .lm-install {
   flex: none;
 }
 
-/* Copy keeps the site's outlined control; the surface only raises it off the code's own tone. */
+/* Copy is the site's outlined square; the surface only raises it off the code's own tone. */
 .lm-install__where .lm-pkg-install__copy,
 .lm-install__where .lm-mcp-install__copy {
   flex: none;
@@ -494,7 +494,7 @@ html[data-mcp-install-cooldown-enabled='1'][data-mcp-install-cooldown-type='bypa
 
 .lm-pkg-install__code--strip > button,
 .lm-mcp-install__code--strip > button {
-  margin-top: 0.4rem;
+  margin-top: 0.25rem;
 }
 
 /* The code: no box of its own, the surface is the box. */

@@ -59,7 +59,7 @@ const copyFile = new URL('../src/components/widgets/InstallCode.astro', import.m
 // The real components, bound to this file's own modules; only collection loading and unused example
 // rendering are left out of this focused fixture.
 const component = () => loadAstroTemplate('components/widgets/PackageInstall.astro', {
-  real: ['InstallCode', 'InstallCooldown', 'InstallFacts', 'InstallTabRow', 'InstallWhere'].map((name) => `components/widgets/${name}.astro`),
+  real: ['InstallCode', 'InstallCooldown', 'InstallCopy', 'InstallFacts', 'InstallTabRow', 'InstallWhere'].map((name) => `components/widgets/${name}.astro`),
   modules: { '../../lib/api-models': { API_MODELS: models }, 'astro-expressive-code/components': { Code: () => '' } },
 })
 async function render(slug: string, saved?: string, ports = [slug]) {

@@ -434,17 +434,22 @@
     right: calc(0.45rem + 4px);
   }
 
+  /* Copy is a clipboard in a small outlined square (record 0067); it shows a checked clipboard after a
+   * copy (`data-copied`), or its warning colour when the copy was refused (`data-failed`). The icons
+   * swap in install-copy.css. */
   .lm-pkg-install__copy {
     appearance: none;
+    flex: none;
+    display: inline-grid;
+    place-items: center;
+    width: 1.875rem;
+    height: 1.875rem;
+    padding: 0;
     border: 1px solid var(--control-border);
-    border-radius: 0.25rem;
+    border-radius: 0.375rem;
     background: var(--lm-pkg-install-bg);
     color: var(--lm-pkg-install-fg-secondary);
     cursor: pointer;
-    font: inherit;
-    font-size: 0.75em;
-    line-height: 1;
-    padding: 0.3rem 0.5rem;
   }
 
   .lm-pkg-install__copy:hover {
@@ -457,9 +462,14 @@
     outline-offset: 2px;
   }
 
-  .lm-pkg-install__copy--done {
+  .lm-pkg-install__copy[data-copied] {
     color: var(--lm-pkg-install-accent);
     border-color: var(--lm-pkg-install-accent);
+  }
+
+  .lm-pkg-install__copy[data-failed] {
+    color: var(--aside-caution-ink);
+    border-color: var(--aside-caution-ink);
   }
 
   /* Compact variant: tighter padding, smaller type — mirrors

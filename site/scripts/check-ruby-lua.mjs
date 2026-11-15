@@ -36,6 +36,8 @@ for (const scheme of ['light', 'dark']) {
       viewport: { width, height },
       colorScheme: scheme,
     })
+    // A negative control: a script that breaks what a check looks at must make the check fail.
+    if (process.env.LIBTMUX_CHECK_SABOTAGE) await context.addInitScript(process.env.LIBTMUX_CHECK_SABOTAGE)
     await context.grantPermissions(['clipboard-read', 'clipboard-write'], {
       origin: new URL(BASE).origin,
     })
@@ -126,9 +128,12 @@ for (const scheme of ['light', 'dark']) {
         `${scheme}/${viewport}: Lua install command is missing`)
       await choose('ruby')
       const copy = install('ruby').locator('.lm-pkg-install__copy').first()
+      // Copy is a clipboard icon with no word in it, and shows a checked clipboard (`data-copied`) after a copy.
+      check(await copy.textContent().then((text) => (text ?? '').trim() === ''),
+        `${scheme}/${viewport}: Ruby copy control has a word in it, not a clipboard icon`)
       await copy.click()
-      await copy.filter({ hasText: /copied/i }).waitFor({ timeout: 1000 }).catch(() => {})
-      check(await copy.textContent().then((text) => /copied/i.test(text ?? '')),
+      await copy.and(page.locator('[data-copied]')).waitFor({ timeout: 1000 }).catch(() => {})
+      check(await copy.evaluate((element) => element.hasAttribute('data-copied')),
         `${scheme}/${viewport}: Ruby copy control did not confirm the copy`)
       check(await page.evaluate(() => navigator.clipboard.readText()).then((text) => /gem install/.test(text)),
         `${scheme}/${viewport}: Ruby copy control wrote the wrong command`)

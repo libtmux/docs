@@ -1,4 +1,6 @@
 ---
+import InstallCopy from './InstallCopy.astro'
+
 /**
  * A highlighted install command, with the shared copy control.
  *
@@ -26,76 +28,15 @@ interface Props {
 const { html, language, layout = 'gutter', label, prompt, codeKey, strip, after, family = 'pkg' } = Astro.props
 const standalone = layout === 'gutter' || layout === 'overlay'
 ---
-<div class={`lm-${family}-install__code lm-${family}-install__code--${layout}${after ? ` lm-${family}-install__code--after` : ''}`} data-language={language} data-prompt={prompt} data-code-key={codeKey} data-install-code>{strip && <span class="lm-install__k">{strip}</span>}<pre tabindex={standalone ? undefined : '0'}><code set:html={html} /></pre>{layout !== 'plain' && <button type="button" class={`lm-${family}-install__copy`} data-action="copy" aria-label={label ? `Copy ${label}` : 'Copy to clipboard'}>Copy</button>}</div>
+<div class={`lm-${family}-install__code lm-${family}-install__code--${layout}${after ? ` lm-${family}-install__code--after` : ''}`} data-language={language} data-prompt={prompt} data-code-key={codeKey} data-install-code>{strip && <span class="lm-install__k">{strip}</span>}<pre tabindex={standalone ? undefined : '0'}><code set:html={html} /></pre>{layout !== 'plain' && <InstallCopy family={family} label={label ? `Copy ${label}` : 'Copy to clipboard'} />}</div>
 <script>
-  function copyPanelCode(button: HTMLElement) {
-    // Copy in a surface's header sits outside the code it takes, so it names the code it copies.
-    const key = button.getAttribute('data-copy-key')
-    const scope = button.closest('[data-copy-scope]')
-    const wrap = key && scope
-      ? scope.querySelector(`[data-code-key="${key}"]`)
-      : button.closest('.lm-pkg-install__code')
-    const codeEl = wrap?.querySelector('code')
-    if (!codeEl) return
-    let text = codeEl.textContent ?? ''
-    // The prompt is drawn, never copied.
-    const prompt = wrap?.getAttribute('data-prompt') ?? (wrap?.getAttribute('data-language') === 'console' ? '$' : '')
-    if (prompt) text = text.replace(new RegExp(`^${prompt.replace(/[$.*+?^{}()|[\]\\]/g, '\\$&')} `, 'gm'), '')
-    writeClipboardText(text, button)
-  }
-
-  function writeClipboardText(text: string, button: HTMLElement) {
-    if (navigator.clipboard?.writeText) {
-      navigator.clipboard.writeText(text).then(
-        () => announceCopyResult(button, true),
-        () => fallbackCopy(text, button),
-      )
-    } else {
-      fallbackCopy(text, button)
-    }
-  }
-
-  function fallbackCopy(text: string, button: HTMLElement) {
-    const focused = document.activeElement
-    const textarea = document.createElement('textarea')
-    textarea.value = text
-    textarea.style.position = 'fixed'
-    textarea.style.opacity = '0'
-    document.body.appendChild(textarea)
-    textarea.focus()
-    textarea.select()
-    let copied = false
-    try {
-      copied = document.execCommand('copy')
-    } catch {
-      copied = false
-    } finally {
-      textarea.remove()
-      if (focused instanceof HTMLElement) focused.focus({ preventScroll: true })
-    }
-    announceCopyResult(button, copied)
-  }
-
-  function announceCopyResult(button: HTMLElement, copied: boolean) {
-    const status = button.closest('.lm-pkg-install')?.querySelector('[data-copy-status]')
-    status?.replaceChildren(document.createTextNode(copied ? 'Copied to clipboard.' : 'Copy failed. Select and copy the text manually.'))
-    const original = button.getAttribute('data-copy-label') ?? button.textContent ?? 'Copy'
-    button.setAttribute('data-copy-label', original)
-    button.textContent = copied ? 'Copied' : 'Copy failed'
-    button.classList.toggle('lm-pkg-install__copy--done', copied)
-    const win = button as HTMLElement & { _lmCopyResetTimer?: number }
-    window.clearTimeout(win._lmCopyResetTimer)
-    win._lmCopyResetTimer = window.setTimeout(() => {
-      button.textContent = original
-      button.classList.remove('lm-pkg-install__copy--done')
-    }, 1500)
-  }
+  import { copyInstallCode } from './install-copy'
 
   document.addEventListener('click', (event) => {
     // The MCP installer copies with its own script, so only the blocks of a package installer, and the tmux installer, are handled here.
     const button = (event.target as HTMLElement).closest<HTMLElement>('.lm-pkg-install [data-install-code] [data-action="copy"], .lm-pkg-install [data-copy-key]')
     if (!button) return
     event.preventDefault()
-    copyPanelCode(button)
+    copyInstallCode(button)
   })
 </script>

@@ -38,8 +38,10 @@
  * own `data-default-*` attributes (rendered by McpInstall.astro from
  * install-matrix.ts) instead of re-declaring them — see readDefaults().
  *
- * Vanilla JS; the header's tab row (counts of the tabs it hides) is install-tabs.ts.
+ * Vanilla JS; the header's tab row (counts of the tabs it hides) is install-tabs.ts,
+ * and Copy (the clipboard icon, its feedback and the prompt it leaves out) is install-copy.ts.
  */
+import { copyInstallCode } from './install-copy'
 import { revealSelected, watchTabRows } from './install-tabs'
 
 ;(function () {
@@ -171,7 +173,7 @@ import { revealSelected, watchTabRows } from './install-tabs'
 
   function handleAction(widget, el, event) {
     if (el.dataset.action === 'copy') {
-      copyPanelCode(el)
+      copyInstallCode(el)
       event.preventDefault()
       return true
     }
@@ -388,79 +390,6 @@ import { revealSelected, watchTabRows } from './install-tabs'
     event.preventDefault()
     tabs[next].focus()
     select(widget, kind, tabs[next].dataset.tabValue, { persist: true, broadcast: true })
-  }
-
-  // -------- copy to clipboard ---------------------------------------
-  //
-  // Not in the source: widget.js relied on sphinx-copybutton (a separate
-  // Sphinx extension) for this, plus its own prompt-strip regex for
-  // console blocks. Neither exists on this static site, and the sibling
-  // PackageInstall widget needs the same behaviour, so it is implemented
-  // here once.
-
-  function copyPanelCode(button) {
-    // Copy in the surface's header sits outside the code it takes, so it names that code by key.
-    var key = button.getAttribute('data-copy-key')
-    var scope = button.closest('[data-copy-scope]')
-    var wrap = key && scope ? scope.querySelector('[data-code-key="' + key + '"]') : button.closest('.lm-mcp-install__code')
-    var codeEl = wrap && wrap.querySelector('code')
-    if (!codeEl) return
-    var text = codeEl.textContent || ''
-    // The prompt is drawn, never copied (sphinx-copybutton did the same via gp-sphinx's prompt-strip regex).
-    var prompt = wrap.getAttribute('data-prompt') || (wrap.getAttribute('data-language') === 'console' ? '$' : '')
-    if (prompt) text = text.replace(new RegExp('^' + prompt.replace(/[$.*+?^{}()|[\]\\]/g, '\\$&') + ' ', 'gm'), '')
-    writeClipboardText(text, button)
-  }
-
-  function writeClipboardText(text, button) {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(
-        function () {
-          announceCopyResult(button, true)
-        },
-        function () {
-          fallbackCopy(text, button)
-        },
-      )
-    } else {
-      fallbackCopy(text, button)
-    }
-  }
-
-  function fallbackCopy(text, button) {
-    var focused = document.activeElement
-    var textarea = document.createElement('textarea')
-    textarea.value = text
-    textarea.style.position = 'fixed'
-    textarea.style.opacity = '0'
-    document.body.appendChild(textarea)
-    textarea.focus()
-    textarea.select()
-    var copied = false
-    try {
-      copied = document.execCommand('copy')
-    } catch {
-      copied = false
-    } finally {
-      textarea.remove()
-      if (focused instanceof HTMLElement) focused.focus({ preventScroll: true })
-    }
-    announceCopyResult(button, copied)
-  }
-
-  function announceCopyResult(button, copied) {
-    var widget = button.closest('.lm-mcp-install')
-    var status = widget && widget.querySelector('[data-copy-status]')
-    if (status) status.replaceChildren(document.createTextNode(copied ? 'Copied to clipboard.' : 'Copy failed. Select and copy the text manually.'))
-    var original = button.getAttribute('data-copy-label') || button.textContent
-    button.setAttribute('data-copy-label', original)
-    button.textContent = copied ? 'Copied' : 'Copy failed'
-    button.classList.toggle('lm-mcp-install__copy--done', copied)
-    window.clearTimeout(button._lmCopyResetTimer)
-    button._lmCopyResetTimer = window.setTimeout(function () {
-      button.textContent = original
-      button.classList.remove('lm-mcp-install__copy--done')
-    }, 1500)
   }
 
   // -------- cooldown helpers --------------------------------------------

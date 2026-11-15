@@ -199,17 +199,20 @@ html[data-theme-mode='dark'] .lm-mcp-install__code span {
   }
 }
 
+/* Copy is a clipboard in a small outlined square (record 0067); the icons swap in install-copy.css. */
 .lm-mcp-install__copy {
   appearance: none;
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 1.875rem;
+  height: 1.875rem;
+  padding: 0;
   border: 1px solid var(--control-border);
-  border-radius: 0.25rem;
+  border-radius: 0.375rem;
   background: var(--lm-mcp-install-bg);
   color: var(--lm-mcp-install-fg-secondary);
   cursor: pointer;
-  font: inherit;
-  font-size: 0.75em;
-  line-height: 1;
-  padding: 0.3rem 0.5rem;
 }
 
 .lm-mcp-install__copy:hover {
@@ -222,9 +225,14 @@ html[data-theme-mode='dark'] .lm-mcp-install__code span {
   outline-offset: 2px;
 }
 
-.lm-mcp-install__copy--done {
+.lm-mcp-install__copy[data-copied] {
   color: var(--lm-mcp-install-accent);
   border-color: var(--lm-mcp-install-accent);
+}
+
+.lm-mcp-install__copy[data-failed] {
+  color: var(--aside-caution-ink);
+  border-color: var(--aside-caution-ink);
 }
 
 /* A day count that JavaScript rewrites: the ISO duration, or the cutoff date, wherever it sits in a body. */

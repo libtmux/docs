@@ -1,0 +1,21 @@
+---
+import './install-copy.css'
+
+/**
+ * The installer's Copy (design record 0067): a clipboard in a small outlined
+ * square, which turns to a checked clipboard after a copy. It names what it
+ * copies, so the icon is never the only thing a reader of the page has.
+ * `install-copy.ts` takes the code and drives the feedback; the colours and
+ * the square are in each installer's own stylesheet.
+ */
+interface Props {
+  family: 'pkg' | 'mcp'
+  /** What the button does, as a reader hears it: "Copy command", "Copy pom.xml". */
+  label: string
+  /** Names the code a header's Copy takes, which sits elsewhere in the surface. */
+  copyKey?: string
+}
+const { family, label, copyKey } = Astro.props as Props
+const glyph = 'M16 4.5h2a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2h2'
+---
+<button type="button" class={`lm-${family}-install__copy`} data-action="copy" data-copy-key={copyKey} aria-label={label} title="Copy"><svg class="lm-copy__idle" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2.5" width="8" height="4" rx="1" /><path d={glyph} /></svg><svg class="lm-copy__done" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2.5" width="8" height="4" rx="1" /><path d={glyph} /><path d="M9 14l2 2 4-4" /></svg></button>

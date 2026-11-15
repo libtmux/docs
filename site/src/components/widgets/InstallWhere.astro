@@ -1,4 +1,5 @@
 ---
+import InstallCopy from './InstallCopy.astro'
 import { targetParts } from '../../lib/install-surface'
 
 /**
@@ -15,4 +16,4 @@ interface Props {
 const { target, lang, copyKey, family } = Astro.props as Props
 const { dir, base } = targetParts(target)
 ---
-<div class="lm-install__where"><span class="lm-install__target" title={target}>{dir && <span class="lm-install__dir">{dir}</span>}<span class="lm-install__base">{base}</span></span><button type="button" class={`lm-${family}-install__copy`} data-action="copy" data-copy-key={copyKey} aria-label={`Copy ${lang === 'console' ? 'command' : target}`}>Copy</button></div>
+<div class="lm-install__where"><span class="lm-install__target" title={target}>{dir && <span class="lm-install__dir">{dir}</span>}<span class="lm-install__base">{base}</span></span><InstallCopy family={family} copyKey={copyKey} label={`Copy ${lang === 'console' ? 'command' : target}`} /></div>

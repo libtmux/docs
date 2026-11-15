@@ -189,7 +189,7 @@ describe('release channels', () => {
 const widgets = new URL('../src/components/widgets/', import.meta.url)
 async function renderPackage(props: Record<string, unknown>, options: { saved?: Record<string, string>; scripts?: boolean } = {}) {
   const template = await loadAstroTemplate('components/widgets/PackageInstall.astro', {
-    real: ['InstallCode', 'InstallCooldown', 'InstallFacts', 'InstallTabRow', 'InstallWhere'].map((name) => `components/widgets/${name}.astro`),
+    real: ['InstallCode', 'InstallCooldown', 'InstallCopy', 'InstallFacts', 'InstallTabRow', 'InstallWhere'].map((name) => `components/widgets/${name}.astro`),
     modules: { '../../lib/api-models': { API_MODELS: {} }, 'astro-expressive-code/components': { Code: () => '' } },
   })
   const window = openWindow()
@@ -441,7 +441,7 @@ describe('driving the cooldown strip', () => {
 async function renderMcp(port: string, options: { saved?: Record<string, string>; scripts?: boolean } = {}) {
   const lines = (code: string) => code.replace(/<COOLDOWN_[A-Z]+>/g, '7').split('\n').map((line) => `<span class="line">${line.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</span>`).join('\n')
   const template = await loadAstroTemplate('components/widgets/McpInstall.astro', {
-    real: ['InstallCode', 'InstallCooldown', 'InstallFacts', 'InstallTabRow', 'InstallWhere'].map((name) => `components/widgets/${name}.astro`),
+    real: ['InstallCode', 'InstallCooldown', 'InstallCopy', 'InstallFacts', 'InstallTabRow', 'InstallWhere'].map((name) => `components/widgets/${name}.astro`),
     modules: { '../../lib/highlight': { highlightWithCooldownSlots: async (code: string) => lines(code), highlightInline: async (code: string) => lines(code) } },
   })
   const window = openWindow()
@@ -640,5 +640,103 @@ describe('the surface does not move when a choice is made', () => {
   it('has a control: a tab taller than the row is found', () => {
     expect(heightOf('.lm-pkg-install--surface .lm-pkg-install__manager { padding: .8rem 0 .7rem; }', '.lm-pkg-install--surface .lm-pkg-install__manager {')).toBeUndefined()
     expect(heightOf('.lm-install__tabs { min-height: 2.5rem; }', '.lm-install__tabs {')).not.toBe('2.625rem')
+  })
+})
+
+describe('Copy is a clipboard icon in a small outlined square', () => {
+  const GLYPH = 'M16 4.5h2a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2h2'
+  const copyButtons = (document: Document) => [...document.querySelectorAll<HTMLButtonElement>('[data-action="copy"]')]
+
+  it('draws the clipboard, and the checked clipboard for after a copy, with no word in the button', async () => {
+    const { document } = await renderPackage({ ports: ['csharp'] })
+    const buttons = copyButtons(document)
+    expect(buttons.length).toBeGreaterThan(8)
+    for (const button of buttons) {
+      expect(button.textContent?.trim(), button.outerHTML.slice(0, 80)).toBe('')
+      const [idle, done] = [button.querySelector('.lm-copy__idle'), button.querySelector('.lm-copy__done')]
+      expect(idle?.querySelector('rect')?.getAttribute('x')).toBe('8')
+      expect(idle?.querySelector('rect')?.getAttribute('y')).toBe('2.5')
+      expect(idle?.querySelector('path')?.getAttribute('d')).toBe(GLYPH)
+      expect(done?.querySelector('path:last-of-type')?.getAttribute('d')).toBe('M9 14l2 2 4-4')
+      expect(idle?.getAttribute('aria-hidden')).toBe('true')
+    }
+  })
+
+  it('names what it copies, so a reader of the page does not meet a bare icon', async () => {
+    const { document } = await renderPackage({ ports: ['csharp'] })
+    const names = new Set(copyButtons(document).map((button) => button.getAttribute('aria-label')))
+    expect(names).toContain('Copy command')
+    expect(names).toContain('Copy Directory.Packages.props')
+    expect(names).toContain('Copy Project file (.csproj or .fsproj)')
+    expect(names).toContain('Copy Package Manager Console')
+    expect(copyButtons(document).every((button) => button.getAttribute('title') === 'Copy')).toBe(true)
+  })
+
+  it('draws the same button in the MCP installer', async () => {
+    const { document } = await renderMcp('py')
+    const buttons = copyButtons(document)
+    expect(buttons.every((button) => button.classList.contains('lm-mcp-install__copy') && button.querySelector('.lm-copy__idle') && button.textContent?.trim() === '')).toBe(true)
+    expect(buttons[0]!.getAttribute('aria-label')).toBe('Copy command')
+  })
+
+  /** A window whose timers wait for the test, so the 1.5s the checked clipboard shows for can be stepped. */
+  function stepped(window: Window) {
+    const timers: { callback: () => void; delay: number; live: boolean }[] = []
+    Object.assign(window, {
+      setTimeout: (callback: () => void, delay: number) => timers.push({ callback, delay, live: true }),
+      clearTimeout: (id: number) => { if (timers[id - 1]) timers[id - 1]!.live = false },
+    })
+    return { timers, run: () => timers.splice(0).forEach((timer) => timer.live && timer.callback()) }
+  }
+
+  it('shows the checked clipboard for 1.5s after a copy, and names what was copied politely', async () => {
+    const { window, document } = await renderPackage({ ports: ['csharp'] })
+    const clock = stepped(window)
+    runWidgetScript(window, new URL('InstallCode.astro', widgets))
+    Object.defineProperty(window.navigator, 'clipboard', { value: { writeText: async () => {} } })
+    const button = document.querySelector<HTMLButtonElement>('.lm-install__headend .lm-pkg-install__cmd[data-default] [data-copy-key]')!
+    button.click()
+    await Promise.resolve()
+    expect(button.hasAttribute('data-copied')).toBe(true)
+    expect(button.getAttribute('title')).toBe('Copied')
+    expect(button.getAttribute('aria-label')).toBe('Copy command')
+    expect(button.textContent?.trim()).toBe('')
+    const status = document.querySelector('[data-copy-status]')!
+    expect(status.getAttribute('aria-live')).toBe('polite')
+    expect(status.textContent).toBe('Copied command.')
+    expect(clock.timers.map((timer) => timer.delay)).toEqual([1500])
+    clock.run()
+    expect(button.hasAttribute('data-copied')).toBe(false)
+    expect(button.getAttribute('title')).toBe('Copy')
+  })
+
+  it('says so when the copy is refused, and leaves the icon and its name alone', async () => {
+    const { window, document } = await renderPackage({ ports: ['csharp'] })
+    const clock = stepped(window)
+    runWidgetScript(window, new URL('InstallCode.astro', widgets))
+    Object.defineProperty(window.navigator, 'clipboard', { value: { writeText: async () => { throw new Error('denied') } } })
+    Object.defineProperty(window.document, 'execCommand', { value: () => false })
+    const button = document.querySelector<HTMLButtonElement>('.lm-install__headend .lm-pkg-install__cmd[data-default] [data-copy-key]')!
+    button.click()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(button.hasAttribute('data-copied')).toBe(false)
+    expect(button.hasAttribute('data-failed')).toBe(true)
+    expect(button.getAttribute('aria-label')).toBe('Copy command')
+    expect(document.querySelector('[data-copy-status]')!.textContent).toBe('Copy failed. Select and copy the text manually.')
+    clock.run()
+    expect(button.hasAttribute('data-failed')).toBe(false)
+  })
+
+  it('copies the MCP command with the same icon feedback', async () => {
+    const { window, document } = await renderMcp('julia', { scripts: true })
+    const clock = stepped(window)
+    Object.defineProperty(window.navigator, 'clipboard', { value: { writeText: async () => {} } })
+    const button = document.querySelector<HTMLButtonElement>('.lm-install__headend [data-client="claude-code"][data-method="pkg"][data-scope="local"][data-cooldown="off"] [data-copy-key]')!
+    button.click()
+    await Promise.resolve()
+    expect(button.hasAttribute('data-copied')).toBe(true)
+    expect(document.querySelector('[data-copy-status]')!.textContent).toBe('Copied command.')
+    clock.run()
+    expect(button.hasAttribute('data-copied')).toBe(false)
   })
 })
