@@ -164,7 +164,7 @@ describe('the landing page markup', () => {
     expect(document.querySelector('[data-home-language]'), 'no language switcher').toBeNull()
   })
 
-  it('keeps each tested excerpt, with its file, source and CI step, behind a link to embedding it', async () => {
+  it('keeps each tested excerpt, with its file and source, behind a link to embedding it', async () => {
     const document = await render('go')
     const entry = table.go!.mcp as LandingExcerpt
     const resolved = landingExcerpt(PORT_BY_SLUG.go!, 'mcp', table, cache)!
@@ -179,8 +179,11 @@ describe('the landing page markup', () => {
     expect(block.getAttribute('data-meta')).toBe(`role="excerpt" lines="${resolved.ranges.map(({ start, end }) => start === end ? start : `${start}-${end}`).join(',')}"`)
     const caption = disclosure.querySelector('.landing-source')!
     expect(caption.querySelector('a')!.getAttribute('href')).toBe(resolved.sourceUrl)
-    expect(caption.textContent).toContain(entry.ci.workflow)
-    expect(caption.textContent).toContain(entry.ci.command)
+    // The reader gets the file and the fact that it is tested, not the repository's workflow file or command.
+    expect(caption.textContent!.replace(/\s+/g, ' ').trim()).toBe(`Excerpt of ${entry.file}. This program is tested on every change.`)
+    expect(caption.textContent).not.toMatch(/\bCI\b|\.github|\.ya?ml/)
+    expect(caption.textContent).not.toContain(entry.ci.workflow)
+    expect(caption.textContent).not.toContain(entry.ci.command)
   })
 
   it('opens the MCP tab with its task line and the worked example, then the install picker, the links and the excerpt (records 0059, 0061)', async () => {
