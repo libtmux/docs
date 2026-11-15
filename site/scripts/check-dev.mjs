@@ -1098,7 +1098,9 @@ try {
         // tmux pages document tmux itself, so the libtmux release notice is absent there.
         if (path.startsWith('tmux/')) assert.equal(result.badgeForeground, null, `${path}: no libtmux release notice`)
         else assert.equal(result.badgeForeground, 'rgb(255, 255, 255)', 'Filled badge uses white foreground')
-        if (width < 1536) assert(result.schemeLabelWidth <= 1, 'Compact color-scheme controls hide their text visually')
+        // The labels share the chips' 80rem threshold (global.css).
+        if (width < 1280) assert(result.schemeLabelWidth <= 1, 'Compact color-scheme controls hide their text visually')
+        else assert(result.schemeLabelWidth > 1, 'Wide color-scheme controls show their text')
         assert(result.overflow <= 1, `${path} at ${width}px: page overflow ${result.overflow}px`)
         assert(result.columns.every((delta) => delta <= 1), `${path} at ${width}px: table columns misaligned`)
         if (hasSwitcher) {
