@@ -90,8 +90,16 @@ def test_created_fields_keep_compiler_types_without_exporting_the_constructor(cr
     assert not any("Internal" in item["id"] for item in result["symbols"])
 
 
-@pytest.mark.parametrize("change", ["missing", "type", "owner"])
-def test_read_only_fields_require_matching_native_type_evidence(creation_inputs, change):
+@pytest.mark.parametrize(
+    ("change", "message"),
+    [
+        ("missing", "Native field source pages differ from the qualified source profile"),
+        ("type", "Opaque field documentation differs from its native type annotation"),
+        ("owner", "Expected one opaque field annotation, found 0"),
+    ],
+    ids=["missing", "type", "owner"],
+)
+def test_read_only_fields_require_matching_native_type_evidence(creation_inputs, change, message):
     """Reject missing or contradictory native field evidence."""
     source = creation_inputs[5]
     if change == "missing":
@@ -105,7 +113,7 @@ def test_read_only_fields_require_matching_native_type_evidence(creation_inputs,
             else "PaneOccurrence -&gt; PaneRef\n"
         )
         source["LibTmux.Internal.Graph"] = source["LibTmux.Internal.Graph"].replace(old, new)
-    with pytest.raises(ValueError, match=r"source|field|annotation"):
+    with pytest.raises(ValueError, match=rf"^{re.escape(message)}$"):
         EXPORT.extract_modules(*creation_inputs)
 
 
