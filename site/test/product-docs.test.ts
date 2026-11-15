@@ -1132,7 +1132,7 @@ describe('Lisp workspace notice', () => {
   it('names the command a checkout runs, not its launcher', () => {
     const lisp = PORTS.find((port) => port.slug === 'lisp')!
     const body = workspaceOverviewNotice(lisp)!.body
-    expect(body).toContain('Run `bin/libtmux-workspace` from a source checkout')
+    expect(body).toContain('Run `sbcl --script tools/workspace-cli.lisp` from a source checkout')
     expect(body).not.toMatch(/Build|`mise`/)
   })
 })

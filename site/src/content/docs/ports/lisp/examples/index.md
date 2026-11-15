@@ -12,7 +12,7 @@ sidebar:
 The repository ships seven programs under `examples/`. The test runner executes
 each one against a private tmux daemon, and each prints or asserts the result
 it is meant to show. Run one from a source checkout with the pinned toolchain,
-for example `mise exec -- tools/lisp.sh examples/managed-daemon.lisp`. The
+for example `mise exec -- sbcl --script examples/managed-daemon.lisp`. The
 [capture pane output](../examples/capture-pane-output/) page builds one
 program up in steps.
 

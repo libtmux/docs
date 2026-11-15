@@ -281,7 +281,7 @@ const READERS = {
       .filter((name) => !name.includes('/tests'))
     const version = /:version\s+"([^"]+)"/.exec(text)?.[1]
     const units = systems.filter((name) => name !== 'libtmux').map((name) => ({ unit: 'ASDF system', name }))
-    if (repo.has('bin/libtmux-workspace')) units.push({ unit: 'script', name: 'libtmux-workspace' })
+    if (repo.has('tools/workspace-cli.lisp')) units.push({ unit: 'script', name: 'libtmux-workspace' })
     return { distributions: [{ name: 'libtmux', version, manifest }], units }
   },
 }
