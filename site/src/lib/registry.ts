@@ -13,7 +13,7 @@
  * assertion and could drift on how it handles a missing port.
  */
 import data from '../data/registry.json'
-import { installCommand, isReleaseSeries, releaseMaturity, releaseWording, type InstallCommand, type InstallForm, type Port, type RegistryData, type RegistryEntry } from './ports'
+import { formTarget, installCommand, isReleaseSeries, releaseMaturity, releaseWording, type InstallCommand, type InstallForm, type Port, type RegistryData, type RegistryEntry } from './ports'
 import { wrapShell } from './install-matrix'
 import { releaseTag } from './versions'
 import { portParts, type PortParts, type PromptContext } from './prompts'
@@ -71,7 +71,7 @@ export function installsFor(port: Port, selection: { version?: string; pin?: boo
   const fill = (code: string) => code.replaceAll('{version}', version!).replaceAll('{revision}', revision)
   if (!version) {
     const source = installCommand(port, entry)
-    return [{ label: 'Source', ...source, code: source.lang === 'console' ? wrapShell(source.code) : source.code }]
+    return [{ label: 'Source', target: formTarget(source), ...source, code: source.lang === 'console' ? wrapShell(source.code) : source.code }]
   }
   return port.installs.map((command) => ({
     ...command,
