@@ -87,6 +87,7 @@ describe('Core Library home page', () => {
     const { loadAstroTemplate, renderAstroTemplate } = await import('./astro-templates')
     const Code = createComponent((_result: unknown, props: { code: string }) => renderTemplate`<pre>${props.code}</pre>`)
     const template = await loadAstroTemplate('components/CoreHome.astro', {
+      real: ['components/widgets/PackageInstall.astro', 'components/widgets/InstallCode.astro'],
       modules: { 'astro-expressive-code/components': { Code } },
     })
     const window = new Window()
@@ -121,6 +122,7 @@ describe('Core Library home page', () => {
         'components/HomeExample.astro': '---\nconst { fixed } = Astro.props\n---\n<div data-example data-fixed={String(Boolean(fixed))} />',
         'components/CoreShowcase.astro': '---\n---\n<div data-showcase />',
         'components/DocCard.astro': '---\nconst { label } = Astro.props\n---\n<a data-card>{label}</a>',
+        'components/widgets/PackageInstall.astro': '---\nconst { ports } = Astro.props\n---\n<div data-package-install={ports.join()} />',
       },
       modules: { 'astro-expressive-code/components': { Code } },
     })
@@ -146,7 +148,14 @@ describe('Core Library home page', () => {
     expect(doc.querySelector('[data-example]')?.getAttribute('data-fixed') ?? 'true').toBe('true')
     const order = [...doc.querySelectorAll('h2')].map((heading) => heading.id)
     expect(order.slice(0, 3), 'the player, then the install, then the sections to go on to (record 0059)').toEqual(['what-it-does', 'install', 'at-a-glance'])
-    expect(doc.querySelectorAll('[data-code]').length, 'one install block, not a card in a card').toBeGreaterThanOrEqual(1)
+    // The installer is the product installer (InstallPicker), not a bare code block: one, in the install section, for this port.
+    const installer = [...doc.querySelectorAll('[data-package-install]')]
+    expect(installer.map((node) => node.getAttribute('data-package-install')), 'one installer, for this port').toEqual([slug])
+    expect(doc.getElementById('install')!.compareDocumentPosition(installer[0]!) & 4, 'under the Install heading').toBeTruthy()
+    expect(installer[0]!.compareDocumentPosition(doc.getElementById('at-a-glance')!) & 4, 'before the sections that follow').toBeTruthy()
+    const first = doc.getElementById('install')!.nextElementSibling!
+    expect(first.querySelector('[data-package-install]'), 'the installer is the first thing under the heading').not.toBeNull()
+    expect(first.querySelector('[data-code]'), 'no plain code block stands in for it').toBeNull()
     expect([...doc.querySelectorAll('[data-core-home-objects] tr[data-role]')].map((row) => row.getAttribute('data-role'))).toEqual([...CORE_ROLES])
     const hrefs = [...doc.querySelectorAll('[data-core-home-objects] a, [data-core-home-capabilities] a')].map((a) => a.getAttribute('href'))
     const listed = [...home.capabilities.typed, ...home.capabilities.cli].filter((row) => row.key !== 'current-pane' && row.key !== 'test-fixtures')

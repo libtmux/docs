@@ -1,12 +1,13 @@
 ---
 import { Code } from 'astro-expressive-code/components'
 import CoreShowcase from './CoreShowcase.astro'
+import PackageInstall from './widgets/PackageInstall.astro'
 import DocCard from './DocCard.astro'
 import { PORT_BY_SLUG } from '../lib/ports'
 import { CAPABILITY_GROUPS, coreLead, resolveCoreHome } from '../lib/core-home'
 import { portCapabilities, type CapabilityTable } from '../lib/core-capabilities'
 import { QUICKSTARTS } from '../lib/quickstarts'
-import { installFor, installsFor, installSelection, registryFor } from '../lib/registry'
+import { registryFor } from '../lib/registry'
 import { proseHref } from '../lib/docs-paths'
 import { SITE_ROOT } from '../lib/site-root'
 import CAPABILITY_TABLE from '../data/core-capabilities.json'
@@ -34,8 +35,6 @@ const home = resolveCoreHome(port, version)
 const example = QUICKSTARTS[port]?.complete
 const showcase = portCapabilities(port, CAPABILITY_TABLE as CapabilityTable, SOURCES as Record<string, CachedSource>)
 
-const sourceInstall = home.modules.length ? installsFor(info, installSelection(info, [], process.env))[0] : undefined
-const install = sourceInstall ?? installFor(info)
 const released = registryFor(info).version ?? ''
 const series = /^0\.(\d+)/.exec(released)?.[0]
 // The pin advice is the registry's own range syntax, for the registries whose syntax is settled.
@@ -60,8 +59,7 @@ const rest = (group: keyof typeof CAPABILITY_GROUPS) => home.capabilities[group]
 
 {/* The installer follows the player (record 0059); the sections to go on to follow it. */}
 <h2 id="install">Install</h2>
-<div class="not-prose"><Code code={install.code} lang={install.lang} frame="none" /></div>
-{sourceInstall?.note && <p>{sourceInstall.note}</p>}
+<div class="not-prose"><PackageInstall ports={[port]} /></div>
 {pin && series && <>
   <p><code>{info.packageName} {released}</code> is pre-1.0 and can change between minor versions. Pin to a range:</p>
   <div class="not-prose"><Code code={pin.code(info.packageName, series, released)} lang={pin.lang} frame="none" /></div>

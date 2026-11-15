@@ -125,7 +125,7 @@ describe('Erlang, released on Hex as libtmux_erlang', () => {
     const { createComponent, renderTemplate } = await import('astro/runtime/server/index.js')
     const { loadAstroTemplate, renderAstroTemplate } = await import('./astro-templates')
     const Code = createComponent((_result: unknown, props: { code: string }) => renderTemplate`<pre>${props.code}</pre>`)
-    const template = await loadAstroTemplate('components/CoreHome.astro', { modules: { 'astro-expressive-code/components': { Code } } })
+    const template = await loadAstroTemplate('components/CoreHome.astro', { real: ['components/widgets/PackageInstall.astro', 'components/widgets/InstallCode.astro'], modules: { 'astro-expressive-code/components': { Code } } })
     const window = new Window()
     try {
       window.document.body.innerHTML = await renderAstroTemplate(template, { props: { port: 'erlang', version: 'latest', cards: [] } })
