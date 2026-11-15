@@ -76,11 +76,19 @@ export async function sample(page, handle, kind) {
       const first = [...range.getClientRects()].find((r) => r.width > 1 && r.height > 1)
       if (first) name = plain(first)
     }
+    // The name's own size: a name in a code element is .875em of the link that holds the mark, and its capitals are that size's.
+    const nameSize = () => {
+      const walker = document.createTreeWalker(element.parentElement, NodeFilter.SHOW_TEXT)
+      for (let text = walker.nextNode(); text; text = walker.nextNode()) {
+        if (text.textContent.trim() && element.compareDocumentPosition(text) & Node.DOCUMENT_POSITION_FOLLOWING && !element.contains(text)) return parseFloat(getComputedStyle(text.parentElement).fontSize)
+      }
+      return parseFloat(getComputedStyle(element.parentElement).fontSize)
+    }
     const box = rectOf(element)
     return {
       box, label: pick && rectOf(pick), word: name ?? (word && rectOf(word)),
       gap: name ? name.x - (box.x + box.w) : undefined,
-      text: pick?.textContent ?? '', wordFont: kind === 'row' ? parseFloat(getComputedStyle(element.parentElement).fontSize) : word ? parseFloat(getComputedStyle(word).fontSize) : 0,
+      text: pick?.textContent ?? '', wordFont: kind === 'row' ? nameSize() : word ? parseFloat(getComputedStyle(word).fontSize) : 0,
       border: { top: parseFloat(style.borderTopWidth), bottom: parseFloat(style.borderBottomWidth) },
       dpr: devicePixelRatio,
     }
@@ -527,10 +535,26 @@ async function negativeControl(page, base, results) {
   results.rowControl = judge('control', measure(await sample(page, await mark.elementHandle(), 'row'), 'row'), 'row').length
   await touching.evaluate((node) => node.remove())
   assert(results.rowControl > 0, 'The row check did not notice a mark that touches its name and sits off its centre')
+
+  // A linked name sets its name in a code element at .875em of its link: the capitals to centre on are the name's, not the link's.
+  await page.goto(`${base}${PAGES[4].path}`, { waitUntil: 'load' })
+  await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
+  await page.addStyleTag({ content: MEASURING_STYLE })
+  const linked = await page.locator(`.tmux-usage a > ${LINK_MARK}`).filter({ visible: true, hasText: /^[maf]$/ }).first().elementHandle()
+  const nameSize = await linked.evaluate((element) => parseFloat(getComputedStyle(element.nextElementSibling).fontSize))
+  const linkSize = await linked.evaluate((element) => parseFloat(getComputedStyle(element.parentElement).fontSize))
+  assert(nameSize < linkSize, `The linked name is not smaller than its link (${nameSize}px of ${linkSize}px), so the control cannot tell them apart`)
+  const sampled = await sample(page, linked, 'row')
+  assert.equal(sampled.info.wordFont, nameSize, 'The row measurement does not read the size of the name')
+  assert.deepEqual(judge('control', measure(sampled, 'row'), 'row'), [], 'A linked name is not centred before the control')
+  const drifted = await page.addStyleTag({ content: `${ROW_MARKS} { top: 3px !important; }` })
+  results.linkedControl = judge('control', measure(await sample(page, linked, 'row'), 'row'), 'row').length
+  await drifted.evaluate((node) => node.remove())
+  assert(results.linkedControl > 0, 'The row check did not notice a linked-name mark three pixels off its name')
 }
 
 export async function checkBadgeCentring(browser, base, { sample: bounded = false } = {}) {
-  const results = { measured: 0, failures: [], counts: {}, control: 0, headingControl: 0, rowControl: 0, sidebarMarked: 0, sidebarOffEdge: 0, gutterControl: 0, modControl: 0 }
+  const results = { measured: 0, failures: [], counts: {}, control: 0, headingControl: 0, rowControl: 0, sidebarMarked: 0, sidebarOffEdge: 0, gutterControl: 0, modControl: 0, linkedControl: 0 }
   // The bounded sample keeps one page for each thing the gate holds: an MCP and a guide page, the API type page (tree gutter, rail, rows) and an MCP tool (sidebar rule).
   const pages = bounded ? [PAGES[0], PAGES[1], PAGES[6], PAGES[8]] : PAGES
   const hi = await chromium.launch({ args: ['--force-device-scale-factor=2', '--window-size=1440,1000'] })
@@ -554,7 +578,7 @@ export async function checkBadgeCentring(browser, base, { sample: bounded = fals
   assert((results.counts['protocol sidebar group'] ?? 0) > 0, 'No protocol sidebar group was measured')
   assert((results.counts['API tree mark'] ?? 0) > 0, 'No API tree mark was measured, so the gutter was not checked')
   assert.deepEqual(results.failures, [], `Badge centring:\n${results.failures.join('\n')}`)
-  console.log(`Badge centring: ${results.measured} samples at 1x and a real 2x, light and dark (${Object.entries(results.counts).map(([k, v]) => `${v} ${k}`).join(', ')}); negative controls caught ${results.control} of ${results.controlTested} shifted marks, ${results.headingControl} heading problem and ${results.rowControl} row problems, ${results.sidebarMarked} marked sidebar row and ${results.sidebarOffEdge} row off the edge, ${results.gutterControl} broken indent, ${results.modControl} shifted modifier word PASS`)
+  console.log(`Badge centring: ${results.measured} samples at 1x and a real 2x, light and dark (${Object.entries(results.counts).map(([k, v]) => `${v} ${k}`).join(', ')}); negative controls caught ${results.control} of ${results.controlTested} shifted marks, ${results.headingControl} heading problem and ${results.rowControl} row problems, ${results.sidebarMarked} marked sidebar row and ${results.sidebarOffEdge} row off the edge, ${results.gutterControl} broken indent, ${results.modControl} shifted modifier word and ${results.linkedControl} drifted linked-name mark PASS`)
 }
 
 /**
