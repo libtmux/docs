@@ -13,7 +13,9 @@ import { qualifiedNameOf } from '@libtmux/api-model/reference'
 import mentionIndex from '../data/mentions.json'
 import { API_MODELS, referenceHref } from './api-models'
 import { equivalentMcpObject, mcpObjects, type McpObject } from './mcp-reference'
-import { isActivePath, type SidebarItem, type SidebarLinkItem } from './sidebar'
+import { apiTreeHref, type ApiTreeBucket, type ApiTreeJson } from './api-search'
+import { sidebarInventory } from './api-sidebar'
+import { isActivePath, type BreadcrumbItem, type SidebarItem, type SidebarLinkItem } from './sidebar'
 import { PORT_BY_SLUG, portPageUrl, type ProductStatus } from './ports'
 import { hasInstaller, type SidebarHeadData } from './sidebar-head'
 import { tmuxManual } from './tmux-manual-data'
@@ -25,6 +27,8 @@ import type { PagePortLink } from './page-port-links'
 export interface PageEndLink {
   label: string
   href: string
+  /** The label is an identifier, set as code. */
+  code?: boolean
 }
 
 export interface PageEndItem extends PageEndLink {
@@ -234,4 +238,60 @@ export function pageNeeds(port: string, surface: DocumentationSurface, section: 
   if (section.href && isActivePath(section.href, pathname)) return undefined
   const text = surface.id === 'core' ? `libtmux for ${info.name}` : `the ${surface.id === 'mcp' ? 'MCP server' : surface.label} for ${info.name}`
   return { text: `Needs ${text}`, ...(surface.status ? { status: surface.status } : {}), ...(hasInstaller(port, surface.id) ? { href: `${surface.href}#install` } : {}) }
+}
+
+
+/** One page of the API tree in its order, with the row's owner for a member. */
+interface TreePage { id: string; label: string; href: string }
+
+/**
+ * Every page of an API tree in the order its rows run: a type, then its members, then the next type, with a bucket's
+ * own types before its children. A shortcut row repeats a type placed elsewhere and is walked where the type is placed.
+ */
+function treePages(json: ApiTreeJson, base: string): TreePage[] {
+  const pages: TreePage[] = []
+  const seen = new Set<string>()
+  const add = (id: string, name: string, slug: string, owner?: string) => {
+    if (seen.has(id)) return
+    seen.add(id)
+    pages.push({ id, label: owner ? `${owner}.${name}` : name, href: apiTreeHref(base, { id, slug }, json.hrefs) })
+    for (const [member, memberSlug, memberId] of json.members[id] ?? []) add(memberId ?? `${id}.${member}`, member, memberSlug, name)
+  }
+  const walk = (buckets: ApiTreeBucket[]) => {
+    for (const bucket of buckets) {
+      for (const type of bucket.types) if (!type.shortcut) add(type.id, type.name, type.slug)
+      walk(bucket.children)
+    }
+  }
+  walk(json.buckets)
+  return pages
+}
+
+export interface ApiPageEndInput {
+  /** The reference's inventory, which the tree beside the page lists. */
+  inventory: ApiTreeJson
+  /** The id of the tree row the page is. */
+  selected: string
+  /** The reference's own path, where a row's slug is relative to. */
+  base: string
+  /** The page's breadcrumb trail, whose last item is the page itself. */
+  breadcrumbs: BreadcrumbItem[]
+}
+
+/**
+ * The end of an API symbol page: the previous and next row of the API tree and the way up.
+ *
+ * The page's relationship collections stay above it and the end adds nothing to them (PageEnd, "API detail"). The
+ * ladder repeats the breadcrumb's targets, nearest first; a level the breadcrumb names without a page is a label and
+ * is left out.
+ */
+export function apiPageEnd({ inventory, selected, base, breadcrumbs }: ApiPageEndInput): PageEndData {
+  const pages = treePages(sidebarInventory(inventory), base)
+  const at = pages.findIndex((page) => page.id === selected)
+  const link = (page: TreePage | undefined): PageEndLink | undefined => page ? { label: page.label, href: page.href, code: true } : undefined
+  const prev = at > 0 ? link(pages[at - 1]) : undefined
+  const next = at >= 0 ? link(pages[at + 1]) : undefined
+  const up = breadcrumbs.slice(0, -1).flatMap((crumb): PageEndLink[] => crumb.url
+    ? [{ label: crumb.name, href: crumb.url, ...(crumb.symbol ? { code: true } : {}) }] : []).reverse()
+  return { ...(prev ? { prev } : {}), ...(next ? { next } : {}), groups: [], up }
 }

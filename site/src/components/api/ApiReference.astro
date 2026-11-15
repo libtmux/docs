@@ -44,6 +44,8 @@ import ApiDoc from '../../components/api/ApiDoc.astro'
 import ApiTree from '../../components/api/ApiTree.astro'
 import ApiColumnsBar from './columns/ApiColumnsBar.astro'
 import { sidebarHeadAt } from '../../lib/sidebar-head'
+import { apiPageEnd } from '../../lib/page-end'
+import PageEnd from '../docs/PageEnd.astro'
 import type { PortNavData } from '../../lib/api-models'
 import { apiTreeVersion, bucketAncestors, bucketForSymbol, navTree, referenceTree, referenceTreeFor, referenceNavigation, referenceIndexSections, referenceIndexSectionsFor, treeRowSymbol, type TreeBucket } from '../../lib/api-tree'
 import { sidebarSelection } from '../../lib/api-sidebar'
@@ -402,6 +404,9 @@ const displayName = owner ? (language === 'haskell' || language === 'erlang' ? n
   : language === 'clojure' || language === 'lisp' ? nativeQualifiedName(model, owner)
   : declaringType ? `${declaringType.name}.${owner.name}` : owner.name) : pageTitle
 const breadcrumbs = source?.breadcrumbs ?? await pageBreadcrumbs(displayName, glossary ? 'reference/glossary' : slug ? `reference/${slug}` : 'reference', version, port)
+// A symbol page ends on the previous and next row of its tree and the way up the breadcrumb climbs (record 0021).
+const end = owner && model && sidebarInventory
+  ? apiPageEnd({ inventory: sidebarInventory, selected: sidebarSelection(sidebarInventory, treeRowSymbol(model, owner)), base: refBase, breadcrumbs }) : undefined
 const pagePath = glossary ? 'reference/glossary' : source?.pagePath ?? (slug ? `reference/${slug}` : 'reference')
 const description = glossary ? glossaryContext.description : source?.description ?? (language === 'haskell'
   ? 'Modules, data types, constructors, record fields and functions in libtmux for Haskell.'
@@ -876,6 +881,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
           </>
         )
       }
+      {end && <PageEnd {...end} />}
     </div>
     {/* A symbol page has its section bar; the right-hand list stays only where there is no bar. */}
     {(owner || glossary) && <ApiPageContents sections={pageSections} related={related} outline={!owner} />}

@@ -1,7 +1,10 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { Window } from 'happy-dom'
 vi.mock('astro:content', () => ({ getCollection: vi.fn(async () => []) }))
 import { buildDocumentationSurfaces, currentDocumentation, getDocumentationSurfaces, withLanguageHome } from '../src/lib/documentation-navigation'
-import { GROUP_LIMIT, pageEnd, pageNeeds, sectionPages, sequence } from '../src/lib/page-end'
+import { apiPageEnd, GROUP_LIMIT, pageEnd, pageNeeds, sectionPages, sequence } from '../src/lib/page-end'
+import type { ApiTreeJson } from '../src/lib/api-search'
+import { closeWindows, go, options as apiOptions, symbolOf } from './api-page-fixtures'
 import { PORT_BY_SLUG, portPageUrl, type DocProduct } from '../src/lib/ports'
 import type { PagePortLink } from '../src/lib/page-port-links'
 import { sidebarHead } from '../src/lib/sidebar-head'
@@ -184,5 +187,86 @@ describe('the Needs note', () => {
     expect(pageNeeds('go', core, section('concepts'), '/go/latest/concepts/a-page/')).toBeUndefined()
     expect(pageNeeds('go', core, { id: 'home', label: 'Home', href: core.href, items: [] }, '/go/latest/core/')).toBeUndefined()
     expect(at('go', '/go/latest/')).toBeUndefined()
+  })
+})
+
+describe('an API symbol page', () => {
+  afterEach(closeWindows)
+  const entry = (id: string, name: string, extra: Record<string, unknown> = {}) => ({ id, name, slug: id.toLowerCase().replaceAll('.', '-'), m: 1 as const, kind: 'struct', ...extra })
+  /** Two buckets and a child bucket; a type's members follow it; a shortcut repeats a type that is placed elsewhere. */
+  const inventory: ApiTreeJson = {
+    port: 'go',
+    buckets: [
+      { id: 'server', label: 'Server', count: 2, slug: null, types: [entry('t.Server', 'Server'), entry('t.Pane', 'Pane', { shortcut: true })],
+        children: [{ id: 'options', label: 'Options', count: 1, slug: null, types: [entry('t.Option', 'Option')], children: [] }] },
+      { id: 'pane', label: 'Pane', count: 1, slug: null, types: [entry('t.Pane', 'Pane')], children: [] },
+    ],
+    members: {
+      't.Server': [['NewSession', 't-server-newsession', 't.Server.NewSession', 'method'], ['Kill', 't-server-kill', 't.Server.Kill', 'method']],
+      't.Pane': [['Capture', 't-pane-capture', 't.Pane.Capture', 'method']],
+    },
+  }
+  const base = '/en/go/latest/reference/'
+  const crumbs = [
+    { name: 'Go', url: '/en/go/latest/' }, { name: 'Core Library', url: '/en/go/latest/core/' }, { name: 'API reference', url: base },
+    { name: 'Queries' }, { name: 'Pane', url: `${base}t-pane/`, symbol: true }, { name: 'Capture', url: `${base}t-pane-capture/`, symbol: true },
+  ]
+  const at = (selected: string) => apiPageEnd({ inventory, selected, base, breadcrumbs: crumbs })
+
+  it('runs in the API tree\'s order: a type, then its members, then the next type, children after their bucket\'s own types', () => {
+    expect(at('t.Server.NewSession').prev).toEqual({ label: 'Server', href: `${base}t-server/`, code: true })
+    expect(at('t.Server.NewSession').next).toEqual({ label: 'Server.Kill', href: `${base}t-server-kill/`, code: true })
+    expect(at('t.Server.Kill').next).toEqual({ label: 'Option', href: `${base}t-option/`, code: true })
+    expect(at('t.Option').next).toEqual({ label: 'Pane', href: `${base}t-pane/`, code: true })
+  })
+
+  it('walks a shortcut row at the place it is canonical, not where it repeats', () => {
+    // `t.Pane` is a shortcut under Server and placed under Pane: the walk reaches it once, from Option.
+    expect(at('t.Pane').prev).toEqual({ label: 'Option', href: `${base}t-option/`, code: true })
+    expect(at('t.Pane').next).toEqual({ label: 'Pane.Capture', href: `${base}t-pane-capture/`, code: true })
+  })
+
+  it('gives the first row no previous and the last no next', () => {
+    expect(at('t.Server').prev).toBeUndefined()
+    expect(at('t.Pane.Capture').next).toBeUndefined()
+    expect(at('t.Pane.Capture').prev).toEqual({ label: 'Pane', href: `${base}t-pane/`, code: true })
+    expect(at('t.Missing')).toMatchObject({ up: expect.any(Array), groups: [] })
+    expect(at('t.Missing').prev).toBeUndefined()
+  })
+
+  it('climbs the breadcrumb, nearest level first, with the targets it links and without the page itself', () => {
+    expect(at('t.Pane.Capture').up).toEqual([
+      { label: 'Pane', href: `${base}t-pane/`, code: true },
+      { label: 'API reference', href: base },
+      { label: 'Core Library', href: '/en/go/latest/core/' },
+      { label: 'Go', href: '/en/go/latest/' },
+    ])
+    // The relationship collections stay above; the end adds only the sequence and the ladder.
+    expect(at('t.Pane.Capture').groups).toEqual([])
+  })
+
+  it('draws on every symbol page of the Go reference, after the relationship collections', async () => {
+    const { loadAstroTemplate, renderAstroTemplate, withoutScope } = await import('./astro-templates')
+    const template = await loadAstroTemplate('components/api/ApiReference.astro', { ...apiOptions,
+      real: [...apiOptions.real, 'components/docs/PageEnd.astro', 'components/StatusBadge.astro'],
+      modules: { ...apiOptions.modules, '../../lib/sidebar': { pageBreadcrumbs: async () => crumbs } } })
+    const owner = symbolOf(go, 'tmux.Pane.Capture')
+    const win = new Window()
+    ;(await import('./api-page-fixtures')).windows.push(win)
+    win.document.body.innerHTML = withoutScope(await renderAstroTemplate(template, {
+      url: `https://libtmux.org/en/go/latest/reference/${owner.slug}/`, props: { model: go, owner },
+    }))
+    const end = win.document.querySelector('.api-reference-content nav[aria-label="Continue"]')!
+    expect(end, 'the page ends on the block').not.toBeNull()
+    expect(end.hasAttribute('data-pagefind-ignore')).toBe(true)
+    const steps = [...end.querySelectorAll('.page-end__step')]
+    expect(steps.map((step) => step.getAttribute('rel')).sort(), 'a method has neighbours in the tree on both sides').toEqual(['next', 'prev'])
+    for (const step of steps) {
+      expect(step.getAttribute('href')).toMatch(/^(?:\/en)?\/go\/latest\/reference\/[^/]+\/$/)
+      expect(step.querySelector('strong code'), 'an identifier is set as code').not.toBeNull()
+    }
+    expect([...end.querySelectorAll('ul[aria-label="Up"] li a')].map((link) => link.textContent!.trim())).toEqual(['Pane', 'API reference', 'Core Library', 'Go'])
+    // After the page's own sections, last in the content column.
+    expect(end.parentElement!.lastElementChild).toBe(end)
   })
 })
