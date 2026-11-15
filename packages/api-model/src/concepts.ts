@@ -4053,7 +4053,7 @@ for (const [id, binding] of Object.entries(ERLANG_CONCEPTS)) {
 CONCEPTS['list-session-panes']!.absent!.julia = 'Traverse `windows(session)` and `panes(window)` in the captured snapshot. `panes(snapshot)` has server-wide scope.'
 
 const OCAML_CONCEPTS: Record<string, { symbol: string; note?: string; variants?: string[] }> = {
-  server: { symbol: 'Libtmux_unix.Client.t', variants: ['Libtmux_eio.Client.t'], note: 'A client is a live, generation-bound server connection. Endpoint describes a socket without connecting; closing a client releases its resources.' },
+  server: { symbol: 'Libtmux_unix.Client', variants: ['Libtmux_eio.Client'], note: 'A client is a live, generation-bound server connection. Endpoint describes a socket without connecting; closing a client releases its resources.' },
   session: { symbol: 'Libtmux.Session.t' },
   window: { symbol: 'Libtmux.Window.t', note: 'A global window can have several session placements. Window_link holds the session, index and current flag.' },
   pane: { symbol: 'Libtmux.Pane.t' },

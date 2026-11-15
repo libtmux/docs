@@ -41,8 +41,11 @@ function titleAndBody(content, sourcePath) {
   // GitHub README headers may center the title and intro in a presentation
   // wrapper. The site supplies its own heading; later HTML stays intact.
   const centered = /^<div align=["']center["']>\s*\n([\s\S]*?)\n<\/div>\s*/.exec(content)
-  if (centered && /^#\s/.test(centered[1])) {
-    content = `${centered[1]}\n\n${content.slice(centered[0].length)}`
+  if (centered) {
+    // The Erlang README writes the centered title as <h1> so ex_doc renders it.
+    const html = /^<h1>([^<\n]+)<\/h1>[ \t]*(?:\n|$)/.exec(centered[1])
+    const inner = html ? `# ${html[1]}\n${centered[1].slice(html[0].length)}` : centered[1]
+    if (/^#\s/.test(inner)) content = `${inner}\n\n${content.slice(centered[0].length)}`
   }
   const match = /^#\s+(.+)\n+/.exec(content)
   return {

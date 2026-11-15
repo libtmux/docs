@@ -211,6 +211,10 @@ const SYNTAXES: { port: string; syntax: string; refs: [string, string, string]; 
   { port: 'powershell', syntax: 'cmdlet names', label: 'Buffers', refs: ['Get-TmuxSession', 'LibTmux\\Get-TmuxWindow', 'Wait-TmuxPaneText'] },
   { port: 'powershell', syntax: 'code spans', label: 'Buffers', refs: ['`ConvertTo-TmuxQueryJson`', '`Get-TmuxPane`', '`LibTmux.Server`'] },
   { port: 'haskell', syntax: 'reST object roles', label: 'Buffers', refs: [':obj:`Server <LibTmux.Server#t:Server>`', ':obj:`withServer <LibTmux.Server#v:withServer>`', ':obj:`capture <LibTmux.Server#v:capture>`'] },
+  { port: 'erlang', syntax: 'EEP-48 function and type references', label: 'Buffers', refs: ['`open/1`', '`tmux_snapshot:sessions/1`', '`t:open_options/0`'] },
+  { port: 'erlang', syntax: 'EEP-48 module and remote type references', label: 'Buffers', refs: ['`m:tmux_buffer`', '`t:tmux_snapshot:t/0`', '`c:init/1`'] },
+  { port: 'ocaml', syntax: 'odoc references', label: 'Buffers', refs: ['{!Client.connect}', '{!Libtmux.Snapshot}', '{!Libtmux.Options.type-scope}'] },
+  { port: 'lisp', syntax: 'package-qualified code spans', label: 'Buffers', refs: ['`libtmux:fetch-snapshot`', '`libtmux.control:open-connection`', '`libtmux.query:one-or-none`'] },
 ]
 
 describe.each(SYNTAXES)('a capability directory in $port\'s $syntax', ({ port, refs, label }) => {
@@ -280,6 +284,10 @@ describe('a capability directory keeps each port\'s spelling to itself', () => {
     ['powershell', 'a Go doc link', '[Server]'],
     ['lua', 'options and ids', '`-S`, `%0` and `"x y"`'],
     ['lua', 'a rustdoc link', '[`Server`]'],
+    ['erlang', 'an atom', '`inconsistent_capture`'],
+    ['erlang', 'a tuple', '`{server, Server}`'],
+    ['ocaml', 'a code span', '`start`, `allow_kill`'],
+    ['lisp', 'a name without its package', '`client`, `fetch-snapshot`'],
   ])('%s does not read %s', (lang, _, ref) => {
     expect(groupDirectory(parseApiProse(run(ref)), lang).some((block) => block.kind === 'directory')).toBe(false)
   })
@@ -320,6 +328,30 @@ describe('a Haskell module\'s export groups', () => {
     for (const module of model.symbols.filter((symbol) => symbol.kind === 'module' && !grouped.includes(symbol))) {
       expect(module.doc?.body ?? '', module.id).not.toContain('What is on here')
     }
+  })
+})
+
+describe('the capability directory of Erlang, OCaml and Common Lisp', () => {
+  // The shell folds whatever prose the pinned model carries, so a model pinned before the native docs gained their
+  // directory has a correct reader and no table.
+  const OWNERS = [
+    { port: 'erlang', id: 'tmux_server', rows: 8 },
+    { port: 'ocaml', id: 'Libtmux_unix.Client', rows: 8 },
+    { port: 'lisp', id: 'libtmux:client', rows: 8 },
+  ]
+
+  it.each(OWNERS)('is on the pinned $port model, in $rows rows on $id', ({ port, id, rows }) => {
+    const owner = API_MODELS[port].symbols.find((symbol) => symbol.id === id)
+    const directory = groupDirectory(parseApiProse(owner?.doc?.body ?? ''), port).find((block) => block.kind === 'directory')
+    if (directory?.kind !== 'directory') throw new Error(`${port} ${id} has no directory`)
+    expect(directory.rows).toHaveLength(rows)
+    for (const row of directory.rows) expect(row.groups.flatMap((group) => group.refs).length, row.title).toBeGreaterThan(0)
+  })
+
+  it('lists the Common Lisp client\'s operations as members of its class', () => {
+    const members = API_MODELS.lisp.symbols.filter((symbol) => symbol.parent === 'libtmux:client')
+    expect(members.map((symbol) => symbol.id)).toEqual(expect.arrayContaining(['libtmux:fetch-snapshot', 'libtmux:send-text']))
+    expect(members.every((symbol) => symbol.kind === 'function')).toBe(true)
   })
 })
 
