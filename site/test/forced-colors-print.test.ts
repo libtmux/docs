@@ -133,7 +133,7 @@ function printViolations(a11y: string, chrome: string[]): string[] {
   const external = print.find((rule) => rule.selectors.some((selector) => /a\[href\^='http'\]/.test(selector) && selector.endsWith('::after')))
   if (!/attr\(href\)/.test(external?.declarations.content ?? '')) found.push('an external link prints no address')
   // The shell's own glyph is a masked box with a width: it has to give way to text.
-  else if (important(external.declarations.mask) !== 'none' || important(external.declarations['inline-size']) !== 'auto') found.push('an external link keeps its glyph over the address')
+  else if (important(external?.declarations.mask) !== 'none' || important(external?.declarations['inline-size']) !== 'auto') found.push('an external link keeps its glyph over the address')
   return found
 }
 
@@ -174,6 +174,7 @@ describe('print', () => {
     expect(printViolations(a11y.replace('height: auto !important;\n    max-height', 'max-height'), chrome)).toEqual(['a player keeps the fixed height of its program'])
     expect(printViolations(a11y.replace('content-visibility: visible', 'content-visibility: hidden'), chrome)).toEqual(['a collapsed section stays collapsed'])
     expect(printViolations(a11y.replace("attr(href)", "''"), chrome)).toEqual(['an external link prints no address'])
+    expect(printViolations(a11y.replace('mask: none !important', 'mask: url(glyph.svg)'), chrome)).toEqual(['an external link keeps its glyph over the address'])
   })
 
   it('prints every line of a capped code frame: the frame\'s own print rule lifts its cap', () => {
