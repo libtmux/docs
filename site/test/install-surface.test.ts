@@ -1,6 +1,6 @@
 import { Window } from 'happy-dom'
 import { afterEach, describe, expect, it } from 'vitest'
-import { buildPanels, SERVERS } from '../src/lib/install-matrix'
+import { buildPanels, markPlaceholders, SERVERS } from '../src/lib/install-matrix'
 import { formTarget, PORTS, type InstallCommand } from '../src/lib/ports'
 import { installsFor } from '../src/lib/registry'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
@@ -77,5 +77,30 @@ describe('where each install goes', () => {
   it('names a target for the source install a port with no release falls back to', () => {
     const unpublished = PORTS.filter((port) => installsFor(port).some((install) => install.label === 'Source'))
     for (const port of unpublished) expect(installsFor(port).find((install) => install.label === 'Source')!.target, port.slug).toBeTruthy()
+  })
+})
+
+describe('placeholder paths', () => {
+  const source = '<span class="line"><span style="--shiki-light:#032f62">"/absolute/path/to/project/bin/libtmux-mcp"</span><span> --socket /absolute/path/to/tmux.sock</span></span>'
+
+  it('marks a path the reader replaces, in its own span and with a title', () => {
+    const marked = markPlaceholders(source)
+    expect(marked.match(/<span class="lm-install__slot" title="Replace with the real path">/g)).toHaveLength(2)
+    expect(marked).toContain('>/absolute/path/to/project/bin/libtmux-mcp</span>')
+    expect(marked).toContain('>/absolute/path/to/tmux.sock</span>')
+  })
+
+  it('leaves the text as written, so Copy keeps the placeholder verbatim', () => {
+    const text = (html: string) => { const window = openWindow(); window.document.body.innerHTML = html; return window.document.body.textContent }
+    expect(text(markPlaceholders(source))).toBe(text(source))
+  })
+
+  it('marks nothing in a command with no placeholder', () => {
+    expect(markPlaceholders('<span>cargo install tmux-mcp</span>')).toBe('<span>cargo install tmux-mcp</span>')
+  })
+
+  it('finds the placeholder in the MCP servers that build from source', () => {
+    const bodies = Object.values(SERVERS).flatMap((spec) => buildPanels(spec, 'a'.repeat(40)).map((panel) => panel.body))
+    expect(bodies.filter((body) => body.includes('/absolute/path/to/')).length).toBeGreaterThan(20)
   })
 })

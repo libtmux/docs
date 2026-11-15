@@ -702,6 +702,22 @@ export function wrapShell(command: string, width = SHELL_MAX_WIDTH): string {
   return lines.join(' \\\n')
 }
 
+/**
+ * A path the reader replaces with their own, as the servers built from source
+ * write it: `/absolute/path/to/project/bin/libtmux-mcp`.
+ */
+const PLACEHOLDER_PATH = /\/absolute\/path\/to\/[^\s"'<&\\]*/g
+
+/**
+ * Highlighted code with each placeholder path marked as text to replace.
+ *
+ * Only a span is added around the path, so the text a reader copies is the
+ * code as written: the placeholder stays, and no one pastes a path of ours.
+ */
+export function markPlaceholders(html: string): string {
+  return html.replace(PLACEHOLDER_PATH, '<span class="lm-install__slot" title="Replace with the real path">$&</span>')
+}
+
 /** `command` and its arguments as one shell line. */
 function shellCommand(server: ServerCommand): string {
   return [server.command, ...server.args].join(' ')
