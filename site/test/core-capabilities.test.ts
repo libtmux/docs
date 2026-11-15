@@ -1,20 +1,33 @@
 import { execFileSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import {
-  CAPABILITIES, capabilityCacheKey, capabilityFiles, MAX_PROGRAM_LINES, portCapabilities, programProblems, validateCapability, workflowStep,
+  CAPABILITIES, capabilityCacheKey, capabilityFiles, fileProblems, hygieneProblems, MAX_PROGRAM_LINES, portCapabilities, programProblems, setupProblems, validateCapability, workflowStep,
   type CapabilityEntry, type CapabilityId, type CapabilityTable,
 } from '../src/lib/core-capabilities'
-import { checkoutFor } from '../src/plugins/remark-port-code.mjs'
-import { isBuildMarker, stripBuildMarkers } from '../src/lib/example-excerpt'
+import { LANG_TO_PORT, checkoutFor, parseMeta, readFence } from '../src/plugins/remark-port-code.mjs'
+import { excerptRequest, isBuildMarker, locateExcerpt, stripBuildMarkers } from '../src/lib/example-excerpt'
 import { playableCapability, viewSteps } from '../src/lib/core-player'
-import type { CachedSource } from '../src/lib/port-landing'
-import { PORT_BY_SLUG } from '../src/lib/ports'
+import { isGap, landingExcerpt, type CachedSource, type LandingTable } from '../src/lib/port-landing'
+import { PORT_BY_SLUG, type DocProduct } from '../src/lib/ports'
+import { registryFor } from '../src/lib/registry'
+import HOME from '../src/data/home-examples.json'
+import LANDING from '../src/data/landing-examples.json'
 import TABLE from '../src/data/core-capabilities.json'
 import SOURCES from '../src/data/example-sources.json'
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { join } from 'node:path'
 
 const table = TABLE as CapabilityTable
+const LANDING_TABLE = LANDING as LandingTable
+const CONTENT = fileURLToPath(new URL('../src/content/docs', import.meta.url))
+/** Every Markdown page under `dir`, with its path relative to it. */
+const pagesUnder = (dir: string, base = dir): { path: string, text: string }[] => readdirSync(dir).flatMap((name) => {
+  const path = join(dir, name)
+  if (statSync(path).isDirectory()) return pagesUnder(path, base)
+  return /\.mdx?$/.test(name) ? [{ path: path.slice(base.length + 1), text: readFileSync(path, 'utf8') }] : []
+})
 const cache = SOURCES as Record<string, CachedSource>
 const entries = Object.entries(table).flatMap(([owner, items]) =>
   Object.entries(items).map(([id, entry]) => ({ owner, id: id as CapabilityId, entry: entry as CapabilityEntry })))
@@ -56,7 +69,7 @@ describe('the capability showcase data', () => {
     }
     // The page shows the file in full: imports, entry point and server setup, nothing defined elsewhere.
     expect(entry.from ?? entry.to ?? entry.more).toBeUndefined()
-    expect(programProblems(entry.lang, cache[capabilityCacheKey(owner, entry.file)]!.content)).toEqual([])
+    expect(programProblems(entry.lang, stripBuildMarkers(cache[capabilityCacheKey(owner, entry.file)]!.content))).toEqual([])
   })
 
   it('shows each program in full, in the maintainer order', () => {
@@ -107,7 +120,7 @@ describe('the capability showcase data', () => {
     const body = listings.split('\n').slice(9, 36).join('\n')
     expect(programProblems('rust', body)).toEqual(['has no import lines', 'has no entry point'])
     expect(programProblems('rust', listings)).toEqual([])
-    const quickstart = cache[capabilityCacheKey('ruby', 'examples/api/capture.rb')]!.content
+    const quickstart = stripBuildMarkers(cache[capabilityCacheKey('ruby', 'examples/api/capture.rb')]!.content)
     expect(programProblems('ruby', quickstart)).toEqual([])
     expect(programProblems('ruby', 'require_relative "support"\nExample.run("x") { }\n')).toEqual(['has no import lines', 'uses a helper of the repository'])
     expect(programProblems('go', 'package main\n\nfunc run() {}\n')).toEqual(['has no import lines', 'has no entry point'])
@@ -123,11 +136,14 @@ describe('the capability showcase data', () => {
   // excerpts carry it. The fixture stays as it was when the cache moves on, so
   // the indented form keeps its own coverage.
   describe('a Ruby program that wraps its require in a begin block', () => {
-    const wrapped = readFileSync(new URL('./fixtures/ruby-capture-begin-wrapped.rb', import.meta.url), 'utf8')
+    const fixture = readFileSync(new URL('./fixtures/ruby-capture-begin-wrapped.rb', import.meta.url), 'utf8')
+    // What a reader sees: the page hides the marker lines before the gate reads the program.
+    const wrapped = stripBuildMarkers(fixture)
 
     it('keeps the shape the fixture exists to cover', () => {
-      expect(wrapped).toMatch(/^begin\n {2}# docs:begin main\n {2}require "libtmux"$/m)
-      expect(wrapped).not.toMatch(/^require /m)
+      expect(fixture).toMatch(/^begin\n {2}# docs:begin main\n {2}require "libtmux"$/m)
+      expect(fixture).not.toMatch(/^require /m)
+      expect(wrapped).toMatch(/^begin\n {2}require "libtmux"$/m)
     })
 
     it('counts the indented require as the program import', () => {
@@ -150,6 +166,10 @@ describe('the capability showcase data', () => {
     it('still finds the entry point in the wrapped program', () => {
       expect(programProblems('ruby', 'begin\n  require "libtmux"\nend\n')).toEqual([])
       expect(programProblems('ruby', '  require "libtmux"\n')).toEqual(['has no entry point'])
+    })
+
+    it('refuses the program a marker line was left in', () => {
+      expect(programProblems('ruby', fixture)).toEqual(['shows a site-build marker'])
     })
   })
 
@@ -446,5 +466,147 @@ describe('the showcase component', () => {
     expect(rs.querySelector('[data-capability-panel="send-keys"] [data-core-player]')!.getAttribute('data-core-player')).toBe('send-keys')
     expect(rs.querySelector('[data-capability-panel="create-windows"] [data-core-player]'), 'no recording, no player').toBeNull()
     expect(rs.querySelector('[data-capability-panel="create-windows"] [data-code]')).not.toBeNull()
+  })
+})
+
+describe('the example gate over what a reader copies', () => {
+  // Each planted violation is a form that appears in a real program of one of the ports. The language
+  // is one with no completeness rule, so the rule has to work without one.
+  const PLANTED: [rule: string, text: string, problem: string][] = [
+    ['a marker left after code', 'tmux.kill()  # docs:end main\n', 'shows a site-build marker'],
+    ['a docs: marker with a given: list', '// docs:run-to-completion given:ctx context.Context\n', 'shows a site-build marker'],
+    ['a region marker', 'run()\n// region: capture\n', 'shows a site-build marker'],
+    ['an endregion marker', 'run()\n// endregion\n', 'shows a site-build marker'],
+    ['a C# region', '#region ConnectAndBuild\nrun();\n', 'shows a site-build marker'],
+    ['an OCaml marker', '(* docs:begin pane-io *)\nlet () = ()\n', 'shows a site-build marker'],
+    ['an F# snippet marker', '// fsharp-snippet: Quickstart\nlet x = 1\n', 'shows a site-build marker'],
+    ['a Perl example marker', '# example: begin batch\nsay "x";\n', 'shows a site-build marker'],
+    ['a variable only the tests set', "executable => $ENV{LIBTMUX_TEST_TMUX} // 'tmux',\n", 'reads a variable only the repository tests set'],
+    ['a Perl include of the repository', 'use FindBin;\nuse lib "$FindBin::Bin/../scripts/lib";\n', 'uses a helper of the repository'],
+    ['a Ruby require of a sibling file', 'require_relative "support"\n', 'uses a helper of the repository'],
+    ['a Ruby example harness', 'Example.check(output.string == "x", "unexpected output")\n', 'uses a helper of the repository'],
+    ['a Rust test module', 'use libtmux::test::unique_name;\n', 'uses a helper of the repository'],
+    ['a C++ test header', '#include "libtmux/testing/scoped_server.hpp"\n', 'uses a helper of the repository'],
+    ['a fixture class', 'LibTmuxFixture->run(sub {});\n', 'uses a helper of the repository'],
+    ['a C++ test server', 'auto fixture = ScopedTmuxServer::start();\n', 'is test code of the repository'],
+    ['a Rust test server', 'let guard = TestServer::new().await?;\n', 'is test code of the repository'],
+    ['pytest fixtures', 'window = mcp_session.active_window\n"socket_name": mcp_server.socket_name,\n', 'is test code of the repository'],
+    ['a pytest test', 'def test_list_panes(server) -> None:\n    pass\n', 'is test code of the repository'],
+    ['a gtest case', 'TEST(McpToolsTmux, ListsTheSessions) {\n}\n', 'is test code of the repository'],
+    ['a JUnit test', '    @Test\n    void theSessionIsBuilt(Server server) {\n', 'is test code of the repository'],
+    ['a Rust test', '#[tokio::test]\nasync fn builds() {}\n', 'is test code of the repository'],
+    ['a Go test', 'func TestPaneIO(t *testing.T) {\n}\n', 'is test code of the repository'],
+    ['an xUnit test', '    [Fact]\n    public void Builds() {}\n', 'is test code of the repository'],
+  ]
+
+  it.each(PLANTED)('refuses %s', (_rule, text, problem) => {
+    expect(hygieneProblems(text)).toEqual([problem])
+    expect(programProblems('cobol', text)).toEqual(['has no completeness rule for cobol', problem])
+  })
+
+  it('refuses a marker form that stripping leaves in a program, as the page would show it', () => {
+    const shown = stripBuildMarkers('begin\n  require "libtmux"\n  server.kill # docs:end main\nend\n')
+    expect(programProblems('ruby', shown)).toEqual(['shows a site-build marker'])
+  })
+
+  it('accepts a program that names nothing of the repository, and prose that only mentions one of these words', () => {
+    const clean = [
+      'use LibTmux;', 'my $server = LibTmux::Server->new(socket => $ENV{LIBTMUX_SOCKET});',
+      '# Run docs: see the guide. A region of the pane, not a marker.', 'puts "see docs: begin"',
+      'tests_passed = 3  # a test counter', 'TEST_TIMEOUT = 5', 'let test = Example.build()',
+    ].join('\n')
+    expect(hygieneProblems(clean)).toEqual([])
+  })
+
+  it.each([
+    'tests/test_window_tools.py',
+    'libtmux-workspace/src/test/java/io/github/libtmux/workspace/WorkspaceBuilderTest.java',
+    'apps/mcp/tests/mcp_test.cpp',
+    'src/App.test.ts',
+    'spec/server_spec.rb',
+  ])('refuses the test file %s as an example source', (file) => {
+    expect(fileProblems(file)).toEqual(['is a test file of the repository'])
+  })
+
+  it.each(['examples/quickstart.rb', 'crates/libtmux/examples/api_input.rs', 'examples/latest/main.go', 'src/contest/run.py', 'Examples/Sources/ExampleCode/Workspaces.swift'])('accepts %s as an example source', (file) => {
+    expect(fileProblems(file)).toEqual([])
+  })
+
+  describe('setup commands', () => {
+    const clone = 'git clone https://github.com/libtmux/libtmux-java.git libtmux-source\ngit -C libtmux-source checkout --detach 5c181887\n'
+
+    it('refuse a clone or checkout of the library when the port is published', () => {
+      expect(setupProblems(clone, { published: true })).toEqual(['clones or checks out the library of a published port; install it from the registry'])
+      expect(setupProblems('$ git -C libtmux-source fetch --depth=1 origin 5c18', { published: true })).toHaveLength(1)
+      expect(setupProblems('cd app && git checkout --detach abc', { published: true })).toHaveLength(1)
+      expect(setupProblems('mkdir x &&\n  git clone https://example.test/r', { published: true })).toHaveLength(1)
+    })
+
+    it('allow it when nothing is published: that source install is the only one', () => {
+      expect(setupProblems(clone, { published: false })).toEqual([])
+    })
+
+    it('allow a registry install and other git commands', () => {
+      expect(setupProblems('uv pip install libtmux==0.62.0\ngit status --short\n# git clone is not needed', { published: true })).toEqual([])
+    })
+
+    it('still hold the program rules', () => {
+      expect(setupProblems('export LIBTMUX_TEST_TMUX=tmux', { published: false })).toEqual(['reads a variable only the repository tests set'])
+    })
+  })
+
+  // The data a reader copies from. Text the ports own is listed with the rule that flags it: a port repository
+  // has to change, and the entry leaves this list when its pinned revision does. A new violation fails here.
+  describe('over the current data', () => {
+    const PORT_OWNED: Record<string, string[]> = {
+      'home program perl examples/quickstart.pl': ['uses a helper of the repository'],
+      'home program perl scripts/lib/LibTmuxFixture.pm': ['reads a variable only the repository tests set', 'uses a helper of the repository'],
+      'home setup java': ['clones or checks out the library of a published port; install it from the registry'],
+      'home setup kotlin': ['clones or checks out the library of a published port; install it from the registry'],
+      'home setup scala': ['clones or checks out the library of a published port; install it from the registry'],
+      'landing py/mcp tests/test_window_tools.py': ['is a test file of the repository', 'is test code of the repository'],
+      'landing ruby/workspace examples/workspace_apply.rb': ['uses a helper of the repository'],
+      'landing rs/workspace crates/tmux-workspace/examples/build.rs': ['is test code of the repository'],
+      'landing java/workspace libtmux-workspace/src/test/java/io/github/libtmux/workspace/WorkspaceBuilderTest.java': ['is a test file of the repository'],
+      'landing cxx/mcp apps/mcp/tests/mcp_test.cpp': ['is a test file of the repository', 'uses a helper of the repository', 'is test code of the repository'],
+      'landing cxx/workspace examples/workspace/tests/tmuxp_test.cpp': ['is a test file of the repository'],
+      'page program ports/rs/examples/attach-and-send-keys.md crates/libtmux/examples/scratch.rs': ['uses a helper of the repository'],
+    }
+
+    const flagged = (): Record<string, string[]> => {
+      const found: Record<string, string[]> = {}
+      const flag = (where: string, problems: string[]) => { if (problems.length) found[where] = problems }
+      for (const [port, example] of Object.entries(HOME)) {
+        for (const file of example.files) flag(`home program ${port} ${file.name}`, hygieneProblems(file.code))
+        flag(`home setup ${port}`, setupProblems(example.commands.join('\n'), { published: registryFor(port).status !== 'unpublished' }))
+      }
+      for (const [owner, products] of Object.entries(LANDING_TABLE)) {
+        for (const [product, entry] of Object.entries(products)) {
+          if (isGap(entry!)) continue
+          const shown = landingExcerpt(PORT_BY_SLUG[owner]!, product as DocProduct, LANDING_TABLE, cache)!
+          flag(`landing ${owner}/${product} ${entry.file}`, [...fileProblems(entry.file), ...hygieneProblems(shown.code)])
+        }
+      }
+      for (const page of pagesUnder(CONTENT)) {
+        for (const fence of page.text.matchAll(/^```(\w+)([^\n]*)$/gm)) {
+          const owner = LANG_TO_PORT[fence[1]!.toLowerCase()]
+          const meta = parseMeta(fence[2])
+          if (!owner || !meta.file) continue
+          const request = excerptRequest(meta)
+          const whole = readFence(owner, meta, page.path)
+          flag(`page program ${page.path} ${meta.file}`, [...fileProblems(meta.file), ...hygieneProblems(request ? locateExcerpt(whole, request, meta.file).text : whole)])
+        }
+      }
+      return found
+    }
+
+    it('flags what the ports still have to change, and nothing else', () => {
+      expect(flagged()).toEqual(PORT_OWNED)
+    })
+
+    it('shows every capability program as complete and free of the repository', () => {
+      // portCapabilities refuses a program the gate flags, so a build never shows one.
+      for (const owner of Object.keys(table)) expect(() => portCapabilities(owner, table, cache), owner).not.toThrow()
+    })
   })
 })
