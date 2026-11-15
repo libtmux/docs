@@ -211,9 +211,15 @@ const box = budget ? { class: 'api-member-budget', role: 'region', tabindex: 0, 
     box.scrollTop += heading!.parentElement!.getBoundingClientRect().top - box.getBoundingClientRect().top
     // The heading keeps no scroll margin (it sticks to the box's top), so the page can leave the box's top under the Members
     // bar that sticks above it: bring the box down to that bar's lower edge.
-    const bar = box.closest('.api-members')?.querySelector<HTMLElement>(':scope > h2')
-    const covered = bar ? bar.getBoundingClientRect().bottom - box.getBoundingClientRect().top : 0
-    if (covered > 0) window.scrollBy({ top: -covered, behavior: 'instant' })
+    const clearBar = () => {
+      const bar = box.closest('.api-members')?.querySelector<HTMLElement>(':scope > h2')
+      const covered = bar ? bar.getBoundingClientRect().bottom - box.getBoundingClientRect().top : 0
+      if (covered > 0) window.scrollBy({ top: -covered, behavior: 'instant' })
+    }
+    clearBar()
+    // The page's contents tracker pins a hash target to its reading line on the next scroll, which can put the box's top back
+    // under the bar; correct once more after it has run.
+    requestAnimationFrame(() => requestAnimationFrame(clearBar))
   }
   const hashId = () => { try { return decodeURIComponent(location.hash.slice(1)) } catch { return '' } }
   addEventListener('hashchange', () => revealGroup(hashId()))
