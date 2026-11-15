@@ -182,6 +182,8 @@ export function isFilePath(text: string): boolean {
  * (`send_keys`, `sendKeys`, `Server::kill`) is an identifier: it says which declaration it means, and keeps its link.
  */
 const plainWord = /^[a-z][a-z0-9]*$/
+/** A bare Raku name: one word, with the hyphens a Raku identifier takes, and no qualifier, sigil, adverb or call. */
+const rakuBareName = /^[A-Za-z_][\w-]*$/
 
 interface TypeSpan {
   text: string
@@ -735,7 +737,49 @@ export class SymbolIndex {
       const parameter = this.typeParameterLink(target, context)
       if (parameter) return parameter
     }
-    return role === 'typeparam' ? undefined : this.resolveSymbol(target, role, context)
+    if (role === 'typeparam') return undefined
+    const hit = this.resolveSymbol(target, role, context)
+    return this.lang === 'raku' && role === 'any' && context && rakuBareName.test(target) ? this.rakuMember(target, hit, context) : hit
+  }
+
+  /**
+   * What a bare Raku name in a description means: a member of the class being described, or of the class a module is
+   * named for, and no member of another class that happens to share its name. `bell` on the page of `LibTmux::Catalogue`,
+   * a list of tmux format names, is a format name and not `WindowLink.bell`; `where` on the page of `LibTmux::Selection`
+   * is `Selection::Selection.where`. A type, a module and a function keep the way they resolve. A name that no class in
+   * scope declares is plain code. An identifier, with a hyphen or a capital (`to-json`, `ACCEPTS`), also names a member
+   * of a class declared directly in the module being described, as it names one declaration; a plain word does not, as
+   * `reset` on the page of `LibTmux::Model` is a shell command and not `PaneRef.reset`.
+   */
+  private rakuMember(name: string, hit: LinkTarget | undefined, context: ApiSymbol): LinkTarget | undefined {
+    const member = hit?.symbol
+    const owner = member?.parent ? this.byDeclared.get(member.parent) : undefined
+    if (hit && (!member || TYPE_KINDS.has(member.kind) || member.kind === 'module' || !owner || !TYPE_KINDS.has(owner.kind))) return hit
+    const scope = this.rakuScope(context, !plainWord.test(name))
+    if (owner && scope.has(owner.id)) return hit
+    // The scope may declare the name although the global lookup picked another class's, or was ambiguous.
+    const declared = [...scope].flatMap((id) => {
+      const found = this.byPublic.get(`${this.byDeclared.get(id)?.publicId ?? id}.${name}`)
+      return found && !TYPE_KINDS.has(found.kind) ? [found] : []
+    })
+    return declared.length === 1 ? { href: this.hrefFor(declared[0]!), external: false, symbol: declared[0] } : undefined
+  }
+
+  /**
+   * The declarations a bare Raku name is looked up in: the symbol and what encloses it, and the class a module is named
+   * for. With `nested`, the classes declared directly in the symbol too, when it is a module.
+   */
+  private rakuScope(context: ApiSymbol, nested = false): Set<string> {
+    const owners = this.ownersOf(context)
+    const scope = new Set(owners)
+    for (const id of owners) {
+      const module = this.byDeclared.get(id)
+      if (module?.kind !== 'module') continue
+      for (const child of this.membersByOwner.get(id) ?? []) {
+        if (TYPE_KINDS.has(child.kind) && (child.name === module.name || (nested && id === context.id))) scope.add(child.id)
+      }
+    }
+    return scope
   }
 
   /** Resolve odoc's namespaces from the containing module outward, without a global suffix guess. */
@@ -803,6 +847,8 @@ export class SymbolIndex {
       return { href: `${this.hrefFor(owner).split('#')[0]}#${encodeURIComponent(docSectionId(owner, section))}`, external: false, symbol: owner }
     }
     if (this.lang === 'erlang') return this.resolveErlang(target, role, context)
+    // A Raku call names its method before the parenthesis, whatever the arguments or adverbs: `has-session(:name)`.
+    if (this.lang === 'raku') target = target.replace(/^([A-Za-z_][\w-]*(?:(?:::|\.)[A-Za-z_][\w-]*)*)\(.*\)$/s, '$1')
     const relative = target.startsWith('.')
     const goType = this.lang === 'go' && role === 'class'
     if (this.lang === 'ruby') {
@@ -1194,8 +1240,10 @@ export class SymbolIndex {
       const resolved = this.resolve(span.target, span.role, context)
       const lone = /^([A-Za-z_$][\w$]*)(\(.*\))?$/s.exec(span.target)
       const link = lone && this.isAnotherOwnersMember(lone[1]!, resolved, context, this.isCall(lone[2] ?? '')) ? undefined : resolved
-      // A `typeparam` reference that names nothing in scope is a literal, not a lookup of a global.
-      return !link && span.role === 'typeparam' ? { kind: 'code' as const, text: span.label } : { ...span, link }
+      // A `typeparam` reference that names nothing in scope is a literal, not a lookup of a global. So is a Raku span that names
+      // nothing whole: a name has hyphens and an adverb a leading colon (`:deadline(Instant)`), which the literal tokenizer reads as
+      // operators between other names, so it would link `deadline` to the member of another class.
+      return !link && (span.role === 'typeparam' || this.lang === 'raku') ? { kind: 'code' as const, text: span.label } : { ...span, link }
     })
   }
 
@@ -1237,7 +1285,7 @@ export class SymbolIndex {
     if (!owner || !TYPE_KINDS.has(owner.kind)) return false
     // A page of the public API links nothing into the library's internals.
     if ((this.isInternal(member) || this.isInternal(owner)) && !this.isInternal(context)) return true
-    const chain = this.ownersOf(context)
+    const chain = this.lang === 'raku' ? this.rakuScope(context) : this.ownersOf(context)
     if (chain.has(owner.id)) return false
     // A language whose ids this index does not walk by `.` may hold the member in an enclosing type as well.
     if ((this.byName.get(member.name) ?? []).some((other) => other.parent !== undefined && chain.has(other.parent))) return false

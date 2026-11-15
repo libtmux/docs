@@ -66,6 +66,27 @@ describe('Common Lisp native API adapter', () => {
       .toEqual(['libtmux.workspace:result-outcomes'])
   })
 
+  it('lists the operations that take a client as members of its class', () => {
+    const operation = (name: string, signature: string) => ({ ...functionSymbol(`libtmux:${name}`, name, 'src/client.lisp'), signature })
+    const withClient = structuredClone(fixture)
+    withClient.source.files.push({ path: 'src/client.lisp', sha256: '9'.repeat(64) })
+    withClient.packages[0].symbols.push(
+      { id: 'libtmux:client', name: 'client', kind: 'class', modifiers: [], supertypes: [],
+        documentation: documentation('A connection scope.'), source: source('src/client.lisp', 1) },
+      operation('fetch-snapshot', '(fetch-snapshot client &key timeout)'),
+      operation('open-client', '(open-client &key socket-path)'),
+      operation('client-label', '(client-label value client)'),
+    )
+    withClient.packages[1].symbols.push(functionSymbol('libtmux.json:write-client', 'write-client', 'src/json.lisp'))
+    const parents = Object.fromEntries(extractCommonLisp(withClient, revision).symbols.map((entry) => [entry.id, entry.parent]))
+    expect(parents['libtmux:fetch-snapshot']).toBe('libtmux:client')
+    // The controls: no client, a client that is not the first parameter, and another package's function.
+    expect(parents['libtmux:open-client']).toBe('libtmux')
+    expect(parents['libtmux:client-label']).toBe('libtmux')
+    expect(parents['libtmux:session/function']).toBe('libtmux')
+    expect(parents['libtmux.json:write-client']).toBe('libtmux.json')
+  })
+
   it('extracts the optional public control package alongside existing systems', () => {
     const input = structuredClone(fixture)
     input.source.files.push({ path: 'src/control.lisp', sha256: '1'.repeat(64) })

@@ -23,6 +23,14 @@ export function rehypeSiteRoot() {
 
   return (tree, file) => {
     const port = file?.data?.astro?.frontmatter?.port || buildPort
+    // A README whose header is HTML (Erlang's, written for ex_doc) reaches the
+    // tree as raw HTML, so its localized `<img src="/badges/…">` tags are not
+    // elements; they take the same own-mount rule as a Markdown badge.
+    const badgeMount = port === buildPort ? `${portRoot}/${port}/${buildTarget(process.env).version}` : root
+    visit(tree, 'raw', (node) => {
+      if (typeof node.value !== 'string' || !node.value.includes('/badges/')) return
+      node.value = node.value.replace(/(\bsrc=)(["'])\/badges\//g, (_, attr, quote) => `${attr}${quote}${badgeMount}/badges/`)
+    })
     visit(tree, 'element', (node) => {
       const attr = node.tagName === 'a' ? 'href' : node.tagName === 'img' ? 'src' : null
       if (!attr) return

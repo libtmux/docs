@@ -27,6 +27,31 @@ export interface MemberSignals {
   readonly inheritedParents: ReadonlyMap<string, ReadonlySet<string>>
   /** Guide pages that discuss a member, by public id. */
   readonly mentions: ReadonlyMap<string, number>
+  /** The suffix that names a method's promise-returning twin on this port, when it has one. */
+  readonly twinSuffix?: string
+}
+
+/**
+ * The suffix that spells a method's promise-returning twin, per port.
+ *
+ * Raku declares `snapshot` and `snapshot-async` side by side. A reader looks for the twin where the original is, so a
+ * twin has the signals of its original unless it has some of its own. Other ports name twins differently
+ * (`xAsync`, `x_async`) or not at all, and `close-async` there is an unrelated name.
+ */
+const TWIN_SUFFIX: Readonly<Record<string, string>> = { raku: '-async' }
+
+/** A map whose entry for a twin falls back to the entry for its original: no entry is invented for a twin that does not exist. */
+class TwinMap<V> extends Map<string, V> {
+  private readonly suffix: string | undefined
+  constructor(suffix: string | undefined) {
+    super()
+    this.suffix = suffix
+  }
+  override get(id: string): V | undefined {
+    const own = super.get(id)
+    return own !== undefined || !this.suffix || !id.endsWith(this.suffix) ? own : super.get(id.slice(0, -this.suffix.length))
+  }
+  override has(id: string): boolean { return this.get(id) !== undefined }
 }
 
 export const MEMBER_TIERS = [
@@ -53,11 +78,12 @@ export function memberSignals(
   mentions: readonly Mention[] = [],
   concepts: Record<string, Concept> = CONCEPTS,
 ): MemberSignals {
-  const conceptPorts = new Map<string, number>()
-  const conceptIds = new Map<string, string>()
-  const listingConcepts = new Map<string, string>()
-  const conceptOrder = new Map<string, number>()
-  const parentObjects = new Map<string, { level: number; variant: number }>()
+  const twinSuffix = TWIN_SUFFIX[port]
+  const conceptPorts = new TwinMap<number>(twinSuffix)
+  const conceptIds = new TwinMap<string>(twinSuffix)
+  const listingConcepts = new TwinMap<string>(twinSuffix)
+  const conceptOrder = new TwinMap<number>(twinSuffix)
+  const parentObjects = new TwinMap<{ level: number; variant: number }>(twinSuffix)
   const inheritedParents = new Map<string, Set<string>>()
   for (const [index, [id, concept]] of Object.entries(concepts).entries()) {
     const symbol = concept.symbols[port]
@@ -81,9 +107,9 @@ export function memberSignals(
       }
     }
   }
-  const counts = new Map<string, number>()
+  const counts = new TwinMap<number>(twinSuffix)
   for (const m of mentions) if (m.port === port) counts.set(m.symbol, (counts.get(m.symbol) ?? 0) + 1)
-  return { conceptPorts, conceptIds, listingConcepts, conceptOrder, parentObjects, inheritedParents, mentions: counts }
+  return { conceptPorts, conceptIds, listingConcepts, conceptOrder, parentObjects, inheritedParents, mentions: counts, twinSuffix }
 }
 
 const idOf = (s: ApiSymbol) => s.publicId ?? s.id
@@ -211,6 +237,8 @@ export function memberTier(s: ApiSymbol, signals: MemberSignals): MemberTier {
  * `new_session`. Every port implements `new-session`; fewer bind keys.
  */
 export function compareMembers(signals: MemberSignals): (a: ApiSymbol, b: ApiSymbol) => number {
+  // Equal signals put a twin by its original; ordering by the original's name keeps another method from landing between them.
+  const base = (s: ApiSymbol) => signals.twinSuffix && s.name.endsWith(signals.twinSuffix) ? s.name.slice(0, -signals.twinSuffix.length) : s.name
   const tier = new Map<ApiSymbol, number>()
   const rank = (s: ApiSymbol) => {
     let t = tier.get(s)
@@ -230,6 +258,7 @@ export function compareMembers(signals: MemberSignals): (a: ApiSymbol, b: ApiSym
     (signals.conceptOrder.get(idOf(a)) ?? Infinity) - (signals.conceptOrder.get(idOf(b)) ?? Infinity) ||
     (memberTier(a, signals) === 'listing' ? listingRank(a, signals) - listingRank(b, signals) : 0) ||
     (signals.mentions.get(idOf(b)) ?? 0) - (signals.mentions.get(idOf(a)) ?? 0) ||
+    base(a).localeCompare(base(b)) ||
     a.name.localeCompare(b.name) ||
     idOf(a).localeCompare(idOf(b))
 }

@@ -170,3 +170,15 @@ describe('release badge of a port no registry carries', () => {
     }
   })
 })
+
+describe('versioned installs follow the registry', () => {
+  it.each([
+    ['java', (version: string) => `platform("io.github.libtmux:libtmux-bom:${version}")`],
+    ['swift', (version: string) => `from: "${version}"`],
+  ])('names the %s release the registry carries', (slug, spelling) => {
+    const port = PORT_BY_SLUG[slug]!
+    const { version } = registryFor(port)
+    expect(version).toBeTruthy()
+    expect(installsFor(port)[0]!.code).toContain(spelling(version!))
+  })
+})

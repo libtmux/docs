@@ -28,6 +28,18 @@ const SHARED = [RUSTDOC_LINK, XML_SEE, JAVADOC_LINK, GO_LINK]
  */
 const CODE_NAME = /`[A-Za-z_]\w*(?:(?:::|\.|:)~?[A-Za-z_]\w*)*(?:\([^`()\n]*\))?`/
 
+/** The reST role that the Haddock and Pod::Simple adapters write for a link to a symbol of the library: :obj:`name <target>`. */
+const OBJ_ROLE = /:obj:`[^`\n]+`/
+
+/**
+ * A Raku name in a code span, as the tokenizer's index resolves it: a method or type name, whose hyphens are part of it
+ * (`start`, `run-batch`, `Server`), a package-qualified one with an optional method (`LibTmux::Server.start`), and either
+ * with the arguments of a call (`has-session(:name)`). `Server.start` is no reference: only a package-qualified name takes a dot.
+ * The exporter pads each span with one space either side, which a span with no padding does without.
+ */
+const RAKU_NAME = String.raw`(?:[A-Za-z_][\w-]*(?:::[A-Za-z_][\w-]*)+(?:\.[A-Za-z_][\w-]*)?|[A-Za-z_][\w-]*)(?:\([^\`()\n]*\))?`
+const RAKU_SPAN = new RegExp(String.raw`(?<!\`)\`(?: ${RAKU_NAME} |${RAKU_NAME})\`(?!\`)`)
+
 /** A PowerShell cmdlet, `Verb-Noun`, with its module when it has one, or a `LibTmux` type. */
 const POWERSHELL_NAME = String.raw`(?:[A-Za-z_]\w*\\)?[A-Z][a-z]+(?:[A-Z][a-z]+)*-[A-Z][A-Za-z0-9]*|(?:LibTmux|System)(?:\.[A-Za-z_]\w*)+`
 
@@ -56,8 +68,21 @@ const BY_PORT: Record<string, RegExp[]> = {
   lua: [CODE_NAME],
   // YARD: {#session}, {Server.open}, {Selection#where?} and {#initialize Server.new}. A label holds no code span.
   ruby: [/\{(?:#[A-Za-z_]\w*[?!=]?|(?:::)?[A-Z]\w*(?:::[A-Z]\w*)*(?:[#.][A-Za-z_]\w*[?!=]?)?)(?:[ \t]+(?=[\w"'([])[^}\n`]*[^}\s`])?\}/],
-  // Haddock links reach the shell as the reST role the adapter writes: :obj:`name <Module#v:name>`.
-  haskell: [/:obj:`[^`\n]+`/],
+  // Haddock links reach the shell as the reST role the adapter writes: :obj:`name <Module#v:name>`. Pod::Simple's
+  // L</name> reaches it the same way: :obj:`"name" <LibTmux::Server::name>`. A Perl code span stays literal.
+  haskell: [OBJ_ROLE],
+  perl: [OBJ_ROLE],
+  // cljdoc: [[name]] for a var of the namespace, [[libtmux.data/windows]] for another, and [[target label]]. The target is
+  // what the tokenizer reads as a var: no space, and none of the characters outside a Clojure symbol.
+  clojure: [/\[\[[\w.*+!?<>=&$%/-]+(?:[ \t]+[^\]\n]+)?\]\]/],
+  // C<name> reaches the shell as a code span of a method or type name.
+  raku: [RAKU_SPAN],
+  // EEP-48 Markdown: `fun/1`, `mod:fun/1`, `t:type/0`, `t:mod:type/0`, `c:callback/1` and `m:module`.
+  erlang: [/`m:[a-z_]\w*`/, /`(?:[tc]:)?(?:[a-z_]\w*:)?[a-z_]\w*\/\d+`/],
+  // odoc: {!Client.connect}, {!Libtmux.Options.type-scope} and {{!Client.connect}text}.
+  ocaml: [/\{\{![^{}\s]+\}[^{}]*\}|\{![^{}\s]+\}/],
+  // A symbol with its package, as the docstrings write it: `libtmux:fetch-snapshot`, `libtmux.control:open-connection`.
+  lisp: [/`[a-z][\w.-]*:[^\s`:]+`/],
   // Documenter: [`name`](@ref), [`name`](@ref Module.name) and [text](@ref).
   julia: [/\[[^\]\n]+\]\(@ref(?:\s[^)\n]*)?\)/],
   // Native help names a cmdlet as a bare word or in a code span.
@@ -76,6 +101,12 @@ function referenceFor(lang: string | undefined): RegExp {
   }
   return pattern
 }
+
+/**
+ * Ports whose heading is a section anchor: Perl's `=head1` becomes a rubric that `docSectionId` gives an id, and a link from
+ * another page (`L<LibTmux::Server/CONTRACT>`) lands on it. Folding a heading into a row drops the id, so only bold-led rows fold.
+ */
+const ANCHORED_HEADINGS: ReadonlySet<string> = new Set(['perl'])
 
 const LEAD = /^\*\*([^*]+?)\*\*\s*(.*)$/
 const LABEL = /^([^:[`]{1,40}):\s+(.*)$/
@@ -132,7 +163,7 @@ export function groupDirectory(blocks: ProseBlock[], lang?: string): DirectoryBl
       continue
     }
     // Go doc comments have no bold: a row there is a `# Heading`, its guidance, then the names.
-    const guidance = block.kind === 'rubric' ? blocks[i + 1] : undefined
+    const guidance = block.kind === 'rubric' && !ANCHORED_HEADINGS.has(lang ?? '') ? blocks[i + 1] : undefined
     const headed = guidance?.kind === 'p' && !referencesOnly(guidance.text, lang) ? groupsOf(blocks[i + 2], lang) : undefined
     if (block.kind === 'rubric' && guidance?.kind === 'p' && headed) {
       rows.push({ title: block.text.replace(/[.:]$/, ''), guidance: guidance.text, groups: headed })

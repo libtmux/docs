@@ -101,7 +101,7 @@ describe('concept map', () => {
       ['powershell', 'LibTmux\\New-TmuxServer', 'function'],
       ['julia', 'LibTmux.Server', 'struct'],
       ['fsharp', 'LibTmux.FSharp.Server', 'module'],
-      ['ocaml', 'Libtmux_unix.Client.t', 'typealias'],
+      ['ocaml', 'Libtmux_unix.Client', 'module'],
     ]
     for (const [port, id, kind] of expected) {
       const symbol = models.get(port)!.symbols.find((symbol) => (symbol.publicId ?? symbol.id) === id)!

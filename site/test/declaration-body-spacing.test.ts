@@ -72,3 +72,27 @@ it('keeps the divider and heading gap of a field list that follows other content
   expect(list.borderTopWidth).not.toBe('0px')
   expect(margin(body!.querySelector('.api-parameter-heading')!, 'Bottom')).toBe('6.4px')
 })
+
+it('gives a heading or paragraph after a fenced block the gap it has after a paragraph', () => {
+  const fenced = (id: string) => `<div class="api-prose-code" id="${id}"><div class="expressive-code"><pre>use v5.44;</pre></div></div>`
+  // Perl writes a POD heading as a paragraph with the rubric class, and SYNOPSIS holds code before CONTRACT.
+  const [body] = mount([
+    '<div class="gp-sphinx-api-description"><h2 class="rubric">Description</h2>' +
+    `<p class="rubric" id="synopsis">SYNOPSIS</p>${fenced('code-1')}<p class="rubric" id="contract">CONTRACT</p>` +
+    '<p id="first">First.</p><p class="rubric" id="next">NEXT</p>' +
+    `${fenced('code-2')}<p id="after">After code.</p>${fenced('code-3')}${fenced('code-4')}</div>`,
+  ])
+  const prose = body!.querySelector('.gp-sphinx-api-description')!
+  const at = (id: string) => prose.querySelector(`#${id}`)!
+  // Adjacent block margins collapse to the larger of the two, so the gap between siblings is that maximum.
+  const gap = (above: string, below: string) =>
+    Math.max(Number.parseFloat(margin(at(above), 'Bottom')) || 0, Number.parseFloat(margin(at(below), 'Top')) || 0)
+  expect(gap('first', 'next')).toBe(8)
+  expect(gap('code-1', 'contract')).toBe(gap('first', 'next'))
+  expect(gap('synopsis', 'code-1')).toBe(8)
+  expect(gap('code-2', 'after')).toBe(8)
+  // Separate narrative examples keep their 1rem (a logical margin, which Happy DOM reports under its own name), and the last block
+  // of a body is still trimmed.
+  expect(win.getComputedStyle(at('code-4')).marginBlockStart).toBe('1rem')
+  expect(margin(prose.lastElementChild!, 'Bottom')).toBe('0px')
+})

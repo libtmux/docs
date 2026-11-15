@@ -981,6 +981,16 @@
       "heading": "@overload"
     },
     {
+      "label": "![LibTmux](/badges/876b4208642c.svg)",
+      "url": "https://metacpan.org/dist/LibTmux",
+      "heading": "LibTmux-0.003 - Captured tmux graph queries and explicit process execution - metacpan.org"
+    },
+    {
+      "label": "![LibTmux](https://img.shields.io/cpan/v/LibTmux?label=LibTmux)",
+      "url": "https://metacpan.org/dist/LibTmux",
+      "heading": "LibTmux-0.003 - Captured tmux graph queries and explicit process execution - metacpan.org"
+    },
+    {
       "label": "CPAN",
       "url": "https://metacpan.org/dist/LibTmux",
       "heading": "LibTmux-0.003 - Captured tmux graph queries and explicit process execution - metacpan.org"
@@ -996,6 +1006,16 @@
       "heading": "LibTmux-0.003 - Captured tmux graph queries and explicit process execution - metacpan.org"
     },
     {
+      "label": "![LibTmux-Async](/badges/4aba342383ff.svg)",
+      "url": "https://metacpan.org/dist/LibTmux-Async",
+      "heading": "LibTmux-Async-0.003 - Optional Future-based libtmux execution - metacpan.org"
+    },
+    {
+      "label": "![LibTmux-Async](https://img.shields.io/cpan/v/LibTmux-Async?label=LibTmux-Async)",
+      "url": "https://metacpan.org/dist/LibTmux-Async",
+      "heading": "LibTmux-Async-0.003 - Optional Future-based libtmux execution - metacpan.org"
+    },
+    {
       "label": "CPAN",
       "url": "https://metacpan.org/dist/LibTmux-Async",
       "heading": "LibTmux-Async-0.003 - Optional Future-based libtmux execution - metacpan.org"
@@ -1009,6 +1029,16 @@
       "label": "LibTmux-Async",
       "url": "https://metacpan.org/dist/LibTmux-Async",
       "heading": "LibTmux-Async-0.003 - Optional Future-based libtmux execution - metacpan.org"
+    },
+    {
+      "label": "![LibTmux-Workspace](/badges/c4fe14279763.svg)",
+      "url": "https://metacpan.org/dist/LibTmux-Workspace",
+      "heading": "LibTmux-Workspace-0.003 - Versioned workspace configuration for tmux - metacpan.org"
+    },
+    {
+      "label": "![LibTmux-Workspace](https://img.shields.io/cpan/v/LibTmux-Workspace?label=LibTmux-Workspace)",
+      "url": "https://metacpan.org/dist/LibTmux-Workspace",
+      "heading": "LibTmux-Workspace-0.003 - Versioned workspace configuration for tmux - metacpan.org"
     },
     {
       "label": "CPAN",

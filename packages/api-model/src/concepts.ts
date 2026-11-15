@@ -4053,7 +4053,7 @@ for (const [id, binding] of Object.entries(ERLANG_CONCEPTS)) {
 CONCEPTS['list-session-panes']!.absent!.julia = 'Traverse `windows(session)` and `panes(window)` in the captured snapshot. `panes(snapshot)` has server-wide scope.'
 
 const OCAML_CONCEPTS: Record<string, { symbol: string; note?: string; variants?: string[] }> = {
-  server: { symbol: 'Libtmux_unix.Client.t', variants: ['Libtmux_eio.Client.t'], note: 'A client is a live, generation-bound server connection. Endpoint describes a socket without connecting; closing a client releases its resources.' },
+  server: { symbol: 'Libtmux_unix.Client', variants: ['Libtmux_eio.Client'], note: 'A client is a live, generation-bound server connection. Endpoint describes a socket without connecting; closing a client releases its resources.' },
   session: { symbol: 'Libtmux.Session.t' },
   window: { symbol: 'Libtmux.Window.t', note: 'A global window can have several session placements. Window_link holds the session, index and current flag.' },
   pane: { symbol: 'Libtmux.Pane.t' },
@@ -4144,12 +4144,13 @@ for (const [id, binding] of Object.entries(CLOJURE_CONCEPTS)) {
   concept.symbols.clojure = binding.symbol
   if (binding.note) (concept.notes ??= {}).clojure = binding.note
 }
-const RAKU_CONCEPTS: Record<string, { symbol: string; note?: string }> = {
+const RAKU_SEARCH_NOTE = 'Explicit acquisition returns a local, replayable selection; the pushdown policy decides which predicates tmux evaluates and which run locally.'
+const RAKU_CONCEPTS: Record<string, { symbol: string; note?: string; variants?: string[] }> = {
   server: { symbol: 'LibTmux::Server' },
   session: { symbol: 'LibTmux::Model::Session' },
   window: { symbol: 'LibTmux::Model::Window', note: 'A physical window may have multiple WindowLink placements, including distinct indexes in one session.' },
   pane: { symbol: 'LibTmux::Model::Pane' },
-  snapshot: { symbol: 'LibTmux::Server.snapshot', note: 'Explicit I/O captures an observation interval. Existing views and relationships remain local.' },
+  snapshot: { symbol: 'LibTmux::Server.snapshot', variants: ['LibTmux::Server.snapshot-async'], note: 'Explicit I/O captures an observation interval. Existing views and relationships remain local.' },
   'list-sessions': { symbol: 'LibTmux::Model::Snapshot.sessions' },
   'list-server-windows': { symbol: 'LibTmux::Model::Snapshot.windows', note: 'Physical windows occur once; window-links preserves placements.' },
   'list-server-panes': { symbol: 'LibTmux::Model::Snapshot.panes' },
@@ -4167,14 +4168,19 @@ const RAKU_CONCEPTS: Record<string, { symbol: string; note?: string }> = {
   'kill-server': { symbol: 'LibTmux::Server.kill-server', note: 'Explicitly terminates the observed daemon. Owned callers still close to join cleanup.' },
   'server-from-env': { symbol: 'LibTmux::Server.from-env', note: 'Explicitly imports TMUX environment data, verifies the daemon PID and binds that incarnation.' },
   'has-session': { symbol: 'LibTmux::Server.has-session', note: 'Checks one exact ID or name; acquisition and identity failures still throw.' },
-  'run-shell': { symbol: 'LibTmux::Server.run-shell', note: 'Background acknowledgement does not establish job completion.' },
+  'run-shell': { symbol: 'LibTmux::Server.run-shell', variants: ['LibTmux::Server.run-shell-async'], note: 'Background acknowledgement does not establish job completion.' },
   'if-shell': { symbol: 'LibTmux::Server.if-shell', note: 'Branches use bounded Invocation values; the condition explicitly selects shell or FORMAT semantics.' },
   'source-file': { symbol: 'LibTmux::Server.source-file', note: 'Sources a literal pathname; parse-only validates without executing commands.' },
-  'wait-for': { symbol: 'LibTmux::Server.wait-for', note: 'Waits, signals, locks or unlocks a named channel within the Server deadline.' },
-  'server-cmd': { symbol: 'LibTmux::Server.command' },
-  'attach-session': { symbol: 'LibTmux::Server.attach', note: 'Returns a separately owned attachment with an explicit lifecycle.' },
-  'server-version': { symbol: 'LibTmux::Server.capabilities', note: 'Client and observed daemon versions are distinct capability inputs.' },
-  'chain-commands': { symbol: 'LibTmux::Server.run-batch', note: 'Returns per-operation evidence and partial results; this is not a transaction.' },
+  'wait-for': { symbol: 'LibTmux::Server.wait-for', variants: ['LibTmux::Server.wait-for-async'], note: 'Waits, signals, locks or unlocks a named channel within the Server deadline.' },
+  'server-cmd': { symbol: 'LibTmux::Server.command', variants: ['LibTmux::Server.command-async'] },
+  'attach-session': { symbol: 'LibTmux::Server.attach', variants: ['LibTmux::Server.attach-async', 'LibTmux::Server.open-control', 'LibTmux::Server.open-control-async'], note: 'Returns a separately owned attachment with an explicit lifecycle.' },
+  'server-version': { symbol: 'LibTmux::Server.capabilities', variants: ['LibTmux::Server.capabilities-async'], note: 'Client and observed daemon versions are distinct capability inputs.' },
+  'chain-commands': { symbol: 'LibTmux::Server.run-batch', variants: ['LibTmux::Server.run-batch-async'], note: 'Returns per-operation evidence and partial results; this is not a transaction.' },
+  // `query` takes the entity as an argument and `query-panes` and its siblings call it, so it realises each search.
+  'search-sessions': { symbol: 'LibTmux::Server.query-sessions', variants: ['LibTmux::Server.query', 'LibTmux::Server.query-async'], note: RAKU_SEARCH_NOTE },
+  'search-server-windows': { symbol: 'LibTmux::Server.query-windows', variants: ['LibTmux::Server.query', 'LibTmux::Server.query-async'], note: RAKU_SEARCH_NOTE },
+  'search-server-panes': { symbol: 'LibTmux::Server.query-panes', variants: ['LibTmux::Server.query', 'LibTmux::Server.query-async'], note: RAKU_SEARCH_NOTE },
+  'global-options': { symbol: 'LibTmux::Server.options', note: 'Pass :scope<session> or :scope<window> for the defaults new sessions and windows inherit.' },
 }
 for (const [owner, bindings] of Object.entries({
   SessionRef: { 'new-window': 'new-window', 'kill-session': 'kill', 'rename-session': 'rename', 'session-cmd': 'command',
@@ -4216,11 +4222,17 @@ for (const [concept, method] of Object.entries({ 'list-buffers': 'list', 'show-b
   RAKU_CONCEPTS[concept] = { symbol: `LibTmux::Configuration::Buffers.${method}`, note: 'Buffer content is byte data; file I/O remains a separate caller operation.' }
 }
 for (const [concept, method] of Object.entries({ 'list-keys': 'list', 'bind-key': 'bind', 'unbind-key': 'unbind' })) RAKU_CONCEPTS[concept] = { symbol: `LibTmux::Configuration::KeyBindings.${method}` }
+// Other ports map their Server accessor for each of these to the same concept; in Raku it returns the facade that realises it.
+// `key-bindings` stays unmapped: no port maps a Server accessor to `list-keys`, and that concept ranks as a listing.
+for (const [concept, accessor] of Object.entries({ 'server-options': 'options', 'server-hooks': 'hooks', 'server-environment': 'environment', 'list-buffers': 'buffers' })) {
+  (RAKU_CONCEPTS[concept]!.variants ??= []).push(`LibTmux::Server.${accessor}`)
+}
 for (const [id, binding] of Object.entries(RAKU_CONCEPTS)) {
   const concept = CONCEPTS[id]
   if (!concept) throw new Error(`concepts: Raku maps unknown concept ${id}`)
   concept.symbols.raku = binding.symbol
   if (binding.note) (concept.notes ??= {}).raku = binding.note
+  if (binding.variants) (concept.variants ??= {}).raku = binding.variants
 }
 for (const [id, reason] of Object.entries({
   'workspace-description': 'Workspace functionality is outside the Raku core library scope.',

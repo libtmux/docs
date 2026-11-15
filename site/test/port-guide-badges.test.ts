@@ -73,6 +73,7 @@ describe('localizeBadges', () => {
     ['elixir', 'https://img.shields.io/hexpm/v/libtmux', '0.1.0', 'hex: v0.1.0'],
     ['kotlin', 'https://img.shields.io/maven-central/v/io.github.libtmux/libtmux-kotlin', '0.1.0', 'maven-central: v0.1.0'],
     ['scala', 'https://img.shields.io/maven-central/v/io.github.libtmux/libtmux-scala_3', '0.1.0', 'maven-central: v0.1.0'],
+    ['perl', 'https://img.shields.io/cpan/v/LibTmux', '0.003', 'cpan: v0.003'],
   ])('renders the %s registry badge from a port entry without packages', (port, url, version, aria) => {
     const data = { ports: { [port]: { version } } }
     const [svg] = localizeBadges(`![x](${url})`, port, data).files.values()
@@ -100,11 +101,26 @@ describe('localizeBadges', () => {
     expect(content).toBe(' after')
   })
 
+  it('renders and drops the badges of a README written as HTML', () => {
+    const { content, files } = localizeBadges([
+      '<p>',
+      '  <a href="https://github.com/o/r/actions/workflows/ci.yml"><img src="https://github.com/o/r/actions/workflows/ci.yml/badge.svg" alt="checks"></a>',
+      '  <a href="https://libtmux.org/"><img src="https://img.shields.io/badge/docs-libtmux.org-0b7285" alt="docs"></a>',
+      '</p>',
+    ].join('\n'), 'ruby', registry)
+    expect(content).not.toContain('actions/workflows')
+    expect(content).toMatch(/<a href="https:\/\/libtmux\.org\/"><img src="\/badges\/[0-9a-f]{12}\.svg" alt="docs"><\/a>/)
+    expect(findOffOriginBadges(content)).toEqual([])
+    expect([...files.values()]).toHaveLength(1)
+    expect([...files.values()][0]).toContain('aria-label="docs: libtmux.org"')
+  })
+
   it('refuses a badge it cannot render rather than hotlinking it', () => {
     expect(() => localizeBadges('![x](https://img.shields.io/github/stars/o/r)', 'ruby', registry)).toThrow(/unsupported badge/)
     expect(() => localizeBadges('![x](https://img.shields.io/hexpm/dt/libtmux)', 'elixir', { ports: { elixir: { version: '0.1.0' } } })).toThrow(/unsupported badge/)
     expect(() => localizeBadges('![x](https://img.shields.io/maven-central/v/libtmux)', 'kotlin', { ports: { kotlin: { version: '0.1.0' } } })).toThrow(/unsupported badge/)
     expect(() => localizeBadges('![x](https://img.shields.io/gem/v/missing)', 'ruby', registry)).toThrow(/registry data does not carry/)
+    expect(() => localizeBadges('<img src="https://img.shields.io/github/stars/o/r">', 'ruby', registry)).toThrow(/unsupported badge/)
   })
 })
 
@@ -132,16 +148,29 @@ describe('stage --check compares badge files', () => {
 describe('badge URLs in a rendered guide', () => {
   afterEach(() => vi.unstubAllEnvs())
 
-  const render = async (port: string) => {
+  const render = async (port: string, markdown = '![x](/badges/abc.svg)', root = '') => {
     vi.stubEnv('LIBTMUX_DOCS_PORT', port)
     vi.stubEnv('LIBTMUX_DOCS_VERSION', 'latest')
-    vi.stubEnv('LIBTMUX_DOCS_ROOT', '')
-    vi.stubEnv('LIBTMUX_DOCS_PORT_ROOT', '')
+    vi.stubEnv('LIBTMUX_DOCS_ROOT', root)
+    vi.stubEnv('LIBTMUX_DOCS_PORT_ROOT', root)
     vi.resetModules()
     const { rehypeSiteRoot } = await import('../src/plugins/rehype-site-root.mjs')
     const processor = await createMarkdownProcessor({ rehypePlugins: [rehypeSiteRoot], syntaxHighlight: false })
-    return (await processor.render('![x](/badges/abc.svg)', { frontmatter: { port: 'ruby' } })).code
+    return (await processor.render(markdown, { frontmatter: { port: 'ruby' } })).code
   }
+
+  // Erlang's README header is HTML, so its localized badges are raw `<img>` tags, not Markdown images.
+  const htmlHeader = '<p>\n  <a href="https://hex.pm/packages/x"><img src="/badges/abc.svg" alt="x"></a>\n</p>'
+
+  it('serves an HTML header\'s badges from the port build\'s own mount', async () => {
+    const html = await render('ruby', htmlHeader)
+    expect(html).toContain('src="/ruby/latest/badges/abc.svg"')
+    expect(html).not.toContain('src="/badges/')
+  })
+
+  it('keeps an HTML header\'s badges inside a preview root', async () => {
+    expect(await render('ruby', htmlHeader, '/pr-317')).toContain('src="/pr-317/ruby/latest/badges/abc.svg"')
+  })
 
   it('serves a port build\'s badges from its own mount', async () => {
     expect(await render('ruby')).toContain('src="/ruby/latest/badges/abc.svg"')
