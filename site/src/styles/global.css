@@ -1132,6 +1132,13 @@ body[data-documentation-layout='reference'] {
   }
 }
 
+/* The home page's own gutter widens to 2rem here (lg:px-8, the code hang room), and the notice keeps its edge. */
+@media (min-width: 64rem) {
+  body:has(.home-launcher) .prerelease-notice--centered {
+    --site-gutter: 2rem;
+  }
+}
+
 .prerelease-notice__text {
   margin: 0;
   display: flex;
