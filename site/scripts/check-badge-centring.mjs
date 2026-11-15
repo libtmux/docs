@@ -237,14 +237,15 @@ export function judgeChipGrowth(chips) {
 }
 
 /**
- * The boxes and lines of every chip of one list on the page, judged by `judgeChipGrowth`: `scope` names the list, the
- * `.tmux-usage` table of senders on a tmux command page. A line is the box of its
- * text, or with `ink` the box of its letters, from the cap height to the baseline that `text-box` trims the name to: the
- * usage table sets its names in a semibold face whose text box is taller than the chip's letters and not centred on them,
- * so the box of the text would put every name a little above its chip.
+ * The boxes and lines of every link of one list on the page, judged by `judgeChipGrowth`: `scope` names the list, the
+ * `.tmux-usage` table of senders on a tmux command page. A line is the capitals of the name on that line, from the cap
+ * height to the baseline, read from a zero-width probe set in the name's own face (the probe is one `cap` high and stands
+ * on the baseline of the first line, and each later line is one line pitch below it). The box of the text would not do: a
+ * name is set at line-height 1.4 in a face whose text box is taller than that, so the box of every line sticks out of the
+ * link by a pixel or two, though no letter does.
  */
 export async function chipGrowthProblems(page, scope) {
-  const chips = await page.evaluate(({ list, where, ink }) => {
+  const chips = await page.evaluate(({ list, where }) => {
     const plain = (r) => ({ top: r.top, bottom: r.bottom, left: r.left, right: r.right })
     return [...document.querySelectorAll(`${list} a:has(> .api-nav__kind:where(:not(.api-link-kind)))`)].filter((a) => a.offsetParent).map((a) => {
       const name = a.querySelector(':scope > .api-nav__kind + code')
@@ -256,13 +257,15 @@ export async function chipGrowthProblems(page, scope) {
         const last = lines.at(-1)
         if (last && r.top - last.top <= 3) { last.bottom = Math.max(last.bottom, r.bottom); last.right = Math.max(last.right, r.right) } else lines.push({ top: r.top, bottom: r.bottom, right: r.right })
       }
-      if (ink) {
-        // The trimmed name spans the cap height of its first line to the baseline of its last, so it is one cap height and a line pitch for each line after the first.
-        const trimmed = name.getBoundingClientRect()
-        const pitch = lines.length > 1 ? (lines.at(-1).top - lines[0].top) / (lines.length - 1) : 0
-        const cap = trimmed.height - pitch * (lines.length - 1)
-        lines.forEach((line, index) => { line.top = trimmed.top + index * pitch; line.bottom = line.top + cap })
-      }
+      // The first line's baseline and the name's cap height. Capitals are .698em of the face when the browser has no `cap` unit.
+      const probe = document.createElement('span')
+      probe.style.cssText = 'display:inline-block;width:0;height:1cap'
+      name.prepend(probe)
+      const stand = probe.getBoundingClientRect()
+      probe.remove()
+      const cap = stand.height || parseFloat(getComputedStyle(name).fontSize) * 0.698
+      const pitch = lines.length > 1 ? (lines.at(-1).top - lines[0].top) / (lines.length - 1) : 0
+      lines.forEach((line, index) => { line.bottom = stand.bottom + index * pitch; line.top = line.bottom - cap })
       const box = a.getBoundingClientRect()
       return {
         text: name.textContent.trim(), box: plain(box), mark: plain(a.querySelector(':scope > .api-nav__kind').getBoundingClientRect()), lines,
@@ -626,91 +629,160 @@ export async function checkMentionDensity(browser, base) {
   } finally { await context.close() }
 }
 
-const USAGE = { list: '.tmux-usage', where: 'usage table', ink: true }
+const USAGE = { list: '.tmux-usage', where: 'usage table' }
+// The table breaks its scope columns apart at a container width (TmuxUsage.astro). A name wraps, at its <wbr> points, only
+// where a column is narrower than it, which is just past that width; a wider or stacked table gives every name its room.
+// Pinning the container makes the wrapping layout the same at any viewport, where the page's own column follows the layout.
+const SIDE_BY_SIDE = '.tmux-usage:has(> table) { inline-size: 52rem; }'
+const STACKED = '.tmux-usage:has(> table) { inline-size: 40rem; }'
 
 /**
- * The chips of the usage table on the page the maintainer saw them wrap on, `list-panes` at 1134px, and in a container narrow
- * enough to wrap a name onto three lines, each judged by `judgeChipGrowth`. A chip with a qualifier keeps the width its
- * name needs. Each control breaks one thing and the check must name it: a chip pinned to one line's height, a name below its chip,
- * a chip squeezed by its qualifier and one chip moved onto another.
+ * The usage table against the rule for a linked name (kind-marks.css, "A linked API name"): the mark leads the name on its
+ * first line, a long name wraps at its <wbr> points, the lines of the name stay inside the link, no link runs onto the next
+ * or out of its column, and the name's capitals share a centre with the mark's ink. `judgeChipGrowth` reads the boxes of every
+ * chip stacked and side by side, and each wrapped name's first line is read from its pixels as `checkBadgeCentring` reads a
+ * linked name. A chip with a qualifier keeps the width its name needs. Each control breaks one thing and the check must name it:
+ * a link pinned to one line's height, a name below its link, a mark sunk to the last line, a mark off the capitals, a name
+ * that cannot wrap, a chip squeezed by its qualifier and one chip moved onto another.
  */
 export async function checkUsageChips(browser, base) {
-  const context = await newCheckContext(browser, base, { viewport: { width: 1134, height: 900 } })
+  const context = await newCheckContext(browser, base, { viewport: { width: 1440, height: 900 } })
   const page = await context.newPage()
   page.setDefaultNavigationTimeout(60000)
   const ready = () => page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
-  const measure = () => chipGrowthProblems(page, USAGE)
+  const growth = () => chipGrowthProblems(page, USAGE)
+  const CHIP = `.tmux-usage a:has(> ${LINK_MARK})`
+  /** The first line of every wrapped name, read from pixels: its capitals against the ink of the mark that leads it. */
+  const capitals = async () => {
+    await page.addStyleTag({ content: MEASURING_STYLE })
+    await page.evaluate(({ chip, mark }) => {
+      document.querySelectorAll('[data-wrapped-mark]').forEach((node) => node.removeAttribute('data-wrapped-mark'))
+      for (const link of document.querySelectorAll(chip)) {
+        const name = link.querySelector(`:scope > ${mark} + code`)
+        if (link.offsetParent && name.getBoundingClientRect().height > 1.5 * parseFloat(getComputedStyle(name).lineHeight)) link.querySelector(`:scope > ${mark}`).dataset.wrappedMark = ''
+      }
+    }, { chip: CHIP, mark: LINK_MARK })
+    const marks = page.locator('[data-wrapped-mark]')
+    const count = Math.min(await marks.count(), 8)
+    const problems = []
+    let measured = 0
+    for (let index = 0; index < count; index++) {
+      const handle = marks.nth(index)
+      const text = await handle.evaluate((element) => element.nextElementSibling.textContent.trim())
+      if (SKIP.has((await handle.evaluate((element) => element.textContent.trim())).charAt(0))) continue
+      const result = measure(await sample(page, await handle.elementHandle(), 'row'), 'row')
+      if (!result) { problems.push(`${text}: its mark could not be read from the pixels`); continue }
+      measured++
+      problems.push(...judge(text, result, 'row'))
+    }
+    return { measured, problems }
+  }
+  /** A name that fits, one that wraps twice and one that wraps three times, in a cell 8.5rem wide of its own. */
+  const addNarrow = () => page.evaluate(() => {
+    const model = document.querySelector('.tmux-usage a:has(> .api-nav__kind:where(:not(.api-link-kind)))')
+    const box = document.createElement('div')
+    box.className = 'tmux-usage'
+    box.dataset.control = 'narrow'
+    box.style.cssText = 'inline-size:8.5rem;margin:1rem 0'
+    // The links of a cell, so that the table's own rules for them apply.
+    const links = Object.assign(document.createElement('span'), { className: 'tmux-usage__links' })
+    box.append(links)
+    for (const name of ['Window#panes', 'Async::Server#list_panes', 'LibTmux::Server#search_panes_with_options']) {
+      const chip = model.cloneNode(true)
+      chip.querySelector(':scope > .api-nav__kind + code').innerHTML = name.replace(/(::|(?=[#_]))/g, '$1<wbr>')
+      links.append(chip)
+    }
+    model.closest('main, article, body').append(box)
+  })
+  // A qualified chip in a cell too narrow to hold it and its qualifier side by side: the qualifier goes under the chip, which keeps its size.
+  const addQualified = () => page.evaluate(() => {
+    const item = [...document.querySelectorAll('.tmux-usage__item')].find((entry) => entry.querySelector(':scope > .tmux-usage__when'))
+    const links = item.parentElement.cloneNode(false)
+    links.dataset.control = 'qualified'
+    links.style.cssText = 'inline-size:11rem;margin:1rem 0'
+    links.append(item.cloneNode(true))
+    item.closest('.tmux-usage').append(links)
+  })
+  const fresh = async () => {
+    await page.reload({ waitUntil: 'load' })
+    await ready()
+    await page.addStyleTag({ content: SIDE_BY_SIDE })
+  }
   try {
     await page.goto(`${base}/tmux/latest/manual/list-panes/`, { waitUntil: 'load' })
     await ready()
-    const real = await measure()
-    assert(real.wrapped > 0, 'No chip wrapped its name at 1134px, so growth was not measured on the page that showed it')
+    // Stacked: each language is a block and every name has the room of its cell.
+    const stacked = await page.addStyleTag({ content: STACKED })
+    assert.equal(await page.evaluate(() => getComputedStyle(document.querySelector('.tmux-usage > table')).display), 'block', 'The usage table did not stack in a 40rem column')
+    const flat = await growth()
+    assert(flat.chips > 0, 'No chip of the usage table was measured in the stacked layout')
+    assert.deepEqual(flat.problems, [], `A chip of the usage table, stacked:\n${flat.problems.join('\n')}`)
+    await stacked.evaluate((node) => node.remove())
+    // Side by side, where the columns are squeezed and names wrap.
+    await page.addStyleTag({ content: SIDE_BY_SIDE })
+    assert.equal(await page.evaluate(() => getComputedStyle(document.querySelector('.tmux-usage > table')).display), 'table', 'The usage table did not lay its columns side by side in a 52rem column')
+    const real = await growth()
+    assert(real.wrapped > 0, 'No name of the usage table wrapped in a 52rem column, so growth was not measured where it happens')
     assert.deepEqual(real.problems, [], `A chip of the usage table on the list-panes manual page:\n${real.problems.join('\n')}`)
     // Each chip with a qualifier keeps the width its name needs, and its qualifier is beside it or under it.
     const qualified = await qualifierProblems(page)
     assert(qualified.asked > 0, 'No chip with a qualifier on the list-panes manual page, so none was measured')
     assert.deepEqual(qualified.problems, [], `A qualifier took room from its chip:\n${qualified.problems.join('\n')}`)
-    // A narrow container with a name that fits, one that wraps twice and one that wraps three times.
-    await page.evaluate(() => {
-      const model = document.querySelector('.tmux-usage a:has(> .api-nav__kind:where(:not(.api-link-kind)))')
-      const box = document.createElement('div')
-      box.className = 'tmux-usage'
-      box.dataset.control = 'narrow'
-      box.style.cssText = 'display:flex;flex-direction:column;align-items:flex-start;gap:6px;inline-size:8.5rem;margin:1rem 0'
-      for (const name of ['Window#panes', 'Async::Server#list_panes', 'LibTmux::Server#search_panes_with_options']) {
-        const chip = model.cloneNode(true)
-        chip.querySelector(':scope > .api-nav__kind + code').innerHTML = name.replace(/(::|(?=[#_]))/g, '$1<wbr>')
-        box.append(chip)
-      }
-      model.closest('main, article, body').append(box)
-    })
-    const narrow = await measure()
+    await addNarrow()
+    const narrow = await growth()
     assert(narrow.wrapped >= real.wrapped + 2, 'The narrow container did not wrap the long names')
     assert.deepEqual(narrow.problems, [], `A wrapped chip in a narrow container:\n${narrow.problems.join('\n')}`)
-    // A qualified chip in a cell too narrow to hold it and its qualifier side by side: the qualifier goes under the chip, which keeps its size.
-    const addQualified = () => page.evaluate(() => {
-      const item = [...document.querySelectorAll('.tmux-usage__item')].find((entry) => entry.querySelector(':scope > .tmux-usage__when'))
-      const links = item.parentElement.cloneNode(false)
-      links.dataset.control = 'qualified'
-      links.style.cssText = 'inline-size:11rem;margin:1rem 0'
-      links.append(item.cloneNode(true))
-      item.closest('.tmux-usage').append(links)
-    })
+    const centred = await capitals()
+    assert(centred.measured > Math.min(narrow.wrapped, 8) - 2, `Only ${centred.measured} of ${narrow.wrapped} wrapped names were read from their pixels`)
+    assert.deepEqual(centred.problems, [], `A wrapped name is not centred on its mark:\n${centred.problems.join('\n')}`)
     await addQualified()
     const narrowQualified = await qualifierProblems(page)
     assert(narrowQualified.asked === qualified.asked + 1, 'The qualified chip in a narrow cell was not measured')
     assert.deepEqual(narrowQualified.problems, [], `A qualifier took room from its chip in a narrow cell:\n${narrowQualified.problems.join('\n')}`)
-    const fresh = async () => {
-      await page.reload({ waitUntil: 'load' })
-      await ready()
-    }
-    const CHIP = `.tmux-usage a:has(> ${LINK_MARK})`
     // Control 1: a link held to one line's height cannot hold a name of two lines, so the name spills out of it.
     await fresh()
     await page.addStyleTag({ content: `${CHIP} { height: 1.4em !important; overflow: hidden !important; }` })
-    const pinned = await measure()
+    const pinned = await growth()
     assert(pinned.problems.some((problem) => /past the link's bottom edge/.test(problem)), 'The check did not notice a link too short for its name')
-    // Control 2: a name that ends below its chip's bottom edge.
+    // Control 2: a name that ends below its link's bottom edge.
     await fresh()
-    await page.addStyleTag({ content: `${CHIP} > .api-nav__kind + code { margin-bottom: -8px !important; }` })
-    const below = await measure()
+    await page.addStyleTag({ content: `${CHIP} > ${LINK_MARK} + code { margin-bottom: -8px !important; }` })
+    const below = await growth()
     assert(below.problems.some((problem) => /runs .* past the link's bottom edge/.test(problem)), 'The check did not notice a name running past its link')
-    // Control 3: the layout this replaced, in which the chip shrinks beside a qualifier that cannot wrap, so its name wraps with room to spare.
+    // Control 3: a mark sunk to the last line of a wrapped name is not on its first line.
+    await fresh()
+    await page.addStyleTag({ content: `${CHIP} > ${LINK_MARK} { align-self: flex-end !important; }` })
+    const sunk = await growth()
+    assert(sunk.problems.some((problem) => /the first line of the name is .*px above the centre of the mark/.test(problem)), 'The check did not notice a mark on the last line of a wrapped name')
+    // Control 4: a mark three pixels off the capitals of its name, by the boxes and by the pixels of a wrapped name.
+    await fresh()
+    await page.addStyleTag({ content: `${CHIP} > ${LINK_MARK} { top: 3px !important; }` })
+    const drifted = await growth()
+    assert(drifted.problems.some((problem) => /px (above|below) the centre of the mark/.test(problem)), 'The check did not notice a mark three pixels off the capitals of its name')
+    const drifting = await capitals()
+    assert(drifting.problems.some((problem) => /device px off the mark's centre/.test(problem)), 'The pixel reading did not notice a mark three pixels off the capitals of a wrapped name')
+    // Control 5: a name with no <wbr> points cannot wrap, so it runs out of its link: the wrap is what holds a long name in.
+    await fresh()
+    await addNarrow()
+    await page.evaluate(() => document.querySelectorAll("[data-control='narrow'] code").forEach((name) => name.replaceChildren(name.textContent)))
+    const unwrapped = await growth()
+    assert(unwrapped.problems.some((problem) => /runs past the link's right edge/.test(problem)), 'The check did not notice a long name that cannot wrap')
+    // Control 6: the layout this replaced, in which the chip shrinks beside a qualifier that cannot wrap, so its name wraps with room to spare.
     await fresh()
     await addQualified()
     await page.addStyleTag({ content: '.tmux-usage__item { flex-wrap: nowrap !important; white-space: nowrap !important; } .tmux-usage__item > a { flex: 0 1 auto !important; } .tmux-usage__when { white-space: nowrap !important; }' })
     const squeezed = await qualifierProblems(page)
     assert(squeezed.problems.some((problem) => /px wide in .*px of room and its name needs/.test(problem)), 'The check did not notice a chip that shrank for its qualifier')
-    // Control 4: a chip moved onto the one above it overlaps.
+    // Control 7: a chip moved onto the one above it overlaps.
     await fresh()
     await page.evaluate(() => {
       const items = [...document.querySelectorAll('.tmux-usage__item a:has(> .api-nav__kind:where(:not(.api-link-kind)))')]
-      const second = items.find((chip, index) => items[index - 1] && chip.parentElement === items[index - 1].parentElement) ?? items[1]
+      const second = items.find((chip, index) => items[index - 1] && chip.closest('.tmux-usage__links') === items[index - 1].closest('.tmux-usage__links')) ?? items[1]
       second.style.transform = 'translateY(-12px)'
     })
-    const moved = await measure()
+    const moved = await growth()
     assert(moved.problems.some((problem) => /overlaps/.test(problem)), 'The check did not notice a link on top of the one above')
-    console.log(`Usage chips: ${real.chips} chips on the list-panes manual page (${real.wrapped} wrapped) and 3 in an 8.5rem container, each tall enough for its name, level with its mark and clear of the next, and ${qualified.asked + 1} qualified chips at the width their names need; controls caught a pinned height (${pinned.problems.length} problems), a name below its chip (${below.problems.length}), a chip squeezed by its qualifier (${squeezed.problems.length}) and an overlap (${moved.problems.length}) PASS`)
+    console.log(`Usage chips: ${flat.chips} chips of the list-panes manual page stacked, and ${real.chips} side by side in a 52rem column (${real.wrapped} wrapped), with 3 more in an 8.5rem cell: each inside its link, level with its mark on the first line, clear of the next, with ${centred.measured} wrapped names read from their pixels, and ${qualified.asked + 1} qualified chips at the width their names need; controls caught a pinned height (${pinned.problems.length} problems), a name below its link (${below.problems.length}), a mark on the last line (${sunk.problems.length}), a mark off the capitals (${drifted.problems.length} by boxes, ${drifting.problems.length} by pixels), a name that cannot wrap (${unwrapped.problems.length}), a chip squeezed by its qualifier (${squeezed.problems.length}) and an overlap (${moved.problems.length}) PASS`)
   } finally { await context.close() }
 }
 
