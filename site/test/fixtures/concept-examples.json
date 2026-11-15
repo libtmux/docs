@@ -623,16 +623,16 @@
     {
       "port": "go",
       "page": "ports/go/concepts/server-session-window-pane",
-      "sourceRevision": "bb06e26e116e941813ca40bf45e7e3a47d38f52a",
-      "runtime": "Go 1.26.8",
+      "sourceRevision": "7ad2bfb0f74c02d395fec1962d5bb9556e2200cd",
+      "runtime": "Go 1.26.5",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "files": [
         {
           "name": "go.mod",
-          "sha256": "f0ee6f28f1960092884e9a6f29e5d411e77e69737d53c551c115de97eb4cc0bb"
+          "sha256": "8c0c29089909ffe9131e52fbfb49b9fba63c201f4ce7789e3a64d67eee860a31"
         },
         {
           "name": "run.sh",
@@ -648,9 +648,9 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-go libtmux-source &&\n  git -C libtmux-source checkout bb06e26e116e941813ca40bf45e7e3a47d38f52a &&\n  GOWORK=off go mod tidy",
-        "sh run.sh env GOWORK=off go run Create.go",
-        "sh run.sh env GOWORK=off go run Snapshot.go"
+        "go mod tidy",
+        "sh run.sh go run Create.go",
+        "sh run.sh go run Snapshot.go"
       ],
       "expectedOutputs": [
         [],
@@ -669,16 +669,16 @@
     {
       "port": "go",
       "page": "ports/go/concepts/queries",
-      "sourceRevision": "bb06e26e116e941813ca40bf45e7e3a47d38f52a",
-      "runtime": "Go 1.26.8",
+      "sourceRevision": "7ad2bfb0f74c02d395fec1962d5bb9556e2200cd",
+      "runtime": "Go 1.26.5",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "files": [
         {
           "name": "go.mod",
-          "sha256": "f0ee6f28f1960092884e9a6f29e5d411e77e69737d53c551c115de97eb4cc0bb"
+          "sha256": "8c0c29089909ffe9131e52fbfb49b9fba63c201f4ce7789e3a64d67eee860a31"
         },
         {
           "name": "run.sh",
@@ -698,10 +698,10 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-go libtmux-source &&\n  git -C libtmux-source checkout bb06e26e116e941813ca40bf45e7e3a47d38f52a &&\n  GOWORK=off go mod tidy",
-        "sh run.sh env GOWORK=off go run Local.go",
-        "sh run.sh env GOWORK=off go run Cardinality.go",
-        "sh run.sh env GOWORK=off go run Relations.go"
+        "go mod tidy",
+        "sh run.sh go run Local.go",
+        "sh run.sh go run Cardinality.go",
+        "sh run.sh go run Relations.go"
       ],
       "expectedOutputs": [
         [],

@@ -23,7 +23,7 @@ records do not change when another command renames or removes an object.
 
 ## Setup and run
 
-Use an empty directory on Linux or macOS with Git, Go 1.26 or newer, and
+Use an empty directory on Linux or macOS with Go 1.26 or newer and
 tmux 3.3a or newer. Save these two files and any complete Go program below.
 Each program includes its imports and entry point; run it by filename so
 other examples in the directory do not introduce duplicate `main` functions.
@@ -33,9 +33,7 @@ module example.com/concepts
 
 go 1.26.0
 
-require github.com/libtmux/libtmux-go v0.0.0
-
-replace github.com/libtmux/libtmux-go => ./libtmux-source
+require github.com/libtmux/libtmux-go v0.1.3
 ```
 
 The launcher starts two sessions on a private socket: `work-one` with an
@@ -72,12 +70,11 @@ export LIBTMUX_SOCKET_PATH="$socket"
 "$binary" -S "$socket" has-session -t '=work-one'
 ```
 
-Fetch the documented library revision and resolve this module's dependencies:
+Resolve this module's dependencies. The module file requires `libtmux-go`
+v0.1.3 from the Go module proxy ([source](https://github.com/libtmux/libtmux-go/tree/7ad2bfb0f74c02d395fec1962d5bb9556e2200cd)):
 
 ```console
-$ git clone https://github.com/libtmux/libtmux-go libtmux-source &&
-  git -C libtmux-source checkout bb06e26e116e941813ca40bf45e7e3a47d38f52a &&
-  GOWORK=off go mod tidy
+$ go mod tidy
 ```
 
 The programs use a five-second context for tmux operations. Errors reach
@@ -196,7 +193,7 @@ func run() error {
 ```
 
 ```console
-$ sh run.sh env GOWORK=off go run Create.go
+$ sh run.sh go run Create.go
 ```
 
 Expected program output:
@@ -315,7 +312,7 @@ func run() error {
 ```
 
 ```console
-$ sh run.sh env GOWORK=off go run Snapshot.go
+$ sh run.sh go run Snapshot.go
 ```
 
 Expected program output:
