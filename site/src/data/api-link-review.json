@@ -492,7 +492,7 @@
     },
     {
       "label": "`OverloadedRecordDot`",
-      "url": "https://downloads.haskell.org/ghc/9.14.1/docs/users_guide/exts/overloaded_record_dot.html",
+      "url": "https://downloads.haskell.org/ghc/latest/docs/users_guide/exts/overloaded_record_dot.html",
       "heading": "6.5.10. Overloaded record dot"
     },
     {
