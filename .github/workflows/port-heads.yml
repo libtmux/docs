@@ -75,7 +75,7 @@ jobs:
   # Lua and Ruby repositories build their own docs tree in their own docs.yml
   # and do not call port-docs.yml, so there is no shared workflow to call. This
   # job runs the same exporter and build steps those workflows run, from the
-  # port head's own export-docs tooling, against docs main.
+  # port head's own docs tooling, against docs main.
   native:
     needs: matrix
     runs-on: ubuntu-24.04
@@ -120,12 +120,19 @@ jobs:
           version: 2026.9.9
           working_directory: port
           cache: false
+      - name: Bootstrap the pinned LuaLS exporter and its LuaJIT
+        if: matrix.port == 'lua'
+        working-directory: docs-generator
+        run: |
+          lua scripts/bootstrap/bootstrap.lua runtimes luajit
+          lua scripts/bootstrap/bootstrap.lua rocks dev live --lua=.cache/toolchains/luajit-2.1/bin/luajit
+          lua scripts/bootstrap/bootstrap.lua luals
+
       - name: Export the Lua source
         if: matrix.port == 'lua'
+        working-directory: docs-generator
         run: |
-          set -euo pipefail
-          python docs-generator/scripts/bootstrap_native.py luals
-          python docs-generator/scripts/export-docs \
+          .cache/toolchains/luajit-2.1/bin/luajit scripts/docs/docs.lua export \
             --source "$GITHUB_WORKSPACE/port" \
             --luals "$GITHUB_WORKSPACE/docs-generator/.cache/tools/luals-3.19.1/bin/lua-language-server" \
             --output "$GITHUB_WORKSPACE/port/docs/_build"
