@@ -1152,7 +1152,24 @@ describe('the room a layout leaves for hanging markers and numbers (record 0058)
   it('states the margin the docs shell leaves left of its frames: the page gutter, then the gap beside the sidebar', () => {
     const css = read('styles/global.css')
     expect(css).toMatch(/\.docs-shell \{[^}]*--code-hang-room: 1rem;/)
-    expect(css, 'from lg, where the sidebar sits 1.25rem away').toMatch(/@media \(min-width: 64rem\) \{[^}]*\.docs-shell \{[^}]*--code-hang-room: 1\.25rem;/)
-    expect(read('layouts/DocsLayout.astro')).toMatch(/class:list=\{\['docs-shell mx-auto flex max-w-\[100rem\] gap-5 px-4 py-6 lg:px-5'/)
+    expect(css, 'from lg, where the sidebar sits 2rem away (lg:gap-8)').toMatch(/@media \(min-width: 64rem\) \{[^}]*\.docs-shell \{[^}]*--code-hang-room: 2rem;/)
+    expect(read('layouts/DocsLayout.astro')).toMatch(/class:list=\{\['docs-shell mx-auto flex max-w-\[100rem\] gap-5 lg:gap-8 px-4 py-6 lg:px-5'/)
+  })
+
+  it('levels a frame with the headings beside the sidebar: the room is as wide as the rail the markers need', () => {
+    // The player moves in by max(0, need - room); the need is 1.1rem + 0.4rem + 1px + 0.375rem, under 2rem.
+    const css = read('styles/core-player.css')
+    const rem = (name: string) => Number(new RegExp(`--${name}: ([\\d.]+)rem`).exec(css)![1])
+    const need = rem('hang-w') + rem('hang-gap') + 0.375 + 1 / 16
+    expect(need).toBeLessThan(2)
+    expect(read('styles/global.css')).toMatch(/@media \(min-width: 64rem\) \{[^}]*\.docs-shell \{[^}]*--code-hang-room: 2rem;/)
+  })
+
+  it('states the room of the home page: its page padding, then 2rem from 64rem', () => {
+    const css = read('styles/global.css')
+    expect(css).toMatch(/\.home-page \{[^}]*--code-hang-room: 1rem;/)
+    expect(css).toMatch(/@media \(min-width: 40rem\) \{[^}]*\.home-page \{[^}]*--code-hang-room: 1\.5rem;/)
+    expect(css).toMatch(/@media \(min-width: 64rem\) \{[^}]*\.home-page \{[^}]*--code-hang-room: 2rem;/)
+    expect(read('pages/index.astro')).toMatch(/<main class="home-page mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">/)
   })
 })

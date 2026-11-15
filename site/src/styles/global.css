@@ -400,7 +400,8 @@ html[data-theme-mode="dark"] {
 /*
  * The margin a layout leaves left of its code frames, where line numbers and step markers hang (record 0058). A frame whose
  * rail needs more than this moves in by the difference; a layout that says nothing leaves 1rem, a phone's gutter. The docs
- * shell leaves its page gutter, and from lg the gap beside the sidebar.
+ * shell leaves its page gutter, and from lg the gap beside the sidebar (`lg:gap-8`, 2rem), which holds the whole rail: a
+ * frame there sits level with the headings. The home page leaves its page padding (1rem, 1.5rem from sm) and 2rem from lg.
  */
 .docs-shell {
   --code-hang-room: 1rem;
@@ -408,7 +409,23 @@ html[data-theme-mode="dark"] {
 
 @media (min-width: 64rem) {
   .docs-shell {
-    --code-hang-room: 1.25rem;
+    --code-hang-room: 2rem;
+  }
+}
+
+.home-page {
+  --code-hang-room: 1rem;
+}
+
+@media (min-width: 40rem) {
+  .home-page {
+    --code-hang-room: 1.5rem;
+  }
+}
+
+@media (min-width: 64rem) {
+  .home-page {
+    --code-hang-room: 2rem;
   }
 }
 
