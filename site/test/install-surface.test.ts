@@ -438,11 +438,11 @@ describe('driving the cooldown strip', () => {
 })
 
 /** The MCP installer, rendered with its real parts; each body is split into one `line` span per line, as Shiki does. */
-async function renderMcp(port: string, options: { saved?: Record<string, string>; scripts?: boolean } = {}) {
+async function renderMcp(port: string, options: { saved?: Record<string, string>; scripts?: boolean; highlighter?: 'real' } = {}) {
   const lines = (code: string) => code.replace(/<COOLDOWN_[A-Z]+>/g, '7').split('\n').map((line) => `<span class="line">${line.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</span>`).join('\n')
   const template = await loadAstroTemplate('components/widgets/McpInstall.astro', {
     real: ['InstallCode', 'InstallCooldown', 'InstallCopy', 'InstallFacts', 'InstallTabRow', 'InstallWhere'].map((name) => `components/widgets/${name}.astro`),
-    modules: { '../../lib/highlight': { highlightWithCooldownSlots: async (code: string) => lines(code), highlightInline: async (code: string) => lines(code) } },
+    modules: options.highlighter === 'real' ? undefined : { '../../lib/highlight': { highlightWithCooldownSlots: async (code: string) => lines(code), highlightInline: async (code: string) => lines(code) } },
   })
   const window = openWindow()
   for (const [key, value] of Object.entries(options.saved ?? {})) window.localStorage.setItem(key, value)
@@ -738,5 +738,64 @@ describe('Copy is a clipboard icon in a small outlined square', () => {
     expect(document.querySelector('[data-copy-status]')!.textContent).toBe('Copied command.')
     clock.run()
     expect(button.hasAttribute('data-copied')).toBe(false)
+  })
+})
+
+describe('code in the surface is highlighted like every other block on the site', () => {
+  /** The colours a code block's tokens carry in the light scheme: each token is a span with `--shiki-light` and `--shiki-dark`. */
+  const palette = (code: Element | null | undefined, scheme: 'light' | 'dark' = 'light') =>
+    new Set([...(code?.querySelectorAll('span[style]') ?? [])].map((span) => span.getAttribute('style')?.match(new RegExp(`--shiki-${scheme}:(#[0-9A-Fa-f]{6})`))?.[1]).filter(Boolean))
+  const token = (code: Element, text: string) => [...code.querySelectorAll('span[style]')].find((span) => span.textContent?.includes(text))
+  const colourOf = (span: Element | undefined, scheme: 'light' | 'dark' = 'light') => span?.getAttribute('style')?.match(new RegExp(`--shiki-${scheme}:(#[0-9A-Fa-f]{6})`))?.[1]
+  const mcpCode = (document: Document, client: string, scope: string, method: string) =>
+    document.querySelector(`.lm-install__body .lm-mcp-install__panel[data-client="${client}"][data-method="${method}"][data-scope="${scope}"][data-cooldown="off"] .lm-mcp-install__code--plain code`)!
+
+  it('colours a JSON config: keys, strings and punctuation apart, in both schemes', async () => {
+    const { document } = await renderMcp('rs', { highlighter: 'real' })
+    const code = mcpCode(document, 'claude-desktop', 'user', 'cargo')
+    expect(code.textContent).toContain('"mcpServers"')
+    expect(palette(code).size).toBeGreaterThanOrEqual(3)
+    const key = token(code, 'mcpServers'), value = token(code, 'tmux-mcp')
+    expect(colourOf(key)).toBeTruthy()
+    expect(colourOf(value)).toBeTruthy()
+    expect(colourOf(key)).not.toBe(colourOf(value))
+    // The dark scheme is a different palette on the same tokens.
+    expect(colourOf(key, 'dark')).toBeTruthy()
+    expect(colourOf(key, 'dark')).not.toBe(colourOf(key))
+  })
+
+  it('colours a TOML config: its table, keys and strings', async () => {
+    const { document } = await renderMcp('rs', { highlighter: 'real' })
+    const code = mcpCode(document, 'codex', 'project', 'cargo')
+    expect(code.textContent).toContain('[mcp_servers.tmux]')
+    expect(palette(code).size).toBeGreaterThanOrEqual(3)
+    expect(colourOf(token(code, 'mcp_servers'))).toBeTruthy()
+    expect(colourOf(token(code, 'tmux-mcp'))).toBeTruthy()
+    expect(palette(code, 'dark').size).toBeGreaterThanOrEqual(3)
+  })
+
+  it('colours the XML, CMake and Gemfile of the package installers', async () => {
+    for (const [port, label, expected] of [['java', 'Maven', '<dependency>'], ['cxx', 'CMake', 'FetchContent_Declare'], ['ruby', 'Bundler', 'gem ']] as const) {
+      const { document } = await renderPackage({ ports: [port] })
+      const index = PORTS.find((entry) => entry.slug === port)!.installs.findIndex((install) => install.label === label)
+      expect(index, `${port} offers ${label}`).toBeGreaterThanOrEqual(0)
+      const code = document.querySelector(`.lm-install__body .lm-pkg-install__cmd[data-manager="${index}"] code`)!
+      expect(code.textContent, `${port} ${label}`).toContain(expected)
+      expect(palette(code).size, `${port} ${label}`).toBeGreaterThanOrEqual(2)
+    }
+  })
+
+  it('reads the dark colours in dark, in both installers\' stylesheets', () => {
+    for (const [file, scope] of [['mcp-install.css', '.lm-mcp-install__code'], ['package-install.css', '.lm-pkg-install__code']] as const) {
+      const css = readFileSync(new URL(file, widgets), 'utf8').replace(/\s+/g, ' ')
+      expect(css, file).toContain(`html[data-theme-mode='dark'] ${scope} span { color: var(--shiki-dark)`)
+      expect(css, file).toContain(`${scope} span { color: var(--shiki-light)`)
+    }
+  })
+
+  it('has a control: a block written as plain text has no colours to find', () => {
+    const plain = new Window().document
+    plain.body.innerHTML = '<code>{\n  "mcpServers": {}\n}</code>'
+    expect(palette(plain.querySelector('code') as unknown as Element).size).toBe(0)
   })
 })
