@@ -17,7 +17,7 @@ it('puts the contents rail after the article in source, so the article is read a
 })
 
 it('reserves the rail column on the wrapper, which precedes the article, only for a page that has a rail', () => {
-  const wrapper = layout.indexOf("<div class:list={['mx-auto flex max-w-[100rem]")
+  const wrapper = layout.indexOf("<div class:list={['docs-shell mx-auto flex max-w-[100rem]")
   expect(wrapper).toBeGreaterThan(0)
   expect(wrapper).toBeLessThan(layout.indexOf('<main class="min-w-0 flex-1">'))
   expect(layout).toContain("tocItems.length > 0 && 'docs-has-toc'")
