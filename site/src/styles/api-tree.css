@@ -2,12 +2,13 @@
  * The reference's navigation tree.
  *
  * Fluent UI's Tree for its rows and Nav for its layout and selection: 32px
- * rows (44px under a coarse pointer), the expand chevron at the row's end
- * where NavCategoryItem draws it, the page's row in semibold, and the count
- * as a small CounterBadge. Primer's TreeView supplies the indent and the
- * guides: each level past the second indents the whole row, and every
- * ancestor level draws a guide. Markup in `components/api/ApiTreeItems.astro`,
- * the keyboard model in `components/api/api-tree.ts`.
+ * rows (44px under a coarse pointer or below the phone breakpoint), the
+ * expand chevron at the row's end where NavCategoryItem draws it, the page's
+ * row in semibold, and the count as a small CounterBadge. Primer's TreeView
+ * supplies the indent and the guides: each level past the second indents the
+ * whole row, and every ancestor level draws a guide. Markup in
+ * `components/api/ApiTreeItems.astro`, the keyboard model in
+ * `components/api/api-tree.ts`.
  */
 
 .api-nav {
