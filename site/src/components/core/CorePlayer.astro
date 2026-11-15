@@ -15,8 +15,8 @@
  * binding the script changes nothing on screen. Nothing plays until the reader
  * presses play, unless the instance sets `autoplay`; clicking or dragging in
  * the code selects text, and a numbered marker beside each call's first line is
- * the one way into a step from the code. The markers hang in a rail beside the
- * code, not in a column inside it (record 0055). Without script the final tmux and
+ * the one way into a step from the code. The markers hang in a rail outside
+ * the player at a negative margin, never in the code's padding (record 0058). Without script the final tmux and
  * every step's result show instead; `core-player.css` swaps the two.
  *
  * The caller decides whether the recording may be played at all

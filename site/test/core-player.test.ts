@@ -734,14 +734,17 @@ describe('the player component', () => {
     expect(inner.style.transform).toBe('translateY(-64px)')
   })
 
-  it('hangs the rail inside the code\'s start padding, and outside the frame where a layout sets --code-hang-out: 1', () => {
+  it('hangs the rail outside the player at a negative margin, never in the code\'s padding, and moves the player in by what the layout\'s room lacks (record 0058)', () => {
     const css = readFileSync(new URL('../src/styles/core-player.css', import.meta.url), 'utf8')
-    expect(css, 'the start padding no longer holds a marker column').not.toMatch(/padding-inline-start: 1\.75rem/)
-    expect(css, 'it widens by the rail only inside').toMatch(/\.ec-line > \.code \{[^}]*padding-inline-start: calc\(1rem \+ \(1 - var\(--code-hang-out, 0\)\) \* 0\.75rem\)/)
-    expect(css).toMatch(/\.core-hang \{[^}]*inset-inline-start: calc\([^;]*var\(--code-hang-out, 0\)/)
-    expect(css, 'inside, the start padding is a strip that sticks to the pre\'s edge while the code scrolls sideways').toMatch(/\.ec-line::before \{[^}]*position: sticky;[^}]*left: 0;[^}]*width: calc\(\(1 - var\(--code-hang-out, 0\)\) \* 1\.75rem\)/)
-    expect(css, 'the card stops clipping so a rail outside it shows').toMatch(/\.home-example-player:has\(\.core-hang\) \{[^}]*overflow: visible/)
-    expect(css, 'the code rounds its own corner in the card\'s place').toMatch(/\.home-example-player:has\(\.core-hang\)[^{]*pre \{[^}]*border-start-start-radius/)
+    expect(css, 'the fallback inside the padding is gone').not.toMatch(/--code-hang-out/)
+    expect(css, 'the code keeps the frame\'s standard start padding').not.toMatch(/\.ec-line > \.code \{[^}]*padding-inline-start/)
+    expect(css, 'and no strip stands in for a gutter inside it').not.toMatch(/\.ec-line::before/)
+    expect(css, 'the program\'s size counts the standard padding on both sides and no marker column').toMatch(/calc\(\(100cqi - 2rem\) \/ \(var\(--home-code-columns\) \* 0\.625\)\)/)
+    expect(css).toMatch(/\.core-hang \{[^}]*inset-inline-start: calc\(-1 \* \(var\(--hang-w\) \+ var\(--hang-gap\) \+ 1px\)\)/)
+    expect(css, 'from the first paint, so the script that draws the markers shifts nothing').toMatch(/\.home-example-player \{[^}]*margin-inline-start: max\(0px, calc\(var\(--hang-need\) - var\(--code-hang-room, 1rem\)\)\)/)
+    expect(css, 'the card stops clipping so a rail outside it shows').toMatch(/\.home-example-player \{[^}]*overflow: visible/)
+    expect(css, 'the code rounds its own corner in the card\'s place').toMatch(/\.home-example-player \.home-example-stage[^{]*pre \{[^}]*border-start-start-radius/)
+    expect(css, 'print has no rail and does not move the player').toMatch(/@media print \{[^@]*\.home-example-player \{[^}]*margin-inline-start: 0/)
   })
 
   it('turns Expressive Code\'s own copy button off in the program\'s frames, so core-copy is each frame\'s only one', async () => {
@@ -1140,5 +1143,16 @@ describe('the variant toggles of the other hosts of HomeExample', () => {
     const document = await render({ options: false, views: ['concise'] })
     expect(document.querySelector('.home-example-toolbar')).toBeNull()
     expect(document.querySelector('[data-example-errors]')).toBeNull()
+  })
+})
+
+describe('the room a layout leaves for hanging markers and numbers (record 0058)', () => {
+  const read = (path: string) => readFileSync(new URL(`../src/${path}`, import.meta.url), 'utf8')
+
+  it('states the margin the docs shell leaves left of its frames: the page gutter, then the gap beside the sidebar', () => {
+    const css = read('styles/global.css')
+    expect(css).toMatch(/\.docs-shell \{[^}]*--code-hang-room: 1rem;/)
+    expect(css, 'from lg, where the sidebar sits 1.25rem away').toMatch(/@media \(min-width: 64rem\) \{[^}]*\.docs-shell \{[^}]*--code-hang-room: 1\.25rem;/)
+    expect(read('layouts/DocsLayout.astro')).toMatch(/class:list=\{\['docs-shell mx-auto flex max-w-\[100rem\] gap-5 px-4 py-6 lg:px-5'/)
   })
 })

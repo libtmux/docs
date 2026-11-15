@@ -397,6 +397,21 @@ html[data-theme-mode="dark"] {
   margin-block-start: 1.5rem;
 }
 
+/*
+ * The margin a layout leaves left of its code frames, where line numbers and step markers hang (record 0058). A frame whose
+ * rail needs more than this moves in by the difference; a layout that says nothing leaves 1rem, a phone's gutter. The docs
+ * shell leaves its page gutter, and from lg the gap beside the sidebar.
+ */
+.docs-shell {
+  --code-hang-room: 1rem;
+}
+
+@media (min-width: 64rem) {
+  .docs-shell {
+    --code-hang-room: 1.25rem;
+  }
+}
+
 /* Preserve literal tabs while keeping compact indentation. */
 .expressive-code .code {
   tab-size: 2;

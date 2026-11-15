@@ -14,15 +14,22 @@
 .home-example-player {
   container: core-player / inline-size;
   --mcp-mono: var(--font-ibm-plex-mono, ui-monospace, 'SFMono-Regular', Menlo, monospace);
+  --hang-w: 1.1rem;
+  --hang-gap: 0.4rem;
+  --hang-need: calc(var(--hang-w) + var(--hang-gap) + 1px + 0.375rem);
+  /* A layout states the margin it leaves left of its code frames in --code-hang-room (default 1rem); the player moves in by what the rail needs beyond it. */
+  margin-inline-start: max(0px, calc(var(--hang-need) - var(--code-hang-room, 1rem)));
   border: 1px solid var(--color-edge);
   border-radius: var(--card-radius, 0.5rem);
   background: var(--color-surface);
-  overflow: hidden;
+  /* The rail hangs outside the card, so the card does not clip; the code rounds its own corner in its place. */
+  overflow: visible;
 }
 
 .home-example-player:fullscreen {
   display: flex;
   flex-direction: column;
+  margin-inline-start: 0;
   border-radius: 0;
   background: var(--color-background-primary, var(--color-surface));
 }
@@ -59,47 +66,17 @@
   border-top: 1px solid var(--color-edge);
 }
 
-/* The program is set a size smaller than the homepage's, so that most of its lines fit the column beside the tmux; the gutter's start padding is part of what the column holds. */
+/* The program is set a size smaller than the homepage's, so that most of its lines fit the column beside the tmux; the frame's padding, 1rem a side, is part of what the column holds. */
 .home-example-player .home-example-stage > .home-example-code > .home-example-view .expressive-code {
-  --ec-codeFontSize: clamp(0.75rem, calc((100cqi - 2.75rem) / (var(--home-code-columns) * 0.625)), 0.875rem);
+  --ec-codeFontSize: clamp(0.75rem, calc((100cqi - 2rem) / (var(--home-code-columns) * 0.625)), 0.875rem);
   position: relative;
 }
 
 /*
- * The step markers hang in a rail beside the code (.core-hang, record 0055), never in a column inside it. A layout that leaves room
- * left of its code frames (about 2.5rem) sets --code-hang-out: 1 and the rail hangs outside the player; elsewhere, as on a phone
- * with a 16px gutter, it hangs inside the code's start padding, which widens by the rail only then. Either way the padding is part
- * of the first paint, so the script that draws the markers moves no text.
+ * The step markers hang in a rail outside the player (.core-hang, record 0058), at a negative margin. No part of the code holds
+ * them, so the code keeps the frame's standard padding; and the player's move in by what the rail needs beyond its layout's room
+ * is part of the first paint, so the script that draws the markers shifts nothing.
  */
-.home-example-player .home-example-stage > .home-example-code > .home-example-view .expressive-code .ec-line > .code {
-  padding-inline-start: calc(1rem + (1 - var(--code-hang-out, 0)) * 0.75rem);
-}
-
-/*
- * Inside, the start padding is a strip that stays put when the code scrolls sideways. It has the code's ground (and the tint of a
- * marked call), so code scrolled under the markers is not seen beside them. It spans the row, so it can stick to the pre's start edge.
- */
-.home-example-player .home-example-stage > .home-example-code > .home-example-view .expressive-code .ec-line::before {
-  content: '';
-  grid-area: 1 / 1 / 2 / -1;
-  justify-self: start;
-  position: sticky;
-  left: 0;
-  z-index: 1;
-  width: calc((1 - var(--code-hang-out, 0)) * 1.75rem);
-  background-color: var(--ec-codeBg, var(--color-surface));
-}
-
-/* The card stops clipping so a rail outside it shows; the code rounds its own corner in the card's place. */
-.home-example-player:has(.core-hang) {
-  overflow: visible;
-}
-
-.home-example-player:has(.core-hang) .home-example-stage > .home-example-code > .home-example-view .expressive-code pre {
-  border-start-start-radius: calc(var(--card-radius, 0.5rem) - 1px);
-  border-start-end-radius: calc(var(--card-radius, 0.5rem) - 1px);
-}
-
 /* More specific than the landing page's cap on every program in its panels, which holds for the stand-alone example. */
 .home-example-player .home-example-stage > .home-example-code > .home-example-view .expressive-code {
   margin: 0;
@@ -120,6 +97,12 @@
   overflow: auto;
   tab-size: 8;
   scrollbar-gutter: stable;
+}
+
+/* The card does not clip, so the code rounds its own start corners (the end corner too where the code stands alone above the tmux). */
+.home-example[data-player] .home-example-player .home-example-stage > .home-example-code > .home-example-view .expressive-code pre {
+  border-start-start-radius: calc(var(--card-radius, 0.5rem) - 1px);
+  border-start-end-radius: calc(var(--card-radius, 0.5rem) - 1px);
 }
 
 /* Named, because the code column is a container of its own (the font size follows its width) and must not answer for the player. */
@@ -146,7 +129,7 @@
     border-inline-start: 1px solid var(--color-edge);
   }
 
-  .home-example-player:has(.core-hang) .home-example-stage > .home-example-code > .home-example-view .expressive-code pre {
+  .home-example[data-player] .home-example-player .home-example-stage > .home-example-code > .home-example-view .expressive-code pre {
     border-start-end-radius: 0;
   }
 }
@@ -162,19 +145,6 @@
 
 .home-example-view .ec-line.is-current.is-pinned {
   background: color-mix(in srgb, var(--color-link) 24%, transparent);
-}
-
-/* The strip carries the same tints, since it covers the line's own. */
-.home-example-view .ec-line.is-hover::before {
-  background-image: linear-gradient(color-mix(in srgb, var(--color-link) 8%, transparent), color-mix(in srgb, var(--color-link) 8%, transparent));
-}
-
-.home-example-view .ec-line.is-current::before {
-  background-image: linear-gradient(color-mix(in srgb, var(--color-link) 14%, transparent), color-mix(in srgb, var(--color-link) 14%, transparent));
-}
-
-.home-example-view .ec-line.is-current.is-pinned::before {
-  background-image: linear-gradient(color-mix(in srgb, var(--color-link) 24%, transparent), color-mix(in srgb, var(--color-link) 24%, transparent));
 }
 
 /*
@@ -193,12 +163,10 @@
  * the code, but not the focus ring beside it.
  */
 .expressive-code .core-hang {
-  --hang-w: 1.1rem;
-  --hang-gap: 0.4rem;
   position: absolute;
-  z-index: 2;
+  z-index: 1;
   inset-block: 0 0;
-  inset-inline-start: calc((1 - var(--code-hang-out, 0)) * 0.3rem - var(--code-hang-out, 0) * (var(--hang-w) + var(--hang-gap) + 1px));
+  inset-inline-start: calc(-1 * (var(--hang-w) + var(--hang-gap) + 1px));
   width: var(--hang-w);
   clip-path: inset(0 -0.5rem);
   pointer-events: none;
@@ -288,6 +256,10 @@
   .expressive-code .core-copy,
   .expressive-code .core-hang {
     display: none;
+  }
+
+  .home-example-player {
+    margin-inline-start: 0;
   }
 }
 

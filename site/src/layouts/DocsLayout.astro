@@ -292,7 +292,7 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
     contents floating a long way short of the right edge with nothing beside
     it; the sidebars now sit near the edges and the middle grows.
   */}
-  <div class:list={['mx-auto flex max-w-[100rem] gap-5 px-4 py-6 lg:px-5', apiNavigation && 'docs-reference-navigation', tocItems.length > 0 && 'docs-has-toc']}>
+  <div class:list={['docs-shell mx-auto flex max-w-[100rem] gap-5 px-4 py-6 lg:px-5', apiNavigation && 'docs-reference-navigation', tocItems.length > 0 && 'docs-has-toc']}>
     {apiNavigation ? <ApiTree presentation="outline" inventory={apiNavigation.inventory} selectedSymbol={apiNavigation.selected}
       referenceBase={apiNavigation.base} portName={port ? PORT_BY_SLUG[port].name : 'tmux CLI'} tree={[]} members={[]} withMembers={new Set()}
       currentPath={currentPath} version={apiNavigation.version} indexLabel={port ? 'Reference overview' : 'All commands'}
