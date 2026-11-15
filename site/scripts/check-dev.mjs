@@ -26,6 +26,7 @@ import { checkBlockLinksUndecorated, checkKindBadgeLinks, checkKindBadgeLinksFai
 import { checkTypeParameters } from './check-type-parameters.mjs'
 import { checkTmuxKeys, TMUX_KEY_PAGES } from './check-tmux-keys.mjs'
 import { checkSidebarDemo } from './check-sidebar-demo.mjs'
+import { retryRequest } from './retry-request.mjs'
 import { checkGuideRedirect } from './check-navigation.mjs'
 
 const apiNavigationOnly = process.argv.includes('--api-navigation')
@@ -756,7 +757,7 @@ async function checkReferenceAndHeroes(browser, base) {
       assert.equal((await signature.locator(':scope > .sig-prename, :scope > .sig-name').allTextContents()).join(''), 'io.github.libtmux.mcp.Main',
         `${width}px Java product declaration uses its source-qualified name`)
     }
-    const manifest = await page.request.get(`${base}/docs.json`).then((response) => response.json())
+    const manifest = await retryRequest(() => page.request.get(`${base}/docs.json`)).then((response) => response.json())
     const javaReference = manifest.pages.find((entry) => new URL(entry.url).pathname.endsWith('/java/latest/reference/'))
     assert.equal(javaReference.title, 'API reference')
     assert.deepEqual(javaReference.symbols.find((entry) => entry.id === 'io.github.libtmux.Server.Server'), {
@@ -934,7 +935,7 @@ try {
     await apiExamples
     const page = await newCheckPage(browser, base, { reducedMotion: 'reduce' })
     page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
-    const manifest = await page.request.get(`${base}/page-links.json`)
+    const manifest = await retryRequest(() => page.request.get(`${base}/page-links.json`))
     assert(manifest.ok(), `Native navigation manifest: HTTP ${manifest.status()}`)
     assert.equal((await manifest.json()).schema, 1)
     const clipboardPage = await newCheckPage(browser, base)
@@ -1066,7 +1067,7 @@ try {
           workspacePortCount,
           'Workspace construction has an equivalent in every published workspace product',
         )
-        const target = await page.request.get(base.replace(/\/en$/, '') + expected)
+        const target = await retryRequest(() => page.request.get(base.replace(/\/en$/, '') + expected))
         assert(target.ok(), `Equivalent target: HTTP ${target.status()}`)
       }
       for (const width of [1600, 1440, 1024, 832, 768, 390]) {
