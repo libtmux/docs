@@ -12,6 +12,9 @@ requested work.
 - Environment, Oxlint, formatting, tests, and pull requests:
   [CONTRIBUTING.md](.github/CONTRIBUTING.md).
 - Documentation, user-facing text, comments, and commits: [WRITING.md](WRITING.md).
+- Visual tokens, component anatomy, and page-family rules: the libtmux.org
+  design system ([libtmux/design](https://github.com/libtmux/design)),
+  implemented in `site/src/styles` and `site/src/components`.
 
 Each guide is the single home for its subject.
 
@@ -44,6 +47,11 @@ facts come from the code.
   `site/src/integrations/pagefind.ts`.
 - Keep TypeScript on the workspace's 6.x catalog entry; do not bump it to 7.
   See [Toolchain constraints](.github/CONTRIBUTING.md#toolchain-constraints).
+- Add colour, spacing, and size values as named custom properties beside the
+  existing ones; do not introduce literal colours in component styles.
+- Run `site/scripts/check-style-parity.mjs` for badge, signature, and kind
+  colour changes, and the layout-shift probe (`site/scripts/check-page-readiness.mjs`)
+  for layout changes to players, tabs, filters, or panes.
 
 ## Repository boundaries
 
