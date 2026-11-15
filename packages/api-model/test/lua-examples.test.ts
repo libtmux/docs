@@ -43,6 +43,23 @@ describe('complete Lua API examples from native artifacts', () => {
     expect(examples.some((example) => example.code.includes('not a complete example'))).toBe(false)
   })
 
+  it('shows plain run commands for a manifest without a launcher', () => {
+    const value = manifest()
+    delete value.setup.launcher
+    const symbol = target()
+    attachCompleteLuaExamples([symbol], value, files.filter((file) => file.path !== 'examples/api/run.sh'), source)
+    const examples = symbol.doc!.examples!
+    expect(examples.map((example) => example.lang)).toEqual(['console', 'lua', 'console'])
+    expect(examples[0].code).toContain('luarocks --tree ./rocks install libtmux')
+    expect(examples[1].code).toBe(program)
+    expect(examples[1].sourceUrl).toBe(`https://github.com/${source.repository}/blob/${source.revision}/examples/api/connect.lua`)
+    expect(examples[1].intro).toContain('`connect.lua`')
+    expect(examples[1].intro).toContain('its own private tmux server')
+    expect(examples[2].code).toBe('$ eval "$(luarocks --tree ./rocks path)" &&\n  lua connect.lua\n')
+    expect(examples[2].intro).toContain('TMUX_BIN')
+    expect(JSON.stringify(examples)).not.toMatch(/launcher|run\.sh/)
+  })
+
   it('preserves historical native artifacts without the opt-in manifest', () => {
     const symbol = target()
     const before = structuredClone(symbol)
@@ -81,5 +98,13 @@ describe('complete Lua API examples from native artifacts', () => {
       .toThrow(/full revision/)
     expect(() => attachCompleteLuaExamples([target()], manifest(), files, { ...source, repository: 'other/repo' }))
       .toThrow(/Lua repository/)
+  })
+
+  it('still checks a launcher the manifest names', () => {
+    const value = manifest()
+    expect(() => attachCompleteLuaExamples([target()], value, files.filter((file) => file.path !== 'examples/api/run.sh'), source))
+      .toThrow(/resolve once: examples\/api\/run\.sh/)
+    value.setup.launcher = 'examples/api/other.sh'
+    expect(() => attachCompleteLuaExamples([target()], value, files, source)).toThrow(/unexpected launcher path/)
   })
 })
