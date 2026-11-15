@@ -729,38 +729,36 @@
     {
       "port": "rs",
       "page": "ports/rs/concepts/queries",
-      "sourceRevision": "e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4",
+      "sourceRevision": "15cfa2b1845d9894c93d8025d8b83e75d756f073",
       "runtime": "Rust 1.97.1",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "files": [
         {
           "name": "Cargo.toml",
-          "sha256": "eec2768c91550287d8874e602ab424e1e367b364e6d35be4a1596d979ddbddc9"
+          "sha256": "0e1d4745afd726abdc06273aa6e88278f5c9bda599718abec34b65507a545b2c"
         },
         {
           "name": "matching.rs",
-          "sha256": "5602d7f469302ca339aec0239f7b24a4f81ced3bdca6c39ade6d303a9b47e6db"
+          "sha256": "3caf64380fdb7a07e985e5caf313d7293652b0abb4a54af8f40ce50360e74d97"
         },
         {
           "name": "cardinality.rs",
-          "sha256": "abd96178295e9ac864a10ccdc4d156643d2efe0f0a20761cdee2840161399e7d"
+          "sha256": "67ad245a613aa7ad0a03aadcc9929d593ad3b3ef105ba0a599ad68a6ec3e594d"
         },
         {
           "name": "refresh.rs",
-          "sha256": "2252dc6a8e77d1c692be5c24cb4b76369325dffb923b11230eab25fb41bc7228"
+          "sha256": "6014f3bfa6a482c8e6d3f99a50a588c30aa5ae0aaf45168586d2a671fbeceb6a"
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs libtmux-source &&\n  git -C libtmux-source checkout e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4",
         "cargo +1.97.1 run --quiet --bin matching",
         "cargo +1.97.1 run --quiet --bin cardinality",
         "cargo +1.97.1 run --quiet --bin refresh"
       ],
       "expectedOutputs": [
-        [],
         [
           "query: prod-api",
           "active panes: 2"
@@ -773,65 +771,61 @@
           "fresh listing: renamed"
         ]
       ],
-      "verificationScope": "Each displayed program has its own imports, private server, bounded operations, result assertions, and cleanup. Run through the exact displayed project and pinned library; recorded execution evidence is required."
+      "verificationScope": "Each displayed program has its own imports, private server, bounded operations, result assertions, and cleanup. Run through the exact displayed project and published library; recorded execution evidence is required."
     },
     {
       "port": "rs",
       "page": "ports/rs/concepts/transports",
-      "sourceRevision": "e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4",
+      "sourceRevision": "15cfa2b1845d9894c93d8025d8b83e75d756f073",
       "runtime": "Rust 1.97.1",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "files": [
         {
           "name": "Cargo.toml",
-          "sha256": "8d66d8a077f464653d595acae0e8c3b91967bf2c9bba623bf080f6c58907f3ea"
+          "sha256": "705e13eb6f45f85e39c65eac9864975bca9d0d02945b4a6d22680ee6bc78b8fd"
         },
         {
           "name": "subprocess.rs",
-          "sha256": "966b8ca918fbf5d3befb4ccfeefc4a6e274ed63e5c7933892d78ffec767b5b6b"
+          "sha256": "09914ab9a3bad2c6bb45a84b83563efc3632d95884c8fa39d1846af3151a81e5"
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs libtmux-source &&\n  git -C libtmux-source checkout e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4",
         "cargo +1.97.1 run --quiet --bin subprocess"
       ],
       "expectedOutputs": [
-        [],
         [
           "sessions: work",
           "missing session: tmux refused the command"
         ]
       ],
-      "verificationScope": "Exact displayed program and pinned library setup; native runs and separately recorded command failure and owned-server cleanup checks."
+      "verificationScope": "Exact displayed program and published library setup; native runs and separately recorded command failure and owned-server cleanup checks."
     },
     {
       "port": "rs",
       "page": "ports/rs/guides/batching-commands",
-      "sourceRevision": "e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4",
+      "sourceRevision": "15cfa2b1845d9894c93d8025d8b83e75d756f073",
       "runtime": "Rust 1.97.1",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "files": [
         {
           "name": "Cargo.toml",
-          "sha256": "385a4b4d48cdff06c12fc4d4906e0f665f70f19d09b418cd6943b73124ec0565"
+          "sha256": "9dcd4f2bc082b47a8854c3eef7ec0764bcec6b1a7bff71bba444361ca1d5a194"
         },
         {
           "name": "batching.rs",
-          "sha256": "aae01800c8c46c11e9a89106d41f8018eb5f52dfce131e6fb38d2184df8c6c50"
+          "sha256": "f5ce38ec08a9f422a2fb881e6831163edf5d84dce676dbe1b21541b66d9a7c51"
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs libtmux-source &&\n  git -C libtmux-source checkout e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4",
         "cargo +1.97.1 run --quiet --bin batching"
       ],
       "expectedOutputs": [
-        [],
         [
           "sequential: 3 dispatches; one, two",
           "folding: 2 dispatches; one, two",
@@ -839,40 +833,37 @@
           "refused plan: failed, skipped"
         ]
       ],
-      "verificationScope": "Exact displayed program and pinned library setup; native runs and separately recorded command failure and owned-server cleanup checks."
+      "verificationScope": "Exact displayed program and published library setup; native runs and separately recorded command failure and owned-server cleanup checks."
     },
     {
       "port": "rs",
       "page": "ports/rs/guides/control-mode",
-      "sourceRevision": "e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4",
+      "sourceRevision": "15cfa2b1845d9894c93d8025d8b83e75d756f073",
       "runtime": "Rust 1.97.1",
       "tmuxVersions": [
-        "3.2a",
         "3.7c"
       ],
       "files": [
         {
           "name": "Cargo.toml",
-          "sha256": "3e1ab381bffedbfaa6bb11330b2c3c8c8d2ffcf4646f6d1662a66677d1ba1dcd"
+          "sha256": "c13f4cfaae5d3d1bb9e14dcb794f51a403fbc35a77fc7bb1d2237a24eb74e454"
         },
         {
           "name": "control.rs",
-          "sha256": "413bd653689bbb489be5054a06e2e2be75f8e6544674e8455557a2b6eecdeac1"
+          "sha256": "3be2443d6a992bd1ac3ff0097ec3b7ed5633449ac1ab794f6c1a727b15a5e63e"
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs libtmux-source &&\n  git -C libtmux-source checkout e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4",
         "cargo +1.97.1 run --quiet --bin control"
       ],
       "expectedOutputs": [
-        [],
         [
           "captured: hello from control",
           "attached control clients: 1",
           "connection closed; server still running"
         ]
       ],
-      "verificationScope": "Exact displayed program and pinned library setup; native runs and separately recorded command failure and owned-server cleanup checks."
+      "verificationScope": "Exact displayed program and published library setup; native runs and separately recorded command failure and owned-server cleanup checks."
     }
   ]
 }

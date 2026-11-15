@@ -15,13 +15,13 @@ The launcher writes diagnostics to stderr.
 
 Use Rust 1.88 or newer and tmux 3.3a or newer on Linux or macOS.
 The command below uses the tested Rust 1.97.1 toolchain and installs the
-published `tmux-mcp` 0.1.0 crate. Cargo's binary directory must be on the
+published `tmux-mcp` 0.1.2 crate. Cargo's binary directory must be on the
 path available to your MCP client.
 
 ## Install and connect
 
 ```console
-$ cargo +1.97.1 install --locked tmux-mcp@0.1.0
+$ cargo +1.97.1 install --locked tmux-mcp@0.1.2
 ```
 
 Check that the installed command runs:
@@ -33,7 +33,7 @@ $ tmux-mcp --version
 Expected output:
 
 ```text
-tmux-mcp 0.1.0
+tmux-mcp 0.1.2
 ```
 
 For a client that accepts `mcpServers`, add this entry to its configuration:

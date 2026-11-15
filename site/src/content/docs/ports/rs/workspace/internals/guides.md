@@ -17,11 +17,11 @@ Install tmux first, then add the crate to a Rust project:
 $ cargo add tmux-workspace
 ```
 
-The runnable [example](../examples/) also uses libtmux's isolated test server.
-Enable its `test-support` feature:
+The runnable [example](../examples/) also uses `libtmux` for its server handle
+and `tempfile` for the private socket directory:
 
 ```console
-$ cargo add libtmux --features test-support
+$ cargo add libtmux tempfile
 ```
 
 Add the Tokio runtime used by the example:

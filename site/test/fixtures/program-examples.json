@@ -159,7 +159,34 @@
       "expectedOutputs": [
         [],
         [
-          "observed terminal echo: \u03bb"
+          "observed terminal echo: λ"
+        ]
+      ]
+    },
+    {
+      "port": "rs",
+      "page": "ports/rs/examples/attach-and-send-keys",
+      "language": "rust",
+      "sourceRepository": "libtmux/libtmux-rs",
+      "sourceRevision": "15cfa2b1845d9894c93d8025d8b83e75d756f073",
+      "files": [
+        {
+          "name": "src/main.rs",
+          "sha256": "4bcdfe8219e3c74cc89bf499fab4607098fbd2a2f408bb465c2d48944bf02ce8"
+        },
+        {
+          "name": "Cargo.toml",
+          "sha256": "17119957f1442dd361e5a333f792b49410fe8c2f9a360b507f822acc051cc848"
+        }
+      ],
+      "shellRecipe": [
+        "cargo +1.97.1 run"
+      ],
+      "expectedOutputs": [
+        [
+          "split it: 2 panes",
+          "the pane printed it",
+          "| hello from tmux"
         ]
       ]
     }

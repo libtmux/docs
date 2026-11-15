@@ -14,13 +14,13 @@ and reads the session names from structured content.
 
 It creates a private tmux server with two sessions running `cat`, then stops
 that server before exiting. The socket lives in a temporary directory under
-`/tmp/libtmux-rs-dev/`; the program does not select a server from your shell's
-`TMUX` variable or load your tmux configuration.
+the system's temporary directory; the program does not select a server from
+your shell's `TMUX` variable or load your tmux configuration.
 
 ## Run the example
 
-Use Rust 1.97.1 and tmux 3.3a or newer on Linux or macOS. Both libtmux
-crates below are the published [0.1.0 release](https://github.com/libtmux/libtmux-rs/tree/ce7610a3b46376c377292e5a640b3798c18708fe).
+Use Rust 1.97.1 and tmux 3.3a or newer on Linux or macOS. Cargo installs
+`libtmux` and `tmux-mcp` 0.1.2 from crates.io ([source](https://github.com/libtmux/libtmux-rs/tree/15cfa2b1845d9894c93d8025d8b83e75d756f073)).
 The example was run on Linux with tmux 3.3a and 3.7c.
 
 Create a directory for the program:
@@ -47,8 +47,8 @@ edition = "2024"
 publish = false
 
 [dependencies]
-libtmux = "0.1.0"
-tmux-mcp = "0.1.0"
+libtmux = "=0.1.2"
+tmux-mcp = "=0.1.2"
 rmcp = { version = "=3.1.2", features = ["client", "server", "transport-io"] }
 serde_json = "=1.0.151"
 tempfile = "=3.27.0"
@@ -191,6 +191,10 @@ async fn wait_until_stopped(socket: &Path) -> Result<(), ExampleError> {
             {
                 return Ok(());
             }
+            // A server that is closing can reset the connection first.
+            Err(error) if error.kind() == ErrorKind::ConnectionReset => {
+                tokio::time::sleep(Duration::from_millis(20)).await;
+            }
             Err(error) => return Err(error.into()),
         }
     }
@@ -198,25 +202,19 @@ async fn wait_until_stopped(socket: &Path) -> Result<(), ExampleError> {
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), ExampleError> {
-    let root = std::path::Path::new("/tmp/libtmux-rs-dev");
-    std::fs::create_dir_all(root)?;
     let directory = tempfile::Builder::new()
         .prefix("mcp-sessions-")
-        .tempdir_in(root)?;
-    std::fs::write(
-        directory.path().join("owner"),
-        std::process::id().to_string(),
-    )?;
+        .tempdir()?;
     let socket = directory.path().join("tmux.sock");
     let server = Server::builder()
         .socket_path(&socket)
         .config_file("/dev/null")
         .default_timeout(Duration::from_secs(5))
         .build()?;
-    eprintln!("owned socket: {}", socket.display());
+    eprintln!("private socket: {}", socket.display());
     let outcome = demonstrate(&server).await;
 
-    // Stop the owned daemon before closing its command executor.
+    // Stop the tmux server this program started, then release the client.
     let killed = server.kill().await;
     let stopped = timeout(Duration::from_secs(5), wait_until_stopped(&socket)).await;
     let closed = timeout(Duration::from_secs(5), server.shutdown()).await;
@@ -227,23 +225,26 @@ async fn main() -> Result<(), ExampleError> {
         failures.push(format!("example: {error}"));
     }
     if let Err(error) = killed {
-        failures.push(format!("daemon cleanup: {error}"));
+        failures.push(format!("could not stop tmux: {error}"));
     }
     match stopped {
         Ok(Ok(())) => {}
-        Ok(Err(error)) => failures.push(format!("daemon cleanup verification: {error}")),
-        Err(error) => failures.push(format!("daemon cleanup verification deadline: {error}")),
+        Ok(Err(error)) => failures.push(format!("tmux is still running: {error}")),
+        Err(error) => failures.push(format!("tmux did not stop: {error}")),
     }
     match closed {
         Ok(Ok(())) => {}
-        Ok(Err(error)) => failures.push(format!("executor cleanup: {error}")),
-        Err(error) => failures.push(format!("executor cleanup deadline: {error}")),
+        Ok(Err(error)) => failures.push(format!("could not close the client: {error}")),
+        Err(error) => failures.push(format!("closing the client timed out: {error}")),
     }
     if cleanup_failed {
         let retained = directory.keep();
-        failures.push(format!("inspect retained directory {}", retained.display()));
+        failures.push(format!(
+            "left the temporary directory at {}",
+            retained.display()
+        ));
     } else if let Err(error) = directory.close() {
-        failures.push(format!("directory cleanup: {error}"));
+        failures.push(format!("could not remove the directory: {error}"));
     }
     if failures.is_empty() {
         Ok(())
@@ -291,10 +292,10 @@ MCP process launched from a client's configuration, and
 ## Shutdown
 
 Handshake and request waits have deadlines. The program closes both MCP
-endpoints after a successful or failed request, then stops its owned tmux
-daemon, waits for its Unix socket to close, and shuts down the libtmux command
-executor. It reports operation and cleanup failures together.
+endpoints after a successful or failed request, then stops the tmux
+server it started, waits for its Unix socket to close, and releases the libtmux client.
+It reports operation and cleanup failures together.
 
-If daemon or executor cleanup fails, or the socket still accepts connections
-at the deadline, it retains the temporary directory and prints its path for
-inspection. The program exits with an error.
+If stopping tmux or releasing the client fails, or the socket still accepts
+connections at the deadline, it leaves the temporary directory in place and
+prints its path. The program exits with an error.

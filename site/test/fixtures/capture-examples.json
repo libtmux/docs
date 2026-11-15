@@ -83,27 +83,29 @@
     {
       "port": "rs",
       "language": "rust",
-      "sourceRevision": "d4e08b4eaab62ef4eeedab79b47973ae9a1de310",
+      "sourceRevision": "15cfa2b1845d9894c93d8025d8b83e75d756f073",
       "sourceRepository": "libtmux/libtmux-rs",
       "files": [
         {
-          "name": "main.rs",
+          "name": "src/main.rs",
           "sha256": "a207a4ace3c97f9226503ccc90b03e81cbd1704333ffa6d44d4d6544deef7b67"
         },
         {
           "name": "Cargo.toml",
-          "sha256": "1051eb82a28d7f94b3a57e77102c805db67c384e9e5f1f1f56be901f7b821443"
+          "sha256": "9b9a477a84eb23b99347dc90772726c1cbf1edc0b4d73b7a9d9ef0536864ecb0"
         }
       ],
       "toolchain": [
-        "Rust 1.97.1"
+        "Rust 1.97.1",
+        "libtmux 0.1.2"
       ],
       "tmux": [
+        "3.3a",
         "3.7c"
       ],
       "page": "ports/rs/examples/capture-pane-output",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs libtmux &&\n  git -C libtmux checkout d4e08b4eaab62ef4eeedab79b47973ae9a1de310 &&\n  cargo +1.97.1 run"
+        "cargo +1.97.1 run"
       ]
     },
     {

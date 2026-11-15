@@ -58,7 +58,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
 ## Setup and run
 
-Use an empty directory on Linux with Git and tmux 3.3a or newer installed.
+Use an empty directory on Linux with tmux 3.3a or newer installed. Cargo
+installs `libtmux` 0.1.2 from crates.io ([source](https://github.com/libtmux/libtmux-rs/tree/15cfa2b1845d9894c93d8025d8b83e75d756f073/crates/libtmux)).
 
 This example was checked with Rust 1.97.1.
 
@@ -71,7 +72,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-libtmux = { path = "libtmux/crates/libtmux" }
+libtmux = "=0.1.2"
 tokio = { version = "1.53.1", features = ["macros", "rt-multi-thread", "time"] }
 ```
 
@@ -108,12 +109,10 @@ export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
 "$binary" -S "$socket" has-session -t '=work'
 ```
 
-Fetch the verified library revision, build, and run:
+Build and run:
 
 ```console
-$ git clone https://github.com/libtmux/libtmux-rs libtmux &&
-  git -C libtmux checkout d4e08b4eaab62ef4eeedab79b47973ae9a1de310 &&
-  sh run.sh cargo +1.97.1 run
+$ sh run.sh cargo +1.97.1 run
 ```
 
 The program prints `work`. To use an existing server of your own, set

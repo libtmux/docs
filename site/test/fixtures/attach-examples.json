@@ -99,14 +99,15 @@
     {
       "port": "rs",
       "language": "rust",
-      "sourceRevision": "d4e08b4eaab62ef4eeedab79b47973ae9a1de310",
+      "sourceRevision": "15cfa2b1845d9894c93d8025d8b83e75d756f073",
       "sourceRepository": "libtmux/libtmux-rs",
       "toolchain": [
-        "Rust 1.97.1"
+        "Rust 1.97.1",
+        "libtmux 0.1.2"
       ],
       "page": "ports/rs/guides/attaching-to-tmux",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs libtmux &&\n  git -C libtmux checkout d4e08b4eaab62ef4eeedab79b47973ae9a1de310 &&\n  sh run.sh cargo +1.97.1 run"
+        "sh run.sh cargo +1.97.1 run"
       ],
       "expectedOutput": "work",
       "files": [
@@ -116,7 +117,7 @@
         },
         {
           "name": "Cargo.toml",
-          "sha256": "b1126e5db8c76db064324255f98bc382a9d2ade716d89f19e8767baeebb170ee"
+          "sha256": "f14dd274f09fe52d0233e5b0f05aa77d35a45853374d7f131f1106d320f97736"
         },
         {
           "name": "run.sh",
@@ -124,7 +125,7 @@
         }
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ]
     },

@@ -564,7 +564,6 @@ describe('the example gate over what a reader copies', () => {
       'home setup java': ['clones or checks out the library of a published port; install it from the registry'],
       'home setup kotlin': ['clones or checks out the library of a published port; install it from the registry'],
       'home setup scala': ['clones or checks out the library of a published port; install it from the registry'],
-      'page program ports/rs/examples/attach-and-send-keys.md crates/libtmux/examples/scratch.rs': ['uses a helper of the repository'],
     }
 
     const flagged = (): Record<string, string[]> => {

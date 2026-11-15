@@ -116,6 +116,12 @@ export const OTHER_FLOORS = [
     near: /Managed control/,
     why: 'the managed control program; libtmux 0.1.0 refuses managed control below tmux 3.7 (ControlAcquisition.supports)',
   },
+  {
+    path: 'site/src/content/docs/ports/rs/guides/control-mode.md',
+    version: '3.7',
+    near: /Control mode needs tmux 3\.7/,
+    why: 'the control-mode program; libtmux 0.1.2 refuses managed control acquisition below tmux 3.7',
+  },
 ]
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
