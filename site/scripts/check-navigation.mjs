@@ -302,7 +302,8 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
       assert.deepEqual((await guideLinks.allTextContents()).slice(0, 2).map((label) => label.trim()),
         ['Getting started', 'Attaching to tmux'], `${slug}: setup leads the guides`)
       assert.equal(await nav.locator('a[href*="api-overview"]').count(), 0, `${slug}: no duplicate API guide`)
-      assert.equal((await page.locator('main .doc-card').first().locator('h3').textContent()).trim(), 'Getting started')
+      // Six or fewer guides are cards; seven or more are a compact list (section-index directoryPattern).
+      assert.equal((await page.locator('main :is(.doc-card h3, .doc-dirlist > li > a)').first().textContent()).trim(), 'Getting started')
       await guideLinks.first().click()
       await page.waitForURL(`${base}/${slug}/latest/guides/getting-started/`)
       const selected = page.locator('.sidebar-nav:visible a[aria-current="page"]')
