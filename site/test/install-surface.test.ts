@@ -1,9 +1,12 @@
+import { readFileSync } from 'node:fs'
 import { Window } from 'happy-dom'
+import ts from 'typescript'
 import { afterEach, describe, expect, it } from 'vitest'
 import { buildPanels, markPlaceholders, SERVERS } from '../src/lib/install-matrix'
 import { addedLines, channelForms, markAddedLines, promptFor, targetParts, withPrompt } from '../src/lib/install-surface'
 import { formTarget, PORTS, type InstallCommand } from '../src/lib/ports'
-import { installsFor } from '../src/lib/registry'
+import { installsFor, REGISTRY } from '../src/lib/registry'
+import { HOME_PORT_PREVIEW_EVENT } from '../src/lib/home-hover-preview'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 
 /**
@@ -168,5 +171,227 @@ describe('release channels', () => {
   it('names where a source install goes, and offers nothing it cannot fill', () => {
     expect(channelForms(port('cxx'), entry('unpublished', { tag: 'v0.1.0' })).find((channel) => channel.id === 'git')!.target).toBe('CMakeLists.txt')
     expect(channelForms(port('py'), entry('unpublished'))).toEqual([])
+  })
+})
+
+/** The package installer, rendered with its real parts and, where a test drives it, its real scripts. */
+const widgets = new URL('../src/components/widgets/', import.meta.url)
+async function renderPackage(props: Record<string, unknown>, options: { saved?: Record<string, string>; scripts?: boolean } = {}) {
+  const template = await loadAstroTemplate('components/widgets/PackageInstall.astro', {
+    real: ['InstallCode', 'InstallCooldown', 'InstallFacts', 'InstallWhere'].map((name) => `components/widgets/${name}.astro`),
+    modules: { '../../lib/api-models': { API_MODELS: {} }, 'astro-expressive-code/components': { Code: () => '' } },
+  })
+  const window = openWindow()
+  for (const [key, value] of Object.entries(options.saved ?? {})) window.localStorage.setItem(key, value)
+  window.document.body.innerHTML = await renderAstroTemplate(template, { props })
+  if (options.scripts) for (const file of ['PackageInstall', 'InstallCode']) hydrate(window, new URL(`${file}.astro`, widgets))
+  return { window, document: window.document as unknown as Document }
+}
+
+/** Run the `<script>` of a component in a window, as the page would after its markup. */
+function hydrate(window: Window, file: URL) {
+  const script = readFileSync(file, 'utf8').match(/<script>([\s\S]*?)<\/script>/)![1]!
+    .replace(/import \{ HOME_PORT_PREVIEW_EVENT \}[^\n]+/, `const HOME_PORT_PREVIEW_EVENT = ${JSON.stringify(HOME_PORT_PREVIEW_EVENT)}`)
+  window.eval(ts.transpileModule(`(() => {${script}})()`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText)
+  window.document.dispatchEvent(new window.Event('DOMContentLoaded'))
+}
+
+const text = (el: Element | null | undefined) => el?.textContent?.replace(/\s+/g, ' ').trim() ?? ''
+
+describe('the package installer draws one code surface', () => {
+  it('puts the tool tabs, where the code goes and one Copy in the header, and the options bar above the code', async () => {
+    const { document } = await renderPackage({ ports: ['py'] })
+    const surface = document.querySelector('.lm-install')!
+    const [head, bar, body] = ['.lm-install__head', '.lm-install__bar', '.lm-install__body'].map((selector) => surface.querySelector(selector)!)
+    expect([...surface.children].map((child) => child.className)).toEqual([head, bar, body].map((child) => child.className))
+    expect([...head.querySelectorAll('[role="tab"]')].map((tab) => text(tab).replace(' (no cooldown)', ''))).toEqual(['pip', 'uv', 'pipx'])
+    expect(text(head.querySelector('.lm-install__headend .lm-pkg-install__cmd[data-default] .lm-install__target'))).toBe('Terminal')
+    expect(head.querySelectorAll('.lm-install__headend [data-copy-key]').length).toBeGreaterThan(0)
+    expect(body.querySelector('[data-action="copy"]')).toBeNull()
+  })
+
+  it('states the package facts, then the channel, with the cooldown at the right edge', async () => {
+    const { document } = await renderPackage({ ports: ['py'] })
+    const bar = document.querySelector('.lm-install__bar')!
+    expect([...bar.children].map((child) => child.className)).toEqual(['lm-install__facts', 'lm-install__opts', 'lm-install__cd'])
+    expect(text(bar.querySelector('.lm-install__facts code'))).toBe('libtmux')
+    expect(bar.querySelector('.lm-install__facts a')?.getAttribute('href')).toBe('https://pypi.org/project/libtmux/')
+    expect([...bar.querySelectorAll('[data-pkg-channel]')].map(text)).toEqual(['Release', 'From Git'])
+    const toggle = bar.querySelector('[data-pkg-cooldown="toggle"]')!
+    expect(toggle.getAttribute('aria-pressed')).toBe('false')
+    expect(text(toggle)).toBe('Cooldown')
+  })
+
+  it('says a port is not on a registry, and shows no cooldown where its tools have none', async () => {
+    const { document } = await renderPackage({ ports: ['cxx'] })
+    const bar = document.querySelector('.lm-install__bar')!
+    expect(text(bar.querySelector('.lm-install__facts'))).toBe('libtmux-cxx Not on a registry yet')
+    expect(bar.querySelector('[data-pkg-cooldown]')).toBeNull()
+  })
+
+  it('names one tool in place of tabs, with no cooldown control', async () => {
+    const { document } = await renderPackage({ ports: ['rs'] })
+    expect(document.querySelector('[role="tablist"]')).toBeNull()
+    expect(text(document.querySelector('.lm-install__tabs .lm-pkg-install__label[data-channel="release"]'))).toBe('cargo')
+  })
+
+  it('names the place and draws the prompt of each .NET install', async () => {
+    const { document } = await renderPackage({ ports: ['csharp'] })
+    const target = (index: number) => text(document.querySelector(`.lm-install__headend .lm-pkg-install__cmd[data-manager="${index}"] .lm-install__target`))
+    expect([target(1), target(2), target(3)]).toEqual(['Package Manager Console', '.csproj', 'Directory.Packages.props'])
+    const pmc = document.querySelector('.lm-install__body .lm-pkg-install__cmd[data-manager="1"] [data-install-code]')!
+    expect(pmc.getAttribute('data-prompt')).toBe('PM>')
+    expect(text(pmc.querySelector('code'))).toMatch(/^PM> NuGet\\Install-Package LibTmux/)
+  })
+
+  it('carries a follow-up and a further file as strips with their own Copy', async () => {
+    const { document } = await renderPackage({ ports: ['csharp'] })
+    const strips = [...document.querySelectorAll('.lm-install__body .lm-pkg-install__cmd[data-manager="3"] .lm-pkg-install__code--strip')]
+    expect(strips.map((strip) => text(strip.querySelector('.lm-install__k')))).toEqual(['Project file (.csproj or .fsproj)'])
+    expect(strips[0]!.querySelector('[data-action="copy"]')).not.toBeNull()
+    const workspace = (await renderPackage({ ports: ['py'], packageId: 'workspace' })).document
+    const then = (index: number) => workspace.querySelector(`.lm-install__body .lm-pkg-install__cmd[data-manager="${index}"] .lm-pkg-install__code--after`)
+    expect(text(then(0))).toContain('Then')
+    expect(text(then(0))).toContain('tmuxp load ./workspace.yaml')
+    // uvx runs the command once and installs nothing, so there is nothing to load with.
+    expect(then(1)).toBeNull()
+  })
+})
+
+describe('the cooldown is a strip beside the change', () => {
+  const variant = (document: Document, manager: number, mode: string) =>
+    document.querySelector(`.lm-install__body .lm-pkg-install__cmd[data-manager="${manager}"] [data-cooldown-variant="${mode}"]`)!
+
+  it('holds back dependencies for a number of days, and marks the lines it adds', async () => {
+    const { document } = await renderPackage({ ports: ['py'] })
+    const days = variant(document, 1, 'days')
+    const strip = days.querySelector('.lm-install__cooldown')!
+    expect(strip.getAttribute('data-tone')).toBe('on')
+    expect(text(strip)).toBe('Cooldown Holds back dependencies newer than days; libtmux itself stays current. Bypass instead Remove')
+    expect(strip.querySelector<HTMLInputElement>('[data-cooldown-action="days"]')!.value).toBe('7')
+    expect([...days.querySelectorAll('.line.is-added')].map(text)).toEqual(['--exclude-newer P7D \\', '--exclude-newer-package libtmux=2099-01-01 \\'])
+    expect(variant(document, 1, 'off').querySelector('.lm-install__cooldown')).toBeNull()
+  })
+
+  it('says what a bypass does for this tool, for this install only', async () => {
+    const { document } = await renderPackage({ ports: ['py'] })
+    const strip = variant(document, 1, 'bypass').querySelector('.lm-install__cooldown')!
+    expect(strip.getAttribute('data-tone')).toBe('bypass')
+    expect(text(strip.querySelector('.lm-install__cooldown-body'))).toBe('Bypasses a cooldown set in your uv configuration, for this install only.')
+    expect(text(strip.querySelector('.lm-install__acts'))).toBe('Use a cooldown Remove')
+  })
+
+  it('turns caution for a tool that cannot take one, gives the reason and offers uv', async () => {
+    const { document } = await renderPackage({ ports: ['py'] })
+    const strip = variant(document, 0, 'days').querySelector('.lm-install__cooldown')!
+    expect(strip.getAttribute('data-tone')).toBe('caution')
+    expect(text(strip.querySelector('.lm-install__cooldown-body'))).toMatch(/^pip cannot exempt libtmux from its own cooldown.* Use uv$/)
+    expect(strip.querySelector('[data-cooldown-action="alt"]')?.getAttribute('data-cooldown-alt')).toBe('1')
+    // The command is the plain one, with nothing marked as added.
+    expect(variant(document, 0, 'days').querySelectorAll('.line.is-added')).toHaveLength(0)
+    const bypass = variant(document, 0, 'bypass').querySelector('.lm-install__cooldown')!
+    expect(bypass.getAttribute('data-tone')).toBe('caution')
+    expect(bypass.querySelector('[data-cooldown-action="alt"]')).toBeNull()
+  })
+
+  it('carries a caution dot on the tab of a tool the setting cannot reach', async () => {
+    const { document } = await renderPackage({ ports: ['ts'] })
+    const tab = (label: string) => [...document.querySelectorAll('.lm-pkg-install__manager')].find((el) => text(el).startsWith(label))!
+    expect(tab('bun').hasAttribute('data-no-days')).toBe(true)
+    expect(tab('bun').hasAttribute('data-no-bypass')).toBe(false)
+    expect(tab('npm').hasAttribute('data-no-days')).toBe(false)
+    expect(tab('bun').querySelector('.lm-install__dot')).not.toBeNull()
+  })
+})
+
+describe('the release channel', () => {
+  it('offers the pre-release when the newest version on the registry is one', async () => {
+    const original = REGISTRY.ports.py!
+    try {
+      REGISTRY.ports.py = { ...original, status: 'prerelease', version: '0.63.0a1', release: '0.62.0' }
+      const { document } = await renderPackage({ ports: ['py'] })
+      expect([...document.querySelectorAll('.lm-install__bar [data-pkg-channel]')].map(text)).toEqual(['Release', 'Pre-release', 'From Git'])
+      expect(text(document.querySelector('.lm-install__body .lm-pkg-install__chan[data-channel="prerelease"] code'))).toContain('0.63.0a1')
+      expect(text(document.querySelector('.lm-install__tabs .lm-pkg-install__label[data-channel="prerelease"]'))).toBe('Pre-release')
+    } finally {
+      REGISTRY.ports.py = original
+    }
+  })
+
+  it('keeps the cooldown in place, disabled, outside the Release channel', async () => {
+    const { window, document } = await renderPackage({ ports: ['py'] }, { scripts: true })
+    const panel = document.querySelector<HTMLElement>('.lm-pkg-install__panel')!
+    const toggle = panel.querySelector<HTMLButtonElement>('[data-pkg-cooldown="toggle"]')!
+    ;(panel.querySelector('[data-pkg-channel="git"]') as HTMLElement).click()
+    expect(panel.dataset.activeChannel).toBe('git')
+    expect(panel.querySelector('[data-pkg-channel="git"]')!.getAttribute('aria-pressed')).toBe('true')
+    expect(toggle.disabled).toBe(true)
+    expect(toggle.title).toBe('Cooldowns apply to the Release channel.')
+    toggle.click()
+    expect(window.localStorage.getItem('libtmux-docs.mcp-install.cooldown.enabled')).toBeNull()
+    ;(panel.querySelector('[data-pkg-channel="release"]') as HTMLElement).click()
+    expect(toggle.disabled).toBe(false)
+  })
+})
+
+describe('driving the cooldown strip', () => {
+  const store = (window: Window, key: string) => window.localStorage.getItem(`libtmux-docs.mcp-install.cooldown.${key}`)
+  const click = (document: Document, selector: string) => (document.querySelector(selector) as HTMLElement).click()
+
+  it('turns on from the toggle, switches to a bypass and back, and removes', async () => {
+    const { window, document } = await renderPackage({ ports: ['py'] }, { scripts: true })
+    const toggle = '[data-pkg-cooldown="toggle"]'
+    click(document, toggle)
+    expect(document.documentElement.getAttribute('data-mcp-install-cooldown-enabled')).toBe('1')
+    expect(document.querySelector(toggle)!.getAttribute('aria-pressed')).toBe('true')
+    expect(store(window, 'enabled')).toBe('1')
+    click(document, '[data-cooldown-action="bypass"]')
+    expect(document.documentElement.getAttribute('data-mcp-install-cooldown-type')).toBe('bypass')
+    expect(store(window, 'type')).toBe('bypass')
+    click(document, '[data-cooldown-action="days-mode"]')
+    expect(store(window, 'type')).toBe('days')
+    click(document, '[data-cooldown-action="remove"]')
+    expect(store(window, 'enabled')).toBe('0')
+    expect(document.querySelector(toggle)!.getAttribute('aria-pressed')).toBe('false')
+  })
+
+  it('writes the day count in each tool\'s unit, in every command at once', async () => {
+    const { window, document } = await renderPackage({ ports: ['py'] }, { scripts: true })
+    const input = document.querySelector<HTMLInputElement>('[data-cooldown-action="days"]')!
+    input.value = '14'
+    input.dispatchEvent(new window.Event('change', { bubbles: true }) as unknown as Event)
+    expect(store(window, 'days')).toBe('14')
+    expect(store(window, 'enabled')).toBe('1')
+    expect(text(document.querySelector('.lm-install__body [data-manager="1"] [data-cooldown-variant="days"] code'))).toContain('--exclude-newer P14D')
+  })
+
+  it('moves to the tool that can, from the strip that says the tool cannot', async () => {
+    const { window, document } = await renderPackage({ ports: ['py'] }, { scripts: true })
+    click(document, '[data-pkg-cooldown="toggle"]')
+    click(document, '.lm-install__body [data-manager="0"] [data-cooldown-variant="days"] [data-cooldown-action="alt"]')
+    expect(document.querySelector('.lm-pkg-install__panel')!.getAttribute('data-active-manager')).toBe('1')
+    expect(document.querySelector('.lm-pkg-install__manager[aria-selected="true"]')!.textContent).toContain('uv')
+    expect(window.localStorage.getItem('libtmux-docs.package-install.manager.py')).toBe('1')
+  })
+
+  it('copies the cooldown command as shown, with the day count in force and no prompt', async () => {
+    const { window, document } = await renderPackage({ ports: ['py'] }, { scripts: true })
+    const copied: string[] = []
+    Object.defineProperty(window.navigator, 'clipboard', { value: { writeText: async (value: string) => { copied.push(value) } } })
+    click(document, '.lm-pkg-install__manager[data-manager-value="1"]')
+    click(document, '[data-pkg-cooldown="toggle"]')
+    click(document, '.lm-install__headend [data-manager="1"] [data-cooldown-variant="days"] [data-copy-key]')
+    await Promise.resolve()
+    expect(copied).toEqual(['uv add \\\n    --exclude-newer P7D \\\n    --exclude-newer-package libtmux=2099-01-01 \\\n    libtmux'])
+  })
+
+  it('copies a Package Manager Console command without its prompt', async () => {
+    const { window, document } = await renderPackage({ ports: ['csharp'] }, { scripts: true })
+    const copied: string[] = []
+    Object.defineProperty(window.navigator, 'clipboard', { value: { writeText: async (value: string) => { copied.push(value) } } })
+    click(document, '.lm-install__headend [data-manager="1"] [data-copy-key]')
+    await Promise.resolve()
+    expect(copied).toHaveLength(1)
+    expect(copied[0]).toMatch(/^NuGet\\Install-Package LibTmux/)
   })
 })

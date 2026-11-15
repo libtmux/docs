@@ -117,12 +117,12 @@ for (const scheme of ['light', 'dark']) {
       const install = (port) => page.locator(`.home-examples > [data-home-language="${port}"] .lm-pkg-install`)
       await choose('ruby')
       check(await install('ruby').isVisible(), `${scheme}/${viewport}: Ruby install is not visible`)
-      check(await install('ruby').locator('code').first().textContent().then((text) => /gem install/.test(text ?? '')),
+      check(await install('ruby').locator('.lm-install__body code').first().textContent().then((text) => /gem install/.test(text ?? '')),
         `${scheme}/${viewport}: Ruby install command is missing`)
       await choose('lua')
       check(await install('lua').isVisible() && !(await install('ruby').isVisible()),
         `${scheme}/${viewport}: Lua selection did not replace the Ruby install`)
-      check(await install('lua').locator('code').first().textContent().then((text) => /luarocks\s+(?:--local\s+)?install/.test(text ?? '')),
+      check(await install('lua').locator('.lm-install__body code').first().textContent().then((text) => /luarocks\s+(?:--local\s+)?install/.test(text ?? '')),
         `${scheme}/${viewport}: Lua install command is missing`)
       await choose('ruby')
       const copy = install('ruby').locator('.lm-pkg-install__copy').first()

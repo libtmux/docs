@@ -1,12 +1,17 @@
 ---
 import InstallCode from './InstallCode.astro'
+import InstallCooldown from './InstallCooldown.astro'
+import InstallFacts from './InstallFacts.astro'
+import InstallWhere from './InstallWhere.astro'
+import './install-surface.css'
 import './package-install.css'
-import { installsFor, installSelection } from '../../lib/registry'
+import { installsFor, installSelection, REGISTRY, registryFor } from '../../lib/registry'
 import { API_MODELS } from '../../lib/api-models'
 import { Code } from 'astro-expressive-code/components'
 import { highlightInline, highlightWithCooldownSlots } from '../../lib/highlight'
-import { DEFAULT_COOLDOWN_DAYS } from '../../lib/install-matrix'
-import { PORTS, portHomeUrl, referenceUrl, type PortPackageId } from '../../lib/ports'
+import { DEFAULT_COOLDOWN_DAYS, markPlaceholders, wrapShell } from '../../lib/install-matrix'
+import { addedLines, channelForms, markAddedLines, promptFor, withPrompt } from '../../lib/install-surface'
+import { PORTS, portHomeUrl, productStatus, referenceUrl, type PortPackageId } from '../../lib/ports'
 import type { Quickstart } from '../../lib/quickstarts'
 import { defaultVersionFor } from '../../lib/versions'
 
@@ -31,28 +36,45 @@ interface Props {
   /** Active tab when nothing is saved yet; defaults to the first shown port. */
   defaultPort?: string
   variant?: 'full' | 'compact'
-  /**
-   * Where each block's copy button sits. `gutter` gives it a column beside the
-   * code, so a long command cannot scroll under it; `overlay` floats it over
-   * the block's corner. `auto`, the default, chooses per block: a one-line
-   * command gets a gutter, and a fragment of several lines, which a whole
-   * column beside it would only narrow, gets the overlay.
-   */
-  copyButton?: 'auto' | 'gutter' | 'overlay'
   /** Install a companion package instead of the core library. */
   packageId?: PortPackageId
 }
-const { ports, defaultPort, snippets, variant = 'full', copyButton = 'auto', packageId = 'core' } = Astro.props as Props
-const copyLayout = (code: string) => (copyButton === 'auto' ? (code.includes('\n') ? 'overlay' : 'gutter') : copyButton)
+const { ports, defaultPort, snippets, variant = 'full', packageId = 'core' } = Astro.props as Props
 
 const selected = ports && ports.length > 0 ? PORTS.filter((p) => ports.includes(p.slug)) : PORTS
 const items = selected.map((port) => {
   const selection = installSelection(port, API_MODELS[port.slug]?.sources, process.env)
-  if (packageId === 'core') return { ...port, installs: installsFor(port, selection) }
-  const companion = port.packages?.find((entry) => entry.id === packageId)
+  const entry = registryFor(port)
+  if (packageId === 'core') {
+    return {
+      ...port,
+      installs: installsFor(port, selection),
+      channels: channelForms(port, entry),
+      facts: {
+        name: port.packageName,
+        version: entry.version,
+        status: productStatus(port, 'core', REGISTRY),
+        registry: port.registry,
+        unpublished: entry.status === 'unpublished',
+      },
+    }
+  }
+  const companion = port.packages?.find((item) => item.id === packageId)
   if (!companion?.installs) throw new Error(`PackageInstall: ${port.slug} has no install forms for ${packageId}`)
   const product = { ...port, packageName: companion.name, installs: companion.installs }
-  return { ...product, installs: port.slug === 'julia' ? installsFor(product, selection) : companion.installs }
+  const found = entry.packages?.[companion.name]
+  return {
+    ...product,
+    installs: port.slug === 'julia' ? installsFor(product, selection) : companion.installs,
+    channels: [],
+    facts: {
+      name: companion.name,
+      version: found?.version ?? null,
+      status: packageId === 'workspace' || packageId === 'mcp' ? productStatus(port, packageId, REGISTRY) : undefined,
+      registry: companion.registry ? { url: companion.registry } : undefined,
+      unpublished: found ? found.status === 'unpublished' : !companion.registry,
+    },
+  }
 })
 if (items.length === 0) {
   throw new Error('PackageInstall: `ports` matched none of the ten port slugs in ports.ts')
@@ -91,33 +113,44 @@ const managerRules = Array.from(
  * Highlighted once, here rather than in the template: `await` is not allowed
  * inside a map callback in Astro's markup.
  *
- * A console command is shown with its prompt and copied without it — the copy
- * control strips `$ ` when `data-language` says console. Everything else
- * is a file fragment and is shown exactly as it goes into the file.
+ * A shell command is drawn with its prompt and copied without it, and so is a
+ * PowerShell or Package Manager Console command; Copy takes the prompt off by
+ * the `data-prompt` the block carries. Everything else is a file fragment and
+ * is shown exactly as it goes into the file. A command wider than the line is
+ * split by the long-command rule.
  */
+type Placed = { lang: string; target: string }
+async function drawn(code: string, at: Placed, options: { slots?: boolean; against?: string } = {}): Promise<string> {
+  const text = at.lang === 'console' ? wrapShell(code) : code
+  const source = at.lang === 'console' ? `$ ${text}` : text
+  let html = options.slots
+    ? await highlightWithCooldownSlots(source, at.lang, DEFAULT_COOLDOWN_DAYS)
+    : await highlightInline(source, at.lang)
+  const prompt = promptFor(at.target, at.lang)
+  if (prompt && at.lang !== 'console') html = withPrompt(html, prompt)
+  // The lines a cooldown adds to the plain command are marked, as a diff marks an insertion.
+  if (options.against !== undefined) html = markAddedLines(html, addedLines(options.against, text))
+  return markPlaceholders(html)
+}
+const plainText = (cmd: Placed & { code: string }) => (cmd.lang === 'console' ? wrapShell(cmd.code) : cmd.code)
+
 const installHtml = new Map(
-  await Promise.all(
-    items.flatMap((p) =>
-      p.installs.map(async (cmd, i) => [
-        `${p.slug}/${i}`,
-        await highlightInline(cmd.lang === 'console' ? `$ ${cmd.code}` : cmd.code, cmd.lang),
-      ] as const),
-    ),
-  ),
+  await Promise.all(items.flatMap((p) => p.installs.map(async (cmd, i) => [`${p.slug}/${i}`, await drawn(cmd.code, cmd)] as const))),
 )
 
 const additionalHtml = new Map(
   await Promise.all(items.flatMap((p) => p.installs.flatMap((cmd, i) =>
     (cmd.additionalBlocks ?? []).map(async (block, j) => [
-      `${p.slug}/${i}/${j}`, await highlightInline(block.code, block.lang),
+      `${p.slug}/${i}/${j}`, await drawn(block.code, { lang: block.lang, target: block.filename ?? cmd.target }),
     ] as const),
   ))),
 )
 
 /*
  * A command's cooldown and bypass forms, with the day count in slots the
- * script below rewrites. A form the tool cannot express is absent, and its
- * variant keeps the plain command with the tool's note beside it.
+ * script below rewrites, and the lines each adds marked. A form the tool
+ * cannot express is absent, and its variant keeps the plain command with the
+ * tool's reason in the strip above it.
  */
 const cooldownHtml = new Map(
   await Promise.all(
@@ -127,19 +160,41 @@ const cooldownHtml = new Map(
           .filter((form) => cmd.cooldown?.[form])
           .map(async (form) => [
             `${p.slug}/${i}/${form}`,
-            await highlightWithCooldownSlots(`$ ${cmd.cooldown![form]!}`, cmd.lang, DEFAULT_COOLDOWN_DAYS),
+            await drawn(cmd.cooldown![form]!, cmd, { slots: true, against: plainText(cmd) }),
           ] as const),
       ),
     ),
   ),
 )
+
+// A release channel's code, drawn like any other.
+const channelHtml = new Map(
+  await Promise.all(items.flatMap((p) => p.channels.map(async (channel) => [`${p.slug}/${channel.id}`, await drawn(channel.code, channel)] as const))),
+)
+
+// A workspace manager's follow-up is loading a workspace, unless the command only runs it once.
+const loadCommand = (p: (typeof items)[number], cmd: (typeof items)[number]['installs'][number]) =>
+  packageId === 'workspace' && p.workspaceCli && !/--help\s*$/.test(cmd.code) ? `${p.workspaceCli} ./workspace.yaml` : undefined
+const loadHtml = new Map(
+  await Promise.all(items.flatMap((p) => p.installs.flatMap((cmd, i) => {
+    const load = loadCommand(p, cmd)
+    return load ? [(async () => [`${p.slug}/${i}`, await drawn(load, { lang: 'console', target: 'Terminal' })] as const)()] : []
+  }))),
+)
+
 const hasCooldown = (p: (typeof items)[number]) => p.installs.some((cmd) => cmd.cooldown)
-// One radio group per picker and port, so a group never spans two pickers;
-// the shared state keeps every group showing the same choice.
-const cooldownGroup = (slug: string) => `cooldown-mode-${packageId}-${slug}`
+/** The first tool that takes a cooldown, which a tool that cannot offers as the way forward. */
+const cooldownAlt = (p: (typeof items)[number]) => p.installs.findIndex((cmd) => cmd.cooldown?.code)
+const exemptClause = (p: (typeof items)[number]) =>
+  packageId === 'core' ? 'libtmux itself stays current' : `${p.packageName} and libtmux stay current`
+const MODES = ['off', 'days', 'bypass'] as const
+const CHANNEL_NOTES = {
+  prerelease: 'Pins this pre-release by version; release builds are the default.',
+  git: 'Pins the tagged source; the registry release is the default.',
+} as const
 ---
 
-<div class={`lm-pkg-install lm-pkg-install--${variant}${snippets ? ' lm-pkg-install--examples' : ''}`} data-ports={items.map((p) => p.slug).join(' ')}>
+<div class={`lm-pkg-install lm-pkg-install--surface lm-pkg-install--${variant}${snippets ? ' lm-pkg-install--examples' : ''}`} data-ports={items.map((p) => p.slug).join(' ')}>
   {/*
     One language is not a choice of language.
 
@@ -171,100 +226,121 @@ const cooldownGroup = (slug: string) => `cooldown-mode-${packageId}-${slug}`
           role="tabpanel"
           data-port={p.slug}
           data-manager-scope={managerScope(p.slug)}
+          data-active-channel="release"
+          data-copy-scope
           data-default={p.slug === initialSlug ? true : undefined}
-          tabindex="0"
         >
-          {(p.installs.length > 1 || hasCooldown(p)) && <div class="lm-pkg-install__bar">
-          {p.installs.length > 1 && (
-            <div class="lm-pkg-install__managers" role="tablist" aria-label={`${p.name} package manager`}>
-              {p.installs.map((cmd, i) => (
-                <button
-                  type="button"
-                  class="lm-pkg-install__manager"
-                  role="tab"
-                  data-manager-value={i}
-                  aria-selected={i === 0 ? 'true' : 'false'}
-                  tabindex={i === 0 ? '0' : '-1'}
-                >
-                  {cmd.label}
-                </button>
+          <div class="lm-install">
+            <div class="lm-install__head">
+              <div class="lm-install__tabs" data-install-scroll>
+                {p.installs.length > 1 ? (
+                  <div class="lm-pkg-install__managers" role="tablist" aria-label={`${p.name} package manager`}>
+                    {p.installs.map((cmd, i) => (
+                      <button
+                        type="button"
+                        class="lm-pkg-install__manager"
+                        role="tab"
+                        data-manager-value={i}
+                        data-no-days={hasCooldown(p) && !cmd.cooldown?.code ? '' : undefined}
+                        data-no-bypass={hasCooldown(p) && !cmd.cooldown?.bypass ? '' : undefined}
+                        aria-selected={i === 0 ? 'true' : 'false'}
+                        tabindex={i === 0 ? '0' : '-1'}
+                      >
+                        {cmd.label}{hasCooldown(p) && <span class="lm-install__dot" title={`The cooldown does not reach ${cmd.label}`}><span class="sr-only"> (no cooldown)</span></span>}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <span class="lm-install__sole lm-pkg-install__label" data-channel="release">{p.installs[0]!.label}</span>
+                )}
+                {p.channels.map((channel) => <span class="lm-install__sole lm-pkg-install__label" data-channel={channel.id}>{channel.label}</span>)}
+              </div>
+              <div class="lm-install__headend">
+                <div class="lm-pkg-install__chan" data-channel="release">
+                  {p.installs.map((cmd, i) => (
+                    <div class="lm-pkg-install__cmd" data-manager={i} data-default={i === 0 ? true : undefined}>
+                      {cmd.cooldown
+                        ? MODES.map((mode) => <div class="lm-pkg-install__variant" data-cooldown-variant={mode}><InstallWhere family="pkg" target={cmd.target} lang={cmd.lang} copyKey={`${i}/${mode}`} /></div>)
+                        : <InstallWhere family="pkg" target={cmd.target} lang={cmd.lang} copyKey={String(i)} />}
+                    </div>
+                  ))}
+                </div>
+                {p.channels.map((channel) => (
+                  <div class="lm-pkg-install__chan" data-channel={channel.id}>
+                    <InstallWhere family="pkg" target={channel.target} lang={channel.lang} copyKey={channel.id} />
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div class="lm-install__bar">
+              <InstallFacts {...p.facts} />
+              {p.channels.length > 0 && (
+                <span class="lm-install__opts">
+                  <span class="lm-install__seg" role="group" aria-label="Release channel">
+                    <button type="button" data-pkg-channel="release" aria-pressed="true">Release</button>
+                    {p.channels.map((channel) => <button type="button" data-pkg-channel={channel.id} aria-pressed="false">{channel.label}</button>)}
+                  </span>
+                </span>
+              )}
+              {hasCooldown(p) && (
+                <span class="lm-install__cd">
+                  <button type="button" class="lm-install__cdtoggle" data-pkg-cooldown="toggle" aria-pressed="false" title="Applies to every installer on libtmux.org">
+                    <span class="lm-install__glyph" aria-hidden="true"></span>Cooldown
+                  </button>
+                </span>
+              )}
+            </div>
+            <div class="lm-install__body">
+              <div class="lm-pkg-install__chan" data-channel="release">
+                {p.installs.map((cmd, i) => (
+                  <div class="lm-pkg-install__cmd" data-manager={i} data-default={i === 0 ? true : undefined}>
+                    {cmd.cooldown ? MODES.map((mode) => {
+                      const form = mode === 'days' ? 'code' : mode === 'bypass' ? 'bypass' : undefined
+                      const refused = form && !cmd.cooldown![form]
+                      const html = form && !refused ? cooldownHtml.get(`${p.slug}/${i}/${form}`) : installHtml.get(`${p.slug}/${i}`)
+                      const alt = cooldownAlt(p)
+                      return (
+                        <div class="lm-pkg-install__variant" data-cooldown-variant={mode}>
+                          {mode !== 'off' && <InstallCooldown
+                            family="pkg"
+                            mode={mode}
+                            tool={cmd.label}
+                            exempt={exemptClause(p)}
+                            reason={refused ? (mode === 'days' ? cmd.cooldown!.note ?? `${cmd.label} cannot take a cooldown, so this command runs without one.` : `${cmd.label} has no flag to bypass a cooldown set in its configuration, so this command is unchanged.`) : undefined}
+                            alt={refused && mode === 'days' && alt >= 0 && alt !== i ? { id: alt, label: p.installs[alt]!.label } : undefined}
+                          />}
+                          <InstallCode html={html!} language={cmd.lang} layout="plain" prompt={promptFor(cmd.target, cmd.lang)} codeKey={`${i}/${mode}`} />
+                        </div>
+                      )
+                    }) : <InstallCode html={installHtml.get(`${p.slug}/${i}`)!} language={cmd.lang} layout="plain" prompt={promptFor(cmd.target, cmd.lang)} codeKey={String(i)} />}
+                    {cmd.additionalBlocks?.map((block, j) => (
+                      <InstallCode html={additionalHtml.get(`${p.slug}/${i}/${j}`)!} language={block.lang} layout="strip" after strip={block.filename ?? 'Then'} prompt={promptFor(block.filename ?? cmd.target, block.lang)} label={block.filename} />
+                    ))}
+                    {loadHtml.has(`${p.slug}/${i}`) && <InstallCode html={loadHtml.get(`${p.slug}/${i}`)!} language="console" layout="strip" after strip="Then" prompt="$" label="load command" />}
+                  </div>
+                ))}
+              </div>
+              {p.channels.map((channel) => (
+                <div class="lm-pkg-install__chan" data-channel={channel.id}>
+                  <InstallCode html={channelHtml.get(`${p.slug}/${channel.id}`)!} language={channel.lang} layout="plain" prompt={promptFor(channel.target, channel.lang)} codeKey={channel.id} />
+                </div>
               ))}
             </div>
-          )}
-          {hasCooldown(p) && (
-            <div class="lm-pkg-install__cooldown">
-              <input type="checkbox" class="lm-pkg-install__cooldown-toggle" data-pkg-cooldown="toggle" aria-label="Apply a dependency cooldown" />
-              <button type="button" class="lm-pkg-install__cooldown-configure" data-pkg-cooldown="configure" aria-expanded="false">
-                Configure cooldowns
-              </button>
-              <button type="button" class="lm-pkg-install__cooldown-help" data-pkg-cooldown="help" aria-label="What are cooldowns?" title="What are cooldowns?">?</button>
+          </div>
+          <div class="lm-install__notes">
+            <div class="lm-pkg-install__chan" data-channel="release">
+              {p.installs.map((cmd, i) => cmd.note && (
+                <div class="lm-pkg-install__cmd" data-manager={i} data-default={i === 0 ? true : undefined}>
+                  <p class="lm-pkg-install__note">{cmd.note}</p>
+                </div>
+              ))}
             </div>
-          )}
-          </div>}
-          {hasCooldown(p) && (
-            <div class="lm-pkg-install__cooldown-settings" role="group" aria-label="Cooldown settings" data-open="false">
-              <p class="lm-pkg-install__cooldown-title">Dependency cooldowns</p>
-              <p class="lm-pkg-install__cooldown-help-text">
-                The checkbox turns a cooldown on and off for every picker on the site. It applies to what an install pulls
-                in; the package itself, and the libtmux it pins, stay current.
-              </p>
-              <fieldset class="lm-pkg-install__cooldown-modes">
-                <legend class="sr-only">Cooldown type</legend>
-                <label>
-                  <input type="radio" name={cooldownGroup(p.slug)} value="days" data-pkg-cooldown="mode" checked />
-                  <span>
-                    Apply a cooldown of
-                    <input type="number" min="1" max="365" value={DEFAULT_COOLDOWN_DAYS} class="lm-pkg-install__cooldown-days" data-pkg-cooldown="days" aria-label="Cooldown in days" />
-                    days
-                  </span>
-                </label>
-                <label>
-                  <input type="radio" name={cooldownGroup(p.slug)} value="bypass" data-pkg-cooldown="mode" />
-                  <span>Bypass any global cooldown</span>
-                </label>
-              </fieldset>
-              <details class="lm-pkg-install__cooldown-explainer">
-                <summary>What are cooldowns?</summary>
-                <p>
-                  Cooldowns delay picking up newly uploaded packages so the community has time to spot supply-chain
-                  attacks before you install. Most package managers don't apply one by default; you opt in through a
-                  global setting in your tool's configuration.
-                </p>
-                <p>
-                  Learn more at <a href="https://cooldowns.dev/" target="_blank" rel="noopener">cooldowns.dev</a> &middot;{' '}
-                  <a href="https://securitylabs.datadoghq.com/articles/dependency-cooldowns/" target="_blank" rel="noopener">Datadog Security Labs writeup</a>.
-                </p>
-              </details>
-            </div>
-          )}
-          {p.installs.map((cmd, i) => (
-            <div
-              class="lm-pkg-install__cmd"
-              data-manager={i}
-              data-default={i === 0 ? true : undefined}
-              role={p.installs.length > 1 ? 'tabpanel' : undefined}
-              tabindex={p.installs.length > 1 ? '0' : undefined}
-            >
-              {cmd.filename && <p class="lm-pkg-install__note"><strong>{cmd.filename}</strong></p>}
-              {!cmd.cooldown && <InstallCode html={installHtml.get(`${p.slug}/${i}`)!} language={cmd.lang} layout={copyLayout(cmd.code)} label={cmd.filename} />}
-              {cmd.additionalBlocks?.map((block, j) => <>
-                {block.filename && <p class="lm-pkg-install__note"><strong>{block.filename}</strong></p>}
-                <InstallCode html={additionalHtml.get(`${p.slug}/${i}/${j}`)!} language={block.lang} layout={copyLayout(block.code)} label={block.filename} />
-              </>)}
-              {cmd.cooldown && (['off', 'days', 'bypass'] as const).map((mode) => {
-                const form = mode === 'days' ? 'code' : mode === 'bypass' ? 'bypass' : undefined
-                const code = form ? cmd.cooldown![form] : undefined
-                const html = form && code ? cooldownHtml.get(`${p.slug}/${i}/${form}`) : installHtml.get(`${p.slug}/${i}`)
-                return (
-                  <div class="lm-pkg-install__variant" data-cooldown-variant={mode}>
-                    <InstallCode html={html!} language={cmd.lang} layout={copyLayout(code ?? cmd.code)} />
-                    {mode !== 'off' && !code && cmd.cooldown!.note && <p class="lm-pkg-install__note lm-pkg-install__note--cooldown">{cmd.cooldown!.note}</p>}
-                  </div>
-                )
-              })}
-              {cmd.note && <p class="lm-pkg-install__note">{cmd.note}</p>}
-            </div>
-          ))}
+            {p.channels.map((channel) => (
+              <div class="lm-pkg-install__chan" data-channel={channel.id}>
+                <p class="lm-pkg-install__note">{CHANNEL_NOTES[channel.id]}</p>
+              </div>
+            ))}
+          </div>
           {snippets && (
             <p class="lm-pkg-install__links">
               <a href={portHomeUrl(p, defaultVersionFor(p.slug))}>{p.name} documentation</a>
@@ -282,8 +358,6 @@ const cooldownGroup = (slug: string) => `cooldown-mode-${packageId}-${slug}`
   </div>
   <span class="sr-only" data-copy-status role="status" aria-live="polite" aria-atomic="true" />
 </div>
-
-
 
 {/* Generated from `items`, not hand-typed — see `activePortRules` above. */}
 <style is:global set:html={activePortRules + managerRules} />
@@ -320,6 +394,55 @@ const cooldownGroup = (slug: string) => `cooldown-mode-${packageId}-${slug}`
     }
   }
 
+  /**
+   * A row of tool tabs scrolls sideways and never wraps. It fades on the side that has more tabs
+   * (`data-more`), and the selected tab is scrolled into view, so a choice saved from a longer list
+   * or a keyboard move to the last tab is never out of sight.
+   */
+  function updateEdges(row: HTMLElement) {
+    const start = row.scrollLeft > 1
+    const end = row.scrollLeft + row.clientWidth < row.scrollWidth - 1
+    if (start || end) row.dataset.more = start && end ? 'both' : start ? 'start' : 'end'
+    else delete row.dataset.more
+  }
+
+  function revealSelected(row: HTMLElement) {
+    const selected = row.querySelector<HTMLElement>('[aria-selected="true"]')
+    if (selected) row.scrollLeft = Math.max(0, selected.offsetLeft - row.clientWidth / 2 + selected.offsetWidth / 2)
+    updateEdges(row)
+  }
+
+  function watchTabRows() {
+    document.querySelectorAll<HTMLElement>('[data-install-scroll]').forEach((row) => {
+      if (row.dataset.watched !== 'true') {
+        row.dataset.watched = 'true'
+        row.addEventListener('scroll', () => updateEdges(row), { passive: true })
+      }
+      revealSelected(row)
+    })
+  }
+
+  window.addEventListener('resize', () => document.querySelectorAll<HTMLElement>('[data-install-scroll]').forEach(updateEdges))
+
+  /**
+   * Which release channel a panel shows: its package managers (Release), or one form of its own. The
+   * cooldown applies to a release only, so it stays where it is, disabled, in the others.
+   */
+  const COOLDOWN_TITLE = 'Applies to every installer on libtmux.org'
+  const RELEASE_ONLY = 'Cooldowns apply to the Release channel.'
+
+  function setChannel(panel: HTMLElement, channel: string) {
+    panel.dataset.activeChannel = channel
+    panel.querySelectorAll<HTMLElement>('[data-pkg-channel]').forEach((button) => {
+      button.setAttribute('aria-pressed', String(button.dataset.pkgChannel === channel))
+    })
+    panel.querySelectorAll<HTMLButtonElement>('[data-pkg-cooldown="toggle"]').forEach((toggle) => {
+      toggle.disabled = channel !== 'release'
+      toggle.title = channel === 'release' ? COOLDOWN_TITLE : RELEASE_ONLY
+      toggle.setAttribute('aria-pressed', String(channel === 'release' && cooldownState().enabled))
+    })
+  }
+
   function applySavedState() {
     if (document.querySelector('[data-pkg-cooldown]')) paintCooldown()
     const saved = document.documentElement.getAttribute('data-pkg-port') ?? read(STORAGE_KEY)
@@ -331,6 +454,7 @@ const cooldownGroup = (slug: string) => `cooldown-mode-${packageId}-${slug}`
       const savedManager = scope && read(`${MANAGER_KEY}.${scope}`)
       if (savedManager) selectManager(panel, savedManager, false)
     })
+    watchTabRows()
   }
 
   function selectManager(panel: HTMLElement, index: string, persist: boolean) {
@@ -345,6 +469,8 @@ const cooldownGroup = (slug: string) => `cooldown-mode-${packageId}-${slug}`
       tab.setAttribute('tabindex', isMatch ? '0' : '-1')
     })
     panel.setAttribute('data-active-manager', index)
+    const row = panel.querySelector<HTMLElement>('[data-install-scroll]')
+    if (row) revealSelected(row)
     if (persist && panel.dataset.managerScope) {
       // As selectPort does for the language: <head> puts the saved manager on
       // the document before first paint, and the rules keyed on it outrank
@@ -437,6 +563,12 @@ const cooldownGroup = (slug: string) => `cooldown-mode-${packageId}-${slug}`
     })
   })
 
+  /** The control the reader just used keeps the focus, or the one that takes its place when it leaves. */
+  function focusVisible(scope: ParentNode, selector: string) {
+    const next = [...scope.querySelectorAll<HTMLElement>(selector)].find((el) => el.getClientRects().length > 0)
+    next?.focus({ preventScroll: true })
+  }
+
   document.addEventListener('click', (e) => {
     const target = e.target as HTMLElement
     const manager = target.closest<HTMLButtonElement>('.lm-pkg-install__manager')
@@ -448,6 +580,41 @@ const cooldownGroup = (slug: string) => `cooldown-mode-${packageId}-${slug}`
           detail: { origin: panel, scope: panel.dataset.managerScope, index: manager.dataset.managerValue },
         }),
       )
+      return
+    }
+    const channel = target.closest<HTMLElement>('[data-pkg-channel]')
+    if (channel?.dataset.pkgChannel) {
+      const owner = channel.closest<HTMLElement>('.lm-pkg-install__panel')
+      if (owner) setChannel(owner, channel.dataset.pkgChannel)
+      return
+    }
+    const toggle = target.closest<HTMLButtonElement>('[data-pkg-cooldown="toggle"]')
+    if (toggle) {
+      if (!toggle.disabled) setCooldown({ enabled: !cooldownState().enabled })
+      return
+    }
+    const action = target.closest<HTMLElement>('[data-cooldown-family="pkg"] [data-cooldown-action]')
+    const owner = action?.closest<HTMLElement>('.lm-pkg-install__panel')
+    if (action && owner) {
+      const kind = action.dataset.cooldownAction
+      if (kind === 'bypass') {
+        setCooldown({ type: 'bypass', enabled: true })
+        focusVisible(owner, '[data-cooldown-action="days-mode"]')
+      } else if (kind === 'days-mode') {
+        setCooldown({ type: 'days', enabled: true })
+        focusVisible(owner, '[data-cooldown-action="bypass"]')
+      } else if (kind === 'remove') {
+        setCooldown({ enabled: false })
+        owner.querySelector<HTMLElement>('[data-pkg-cooldown="toggle"]')?.focus({ preventScroll: true })
+      } else if (kind === 'alt' && action.dataset.cooldownAlt !== undefined) {
+        selectManager(owner, action.dataset.cooldownAlt, true)
+        window.dispatchEvent(
+          new CustomEvent(MANAGER_SYNC_EVENT, {
+            detail: { origin: owner, scope: owner.dataset.managerScope, index: action.dataset.cooldownAlt },
+          }),
+        )
+        owner.querySelector<HTMLElement>('.lm-pkg-install__manager[aria-selected="true"]')?.focus({ preventScroll: true })
+      }
       return
     }
     const tab = target.closest<HTMLButtonElement>('.lm-pkg-install__tab')
@@ -525,13 +692,10 @@ const cooldownGroup = (slug: string) => `cooldown-mode-${packageId}-${slug}`
     root.setAttribute('data-mcp-install-cooldown-enabled', enabled ? '1' : '0')
     root.setAttribute('data-mcp-install-cooldown-type', type)
     root.setAttribute('data-mcp-install-cooldown-days', String(days))
-    document.querySelectorAll<HTMLInputElement>('[data-pkg-cooldown="toggle"]').forEach((box) => {
-      box.checked = enabled
+    document.querySelectorAll<HTMLElement>('[data-pkg-cooldown="toggle"]').forEach((toggle) => {
+      toggle.setAttribute('aria-pressed', String(enabled && !(toggle as HTMLButtonElement).disabled))
     })
-    document.querySelectorAll<HTMLInputElement>('[data-pkg-cooldown="mode"]').forEach((radio) => {
-      radio.checked = radio.value === type
-    })
-    document.querySelectorAll<HTMLInputElement>('[data-pkg-cooldown="days"]').forEach((input) => {
+    document.querySelectorAll<HTMLInputElement>('[data-cooldown-family="pkg"] [data-cooldown-action="days"]').forEach((input) => {
       if (document.activeElement !== input) input.value = String(days)
     })
     writeCooldownSlots(days)
@@ -550,35 +714,18 @@ const cooldownGroup = (slug: string) => `cooldown-mode-${packageId}-${slug}`
     }
   }
 
-  document.addEventListener('change', (e) => {
-    const el = (e.target as HTMLElement).closest<HTMLInputElement>('[data-pkg-cooldown]')
-    if (!el) return
-    const action = el.dataset.pkgCooldown
-    if (action === 'toggle') setCooldown({ enabled: el.checked })
-    // Choosing how a cooldown behaves implies wanting one.
-    if (action === 'mode') setCooldown({ type: el.value, enabled: true })
-    if (action === 'days') setCooldown({ days: parseInt(el.value, 10), type: 'days', enabled: true })
-  })
-
   // Typing a day count rewrites every command at once; it is saved on change.
   document.addEventListener('input', (e) => {
-    const el = (e.target as HTMLElement).closest<HTMLInputElement>('[data-pkg-cooldown="days"]')
+    const el = (e.target as HTMLElement).closest<HTMLInputElement>('[data-cooldown-family="pkg"] [data-cooldown-action="days"]')
     if (!el) return
     const days = parseInt(el.value, 10)
     if (Number.isFinite(days)) writeCooldownSlots(clampDays(days))
   })
 
-  document.addEventListener('click', (e) => {
-    const el = (e.target as HTMLElement).closest<HTMLElement>('[data-pkg-cooldown="configure"], [data-pkg-cooldown="help"]')
-    const panel = el?.closest<HTMLElement>('.lm-pkg-install__panel')
-    const settings = panel?.querySelector<HTMLElement>('.lm-pkg-install__cooldown-settings')
-    if (!el || !settings) return
-    const open = el.dataset.pkgCooldown === 'help' || settings.dataset.open !== 'true'
-    settings.dataset.open = String(open)
-    panel!.querySelector('[data-pkg-cooldown="configure"]')?.setAttribute('aria-expanded', String(open))
-    if (el.dataset.pkgCooldown === 'help') {
-      settings.querySelector('details')?.setAttribute('open', '')
-    }
+  // Choosing a length implies wanting a cooldown.
+  document.addEventListener('change', (e) => {
+    const el = (e.target as HTMLElement).closest<HTMLInputElement>('[data-cooldown-family="pkg"] [data-cooldown-action="days"]')
+    if (el) setCooldown({ days: parseInt(el.value, 10), type: 'days', enabled: true })
   })
 
   window.addEventListener(COOLDOWN_EVENT, ((e: CustomEvent<{ kind?: string }>) => {

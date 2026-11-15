@@ -1,0 +1,489 @@
+/* The installer's one code surface (design record 0063) and its cooldown strip (record 0064).
+ *
+ * Both installers draw it: a header with the tool tabs, where the code goes and Copy; an options bar
+ * under it with the package facts, the options and, at the right edge, the cooldown; strips for a
+ * prerequisite, a follow-up and the cooldown; and the code. Every control sits above the code, so a
+ * choice changes the command below and never moves the control just used.
+ *
+ * Unlayered on purpose, like the two widget stylesheets: nothing here uses `hidden`, so Tailwind's
+ * preflight rule for it has nothing to outrank.
+ */
+.lm-install {
+  --lm-install-code-bg: #f1f5f9; /* slate-100 */
+  --lm-install-edge: #dfe5ec;
+  --lm-install-strip-bg: #e9eef4;
+  --lm-install-raised: #ffffff;
+  --lm-install-add-bg: rgb(5 150 105 / 10%);
+  --lm-install-add-edge: #047857; /* emerald-700 */
+  --lm-install-muted: var(--color-foreground-muted);
+  container: lm-install / inline-size;
+  overflow: hidden;
+  border: 1px solid var(--lm-install-edge);
+  border-radius: 0.5rem;
+  background: var(--lm-install-code-bg);
+  color: var(--text-color);
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+}
+
+html[data-theme-mode='dark'] .lm-install {
+  --lm-install-code-bg: #1e293b; /* slate-800 */
+  --lm-install-edge: #2c3a4e;
+  --lm-install-strip-bg: #18222f;
+  --lm-install-raised: #2c3a4e;
+  --lm-install-add-bg: rgb(52 211 153 / 13%);
+  --lm-install-add-edge: #34d399; /* emerald-400 */
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme-mode]):not([data-theme='light']) .lm-install {
+    --lm-install-code-bg: #1e293b;
+    --lm-install-edge: #2c3a4e;
+    --lm-install-strip-bg: #18222f;
+    --lm-install-raised: #2c3a4e;
+    --lm-install-add-bg: rgb(52 211 153 / 13%);
+    --lm-install-add-edge: #34d399;
+  }
+}
+
+/* Header: the tabs scroll sideways and never wrap, with where the code goes and Copy at the end. */
+.lm-install__head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 2.625rem;
+  padding: 0 0.3rem 0 0.875rem;
+  border-bottom: 1px solid var(--lm-install-edge);
+}
+
+.lm-install__tabs {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.lm-install__tabs::-webkit-scrollbar {
+  display: none;
+}
+
+/* A row that scrolls fades on the side that has more tabs (`data-more`, set by the widget's script). */
+.lm-install__tabs[data-more='end'] {
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 1.5rem), transparent);
+  mask-image: linear-gradient(to right, #000 calc(100% - 1.5rem), transparent);
+}
+
+.lm-install__tabs[data-more='start'] {
+  -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 1.5rem), transparent);
+  mask-image: linear-gradient(to left, #000 calc(100% - 1.5rem), transparent);
+}
+
+.lm-install__tabs[data-more='both'] {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 1.5rem, #000 calc(100% - 1.5rem), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 1.5rem, #000 calc(100% - 1.5rem), transparent);
+}
+
+.lm-install__sole {
+  display: block;
+  font: 500 13px/1 var(--font-sans);
+  color: var(--text-color);
+}
+
+.lm-install__headend {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 45%;
+}
+
+.lm-install__where {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+/* A long file target cuts its folder and never its file name: ~/.gemini/co…mcp_config.json. */
+.lm-install__target {
+  display: inline-flex;
+  flex: 0 1 auto;
+  min-width: 0;
+  color: var(--lm-install-muted);
+  font: 400 12px/1 var(--font-mono);
+  white-space: nowrap;
+}
+
+.lm-install__dir {
+  min-width: 1.5em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lm-install__base {
+  flex: none;
+}
+
+/* Copy keeps the site's outlined control; the surface only raises it off the code's own tone. */
+.lm-install__where .lm-pkg-install__copy,
+.lm-install__where .lm-mcp-install__copy {
+  flex: none;
+  background: var(--lm-install-raised);
+}
+
+/* Narrow: the tabs take the header's first row; where the code goes and Copy share a second. */
+@container lm-install (max-width: 34rem) {
+  .lm-install__head {
+    flex-wrap: wrap;
+    row-gap: 0;
+  }
+
+  .lm-install__tabs {
+    flex: 1 0 100%;
+  }
+
+  .lm-install__headend {
+    flex: 1 1 auto;
+    max-width: none;
+    padding: 0.4rem 0;
+    border-top: 1px solid var(--lm-install-edge);
+  }
+
+  .lm-install__where {
+    justify-content: space-between;
+  }
+}
+
+/* Options bar: facts and options from the left edge, the cooldown on the right edge. */
+.lm-install__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  padding: 0.5rem 0.75rem 0.5rem 0.875rem;
+  border-bottom: 1px solid var(--lm-install-edge);
+}
+
+.lm-install__facts {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.55rem;
+  color: var(--lm-install-muted);
+  font-size: 12.5px;
+}
+
+.lm-install__facts code {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-color);
+  font: 600 12.5px/1.3 var(--font-mono);
+}
+
+.lm-install__facts a {
+  color: var(--color-link);
+  text-underline-offset: 2px;
+}
+
+.lm-install__facts .status-badge {
+  align-self: center;
+}
+
+.lm-install__warn {
+  color: var(--aside-caution-ink);
+  font-weight: 500;
+}
+
+.lm-install__opts {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.875rem;
+}
+
+.lm-install__cd {
+  display: inline-flex;
+  align-items: center;
+  margin-inline-start: auto;
+}
+
+.lm-install__seg {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--text-color) 6%, transparent);
+}
+
+.lm-install__seg button {
+  appearance: none;
+  padding: 0.25rem 0.55rem;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--lm-install-muted);
+  font: 500 12px/1.3 var(--font-sans);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.lm-install__seg button:hover {
+  color: var(--text-color);
+}
+
+.lm-install__seg button[aria-pressed='true'] {
+  background: var(--lm-install-raised);
+  color: var(--text-color);
+  box-shadow: 0 0 0 1px var(--lm-install-edge), 0 1px 2px rgb(0 0 0 / 8%);
+}
+
+.lm-install__seg button:focus-visible,
+.lm-install__cdtoggle:focus-visible,
+.lm-install__link:focus-visible {
+  outline: 2px solid var(--focus-ring-color);
+  outline-offset: 1px;
+}
+
+/* The cooldown: a quiet "+ Cooldown" that reads "✓ Cooldown" once on. It keeps its place when the
+ * channel leaves Release, disabled, so nothing beside it moves. */
+.lm-install__cdtoggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 26px;
+  padding: 0 0.6rem;
+  border: 1px solid var(--lm-install-edge);
+  border-radius: 999px;
+  background: var(--lm-install-raised);
+  color: var(--lm-install-muted);
+  font: 500 12.5px/1 var(--font-sans);
+  cursor: pointer;
+}
+
+.lm-install__cdtoggle:hover {
+  color: var(--text-color);
+}
+
+.lm-install__cdtoggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.lm-install__glyph {
+  display: inline-block;
+  min-width: 0.8em;
+  text-align: center;
+}
+
+.lm-install__glyph::before {
+  content: '+';
+}
+
+.lm-install__cdtoggle[aria-pressed='true'],
+html[data-mcp-install-cooldown-enabled='1'] .lm-install__cdtoggle:not(:disabled) {
+  border-color: color-mix(in srgb, var(--lm-install-add-edge) 55%, transparent);
+  background: var(--lm-install-add-bg);
+  color: var(--text-color);
+}
+
+.lm-install__cdtoggle[aria-pressed='true'] .lm-install__glyph,
+html[data-mcp-install-cooldown-enabled='1'] .lm-install__cdtoggle:not(:disabled) .lm-install__glyph {
+  color: var(--lm-install-add-edge);
+}
+
+.lm-install__cdtoggle[aria-pressed='true'] .lm-install__glyph::before,
+html[data-mcp-install-cooldown-enabled='1'] .lm-install__cdtoggle:not(:disabled) .lm-install__glyph::before {
+  content: '\2713';
+}
+
+/* A tool the cooldown, as set, cannot reach carries a caution dot after its tab. */
+.lm-install__dot {
+  display: none;
+  width: 6px;
+  height: 6px;
+  margin-inline-start: 5px;
+  border-radius: 50%;
+  background: var(--aside-caution);
+  vertical-align: 2px;
+}
+
+html[data-mcp-install-cooldown-enabled='1']:not([data-mcp-install-cooldown-type='bypass']) .lm-install__tabs [data-no-days] .lm-install__dot,
+html[data-mcp-install-cooldown-enabled='1'][data-mcp-install-cooldown-type='bypass'] .lm-install__tabs [data-no-bypass] .lm-install__dot {
+  display: inline-block;
+}
+
+/* The cooldown strip, between the bar and the lines it adds. */
+.lm-install__cooldown {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.875rem;
+  padding: 0.55rem 0.875rem;
+  border-bottom: 1px solid var(--lm-install-edge);
+  background: var(--lm-install-add-bg);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.lm-install__cooldown[data-tone='bypass'] {
+  background: var(--lm-install-strip-bg);
+}
+
+.lm-install__cooldown[data-tone='caution'] {
+  background: color-mix(in srgb, var(--aside-caution) 14%, transparent);
+}
+
+.lm-install__k {
+  flex: none;
+  color: var(--lm-install-add-edge);
+  font: 600 12px/1 var(--font-sans);
+}
+
+.lm-install__cooldown[data-tone='bypass'] .lm-install__k {
+  color: var(--lm-install-muted);
+}
+
+.lm-install__cooldown[data-tone='caution'] .lm-install__k {
+  color: var(--aside-caution-ink);
+}
+
+.lm-install__cooldown-body {
+  flex: 1 1 18rem;
+  min-width: 0;
+}
+
+.lm-install__cooldown-body code {
+  padding: 0 0.2em;
+  border: 0;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--text-color) 7%, transparent);
+  font: 400 0.92em/1 var(--font-mono);
+}
+
+.lm-install__days {
+  width: 3.25rem;
+  min-height: 24px;
+  padding: 0 0.3rem;
+  border: 1px solid var(--control-border);
+  border-radius: 5px;
+  background: var(--background-color);
+  color: var(--text-color);
+  font: 500 12.5px/1 var(--font-mono);
+}
+
+.lm-install__acts {
+  display: inline-flex;
+  gap: 0.875rem;
+  margin-inline-start: auto;
+}
+
+/* The mode link swaps its label (Bypass instead, Use a cooldown); it keeps one width, so Remove stays put. */
+.lm-install__acts > .lm-install__link:first-child {
+  min-width: 6.75rem;
+  text-align: end;
+}
+
+.lm-install__link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-link);
+  font: 500 12.5px/1.3 var(--font-sans);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+/* Narrow: the actions share the first row with the label, so they never move when the sentence changes. */
+@container lm-install (max-width: 34rem) {
+  .lm-install__acts {
+    order: 2;
+  }
+
+  .lm-install__cooldown-body {
+    order: 3;
+    flex-basis: 100%;
+  }
+}
+
+/* A strip carries a prerequisite (First) or a follow-up (Then), each with its own Copy. */
+.lm-pkg-install__code--strip,
+.lm-mcp-install__code--strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0 0.5rem;
+  padding: 0 0.3rem 0 0.875rem;
+  border-bottom: 1px solid var(--lm-install-edge);
+  background: var(--lm-install-strip-bg);
+}
+
+.lm-pkg-install__code--after,
+.lm-mcp-install__code--after {
+  border-top: 1px solid var(--lm-install-edge);
+  border-bottom: 0;
+}
+
+.lm-pkg-install__code--strip pre,
+.lm-mcp-install__code--strip pre {
+  flex: 1 1 12rem;
+  min-width: 0;
+  padding: 0.5rem 0;
+}
+
+/* The label and Copy sit on the command's first line, however many lines it takes. */
+.lm-pkg-install__code--strip > .lm-install__k,
+.lm-mcp-install__code--strip > .lm-install__k {
+  padding-top: calc(0.5rem + 4px);
+  color: var(--lm-install-muted);
+}
+
+.lm-pkg-install__code--strip > button,
+.lm-mcp-install__code--strip > button {
+  margin-top: 0.25rem;
+}
+
+/* The code: no box of its own, the surface is the box. */
+.lm-install .lm-pkg-install__code--plain,
+.lm-install .lm-mcp-install__code--plain {
+  background: none;
+  border-radius: 0;
+}
+
+.lm-install .lm-pkg-install__code--plain pre,
+.lm-install .lm-mcp-install__code--plain pre {
+  padding: 0.875rem 1rem;
+}
+
+.lm-install pre:focus-visible {
+  outline: 2px solid var(--focus-ring-color);
+  outline-offset: -2px;
+}
+
+/* A line a cooldown adds: a green edge and tint, as a diff marks an insertion. The newline after it stays
+ * a text node, so the copied text keeps its lines. */
+.lm-install .line.is-added {
+  display: inline-block;
+  min-width: calc(100% + 2rem);
+  margin-inline: -1rem;
+  padding-inline: 1rem;
+  background: var(--lm-install-add-bg);
+  box-shadow: inset 2px 0 var(--lm-install-add-edge);
+}
+
+.lm-install__slot {
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--aside-caution) 18%, transparent);
+  box-shadow: inset 0 -1px color-mix(in srgb, var(--aside-caution-ink) 60%, transparent);
+}
+
+.lm-install__notes {
+  margin-top: 0.5rem;
+}
+
+.lm-install__notes .lm-pkg-install__note {
+  max-width: 46rem;
+  margin: 0.25rem 0 0;
+  font-size: 0.8125rem;
+}

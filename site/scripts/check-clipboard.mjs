@@ -94,9 +94,15 @@ export async function checkClipboard(page, base) {
     assert.equal(await status.getAttribute('aria-atomic'), 'true', `${path}: complete copy announcement`)
     const buttonLabel = await button.getAttribute('aria-label')
     const text = await button.evaluate((element, selector) => {
-      const container = element.parentElement
+      // An installer's Copy sits in its header, outside the code it takes, and names that code by key.
+      const key = element.dataset.copyKey
+      const container = key
+        ? element.closest('[data-copy-scope]').querySelector(`[data-code-key="${key}"]`)
+        : element.parentElement
       const text = container.querySelector(selector).textContent
-      return container.dataset.language === 'console' ? text.replace(/^\$ /gm, '') : text
+      // The prompt is drawn, never copied.
+      const prompt = container.dataset.prompt ?? (container.dataset.language === 'console' ? '$' : '')
+      return prompt ? text.replace(new RegExp(`^${prompt.replace(/[$.*+?^{}()|[\]\\]/g, '\\$&')} `, 'gm'), '') : text
     }, textSelector)
     const textareas = await page.locator('textarea').count()
     for (const mode of ['api', 'rejected', 'fallback', 'false', 'throw']) {
