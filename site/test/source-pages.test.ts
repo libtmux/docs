@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { API_MODELS } from '../src/lib/api-models'
 import { hasSourceView, sourceFilesFor } from '../src/lib/api-source-pages'
@@ -76,5 +77,21 @@ describe('sourceLines', () => {
     const { html, css } = await sourceLines('a := 1\nb := 2\n', 'go')
     expect(html).not.toContain('style=')
     expect(css).toMatch(/^\.lm-src \.t0\{--shiki-light:#/)
+  })
+})
+
+describe('the source view\'s numbers and marks (record 0058)', () => {
+  const css = readFileSync(new URL('../src/styles/source.css', import.meta.url), 'utf8')
+
+  it('keeps them in the column left of the code block, which carries the code ground and an edge of its own', () => {
+    const rule = /\n\.lm-src \{([^}]*)\}/.exec(css)
+    expect(rule, 'a rule for the numbered lines').not.toBeNull()
+    expect(rule![1], 'the column is as wide as the marks, the numbers and their gaps').toMatch(/--lm-src-edge:\s*calc\(22px \+ 6\.75ch\)/)
+    expect(rule![1], 'the code ground starts at the edge, so the column is the page\'s').toMatch(/background:[^;]*var\(--lm-src-bg\)[^;]*var\(--lm-src-edge\)/)
+    expect(rule![1], 'a hairline marks the edge').toMatch(/var\(--color-background-border\)[^;]*var\(--lm-src-edge\)/)
+  })
+
+  it('leaves the pane\'s scrolling column on the page\'s ground, so its numbers do not sit on the code\'s', () => {
+    expect(/\.lm-pane__body \{([^}]*)\}/.exec(css)![1]).toMatch(/background: var\(--background-color\)/)
   })
 })

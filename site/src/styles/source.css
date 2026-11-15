@@ -25,10 +25,18 @@ html[data-theme-mode='dark'] {
 
 /* ---- Numbered lines, shared by the page and the pane ---- */
 
+/*
+ * The marks and the numbers keep their column on the page's ground (record 0058); the code block starts where the column ends,
+ * carries the code ground and a hairline of its own. The column is the mark (22px), then the number (4.5ch) and the gaps
+ * either side of it, and the block starts 0.75ch before its text.
+ */
 .lm-src {
+  --lm-src-edge: calc(22px + 6.75ch);
   margin: 0;
   padding: 12px 0;
-  background: var(--lm-src-bg);
+  background:
+    linear-gradient(var(--color-background-border), var(--color-background-border)) no-repeat var(--lm-src-edge) 0 / 1px 100%,
+    linear-gradient(var(--lm-src-bg), var(--lm-src-bg)) no-repeat var(--lm-src-edge) 0 / calc(100% - var(--lm-src-edge)) 100%;
   color: var(--lm-src-fg);
   font: 400 .8125rem/1.7 var(--font-mono, ui-monospace, monospace);
   letter-spacing: 0;
@@ -190,7 +198,7 @@ html[data-theme-mode='dark'] .lm-src code > span { color: var(--shiki-dark); }
   color: var(--color-foreground-muted);
 }
 .lm-pane__prov a { color: var(--color-link); font-family: var(--font-sans, ui-sans-serif, system-ui, sans-serif); }
-.lm-pane__body { position: relative; overflow: auto; overscroll-behavior: contain; min-height: 0; background: var(--lm-src-bg); }
+.lm-pane__body { position: relative; overflow: auto; overscroll-behavior: contain; min-height: 0; background: var(--background-color); }
 .lm-pane__body .lm-src { overflow: visible; }
 .lm-pane__body .lm-src > span { grid-template-columns: 22px 4.5ch minmax(0, 1fr); scroll-margin-top: .5rem; }
 .lm-pane__body[aria-busy='true'] { opacity: .6; }
