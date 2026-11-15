@@ -1772,11 +1772,9 @@ html[data-theme-mode='dark'] .site-header .header-picker > summary:is(:hover, :f
 @media (max-width: 79.999rem) {
   .site-header__destinations :is(.header-link__label, .header-picker__label) { display: none; }
 }
-/* The Menu button carries its word from bp-phone (30rem) up; below it the bar has room for the icon only. */
-@media (max-width: 29.999rem) {
-  .site-header__menu-label { display: none; }
-}
+/* The Menu button carries its word with the other labels, from the chips' 80rem: below it the word would squeeze the language picker beside it. */
 @media (max-width: 79.999rem) {
+  .site-header__menu-label { display: none; }
   .site-header__bar { gap: 0.5rem; }
 }
 @media (max-width: 69.999rem) {
