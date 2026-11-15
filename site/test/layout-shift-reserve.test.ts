@@ -12,6 +12,7 @@ import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
  */
 const read = (path: string) => readFileSync(new URL(`../src/${path}`, import.meta.url), 'utf8')
 const showcase = read('components/CoreShowcase.astro')
+const playerCss = read('styles/core-player.css')
 
 const Code = createComponent((_result: unknown, props: { code: string }) => renderTemplate`<pre data-code>${props.code}</pre>`)
 const windows: Window[] = []
@@ -42,6 +43,8 @@ function rules(css: string, selector: string) {
   return found.join(';')
 }
 
+const rem = (value: string) => Number(/^(-?[\d.]+)rem$/.exec(value.trim())?.[1])
+
 describe('the capability list at a phone width', () => {
   /** True when the server draws the list open, which a phone's script then closes and the page below moves up. */
   const drawsOpen = (html: string) => /<details\b[^>]*\bcore-showcase__picker[^>]*\sopen(=|\s|>)/.test(html)
@@ -61,6 +64,26 @@ describe('the capability list at a phone width', () => {
   it('has a negative case: markup drawn open is what the check refuses', () => {
     expect(drawsOpen('<details class="core-showcase__picker" open><summary>x</summary></details>')).toBe(true)
     expect(drawsOpen('<details class="core-showcase__picker"><summary>x</summary></details>')).toBe(false)
+  })
+})
+
+describe('a result title with its pin button', () => {
+  /** What the title row lacks of the pin button's box: the button's height less its negative block margins. */
+  function shortfall(css: string) {
+    const pin = rules(css, '.core-result__pin')
+    const height = rem(/(?:^|;)\s*height:\s*([^;]+)/.exec(pin)![1]!)
+    const margin = rem(/margin-block:\s*(-[^;]+)/.exec(pin)![1]!)
+    const title = rules(css, '.core-result__title')
+    const floor = /min-height:\s*([^;]+)/.exec(title)?.[1]
+    return height + 2 * margin - (floor ? rem(floor) : 0)
+  }
+
+  it('keeps the row as tall hidden as shown, so unhiding the button grows nothing', () => {
+    expect(shortfall(playerCss), 'the script unhides the pin, a taller box than the title line').toBeLessThanOrEqual(0)
+  })
+
+  it('has a negative case: a title row with no floor falls short of its button', () => {
+    expect(shortfall(playerCss.replace(/min-height:[^;]+;/g, ''))).toBeGreaterThan(0)
   })
 })
 

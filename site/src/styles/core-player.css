@@ -357,6 +357,11 @@ html[data-js] .core-player__results > .core-result[data-off] {
   line-height: 1.4;
 }
 
+/* The script unhides the pin, a 1.75rem button with a -0.25rem block margin each side: the row is its 1.25rem before and after. */
+.core-result__title {
+  min-height: 1.25rem;
+}
+
 .core-result__title code {
   font-family: var(--mcp-mono);
 }
