@@ -94,7 +94,7 @@
   ],
   "port": "raku",
   "repo": "libtmux/libtmux-raku",
-  "revision": "8293da87dc45f61ea2a68d1cc5327b4e62892732",
+  "revision": "ae97f9f87b73db63d4ab3cabb108a195f64e4f6f",
   "schemaVersion": 1,
   "symbols": {
     "LibTmux::Attachment.inspect-client": [

@@ -291,6 +291,43 @@ d('member order', () => {
     expect(memberTier(symbol, signals)).toBe('parent')
   })
 
+  it('lists each Raku -async twin directly after its synchronous method', () => {
+    const api = model('raku')
+    const mentions = JSON.parse(readFileSync(join(DATA, 'mentions.json'), 'utf8')).mentions
+    const owner = api.symbols.find((symbol) => symbol.id === 'LibTmux::Server')!
+    const names = membersOf(api, owner, memberSignals('raku', mentions)).map((member) => member.name)
+    const twins = names.filter((name) => name.endsWith('-async') && names.includes(name.slice(0, -'-async'.length)))
+    expect(twins.length).toBeGreaterThan(5)
+    for (const twin of twins) expect(names.indexOf(twin), twin).toBe(names.indexOf(twin.slice(0, -'-async'.length)) + 1)
+  })
+
+  it('ranks the Raku Server members that realise a shared concept above the rest', () => {
+    const api = model('raku')
+    const signals = memberSignals('raku')
+    const owner = api.symbols.find((symbol) => symbol.id === 'LibTmux::Server')!
+    const tiers = Object.fromEntries(membersOf(api, owner, signals).map((member) => [member.name, memberTier(member, signals)]))
+    for (const name of ['options', 'hooks', 'environment', 'open-control', 'attach-async']) expect(tiers[name], name).toBe('concept')
+    for (const name of ['query-sessions', 'query-windows', 'query-panes', 'query', 'query-async']) expect(tiers[name], name).toBe('query')
+    // A window link is a placement, not a window, and an endpoint is a record, not a socket path.
+    for (const name of ['query-window-links', 'endpoint', 'explain']) expect(tiers[name], name).toBe('public')
+  })
+
+  it('ranks a twin with its original even when guides discuss only the original', () => {
+    const [symbol] = model('raku').symbols
+    const member = (name: string) => ({ ...symbol!, id: `Owner.${name}`, publicId: `Owner.${name}`, name, kind: 'method' as const, parent: 'Owner', doc: undefined })
+    const owner = { ...symbol!, id: 'Owner', publicId: 'Owner', name: 'Owner', kind: 'class' as const, parent: undefined }
+    const symbols = ['zeta', 'close-async', 'close-all', 'close', 'menu-async'].map(member)
+    const mentions = ['Owner.close', 'Owner.close-all', 'Owner.zeta'].map((id) => ({ port: 'raku', symbol: id }))
+    const signals = memberSignals('raku', mentions, {})
+    const ordered = membersOf({ port: 'raku', symbols: [owner, ...symbols] } as unknown as ApiModel, owner, signals)
+    // `close-all` is another method: it follows the pair, and `menu-async` has no `menu`, so it stays public.
+    expect(ordered.map((entry) => entry.name)).toEqual(['close', 'close-async', 'close-all', 'zeta', 'menu-async'])
+    expect(ordered.map((entry) => memberTier(entry, signals))).toEqual(['discussed', 'discussed', 'discussed', 'discussed', 'public'])
+    // The convention is Raku's: another port's `close-async` is an unrelated name.
+    expect(membersOf({ port: 'ts', symbols: [owner, ...symbols] } as unknown as ApiModel, owner, memberSignals('ts', mentions.map((m) => ({ ...m, port: 'ts' })), {}))
+      .map((entry) => entry.name)).toEqual(['close', 'close-all', 'zeta', 'close-async', 'menu-async'])
+  })
+
   it('exposes only explicit C++ public using declarations and keeps their original targets', () => {
     const api = model('cxx')
     const before = JSON.stringify(api)

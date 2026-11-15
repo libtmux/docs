@@ -435,7 +435,7 @@
     },
     "clojure": {
       "repo": "libtmux/libtmux-java",
-      "revision": "941f2162062b6d118c68b7d1c23417e0d2cea124",
+      "revision": "9cbaef3e0949fb4a76e5f259f3cb04bf5ebba46e",
       "wrapper": "java",
       "distributions": [
         {
@@ -443,91 +443,91 @@
           "version": "0.1.2",
           "manifest": "libtmux/build.gradle.kts",
           "repo": "libtmux/libtmux-java",
-          "revision": "941f2162062b6d118c68b7d1c23417e0d2cea124"
+          "revision": "9cbaef3e0949fb4a76e5f259f3cb04bf5ebba46e"
         },
         {
           "name": "io.github.libtmux:libtmux-bom",
           "version": "0.1.2",
           "manifest": "libtmux-bom/build.gradle.kts",
           "repo": "libtmux/libtmux-java",
-          "revision": "941f2162062b6d118c68b7d1c23417e0d2cea124"
+          "revision": "9cbaef3e0949fb4a76e5f259f3cb04bf5ebba46e"
         },
         {
           "name": "io.github.libtmux:libtmux-clojure",
           "version": "0.1.2",
           "manifest": "libtmux-clojure/build.gradle.kts",
           "repo": "libtmux/libtmux-java",
-          "revision": "941f2162062b6d118c68b7d1c23417e0d2cea124"
+          "revision": "9cbaef3e0949fb4a76e5f259f3cb04bf5ebba46e"
         },
         {
           "name": "io.github.libtmux:libtmux-clojure-core-async",
           "version": "0.1.2",
           "manifest": "libtmux-clojure-core-async/build.gradle.kts",
           "repo": "libtmux/libtmux-java",
-          "revision": "941f2162062b6d118c68b7d1c23417e0d2cea124"
+          "revision": "9cbaef3e0949fb4a76e5f259f3cb04bf5ebba46e"
         },
         {
           "name": "io.github.libtmux:libtmux-jackson",
           "version": "0.1.2",
           "manifest": "libtmux-jackson/build.gradle.kts",
           "repo": "libtmux/libtmux-java",
-          "revision": "941f2162062b6d118c68b7d1c23417e0d2cea124"
+          "revision": "9cbaef3e0949fb4a76e5f259f3cb04bf5ebba46e"
         },
         {
           "name": "io.github.libtmux:libtmux-junit5",
           "version": "0.1.2",
           "manifest": "libtmux-junit5/build.gradle.kts",
           "repo": "libtmux/libtmux-java",
-          "revision": "941f2162062b6d118c68b7d1c23417e0d2cea124"
+          "revision": "9cbaef3e0949fb4a76e5f259f3cb04bf5ebba46e"
         },
         {
           "name": "io.github.libtmux:libtmux-kotlin",
           "version": "0.1.2",
           "manifest": "libtmux-kotlin/build.gradle.kts",
           "repo": "libtmux/libtmux-java",
-          "revision": "941f2162062b6d118c68b7d1c23417e0d2cea124"
+          "revision": "9cbaef3e0949fb4a76e5f259f3cb04bf5ebba46e"
         },
         {
           "name": "io.github.libtmux:libtmux-mcp",
           "version": "0.1.2",
           "manifest": "libtmux-mcp/build.gradle.kts",
           "repo": "libtmux/libtmux-java",
-          "revision": "941f2162062b6d118c68b7d1c23417e0d2cea124"
+          "revision": "9cbaef3e0949fb4a76e5f259f3cb04bf5ebba46e"
         },
         {
           "name": "io.github.libtmux:libtmux-scala_3",
           "version": "0.1.2",
           "manifest": "libtmux-scala/build.gradle.kts",
           "repo": "libtmux/libtmux-java",
-          "revision": "941f2162062b6d118c68b7d1c23417e0d2cea124"
+          "revision": "9cbaef3e0949fb4a76e5f259f3cb04bf5ebba46e"
         },
         {
           "name": "io.github.libtmux:libtmux-scala-cats_3",
           "version": "0.1.2",
           "manifest": "libtmux-scala-cats/build.gradle.kts",
           "repo": "libtmux/libtmux-java",
-          "revision": "941f2162062b6d118c68b7d1c23417e0d2cea124"
+          "revision": "9cbaef3e0949fb4a76e5f259f3cb04bf5ebba46e"
         },
         {
           "name": "io.github.libtmux:libtmux-scala-ox_3",
           "version": "0.1.2",
           "manifest": "libtmux-scala-ox/build.gradle.kts",
           "repo": "libtmux/libtmux-java",
-          "revision": "941f2162062b6d118c68b7d1c23417e0d2cea124"
+          "revision": "9cbaef3e0949fb4a76e5f259f3cb04bf5ebba46e"
         },
         {
           "name": "io.github.libtmux:libtmux-workspace",
           "version": "0.1.2",
           "manifest": "libtmux-workspace/build.gradle.kts",
           "repo": "libtmux/libtmux-java",
-          "revision": "941f2162062b6d118c68b7d1c23417e0d2cea124"
+          "revision": "9cbaef3e0949fb4a76e5f259f3cb04bf5ebba46e"
         },
         {
           "name": "io.github.libtmux:libtmux-workspace-cli",
           "version": "0.1.2",
           "manifest": "libtmux-workspace-cli/build.gradle.kts",
           "repo": "libtmux/libtmux-java",
-          "revision": "941f2162062b6d118c68b7d1c23417e0d2cea124"
+          "revision": "9cbaef3e0949fb4a76e5f259f3cb04bf5ebba46e"
         }
       ],
       "units": []
@@ -951,28 +951,28 @@
     },
     "perl": {
       "repo": "libtmux/libtmux-perl",
-      "revision": "a1cab0324b600a5df6e34b92590b5c3bd8f79c69",
+      "revision": "388f27171ee6256dc7dbaef6f878d394f9ca474a",
       "distributions": [
         {
           "name": "LibTmux",
           "version": "0.003",
           "manifest": "packages/core/Makefile.PL",
           "repo": "libtmux/libtmux-perl",
-          "revision": "a1cab0324b600a5df6e34b92590b5c3bd8f79c69"
+          "revision": "388f27171ee6256dc7dbaef6f878d394f9ca474a"
         },
         {
           "name": "LibTmux-Async",
           "version": "0.003",
           "manifest": "packages/async/Makefile.PL",
           "repo": "libtmux/libtmux-perl",
-          "revision": "a1cab0324b600a5df6e34b92590b5c3bd8f79c69"
+          "revision": "388f27171ee6256dc7dbaef6f878d394f9ca474a"
         },
         {
           "name": "LibTmux-Workspace",
           "version": "0.003",
           "manifest": "packages/workspace/Makefile.PL",
           "repo": "libtmux/libtmux-perl",
-          "revision": "a1cab0324b600a5df6e34b92590b5c3bd8f79c69"
+          "revision": "388f27171ee6256dc7dbaef6f878d394f9ca474a"
         }
       ],
       "units": [
@@ -986,14 +986,14 @@
     },
     "raku": {
       "repo": "libtmux/libtmux-raku",
-      "revision": "8293da87dc45f61ea2a68d1cc5327b4e62892732",
+      "revision": "ae97f9f87b73db63d4ab3cabb108a195f64e4f6f",
       "distributions": [
         {
           "name": "LibTmux",
           "version": "0.0.1",
           "manifest": "META6.json",
           "repo": "libtmux/libtmux-raku",
-          "revision": "8293da87dc45f61ea2a68d1cc5327b4e62892732"
+          "revision": "ae97f9f87b73db63d4ab3cabb108a195f64e4f6f"
         }
       ],
       "units": []

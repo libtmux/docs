@@ -14,10 +14,8 @@ interface Props {
   context?: ApiSymbol
 }
 const { text, items, index, context } = Astro.props as Props
-const parsed = parseApiProse(text ?? '')
-// Perl POD sections remain link targets even beside lists of references.
-const blocks: DirectoryBlock[] = items ? [{ kind: 'ul', items }]
-  : index.language === 'perl' ? parsed : groupDirectory(parsed, index.language)
+// Every port folds a capability directory. Perl's headings stay section anchors: `groupDirectory` folds only its bold-led rows.
+const blocks: DirectoryBlock[] = items ? [{ kind: 'ul', items }] : groupDirectory(parseApiProse(text ?? ''), index.language)
 const { self: ApiProse } = Astro
 ---
 

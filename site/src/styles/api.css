@@ -1233,6 +1233,15 @@ html[data-api-sections-measured] .api-section-links {
 }
 
 /*
+ * A fenced block in a description keeps below it the gap a paragraph keeps, so the heading or paragraph that follows does not
+ * touch it. A heading written as a paragraph (Perl's POD sections) takes no top margin of its own, and relies on this one. The
+ * body trim in `dl.py.gp-sphinx-api-container > dd > :last-child` still removes it from the last block.
+ */
+.gp-sphinx-api-description > .api-prose-code {
+  margin-bottom: 0.5rem;
+}
+
+/*
  * A path through the tmux source: the Paths through the source of a C reference page and the paths of a symbol's tmux C API
  * section. Global because both pages draw it, and a product page imports this file but not the C reference's component.
  */
