@@ -193,6 +193,27 @@ describe('the excerpt of each shipped product', () => {
   }
 })
 
+describe('an excerpt of a source that holds marker lines', () => {
+  const content = [
+    'require "libtmux"',                 // 1
+    '',                                  // 2
+    '# docs:begin main',                 // 3
+    'server = LibTmux::Server.new',      // 4
+    '# docs:end main',                   // 5
+    'server.kill',                       // 6
+    '',
+  ].join('\n')
+  const marked: LandingTable = { ruby: { mcp: { file: 'examples/x.rb', lang: 'ruby', from: 'server = LibTmux', to: 'server.kill', ci: { workflow: '.github/workflows/ci.yml', command: 'rake' } } } }
+  const fake = { 'ruby/mcp:examples/x.rb': { repository: 'libtmux/libtmux-ruby', revision: 'abc', content } }
+
+  it('shows the program without the marker line and cites the lines of the file it links', () => {
+    const resolved = landingExcerpt(PORT_BY_SLUG.ruby!, 'mcp', marked, fake)!
+    expect(resolved.code).toBe('server = LibTmux::Server.new\nserver.kill')
+    // The reader follows the link to the file, where the marker line is line 5: the range cites lines 4 to 6.
+    expect(resolved.ranges).toEqual([{ start: 4, end: 6 }])
+  })
+})
+
 describe('the workflow command an excerpt records', () => {
   const workflow = (body: string) => `name: tests\njobs:\n  test:\n    steps:\n${body}`
   const wrapped = workflow(`      - name: Test

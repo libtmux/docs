@@ -10,6 +10,7 @@ import {
   pageSource,
   parseFenceAttributes,
   sliceExcerpt,
+  stripBuildMarkers,
   withoutAttributes,
 } from '../src/lib/example-excerpt.ts'
 
@@ -159,6 +160,86 @@ describe('locateExcerpt', () => {
   })
 })
 
+describe('stripBuildMarkers', () => {
+  // One marker line of each kind a port keeps in a source for its own tooling.
+  const MARKERS: [name: string, line: string][] = [
+    ['Go docs:<name> given:', '// docs:run-to-completion given:ctx context.Context; session tmux.Session'],
+    ['Go docs:end', '// docs:end'],
+    ['Ruby docs:begin', '# docs:begin main'],
+    ['Ruby indented docs:end', '  # docs:end main'],
+    ['Lua docs:begin', '-- docs:begin main'],
+    ['OCaml docs:begin', '(* docs:begin pane-io *)'],
+    ['Lisp docs:name', ';;; docs:package'],
+    ['Erlang docs:begin', '%% docs:begin main'],
+    ['Rust region', '// region: capture'],
+    ['Rust endregion', '// endregion'],
+    ['C# region', '#region ConnectAndBuild'],
+    ['C# endregion', '#endregion'],
+    ['F# fsharp-snippet', '// fsharp-snippet: Quickstart'],
+    ['F# endfsharp-snippet', '// endfsharp-snippet'],
+    ['Perl example begin', '# example: begin batch'],
+    ['Perl example end', '# example: end batch'],
+  ]
+
+  it.each(MARKERS)('hides a %s line and keeps the code around it', (_name, marker) => {
+    expect(stripBuildMarkers(`first()\n${marker}\nsecond()\n`)).toBe('first()\nsecond()\n')
+  })
+
+  // Each is code or prose a reader needs; a marker form that is not alone on its line is not one to hide.
+  it.each([
+    ['a marker after code', 'run() // docs:end'],
+    ['a comment that mentions docs', '// docs: see the guide'],
+    ['a comment about a region', '# region of interest'],
+    ['a string that holds a marker', 'puts "# docs:begin main"'],
+    ['a longer word', '#regional()'],
+    ['a shebang', '#!/bin/sh'],
+  ])('keeps %s', (_name, line) => {
+    expect(stripBuildMarkers(`a\n${line}\nb\n`)).toBe(`a\n${line}\nb\n`)
+  })
+
+  it('returns a source with no marker as it is, byte for byte', () => {
+    const plain = 'a\r\n\r\n\r\nb'
+    expect(stripBuildMarkers(plain)).toBe(plain)
+  })
+
+  it('leaves no blank line at the top, doubled, or trailing where a marker stood', () => {
+    expect(stripBuildMarkers('// docs:begin a\n\nfirst()\n\n// docs:end\n\n// docs:begin b\nsecond()\n// docs:end\n'))
+      .toBe('first()\n\nsecond()\n')
+    expect(stripBuildMarkers('(* docs:begin pane-io *)\nlet () = ()\n(* docs:end pane-io *)\n')).toBe('let () = ()\n')
+  })
+
+  it('reads a CRLF source', () => {
+    expect(stripBuildMarkers('a\r\n// docs:end\r\nb\r\n')).toBe('a\nb\n')
+  })
+})
+
+describe('an excerpt of a source with marker lines', () => {
+  const GO = [
+    'package main',          // 1
+    '',                      // 2
+    '// docs:pane-io given:ctx context.Context', // 3
+    'func run() {',          // 4
+    '\tstart()',             // 5
+    '// docs:end',           // 6
+    '\tfinish()',            // 7
+    '}',                     // 8
+  ].join('\n')
+
+  it('does not quote a marker line, and counts it in the line numbers of the source', () => {
+    expect(locateExcerpt(GO, { from: 'func run', to: 'finish()' }, 'x')).toEqual({ text: 'func run() {\n\tstart()\n\tfinish()', start: 4, end: 7 })
+    expect(locateExcerpt(GO, { from: 'finish()' }, 'x')).toMatchObject({ start: 7, end: 7 })
+  })
+
+  it('does not take a marker line for an anchor', () => {
+    expect(() => locateExcerpt(GO, { from: 'docs:pane-io' }, 'x')).toThrow(/from anchor "docs:pane-io" matches no line/)
+    expect(() => locateExcerpt(GO, { from: 'func run', to: 'docs:end' }, 'x')).toThrow(/to anchor "docs:end" matches no line/)
+  })
+
+  it('names source lines in an error about an anchor', () => {
+    expect(() => locateExcerpt(GO, { from: '\t' }, 'x')).toThrow(/matches lines 5, 7/)
+  })
+})
+
 describe('excerptRequest', () => {
   it('is not an excerpt without a from or to anchor, so whole-file fences are untouched', () => {
     expect(excerptRequest({ file: 'examples/main.go' })).toBeUndefined()
@@ -279,10 +360,12 @@ describe('excerpts in a page', () => {
       .rejects.toThrow(/examples\/pane-io\/main\.go: from anchor/)
   })
 
-  it('leaves a whole-file inclusion alone', async () => {
+  it('includes a whole file as the program, without the comments its port\'s own tooling reads', async () => {
     const [block] = codeOf(await render(`\`\`\`go file="${file}"\n\`\`\`\n`))
     expect(block).toContain('package main')
-    expect(block).toContain('docs:end')
+    expect(cached).toContain('docs:end')
+    expect(block).not.toMatch(/docs:/)
+    expect(block).toBe(`${stripBuildMarkers(cached).replace(/\s+$/, '')}\n`)
   })
 
   it('quotes a Ruby file from the revision-bound cache', async () => {
@@ -302,9 +385,24 @@ describe('excerpts in a page', () => {
       .rejects.toThrow(/examples\/quickstart\.rb: from anchor/)
   })
 
-  it('leaves a Ruby whole-file inclusion alone', async () => {
+  it('includes a Ruby whole file without its docs: markers', async () => {
     const [block] = codeOf(await render('```ruby file="examples/quickstart.rb"\n```\n'))
     expect(block).toContain('require "libtmux"')
-    expect(block).toContain('docs:begin main')
+    expect(block).not.toMatch(/docs:/)
+  })
+
+  it('exports a whole-file inclusion as the same program', () => {
+    expect(resolvePortCode(`\`\`\`go file="${file}"\n\`\`\`\n`)).not.toMatch(/docs:/)
+  })
+
+  it('still cuts a region between its own markers, and shows nothing of a marker inside it', async () => {
+    const [block] = codeOf(await render('```rust file="crates/libtmux/examples/scratch.rs" region="capture"\n```\n'))
+    expect(block).toBe([
+      '            let lines = pane.capture().await?;',
+      '            for line in lines.iter().filter(|line| !line.as_bytes().is_empty()) {',
+      '                println!("  | {}", line.to_string_lossy());',
+      '            }',
+      '',
+    ].join('\n'))
   })
 })

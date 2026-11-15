@@ -6,6 +6,8 @@ import {
   type CapabilityEntry, type CapabilityId, type CapabilityTable,
 } from '../src/lib/core-capabilities'
 import { checkoutFor } from '../src/plugins/remark-port-code.mjs'
+import { isBuildMarker, stripBuildMarkers } from '../src/lib/example-excerpt'
+import { playableCapability, viewSteps } from '../src/lib/core-player'
 import type { CachedSource } from '../src/lib/port-landing'
 import { PORT_BY_SLUG } from '../src/lib/ports'
 import TABLE from '../src/data/core-capabilities.json'
@@ -68,6 +70,32 @@ describe('the capability showcase data', () => {
     // A port whose examples are library functions, not programs, offers none.
     expect(portCapabilities('ts', table, cache)).toEqual([])
     expect(portCapabilities('lua', table, cache)).toEqual([])
+  })
+
+  it('shows a program without the comments its port\'s tooling reads, and keeps the file for the recording', () => {
+    const entry = table.rs!['send-keys']!
+    const key = capabilityCacheKey('rs', entry.file)
+    const content = cache[key]!.content
+    const marked = `// region: whole\n${content}// endregion\n`
+    const [item] = portCapabilities('rs', { rs: { 'send-keys': entry } }, { [key]: { ...cache[key]!, content: marked } })
+    expect(item!.code).toBe(content.replace(/\n$/, ''))
+    expect(item!.source).toBe(marked.replace(/\n$/, ''))
+  })
+
+  it.each(['go', 'ruby', 'ocaml'])('shows no marker line of the %s programs', (owner) => {
+    for (const item of portCapabilities(owner, table, cache)) {
+      expect(item.code.split('\n').filter(isBuildMarker), item.file).toEqual([])
+      expect(item.code).toBe(stripBuildMarkers(cache[capabilityCacheKey(owner, item.file)]!.content).replace(/\n$/, ''))
+    }
+  })
+
+  // The recorder hashed each file as the port holds it, markers included, so the player is asked about that text.
+  it.each([['go', 'watch'], ['go', 'run-applications'], ['ruby', 'send-keys']] as const)('keeps the recording of %s/%s playable, its steps found in the program shown', async (owner, id) => {
+    const item = portCapabilities(owner, table, cache).find((shown) => shown.id === id)!
+    const played = await playableCapability(owner, id, item.source)
+    expect(played, 'plays for the program the recorder hashed').toBeDefined()
+    const planned = viewSteps(played!.capability, item.code, owner).map((step) => step.index)
+    expect(planned, 'every step finds its line in the shown program').toEqual(played!.capability.steps.map((_step, index) => index))
   })
 
   it('refuses an excerpt, and a file that is not a program', () => {

@@ -4,6 +4,11 @@
  * A fence quotes part of a tested file by naming its first and last line
  * instead of copying them, so a step cannot drift from the program the page
  * runs. The build fails when an anchor stops resolving.
+ *
+ * Every path that shows program text from a port repository takes it through
+ * this module, which hides the comments the port's own tooling keeps in a
+ * source (`stripBuildMarkers`): a reader sees the program, not the region
+ * markers a README generator or a snippet extractor reads.
  */
 
 /** A bad excerpt: the message names the source and the anchor to fix. */
@@ -62,6 +67,47 @@ function commonIndent(lines: readonly string[]): string {
   return indent ?? ''
 }
 
+/**
+ * A line that only marks a region of the source for the port's own tooling:
+ * `// docs:begin main`, `# docs:end main`, `// docs:run-to-completion given:...`,
+ * `;;; docs:package`, `// region: capture`, `// endregion`, `#region Name`,
+ * `#endregion`, `// fsharp-snippet: Quickstart`, `// endfsharp-snippet` and
+ * `# example: begin batch`. The comment leader varies by language, so the
+ * marker text is what counts. A marker after code on the same line stays.
+ */
+const MARKER_LINE = /^[ \t]*(?:(?:\/{2,}|#+|-{2,}|;+|%+|\/\*|\(\*)[ \t]*(?:docs:[\w-]+(?:[ \t].*?)?|region:[ \t]*\S.*?|endregion\b.*?|fsharp-snippet:.*?|endfsharp-snippet\b.*?|example:[ \t]*(?:begin|end)\b.*?)[ \t]*(?:\*\/|\*\))?|#(?:end)?region\b.*)[ \t]*$/
+
+/** Whether a line only marks a region for the port's own tooling. */
+export const isBuildMarker = (line: string): boolean => MARKER_LINE.test(line)
+
+/**
+ * The lines a reader sees, each with its number in `source`, counted from
+ * one. Marker lines are hidden, and so is a blank line a marker leaves behind
+ * at the top of the text or beside another blank line.
+ */
+function visibleLines(source: string): { lines: string[]; numbers: number[] } {
+  const lines: string[] = []
+  const numbers: number[] = []
+  let afterMarker = false
+  source.replace(/\r\n/g, '\n').split('\n').forEach((line, index) => {
+    if (isBuildMarker(line)) { afterMarker = true; return }
+    if (afterMarker && !line.trim() && (lines.length === 0 || !lines.at(-1)!.trim())) return
+    afterMarker = false
+    lines.push(line)
+    numbers.push(index + 1)
+  })
+  return { lines, numbers }
+}
+
+/**
+ * `source` without the lines that only mark a region for the port's own
+ * tooling. A source with none comes back unchanged, so the call is safe on
+ * text that is already clean.
+ */
+export function stripBuildMarkers(source: string): string {
+  return source.replace(/\r\n/g, '\n').split('\n').some((line) => isBuildMarker(line)) ? visibleLines(source).lines.join('\n') : source
+}
+
 /** An excerpt's text and the source lines it quotes, counted from one. */
 export interface LocatedExcerpt {
   text: string
@@ -79,16 +125,23 @@ export interface LocatedExcerpt {
  * `from` must match exactly one line. `to` ends the range at its first match
  * after `from`, so a block can end at a closing line such as `fi` or `}` that
  * the file repeats; `to="=  }"` names the closer at that indentation.
+ *
+ * Marker lines (`stripBuildMarkers`) are neither matched nor quoted, but they
+ * count: `start` and `end` are line numbers of `source` as given, so a caller
+ * that links the file at its revision cites the right lines. A caller that
+ * shows the whole program passes it already stripped, and the numbers then
+ * count the lines the page shows.
  */
 export function locateExcerpt(source: string, { from, to }: ExcerptRequest, label: string): LocatedExcerpt {
   if (!from) throw new ExcerptError(`${label}: empty from anchor`)
   if (to === '') throw new ExcerptError(`${label}: empty to anchor`)
-  const lines = source.replace(/\r\n/g, '\n').split('\n')
+  const { lines, numbers } = visibleLines(source)
+  const at = (index: number) => numbers[index]!
 
   const starts = matching(lines, from)
   if (!starts.length) throw new ExcerptError(`${label}: from anchor "${from}" matches no line`)
   if (starts.length > 1) {
-    throw new ExcerptError(`${label}: from anchor "${from}" is ambiguous: it matches lines ${starts.map((index) => index + 1).join(', ')}`)
+    throw new ExcerptError(`${label}: from anchor "${from}" is ambiguous: it matches lines ${starts.map((index) => at(index)).join(', ')}`)
   }
   const start = starts[0]!
 
@@ -99,8 +152,8 @@ export function locateExcerpt(source: string, { from, to }: ExcerptRequest, labe
     if (later === undefined) {
       if (!found.length) throw new ExcerptError(`${label}: to anchor "${to}" matches no line`)
       throw new ExcerptError(found[0]! === start
-        ? `${label}: to anchor "${to}" appears only at line ${start + 1}, the from anchor's own line`
-        : `${label}: to anchor "${to}" appears only at line ${found[0]! + 1}, above the from anchor at line ${start + 1}`)
+        ? `${label}: to anchor "${to}" appears only at line ${at(start)}, the from anchor's own line`
+        : `${label}: to anchor "${to}" appears only at line ${at(found[0]!)}, above the from anchor at line ${at(start)}`)
     }
     end = later
   }
@@ -108,7 +161,7 @@ export function locateExcerpt(source: string, { from, to }: ExcerptRequest, labe
   const picked = lines.slice(start, end + 1)
   const indent = commonIndent(picked)
   const text = picked.map((line) => line.startsWith(indent) ? line.slice(indent.length) : line.trimStart()).join('\n')
-  return { text, start: start + 1, end: end + 1 }
+  return { text, start: at(start), end: at(end) }
 }
 
 /** The text of `locateExcerpt`, for a caller that does not show where it came from. */

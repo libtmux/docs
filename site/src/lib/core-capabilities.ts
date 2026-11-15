@@ -11,6 +11,7 @@
  */
 
 // gen-example-sources.mjs imports this module with bare Node; local imports need `.ts`.
+import { stripBuildMarkers } from './example-excerpt.ts'
 import { landingCacheKey, workflowRuns, type CachedSource, type LandingCi } from './port-landing.ts'
 
 /** The showcase's capabilities, in the order a reader sees them. */
@@ -117,7 +118,10 @@ export function programProblems(lang: string, content: string): string[] {
 export interface ShownCapability {
   id: CapabilityId
   label: string
+  /** The program a reader sees: the port's file without the comments its own tooling reads. */
   code: string
+  /** The file as the port holds it at the revision. A recording is of this text, and its hash is taken over it. */
+  source: string
   lang: string
   file: string
   sourceUrl: string
@@ -137,11 +141,12 @@ export function portCapabilities(owner: string, table: CapabilityTable, cache: C
     const key = capabilityCacheKey(owner, entry.file)
     const cached = cache[key]
     if (!cached) throw new Error(`core-capabilities: ${key} is not in the example cache; run node scripts/gen-example-sources.mjs`)
-    const incomplete = programProblems(entry.lang, cached.content)
+    const code = stripBuildMarkers(cached.content).replace(/\n$/, '')
+    const incomplete = programProblems(entry.lang, code)
     if (incomplete.length) throw new Error(`core-capabilities: ${owner}/${id} ${incomplete.join('; ')}`)
     return [{
       id, label, lang: entry.lang, file: entry.file, ci: entry.ci,
-      code: cached.content.replace(/\n$/, ''),
+      code, source: cached.content.replace(/\n$/, ''),
       sourceUrl: `https://github.com/${cached.repository}/blob/${cached.revision}/${entry.file}`,
       ...(entry.tmux ? { tmux: entry.tmux } : {}),
     }]
