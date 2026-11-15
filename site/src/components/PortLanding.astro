@@ -7,9 +7,8 @@ import WorkspaceConfig from './workspace/WorkspaceConfig.astro'
 import WorkspaceEvidence from './workspace/WorkspaceEvidence.astro'
 import WorkspacePicker from './workspace/WorkspacePicker.astro'
 import WorkspaceWindows from './workspace/WorkspaceWindows.astro'
-import DocCard from './DocCard.astro'
 import StatusBadge from './StatusBadge.astro'
-import { PICKER_GROUP_LABEL, portPageUrl, productStatus, productStatusLine, type DocProduct, type Port } from '../lib/ports'
+import { PICKER_GROUP_LABEL, portPageUrl, productStatus, type DocProduct, type Port } from '../lib/ports'
 import { REGISTRY } from '../lib/registry'
 import { landingPanels, type CachedSource, type LandingTable } from '../lib/port-landing'
 import { mcpShowcase, toolHeadings } from '../lib/mcp-showcase'
@@ -23,7 +22,10 @@ import SOURCES from '../data/example-sources.json'
 
 /**
  * What each product a port ships looks like in use, with its install widget.
- * The demo opens each panel and the installer follows it (record 0059): the
+ * The product tabs are the page's one chooser (record 0061): each panel opens
+ * with the task it serves, its maturity and a link to the product's home, and
+ * a command belongs to the installer, not to that line (record 0028). The demo
+ * follows and the installer follows the demo (record 0059): the
  * player, then the library install; the MCP replay, then the client installer;
  * the workspace picker, then the workspace CLI install, just before the step
  * that loads the file. A reader of the port home is still deciding; a
@@ -67,27 +69,11 @@ const coreLinks = [
   { href: portPageUrl(port, version, moreExamples ? 'examples' : 'guides'), label: moreExamples ? `More ${port.name} examples →` : `${port.name} guides →` },
 ]
 const panelId = (product: string) => `landing-panel-${product}`
-// "What do you want to do?": the reader's choice, one card for each product the port ships. A card says what the product
-// is for and its maturity; a command belongs to the installer (record 0028), so none is written here.
-const tasks = panels.length > 1 ? panels.map((panel) => {
-  const product = panel.product as 'core' | DocProduct
-  const status = productStatus(port, product, REGISTRY)
-  const line = product === 'core' ? 'guides, examples and the API reference.'
-    : product === 'mcp' ? 'needs an MCP client and tmux on PATH.'
-    : workspaceProgram ? `the ${workspaceProgram.program} command.` : 'workspace files for tmux.'
-  return {
-    href: portPageUrl(port, version, product),
-    label: product === 'core' ? `Control tmux from ${port.language} code` : product === 'mcp' ? 'Give an assistant tmux tools' : 'Load a workspace file',
-    body: `${PICKER_GROUP_LABEL[product]} · ${line}`,
-    ...(status ? { corner: { label: status, title: productStatusLine(status) } } : {}),
-  }
-}) : []
+// The line each panel opens with, where the tabs make a choice of it: what the product is for, in the reader's words.
+const taskLabel = (product: 'core' | DocProduct) => product === 'core' ? `Control tmux from ${port.language} code`
+  : product === 'mcp' ? 'Give an assistant tmux tools' : 'Load a workspace file'
 ---
 <section class="port-landing mt-10" aria-label={`Start with ${port.name}`} data-port-landing={port.slug}>
-  {tasks.length > 0 && <section class="landing-tasks" aria-labelledby="landing-tasks-title" data-landing-tasks>
-    <h2 id="landing-tasks-title">What do you want to do?</h2>
-    <ul style={`--tasks: ${tasks.length}`}>{tasks.map((task) => <li><DocCard {...task} /></li>)}</ul>
-  </section>}
   {panels.length > 1 && <fieldset class="landing-products">
     <legend class="sr-only">Product</legend>
     {panels.map((panel, index) => <label>
@@ -107,15 +93,22 @@ const tasks = panels.length > 1 ? panels.map((panel) => {
         (<code>{panel.excerpt.ci.workflow}</code>).
       </p>
     </details>
-    // A companion product names its maturity once, beside its name; the core library's is the page's own badge.
-    const maturity = panel.product === 'core' ? undefined : productStatus(port, panel.product as DocProduct, REGISTRY)
+    // Where there are tabs, each panel opens with its task, its maturity once and a link to the product's home.
+    const product = panel.product as 'core' | DocProduct
+    const maturity = productStatus(port, product, REGISTRY)
+    const task = panels.length > 1 && <p class="landing-task" data-landing-task={product}>
+      <strong>{taskLabel(product)}</strong>
+      {maturity && <StatusBadge status={maturity} product={PICKER_GROUP_LABEL[product]} id={`landing-status-${product}`} />}
+      <a href={portPageUrl(port, version, product)}>{PICKER_GROUP_LABEL[product]} home →</a>
+    </p>
     return <div class="landing-panel" id={panelId(panel.product)} data-landing-panel={panel.product}>
     {panel.product === 'core' ? <>
+      {task}
       <CoreShowcase port={port.slug} links={coreLinks} />
       <LandingInstall panel={panel} port={port.slug} />
     </> : panel.product === 'mcp' ? <>
       <h2 class="sr-only">{panel.label}</h2>
-      {maturity && <p class="landing-status" data-landing-status><StatusBadge status={maturity} /> <span>{productStatusLine(maturity)}</span></p>}
+      {task}
       {showcase?.example && <div class="landing-example" data-landing-example="mcp">
         <McpReplay example={showcase.example} portName={port.name} level={3} />
       </div>}
@@ -128,7 +121,7 @@ const tasks = panels.length > 1 ? panels.map((panel) => {
       {excerpt}
     </> : <>
       <h2 class="sr-only">{panel.label}</h2>
-      {maturity && <p class="landing-status" data-landing-status><StatusBadge status={maturity} /> <span>{productStatusLine(maturity)}</span></p>}
+      {task}
       {workspace && workspaceExample && workspaceTopic
         ? <div class="landing-example" data-landing-example="workspace">
           {offersPicker(workspace)
@@ -195,13 +188,6 @@ const tasks = panels.length > 1 ? panels.map((panel) => {
 <style>
   /* One content edge: the hero, install and player take the full column, as the cards below them do. */
   .port-landing { container-type: inline-size; }
-  /* The reader's choice leads the page: three cards in a row from 40rem, one column below. */
-  .landing-tasks { margin: 0 0 2rem; }
-  .landing-tasks h2 { margin: 0 0 .75rem; font-size: 1.5rem; line-height: 2rem; font-weight: 600; letter-spacing: -.01em; }
-  .landing-tasks ul { display: grid; gap: .75rem; margin: 0; padding: 0; list-style: none; grid-template-columns: minmax(0, 1fr); }
-  .landing-tasks li { display: flex; margin: 0; }
-  .landing-tasks li > :global(a) { flex: 1; }
-  @container (min-width: 40rem) { .landing-tasks ul { grid-template-columns: repeat(var(--tasks), minmax(0, 1fr)); } }
   .landing-products {
     display: flex; flex-wrap: wrap; gap: .125rem; margin: 0 0 1.25rem; padding: 0;
     border: 0; border-bottom: 1px solid var(--color-edge);
@@ -238,7 +224,10 @@ const tasks = panels.length > 1 ? panels.map((panel) => {
   .landing-example :global(h3) { margin: 0 0 .5rem; font-weight: 600; line-height: 1.4; }
   .landing-example > :global(p:not(.mcp-replay-note)) { margin: 0 0 1rem; }
   .landing-note { margin: 0 0 1rem; }
-  .landing-status { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .5rem; margin: 0 0 1rem; font-size: .875rem; color: var(--color-muted); }
+  /* The line a panel opens with: the task in the reader's words, its maturity and the way to the product's home. */
+  .landing-task { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .75rem; margin: 0 0 1rem; font-size: .875rem; color: var(--color-muted); }
+  .landing-task > strong { color: var(--text-color); font-size: 1rem; font-weight: 600; }
+  .landing-task > a { color: var(--color-link); }
   .landing-links { margin: 1.25rem 0 0; padding: 0; list-style: none; display: grid; gap: .35rem; font-size: .875rem; }
   .landing-links a { color: var(--color-link); }
   .landing-excerpt { margin-top: 1.25rem; }

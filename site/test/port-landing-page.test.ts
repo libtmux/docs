@@ -9,7 +9,7 @@ import * as showcaseLibrary from '../src/lib/workspace-showcase'
 import { loadCommand } from '../src/lib/workspace-links'
 import { STORAGE_PREFIX } from '../src/lib/workspace-picker'
 import { landingExcerpt, landingProducts, type CachedSource, type LandingExcerpt, type LandingTable } from '../src/lib/port-landing'
-import { PORTS, PORT_BY_SLUG, portPageUrl, productStatus, productStatusLine, type DocProduct } from '../src/lib/ports'
+import { PICKER_GROUP_LABEL, PORTS, PORT_BY_SLUG, portPageUrl, productStatus, productStatusLine, type DocProduct } from '../src/lib/ports'
 import { REGISTRY } from '../src/lib/registry'
 import LANDING from '../src/data/landing-examples.json'
 import SOURCES from '../src/data/example-sources.json'
@@ -32,7 +32,7 @@ const REAL = [
   'components/replay/TmuxScreen.astro', 'components/replay/ReplayControls.astro',
   'components/workspace/WorkspaceConfig.astro', 'components/workspace/WorkspaceWindows.astro',
   'components/workspace/WorkspaceEvidence.astro', 'components/workspace/WorkspacePicker.astro',
-  'components/RerollButton.astro', 'components/docs/PickerSearch.astro', 'components/DocCard.astro',
+  'components/RerollButton.astro', 'components/docs/PickerSearch.astro', 'components/StatusBadge.astro',
 ]
 const stubs = {
   'components/HomeExample.astro': '---\nconst { port, language } = Astro.props\n---\n<div data-home-example={port} data-language={language} />',
@@ -75,37 +75,57 @@ async function render(slug: string) {
   return window.document as unknown as Document
 }
 
-/** "What do you want to do?" (PageLanding, record 0028): the reader's choice comes before any demo, and a command belongs to the installer. */
-describe('the task cards', () => {
-  const titles = (document: Document) => [...document.querySelectorAll('[data-landing-tasks] a.doc-card h3')].map((title) => title.textContent!.trim())
+/**
+ * The product tabs are the landing's one chooser (record 0061, adoption step 42). Each panel opens with the task it serves,
+ * its maturity and a link to the product's home, and a command belongs to the installer, not to this line (record 0028).
+ */
+describe('the task line of each panel', () => {
+  const task = (panel: Element) => panel.querySelector('[data-landing-task]')!
 
-  it('open the page with a card for each product the port ships, linked to its home, with its maturity and one prerequisite line', async () => {
+  it('replaces the "What do you want to do?" cards, so the tabs are the only chooser', async () => {
+    for (const slug of ['go', 'powershell', 'lua']) {
+      const document = await render(slug)
+      expect(document.querySelector('[data-landing-tasks]'), slug).toBeNull()
+      expect(document.body.textContent, slug).not.toContain('What do you want to do?')
+    }
+  })
+
+  it('opens each panel with its task, its maturity and a link to the product home, before the demo and the installer', async () => {
     const document = await render('go')
-    const section = document.querySelector('[data-landing-tasks]')!
-    expect(section.querySelector('h2')!.textContent).toBe('What do you want to do?')
-    expect(titles(document)).toEqual(['Control tmux from Go code', 'Give an assistant tmux tools', 'Load a workspace file'])
     const go = PORT_BY_SLUG.go!
-    const cards = [...section.querySelectorAll<HTMLAnchorElement>('a.doc-card')]
-    expect(cards.map((card) => card.getAttribute('href'))).toEqual([portPageUrl(go, 'latest', 'core'), portPageUrl(go, 'latest', 'mcp'), portPageUrl(go, 'latest', 'workspace')])
-    expect(cards.map((card) => card.querySelector('.lm-tab')?.textContent)).toEqual((['core', 'mcp', 'workspace'] as const).map((product) => productStatus(go, product, REGISTRY)))
-    const lines = cards.map((card) => card.querySelector('.doc-card__body')!.textContent!)
-    expect(lines[0]).toBe('Core Library · guides, examples and the API reference.')
-    expect(lines[1]).toBe('MCP · needs an MCP client and tmux on PATH.')
-    expect(lines[2]).toBe(`Workspace Manager · the ${loadCommand('go')!.program} command.`)
-    // The reader chooses before the page demonstrates: the cards precede the product switch and every panel.
-    const first = document.querySelector('.landing-products, [data-landing-panel]')!
-    expect(section.compareDocumentPosition(first) & 4, 'cards come first').toBeTruthy()
+    const panels = [...document.querySelectorAll('[data-landing-panel]')]
+    expect(panels.map((panel) => task(panel).querySelector('strong')!.textContent)).toEqual(['Control tmux from Go code', 'Give an assistant tmux tools', 'Load a workspace file'])
+    for (const [index, product] of (['core', 'mcp', 'workspace'] as const).entries()) {
+      const panel = panels[index]!
+      const line = task(panel)
+      expect(panel.querySelectorAll('[data-landing-task]'), `${product}: the line, once`).toHaveLength(1)
+      const status = productStatus(go, product, REGISTRY)!
+      expect(line.querySelector('.status-badge')!.getAttribute('data-status'), `${product}: maturity`).toBe(status)
+      expect(line.textContent, `${product}: the badge explains itself`).toContain(productStatusLine(status))
+      const home = [...line.children].find((child) => child.localName === 'a')!
+      expect(home.getAttribute('href'), `${product}: home`).toBe(portPageUrl(go, 'latest', product))
+      expect(home.textContent, `${product}: home`).toBe(`${PICKER_GROUP_LABEL[product]} home →`)
+      // A command inside a link or a line cannot be selected, copied or highlighted: the installer holds it.
+      expect([...line.querySelectorAll('code, pre, kbd')].filter((element) => !element.closest('.status-toggletip__card')), `${product}: no command`).toEqual([])
+      expect(line.textContent, `${product}: no command`).not.toMatch(/go get|go install|npm |pip |cargo /)
+      for (const later of panel.querySelectorAll('[data-core-showcase], [data-landing-example], [data-package-install], [data-mcp-install]')) {
+        expect(line.compareDocumentPosition(later) & 4, `${product}: the line leads`).toBeTruthy()
+      }
+    }
+    // The installer says how to install; the picker's load step is the one place a workspace file is loaded.
+    expect(panels[2]!.querySelector('.landing-install')!.textContent).not.toMatch(/load/i)
   })
 
-  it('carry no command: an install line inside a link card cannot be selected, copied or highlighted', async () => {
-    const section = (await render('go')).querySelector('[data-landing-tasks]')!
-    expect(section.querySelector('code, pre, kbd')).toBeNull()
-    expect(section.textContent).not.toMatch(/go get|go install|npm |pip |cargo /)
+  it('names each product\'s maturity once, in its task line', async () => {
+    const document = await render('go')
+    expect(document.querySelector('[data-landing-status]')).toBeNull()
+    for (const panel of document.querySelectorAll('[data-landing-panel]')) expect(panel.querySelectorAll('[data-landing-task] .status-badge')).toHaveLength(1)
   })
 
-  it('leave out a product the port has not published, and the choice where there is only one', async () => {
-    expect(titles(await render('powershell'))).toEqual(['Control tmux from PowerShell code', 'Load a workspace file'])
-    for (const slug of ['lua', 'elixir', 'kotlin', 'scala', 'fsharp']) expect((await render(slug)).querySelector('[data-landing-tasks]'), slug).toBeNull()
+  it('leaves out a product the port has not published, and the line where there is only one product', async () => {
+    const lines = async (slug: string) => [...(await render(slug)).querySelectorAll('[data-landing-task] strong')].map((title) => title.textContent!.trim())
+    expect(await lines('powershell')).toEqual(['Control tmux from PowerShell code', 'Load a workspace file'])
+    for (const slug of ['lua', 'elixir', 'kotlin', 'scala', 'fsharp']) expect(await lines(slug), slug).toEqual([])
   })
 })
 
@@ -163,10 +183,10 @@ describe('the landing page markup', () => {
     expect(caption.textContent).toContain(entry.ci.command)
   })
 
-  it('opens the MCP tab with its maturity and the worked example, then the install picker, the links and the excerpt (record 0059)', async () => {
+  it('opens the MCP tab with its task line and the worked example, then the install picker, the links and the excerpt (records 0059, 0061)', async () => {
     const document = await render('rs')
     const panel = document.querySelector('[data-landing-panel="mcp"]')!
-    const order = ['[data-landing-status]', '[data-landing-example="mcp"]', '[data-mcp-install]', '.landing-links', '[data-landing-excerpt]']
+    const order = ['[data-landing-task]', '[data-landing-example="mcp"]', '[data-mcp-install]', '.landing-links', '[data-landing-excerpt]']
     const found = order.map((selector) => panel.querySelector(selector))
     found.forEach((element, index) => expect(element, order[index]).not.toBeNull())
     for (let index = 1; index < found.length; index += 1) {
@@ -198,16 +218,6 @@ describe('the landing page markup', () => {
       expect(demo.compareDocumentPosition(installers[0]!) & (demo.contains(installers[0]!) ? 16 : 4), `${slug} ${product}: the install follows the demo`).toBeTruthy()
     }
     expect(seen, `${slug} has a demo to lead with`).toContain('core')
-  })
-
-  it('names each companion product\'s maturity once beside it, and the core library\'s not at all', async () => {
-    const document = await render('go')
-    expect(document.querySelector('[data-landing-panel="core"] [data-landing-status]')).toBeNull()
-    for (const product of ['mcp', 'workspace']) {
-      const lines = document.querySelectorAll(`[data-landing-panel="${product}"] [data-landing-status]`)
-      expect(lines, product).toHaveLength(1)
-      expect(lines[0]!.textContent, product).toContain(productStatusLine('concept'))
-    }
   })
 
   it('names the MCP and Workspace panels with a screen-reader label, not a visible heading under the tab', async () => {
