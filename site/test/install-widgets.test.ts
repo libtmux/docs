@@ -29,7 +29,7 @@ describe('Julia source installation', () => {
     try {
       const server = product === 'mcp-server'
       const template = await loadAstroTemplate(`components/widgets/${server ? 'McpInstall' : 'PackageInstall'}.astro`, {
-        real: ['InstallCode', 'InstallCooldown', 'InstallFacts', 'InstallWhere'].map((name) => `components/widgets/${name}.astro`),
+        real: ['InstallCode', 'InstallCooldown', 'InstallFacts', 'InstallTabRow', 'InstallWhere'].map((name) => `components/widgets/${name}.astro`),
         modules: {
           '../../lib/api-models': { API_MODELS: {} },
           'astro-expressive-code/components': { Code: () => '' },

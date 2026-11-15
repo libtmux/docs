@@ -57,6 +57,51 @@ html[data-theme-mode='dark'] .lm-install {
   border-bottom: 1px solid var(--lm-install-edge);
 }
 
+/* The tab row: edge buttons, shown only when the tabs overflow, carry the count hidden on their side. */
+.lm-install__tabrow {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.lm-install__tabrow[data-fits] > .lm-install__more {
+  display: none;
+}
+
+.lm-install__more {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  min-width: 2.5rem;
+  height: 1.625rem;
+  padding: 0 0.35rem;
+  border: 1px solid var(--lm-install-edge);
+  border-radius: 999px;
+  background: var(--lm-install-raised);
+  color: var(--text-color);
+  font: 600 11.5px/1 var(--font-sans);
+  cursor: pointer;
+}
+
+.lm-install__more:hover:not(:disabled) {
+  border-color: var(--control-border);
+}
+
+.lm-install__more:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.lm-install__more:focus-visible {
+  outline: 2px solid var(--focus-ring-color);
+  outline-offset: 1px;
+}
+
+/* Positioned, so each tab's offsetLeft is measured from the row; the padding keeps a focused tab clear of the fade. */
 .lm-install__tabs {
   position: relative;
   display: flex;
@@ -66,6 +111,7 @@ html[data-theme-mode='dark'] .lm-install {
   flex: 1 1 auto;
   min-width: 0;
   overflow-x: auto;
+  scroll-padding-inline: 1.5rem;
   scrollbar-width: none;
 }
 
@@ -143,7 +189,7 @@ html[data-theme-mode='dark'] .lm-install {
     row-gap: 0;
   }
 
-  .lm-install__tabs {
+  .lm-install__tabrow {
     flex: 1 0 100%;
   }
 
@@ -441,13 +487,14 @@ html[data-mcp-install-cooldown-enabled='1'][data-mcp-install-cooldown-type='bypa
 /* The label and Copy sit on the command's first line, however many lines it takes. */
 .lm-pkg-install__code--strip > .lm-install__k,
 .lm-mcp-install__code--strip > .lm-install__k {
-  padding-top: calc(0.5rem + 4px);
+  padding-top: 0.5rem;
   color: var(--lm-install-muted);
+  line-height: 22px;
 }
 
 .lm-pkg-install__code--strip > button,
 .lm-mcp-install__code--strip > button {
-  margin-top: 0.25rem;
+  margin-top: 0.4rem;
 }
 
 /* The code: no box of its own, the surface is the box. */

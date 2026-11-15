@@ -38,9 +38,11 @@
  * own `data-default-*` attributes (rendered by McpInstall.astro from
  * install-matrix.ts) instead of re-declaring them — see readDefaults().
  *
- * Vanilla JS, no deps.
+ * Vanilla JS; the header's tab row (counts of the tabs it hides) is install-tabs.ts.
  */
-(function () {
+import { revealSelected, watchTabRows } from './install-tabs'
+
+;(function () {
   'use strict'
 
   var STORAGE_PREFIX = 'libtmux-docs.mcp-install'
@@ -299,7 +301,10 @@
     // tab (the others read from the widget's existing aria-selected
     // state).
     syncHtmlAttrs(widget)
-    if (kind === 'client') watchTabRows()
+    if (kind === 'client') {
+      var row = widget.querySelector('[data-install-scroll]')
+      if (row) revealSelected(row)
+    }
 
     if (opts.persist) {
       if (kind === 'scope') {
@@ -590,37 +595,4 @@
       slot.textContent = date
     })
   }
-
-  // -------- tool tabs ----------------------------------------------------
-  //
-  // A row of tabs scrolls sideways and never wraps. It fades on the side that has more tabs
-  // (`data-more`), and the selected tab is scrolled into view, so a client saved from a later
-  // visit is never out of sight.
-
-  function updateEdges(row) {
-    var start = row.scrollLeft > 1
-    var end = row.scrollLeft + row.clientWidth < row.scrollWidth - 1
-    if (start || end) row.dataset.more = start && end ? 'both' : start ? 'start' : 'end'
-    else delete row.dataset.more
-  }
-
-  function revealSelected(row) {
-    var selected = row.querySelector('[aria-selected="true"]')
-    if (selected) row.scrollLeft = Math.max(0, selected.offsetLeft - row.clientWidth / 2 + selected.offsetWidth / 2)
-    updateEdges(row)
-  }
-
-  function watchTabRows() {
-    document.querySelectorAll('.lm-mcp-install [data-install-scroll]').forEach(function (row) {
-      if (row.dataset.watched !== 'true') {
-        row.dataset.watched = 'true'
-        row.addEventListener('scroll', function () { updateEdges(row) }, { passive: true })
-      }
-      revealSelected(row)
-    })
-  }
-
-  window.addEventListener('resize', function () {
-    document.querySelectorAll('.lm-mcp-install [data-install-scroll]').forEach(updateEdges)
-  })
 })()

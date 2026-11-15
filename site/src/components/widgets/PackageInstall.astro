@@ -2,6 +2,7 @@
 import InstallCode from './InstallCode.astro'
 import InstallCooldown from './InstallCooldown.astro'
 import InstallFacts from './InstallFacts.astro'
+import InstallTabRow from './InstallTabRow.astro'
 import InstallWhere from './InstallWhere.astro'
 import './install-surface.css'
 import './package-install.css'
@@ -232,7 +233,7 @@ const CHANNEL_NOTES = {
         >
           <div class="lm-install">
             <div class="lm-install__head">
-              <div class="lm-install__tabs" data-install-scroll>
+              <InstallTabRow noun="tools">
                 {p.installs.length > 1 ? (
                   <div class="lm-pkg-install__managers" role="tablist" aria-label={`${p.name} package manager`}>
                     {p.installs.map((cmd, i) => (
@@ -254,7 +255,7 @@ const CHANNEL_NOTES = {
                   <span class="lm-install__sole lm-pkg-install__label" data-channel="release">{p.installs[0]!.label}</span>
                 )}
                 {p.channels.map((channel) => <span class="lm-install__sole lm-pkg-install__label" data-channel={channel.id}>{channel.label}</span>)}
-              </div>
+              </InstallTabRow>
               <div class="lm-install__headend">
                 <div class="lm-pkg-install__chan" data-channel="release">
                   {p.installs.map((cmd, i) => (
@@ -372,6 +373,7 @@ const CHANNEL_NOTES = {
   // Per port, because a choice of pnpm says nothing about a choice of uv.
   const MANAGER_KEY = 'libtmux-docs.package-install.manager'
   import { HOME_PORT_PREVIEW_EVENT } from '../../lib/home-hover-preview'
+  import { revealSelected, watchTabRows } from './install-tabs'
 
   const SYNC_EVENT = 'lm-pkg-install:change'
   const MANAGER_SYNC_EVENT = 'lm-pkg-install:manager'
@@ -395,36 +397,6 @@ const CHANNEL_NOTES = {
   }
 
   /**
-   * A row of tool tabs scrolls sideways and never wraps. It fades on the side that has more tabs
-   * (`data-more`), and the selected tab is scrolled into view, so a choice saved from a longer list
-   * or a keyboard move to the last tab is never out of sight.
-   */
-  function updateEdges(row: HTMLElement) {
-    const start = row.scrollLeft > 1
-    const end = row.scrollLeft + row.clientWidth < row.scrollWidth - 1
-    if (start || end) row.dataset.more = start && end ? 'both' : start ? 'start' : 'end'
-    else delete row.dataset.more
-  }
-
-  function revealSelected(row: HTMLElement) {
-    const selected = row.querySelector<HTMLElement>('[aria-selected="true"]')
-    if (selected) row.scrollLeft = Math.max(0, selected.offsetLeft - row.clientWidth / 2 + selected.offsetWidth / 2)
-    updateEdges(row)
-  }
-
-  function watchTabRows() {
-    document.querySelectorAll<HTMLElement>('[data-install-scroll]').forEach((row) => {
-      if (row.dataset.watched !== 'true') {
-        row.dataset.watched = 'true'
-        row.addEventListener('scroll', () => updateEdges(row), { passive: true })
-      }
-      revealSelected(row)
-    })
-  }
-
-  window.addEventListener('resize', () => document.querySelectorAll<HTMLElement>('[data-install-scroll]').forEach(updateEdges))
-
-  /**
    * Which release channel a panel shows: its package managers (Release), or one form of its own. The
    * cooldown applies to a release only, so it stays where it is, disabled, in the others.
    */
@@ -441,6 +413,9 @@ const CHANNEL_NOTES = {
       toggle.title = channel === 'release' ? COOLDOWN_TITLE : RELEASE_ONLY
       toggle.setAttribute('aria-pressed', String(channel === 'release' && cooldownState().enabled))
     })
+    // The tabs come and go with the channel, and the row's own size does not change when they do.
+    const row = panel.querySelector<HTMLElement>('[data-install-scroll]')
+    if (row) revealSelected(row, 'center')
   }
 
   function applySavedState() {

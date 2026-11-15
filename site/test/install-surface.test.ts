@@ -1,13 +1,12 @@
 import { readFileSync } from 'node:fs'
 import { Window } from 'happy-dom'
-import ts from 'typescript'
 import { afterEach, describe, expect, it } from 'vitest'
 import { buildPanels, markPlaceholders, SERVERS } from '../src/lib/install-matrix'
 import { addedLines, channelForms, markAddedLines, promptFor, targetParts, withPrompt } from '../src/lib/install-surface'
 import { formTarget, PORTS, type InstallCommand } from '../src/lib/ports'
 import { installsFor, REGISTRY } from '../src/lib/registry'
-import { HOME_PORT_PREVIEW_EVENT } from '../src/lib/home-hover-preview'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
+import { runWidgetScript } from './widget-script'
 
 /**
  * The installer's one code surface: what its data carries and what it draws.
@@ -190,7 +189,7 @@ describe('release channels', () => {
 const widgets = new URL('../src/components/widgets/', import.meta.url)
 async function renderPackage(props: Record<string, unknown>, options: { saved?: Record<string, string>; scripts?: boolean } = {}) {
   const template = await loadAstroTemplate('components/widgets/PackageInstall.astro', {
-    real: ['InstallCode', 'InstallCooldown', 'InstallFacts', 'InstallWhere'].map((name) => `components/widgets/${name}.astro`),
+    real: ['InstallCode', 'InstallCooldown', 'InstallFacts', 'InstallTabRow', 'InstallWhere'].map((name) => `components/widgets/${name}.astro`),
     modules: { '../../lib/api-models': { API_MODELS: {} }, 'astro-expressive-code/components': { Code: () => '' } },
   })
   const window = openWindow()
@@ -200,11 +199,9 @@ async function renderPackage(props: Record<string, unknown>, options: { saved?: 
   return { window, document: window.document as unknown as Document }
 }
 
-/** Run the `<script>` of a component in a window, as the page would after its markup. */
+/** Run the script of a component in a window, then tell the page it has loaded. */
 function hydrate(window: Window, file: URL) {
-  const script = readFileSync(file, 'utf8').match(/<script>([\s\S]*?)<\/script>/)![1]!
-    .replace(/import \{ HOME_PORT_PREVIEW_EVENT \}[^\n]+/, `const HOME_PORT_PREVIEW_EVENT = ${JSON.stringify(HOME_PORT_PREVIEW_EVENT)}`)
-  window.eval(ts.transpileModule(`(() => {${script}})()`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText)
+  runWidgetScript(window, file)
   window.document.dispatchEvent(new window.Event('DOMContentLoaded'))
 }
 
@@ -267,6 +264,38 @@ describe('the package installer draws one code surface', () => {
     expect(text(then(0))).toContain('tmuxp load ./workspace.yaml')
     // uvx runs the command once and installs nothing, so there is nothing to load with.
     expect(then(1)).toBeNull()
+  })
+})
+
+describe('a tab row that overflows counts what it hides', () => {
+  it('puts an edge button at each end of the tools a package installer offers', async () => {
+    const { document } = await renderPackage({ ports: ['csharp'] })
+    const row = document.querySelector('.lm-install__head [data-install-row]')!
+    expect([...row.children].map((child) => child.matches('button') ? `button ${child.getAttribute('data-install-more')}` : child.className)).toEqual(['button -1', 'lm-install__tabs', 'button 1'])
+    expect([...row.querySelectorAll('[data-install-more]')].map((button) => button.getAttribute('aria-label'))).toEqual(['No more tools this way', 'No more tools this way'])
+    expect(row.querySelectorAll('[data-install-scroll] [role="tab"]')).toHaveLength(8)
+    // Until the script has measured the row, it is as drawn on the server: buttons hidden, so no tab moves for them.
+    expect(row.hasAttribute('data-fits')).toBe(true)
+    expect([...row.querySelectorAll('[data-install-more]')].every((button) => (button as HTMLButtonElement).disabled)).toBe(true)
+  })
+
+  it('names the clients of the MCP installer, and moves between them with the arrow keys', async () => {
+    const { document, window } = await renderMcp('py', { scripts: true })
+    const row = document.querySelector('.lm-install__head [data-install-row]')!
+    expect([...row.querySelectorAll('[data-install-more]')].map((button) => button.getAttribute('data-noun'))).toEqual(['clients', 'clients'])
+    const tab = (id: string) => document.querySelector<HTMLElement>(`.lm-install__tabs [data-tab-kind="client"][data-tab-value="${id}"]`)!
+    tab('claude-code').focus()
+    tab('claude-code').dispatchEvent(new window.KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }) as unknown as Event)
+    expect(tab('claude-desktop').getAttribute('aria-selected')).toBe('true')
+    expect(document.activeElement).toBe(tab('claude-desktop'))
+    tab('claude-desktop').dispatchEvent(new window.KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }) as unknown as Event)
+    expect(tab('claude-code').getAttribute('aria-selected')).toBe('true')
+  })
+
+  it('positions the scroller and keeps a focused tab clear of the fade', () => {
+    const rule = readFileSync(new URL('install-surface.css', widgets), 'utf8').split('.lm-install__tabs {')[1]!.split('}')[0]!
+    expect(rule).toMatch(/position:\s*relative/)
+    expect(rule).toMatch(/scroll-padding-inline:\s*1\.5rem/)
   })
 })
 
@@ -412,14 +441,14 @@ describe('driving the cooldown strip', () => {
 async function renderMcp(port: string, options: { saved?: Record<string, string>; scripts?: boolean } = {}) {
   const lines = (code: string) => code.replace(/<COOLDOWN_[A-Z]+>/g, '7').split('\n').map((line) => `<span class="line">${line.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</span>`).join('\n')
   const template = await loadAstroTemplate('components/widgets/McpInstall.astro', {
-    real: ['InstallCode', 'InstallCooldown', 'InstallFacts', 'InstallWhere'].map((name) => `components/widgets/${name}.astro`),
+    real: ['InstallCode', 'InstallCooldown', 'InstallFacts', 'InstallTabRow', 'InstallWhere'].map((name) => `components/widgets/${name}.astro`),
     modules: { '../../lib/highlight': { highlightWithCooldownSlots: async (code: string) => lines(code), highlightInline: async (code: string) => lines(code) } },
   })
   const window = openWindow()
   for (const [key, value] of Object.entries(options.saved ?? {})) window.localStorage.setItem(key, value)
   window.document.body.innerHTML = await renderAstroTemplate(template, { props: { port } })
   if (options.scripts) {
-    window.eval(readFileSync(new URL('mcp-install.js', widgets), 'utf8'))
+    hydrate(window, new URL('mcp-install.js', widgets))
     hydrate(window, new URL('InstallCode.astro', widgets))
   }
   return { window, document: window.document as unknown as Document }

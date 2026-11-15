@@ -2,6 +2,7 @@
 import InstallCode from './InstallCode.astro'
 import InstallCooldown from './InstallCooldown.astro'
 import InstallFacts from './InstallFacts.astro'
+import InstallTabRow from './InstallTabRow.astro'
 import InstallWhere from './InstallWhere.astro'
 import './install-surface.css'
 import './mcp-install.css'
@@ -192,7 +193,7 @@ const panelAttrs = (panel: (typeof panels)[number]) => ({
 >
   <div class="lm-install">
     <div class="lm-install__head">
-      <div class="lm-install__tabs" data-install-scroll>
+      <InstallTabRow noun="clients">
         <div class="lm-mcp-install__tabs lm-mcp-install__tabs--clients" role="tablist" aria-label="MCP client">
           {
             CLIENTS.map((client, i) => (
@@ -210,7 +211,7 @@ const panelAttrs = (panel: (typeof panels)[number]) => ({
             ))
           }
         </div>
-      </div>
+      </InstallTabRow>
       <div class="lm-install__headend">
         {panels.map((panel) => (
           <div class="lm-mcp-install__panel" {...panelAttrs(panel)}>

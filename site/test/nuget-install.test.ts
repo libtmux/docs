@@ -1,14 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { Window, type HTMLButtonElement } from 'happy-dom'
-import ts from 'typescript'
 import { PORT_BY_SLUG } from '../src/lib/ports'
 import { installsFor, installSelection, REGISTRY } from '../src/lib/registry'
 import { pickerPaintRules } from '../src/lib/picker-paint'
 import csharp from '../src/data/api/csharp.json'
 import fsharp from '../src/data/api/fsharp.json'
-import { HOME_PORT_PREVIEW_EVENT } from '../src/lib/home-hover-preview'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
+import { runWidgetScript } from './widget-script'
 
 const models = { csharp, fsharp }
 const windows: Window[] = []
@@ -60,7 +59,7 @@ const copyFile = new URL('../src/components/widgets/InstallCode.astro', import.m
 // The real components, bound to this file's own modules; only collection loading and unused example
 // rendering are left out of this focused fixture.
 const component = () => loadAstroTemplate('components/widgets/PackageInstall.astro', {
-  real: ['InstallCode', 'InstallCooldown', 'InstallFacts', 'InstallWhere'].map((name) => `components/widgets/${name}.astro`),
+  real: ['InstallCode', 'InstallCooldown', 'InstallFacts', 'InstallTabRow', 'InstallWhere'].map((name) => `components/widgets/${name}.astro`),
   modules: { '../../lib/api-models': { API_MODELS: models }, 'astro-expressive-code/components': { Code: () => '' } },
 })
 async function render(slug: string, saved?: string, ports = [slug]) {
@@ -76,9 +75,7 @@ async function render(slug: string, saved?: string, ports = [slug]) {
   return win
 }
 function hydrate(win: Window, file: URL) {
-  const script = readFileSync(file, 'utf8').match(/<script>([\s\S]*?)<\/script>/)![1]
-    .replace(/import \{ HOME_PORT_PREVIEW_EVENT \}[^\n]+/, `const HOME_PORT_PREVIEW_EVENT = ${JSON.stringify(HOME_PORT_PREVIEW_EVENT)}`)
-  win.eval(ts.transpileModule(`(() => {${script}})()`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText)
+  runWidgetScript(win, file)
   win.document.dispatchEvent(new win.Event('astro:page-load'))
 }
 
