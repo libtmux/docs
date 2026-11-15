@@ -450,11 +450,10 @@ html[data-js] .ws-layout__stack > .ws-win:not([data-active]) {
 /*
  * The landing page's picker (WorkspacePicker `landing`). It sits straight under
  * the product tabs, and nothing follows it, so each preset brings its own
- * heading, one-line summary and evidence. The panel becomes a column in which
- * the configuration and the drawing take the height the tallest preset
- * leaves, so the evidence of a short preset sits at the foot of the stage as
- * a tall one's does. The menu names the preset, so the heading shows only
- * where there is no menu.
+ * heading, one-line summary and evidence. The configuration and the drawing
+ * take the height the tallest preset leaves, and the load step below stands
+ * where a tall preset's does (the rows are set out below). The menu names the
+ * preset, so the heading shows only where there is no menu.
  */
 .ws-picker--landing {
   margin-block: 0;
