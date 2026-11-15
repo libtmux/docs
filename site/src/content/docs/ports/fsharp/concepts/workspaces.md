@@ -14,7 +14,7 @@ Build a tmux layout from F# by creating a window, splitting a pane and selecting
 
 ## Setup and run
 
-Use an empty directory on Linux with Git, tmux 3.3a or newer, and .NET SDK 10.0.302. Save the project files and launcher below, then save any complete program on this page. Each program has its own imports and entry point.
+Use an empty directory on Linux with tmux 3.3a or newer and the .NET 10 SDK. The project file installs `LibTmux.FSharp` 0.1.1 from NuGet ([source](https://github.com/libtmux/libtmux-dotnet/tree/8d47af7d89638ad267528ac56897cec67df597f7/src/LibTmux.FSharp)). Save the project file and launcher below, then save any complete program on this page. Each program has its own imports and entry point.
 
 ```xml title="Query.fsproj"
 <Project Sdk="Microsoft.NET.Sdk">
@@ -25,7 +25,7 @@ Use an empty directory on Linux with Git, tmux 3.3a or newer, and .NET SDK 10.0.
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(Example).fs" />
-    <ProjectReference Include="libtmux-source/src/LibTmux.FSharp/LibTmux.FSharp.fsproj" />
+    <PackageReference Include="LibTmux.FSharp" Version="0.1.1" />
   </ItemGroup>
 </Project>
 ```
@@ -37,8 +37,7 @@ The launcher creates two sessions on a private socket: `work-one` with an `edito
 set -eu
 
 binary=$(command -v tmux)
-mkdir -p /tmp/libtmux-dotnet-dev
-directory=$(mktemp -d /tmp/libtmux-dotnet-dev/query.XXXXXX)
+directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-query.XXXXXX")
 socket="$directory/tmux.sock"
 
 cleanup() {
@@ -60,13 +59,6 @@ export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
 "$binary" -S "$socket" new-session -d -s work-two -n logs /bin/cat
 "$@"
 "$binary" -S "$socket" has-session -t '=work-one'
-```
-
-Fetch the library revision used by these examples:
-
-```console
-$ git clone https://github.com/libtmux/libtmux-dotnet libtmux-source &&
-  git -C libtmux-source checkout 2d99ead5aba8d968e85dcac8c9a9a518452e6ba6
 ```
 
 Each run starts from the same two-session fixture. Programs do not depend on another example having run first. Their assertions fail if the observed result differs.
@@ -114,8 +106,7 @@ let main _ =
 ```
 
 ```console
-$ dotnet build Query.fsproj --maxcpucount:1 -p:Example=Layout \
-  -p:DisableImplicitLibraryPacksFolder=true -p:RestorePackagesPath="$PWD/.packages" &&
+$ dotnet build Query.fsproj --maxcpucount:1 -p:Example=Layout &&
   sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Layout
 ```
 
@@ -173,8 +164,7 @@ let main _ =
 ```
 
 ```console
-$ dotnet build Query.fsproj --maxcpucount:1 -p:Example=ReuseLayout \
-  -p:DisableImplicitLibraryPacksFolder=true -p:RestorePackagesPath="$PWD/.packages" &&
+$ dotnet build Query.fsproj --maxcpucount:1 -p:Example=ReuseLayout &&
   sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=ReuseLayout
 ```
 

@@ -385,72 +385,73 @@
     {
       "port": "fsharp",
       "language": "fsharp",
-      "sourceRevision": "661287848a6cfb407f37114b25e8249a29f99e3f",
+      "sourceRevision": "8d47af7d89638ad267528ac56897cec67df597f7",
       "sourceRepository": "libtmux/libtmux-dotnet",
       "files": [
         {
           "name": "Program.fs",
-          "sha256": "10e4320d65f9214988a3c2203576407398646a2e6ca6d829849e15a911df10c0"
+          "sha256": "98220af6bb43c3d60e8c7622b538e5f34cac7acbbb83229abba1f17dd526cac7"
         },
         {
           "name": "Capture.fsproj",
-          "sha256": "314bfb2bef111e8885728a0065943a59594721011da4ac6ef0275aebd8f14bcd"
+          "sha256": "dfe3aea0a74c91c02a57cf5ad88be362c16fc62fa5f349c9d2a8d538a5482c99"
         }
       ],
       "toolchain": [
-        ".NET SDK 10.0.302"
+        ".NET SDK 10.0.403",
+        "LibTmux.FSharp 0.1.1"
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "page": "ports/fsharp/examples/capture-pane-output",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet libtmux-source &&\n  git -C libtmux-source checkout 661287848a6cfb407f37114b25e8249a29f99e3f &&\n  dotnet build Capture.fsproj --maxcpucount:1 \\\n    -p:DisableImplicitLibraryPacksFolder=true \\\n    -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  dotnet run --project Capture.fsproj --no-build"
+        "dotnet build Capture.fsproj --maxcpucount:1 &&\n  dotnet run --project Capture.fsproj --no-build"
       ],
       "verification": {
         "platform": "Linux",
         "checks": [
           {
-            "name": "positive-3.2a",
-            "tmux": "3.2a",
+            "name": "positive-3.3a",
+            "tmux": "3.3a",
             "exit": 0,
-            "seconds": 1.061,
+            "seconds": 0.991,
             "remainingSocketDirectories": 0
           },
           {
             "name": "positive-3.7c",
             "tmux": "3.7c",
             "exit": 0,
-            "seconds": 0.923,
+            "seconds": 1.013,
             "remainingSocketDirectories": 0
           },
           {
             "name": "negative-import",
             "tmux": "3.7c",
             "exit": 1,
-            "seconds": 2.171,
+            "seconds": 2.934,
             "remainingSocketDirectories": 0
           },
           {
             "name": "negative-runtime-build",
             "tmux": "3.7c",
             "exit": 0,
-            "seconds": 2.288,
+            "seconds": 2.745,
             "remainingSocketDirectories": 0
           },
           {
             "name": "negative-runtime",
             "tmux": "3.7c",
             "exit": 1,
-            "seconds": 5.919,
+            "seconds": 6.0,
             "remainingSocketDirectories": 0
           },
           {
             "name": "restored-build",
             "tmux": "3.7c",
             "exit": 0,
-            "seconds": 2.903,
+            "seconds": 2.682,
             "remainingSocketDirectories": 0
           }
         ]

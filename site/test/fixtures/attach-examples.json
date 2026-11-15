@@ -343,14 +343,15 @@
     {
       "port": "fsharp",
       "language": "fsharp",
-      "sourceRevision": "661287848a6cfb407f37114b25e8249a29f99e3f",
+      "sourceRevision": "8d47af7d89638ad267528ac56897cec67df597f7",
       "sourceRepository": "libtmux/libtmux-dotnet",
       "toolchain": [
-        ".NET SDK 10.0.302"
+        ".NET SDK 10.0.403",
+        "LibTmux.FSharp 0.1.1"
       ],
       "page": "ports/fsharp/guides/attaching-to-tmux",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet libtmux-source &&\n  git -C libtmux-source checkout 661287848a6cfb407f37114b25e8249a29f99e3f &&\n  dotnet build Connect.fsproj --maxcpucount:1 \\\n    -p:DisableImplicitLibraryPacksFolder=true \\\n    -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  sh run.sh dotnet run --project Connect.fsproj --no-build"
+        "dotnet build Connect.fsproj --maxcpucount:1 &&\n  sh run.sh dotnet run --project Connect.fsproj --no-build"
       ],
       "expectedOutput": "work",
       "files": [
@@ -360,7 +361,7 @@
         },
         {
           "name": "Connect.fsproj",
-          "sha256": "314bfb2bef111e8885728a0065943a59594721011da4ac6ef0275aebd8f14bcd"
+          "sha256": "dfe3aea0a74c91c02a57cf5ad88be362c16fc62fa5f349c9d2a8d538a5482c99"
         },
         {
           "name": "run.sh",
@@ -368,7 +369,7 @@
         }
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ]
     },

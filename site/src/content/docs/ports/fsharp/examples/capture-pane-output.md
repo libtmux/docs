@@ -12,7 +12,8 @@ tableOfContents: true
 
 This complete F# program starts a private tmux server, sends a command,
 and captures the line it prints. It includes imports, setup, and cleanup.
-You need tmux and a Unix environment; no existing session is required.
+You need tmux 3.3a or newer and a Unix environment; no existing session is
+required.
 
 ## Read what's on screen
 
@@ -30,8 +31,7 @@ open LibTmux
 open LibTmux.FSharp
 
 let capture () = task {
-    let directory = Path.Combine("/tmp/libtmux-dotnet-dev", Guid.NewGuid().ToString("N"))
-    Directory.CreateDirectory(directory) |> ignore
+    let directory = Directory.CreateTempSubdirectory("libtmux-capture-")
     let errors = ResizeArray<exn>()
     let mutable owned: OwnedServerScope option = None
     let mutable stopped = false
@@ -43,7 +43,7 @@ let capture () = task {
             environment[name] <- null
         let! scope = LibTmux.Server.CreateOwnedAsync(
             ServerConnectionOptions(
-                SocketPath = Path.Combine(directory, "tmux.sock"),
+                SocketPath = Path.Combine(directory.FullName, "tmux.sock"),
                 ConfigurationFile = "/dev/null",
                 ChildEnvironment = environment), token)
         owned <- Some scope
@@ -65,16 +65,16 @@ let capture () = task {
         printfn "libtmux capture ready"
     with error -> errors.Add(error)
 
-    // Keep the endpoint available for inspection if stopping the server fails.
+    // If stopping the server fails, keep its directory and socket.
     match owned with
     | Some scope ->
         try
             do! scope.DisposeAsync().AsTask()
             stopped <- true
         with error -> errors.Add(error)
-    | None -> stopped <- not (File.Exists(Path.Combine(directory, "tmux.sock")))
+    | None -> stopped <- not (File.Exists(Path.Combine(directory.FullName, "tmux.sock")))
     if stopped then
-        try Directory.Delete(directory, true)
+        try directory.Delete(true)
         with error -> errors.Add(error)
     if errors.Count > 0 then raise (AggregateException(errors))
 }
@@ -102,7 +102,7 @@ and exits unsuccessfully if an operation fails.
 ## Setup and run
 
 Use an empty directory and save the files using the displayed names. You need
-.NET SDK 10.0.302. Restore into a project-local cache from NuGet so FSharp.Core matches the library’s lockfile.
+the .NET 10 SDK. The project file installs `LibTmux.FSharp` 0.1.1 from NuGet.
 
 Save `Capture.fsproj` beside `Program.fs`.
 
@@ -114,19 +114,13 @@ Save `Capture.fsproj` beside `Program.fs`.
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Program.fs" />
-    <ProjectReference Include="libtmux-source/src/LibTmux.FSharp/LibTmux.FSharp.fsproj" />
+    <PackageReference Include="LibTmux.FSharp" Version="0.1.1" />
   </ItemGroup>
 </Project>
 ```
 
-The commands pin the library revision used to run this program.
-
 ```console
-$ git clone https://github.com/libtmux/libtmux-dotnet libtmux-source &&
-  git -C libtmux-source checkout 661287848a6cfb407f37114b25e8249a29f99e3f &&
-  dotnet build Capture.fsproj --maxcpucount:1 \
-    -p:DisableImplicitLibraryPacksFolder=true \
-    -p:RestorePackagesPath="$PWD/.packages" &&
+$ dotnet build Capture.fsproj --maxcpucount:1 &&
   dotnet run --project Capture.fsproj --no-build
 ```
 
@@ -134,5 +128,5 @@ $ git clone https://github.com/libtmux/libtmux-dotnet libtmux-source &&
 
 ## Where this comes from
 
-The displayed files were compiled or loaded with their native tools and run
-on Linux with tmux 3.2a and 3.7c. The rendering checks preserve those file bytes.
+This program uses `LibTmux.FSharp` 0.1.1 from NuGet. Its [source](https://github.com/libtmux/libtmux-dotnet/tree/8d47af7d89638ad267528ac56897cec67df597f7/src/LibTmux.FSharp)
+is on GitHub.

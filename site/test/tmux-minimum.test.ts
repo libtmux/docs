@@ -122,6 +122,12 @@ export const OTHER_FLOORS = [
     near: /Control mode needs tmux 3\.7/,
     why: 'the control-mode program; libtmux 0.1.2 refuses managed control acquisition below tmux 3.7',
   },
+  {
+    path: 'site/src/content/docs/ports/fsharp/concepts/transports.md',
+    version: '3.7',
+    near: /control connection program/,
+    why: 'the control connection program; LibTmux 0.1.1 throws TmuxVersionTooLowException for a library-managed control client below tmux 3.7',
+  },
 ]
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')

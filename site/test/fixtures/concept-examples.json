@@ -437,20 +437,20 @@
     {
       "port": "fsharp",
       "page": "ports/fsharp/concepts/server-session-window-pane",
-      "sourceRevision": "2d99ead5aba8d968e85dcac8c9a9a518452e6ba6",
-      "runtime": ".NET SDK 10.0.302",
+      "sourceRevision": "8d47af7d89638ad267528ac56897cec67df597f7",
+      "runtime": ".NET SDK 10.0.403; LibTmux.FSharp 0.1.1",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "files": [
         {
           "name": "Query.fsproj",
-          "sha256": "cede2d70f84c645ef1e609e648d1794abdd8d96fb8f0f957a274d11ea2aec212"
+          "sha256": "878ee558f6c48bae48dd555706740a16ba3c88d07fb36079d34d8346dc2c8b0a"
         },
         {
           "name": "run.sh",
-          "sha256": "dacfb3ef36d757bb66b1c97bacc575348e2466866dee63d53b95895932f8e40b"
+          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
         },
         {
           "name": "Hierarchy.fs",
@@ -462,12 +462,10 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet libtmux-source &&\n  git -C libtmux-source checkout 2d99ead5aba8d968e85dcac8c9a9a518452e6ba6",
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Hierarchy \\\n  -p:DisableImplicitLibraryPacksFolder=true -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Hierarchy",
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Refresh \\\n  -p:DisableImplicitLibraryPacksFolder=true -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Refresh"
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Hierarchy &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Hierarchy",
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Refresh &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Refresh"
       ],
       "expectedOutputs": [
-        [],
         [
           "work-one: editor",
           "work-two: logs",
@@ -477,25 +475,25 @@
           "editor -> renamed"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and pinned library. Native checks cover assertions, stdout and cleanup."
+      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup."
     },
     {
       "port": "fsharp",
       "page": "ports/fsharp/concepts/queries",
-      "sourceRevision": "2d99ead5aba8d968e85dcac8c9a9a518452e6ba6",
-      "runtime": ".NET SDK 10.0.302",
+      "sourceRevision": "8d47af7d89638ad267528ac56897cec67df597f7",
+      "runtime": ".NET SDK 10.0.403; LibTmux.FSharp 0.1.1",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "files": [
         {
           "name": "Query.fsproj",
-          "sha256": "cede2d70f84c645ef1e609e648d1794abdd8d96fb8f0f957a274d11ea2aec212"
+          "sha256": "878ee558f6c48bae48dd555706740a16ba3c88d07fb36079d34d8346dc2c8b0a"
         },
         {
           "name": "run.sh",
-          "sha256": "dacfb3ef36d757bb66b1c97bacc575348e2466866dee63d53b95895932f8e40b"
+          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
         },
         {
           "name": "Local.fs",
@@ -511,13 +509,11 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet libtmux-source &&\n  git -C libtmux-source checkout 2d99ead5aba8d968e85dcac8c9a9a518452e6ba6",
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Local \\\n  -p:DisableImplicitLibraryPacksFolder=true -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Local",
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Cardinality \\\n  -p:DisableImplicitLibraryPacksFolder=true -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Cardinality",
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Relations \\\n  -p:DisableImplicitLibraryPacksFolder=true -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Relations"
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Local &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Local",
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Cardinality &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Cardinality",
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Relations &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Relations"
       ],
       "expectedOutputs": [
-        [],
         [
           "work-one, work-two"
         ],
@@ -531,25 +527,24 @@
           "no editor: work-two"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and pinned library. Native checks cover assertions, stdout and cleanup."
+      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup."
     },
     {
       "port": "fsharp",
       "page": "ports/fsharp/concepts/transports",
-      "sourceRevision": "2d99ead5aba8d968e85dcac8c9a9a518452e6ba6",
-      "runtime": ".NET SDK 10.0.302",
+      "sourceRevision": "8d47af7d89638ad267528ac56897cec67df597f7",
+      "runtime": ".NET SDK 10.0.403; LibTmux.FSharp 0.1.1",
       "tmuxVersions": [
-        "3.2a",
         "3.7c"
       ],
       "files": [
         {
           "name": "Query.fsproj",
-          "sha256": "cede2d70f84c645ef1e609e648d1794abdd8d96fb8f0f957a274d11ea2aec212"
+          "sha256": "878ee558f6c48bae48dd555706740a16ba3c88d07fb36079d34d8346dc2c8b0a"
         },
         {
           "name": "run.sh",
-          "sha256": "dacfb3ef36d757bb66b1c97bacc575348e2466866dee63d53b95895932f8e40b"
+          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
         },
         {
           "name": "Local.fs",
@@ -561,12 +556,10 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet libtmux-source &&\n  git -C libtmux-source checkout 2d99ead5aba8d968e85dcac8c9a9a518452e6ba6",
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Local \\\n  -p:DisableImplicitLibraryPacksFolder=true -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Local",
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Control \\\n  -p:DisableImplicitLibraryPacksFolder=true -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Control"
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Local &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Local",
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Control &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Control"
       ],
       "expectedOutputs": [
-        [],
         [
           "work-one, work-two"
         ],
@@ -575,25 +568,25 @@
           "control client closed; server still running"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and pinned library. Native checks cover assertions, stdout and cleanup."
+      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup. Local.fs also passes on tmux 3.3a; Control.fs refuses tmux earlier than 3.7."
     },
     {
       "port": "fsharp",
       "page": "ports/fsharp/concepts/workspaces",
-      "sourceRevision": "2d99ead5aba8d968e85dcac8c9a9a518452e6ba6",
-      "runtime": ".NET SDK 10.0.302",
+      "sourceRevision": "8d47af7d89638ad267528ac56897cec67df597f7",
+      "runtime": ".NET SDK 10.0.403; LibTmux.FSharp 0.1.1",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "files": [
         {
           "name": "Query.fsproj",
-          "sha256": "cede2d70f84c645ef1e609e648d1794abdd8d96fb8f0f957a274d11ea2aec212"
+          "sha256": "878ee558f6c48bae48dd555706740a16ba3c88d07fb36079d34d8346dc2c8b0a"
         },
         {
           "name": "run.sh",
-          "sha256": "dacfb3ef36d757bb66b1c97bacc575348e2466866dee63d53b95895932f8e40b"
+          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
         },
         {
           "name": "Layout.fs",
@@ -605,12 +598,10 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet libtmux-source &&\n  git -C libtmux-source checkout 2d99ead5aba8d968e85dcac8c9a9a518452e6ba6",
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Layout \\\n  -p:DisableImplicitLibraryPacksFolder=true -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Layout",
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=ReuseLayout \\\n  -p:DisableImplicitLibraryPacksFolder=true -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=ReuseLayout"
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Layout &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Layout",
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=ReuseLayout &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=ReuseLayout"
       ],
       "expectedOutputs": [
-        [],
         [
           "tools: 2 panes"
         ],
@@ -618,7 +609,7 @@
           "one tools window after two calls"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and pinned library. Native checks cover assertions, stdout and cleanup."
+      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup."
     },
     {
       "port": "go",
