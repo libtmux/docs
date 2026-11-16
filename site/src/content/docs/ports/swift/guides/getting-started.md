@@ -34,8 +34,9 @@ consult this version's API reference for their lifetime and completion rules.
 ## Connect to an existing server
 
 Use the [complete attach program](../attaching-to-tmux/) to select an existing
-socket and find the `work` session. That example leaves tmux running; its
-launcher owns setup and cleanup for trying it safely.
+socket and find the `work` session. That example leaves that server running.
+Without `LIBTMUX_SOCKET_PATH`, it starts a private server, looks up that
+server's `work` session and stops the server.
 
 ## Where to go next
 

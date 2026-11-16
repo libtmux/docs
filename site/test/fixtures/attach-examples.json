@@ -236,26 +236,22 @@
       ],
       "page": "ports/swift/guides/attaching-to-tmux",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-swift libtmux-source &&\n  git -C libtmux-source checkout 254f8b2be7eb60cacc3ffcb3ea8e456784f582df &&\n  sh run.sh swift run --jobs 2 Connect"
+        "git clone https://github.com/libtmux/libtmux-swift libtmux-source &&\n  git -C libtmux-source checkout 254f8b2be7eb60cacc3ffcb3ea8e456784f582df &&\n  swift run --jobs 2 Connect"
       ],
       "expectedOutput": "work",
       "files": [
         {
           "name": "Connect.swift",
           "path": "Sources/Connect/Connect.swift",
-          "sha256": "9821b15aa0bb09ab626164f6f6a1e900f7263fafc5ff3d6297520505c8ebdc07"
+          "sha256": "ea4c58db803bfea275a8f5716765e931b2a949c43229d6704382ff7b8a7cdf42"
         },
         {
           "name": "Package.swift",
           "sha256": "bc9db4a88cdd0236c4985176f03a46c9dfac4f2401312149876d0fc013a91440"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "71f88925278d500b86c6571b92063ecf723275e8983468f6429d9fe2f6b2fe56"
         }
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ]
     },
