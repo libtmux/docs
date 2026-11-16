@@ -64,7 +64,6 @@
   "ports/rs/mcp/examples/inspect-sessions.md": 11,
   "ports/rs/topics/waiting-and-retry.md": 2,
   "ports/rs/workspace/internals/examples.md": 3,
-  "ports/ruby/guides/attaching-to-tmux.md": 1,
   "ports/ruby/mcp/examples/page-session-metadata.md": 1,
   "ports/scala/concepts/queries.md": 7,
   "ports/scala/concepts/server-session-window-pane.md": 4,
