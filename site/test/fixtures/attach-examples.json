@@ -276,13 +276,13 @@
       ],
       "page": "ports/kotlin/guides/attaching-to-tmux",
       "shellRecipe": [
-        "sh run.sh gradle --console=plain --no-daemon run"
+        "gradle --console=plain --no-daemon run"
       ],
       "expectedOutput": "work",
       "files": [
         {
           "name": "Connect.kt",
-          "sha256": "f908e010372c9a9391c6e20748bcdf296cce991b3822fe3f83f7016ec39a8671"
+          "sha256": "7a9617ab6f5d80b19c1f63ca29f4c469710b64f49f01f72665bf516fcf3227a4"
         },
         {
           "name": "build.gradle.kts",
@@ -295,10 +295,6 @@
         {
           "name": "gradle.properties",
           "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "a6a762cba4ee9405dbd633dba800fcd0824c82587daed9bb922b2b400d282f2c"
         }
       ],
       "tmux": [

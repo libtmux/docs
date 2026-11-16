@@ -16,7 +16,7 @@ Choose command calls for bounded operations and a control connection when you ne
 
 ## Setup and run
 
-Use an empty directory on Linux with tmux 3.3a or newer, JDK 25, and Gradle 9. Save the project files and launcher below, then save any complete program on this page. Each program has its own imports and entry point.
+Use an empty directory on Linux with tmux 3.3a or newer, JDK 25, and Gradle 9. Save the project files below, then save any complete program on this page. Each program has its own imports and entry point.
 
 Gradle resolves `libtmux-kotlin` 0.1.2 from Maven Central ([source](https://github.com/libtmux/libtmux-java/tree/e8a39689d8d60968ac978a1dd2a89c6112333896/libtmux-kotlin)).
 
@@ -49,36 +49,7 @@ kotlin.daemon.jvmargs=-Xmx2g
 org.gradle.workers.max=2
 ```
 
-The launcher creates two sessions on a private socket: `work-one` with an `editor` window, and `work-two` with a `logs` window. Each pane runs `cat` so it stays alive. It stops only this server when the program finishes or fails. If shutdown fails, it reports the retained directory and exits with an error.
-
-```sh title="run.sh"
-#!/bin/sh
-set -eu
-
-binary=$(command -v tmux)
-directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-query.XXXXXX")
-socket="$directory/tmux.sock"
-
-cleanup() {
-    status=$?
-    trap - 0 HUP INT TERM
-    if [ -S "$socket" ] && ! "$binary" -S "$socket" kill-server; then
-        printf 'Cannot stop tmux; kept %s\n' "$directory" >&2
-        exit 1
-    fi
-    rm -rf "$directory" || exit 1
-    exit "$status"
-}
-trap cleanup 0
-trap 'exit 1' HUP INT TERM
-
-unset TMUX TMUX_PANE
-export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
-"$binary" -S "$socket" -f /dev/null new-session -d -s work-one -n editor /bin/cat
-"$binary" -S "$socket" new-session -d -s work-two -n logs /bin/cat
-"$@"
-"$binary" -S "$socket" has-session -t '=work-one'
-```
+Each program starts its own private tmux server with two sessions: `work-one` with an `editor` window, and `work-two` with a `logs` window. Each pane runs `cat` so it stays alive. The program stops only that server when it finishes or fails, then removes the server's directory. If shutdown fails, it reports the retained directory and exits with an error.
 
 Each run starts from the same two-session fixture. Programs do not depend on another example having run first. Their assertions fail if the observed result differs.
 
@@ -91,37 +62,77 @@ import io.github.libtmux.ServerConfig
 import io.github.libtmux.ServerEndpoint
 import io.github.libtmux.kotlin.*
 import io.github.libtmux.kotlin.query.*
+import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+
+suspend fun demonstrate(server: Server) {
+    val sessions = server.sessions()
+    val matching = sessions.filter(Session.name startsWith "work-")
+    val names = matching.map { it.name }.sorted()
+    check(names == listOf("work-one", "work-two"))
+    println(names.joinToString(", "))
+    // Filtering the captured list makes no new tmux calls.
+    check(sessions.filter { it.name.startsWith("work-") } == matching)
+    val onlyOne = (Session.name startsWith "work-")
+        .and(Session.name endsWith "one")
+    check(sessions.filter(onlyOne).single().name == "work-one")
+    val either = (Session.name eq "work-one").or(Session.name eq "work-two")
+    check(sessions.filter(either).size == 2)
+    val others = sessions.filter(!(Session.name eq "work-one"))
+    check(others.single().name == "work-two")
+}
 
 fun main() = runBlocking {
-    val socket = requireNotNull(System.getenv("LIBTMUX_SOCKET_PATH")) {
-        "Set LIBTMUX_SOCKET_PATH to an existing socket"
-    }
+    val directory = Files.createTempDirectory("libtmux-example-")
+    val socket = directory.resolve("tmux.sock")
     val config = ServerConfig.builder()
-        .endpoint(ServerEndpoint.socketPath(Path.of(socket)))
+        .endpoint(ServerEndpoint.socketPath(socket))
+        .configFile(Path.of("/dev/null"))
         .defaultTimeout(Duration.ofSeconds(5))
         .build()
-    withServer(config) { server ->
-        val sessions = server.sessions()
-        val matching = sessions.filter(Session.name startsWith "work-")
-        val names = matching.map { it.name }.sorted()
-        check(names == listOf("work-one", "work-two"))
-        println(names.joinToString(", "))
-        // Filtering the captured list makes no new tmux calls.
-        check(sessions.filter { it.name.startsWith("work-") } == matching)
-        val onlyOne = (Session.name startsWith "work-").and(Session.name endsWith "one")
-        check(sessions.filter(onlyOne).single().name == "work-one")
-        val either = (Session.name eq "work-one").or(Session.name eq "work-two")
-        check(sessions.filter(either).size == 2)
-        check(sessions.filter(!(Session.name eq "work-one")).single().name == "work-two")
+    var stopped = false
+    try {
+        withServer(config) { server ->
+            try {
+                server.newSession {
+                    name = "work-one"
+                    window {
+                        name = "editor"
+                        running("/bin/cat")
+                    }
+                }
+                server.newSession {
+                    name = "work-two"
+                    window {
+                        name = "logs"
+                        running("/bin/cat")
+                    }
+                }
+                demonstrate(server)
+            } finally {
+                withContext(NonCancellable) {
+                    if (Files.exists(socket)) server.killServer()
+                    stopped = true
+                }
+            }
+        }
+    } finally {
+        if (stopped || !Files.exists(socket)) {
+            Files.deleteIfExists(socket)
+            Files.delete(directory)
+        } else {
+            System.err.println("Cannot stop tmux; kept $directory")
+        }
     }
 }
 ```
 
 ```console
-$ sh run.sh gradle --console=plain --no-daemon run -Pexample=Local
+$ gradle --console=plain --no-daemon run -Pexample=Local
 ```
 
 Expected program output:
@@ -139,35 +150,75 @@ import io.github.libtmux.ServerConfig
 import io.github.libtmux.ServerEndpoint
 import io.github.libtmux.kotlin.*
 import io.github.libtmux.kotlin.query.*
+import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+
+suspend fun demonstrate(server: Server) {
+    val session = server.sessions().single { it.name == "work-one" }
+    withControl(server, session) { control ->
+        val reply = control.send("list-sessions", "-F", "#{session_name}")
+        check(reply.succeeded()) {
+            "tmux rejected list-sessions: ${reply.outcome()}"
+        }
+        val names = reply.lines().sorted()
+        check(names == listOf("work-one", "work-two"))
+        println(names.joinToString(", "))
+    }
+    check(server.sessions().size == 2)
+    println("control client closed; server still running")
+}
 
 fun main() = runBlocking {
-    val socket = requireNotNull(System.getenv("LIBTMUX_SOCKET_PATH")) {
-        "Set LIBTMUX_SOCKET_PATH to an existing socket"
-    }
+    val directory = Files.createTempDirectory("libtmux-example-")
+    val socket = directory.resolve("tmux.sock")
     val config = ServerConfig.builder()
-        .endpoint(ServerEndpoint.socketPath(Path.of(socket)))
+        .endpoint(ServerEndpoint.socketPath(socket))
+        .configFile(Path.of("/dev/null"))
         .defaultTimeout(Duration.ofSeconds(5))
         .build()
-    withServer(config) { server ->
-        val session = server.sessions().single { it.name == "work-one" }
-        withControl(server, session) { control ->
-            val reply = control.send("list-sessions", "-F", "#{session_name}")
-            check(reply.succeeded()) { "tmux rejected list-sessions: ${reply.outcome()}" }
-            val names = reply.lines().sorted()
-            check(names == listOf("work-one", "work-two"))
-            println(names.joinToString(", "))
+    var stopped = false
+    try {
+        withServer(config) { server ->
+            try {
+                server.newSession {
+                    name = "work-one"
+                    window {
+                        name = "editor"
+                        running("/bin/cat")
+                    }
+                }
+                server.newSession {
+                    name = "work-two"
+                    window {
+                        name = "logs"
+                        running("/bin/cat")
+                    }
+                }
+                demonstrate(server)
+            } finally {
+                withContext(NonCancellable) {
+                    if (Files.exists(socket)) server.killServer()
+                    stopped = true
+                }
+            }
         }
-        check(server.sessions().size == 2)
-        println("control client closed; server still running")
+    } finally {
+        if (stopped || !Files.exists(socket)) {
+            Files.deleteIfExists(socket)
+            Files.delete(directory)
+        } else {
+            System.err.println("Cannot stop tmux; kept $directory")
+        }
     }
 }
 ```
 
 ```console
-$ sh run.sh gradle --console=plain --no-daemon run -Pexample=Control
+$ gradle --console=plain --no-daemon run -Pexample=Control
 ```
 
 Expected program output:
@@ -181,4 +232,4 @@ control client closed; server still running
 
 An operation that times out may already have reached tmux. Read the current state before retrying a mutation such as creating a window. A cancellation signal does not roll back a completed tmux command.
 
-Here the launcher owns the private server and stops it after the program exits. An application connecting to an existing server should close its own client resources and leave that server running. See [attaching to tmux](../../guides/attaching-to-tmux/) for the connection-only example.
+Here each program owns the private server it starts and stops it before it exits. An application connecting to an existing server should close its own client resources and leave that server running. See [attaching to tmux](../../guides/attaching-to-tmux/) for the connection-only example.
