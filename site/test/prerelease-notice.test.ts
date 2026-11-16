@@ -14,6 +14,7 @@ import { buildTarget } from '../src/lib/versions'
 import { renderedTargets } from '../src/lib/inventory-targets'
 import { tmuxInventoryVersion } from '../src/lib/inventory-links'
 import { targetKey } from '@libtmux/api-model/reference'
+import { ROOT_PORT } from '../src/lib/search-state'
 
 const astroRequire = createRequire(realpathSync(new URL('../node_modules/astro/package.json', import.meta.url)))
 const noticeSource = readFileSync(new URL('../src/components/PrereleaseNotice.astro', import.meta.url), 'utf8')
@@ -37,6 +38,7 @@ beforeAll(async () => {
   const helpers = {
     buildLocale, localeSourcePath, CONTRIBUTE_BRANCH, CONTRIBUTE_REPO, repoPath,
     markdownPath, pageBrand, PORT_BY_SLUG, portSourceUrl, releaseMaturity, registryFor, withPortRoot, withRoot, buildTarget, tmuxInventoryVersion,
+    ROOT_PORT,
   }
   vi.stubGlobal('__prereleaseHelpers', helpers)
   const helperModule = `data:text/javascript,export const {${Object.keys(helpers).join(',')}}=globalThis.__prereleaseHelpers`
