@@ -73,9 +73,8 @@ then captures it through the Tokio adapter. It also reads a detached snapshot
 after shutting down the runtime. It kills its own server and removes its
 socket under `/tmp/libtmux-rs-dev/` when finished.
 
-Set `LIBTMUX_TEST_TMUX` to choose a different tmux executable. Both programs
-print human-readable output to stdout, report errors to stderr, and exit zero
-on success and nonzero on failure.
+Both programs print human-readable output to stdout, report errors to
+stderr, and exit zero on success and nonzero on failure.
 
 The [offline consumer][offline] builds a capture request synchronously. The
 [live consumer][live] passes that same core type to the adapter and receives
