@@ -10,6 +10,7 @@ import { PORTS } from '../site/src/lib/ports.ts'
 import { defaultVersionFor, linkedVersionFor } from '../site/src/lib/versions.ts'
 import { sourceGuidesFor, sourceGuideRedirectsFor, stagedSectionsFor, stagedSectionDescription, SOURCE_GUIDE_PORTS } from '../site/src/lib/port-documentation.ts'
 import { SymbolIndex, parameterId } from '../packages/api-model/src/link.ts'
+import { stripBuildMarkers } from '../site/src/lib/example-excerpt.ts'
 import { BADGE_DIRECTORY, badgesStale, localizeBadges } from './lib/badges.mjs'
 import { resolveCheckout } from './lib/port-checkout.mjs'
 
@@ -60,6 +61,33 @@ function titleAndBody(content, sourcePath) {
  * sentence is longer than `limit`. Staged pages use it where the catalog
  * gives no description.
  */
+/**
+ * A guide that embeds a whole example file copies the file's region markers
+ * (`# example: begin batch`) into its code blocks. Hide them as every other
+ * code path does; text outside a code block is prose and stays as written.
+ */
+export function hideFenceMarkers(content) {
+  const lines = content.split('\n')
+  const out = []
+  let fence
+  let body = []
+  for (const line of lines) {
+    if (!fence) {
+      const open = /^ {0,3}(`{3,}|~{3,})/.exec(line)
+      out.push(line)
+      if (open) { fence = open[1]; body = [] }
+      continue
+    }
+    const close = new RegExp(`^ {0,3}${fence[0] === '`' ? '`' : '~'}{${fence.length},}[ \t]*$`).exec(line)
+    if (!close) { body.push(line); continue }
+    if (body.length) out.push(stripBuildMarkers(body.join('\n')))
+    out.push(line)
+    fence = undefined
+  }
+  if (fence) out.push(...body)
+  return out.join('\n')
+}
+
 export function leadSentence(body, limit = 240) {
   const text = (node) => node.type === 'text' || node.type === 'inlineCode' ? node.value
     : node.type === 'image' || node.type === 'html' ? '' : (node.children ?? []).map(text).join('')
@@ -271,7 +299,8 @@ export function stagedPortGuides(port, artifact) {
     const { route, product, package: packageId, domain, aliases, equivalence, sidebar } = guide
     const content = guides.get(sourcePath)
     if (typeof content !== 'string') throw new Error(`${port}: native artifact is missing guide ${sourcePath}`)
-    const { title: sourceTitle, body } = titleAndBody(content, sourcePath)
+    const { title: sourceTitle, body: marked } = titleAndBody(content, sourcePath)
+    const body = hideFenceMarkers(marked)
     const title = guide.title ?? sourceTitle
     const linked = port === 'fsharp' && sourcePath === 'docs/fsharp/supported-query-fields.md'
       ? linkSnapshotDepths(body) : body
