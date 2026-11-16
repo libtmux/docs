@@ -26,8 +26,8 @@
   "ports/fsharp/concepts/workspaces.md": 6,
   "ports/fsharp/examples/capture-pane-output.md": 3,
   "ports/fsharp/guides/attaching-to-tmux.md": 1,
-  "ports/go/concepts/queries.md": 19,
-  "ports/go/concepts/server-session-window-pane.md": 10,
+  "ports/go/concepts/queries.md": 15,
+  "ports/go/concepts/server-session-window-pane.md": 7,
   "ports/go/concepts/transports.md": 1,
   "ports/go/concepts/workspaces.md": 5,
   "ports/go/examples/capture-pane-output.md": 1,
@@ -83,7 +83,6 @@
   "ports/swift/workspace/internals/examples.md": 4,
   "ports/ts/concepts/queries.md": 30,
   "ports/ts/concepts/workspaces.md": 1,
-  "ports/ts/guides/attaching-to-tmux.md": 1,
   "ports/ts/mcp/examples.md": 1,
   "ports/ts/workspace/internals/examples.md": 1,
   "topics/waiting-and-retry.md": 1

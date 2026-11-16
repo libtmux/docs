@@ -11,7 +11,7 @@ tableOfContents: true
 ---
 
 Connect a `Server` to an explicit socket and find the existing `work` session.
-The program prints its name and leaves the tmux server running. It reports an
+The program prints its name and leaves that server running. It reports an
 error if the connection fails or the session is absent.
 
 This controls tmux from your program. To open a session in your terminal, use
@@ -22,43 +22,101 @@ interactive attachment and detaching.
 
 ## Connect to an existing server
 
-Save the complete program as `main.go`. `LIBTMUX_SOCKET_PATH` selects
-the existing server. The launcher below supplies a private socket for trying
-the example.
+Save the complete program as `main.go`. `LIBTMUX_SOCKET_PATH` selects the
+existing server: `findWork` connects a new `Server` to that socket, prints the
+`work` session and leaves the tmux server running.
+
+Without the variable, the program starts a demonstration server to stand in
+for yours. `startDemonstration` creates a `work` session on a socket in a new
+temporary directory. `run` stops that server and removes the directory when it
+returns, including after an error. If tmux does not stop, the error names the
+directory the program kept.
 
 ```go title="main.go"
 package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/libtmux/libtmux-go/tmux"
 )
 
+const limit = 5 * time.Second
+
 func main() {
-	socket := os.Getenv("LIBTMUX_SOCKET_PATH")
-	if socket == "" {
-		log.Fatal("Set LIBTMUX_SOCKET_PATH to an existing socket")
-	}
-	server, err := tmux.NewServer(tmux.ServerOptions{SocketPath: socket})
-	if err != nil {
+	if err := run(); err != nil {
 		log.Fatal(err)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+}
+
+func run() (err error) {
+	socket := os.Getenv("LIBTMUX_SOCKET_PATH")
+	if socket == "" {
+		var stop func() error
+		if socket, stop, err = startDemonstration(); err != nil {
+			return err
+		}
+		defer func() { err = errors.Join(err, stop()) }()
+	}
+	return findWork(socket)
+}
+
+func findWork(socket string) error {
+	server, err := tmux.NewServer(tmux.ServerOptions{SocketPath: socket})
+	if err != nil {
+		return err
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), limit)
 	defer cancel()
 	filter := tmux.TmuxFilter("#{==:#{session_name},work}")
 	sessions, err := server.SearchSessions(ctx, &filter)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	if len(sessions) != 1 {
-		log.Fatalf("Expected one work session, found %d", len(sessions))
+		return fmt.Errorf("found %d work sessions", len(sessions))
 	}
 	fmt.Println("work")
+	return nil
+}
+
+func startDemonstration() (socket string, stop func() error, err error) {
+	directory, err := os.MkdirTemp("", "libtmux-attach-")
+	if err != nil {
+		return "", nil, err
+	}
+	socket = filepath.Join(directory, "tmux.sock")
+	owner, err := tmux.NewServer(tmux.ServerOptions{
+		SocketPath: socket, ConfigFile: "/dev/null",
+	})
+	if err != nil {
+		return "", nil, errors.Join(err, os.RemoveAll(directory))
+	}
+	stop = func() error {
+		ctx, cancel := context.WithTimeout(context.Background(), limit)
+		defer cancel()
+		if err := owner.Kill(ctx); err != nil {
+			return fmt.Errorf(
+				"cannot stop tmux; kept %s: %w", directory, err,
+			)
+		}
+		return os.RemoveAll(directory)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), limit)
+	defer cancel()
+	_, err = owner.NewSession(ctx, tmux.NewSessionRequest{
+		Name: "work", Command: "cat",
+	})
+	if err != nil {
+		return "", nil, errors.Join(err, stop())
+	}
+	return socket, stop, nil
 }
 ```
 
@@ -78,49 +136,16 @@ go 1.26.0
 require github.com/libtmux/libtmux-go v0.1.3
 ```
 
-Save the launcher as `run.sh`. It starts an isolated tmux server, runs the
-program, checks that the session still exists, then stops only that server.
-Cleanup runs after failures too. A failed shutdown keeps its socket directory
-and prints its location for inspection.
-
-```sh title="run.sh"
-#!/bin/sh
-set -eu
-
-binary=$(command -v tmux)
-directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-go-attach.XXXXXX")
-socket="$directory/tmux.sock"
-
-cleanup() {
-    status=$?
-    trap - 0 HUP INT TERM
-    if [ -S "$socket" ] && ! "$binary" -S "$socket" kill-server; then
-        printf 'Cannot stop tmux; kept %s\n' "$directory" >&2
-        exit 1
-    fi
-    rm -rf "$directory" || exit 1
-    exit "$status"
-}
-trap cleanup 0
-trap 'exit 1' HUP INT TERM
-
-unset TMUX TMUX_PANE
-export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
-"$binary" -S "$socket" -f /dev/null new-session -d -s work /bin/cat
-"$@"
-"$binary" -S "$socket" has-session -t '=work'
-```
-
 Resolve the module, build, and run:
 
 ```console
 $ go mod tidy &&
-  sh run.sh go run .
+  go run .
 ```
 
-The program prints `work`. To use an existing server of your own, set
-`LIBTMUX_SOCKET_PATH` to its socket and run the program without the launcher.
-That launcher is responsible for the demonstration server's lifetime.
+The program prints `work`. To attach to a server of your own, set
+`LIBTMUX_SOCKET_PATH` to its socket path in the environment of `go run .`. The
+program then starts no server and leaves yours running.
 
 <a id="finding-a-session-instead-of-always-creating-one"></a>
 
@@ -131,6 +156,6 @@ after an unsuccessful lookup, another client may create the same name between
 those operations. Handle the creation error instead of assuming the lookup
 reserves the name.
 
-For a complete program that starts and owns its server, see
+For a program that sends input and captures output, see
 [Capture pane output](/examples/capture-pane-output/). Continue with
 [Sending keys](/guides/sending-keys/) once you have a pane handle.

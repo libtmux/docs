@@ -610,22 +610,18 @@
           "sha256": "8c0c29089909ffe9131e52fbfb49b9fba63c201f4ce7789e3a64d67eee860a31"
         },
         {
-          "name": "run.sh",
-          "sha256": "c198606b019bc0d077c83c90032b6e690ed1901c718ddd0cbe8f88e0a077ec40"
-        },
-        {
           "name": "Create.go",
-          "sha256": "a5b7ae2cd453887395709de50ff1ae6ccb9318ebbaa88ccf874b789a851ed3d9"
+          "sha256": "8c92498c5cda96524054c1c322a4dea746d8627482e16127c5f0d51a916e440a"
         },
         {
           "name": "Snapshot.go",
-          "sha256": "c085f116c805cde587eebe0ad9d9189798b9191bab8b6f1ae402396a1fd17c03"
+          "sha256": "2b88a01142597055efa30d5c46eac3bcf94b1d66c21bc87f44894b5e7da84a2b"
         }
       ],
       "shellRecipe": [
         "go mod tidy",
-        "sh run.sh go run Create.go",
-        "sh run.sh go run Snapshot.go"
+        "go run Create.go",
+        "go run Snapshot.go"
       ],
       "expectedOutputs": [
         [],
@@ -656,27 +652,23 @@
           "sha256": "8c0c29089909ffe9131e52fbfb49b9fba63c201f4ce7789e3a64d67eee860a31"
         },
         {
-          "name": "run.sh",
-          "sha256": "c198606b019bc0d077c83c90032b6e690ed1901c718ddd0cbe8f88e0a077ec40"
-        },
-        {
           "name": "Local.go",
-          "sha256": "cdc231b445cf0ed10e74ddc80c486da7beaf46fe115f3b9072edef27a09c5305"
+          "sha256": "3a40f6d018d8f7fcd54ebbb3e8c713125ca079ded0362f2ed8f0735773ce13dd"
         },
         {
           "name": "Cardinality.go",
-          "sha256": "6ccab5e42c7b50a29147d0066d0d3b3a113a9531449a17bf8dcb4913b63e4f5f"
+          "sha256": "9fc6aab3f38b866a33dca1fcd3239f944f9c7b5dbe3d1cd5965ebfbd5e6e33cb"
         },
         {
           "name": "Relations.go",
-          "sha256": "b68f5614cdd02bb8a9835c94fa00c588e2cfe412248a30be9ef1d7f298b3c9a8"
+          "sha256": "4293b7ba5eddf56513a9001a8d135af1b13e5dc5a54ec8d986e3b9d15fa9a7bb"
         }
       ],
       "shellRecipe": [
         "go mod tidy",
-        "sh run.sh go run Local.go",
-        "sh run.sh go run Cardinality.go",
-        "sh run.sh go run Relations.go"
+        "go run Local.go",
+        "go run Cardinality.go",
+        "go run Relations.go"
       ],
       "expectedOutputs": [
         [],
