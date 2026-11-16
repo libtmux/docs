@@ -13483,7 +13483,7 @@
         "libtmux::Server"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
+      "sourceRevision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1",
       "sourceFile": "crates/libtmux/examples/api_construction.rs",
       "files": [
         {
@@ -13526,7 +13526,7 @@
         "libtmux::Server::builder"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
+      "sourceRevision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1",
       "sourceFile": "crates/libtmux/examples/api_construction.rs",
       "files": [
         {
@@ -13569,7 +13569,7 @@
         "libtmux::ServerBuilder::socket_path"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
+      "sourceRevision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1",
       "sourceFile": "crates/libtmux/examples/api_construction.rs",
       "files": [
         {
@@ -13612,7 +13612,7 @@
         "libtmux::ServerBuilder::config_file"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
+      "sourceRevision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1",
       "sourceFile": "crates/libtmux/examples/api_construction.rs",
       "files": [
         {
@@ -13655,7 +13655,7 @@
         "libtmux::ServerBuilder::default_timeout"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
+      "sourceRevision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1",
       "sourceFile": "crates/libtmux/examples/api_construction.rs",
       "files": [
         {
@@ -13698,7 +13698,7 @@
         "libtmux::ServerBuilder::build"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
+      "sourceRevision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1",
       "sourceFile": "crates/libtmux/examples/api_construction.rs",
       "files": [
         {
@@ -13741,7 +13741,7 @@
         "libtmux::Server::sessions"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
+      "sourceRevision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1",
       "sourceFile": "crates/libtmux/examples/api_listings.rs",
       "files": [
         {
@@ -13784,7 +13784,7 @@
         "libtmux::Server::windows"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
+      "sourceRevision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1",
       "sourceFile": "crates/libtmux/examples/api_listings.rs",
       "files": [
         {
@@ -13827,7 +13827,7 @@
         "libtmux::Server::panes"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
+      "sourceRevision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1",
       "sourceFile": "crates/libtmux/examples/api_listings.rs",
       "files": [
         {
@@ -13870,7 +13870,7 @@
         "libtmux::Server::hierarchy"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
+      "sourceRevision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1",
       "sourceFile": "crates/libtmux/examples/api_listings.rs",
       "files": [
         {
@@ -13913,7 +13913,7 @@
         "libtmux::Session::windows"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
+      "sourceRevision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1",
       "sourceFile": "crates/libtmux/examples/api_listings.rs",
       "files": [
         {
@@ -13956,7 +13956,7 @@
         "libtmux::Session::panes"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
+      "sourceRevision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1",
       "sourceFile": "crates/libtmux/examples/api_listings.rs",
       "files": [
         {
@@ -13999,7 +13999,7 @@
         "libtmux::Window::panes"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
+      "sourceRevision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1",
       "sourceFile": "crates/libtmux/examples/api_listings.rs",
       "files": [
         {
@@ -14042,7 +14042,7 @@
         "libtmux::Server::new_session"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
+      "sourceRevision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1",
       "sourceFile": "crates/libtmux/examples/api_creation.rs",
       "files": [
         {
@@ -14085,7 +14085,7 @@
         "libtmux::NewSessionOptions"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
+      "sourceRevision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1",
       "sourceFile": "crates/libtmux/examples/api_creation.rs",
       "files": [
         {
@@ -14128,7 +14128,7 @@
         "libtmux::Session::new_window"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
+      "sourceRevision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1",
       "sourceFile": "crates/libtmux/examples/api_creation.rs",
       "files": [
         {
@@ -14171,7 +14171,7 @@
         "libtmux::NewWindowOptions"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
+      "sourceRevision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1",
       "sourceFile": "crates/libtmux/examples/api_creation.rs",
       "files": [
         {
@@ -14214,7 +14214,7 @@
         "libtmux::Window::split"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
+      "sourceRevision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1",
       "sourceFile": "crates/libtmux/examples/api_creation.rs",
       "files": [
         {
@@ -14257,7 +14257,7 @@
         "libtmux::Pane::split"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
+      "sourceRevision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1",
       "sourceFile": "crates/libtmux/examples/api_creation.rs",
       "files": [
         {
@@ -14300,7 +14300,7 @@
         "libtmux::SplitOptions"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
+      "sourceRevision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1",
       "sourceFile": "crates/libtmux/examples/api_creation.rs",
       "files": [
         {
@@ -14343,7 +14343,7 @@
         "libtmux::query::Filterable"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
+      "sourceRevision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1",
       "sourceFile": "crates/libtmux/examples/api_query.rs",
       "files": [
         {
@@ -14386,7 +14386,7 @@
         "libtmux::query::QueryIteratorExt::matching"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
+      "sourceRevision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1",
       "sourceFile": "crates/libtmux/examples/api_query.rs",
       "files": [
         {
@@ -14429,7 +14429,7 @@
         "libtmux::query::QueryIteratorExt::exactly_one"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
+      "sourceRevision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1",
       "sourceFile": "crates/libtmux/examples/api_cardinality.rs",
       "files": [
         {
@@ -14472,7 +14472,7 @@
         "libtmux::query::QueryIteratorExt::one_or_none"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
+      "sourceRevision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1",
       "sourceFile": "crates/libtmux/examples/api_cardinality.rs",
       "files": [
         {
@@ -14515,7 +14515,7 @@
         "libtmux::query::ExactlyOneError"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
+      "sourceRevision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1",
       "sourceFile": "crates/libtmux/examples/api_cardinality.rs",
       "files": [
         {
@@ -14558,7 +14558,7 @@
         "libtmux::query::MultipleItemsError"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
+      "sourceRevision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1",
       "sourceFile": "crates/libtmux/examples/api_cardinality.rs",
       "files": [
         {
@@ -14601,7 +14601,7 @@
         "libtmux::Pane::send_keys"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
+      "sourceRevision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1",
       "sourceFile": "crates/libtmux/examples/api_input.rs",
       "files": [
         {
@@ -14644,7 +14644,7 @@
         "libtmux::Pane::send_key_names"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
+      "sourceRevision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1",
       "sourceFile": "crates/libtmux/examples/api_input.rs",
       "files": [
         {
@@ -14687,7 +14687,7 @@
         "libtmux::Pane::send_line"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
+      "sourceRevision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1",
       "sourceFile": "crates/libtmux/examples/api_capture.rs",
       "files": [
         {
@@ -14730,7 +14730,7 @@
         "libtmux::Pane::capture"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
+      "sourceRevision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1",
       "sourceFile": "crates/libtmux/examples/api_capture.rs",
       "files": [
         {
@@ -14773,7 +14773,7 @@
         "libtmux::Pane::wait_for_text"
       ],
       "sourceRepository": "libtmux/libtmux-rs",
-      "sourceRevision": "6942c1e602e537eab1d545e4b0589020162ce953",
+      "sourceRevision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1",
       "sourceFile": "crates/libtmux/examples/api_capture.rs",
       "files": [
         {

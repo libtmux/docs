@@ -1,7 +1,7 @@
 {
  "port": "rs",
  "repo": "libtmux/libtmux-rs",
- "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+ "revision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1",
  "symbols": {
   "blocking.Runtime.new": {
    "behavior": {
@@ -1011,7 +1011,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/control.rs",
-      "line": 1483
+      "line": 1485
      },
      "origin": "signature"
     },
@@ -1019,18 +1019,18 @@
      "text": "Returns an error when the connection closes, the command deadline elapses, or tmux refuses the capture, including when the pane vanished.",
      "source": {
       "file": "crates/libtmux/src/control.rs",
-      "line": 1476
+      "line": 1478
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 1483,
+     "line": 1485,
      "text": "pub async fn snapshot("
     },
     "errors": {
-     "line": 1476,
+     "line": 1478,
      "text": "Returns an error when the connection closes, the command deadline"
     }
    }
@@ -1041,14 +1041,14 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/control.rs",
-      "line": 1553
+      "line": 1555
      },
      "origin": "signature"
     }
    },
    "evidence": {
     "completion": {
-     "line": 1553,
+     "line": 1555,
      "text": "pub async fn next_chunk(&mut self) -> Option<Vec<u8>> {"
     }
    }
@@ -1059,7 +1059,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/control.rs",
-      "line": 1562
+      "line": 1564
      },
      "origin": "signature"
     },
@@ -1067,18 +1067,18 @@
      "text": "Returns an error when the connection failed before it was closed.",
      "source": {
       "file": "crates/libtmux/src/control.rs",
-      "line": 1561
+      "line": 1563
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 1562,
+     "line": 1564,
      "text": "pub async fn shutdown(self) -> Result<(), Error> {"
     },
     "errors": {
-     "line": 1561,
+     "line": 1563,
      "text": "Returns an error when the connection failed before it was closed."
     }
    }
@@ -1305,7 +1305,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 120
+      "line": 328
      },
      "origin": "signature"
     },
@@ -1313,18 +1313,18 @@
      "text": "Returns an error when `TMUX_PANE` is absent or is not a pane ID, or when the pane listing fails.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 94
+      "line": 302
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 120,
+     "line": 328,
      "text": "pub async fn from_env(server: &crate::Server) -> Result<Option<Self>, Error> {"
     },
     "errors": {
-     "line": 94,
+     "line": 302,
      "text": "Returns an error when `TMUX_PANE` is absent or is not a pane ID, or"
     }
    }
@@ -1335,7 +1335,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 130
+      "line": 338
      },
      "origin": "signature"
     },
@@ -1343,18 +1343,18 @@
      "text": "Returns an error when the value is absent or is not a pane ID, or when the pane listing fails.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 128
+      "line": 336
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 130,
+     "line": 338,
      "text": "pub async fn from_env_value("
     },
     "errors": {
-     "line": 128,
+     "line": 336,
      "text": "Returns an error when the value is absent or is not a pane ID, or when"
     }
    }
@@ -1365,14 +1365,14 @@
      "text": "The four edge predicates are what tell a caller a directional move has nowhere to go: a pane at the top has no neighbour above it, so selecting one would wrap or fail rather than move.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 248
+      "line": 456
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "errors": {
-     "line": 248,
+     "line": 456,
      "text": "The four edge predicates are what tell a caller a directional move has"
     }
    }
@@ -1383,7 +1383,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 395
+      "line": 603
      },
      "origin": "signature"
     },
@@ -1391,18 +1391,18 @@
      "text": "Returns [`Error::ObjectGone`] when the pane no longer exists, or a listing error when tmux could not be read.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 393
+      "line": 601
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 395,
+     "line": 603,
      "text": "pub async fn refresh(&mut self) -> Result<&mut Self, Error> {"
     },
     "errors": {
-     "line": 393,
+     "line": 601,
      "text": "Returns [`Error::ObjectGone`] when the pane no longer exists, or a"
     }
    }
@@ -1413,7 +1413,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 416
+      "line": 624
      },
      "origin": "signature"
     },
@@ -1421,18 +1421,18 @@
      "text": "Returns [`Error::ObjectGone`] when the pane no longer exists, or a listing error when tmux could not be read.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 414
+      "line": 622
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 416,
+     "line": 624,
      "text": "pub async fn refreshed(&self) -> Result<Self, Error> {"
     },
     "errors": {
-     "line": 414,
+     "line": 622,
      "text": "Returns [`Error::ObjectGone`] when the pane no longer exists, or a"
     }
    }
@@ -1443,7 +1443,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 433
+      "line": 641
      },
      "origin": "signature"
     },
@@ -1451,18 +1451,18 @@
      "text": "Returns an error when the parent lookup fails.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 432
+      "line": 640
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 433,
+     "line": 641,
      "text": "pub async fn window(&self) -> Result<Option<Window>, Error> {"
     },
     "errors": {
-     "line": 432,
+     "line": 640,
      "text": "Returns an error when the parent lookup fails."
     }
    }
@@ -1473,7 +1473,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 463
+      "line": 671
      },
      "origin": "signature"
     },
@@ -1481,18 +1481,18 @@
      "text": "Returns an error when the session listing fails.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 451
+      "line": 659
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 463,
+     "line": 671,
      "text": "pub async fn session(&self) -> Result<Option<Session>, Error> {"
     },
     "errors": {
-     "line": 451,
+     "line": 659,
      "text": "Returns an error when the session listing fails."
     }
    }
@@ -1503,7 +1503,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 511
+      "line": 719
      },
      "origin": "signature"
     },
@@ -1511,18 +1511,18 @@
      "text": "Returns an error when tmux refuses the split, which includes a pane too small to divide.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 479
+      "line": 687
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 511,
+     "line": 719,
      "text": "pub async fn split(&self, options: impl Into<crate::SplitOptions>) -> Result<Self, Error> {"
     },
     "errors": {
-     "line": 479,
+     "line": 687,
      "text": "Returns an error when tmux refuses the split, which includes a pane"
     }
    }
@@ -1533,7 +1533,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 556
+      "line": 764
      },
      "origin": "signature"
     },
@@ -1541,18 +1541,18 @@
      "text": "Returns an error when tmux refuses the resize.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 529
+      "line": 737
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 556,
+     "line": 764,
      "text": "pub async fn resize_by("
     },
     "errors": {
-     "line": 529,
+     "line": 737,
      "text": "Returns an error when tmux refuses the resize."
     }
    }
@@ -1563,7 +1563,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 613
+      "line": 821
      },
      "origin": "signature"
     },
@@ -1571,18 +1571,18 @@
      "text": "Returns an error when tmux refuses the request.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 585
+      "line": 793
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 613,
+     "line": 821,
      "text": "pub async fn toggle_zoom(&mut self) -> Result<&mut Self, Error> {"
     },
     "errors": {
-     "line": 585,
+     "line": 793,
      "text": "Returns an error when tmux refuses the request."
     }
    }
@@ -1593,7 +1593,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 642
+      "line": 850
      },
      "origin": "signature"
     },
@@ -1601,18 +1601,18 @@
      "text": "Returns an error when tmux refuses the command.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 641
+      "line": 849
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 642,
+     "line": 850,
      "text": "pub async fn send_keys(&self, keys: impl Into<OsString>) -> Result<(), Error> {"
     },
     "errors": {
-     "line": 641,
+     "line": 849,
      "text": "Returns an error when tmux refuses the command."
     }
    }
@@ -1623,7 +1623,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 669
+      "line": 877
      },
      "origin": "signature"
     },
@@ -1631,18 +1631,18 @@
      "text": "Returns an error when tmux refuses the line.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 662
+      "line": 870
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 669,
+     "line": 877,
      "text": "pub async fn send_line(&self, text: impl Into<OsString>) -> Result<(), Error> {"
     },
     "errors": {
-     "line": 662,
+     "line": 870,
      "text": "Returns an error when tmux refuses the line."
     }
    }
@@ -1653,7 +1653,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 683
+      "line": 891
      },
      "origin": "signature"
     },
@@ -1661,18 +1661,18 @@
      "text": "Returns an error when tmux does not recognize a key name.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 682
+      "line": 890
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 683,
+     "line": 891,
      "text": "pub async fn send_key_names<I, K>(&self, keys: I) -> Result<(), Error>"
     },
     "errors": {
-     "line": 682,
+     "line": 890,
      "text": "Returns an error when tmux does not recognize a key name."
     }
    }
@@ -1683,7 +1683,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 704
+      "line": 912
      },
      "origin": "signature"
     },
@@ -1691,18 +1691,18 @@
      "text": "Returns an error when tmux refuses the command.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 703
+      "line": 911
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 704,
+     "line": 912,
      "text": "pub async fn select(&mut self) -> Result<&mut Self, Error> {"
     },
     "errors": {
-     "line": 703,
+     "line": 911,
      "text": "Returns an error when tmux refuses the command."
     }
    }
@@ -1713,7 +1713,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 725
+      "line": 933
      },
      "origin": "signature"
     },
@@ -1721,18 +1721,18 @@
      "text": "Returns an error when tmux refuses the size.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 724
+      "line": 932
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 725,
+     "line": 933,
      "text": "pub async fn resize(&mut self, width: u32, height: u32) -> Result<&mut Self, Error> {"
     },
     "errors": {
-     "line": 724,
+     "line": 932,
      "text": "Returns an error when tmux refuses the size."
     }
    }
@@ -1743,7 +1743,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 753
+      "line": 961
      },
      "origin": "signature"
     },
@@ -1751,18 +1751,18 @@
      "text": "Returns an error when tmux refuses the command.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 752
+      "line": 960
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 753,
+     "line": 961,
      "text": "pub async fn kill(self) -> Result<(), Error> {"
     },
     "errors": {
-     "line": 752,
+     "line": 960,
      "text": "Returns an error when tmux refuses the command."
     }
    }
@@ -1773,7 +1773,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 801
+      "line": 1009
      },
      "origin": "signature"
     },
@@ -1781,18 +1781,18 @@
      "text": "Returns an error when the process cannot be started, captured, or awaited.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 776
+      "line": 984
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 801,
+     "line": 1009,
      "text": "pub async fn cmd(&self, command: Command) -> Result<CommandResult, Error> {"
     },
     "errors": {
-     "line": 776,
+     "line": 984,
      "text": "Returns an error when the process cannot be started, captured, or"
     }
    }
@@ -1803,7 +1803,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 838
+      "line": 1046
      },
      "origin": "signature"
     },
@@ -1811,18 +1811,18 @@
      "text": "Returns an error when tmux cannot be reached or refuses the format.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 816
+      "line": 1024
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 838,
+     "line": 1046,
      "text": "pub async fn format(&self, template: &str) -> Result<TmuxText, Error> {"
     },
     "errors": {
-     "line": 816,
+     "line": 1024,
      "text": "Returns an error when tmux cannot be reached or refuses the format."
     }
    }
@@ -1833,7 +1833,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 874
+      "line": 1082
      },
      "origin": "signature"
     },
@@ -1841,18 +1841,18 @@
      "text": "Returns an error when tmux cannot be reached or refuses the message.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 873
+      "line": 1081
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 874,
+     "line": 1082,
      "text": "pub async fn display(&self, message: &str) -> Result<(), Error> {"
     },
     "errors": {
-     "line": 873,
+     "line": 1081,
      "text": "Returns an error when tmux cannot be reached or refuses the message."
     }
    }
@@ -1863,7 +1863,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 898
+      "line": 1106
      },
      "origin": "signature"
     },
@@ -1871,18 +1871,18 @@
      "text": "Returns an error when tmux refuses the title.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 897
+      "line": 1105
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 898,
+     "line": 1106,
      "text": "pub async fn set_title(&mut self, title: impl Into<TmuxArg>) -> Result<&mut Self, Error> {"
     },
     "errors": {
-     "line": 897,
+     "line": 1105,
      "text": "Returns an error when tmux refuses the title."
     }
    }
@@ -1893,7 +1893,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 921
+      "line": 1129
      },
      "origin": "signature"
     },
@@ -1901,18 +1901,18 @@
      "text": "Returns an error when tmux refuses the command.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 920
+      "line": 1128
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 921,
+     "line": 1129,
      "text": "pub async fn clear_history(&self) -> Result<(), Error> {"
     },
     "errors": {
-     "line": 920,
+     "line": 1128,
      "text": "Returns an error when tmux refuses the command."
     }
    }
@@ -1923,7 +1923,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 939
+      "line": 1147
      },
      "origin": "signature"
     },
@@ -1931,18 +1931,18 @@
      "text": "Returns an error when no such buffer exists.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 938
+      "line": 1146
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 939,
+     "line": 1147,
      "text": "pub async fn paste_buffer(&self, name: Option<&str>) -> Result<(), Error> {"
     },
     "errors": {
-     "line": 938,
+     "line": 1146,
      "text": "Returns an error when no such buffer exists."
     }
    }
@@ -1953,7 +1953,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 964
+      "line": 1172
      },
      "origin": "signature"
     },
@@ -1961,18 +1961,18 @@
      "text": "Returns an error when tmux refuses the command.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 963
+      "line": 1171
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 964,
+     "line": 1172,
      "text": "pub async fn pipe(&self, command: Option<impl Into<OsString>>) -> Result<(), Error> {"
     },
     "errors": {
-     "line": 963,
+     "line": 1171,
      "text": "Returns an error when tmux refuses the command."
     }
    }
@@ -1983,7 +1983,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 983
+      "line": 1191
      },
      "origin": "signature"
     },
@@ -1991,18 +1991,18 @@
      "text": "Returns an error under [`Respawn::OnlyIfDead`] when the command is still running.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 981
+      "line": 1189
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 983,
+     "line": 1191,
      "text": "pub async fn respawn("
     },
     "errors": {
-     "line": 981,
+     "line": 1189,
      "text": "Returns an error under [`Respawn::OnlyIfDead`] when the command is"
     }
    }
@@ -2013,7 +2013,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 1011
+      "line": 1219
      },
      "origin": "signature"
     },
@@ -2021,18 +2021,18 @@
      "text": "Returns [`Error::ServerMismatch`] when `other` belongs to another server, or an error when tmux refuses the swap.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 1009
+      "line": 1217
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 1011,
+     "line": 1219,
      "text": "pub async fn swap_with(&mut self, other: &Self) -> Result<&mut Self, Error> {"
     },
     "errors": {
-     "line": 1009,
+     "line": 1217,
      "text": "Returns [`Error::ServerMismatch`] when `other` belongs to another"
     }
    }
@@ -2043,7 +2043,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 1078
+      "line": 1286
      },
      "origin": "signature"
     },
@@ -2051,18 +2051,18 @@
      "text": "Returns an error when tmux refuses the command. Being the window's only pane is not one of those, and neither is it a no-op: tmux relinks the window rather than breaking a pane out of it, which moves the window to a free index.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 1046
+      "line": 1254
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 1078,
+     "line": 1286,
      "text": "pub async fn break_out(self) -> Result<Self, Error> {"
     },
     "errors": {
-     "line": 1046,
+     "line": 1254,
      "text": "Returns an error when tmux refuses the command. Being the window's only"
     }
    }
@@ -2073,7 +2073,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 1134
+      "line": 1342
      },
      "origin": "signature"
     },
@@ -2081,18 +2081,18 @@
      "text": "Returns [`Error::ServerMismatch`] when `beside` belongs to another server, or an error when tmux refuses the move, including a pane joined to its own window.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 1103
+      "line": 1311
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 1134,
+     "line": 1342,
      "text": "pub async fn join_into("
     },
     "errors": {
-     "line": 1103,
+     "line": 1311,
      "text": "Returns [`Error::ServerMismatch`] when `beside` belongs to another"
     }
    }
@@ -2103,7 +2103,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 1161
+      "line": 1369
      },
      "origin": "signature"
     },
@@ -2111,18 +2111,18 @@
      "text": "Returns an error when tmux refuses the command.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 1160
+      "line": 1368
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 1161,
+     "line": 1369,
      "text": "pub async fn copy_mode(&self) -> Result<(), Error> {"
     },
     "errors": {
-     "line": 1160,
+     "line": 1368,
      "text": "Returns an error when tmux refuses the command."
     }
    }
@@ -2133,7 +2133,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 1186
+      "line": 1394
      },
      "origin": "signature"
     },
@@ -2141,7 +2141,7 @@
      "text": "This dispatches `copy-mode -q` rather than the cancel key, because the key reaches a pane through the copy-mode key table and clock mode and tree mode have none: sending it there is answered \"not in a mode\" while the pane stays in one.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 1177
+      "line": 1385
      },
      "origin": "doc comment"
     },
@@ -2149,22 +2149,22 @@
      "text": "Returns an error when tmux refuses the command.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 1185
+      "line": 1393
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 1186,
+     "line": 1394,
      "text": "pub async fn exit_mode(&self) -> Result<(), Error> {"
     },
     "boundedBy": {
-     "line": 1177,
+     "line": 1385,
      "text": "This dispatches `copy-mode -q` rather than the cancel key, because the"
     },
     "errors": {
-     "line": 1185,
+     "line": 1393,
      "text": "Returns an error when tmux refuses the command."
     }
    }
@@ -2175,7 +2175,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 1203
+      "line": 1411
      },
      "origin": "signature"
     },
@@ -2183,18 +2183,18 @@
      "text": "Returns an error when tmux refuses the command.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 1202
+      "line": 1410
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 1203,
+     "line": 1411,
      "text": "pub async fn clock_mode(&self) -> Result<(), Error> {"
     },
     "errors": {
-     "line": 1202,
+     "line": 1410,
      "text": "Returns an error when tmux refuses the command."
     }
    }
@@ -2205,7 +2205,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 1219
+      "line": 1427
      },
      "origin": "signature"
     },
@@ -2213,18 +2213,18 @@
      "text": "Returns an error when tmux refuses the command.",
      "source": {
       "file": "crates/libtmux/src/pane.rs",
-      "line": 1218
+      "line": 1426
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 1219,
+     "line": 1427,
      "text": "pub async fn send_prefix(&self) -> Result<(), Error> {"
     },
     "errors": {
-     "line": 1218,
+     "line": 1426,
      "text": "Returns an error when tmux refuses the command."
     }
    }
@@ -2457,7 +2457,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/pane/observe.rs",
-      "line": 438
+      "line": 440
      },
      "origin": "signature"
     },
@@ -2480,7 +2480,7 @@
    },
    "evidence": {
     "completion": {
-     "line": 438,
+     "line": 440,
      "text": "pub async fn wait_until("
     },
     "boundedBy": {
@@ -2799,14 +2799,14 @@
      "text": "Returns an error when a slot names an absent or non-earlier step, when that step does not produce the required tmux object, or when a step's own arguments cannot render as one tmux command -- such as [`SendKeys`] carrying literal text together with named keys.",
      "source": {
       "file": "crates/libtmux/src/plan.rs",
-      "line": 993
+      "line": 995
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "errors": {
-     "line": 993,
+     "line": 995,
      "text": "Returns an error when a slot names an absent or non-earlier step, when"
     }
    }
@@ -3602,26 +3602,38 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1216
+      "line": 1231
      },
      "origin": "signature"
+    },
+    "boundedBy": {
+     "text": "After a timeout or a lost connection it is left, because tmux may still write it.",
+     "source": {
+      "file": "crates/libtmux/src/server.rs",
+      "line": 1218
+     },
+     "origin": "doc comment"
     },
     "errors": {
      "text": "Returns an error when the buffer is missing or tmux cannot write the path.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1214
+      "line": 1229
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 1216,
+     "line": 1231,
      "text": "pub async fn save_buffer("
     },
+    "boundedBy": {
+     "line": 1218,
+     "text": "removed. After a timeout or a lost connection it is left, because tmux"
+    },
     "errors": {
-     "line": 1214,
+     "line": 1229,
      "text": "Returns an error when the buffer is missing or tmux cannot write the"
     }
    }
@@ -3632,7 +3644,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1245
+      "line": 1270
      },
      "origin": "signature"
     },
@@ -3640,18 +3652,18 @@
      "text": "Returns an error when tmux cannot be reached.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1244
+      "line": 1269
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 1245,
+     "line": 1270,
      "text": "pub async fn buffer(&self, name: impl AsRef<[u8]>) -> Result<Option<Vec<u8>>, Error> {"
     },
     "errors": {
-     "line": 1244,
+     "line": 1269,
      "text": "Returns an error when tmux cannot be reached."
     }
    }
@@ -3662,7 +3674,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1274
+      "line": 1299
      },
      "origin": "signature"
     },
@@ -3670,18 +3682,18 @@
      "text": "Returns an error when tmux refuses the listing, and [`Error::DecodeListing`] when its output does not decode.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1272
+      "line": 1297
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 1274,
+     "line": 1299,
      "text": "pub async fn buffer_names(&self) -> Result<Vec<TmuxText>, Error> {"
     },
     "errors": {
-     "line": 1272,
+     "line": 1297,
      "text": "Returns an error when tmux refuses the listing, and"
     }
    }
@@ -3692,7 +3704,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1311
+      "line": 1336
      },
      "origin": "signature"
     },
@@ -3700,18 +3712,18 @@
      "text": "Returns an error when no buffer has that name.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1310
+      "line": 1335
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 1311,
+     "line": 1336,
      "text": "pub async fn delete_buffer(&self, name: impl AsRef<[u8]>) -> Result<(), Error> {"
     },
     "errors": {
-     "line": 1310,
+     "line": 1335,
      "text": "Returns an error when no buffer has that name."
     }
    }
@@ -3722,7 +3734,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1327
+      "line": 1352
      },
      "origin": "signature"
     },
@@ -3730,18 +3742,18 @@
      "text": "Returns an error when tmux rejects the key or the command.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1326
+      "line": 1351
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 1327,
+     "line": 1352,
      "text": "pub async fn bind_key("
     },
     "errors": {
-     "line": 1326,
+     "line": 1351,
      "text": "Returns an error when tmux rejects the key or the command."
     }
    }
@@ -3752,7 +3764,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1351
+      "line": 1376
      },
      "origin": "signature"
     },
@@ -3760,18 +3772,18 @@
      "text": "Returns an error when tmux rejects the key.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1350
+      "line": 1375
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 1351,
+     "line": 1376,
      "text": "pub async fn unbind_key(&self, table: &str, key: &str) -> Result<(), Error> {"
     },
     "errors": {
-     "line": 1350,
+     "line": 1375,
      "text": "Returns an error when tmux rejects the key."
     }
    }
@@ -3782,7 +3794,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1378
+      "line": 1403
      },
      "origin": "signature"
     },
@@ -3790,18 +3802,18 @@
      "text": "Returns an error when tmux refuses the listing.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1377
+      "line": 1402
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 1378,
+     "line": 1403,
      "text": "pub async fn key_bindings(&self, table: Option<&str>) -> Result<Vec<String>, Error> {"
     },
     "errors": {
-     "line": 1377,
+     "line": 1402,
      "text": "Returns an error when tmux refuses the listing."
     }
    }
@@ -3812,7 +3824,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1432
+      "line": 1457
      },
      "origin": "signature"
     },
@@ -3820,18 +3832,18 @@
      "text": "Returns [`Error::ServerMismatch`] when the pane belongs to another server, or an error when tmux rejects the format or the pane is gone.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1430
+      "line": 1455
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 1432,
+     "line": 1457,
      "text": "pub async fn format(&self, pane: Option<&Pane>, format: &str) -> Result<TmuxText, Error> {"
     },
     "errors": {
-     "line": 1430,
+     "line": 1455,
      "text": "Returns [`Error::ServerMismatch`] when the pane belongs to another"
     }
    }
@@ -3842,7 +3854,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1495
+      "line": 1520
      },
      "origin": "signature"
     },
@@ -3850,18 +3862,18 @@
      "text": "Returns an error when the daemon is unsupported, cannot be reached, or refuses the listing.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1472
+      "line": 1497
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 1495,
+     "line": 1520,
      "text": "pub async fn prompt_history(&self, kind: PromptKind) -> Result<Vec<TmuxText>, Error> {"
     },
     "errors": {
-     "line": 1472,
+     "line": 1497,
      "text": "Returns an error when the daemon is unsupported, cannot be reached, or"
     }
    }
@@ -3872,7 +3884,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1530
+      "line": 1555
      },
      "origin": "signature"
     },
@@ -3880,18 +3892,18 @@
      "text": "Returns an error when the daemon is unsupported, cannot be reached, or refuses the command.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1528
+      "line": 1553
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 1530,
+     "line": 1555,
      "text": "pub async fn clear_prompt_history(&self) -> Result<(), Error> {"
     },
     "errors": {
-     "line": 1528,
+     "line": 1553,
      "text": "Returns an error when the daemon is unsupported, cannot be reached, or"
     }
    }
@@ -3902,7 +3914,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1568
+      "line": 1593
      },
      "origin": "signature"
     },
@@ -3910,18 +3922,18 @@
      "text": "Returns an error when the daemon is unsupported, cannot be reached, or refuses the listing.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1546
+      "line": 1571
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 1568,
+     "line": 1593,
      "text": "pub async fn access_rules(&self) -> Result<Vec<AccessRule>, Error> {"
     },
     "errors": {
-     "line": 1546,
+     "line": 1571,
      "text": "Returns an error when the daemon is unsupported, cannot be reached, or"
     }
    }
@@ -3932,7 +3944,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1587
+      "line": 1612
      },
      "origin": "signature"
     },
@@ -3940,18 +3952,18 @@
      "text": "Returns an error when the daemon is unsupported or refuses the change, which it does for the user who owns the server.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1585
+      "line": 1610
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 1587,
+     "line": 1612,
      "text": "pub async fn grant_access(&self, user: &str, mode: AccessMode) -> Result<(), Error> {"
     },
     "errors": {
-     "line": 1585,
+     "line": 1610,
      "text": "Returns an error when the daemon is unsupported or refuses the change,"
     }
    }
@@ -3962,7 +3974,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1609
+      "line": 1634
      },
      "origin": "signature"
     },
@@ -3970,18 +3982,18 @@
      "text": "Returns an error when the daemon is unsupported or refuses the change, which it does for the user who owns the server.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1607
+      "line": 1632
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 1609,
+     "line": 1634,
      "text": "pub async fn revoke_access(&self, user: &str) -> Result<(), Error> {"
     },
     "errors": {
-     "line": 1607,
+     "line": 1632,
      "text": "Returns an error when the daemon is unsupported or refuses the change,"
     }
    }
@@ -3992,7 +4004,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1627
+      "line": 1652
      },
      "origin": "signature"
     },
@@ -4000,18 +4012,18 @@
      "text": "Returns an error when tmux cannot read the file or a command in it fails.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1625
+      "line": 1650
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 1627,
+     "line": 1652,
      "text": "pub async fn source_file(&self, path: impl Into<PathBuf>) -> Result<(), Error> {"
     },
     "errors": {
-     "line": 1625,
+     "line": 1650,
      "text": "Returns an error when tmux cannot read the file or a command in it"
     }
    }
@@ -4022,7 +4034,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1656
+      "line": 1681
      },
      "origin": "signature"
     },
@@ -4030,18 +4042,18 @@
      "text": "Returns [`crate::ScopeError`] when creation, the operation, or cleanup fails. The operation's error needs no conversion into [`Error`].",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1647
+      "line": 1672
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 1656,
+     "line": 1681,
      "text": "pub async fn with_session<T, E>("
     },
     "errors": {
-     "line": 1647,
+     "line": 1672,
      "text": "Returns [`crate::ScopeError`] when creation, the operation, or cleanup"
     }
    }
@@ -4052,7 +4064,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1693
+      "line": 1718
      },
      "origin": "signature"
     },
@@ -4060,18 +4072,18 @@
      "text": "Returns an error when tmux refuses the command.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1679
+      "line": 1704
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 1693,
+     "line": 1718,
      "text": "pub async fn run_shell(&self, command: impl Into<OsString>) -> Result<Vec<TmuxText>, Error> {"
     },
     "errors": {
-     "line": 1679,
+     "line": 1704,
      "text": "Returns an error when tmux refuses the command."
     }
    }
@@ -4082,7 +4094,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1730
+      "line": 1755
      },
      "origin": "signature"
     },
@@ -4090,18 +4102,18 @@
      "text": "Returns an error when tmux refuses to enqueue the command.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1729
+      "line": 1754
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 1730,
+     "line": 1755,
      "text": "pub async fn spawn_shell(&self, command: impl Into<OsString>) -> Result<(), Error> {"
     },
     "errors": {
-     "line": 1729,
+     "line": 1754,
      "text": "Returns an error when tmux refuses to enqueue the command."
     }
    }
@@ -4112,7 +4124,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1747
+      "line": 1772
      },
      "origin": "signature"
     },
@@ -4120,18 +4132,18 @@
      "text": "Returns an error when tmux cannot be run.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1746
+      "line": 1771
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 1747,
+     "line": 1772,
      "text": "pub async fn start(&self) -> Result<(), Error> {"
     },
     "errors": {
-     "line": 1746,
+     "line": 1771,
      "text": "Returns an error when tmux cannot be run."
     }
    }
@@ -4142,7 +4154,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1790
+      "line": 1815
      },
      "origin": "signature"
     },
@@ -4150,7 +4162,7 @@
      "text": "Returns an error when tmux cannot be reached, or answers with something that is not a pid and a start time this platform's `SystemTime` holds.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1767
+      "line": 1792
      },
      "origin": "doc comment"
     },
@@ -4158,22 +4170,22 @@
      "text": "A socket path does not identify a daemon. tmux reuses the socket file across restarts -- it survives `kill-server`, and a replacement daemon binds the same inode -- so an endpoint that looks unchanged can be a different server holding different objects under the same ids.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1753
+      "line": 1778
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 1790,
+     "line": 1815,
      "text": "pub async fn generation(&self) -> Result<ServerGeneration, Error> {"
     },
     "errors": {
-     "line": 1767,
+     "line": 1792,
      "text": "Returns an error when tmux cannot be reached, or answers with something"
     },
     "transport": {
-     "line": 1753,
+     "line": 1778,
      "text": "A socket path does not identify a daemon. tmux reuses the socket file"
     }
    }
@@ -4184,7 +4196,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1819
+      "line": 1844
      },
      "origin": "signature"
     },
@@ -4192,18 +4204,18 @@
      "text": "Returns [`Error::ServerGenerationChanged`] when a different daemon now holds this endpoint, or a transport error when tmux cannot be reached.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1817
+      "line": 1842
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 1819,
+     "line": 1844,
      "text": "pub async fn require_generation(&self, expected: ServerGeneration) -> Result<(), Error> {"
     },
     "errors": {
-     "line": 1817,
+     "line": 1842,
      "text": "Returns [`Error::ServerGenerationChanged`] when a different daemon now"
     }
    }
@@ -4214,7 +4226,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1832
+      "line": 1857
      },
      "origin": "signature"
     },
@@ -4222,18 +4234,18 @@
      "text": "Every failure becomes `false`, including a missing executable.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1830
+      "line": 1855
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 1832,
+     "line": 1857,
      "text": "pub async fn is_alive(&self) -> bool {"
     },
     "errors": {
-     "line": 1830,
+     "line": 1855,
      "text": "Every failure becomes `false`, including a missing executable. Use"
     }
    }
@@ -4244,7 +4256,7 @@
      "text": "Returns a future that runs when awaited.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1842
+      "line": 1867
      },
      "origin": "signature"
     },
@@ -4252,18 +4264,18 @@
      "text": "Returns [`Error::ServerGone`] when no daemon is answering, or another dispatch error when tmux cannot be asked.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1840
+      "line": 1865
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 1842,
+     "line": 1867,
      "text": "pub async fn check_alive(&self) -> Result<(), Error> {"
     },
     "errors": {
-     "line": 1840,
+     "line": 1865,
      "text": "Returns [`Error::ServerGone`] when no daemon is answering, or another"
     }
    }
@@ -4274,7 +4286,7 @@
      "text": "Commands wait for the sender's own [`reply_timeout`], not this server's [`default_timeout`].",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1874
+      "line": 1899
      },
      "origin": "doc comment"
     },
@@ -4282,18 +4294,18 @@
      "text": "Returns an error when the sender reaches a different server, or when the tmux version cannot be detected. Detection runs here, once, through this server's process transport, because `tmux -V` is a client flag and has no control-mode spelling; the returned handle never probes.",
      "source": {
       "file": "crates/libtmux/src/server.rs",
-      "line": 1887
+      "line": 1912
      },
      "origin": "doc comment"
     }
    },
    "evidence": {
     "completion": {
-     "line": 1874,
+     "line": 1899,
      "text": "Commands wait for the sender's own [`reply_timeout`], not this server's"
     },
     "errors": {
-     "line": 1887,
+     "line": 1912,
      "text": "Returns an error when the sender reaches a different server, or when"
     }
    }

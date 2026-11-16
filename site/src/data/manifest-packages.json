@@ -262,35 +262,35 @@
     },
     "rs": {
       "repo": "libtmux/libtmux-rs",
-      "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+      "revision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1",
       "distributions": [
         {
           "name": "libtmux",
           "version": "0.1.2",
           "manifest": "crates/libtmux/Cargo.toml",
           "repo": "libtmux/libtmux-rs",
-          "revision": "6942c1e602e537eab1d545e4b0589020162ce953"
+          "revision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1"
         },
         {
           "name": "libtmux-macros",
           "version": "0.1.2",
           "manifest": "crates/libtmux-macros/Cargo.toml",
           "repo": "libtmux/libtmux-rs",
-          "revision": "6942c1e602e537eab1d545e4b0589020162ce953"
+          "revision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1"
         },
         {
           "name": "tmux-mcp",
           "version": "0.1.2",
           "manifest": "crates/tmux-mcp/Cargo.toml",
           "repo": "libtmux/libtmux-rs",
-          "revision": "6942c1e602e537eab1d545e4b0589020162ce953"
+          "revision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1"
         },
         {
           "name": "tmux-workspace",
           "version": "0.1.2",
           "manifest": "crates/tmux-workspace/Cargo.toml",
           "repo": "libtmux/libtmux-rs",
-          "revision": "6942c1e602e537eab1d545e4b0589020162ce953"
+          "revision": "9ed48211aa85a6de705c8125fb61e196a8c4a1e1"
         }
       ],
       "units": []

@@ -35,8 +35,9 @@ practice](/guides/querying-and-filtering/) covers absent and ambiguous matches.
 **In this page:** read whole from the file
 
 **Checked by:** run to completion against a throwaway tmux by
-`scripts/run-examples.sh` (`just examples`), which CI runs and which also
-asserts the example leaves no session behind
+`scripts/run-examples/run_examples.py` (`just examples`), which CI runs. It
+fails when the example exits nonzero, does not print its expected line, or
+leaves a socket behind
 
 ### Source inclusion
 

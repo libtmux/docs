@@ -157,7 +157,7 @@ const RUST = {
 
 const MANIFEST = (checkout, extra) => `[package]\nname = "docs-program"\nversion = "0.0.0"\nedition = "2024"\npublish = false\n\n[dependencies]\nlibtmux = { path = ${JSON.stringify(join(checkout, 'crates/libtmux'))} }\ntempfile = "3.20"\ntokio = { version = "1.40", features = ["macros", "rt", "time"] }\n${extra ?? ''}`
 
-/** A capability's program from the example cache; the cache holds no output.txt for Rust, so the output is what `scripts/run-examples.sh` requires of it. */
+/** A capability's program from the example cache; the cache holds no output.txt for Rust, so the output is what `scripts/run-examples/run_examples.py` requires of it. */
 function capabilityProgram(root, file, output) {
   const cache = JSON.parse(readFileSync(join(root, 'site/src/data/example-sources.json'), 'utf8'))
   const program = cache[`rs:${file}`]

@@ -3080,9 +3080,10 @@
       "why": "display shows a message with display-message; it sends no display-panes.",
       "evidence": [
         {
-          "at": "crates/libtmux/src/pane.rs:877",
+          "at": "crates/libtmux/src/pane.rs",
+          "within": "display",
           "has": [
-            "display-message"
+            "Command::new(\"display-message\")"
           ]
         }
       ]
