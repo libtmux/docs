@@ -43,7 +43,6 @@
   "ports/java/concepts/queries.md": 1,
   "ports/java/concepts/server-session-window-pane.md": 1,
   "ports/java/examples/capture-pane-output.md": 3,
-  "ports/java/guides/attaching-to-tmux.md": 2,
   "ports/java/mcp/examples.md": 11,
   "ports/java/workspace/internals/examples.md": 3,
   "ports/julia/examples/observe-output.md": 1,

@@ -141,13 +141,13 @@
       ],
       "page": "ports/java/guides/attaching-to-tmux",
       "shellRecipe": [
-        "sh run.sh gradle --console=plain --no-daemon run"
+        "gradle --console=plain --no-daemon run"
       ],
       "expectedOutput": "work",
       "files": [
         {
           "name": "Connect.java",
-          "sha256": "0dd7f4fef844f89ed6b6f424f3bce74daa43beb5280f43b12ab44cc1f4bf56a3"
+          "sha256": "0defbda7819f7f602fcec7bfe739abe61b0d2c9330c9408fc5e99b27202ddf29"
         },
         {
           "name": "build.gradle.kts",
@@ -156,10 +156,6 @@
         {
           "name": "settings.gradle.kts",
           "sha256": "8a9a1cef4b025e20741219b949c5a591444f9f3b850534f1cc5b2f9164b9c126"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "c7c6c6c7798d10dd389beaa6a5843f145a1bf0497acae99e229468cf0add072d"
         }
       ],
       "tmux": [
