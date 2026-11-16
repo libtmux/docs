@@ -5,6 +5,8 @@ const EC_LANGS = new Set([
   'toml', 'xml', 'diff', 'text', 'tmux-usage', 'tmux-shell', 'tmux-config', 'powershell', 'julia', 'elixir', 'properties', 'ini',
   'cmake', 'ocaml', 'lisp', 'haskell', 'clojure', 'erlang',
   'raku', 'groovy', 'make', 'just', 'dockerfile', 'markdown', 'rst',
+  // The site's own grammars for file formats Shiki does not bundle (`lib/grammars`).
+  'cabal', 'dune', 'gemfile-lock', 'gomod', 'opam',
 ])
 
 const EC_ALIASES: Record<string, string> = {
@@ -16,7 +18,6 @@ const EC_ALIASES: Record<string, string> = {
   rs: 'rust',
   'c#': 'csharp',
   cs: 'csharp',
-  dune: 'lisp',
   sbt: 'scala',
   ml: 'ocaml',
   ex: 'elixir',
@@ -27,6 +28,14 @@ const EC_ALIASES: Record<string, string> = {
   tmux: 'tmux-config',
   plaintext: 'text',
   '': 'text',
+  'cabal.project': 'cabal',
+  'cabal-project': 'cabal',
+  'dune-project': 'dune',
+  'dune-workspace': 'dune',
+  'gemfile.lock': 'gemfile-lock',
+  'go.mod': 'gomod',
+  'go-mod': 'gomod',
+  'go.work': 'gomod',
 }
 
 export function codeLang(lang?: string): string {
@@ -43,8 +52,8 @@ const EXTENSIONS: Readonly<Record<string, string>> = {
   cs: 'csharp', fs: 'fsharp', fsi: 'fsharp', fsx: 'fsharp', swift: 'swift',
   c: 'c', h: 'cpp', hpp: 'cpp', hh: 'cpp', cc: 'cpp', cpp: 'cpp', cxx: 'cpp',
   pl: 'perl', pm: 'perl', t: 'perl', raku: 'raku', rakumod: 'raku', rakudoc: 'raku', p6: 'raku', pm6: 'raku',
-  erl: 'erlang', hrl: 'erlang', 'app.src': 'erlang', ex: 'elixir', exs: 'elixir', hs: 'haskell',
-  ml: 'ocaml', mli: 'ocaml',
+  erl: 'erlang', hrl: 'erlang', 'app.src': 'erlang', ex: 'elixir', exs: 'elixir', hs: 'haskell', cabal: 'cabal',
+  ml: 'ocaml', mli: 'ocaml', opam: 'opam',
   lisp: 'lisp', lsp: 'lisp', cl: 'lisp', asd: 'lisp', clj: 'clojure', cljc: 'clojure', cljs: 'clojure', edn: 'clojure',
   jl: 'julia', ps1: 'powershell', psm1: 'powershell', psd1: 'powershell',
   json: 'json', yaml: 'yaml', yml: 'yaml', toml: 'toml', xml: 'xml', cmake: 'cmake', sh: 'bash',
@@ -54,9 +63,11 @@ const EXTENSIONS: Readonly<Record<string, string>> = {
 
 /** Files that take their language from the whole name. */
 const FILENAMES: Readonly<Record<string, string>> = {
-  Gemfile: 'ruby', Rakefile: 'ruby',
+  'cabal.project': 'cabal', 'cabal.project.local': 'cabal', 'cabal.project.freeze': 'cabal',
+  'go.mod': 'gomod', 'go.work': 'gomod',
+  Gemfile: 'ruby', Rakefile: 'ruby', 'Gemfile.lock': 'gemfile-lock',
   cpanfile: 'perl', 'rebar.config': 'erlang', 'rebar.config.script': 'erlang', 'rebar.lock': 'erlang',
-  dune: 'lisp', 'dune-project': 'lisp', 'dune-workspace': 'lisp',
+  dune: 'dune', 'dune-project': 'dune', 'dune-workspace': 'dune',
   'CMakeLists.txt': 'cmake', Makefile: 'make', justfile: 'just', Justfile: 'just', Dockerfile: 'dockerfile',
   'Cargo.lock': 'toml', 'project.clj': 'clojure',
 }

@@ -1,0 +1,50 @@
+{
+  "name": "dune",
+  "scopeName": "source.dune",
+  "patterns": [
+    { "include": "#comment" },
+    { "include": "#string" },
+    { "include": "#variable" },
+    { "include": "#list" },
+    { "include": "#atom" }
+  ],
+  "repository": {
+    "comment": {
+      "patterns": [
+        { "match": ";.*$", "name": "comment.line.semicolon.dune" },
+        { "begin": "#\\|", "end": "\\|#", "name": "comment.block.dune", "patterns": [{ "include": "#nested-comment" }] }
+      ]
+    },
+    "nested-comment": {
+      "begin": "#\\|",
+      "end": "\\|#",
+      "patterns": [{ "include": "#nested-comment" }]
+    },
+    "list": {
+      "begin": "(\\()[ \\t]*([A-Za-z_][\\w.-]*)?(?![\\w.-])",
+      "beginCaptures": { "2": { "name": "entity.name.function.stanza.dune" } },
+      "end": "\\)",
+      "patterns": [{ "include": "$self" }]
+    },
+    "string": {
+      "begin": "\"",
+      "end": "\"",
+      "name": "string.quoted.double.dune",
+      "patterns": [
+        { "match": "\\\\(?:[\\\\\"ntbr ]|x[0-9A-Fa-f]{2}|\\d{3}|\\n)", "name": "constant.character.escape.dune" },
+        { "include": "#variable" }
+      ]
+    },
+    "variable": {
+      "match": "%\\{[^}\\s]*\\}",
+      "name": "variable.name.interpolation.dune"
+    },
+    "atom": {
+      "patterns": [
+        { "match": "(?<![\\w.:-])-?\\d+(?:\\.\\d+)*(?![\\w.:-])", "name": "constant.numeric.dune" },
+        { "match": "(?<![\\w.])(?:true|false)(?![\\w.:-])", "name": "constant.language.boolean.dune" },
+        { "match": ":[A-Za-z_][\\w.-]*", "name": "constant.other.keyword.dune" }
+      ]
+    }
+  }
+}
