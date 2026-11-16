@@ -74,21 +74,17 @@
       ],
       "page": "ports/go/guides/attaching-to-tmux",
       "shellRecipe": [
-        "go mod tidy &&\n  sh run.sh go run ."
+        "go mod tidy &&\n  go run ."
       ],
       "expectedOutput": "work",
       "files": [
         {
           "name": "main.go",
-          "sha256": "c94705da738b099fc78dd646ee8c49e1405fea1da2259bdc327a4849684b51cc"
+          "sha256": "1bf3c76e2d2580013e7ef7607fa8ded1ca892da6ff621b097db44e5d6bdc51f7"
         },
         {
           "name": "go.mod",
           "sha256": "b52abafd550ce6386bc3353e9da8efd1822e8175370e0874a840b705a90f43db"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "2163f09a3a6ba881afb8d0e9750910b652f39c762d31013f2dbc4b3868c3c565"
         }
       ],
       "tmux": [
