@@ -21,7 +21,7 @@ created it; later commands can still fail if an object has disappeared.
 
 [Attaching to tmux](../attaching-to-tmux/) provides the complete TypeScript program
 and its setup. It searches an existing server for `work`, prints the name and
-reports an absent session. Its launcher checks that the server remains running.
+reports an absent session. It leaves the server running.
 
 For a more general predicate, decide whether zero or several results are valid
 before indexing a collection. Keep lookup and command failures visible: another

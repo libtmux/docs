@@ -41,21 +41,17 @@
       ],
       "page": "ports/ts/guides/attaching-to-tmux",
       "shellRecipe": [
-        "bun install &&\n  sh run.sh bun run connect.ts"
+        "bun install &&\n  bun run connect.ts"
       ],
       "expectedOutput": "work",
       "files": [
         {
           "name": "connect.ts",
-          "sha256": "bd4f946b8fc2a24e1aab9d366402fa1260a3a05542023f3454e0686c72ba3d9d"
+          "sha256": "150862faafa1b4d80e089cfed49efeb8644e3b5cdf35d296d86a36b0f088869e"
         },
         {
           "name": "package.json",
           "sha256": "26d88a6feea572fe35fd80ae3bab9f99290f491c6398ce9b761218a7442cbf5f"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "124a197acc79bf28595ebf8ea43cc9b89565d2f97ca5cc5ae64257674bdad539"
         }
       ],
       "tmux": [
