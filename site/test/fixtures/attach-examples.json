@@ -428,17 +428,13 @@
       ],
       "page": "ports/lua/guides/attaching-to-tmux",
       "shellRecipe": [
-        "luarocks --tree .rocks install luv 1.52.1-0 &&\n  luarocks --tree .rocks install libtmux 0.1.1-1 &&\n  eval \"$(luarocks --tree .rocks path)\" &&\n  sh run.sh lua connect.lua"
+        "luarocks --tree .rocks install luv 1.52.1-0 &&\n  luarocks --tree .rocks install libtmux 0.1.1-1 &&\n  eval \"$(luarocks --tree .rocks path)\" &&\n  lua connect.lua"
       ],
       "expectedOutput": "work",
       "files": [
         {
           "name": "connect.lua",
-          "sha256": "4941e3f804521ec54e8692d83f6f3f22a0badb56affe4c24232ea28973fed2d6"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "18b752e8b0c36ef899af7bb5d4454469b34e5a70f6cfd7939ef5efec13c931a1"
+          "sha256": "8b17cc5fa72cbaad43d03df76baadcd819fc76a95308f080e6d22879e9a11899"
         }
       ],
       "tmux": [

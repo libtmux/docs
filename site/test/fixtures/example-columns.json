@@ -53,7 +53,6 @@
   "ports/kotlin/concepts/server-session-window-pane.md": 2,
   "ports/kotlin/concepts/transports.md": 4,
   "ports/kotlin/concepts/workspaces.md": 3,
-  "ports/lua/guides/attaching-to-tmux.md": 3,
   "ports/py/examples/capture-pane-output.md": 1,
   "ports/py/guides/attaching-to-tmux.md": 1,
   "ports/rs/concepts/queries.md": 4,

@@ -12043,6 +12043,13 @@
   {
    "port": "lua",
    "symbol": "libtmux.Server:command",
+   "page": "/lua/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Server:command",
    "page": "/lua/latest/guides/commands/",
    "title": "Execute tmux commands",
    "section": "guides"
@@ -12094,6 +12101,13 @@
    "symbol": "libtmux.Server:handle",
    "page": "/lua/latest/guides/snapshots/",
    "title": "Capture server state",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Server:new_session",
+   "page": "/lua/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
    "section": "guides"
   },
   {
