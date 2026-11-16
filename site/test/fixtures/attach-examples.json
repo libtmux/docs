@@ -360,21 +360,17 @@
       ],
       "page": "ports/fsharp/guides/attaching-to-tmux",
       "shellRecipe": [
-        "dotnet build Connect.fsproj --maxcpucount:1 &&\n  sh run.sh dotnet run --project Connect.fsproj --no-build"
+        "dotnet build Connect.fsproj --maxcpucount:1 &&\n  dotnet run --project Connect.fsproj --no-build"
       ],
       "expectedOutput": "work",
       "files": [
         {
           "name": "Program.fs",
-          "sha256": "22a62e8423aa21ecb88aba93bf1cbf0520aa84c968ce18bb0559122b314517bc"
+          "sha256": "035b38c9db7169392a34b09bc91857f40a8e78d6ec32996d9866379e199ded2b"
         },
         {
           "name": "Connect.fsproj",
           "sha256": "dfe3aea0a74c91c02a57cf5ad88be362c16fc62fa5f349c9d2a8d538a5482c99"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "ecb16ad7a624faf847875e73372706fa988893af7177c46a7912ed9364de88da"
         }
       ],
       "tmux": [

@@ -433,21 +433,17 @@
           "sha256": "878ee558f6c48bae48dd555706740a16ba3c88d07fb36079d34d8346dc2c8b0a"
         },
         {
-          "name": "run.sh",
-          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
-        },
-        {
           "name": "Hierarchy.fs",
-          "sha256": "1b2b94d47c06e1f2ce86e46b3d55eb0576414e2f2e59d8d0328e94e206506046"
+          "sha256": "ea4c4e8779e485b30a1090f1fb2277c3464a2a1f9245d990c1efa66fae53dce5"
         },
         {
           "name": "Refresh.fs",
-          "sha256": "55e801b201571844a295b9b6f002632d0b34c45212773e998d251ac4fc4eaedf"
+          "sha256": "111408dbf77817c992277815de17625fb01e861edf53285702d6c4f4fc07200e"
         }
       ],
       "shellRecipe": [
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Hierarchy &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Hierarchy",
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Refresh &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Refresh"
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Hierarchy &&\n  dotnet run --project Query.fsproj --no-build -p:Example=Hierarchy",
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Refresh &&\n  dotnet run --project Query.fsproj --no-build -p:Example=Refresh"
       ],
       "expectedOutputs": [
         [
@@ -459,7 +455,7 @@
           "editor -> renamed"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup."
+      "verificationScope": "Each displayed program runs independently with its displayed project and published library. Native checks cover assertions, stdout and cleanup."
     },
     {
       "port": "fsharp",
@@ -476,26 +472,22 @@
           "sha256": "878ee558f6c48bae48dd555706740a16ba3c88d07fb36079d34d8346dc2c8b0a"
         },
         {
-          "name": "run.sh",
-          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
-        },
-        {
           "name": "Local.fs",
-          "sha256": "367291c85b89affaddbd6104932c4ab5e14b49fc01e339f2eb82ff67f0adbd15"
+          "sha256": "f4e66283ae7e0a533f4af9d4c69f4b9ad4939bf03ebf03f7c54e68cac7c35264"
         },
         {
           "name": "Cardinality.fs",
-          "sha256": "705ca5f30a953763a11d3bc206ffe647616d8537e4a15373f1da48c1bf1a88d9"
+          "sha256": "44b0dfebf9e68e9c13b8764aba80768277fc23b13c7344bd21f2aeab6edbc7ad"
         },
         {
           "name": "Relations.fs",
-          "sha256": "19d95e24c7a274257ba65e15fae9b773e0418e5266ef0436f5ba78c16e7d8040"
+          "sha256": "65e9e9635d4b340ac7693944c018a61ba8828c250bf54166100d4c167462883c"
         }
       ],
       "shellRecipe": [
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Local &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Local",
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Cardinality &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Cardinality",
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Relations &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Relations"
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Local &&\n  dotnet run --project Query.fsproj --no-build -p:Example=Local",
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Cardinality &&\n  dotnet run --project Query.fsproj --no-build -p:Example=Cardinality",
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Relations &&\n  dotnet run --project Query.fsproj --no-build -p:Example=Relations"
       ],
       "expectedOutputs": [
         [
@@ -511,7 +503,7 @@
           "no editor: work-two"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup."
+      "verificationScope": "Each displayed program runs independently with its displayed project and published library. Native checks cover assertions, stdout and cleanup."
     },
     {
       "port": "fsharp",
@@ -527,21 +519,17 @@
           "sha256": "878ee558f6c48bae48dd555706740a16ba3c88d07fb36079d34d8346dc2c8b0a"
         },
         {
-          "name": "run.sh",
-          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
-        },
-        {
           "name": "Local.fs",
-          "sha256": "367291c85b89affaddbd6104932c4ab5e14b49fc01e339f2eb82ff67f0adbd15"
+          "sha256": "f4e66283ae7e0a533f4af9d4c69f4b9ad4939bf03ebf03f7c54e68cac7c35264"
         },
         {
           "name": "Control.fs",
-          "sha256": "f51c2714f86a4951f1717ec0f6fd565e551def94e70013dec597152f44b52031"
+          "sha256": "b30ee1366e5a0690db0957496847b556af93c5541665cec0628665618e22f2a9"
         }
       ],
       "shellRecipe": [
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Local &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Local",
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Control &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Control"
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Local &&\n  dotnet run --project Query.fsproj --no-build -p:Example=Local",
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Control &&\n  dotnet run --project Query.fsproj --no-build -p:Example=Control"
       ],
       "expectedOutputs": [
         [
@@ -552,7 +540,7 @@
           "control client closed; server still running"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup. Local.fs also passes on tmux 3.3a; Control.fs refuses tmux earlier than 3.7."
+      "verificationScope": "Each displayed program runs independently with its displayed project and published library. Native checks cover assertions, stdout and cleanup. Local.fs also passes on tmux 3.3a; Control.fs refuses tmux earlier than 3.7."
     },
     {
       "port": "fsharp",
@@ -569,21 +557,17 @@
           "sha256": "878ee558f6c48bae48dd555706740a16ba3c88d07fb36079d34d8346dc2c8b0a"
         },
         {
-          "name": "run.sh",
-          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
-        },
-        {
           "name": "Layout.fs",
-          "sha256": "bb000c5be099288ee305204d32533c6296c498225654968698db282a4859ddc7"
+          "sha256": "42953399d6224b4077908a0365df3dc519bd62daab971887e7d3aeb66afe822f"
         },
         {
           "name": "ReuseLayout.fs",
-          "sha256": "1b81e1fdf0b1a8346c9c5cf10add566798dc07c5418fed049d0a291c03d7b313"
+          "sha256": "9c89e0fcb2704ad3308dbe36069bff2821d18a92b58ff27de04134f67c94fb14"
         }
       ],
       "shellRecipe": [
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Layout &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Layout",
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=ReuseLayout &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=ReuseLayout"
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Layout &&\n  dotnet run --project Query.fsproj --no-build -p:Example=Layout",
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=ReuseLayout &&\n  dotnet run --project Query.fsproj --no-build -p:Example=ReuseLayout"
       ],
       "expectedOutputs": [
         [
@@ -593,7 +577,7 @@
           "one tools window after two calls"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup."
+      "verificationScope": "Each displayed program runs independently with its displayed project and published library. Native checks cover assertions, stdout and cleanup."
     },
     {
       "port": "go",
