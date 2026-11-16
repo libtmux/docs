@@ -103,21 +103,17 @@
       ],
       "page": "ports/rs/guides/attaching-to-tmux",
       "shellRecipe": [
-        "sh run.sh cargo +1.97.1 run"
+        "cargo +1.97.1 run"
       ],
       "expectedOutput": "work",
       "files": [
         {
           "name": "src/main.rs",
-          "sha256": "931e123008ee498523d89f0036ed480f4a9da0a47e0572a75f58df6034dc1ff1"
+          "sha256": "75411ee17e2173586d75a2af4f4f48b13ea75aee9b817617d590a54bd3da3e32"
         },
         {
           "name": "Cargo.toml",
-          "sha256": "f14dd274f09fe52d0233e5b0f05aa77d35a45853374d7f131f1106d320f97736"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "d984d9482d78cb452286b071afad4aca2d21ee271d44920b0818fabe8e6cc511"
+          "sha256": "d7cc6b13551e91aa5e76185fd9643713a570f40aa484549c8d898c44b9d63e4b"
         }
       ],
       "tmux": [

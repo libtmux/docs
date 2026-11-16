@@ -11,7 +11,7 @@ tableOfContents: true
 ---
 
 Connect a `Server` to an explicit socket and find the existing `work` session.
-The program prints its name and leaves the tmux server running. It reports an
+The program prints its name and leaves that server running. It reports an
 error if the connection fails or the session is absent.
 
 This controls tmux from your program. To open a session in your terminal, use
@@ -22,20 +22,35 @@ interactive attachment and detaching.
 
 ## Connect to an existing server
 
-Save the complete program as `src/main.rs`. `LIBTMUX_SOCKET_PATH` selects
-the existing server. The launcher below supplies a private socket for trying
-the example.
+Save the complete program as `src/main.rs`. `LIBTMUX_SOCKET_PATH` selects the
+existing server: `find_work` connects a new `Server` to that socket, prints the
+`work` session and leaves the tmux server running.
+
+Without the variable, the program starts a demonstration server to stand in
+for yours. `demonstrate` creates a `work` session on a socket in a new
+temporary directory, then stops that server and removes the directory, even if
+the lookup fails. If tmux does not stop, the program keeps the directory and
+prints its location.
 
 ```rust title="src/main.rs"
 use std::error::Error;
+use std::path::PathBuf;
 use std::time::Duration;
 
-use libtmux::Server;
+use libtmux::{NewSessionOptions, Server};
 use tokio::time::timeout;
 
+type Failure = Box<dyn Error>;
+
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
-    let socket = std::env::var("LIBTMUX_SOCKET_PATH")?;
+async fn main() -> Result<(), Failure> {
+    match std::env::var_os("LIBTMUX_SOCKET_PATH") {
+        Some(socket) => find_work(socket.into()).await,
+        None => demonstrate().await,
+    }
+}
+
+async fn find_work(socket: PathBuf) -> Result<(), Failure> {
     let server = Server::builder().socket_path(socket).build()?;
     let result = timeout(Duration::from_secs(5), async {
         let sessions = server.sessions().await?;
@@ -46,13 +61,35 @@ async fn main() -> Result<(), Box<dyn Error>> {
             return Err("The work session does not exist".into());
         }
         println!("work");
-        Ok::<_, Box<dyn Error>>(())
+        Ok::<_, Failure>(())
     })
     .await;
     let closed = server.shutdown().await;
     result??;
     closed?;
     Ok(())
+}
+
+async fn demonstrate() -> Result<(), Failure> {
+    let directory = tempfile::tempdir()?;
+    let socket = directory.path().join("tmux.sock");
+    let owner = Server::builder()
+        .socket_path(&socket)
+        .config_file("/dev/null")
+        .build()?;
+    let found = async {
+        let options = NewSessionOptions::new("work").command("cat");
+        timeout(Duration::from_secs(5), owner.new_session(options)).await??;
+        find_work(socket).await
+    }
+    .await;
+    if let Err(error) = owner.kill().await.and(owner.shutdown().await) {
+        let kept = directory.keep();
+        eprintln!("Cannot stop tmux; kept {}", kept.display());
+        found?;
+        return Err(error.into());
+    }
+    found
 }
 ```
 
@@ -73,51 +110,19 @@ edition = "2024"
 
 [dependencies]
 libtmux = "=0.1.2"
+tempfile = "3.27.0"
 tokio = { version = "1.53.1", features = ["macros", "rt-multi-thread", "time"] }
-```
-
-Save the launcher as `run.sh`. It starts an isolated tmux server, runs the
-program, checks that the session still exists, then stops only that server.
-Cleanup runs after failures too. A failed shutdown keeps its socket directory
-and prints its location for inspection.
-
-```sh title="run.sh"
-#!/bin/sh
-set -eu
-
-binary=$(command -v tmux)
-directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-rs-attach.XXXXXX")
-socket="$directory/tmux.sock"
-
-cleanup() {
-    status=$?
-    trap - 0 HUP INT TERM
-    if [ -S "$socket" ] && ! "$binary" -S "$socket" kill-server; then
-        printf 'Cannot stop tmux; kept %s\n' "$directory" >&2
-        exit 1
-    fi
-    rm -rf "$directory" || exit 1
-    exit "$status"
-}
-trap cleanup 0
-trap 'exit 1' HUP INT TERM
-
-unset TMUX TMUX_PANE
-export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
-"$binary" -S "$socket" -f /dev/null new-session -d -s work /bin/cat
-"$@"
-"$binary" -S "$socket" has-session -t '=work'
 ```
 
 Build and run:
 
 ```console
-$ sh run.sh cargo +1.97.1 run
+$ cargo +1.97.1 run
 ```
 
-The program prints `work`. To use an existing server of your own, set
-`LIBTMUX_SOCKET_PATH` to its socket and run the program without the launcher.
-That launcher is responsible for the demonstration server's lifetime.
+The program prints `work`. To attach to a server of your own, set
+`LIBTMUX_SOCKET_PATH` to its socket path in the environment of `cargo run`. The
+program then starts no server and leaves yours running.
 
 <a id="finding-a-session-instead-of-always-creating-one"></a>
 
@@ -128,6 +133,6 @@ after an unsuccessful lookup, another client may create the same name between
 those operations. Handle the creation error instead of assuming the lookup
 reserves the name.
 
-For a complete program that starts and owns its server, see
+For a program that sends input and captures output, see
 [Capture pane output](/examples/capture-pane-output/). Continue with
 [Sending keys](/guides/sending-keys/) once you have a pane handle.
