@@ -189,15 +189,11 @@
       "files": [
         {
           "name": "settings.gradle.kts",
-          "sha256": "0714b53c34a0d0d191cd7c52dc0f75f8821bc8d87fa567e0a9da9c1cdb8347e0"
+          "sha256": "c41bdd6a501835ca2334368c4addd0d86da4f7faaeac4a3078920639f4a737cf"
         },
         {
           "name": "build.gradle.kts",
           "sha256": "ee2f9d76719195761685a5bde12d8d89cf42420e08a641fd119771b38fc64c16"
-        },
-        {
-          "name": "run-mcp.sh",
-          "sha256": "74c371248dc84b1ec2fc89013ec570912dd35c096177bfb2b49833901d14484a"
         }
       ],
       "toolchain": [
@@ -213,7 +209,9 @@
       "shellRecipe": [
         "mkdir java-mcp-client && cd java-mcp-client",
         "gradle --console=plain --no-daemon installDist",
-        "sh run-mcp.sh"
+        "tmux -L mcp-example new-session -d -s mcp-example",
+        "LIBTMUX_TOOLSETS= LIBTMUX_TOOLS=list_sessions \\\n    build/install/libtmux-mcp/bin/libtmux-mcp \\\n    --socket-name mcp-example < /dev/null",
+        "tmux -L mcp-example kill-server"
       ]
     },
     {

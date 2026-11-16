@@ -1,6 +1,6 @@
 ---
 title: Connect a Java MCP client
-description: Build the Java MCP launcher from Maven Central and connect it to a private tmux server.
+description: Build the Java MCP server from Maven Central and connect a client to a running tmux server.
 port: java
 product: mcp
 equivalence: mcp-client-setup
@@ -9,11 +9,12 @@ sidebar:
   order: 2
 ---
 
-Build the Java launcher and let your MCP client launch the script below.
-It creates its own tmux session, exposes only `list_sessions`, and stops that
-private server when the MCP process exits.
+Build the `libtmux-mcp` distribution, then configure your MCP client to run
+its start script against a tmux server that is already running. The server
+connects to the tmux server you name and offers the tools you select. You start
+and stop that tmux server yourself.
 
-## Build the launcher
+## Build the server
 
 Use JDK 25, Gradle 9, and tmux 3.3a or newer on a Unix host. Create an empty
 directory:
@@ -25,7 +26,7 @@ $ mkdir java-mcp-client && cd java-mcp-client
 Save the settings file:
 
 ```kotlin title="settings.gradle.kts"
-rootProject.name = "libtmux-mcp-launcher"
+rootProject.name = "libtmux-mcp-server"
 ```
 
 Save the build file. Gradle resolves `libtmux-mcp` 0.1.2 and its dependencies
@@ -50,90 +51,85 @@ application {
 }
 ```
 
-Build the launcher:
+Build the distribution:
 
 ```console
 $ gradle --console=plain --no-daemon installDist
 ```
 
-The resulting application contains the start script and required JARs; keep
-its directory intact.
+The resulting application contains the start script,
+`build/install/libtmux-mcp/bin/libtmux-mcp`, and its required JARs; keep its
+directory intact.
 
-## Save the private-server launcher
+## Choose the tmux server
 
-Save the following file beside `build.gradle.kts`. It clears inherited
-endpoint, caller and tool-selection settings before choosing its own. The trap
-reports cleanup failures and retains a socket that could not be stopped.
+Select the server with `--socket` for a socket path or `--socket-name` for a
+name under tmux's own socket directory. `--tmux` selects the tmux executable.
+Environment alternatives are `LIBTMUX_SOCKET_PATH`, `LIBTMUX_SOCKET`, and
+`LIBTMUX_TMUX_CONFIG`.
 
-```sh title="run-mcp.sh"
-#!/bin/sh
-set -eu
-unset TMUX TMUX_PANE LIBTMUX_SOCKET LIBTMUX_SOCKET_PATH
-unset LIBTMUX_SAFETY LIBTMUX_WATCH LIBTMUX_EXCLUDE_TOOLS
-project=$(CDPATH= cd -P "$(dirname "$0")" && pwd)
-directory=$(mktemp -d /tmp/libtmux-java-mcp.XXXXXXXX)
-cleanup() {
-    status=$?
-    trap - 0 HUP INT TERM
-    if [ -S "$directory/s" ]; then
-        if ! tmux -S "$directory/s" kill-server; then
-            printf 'Cannot stop private server; inspect %s\n' "$directory" >&2
-            exit 1
-        fi
-    fi
-    if ! rm -f "$directory/s" || ! rmdir "$directory"; then
-        printf 'Cannot remove private directory: %s\n' "$directory" >&2
-        exit 1
-    fi
-    exit "$status"
-}
-trap cleanup 0
-trap 'exit 129' HUP
-trap 'exit 130' INT
-trap 'exit 143' TERM
-tmux -S "$directory/s" -f /dev/null \
-    set-option -g default-shell /bin/sh \; \
-    set-environment -g ENV '' \; \
-    set-environment -g BASH_ENV '' \; \
-    new-session -d -s mcp-example 'exec /bin/cat'
-LIBTMUX_TMUX_CONFIG=/dev/null LIBTMUX_TOOLSETS= LIBTMUX_TOOLS=list_sessions \
-    "$project/build/install/libtmux-mcp/bin/libtmux-mcp" \
-    --socket "$directory/s" --tmux tmux
-```
-
-Run it directly to check startup:
+To try the server, start a tmux server on the socket name `mcp-example` with one
+session:
 
 ```console
-$ sh run-mcp.sh
+$ tmux -L mcp-example new-session -d -s mcp-example
 ```
 
-It waits for MCP messages on stdin. Send EOF to close the process and trigger
-cleanup. Startup diagnostics go to stderr; stdout carries the MCP protocol.
+Start the server with its input closed to see the toolsets and tools your
+selection serves. It reports them on standard error, then exits:
+
+```console
+$ LIBTMUX_TOOLSETS= LIBTMUX_TOOLS=list_sessions \
+    build/install/libtmux-mcp/bin/libtmux-mcp \
+    --socket-name mcp-example < /dev/null
+```
+
+An MCP client keeps the input open, so the server waits for MCP messages on
+stdin. Startup diagnostics go to stderr; stdout carries the MCP protocol.
 
 ## Connect a client
 
-Configure the client's command as `sh` and pass the launcher's absolute path
-as its only argument. The client needs Java and tmux on its `PATH`, or a valid
-`JAVA_HOME` for Java. The launcher finds the distribution relative to its own
-file, so the client's working directory does not matter.
+Configure the client to run the start script with the same arguments. For a
+client that reads an `mcpServers` object, replace the command with the absolute
+path of the script:
+
+```json
+{
+  "mcpServers": {
+    "tmux-java": {
+      "command": "/absolute/path/to/libtmux-mcp",
+      "args": ["--socket-name", "mcp-example"],
+      "env": {
+        "LIBTMUX_TOOLSETS": "",
+        "LIBTMUX_TOOLS": "list_sessions"
+      }
+    }
+  }
+}
+```
+
+The client needs Java and tmux on its `PATH`, or a valid `JAVA_HOME` for Java.
 
 ## Verify and change selection
 
 Read `tmux://capabilities`, list the offered tools, then call
-[`list_sessions`](../tools/list_sessions/). This launcher offers only that tool,
-and its result contains the private `mcp-example` session.
+[`list_sessions`](../tools/list_sessions/). This configuration offers only that
+tool, and its result contains the `mcp-example` session.
 
 An empty `LIBTMUX_TOOLSETS` plus the one name in `LIBTMUX_TOOLS` selects this
 surface. Select `inspect,manage,execute` for a broader workflow. Reconnect
 after changing startup configuration. Invalid tool names fail startup with a
 visible diagnostic.
 
-To connect the distribution directly to a server your application already
-owns, pass `--socket` with its path or `--socket-name` with its name.
-`--tmux` selects the tmux executable. Environment alternatives are
-`LIBTMUX_SOCKET_PATH`, `LIBTMUX_SOCKET`, and `LIBTMUX_TMUX_CONFIG`.
+To connect to a server your application owns, pass its socket path with
+`--socket`. Disconnecting the client leaves that tmux server running. Stop the
+example server when you finish:
+
+```console
+$ tmux -L mcp-example kill-server
+```
 
 The [complete Java client example](../examples/) includes public imports,
 project files, bounded requests, and owned-server cleanup. The
-[launcher contract](https://github.com/libtmux/libtmux-java/blob/e8a39689d8d60968ac978a1dd2a89c6112333896/libtmux-mcp/README.md)
-describes the direct command's flags and environment.
+[`libtmux-mcp` README](https://github.com/libtmux/libtmux-java/blob/e8a39689d8d60968ac978a1dd2a89c6112333896/libtmux-mcp/README.md)
+describes the start script's flags and environment.
