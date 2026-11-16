@@ -80,6 +80,29 @@ try {
   quietly(() => run(options({ check: true })))
   console.log('ok   a later HEAD does not change the pinned bytes')
 
+  // A build that regenerated the model at a later revision must replace the copies, not keep the committed ones.
+  const later = checkoutGit('rev-parse', 'HEAD')
+  const rebased = { ...model, revision: later, symbols: model.symbols.map((symbol) => ({ ...symbol, source: { ...symbol.source, line: 4 } })) }
+  writeFileSync(join(modelsDir, 'go.json'), JSON.stringify(rebased))
+  assert.throws(() => quietly(() => run(options({ check: true }))), /differs/)
+  assert.throws(() => quietly(() => run(options({ sourceBound: true }))), /rewrites one port/)
+  assert.throws(() => quietly(() => run(options({ sourceBound: true, check: true, only: 'go' }))), /rewrites one port/)
+  quietly(() => run(options({ sourceBound: true, only: 'go' })))
+  const rebound = JSON.parse(readFileSync(target, 'utf8')).files['a.go']
+  assert.equal(rebound.revision, later)
+  assert.match(rebound.content, /later/)
+  quietly(() => run(options({ check: true })))
+  console.log('ok   a source-bound run replaces the copies of the previous revision with the model\'s')
+
+  // With no checkout holding the model's revision, the old copies are not kept as the new revision's.
+  const beforeRefusal = readFileSync(target, 'utf8')
+  writeFileSync(join(modelsDir, 'go.json'), JSON.stringify({ ...rebased, revision: '2'.repeat(40) }))
+  assert.throws(() => quietly(() => run(options({ sourceBound: true, only: 'go', checkouts: () => [] }))), /no checkout holding 222222222222/)
+  assert.throws(() => quietly(() => run(options({ sourceBound: true, only: 'go' }))), /no checkout holding 222222222222/)
+  assert.equal(readFileSync(target, 'utf8'), beforeRefusal)
+  assert.throws(() => quietly(() => run(options({ sourceBound: true, only: 'nothing' }))), /no model for nothing/)
+  console.log('ok   a source-bound run that cannot read the model\'s revision fails and writes nothing')
+
   // Two repositories cannot share one path, since a page is addressed by path alone.
   assert.throws(() => citedFiles({ port: 'py', repo: 'a/a', revision, symbols: [
     { id: 'x', source: { file: 'src/x.py' } },
