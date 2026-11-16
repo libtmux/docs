@@ -404,9 +404,10 @@ const displayName = owner ? (language === 'haskell' || language === 'erlang' ? n
   : language === 'clojure' || language === 'lisp' ? nativeQualifiedName(model, owner)
   : declaringType ? `${declaringType.name}.${owner.name}` : owner.name) : pageTitle
 const breadcrumbs = source?.breadcrumbs ?? await pageBreadcrumbs(displayName, glossary ? 'reference/glossary' : slug ? `reference/${slug}` : 'reference', version, port)
-// A symbol page ends on the previous and next row of its tree and the way up the breadcrumb climbs (record 0021).
-const end = owner && model && sidebarInventory
-  ? apiPageEnd({ inventory: sidebarInventory, selected: sidebarSelection(sidebarInventory, treeRowSymbol(model, owner)), base: refBase, breadcrumbs }) : undefined
+// A symbol page ends on the previous and next row of its tree and the way up the breadcrumb climbs (record 0021). The index
+// and the glossary are no row of the tree, so they end on the way up alone.
+const end = model && sidebarInventory
+  ? apiPageEnd({ inventory: sidebarInventory, selected: owner ? sidebarSelection(sidebarInventory, treeRowSymbol(model, owner)) : '', base: refBase, breadcrumbs }) : undefined
 const pagePath = glossary ? 'reference/glossary' : source?.pagePath ?? (slug ? `reference/${slug}` : 'reference')
 const description = glossary ? glossaryContext.description : source?.description ?? (language === 'haskell'
   ? 'Modules, data types, constructors, record fields and functions in libtmux for Haskell.'
