@@ -21,7 +21,7 @@ toolsets at startup. It serves MCP over stdin and stdout.
 
 - [Install](#install) points an MCP client at this server.
 - [Tools](./tools/) lists the MCP operations, arguments, and results.
-- [Guides](./guides/) build the launcher and connect a client.
+- [Guides](./guides/) build the server and connect a client.
 - [Topics](./topics/) explain toolsets, input preflight, and wait semantics.
 - [Examples](./examples/) call a tool, then explore server internals.
 - [Language API](./reference/) documents embedding and implementation types.
