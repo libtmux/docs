@@ -455,7 +455,7 @@
       "page": "ports/powershell/guides/attaching-to-tmux",
       "shellRecipe": [
         "pwsh -NoLogo -NoProfile -Command '\n  $ErrorActionPreference = \"Stop\"\n  Install-PSResource -Name LibTmux -Version 0.1.0 `\n    -Repository PSGallery -Scope CurrentUser -TrustRepository\n'",
-        "sh run.sh pwsh -NoLogo -NoProfile -File connect.ps1"
+        "pwsh -NoLogo -NoProfile -File connect.ps1"
       ],
       "expectedOutputs": [
         [],
@@ -466,11 +466,7 @@
       "files": [
         {
           "name": "connect.ps1",
-          "sha256": "9b7d64c848a6498380e574702fdca35fca7a66e227fd84711e7ecc38319889a9"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "69a251952304d1af76082f1e36bd59fc3ea6e5ecc64e40540cbabae3e3e4fbc8"
+          "sha256": "13e4510e887f08bf82ae740aaf41b99e16cf322ef981b98e990a91818b829593"
         }
       ]
     },

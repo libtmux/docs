@@ -13772,6 +13772,13 @@
   {
    "port": "powershell",
    "symbol": "LibTmux\\Invoke-TmuxCommand",
+   "page": "/powershell/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Invoke-TmuxCommand",
    "page": "/powershell/latest/guides/capture/",
    "title": "Capture, refresh and raw commands",
    "section": "guides"
@@ -13943,6 +13950,13 @@
    "page": "/powershell/latest/examples/create-layout/",
    "title": "Create windows and panes",
    "section": "examples"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\New-TmuxSession",
+   "page": "/powershell/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
   },
   {
    "port": "powershell",

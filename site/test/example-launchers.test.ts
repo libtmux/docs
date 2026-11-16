@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 
 // Ports whose pages show native programs that own their tmux server instead of
 // a shell launcher.
-const PORTS = ['ruby', 'lua', 'elixir', 'julia']
+const PORTS = ['ruby', 'lua', 'elixir', 'julia', 'powershell']
 
 const docs = fileURLToPath(new URL('../src/content/docs/', import.meta.url))
 const fixtures = fileURLToPath(new URL('./fixtures/', import.meta.url))
