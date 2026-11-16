@@ -1,6 +1,7 @@
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 import { buildIndex, type FixtureIndex } from './search-fixture'
+import type { ApiTreeJson } from '../src/lib/api-search'
 
 vi.mock('astro:content', () => ({ getCollection: async () => [] }))
 vi.setConfig({ testTimeout: 60_000 })
@@ -68,5 +69,64 @@ describe('the filters of a page through the real layout', () => {
   it('adds no text for the section marker to the page', async () => {
     const guide = (await index.pages()).find((page) => page.url.includes('/guides/'))
     expect(guide?.content).toBe('go/latest/guides/capturing-output. Read the lines of a pane with capture.')
+  })
+})
+
+/** The first paint of the real reference sidebar: its head, search field, owner picker and actions. */
+async function referenceSidebar() {
+  const template = await loadAstroTemplate('components/api/ApiTree.astro', {
+    real: ['components/api/ApiTreeItems.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro', 'components/docs/SidebarHead.astro'],
+  })
+  const inventory: ApiTreeJson = {
+    port: 'go',
+    buckets: [{ id: 'go', label: 'API reference', count: 1, slug: 'pane', types: [], children: [
+      { id: 'tmux', label: 'tmux', count: 1, slug: null, types: [{ id: 'Pane', name: 'Pane', slug: 'tmux-pane', m: 1, kind: 'struct', category: 'types' }], children: [] },
+    ] }],
+    members: { Pane: [['Capture', 'tmux-pane-capture', 'Pane.Capture', 'method']] },
+  }
+  return renderAstroTemplate(template, { props: {
+    presentation: 'outline', inventory, selectedSymbol: 'Pane.Capture', referenceBase: '/en/go/latest/reference/', portName: 'Go', tree: [], members: [],
+    withMembers: new Set(), currentPath: '/en/go/latest/reference/tmux-pane-capture/', version: 'test', treeLabel: 'Go API',
+    head: { up: { label: 'Core Library API reference', href: '/en/go/latest/reference/' }, title: { label: 'Go API', href: '/en/go/latest/' } },
+  } })
+}
+
+describe('the text a result opens with', () => {
+  afterEach(() => vi.unstubAllEnvs())
+
+  it('opens an API page with its heading and summary, not the symbol tree beside them', async () => {
+    env()
+    const layout = await loadAstroTemplate('layouts/BaseLayout.astro')
+    const html = await renderAstroTemplate(layout, {
+      url: 'https://libtmux.org/en/go/latest/reference/tmux-pane-capture/',
+      props: { title: 'Pane.Capture', pagePath: 'reference/tmux-pane-capture', portSlug: 'go', pageSource: SOURCE },
+      slots: { default: `<main>${await referenceSidebar()}<div class="api-reference-content"><h1>Pane.Capture</h1><p>Capture captures printed content.</p></div></main>` },
+    })
+    const index = await buildIndex([{ url: '/en/go/latest/reference/tmux-pane-capture/', html }])
+    try {
+      const [page] = await index.pages()
+      expect(page!.content).toBe('Pane.Capture. Capture captures printed content.')
+    } finally { await index.close() }
+  })
+
+  it('opens a guide with its title, not the navigation drawer, the sidebar or the contents lists', async () => {
+    env()
+    const docs = await loadAstroTemplate('layouts/DocsLayout.astro', {
+      real: ['layouts/BaseLayout.astro', 'components/MobileToC.astro', 'components/TableOfContents/TableOfContents.astro', 'components/TableOfContents/TableOfContentsList.astro'],
+      stubs: { 'components/docs/Sidebar.astro': '<nav class="sidebar-nav"><a href="/en/go/latest/guides/other/">Other guide</a></nav>' },
+    })
+    const html = await renderAstroTemplate(docs, {
+      url: 'https://libtmux.org/en/go/latest/guides/capturing-output/',
+      props: {
+        title: 'Capturing output', port: 'go', pagePath: 'guides/capturing-output', version: 'latest', locale: 'en', pagePorts: [], pageSource: SOURCE,
+        headings: [{ depth: 2, slug: 'choose-a-range', text: 'Choose a range' }],
+      },
+      slots: { default: '<p>Pane.Capture takes a request.</p>' },
+    })
+    const index = await buildIndex([{ url: '/en/go/latest/guides/capturing-output/', html }])
+    try {
+      const [page] = await index.pages()
+      expect(page!.content).toBe('Capturing output. Pane.Capture takes a request.')
+    } finally { await index.close() }
   })
 })

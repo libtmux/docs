@@ -8,7 +8,7 @@ const css = layout.slice(layout.lastIndexOf('<style>')).replace(/\/\*[\s\S]*?\*\
 it('puts the contents rail after the article in source, so the article is read and tabbed first', () => {
   const main = layout.indexOf('<main class="min-w-0 flex-1">')
   const end = layout.indexOf('</main>')
-  const rail = layout.indexOf('<aside class="hidden w-56 shrink-0 xl:block" data-toc-rail>')
+  const rail = layout.indexOf('<aside class="hidden w-56 shrink-0 xl:block" data-toc-rail')
   expect(main).toBeGreaterThan(0)
   expect(end).toBeGreaterThan(main)
   expect(rail).toBeGreaterThan(end)
@@ -34,5 +34,5 @@ it('reserves nothing below the width where the rail shows, and no longer waits f
   expect(css.indexOf('padding-inline-end: 16.5rem')).toBeGreaterThan(css.indexOf('@media (min-width: 80rem)'))
   // The reference grid is no longer widened by finding the rail with :has(), which waited for it.
   expect(css).not.toMatch(/:has\(> aside\)/)
-  expect(layout).toMatch(/<aside class="hidden w-56 shrink-0 xl:block" data-toc-rail>/)
+  expect(layout).toMatch(/<aside class="hidden w-56 shrink-0 xl:block" data-toc-rail[ >]/)
 })
