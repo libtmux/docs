@@ -14,7 +14,7 @@ Build a tmux layout from Scala by creating a window, splitting a pane and select
 
 ## Setup and run
 
-Use an empty directory on Linux with tmux 3.3a or newer, JDK 25, and Gradle 9. Save the project files and launcher below, then save any complete program on this page. Each program has its own imports and entry point.
+Use an empty directory on Linux with tmux 3.3a or newer, JDK 25, and Gradle 9. Save the project files below, then save any complete program on this page. Each program has its own imports and entry point.
 
 Gradle resolves `libtmux-scala_3` 0.1.2 from Maven Central ([source](https://github.com/libtmux/libtmux-java/tree/e8a39689d8d60968ac978a1dd2a89c6112333896/libtmux-scala)).
 
@@ -46,36 +46,7 @@ kotlin.daemon.jvmargs=-Xmx2g
 org.gradle.workers.max=2
 ```
 
-The launcher creates two sessions on a private socket: `work-one` with an `editor` window, and `work-two` with a `logs` window. Each pane runs `cat` so it stays alive. It stops only this server when the program finishes or fails. If shutdown fails, it reports the retained directory and exits with an error.
-
-```sh title="run.sh"
-#!/bin/sh
-set -eu
-
-binary=$(command -v tmux)
-directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-query.XXXXXX")
-socket="$directory/tmux.sock"
-
-cleanup() {
-    status=$?
-    trap - 0 HUP INT TERM
-    if [ -S "$socket" ] && ! "$binary" -S "$socket" kill-server; then
-        printf 'Cannot stop tmux; kept %s\n' "$directory" >&2
-        exit 1
-    fi
-    rm -rf "$directory" || exit 1
-    exit "$status"
-}
-trap cleanup 0
-trap 'exit 1' HUP INT TERM
-
-unset TMUX TMUX_PANE
-export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
-"$binary" -S "$socket" -f /dev/null new-session -d -s work-one -n editor /bin/cat
-"$binary" -S "$socket" new-session -d -s work-two -n logs /bin/cat
-"$@"
-"$binary" -S "$socket" has-session -t '=work-one'
-```
+Each program starts its own private tmux server with two sessions: `work-one` with an `editor` window, and `work-two` with a `logs` window. Each pane runs `cat` so it stays alive. The program stops only that server when it finishes or fails, then removes the server's directory. If shutdown fails, it reports the retained directory and exits with an error.
 
 Each run starts from the same two-session fixture. Programs do not depend on another example having run first. Their assertions fail if the observed result differs.
 
@@ -84,40 +55,66 @@ Each run starts from the same two-session fixture. Programs do not depend on ano
 Create `tools` in `work-one`, split its pane to the right, then choose `even-horizontal`. The final read verifies two panes. The previously captured session does not automatically gain the new window.
 
 ```scala title="Layout.scala"
-import io.github.libtmux.{ServerConfig, ServerEndpoint}
+import io.github.libtmux.{ServerConfig, ServerEndpoint, SessionSpec}
 import io.github.libtmux.scaladsl.*
 import io.github.libtmux.scaladsl.query.*
-import java.nio.file.Path
+import java.nio.file.{Files, Path}
 import java.time.Duration
 import scala.util.Using
 import scala.jdk.CollectionConverters.*
 
 object Layout {
+  def demonstrate(server: Server): Unit = {
+    val session = server.sessions().find(_.name == "work-one").get
+    val window = session.newWindow(io.github.libtmux.WindowSpec.builder()
+      .named("tools").running("/bin/cat").build())
+    window.panes.head.split(io.github.libtmux.SplitSpec.builder()
+      .toRight().running("/bin/cat").build())
+    window.selectLayout(io.github.libtmux.Layout.EVEN_HORIZONTAL)
+    val refreshed = server.sessions().find(_.name == "work-one").get
+    val tools = refreshed.windows.find(_.name == "tools").get
+    assert(tools.panes.size == 2)
+    println("tools: 2 panes")
+  }
+
   def main(args: Array[String]): Unit = {
-    val socket = sys.env.getOrElse("LIBTMUX_SOCKET_PATH",
-      throw new IllegalArgumentException("Set LIBTMUX_SOCKET_PATH to an existing socket"))
+    val directory = Files.createTempDirectory("libtmux-example-")
+    val socket = directory.resolve("tmux.sock")
     val config = ServerConfig.builder()
-      .endpoint(ServerEndpoint.socketPath(Path.of(socket)))
+      .endpoint(ServerEndpoint.socketPath(socket))
+      .configFile(Path.of("/dev/null"))
       .defaultTimeout(Duration.ofSeconds(5))
       .build()
-    Using.resource(Server.open(config)) { server =>
-      val session = server.sessions().find(_.name == "work-one").get
-      val window = session.newWindow(io.github.libtmux.WindowSpec.builder()
-        .named("tools").running("/bin/cat").build())
-      window.panes.head.split(io.github.libtmux.SplitSpec.builder()
-        .toRight().running("/bin/cat").build())
-      window.selectLayout(io.github.libtmux.Layout.EVEN_HORIZONTAL)
-      val refreshed = server.sessions().find(_.name == "work-one").get
-      val tools = refreshed.windows.find(_.name == "tools").get
-      assert(tools.panes.size == 2)
-      println("tools: 2 panes")
+    var stopped = false
+    try {
+      Using.resource(Server.open(config)) { server =>
+        try {
+          server.newSession(SessionSpec.builder()
+            .named("work-one").firstWindowNamed("editor")
+            .running("/bin/cat").build())
+          server.newSession(SessionSpec.builder()
+            .named("work-two").firstWindowNamed("logs")
+            .running("/bin/cat").build())
+          demonstrate(server)
+        } finally {
+          if (Files.exists(socket)) server.killServer()
+          stopped = true
+        }
+      }
+    } finally {
+      if (stopped || !Files.exists(socket)) {
+        Files.deleteIfExists(socket)
+        Files.delete(directory)
+      } else {
+        System.err.println(s"Cannot stop tmux; kept $directory")
+      }
     }
   }
 }
 ```
 
 ```console
-$ sh run.sh gradle --console=plain --no-daemon run -Pexample=Layout
+$ gradle --console=plain --no-daemon run -Pexample=Layout
 ```
 
 Expected program output:
@@ -131,42 +128,69 @@ tools: 2 panes
 Look for `tools` before creating it. Two sequential calls return the same window ID, and the session has only `editor` and `tools`. This is useful for a setup command you run repeatedly.
 
 ```scala title="ReuseLayout.scala"
-import io.github.libtmux.{ServerConfig, ServerEndpoint}
+import io.github.libtmux.{ServerConfig, ServerEndpoint, SessionSpec}
 import io.github.libtmux.scaladsl.*
 import io.github.libtmux.scaladsl.query.*
-import java.nio.file.Path
+import java.nio.file.{Files, Path}
 import java.time.Duration
 import scala.util.Using
 import scala.jdk.CollectionConverters.*
 
 object ReuseLayout {
+  def demonstrate(server: Server): Unit = {
+    def ensureTools(): Window = {
+      val session = server.sessions().find(_.name == "work-one").get
+      session.windows.find(_.name == "tools").getOrElse {
+        session.newWindow(io.github.libtmux.WindowSpec.builder()
+          .named("tools").running("/bin/cat").build())
+      }
+    }
+    val first = ensureTools()
+    val second = ensureTools()
+    assert(first.id == second.id)
+    val session = server.sessions().find(_.name == "work-one").get
+    assert(session.windows.size == 2)
+    println("one tools window after two calls")
+  }
+
   def main(args: Array[String]): Unit = {
-    val socket = sys.env.getOrElse("LIBTMUX_SOCKET_PATH",
-      throw new IllegalArgumentException("Set LIBTMUX_SOCKET_PATH to an existing socket"))
+    val directory = Files.createTempDirectory("libtmux-example-")
+    val socket = directory.resolve("tmux.sock")
     val config = ServerConfig.builder()
-      .endpoint(ServerEndpoint.socketPath(Path.of(socket)))
+      .endpoint(ServerEndpoint.socketPath(socket))
+      .configFile(Path.of("/dev/null"))
       .defaultTimeout(Duration.ofSeconds(5))
       .build()
-    Using.resource(Server.open(config)) { server =>
-      def ensureTools(): Window = {
-        val session = server.sessions().find(_.name == "work-one").get
-        session.windows.find(_.name == "tools").getOrElse {
-          session.newWindow(io.github.libtmux.WindowSpec.builder()
-            .named("tools").running("/bin/cat").build())
+    var stopped = false
+    try {
+      Using.resource(Server.open(config)) { server =>
+        try {
+          server.newSession(SessionSpec.builder()
+            .named("work-one").firstWindowNamed("editor")
+            .running("/bin/cat").build())
+          server.newSession(SessionSpec.builder()
+            .named("work-two").firstWindowNamed("logs")
+            .running("/bin/cat").build())
+          demonstrate(server)
+        } finally {
+          if (Files.exists(socket)) server.killServer()
+          stopped = true
         }
       }
-      val first = ensureTools()
-      val second = ensureTools()
-      assert(first.id == second.id)
-      assert(server.sessions().find(_.name == "work-one").get.windows.size == 2)
-      println("one tools window after two calls")
+    } finally {
+      if (stopped || !Files.exists(socket)) {
+        Files.deleteIfExists(socket)
+        Files.delete(directory)
+      } else {
+        System.err.println(s"Cannot stop tmux; kept $directory")
+      }
     }
   }
 }
 ```
 
 ```console
-$ sh run.sh gradle --console=plain --no-daemon run -Pexample=ReuseLayout
+$ gradle --console=plain --no-daemon run -Pexample=ReuseLayout
 ```
 
 Expected program output:

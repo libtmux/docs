@@ -16,7 +16,7 @@ Filter captured objects in Scala, handle result counts explicitly, and match ses
 
 ## Setup and run
 
-Use an empty directory on Linux with tmux 3.3a or newer, JDK 25, and Gradle 9. Save the project files and launcher below, then save any complete program on this page. Each program has its own imports and entry point.
+Use an empty directory on Linux with tmux 3.3a or newer, JDK 25, and Gradle 9. Save the project files below, then save any complete program on this page. Each program has its own imports and entry point.
 
 Gradle resolves `libtmux-scala_3` 0.1.2 from Maven Central ([source](https://github.com/libtmux/libtmux-java/tree/e8a39689d8d60968ac978a1dd2a89c6112333896/libtmux-scala)).
 
@@ -48,36 +48,7 @@ kotlin.daemon.jvmargs=-Xmx2g
 org.gradle.workers.max=2
 ```
 
-The launcher creates two sessions on a private socket: `work-one` with an `editor` window, and `work-two` with a `logs` window. Each pane runs `cat` so it stays alive. It stops only this server when the program finishes or fails. If shutdown fails, it reports the retained directory and exits with an error.
-
-```sh title="run.sh"
-#!/bin/sh
-set -eu
-
-binary=$(command -v tmux)
-directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-query.XXXXXX")
-socket="$directory/tmux.sock"
-
-cleanup() {
-    status=$?
-    trap - 0 HUP INT TERM
-    if [ -S "$socket" ] && ! "$binary" -S "$socket" kill-server; then
-        printf 'Cannot stop tmux; kept %s\n' "$directory" >&2
-        exit 1
-    fi
-    rm -rf "$directory" || exit 1
-    exit "$status"
-}
-trap cleanup 0
-trap 'exit 1' HUP INT TERM
-
-unset TMUX TMUX_PANE
-export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
-"$binary" -S "$socket" -f /dev/null new-session -d -s work-one -n editor /bin/cat
-"$binary" -S "$socket" new-session -d -s work-two -n logs /bin/cat
-"$@"
-"$binary" -S "$socket" has-session -t '=work-one'
-```
+Each program starts its own private tmux server with two sessions: `work-one` with an `editor` window, and `work-two` with a `logs` window. Each pane runs `cat` so it stays alive. The program stops only that server when it finishes or fails, then removes the server's directory. If shutdown fails, it reports the retained directory and exits with an error.
 
 Each run starts from the same two-session fixture. Programs do not depend on another example having run first. Their assertions fail if the observed result differs.
 
@@ -86,42 +57,70 @@ Each run starts from the same two-session fixture. Programs do not depend on ano
 Select the two names beginning with `work-`, then assert equality, AND, OR and exclusion against the same captured collection. Matching is case sensitive. The native collection predicate agrees with the typed prefix query.
 
 ```scala title="Local.scala"
-import io.github.libtmux.{ServerConfig, ServerEndpoint}
+import io.github.libtmux.{ServerConfig, ServerEndpoint, SessionSpec}
 import io.github.libtmux.scaladsl.*
 import io.github.libtmux.scaladsl.query.*
-import java.nio.file.Path
+import java.nio.file.{Files, Path}
 import java.time.Duration
 import scala.util.Using
 import scala.jdk.CollectionConverters.*
 
 object Local {
+  def demonstrate(server: Server): Unit = {
+    val sessions = server.sessions()
+    val matching = sessions.matching(Session.name.startsWith("work-"))
+    val names = matching.map(_.name).sorted
+    assert(names == Vector("work-one", "work-two"))
+    println(names.mkString(", "))
+    // Filtering the captured vector makes no new tmux calls.
+    assert(sessions.filter(_.name.startsWith("work-")) == matching)
+    val onlyOne = Session.name.startsWith("work-") &&
+      Session.name.endsWith("one")
+    assert(sessions.matching(onlyOne).head.name == "work-one")
+    val either = Session.name.is("work-one") || Session.name.is("work-two")
+    assert(sessions.matching(either).size == 2)
+    val others = sessions.matching(!Session.name.is("work-one"))
+    assert(others.head.name == "work-two")
+  }
+
   def main(args: Array[String]): Unit = {
-    val socket = sys.env.getOrElse("LIBTMUX_SOCKET_PATH",
-      throw new IllegalArgumentException("Set LIBTMUX_SOCKET_PATH to an existing socket"))
+    val directory = Files.createTempDirectory("libtmux-example-")
+    val socket = directory.resolve("tmux.sock")
     val config = ServerConfig.builder()
-      .endpoint(ServerEndpoint.socketPath(Path.of(socket)))
+      .endpoint(ServerEndpoint.socketPath(socket))
+      .configFile(Path.of("/dev/null"))
       .defaultTimeout(Duration.ofSeconds(5))
       .build()
-    Using.resource(Server.open(config)) { server =>
-      val sessions = server.sessions()
-      val matching = sessions.matching(Session.name.startsWith("work-"))
-      val names = matching.map(_.name).sorted
-      assert(names == Vector("work-one", "work-two"))
-      println(names.mkString(", "))
-      // Filtering the captured vector makes no new tmux calls.
-      assert(sessions.filter(_.name.startsWith("work-")) == matching)
-      val onlyOne = Session.name.startsWith("work-") && Session.name.endsWith("one")
-      assert(sessions.matching(onlyOne).head.name == "work-one")
-      val either = Session.name.is("work-one") || Session.name.is("work-two")
-      assert(sessions.matching(either).size == 2)
-      assert(sessions.matching(!Session.name.is("work-one")).head.name == "work-two")
+    var stopped = false
+    try {
+      Using.resource(Server.open(config)) { server =>
+        try {
+          server.newSession(SessionSpec.builder()
+            .named("work-one").firstWindowNamed("editor")
+            .running("/bin/cat").build())
+          server.newSession(SessionSpec.builder()
+            .named("work-two").firstWindowNamed("logs")
+            .running("/bin/cat").build())
+          demonstrate(server)
+        } finally {
+          if (Files.exists(socket)) server.killServer()
+          stopped = true
+        }
+      }
+    } finally {
+      if (stopped || !Files.exists(socket)) {
+        Files.deleteIfExists(socket)
+        Files.delete(directory)
+      } else {
+        System.err.println(s"Cannot stop tmux; kept $directory")
+      }
     }
   }
 }
 ```
 
 ```console
-$ sh run.sh gradle --console=plain --no-daemon run -Pexample=Local
+$ gradle --console=plain --no-daemon run -Pexample=Local
 ```
 
 Expected program output:
@@ -135,42 +134,69 @@ work-one, work-two
 An exactly-one selection returns an `Either`: one handle on success, `CardinalityError.NoMatch` for zero, or `MultipleMatches` for several. An at-most-one selection also rejects ambiguity; it does not pick an arbitrary first result.
 
 ```scala title="Cardinality.scala"
-import io.github.libtmux.{ServerConfig, ServerEndpoint}
+import io.github.libtmux.{ServerConfig, ServerEndpoint, SessionSpec}
 import io.github.libtmux.scaladsl.*
 import io.github.libtmux.scaladsl.query.*
-import java.nio.file.Path
+import java.nio.file.{Files, Path}
 import java.time.Duration
 import scala.util.Using
 import scala.jdk.CollectionConverters.*
 
 object Cardinality {
+  def demonstrate(server: Server): Unit = {
+    val sessions = server.sessions()
+    for (name <- Vector("work-one", "missing")) {
+      sessions.matching(Session.name.is(name)).exactlyOne match {
+        case Right(session) => println(s"${session.name}: selected")
+        case Left(CardinalityError.NoMatch) => println(s"$name: absent")
+        case Left(CardinalityError.MultipleMatches(count)) =>
+          throw new IllegalStateException(
+            s"At least $count sessions named $name")
+      }
+    }
+    val many = sessions.matching(Session.name.startsWith("work-")).atMostOne
+    assert(many == Left(CardinalityError.MultipleMatches(2)))
+    println("work-: ambiguous")
+  }
+
   def main(args: Array[String]): Unit = {
-    val socket = sys.env.getOrElse("LIBTMUX_SOCKET_PATH",
-      throw new IllegalArgumentException("Set LIBTMUX_SOCKET_PATH to an existing socket"))
+    val directory = Files.createTempDirectory("libtmux-example-")
+    val socket = directory.resolve("tmux.sock")
     val config = ServerConfig.builder()
-      .endpoint(ServerEndpoint.socketPath(Path.of(socket)))
+      .endpoint(ServerEndpoint.socketPath(socket))
+      .configFile(Path.of("/dev/null"))
       .defaultTimeout(Duration.ofSeconds(5))
       .build()
-    Using.resource(Server.open(config)) { server =>
-      val sessions = server.sessions()
-      for (name <- Vector("work-one", "missing")) {
-        sessions.matching(Session.name.is(name)).exactlyOne match {
-          case Right(session) => println(s"${session.name}: selected")
-          case Left(CardinalityError.NoMatch) => println(s"$name: absent")
-          case Left(CardinalityError.MultipleMatches(count)) =>
-            throw new IllegalStateException(s"At least $count sessions named $name")
+    var stopped = false
+    try {
+      Using.resource(Server.open(config)) { server =>
+        try {
+          server.newSession(SessionSpec.builder()
+            .named("work-one").firstWindowNamed("editor")
+            .running("/bin/cat").build())
+          server.newSession(SessionSpec.builder()
+            .named("work-two").firstWindowNamed("logs")
+            .running("/bin/cat").build())
+          demonstrate(server)
+        } finally {
+          if (Files.exists(socket)) server.killServer()
+          stopped = true
         }
       }
-      val many = sessions.matching(Session.name.startsWith("work-")).atMostOne
-      assert(many == Left(CardinalityError.MultipleMatches(2)))
-      println("work-: ambiguous")
+    } finally {
+      if (stopped || !Files.exists(socket)) {
+        Files.deleteIfExists(socket)
+        Files.delete(directory)
+      } else {
+        System.err.println(s"Cannot stop tmux; kept $directory")
+      }
     }
   }
 }
 ```
 
 ```console
-$ sh run.sh gradle --console=plain --no-daemon run -Pexample=Cardinality
+$ gradle --console=plain --no-daemon run -Pexample=Cardinality
 ```
 
 Expected program output:
@@ -186,38 +212,64 @@ work-: ambiguous
 Match sessions with any window named `editor`, then match sessions with none. For an empty captured relation, `any` is false and `none` is true; `all` is true. An uncaptured relation is a different condition and must be captured before filtering.
 
 ```scala title="Relations.scala"
-import io.github.libtmux.{ServerConfig, ServerEndpoint}
+import io.github.libtmux.{ServerConfig, ServerEndpoint, SessionSpec}
 import io.github.libtmux.scaladsl.*
 import io.github.libtmux.scaladsl.query.*
-import java.nio.file.Path
+import java.nio.file.{Files, Path}
 import java.time.Duration
 import scala.util.Using
 import scala.jdk.CollectionConverters.*
 
 object Relations {
+  def demonstrate(server: Server): Unit = {
+    val sessions = server.sessions()
+    val editorWindow = Window.name.is("editor")
+    val withEditor = sessions.matching(Session.windows.any(editorWindow))
+    val withoutEditor = sessions.matching(Session.windows.none(editorWindow))
+    assert(withEditor.map(_.name) == Vector("work-one"))
+    assert(withoutEditor.map(_.name) == Vector("work-two"))
+    println(s"editor: ${withEditor.head.name}")
+    println(s"no editor: ${withoutEditor.head.name}")
+  }
+
   def main(args: Array[String]): Unit = {
-    val socket = sys.env.getOrElse("LIBTMUX_SOCKET_PATH",
-      throw new IllegalArgumentException("Set LIBTMUX_SOCKET_PATH to an existing socket"))
+    val directory = Files.createTempDirectory("libtmux-example-")
+    val socket = directory.resolve("tmux.sock")
     val config = ServerConfig.builder()
-      .endpoint(ServerEndpoint.socketPath(Path.of(socket)))
+      .endpoint(ServerEndpoint.socketPath(socket))
+      .configFile(Path.of("/dev/null"))
       .defaultTimeout(Duration.ofSeconds(5))
       .build()
-    Using.resource(Server.open(config)) { server =>
-      val sessions = server.sessions()
-      val editorWindow = Window.name.is("editor")
-      val withEditor = sessions.matching(Session.windows.any(editorWindow))
-      val withoutEditor = sessions.matching(Session.windows.none(editorWindow))
-      assert(withEditor.map(_.name) == Vector("work-one"))
-      assert(withoutEditor.map(_.name) == Vector("work-two"))
-      println(s"editor: ${withEditor.head.name}")
-      println(s"no editor: ${withoutEditor.head.name}")
+    var stopped = false
+    try {
+      Using.resource(Server.open(config)) { server =>
+        try {
+          server.newSession(SessionSpec.builder()
+            .named("work-one").firstWindowNamed("editor")
+            .running("/bin/cat").build())
+          server.newSession(SessionSpec.builder()
+            .named("work-two").firstWindowNamed("logs")
+            .running("/bin/cat").build())
+          demonstrate(server)
+        } finally {
+          if (Files.exists(socket)) server.killServer()
+          stopped = true
+        }
+      }
+    } finally {
+      if (stopped || !Files.exists(socket)) {
+        Files.deleteIfExists(socket)
+        Files.delete(directory)
+      } else {
+        System.err.println(s"Cannot stop tmux; kept $directory")
+      }
     }
   }
 }
 ```
 
 ```console
-$ sh run.sh gradle --console=plain --no-daemon run -Pexample=Relations
+$ gradle --console=plain --no-daemon run -Pexample=Relations
 ```
 
 Expected program output:

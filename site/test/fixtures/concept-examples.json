@@ -216,21 +216,17 @@
           "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1"
         },
         {
-          "name": "run.sh",
-          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
-        },
-        {
           "name": "Hierarchy.scala",
-          "sha256": "bf83e9625aed62a5585f403de180f83f163de4292ae5f53d333ba9c1dd06a91f"
+          "sha256": "d6f34de510c21dc80c6f07e5ce7b216e3fe3619a4a2fc849c386818598a68a82"
         },
         {
           "name": "Refresh.scala",
-          "sha256": "7ed6ee12473851261ef6117b57841fcc420bf22635e306b8c054795af15a75a8"
+          "sha256": "25c1b75b105898d66b120f516528686d8fd87fb717f96c3a98f9dbdd72175314"
         }
       ],
       "shellRecipe": [
-        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Hierarchy",
-        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Refresh"
+        "gradle --console=plain --no-daemon run -Pexample=Hierarchy",
+        "gradle --console=plain --no-daemon run -Pexample=Refresh"
       ],
       "expectedOutputs": [
         [
@@ -242,7 +238,7 @@
           "editor -> renamed"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup."
+      "verificationScope": "Each displayed program runs independently with its displayed project and published library. Native checks cover assertions, stdout and cleanup."
     },
     {
       "port": "scala",
@@ -267,26 +263,22 @@
           "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1"
         },
         {
-          "name": "run.sh",
-          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
-        },
-        {
           "name": "Local.scala",
-          "sha256": "7d714f11710c2a1cf613d6e9a2c2bd43547f2b6a183c758178298a1fe8f90599"
+          "sha256": "f4b0a7d6d497fb211a8edd532bb093050fc08a049469efd9e545647f3b0a6913"
         },
         {
           "name": "Cardinality.scala",
-          "sha256": "2abf4f046a9253958c1d6a25ceb0b41f2a0bbcd70b62f42242a736e5b603c60c"
+          "sha256": "718dd6ea75405865011b9e7f794f5cf9085d2e481829d52ced1dac1ae281e8ef"
         },
         {
           "name": "Relations.scala",
-          "sha256": "a197b7e27f24d7c5717cd5cd28f215977471e5791c9f4470aefcfc4d2f1048d2"
+          "sha256": "7b93c5c05a2ce02d0ec9a7c9cc31b842893cf5984ec4d4afea802c88c9965ead"
         }
       ],
       "shellRecipe": [
-        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Local",
-        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Cardinality",
-        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Relations"
+        "gradle --console=plain --no-daemon run -Pexample=Local",
+        "gradle --console=plain --no-daemon run -Pexample=Cardinality",
+        "gradle --console=plain --no-daemon run -Pexample=Relations"
       ],
       "expectedOutputs": [
         [
@@ -302,7 +294,7 @@
           "no editor: work-two"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup."
+      "verificationScope": "Each displayed program runs independently with its displayed project and published library. Native checks cover assertions, stdout and cleanup."
     },
     {
       "port": "scala",
@@ -326,21 +318,17 @@
           "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1"
         },
         {
-          "name": "run.sh",
-          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
-        },
-        {
           "name": "Local.scala",
-          "sha256": "7d714f11710c2a1cf613d6e9a2c2bd43547f2b6a183c758178298a1fe8f90599"
+          "sha256": "f4b0a7d6d497fb211a8edd532bb093050fc08a049469efd9e545647f3b0a6913"
         },
         {
           "name": "Control.scala",
-          "sha256": "a541715d9c976c57716a679524d060579c13cf276890f0b74732ec326b680f62"
+          "sha256": "2adafcba941caee96869a2812066a4371bdf3043f86eb256552f527960b68787"
         }
       ],
       "shellRecipe": [
-        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Local",
-        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Control"
+        "gradle --console=plain --no-daemon run -Pexample=Local",
+        "gradle --console=plain --no-daemon run -Pexample=Control"
       ],
       "expectedOutputs": [
         [
@@ -351,7 +339,7 @@
           "control client closed; server still running"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup. Local.scala also passes on tmux 3.3a; Control.scala refuses tmux earlier than 3.7."
+      "verificationScope": "Each displayed program runs independently with its displayed project and published library. Native checks cover assertions, stdout and cleanup. Local.scala also passes on tmux 3.3a; Control.scala refuses tmux earlier than 3.7."
     },
     {
       "port": "scala",
@@ -376,21 +364,17 @@
           "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1"
         },
         {
-          "name": "run.sh",
-          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
-        },
-        {
           "name": "Layout.scala",
-          "sha256": "bc3501864a170b3f208064ef720fa104daf8e1e264101ebe8ad7e88708ffd451"
+          "sha256": "2cb08f1bda607853fd71a0aba51f4db2923156b1aa4c0444abd09bf0537dc0e3"
         },
         {
           "name": "ReuseLayout.scala",
-          "sha256": "7b37add5e44fbb60fee277c95b6728c815826dac4869b749c8a737cce530f204"
+          "sha256": "0abf731c17199753cdd9cf8f94858822e06716c945f33ba721cb4cb6d7fadde5"
         }
       ],
       "shellRecipe": [
-        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Layout",
-        "sh run.sh gradle --console=plain --no-daemon run -Pexample=ReuseLayout"
+        "gradle --console=plain --no-daemon run -Pexample=Layout",
+        "gradle --console=plain --no-daemon run -Pexample=ReuseLayout"
       ],
       "expectedOutputs": [
         [
@@ -400,7 +384,7 @@
           "one tools window after two calls"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup."
+      "verificationScope": "Each displayed program runs independently with its displayed project and published library. Native checks cover assertions, stdout and cleanup."
     },
     {
       "port": "fsharp",

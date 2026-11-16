@@ -315,13 +315,13 @@
       ],
       "page": "ports/scala/guides/attaching-to-tmux",
       "shellRecipe": [
-        "sh run.sh gradle --console=plain --no-daemon run"
+        "gradle --console=plain --no-daemon run"
       ],
       "expectedOutput": "work",
       "files": [
         {
           "name": "Connect.scala",
-          "sha256": "cbca6ab2fdb96a5b4291cdc9003a17d32a098c2b5f7cff159b03bd4ab63ca1a5"
+          "sha256": "7ca829b21257182f75562e0f3cd0ca88916d80366201b663488527a0d8d9ae2a"
         },
         {
           "name": "build.gradle.kts",
@@ -334,10 +334,6 @@
         {
           "name": "gradle.properties",
           "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "200098b228e8bff4cf7c60ccdb8d43c8222c95c52c20e0b69b23c1bbb6c8ea8f"
         }
       ],
       "tmux": [
