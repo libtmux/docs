@@ -29,7 +29,7 @@ describe('Haskell port metadata', () => {
     expect(haskell.packages!.map((entry) => entry.id)).toEqual(['core'])
     expect(productAvailable(haskell, 'workspace')).toBe(false)
     expect(productAvailable(haskell, 'mcp')).toBe(false)
-    expect(installsFor(haskell)[0]).toMatchObject({ filename: 'cabal.project', lang: 'text' })
+    expect(installsFor(haskell)[0]).toMatchObject({ filename: 'cabal.project', lang: 'cabal' })
     expect(installsFor(haskell)[0].code).toContain('tag: "master"')
     expect(installCommand(haskell, { status: 'unpublished', version: null, release: null, tag: null }).code)
       .toContain('location: https://github.com/libtmux/libtmux-haskell')

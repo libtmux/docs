@@ -24,7 +24,7 @@ it and `-n editor` names its first window. `-x 100 -y 30` sizes that window,
 because a detached session has no terminal to size it. The final `'sh'` is the
 program in the first pane.
 
-```text excerpt="workspace.conf" from="new-session"
+```tmux excerpt="workspace.conf" from="new-session"
 ```
 
 ### 2. Split the window
@@ -33,7 +33,7 @@ program in the first pane.
 window with an exact session name, so the split cannot reach a session whose
 name only starts with `dev`.
 
-```text excerpt="workspace.conf" from="split-window"
+```tmux excerpt="workspace.conf" from="split-window"
 ```
 
 The `editor` window now has two panes. Each runs `sh`.
@@ -43,7 +43,7 @@ The `editor` window now has two panes. Each runs `sh`.
 `new-window -n logs` adds a window named `logs` with one pane. A new window
 becomes the current one.
 
-```text excerpt="workspace.conf" from="new-window"
+```tmux excerpt="workspace.conf" from="new-window"
 ```
 
 ### 4. Choose what is selected
@@ -51,7 +51,7 @@ becomes the current one.
 `select-window` and `select-pane` move the focus back to the first pane of the
 `editor` window. `.0` is the pane's index in that window.
 
-```text excerpt="workspace.conf" from="select-window" to="select-pane"
+```tmux excerpt="workspace.conf" from="select-window" to="select-pane"
 ```
 
 <a id="define-the-layout"></a>
@@ -61,7 +61,7 @@ becomes the current one.
 Explicit targets keep each command tied to the intended session and window.
 Save the four steps together as `workspace.conf`:
 
-```text title="workspace.conf"
+```tmux title="workspace.conf"
 new-session -d -s dev -n editor -x 100 -y 30 'sh'
 split-window -h -t '=dev:editor' 'sh'
 new-window -t '=dev' -n logs 'sh'

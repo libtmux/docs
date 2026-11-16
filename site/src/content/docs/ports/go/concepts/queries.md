@@ -29,7 +29,7 @@ tmux 3.3a or newer. Save these two files and any complete Go program below.
 Each program includes its imports and entry point; run it by filename so
 other examples in the directory do not introduce duplicate `main` functions.
 
-```text title="go.mod"
+```gomod title="go.mod"
 module example.com/concepts
 
 go 1.26.0

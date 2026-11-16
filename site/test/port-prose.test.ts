@@ -175,7 +175,7 @@ describe('port prose ownership', () => {
       const body = resolvePortCode(content)
       const languages: string[] = []
       visit(fromMarkdown(body), 'code', (node) => { languages.push(node.lang ?? '') })
-      expect(languages.every((language) => ['sh', 'bash', 'console', 'text'].includes(language)), path).toBe(true)
+      expect(languages.every((language) => ['sh', 'bash', 'console', 'text', 'tmux'].includes(language)), path).toBe(true)
       expect(body, path).not.toMatch(/QueryList|server\.sessions|FilterExpr|CreateWindowAsync/)
       vi.stubEnv('LIBTMUX_DOCS_PORT', '')
       const markdown = linkProseMarkdown(body)
