@@ -1,0 +1,136 @@
+{
+  "name": "cabal",
+  "scopeName": "source.cabal",
+  "patterns": [
+    { "include": "#comment" },
+    { "include": "#section" },
+    { "include": "#conditional" },
+    { "include": "#else" },
+    { "include": "#dependency-field" },
+    { "include": "#text-field" },
+    { "include": "#field" },
+    { "include": "#value" }
+  ],
+  "repository": {
+    "comment": {
+      "match": "^[ \\t]*--.*$",
+      "name": "comment.line.double-dash.cabal"
+    },
+    "section": {
+      "match": "^[ \\t]*(library|executable|test-suite|benchmark|foreign-library|flag|source-repository-package|source-repository|common|custom-setup|package|program-options|repository)(?![\\w-])(?![ \\t]*:)(?:[ \\t]+(\\S.*?))?[ \\t]*$",
+      "captures": {
+        "1": { "name": "keyword.control.section.cabal" },
+        "2": { "name": "entity.name.section.cabal" }
+      }
+    },
+    "conditional": {
+      "begin": "^[ \\t]*(if|elif)(?![\\w-])",
+      "beginCaptures": { "1": { "name": "keyword.control.conditional.cabal" } },
+      "end": "$",
+      "patterns": [
+        { "match": "\\b(?:impl|os|arch|flag)(?=[ \\t]*\\()", "name": "support.function.condition.cabal" },
+        { "include": "#logic" },
+        { "include": "#boolean" },
+        { "include": "#version-operator" },
+        { "include": "#version" },
+        { "include": "#string" },
+        { "match": "[A-Za-z][\\w-]*", "name": "variable.other.condition.cabal" }
+      ]
+    },
+    "else": {
+      "match": "^[ \\t]*(else)(?![\\w-])",
+      "captures": { "1": { "name": "keyword.control.conditional.cabal" } }
+    },
+    "dependency-field": {
+      "begin": "^([ \\t]*)(build-depends|build-tool-depends|setup-depends|pkgconfig-depends|constraints|allow-newer|allow-older|extra-packages)[ \\t]*(:)",
+      "beginCaptures": {
+        "2": { "name": "support.type.property-name.cabal" },
+        "3": { "name": "punctuation.separator.key-value.cabal" }
+      },
+      "end": "^(?![ \\t]*$|\\1[ \\t]+\\S)",
+      "patterns": [
+        { "include": "#comment" },
+        { "include": "#logic" },
+        { "include": "#version-operator" },
+        { "include": "#version" },
+        { "match": "(?<=[\\s,])[+-][A-Za-z][\\w-]*", "name": "constant.other.flag.cabal" },
+        { "match": "(?<![\\w.-])[A-Za-z][\\w-]*(?::[A-Za-z][\\w-]*)?(?![\\w.-])", "name": "entity.name.package.cabal" }
+      ]
+    },
+    "text-field": {
+      "begin": "^([ \\t]*)(description|synopsis|category|author|maintainer|copyright|stability|homepage|bug-reports|package-url)[ \\t]*(:)",
+      "beginCaptures": {
+        "2": { "name": "support.type.property-name.cabal" },
+        "3": { "name": "punctuation.separator.key-value.cabal" }
+      },
+      "end": "^(?![ \\t]*$|\\1[ \\t]+\\S)",
+      "contentName": "string.unquoted.cabal",
+      "patterns": [
+        { "include": "#comment" },
+        { "include": "#url" }
+      ]
+    },
+    "field": {
+      "begin": "^([ \\t]*)([A-Za-z][\\w.-]*)[ \\t]*(:)(?!//)",
+      "beginCaptures": {
+        "2": { "name": "support.type.property-name.cabal" },
+        "3": { "name": "punctuation.separator.key-value.cabal" }
+      },
+      "end": "^(?![ \\t]*$|\\1[ \\t]+\\S)",
+      "patterns": [
+        { "include": "#comment" },
+        { "include": "#value" }
+      ]
+    },
+    "value": {
+      "patterns": [
+        { "include": "#string" },
+        { "include": "#url" },
+        { "include": "#timestamp" },
+        { "include": "#hash" },
+        { "match": "(?<![\\w.-])-{1,2}[A-Za-z][\\w=.,:/+-]*", "name": "constant.other.option.cabal" },
+        { "include": "#logic" },
+        { "include": "#version-operator" },
+        { "include": "#boolean" },
+        { "include": "#version" },
+        { "match": "\\b[A-Z][\\w']*(?:\\.[A-Z][\\w']*)+\\b", "name": "entity.name.namespace.cabal" },
+        { "match": "(?<![\\w:/.-])[\\w.*-]*(?:/[\\w.*-]*)+", "name": "string.unquoted.path.cabal" },
+        { "match": "(?<![\\w.-])\\.{1,2}(?![\\w.-])", "name": "string.unquoted.path.cabal" }
+      ]
+    },
+    "string": {
+      "begin": "\"",
+      "end": "\"",
+      "name": "string.quoted.double.cabal",
+      "patterns": [{ "match": "\\\\.", "name": "constant.character.escape.cabal" }]
+    },
+    "url": {
+      "match": "\\b[A-Za-z][A-Za-z0-9+.-]*://[^\\s,\"]+",
+      "name": "string.other.link.cabal"
+    },
+    "timestamp": {
+      "match": "\\b\\d{4}-\\d{2}-\\d{2}(?:T\\d{2}:\\d{2}:\\d{2}Z)?(?![\\w-])",
+      "name": "constant.numeric.date.cabal"
+    },
+    "hash": {
+      "match": "\\b(?:[0-9a-f]{64}|[0-9a-f]{40})\\b",
+      "name": "constant.numeric.hash.cabal"
+    },
+    "logic": {
+      "match": "&&|\\|\\||!",
+      "name": "keyword.operator.logical.cabal"
+    },
+    "version-operator": {
+      "match": "\\^>=|>=|<=|==|<|>|=",
+      "name": "keyword.operator.comparison.cabal"
+    },
+    "version": {
+      "match": "(?<![\\w.-])\\d+(?:\\.(?:\\d+|\\*))*(?![\\w.-])",
+      "name": "constant.numeric.version.cabal"
+    },
+    "boolean": {
+      "match": "\\b(?:True|False|true|false)\\b",
+      "name": "constant.language.boolean.cabal"
+    }
+  }
+}

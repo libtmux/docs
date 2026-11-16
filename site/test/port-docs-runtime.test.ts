@@ -151,40 +151,102 @@ describe('native documentation producers', () => {
     }
   })
 
-  it.each([0, 23])('uses Julia tooling to build its tmux floor and stops on build failure %s', (exitCode) => {
+  // A generator that predates the Julia matrix script carries dev/check-matrix.py,
+  // which builds the tmux floor. Without it the shared build-tmux action does.
+  function juliaSystemDependencies(legacyExit?: number) {
     const directory = mkdtempSync(join(tmpdir(), 'libtmux-julia-tmux-'))
     const tooling = join(directory, 'export tooling')
-    const output = join(directory, 'path')
+    const path = join(directory, 'path')
+    const output = join(directory, 'output')
     const invocations = join(directory, 'invocations')
-    const stage = join(directory, 'libtmux-julia-docs')
     try {
       mkdirSync(join(tooling, 'dev'), { recursive: true })
       mkdirSync(join(directory, 'docs/scripts'), { recursive: true })
+      writeFileSync(path, '')
       writeFileSync(output, '')
+      writeFileSync(invocations, '')
       writeFileSync(join(directory, 'docs/scripts/apt-get.sh'), `#!${process.execPath}
 require('node:fs').appendFileSync(process.env.TMUX_INVOCATIONS, JSON.stringify(process.argv.slice(2)) + '\\n')
 `, { mode: 0o700 })
       writeFileSync(join(directory, 'tmux'), '#!/bin/sh\nprintf "tmux 3.4\\n"\n', { mode: 0o700 })
-      writeFileSync(join(tooling, 'dev/check-matrix.py'), `import json, os, pathlib, sys
+      if (legacyExit !== undefined) {
+        writeFileSync(join(tooling, 'dev/check-matrix.py'), `import json, os, pathlib, sys
 with open(os.environ['TMUX_INVOCATIONS'], 'a') as output:
     output.write(json.dumps(sys.argv[1:]) + '\\n')
-if ${exitCode}: sys.exit(${exitCode})
+if ${legacyExit}: sys.exit(${legacyExit})
 binary = pathlib.Path(sys.argv[2]) / 'tmux' / sys.argv[3] / 'bin/tmux'
 binary.parent.mkdir(parents=True)
 binary.write_text('#!/bin/sh\\nprintf "tmux 3.7c\\\\n"\\n')
 binary.chmod(0o700)
 `)
+      }
       const result = spawnSync('bash', ['-e', '-c', script('Install native system dependencies')], {
         cwd: directory, encoding: 'utf8', timeout: 5000,
-        env: { ...process.env, PORT: 'julia', PATH: `${directory}:${process.env.PATH}`, LIBTMUX_DOCS_GENERATOR_CHECKOUT: tooling, RUNNER_TEMP: directory, GITHUB_PATH: output, TMUX_INVOCATIONS: invocations },
+        env: { ...process.env, PORT: 'julia', PATH: `${directory}:${process.env.PATH}`, LIBTMUX_DOCS_GENERATOR_CHECKOUT: tooling, RUNNER_TEMP: directory, GITHUB_PATH: path, GITHUB_OUTPUT: output, TMUX_INVOCATIONS: invocations },
       })
-      expect(result.status, result.stderr).toBe(exitCode)
-      const commands = readFileSync(invocations, 'utf8').trim().split('\n').map((line) => JSON.parse(line))
-      expect(commands[0]).toEqual(['update', '-qq'])
-      expect(commands[1]).toEqual(expect.arrayContaining(['install', 'libevent-dev', 'libncurses-dev', 'bison', 'build-essential', 'pkg-config']))
-      expect(commands[2]).toEqual(['build-tmux', stage, '3.7c'])
-      expect(readFileSync(output, 'utf8')).toBe(exitCode ? '' : `${stage}/tmux/3.7c/bin\n`)
-      if (!exitCode) expect(result.stdout).toContain('tmux 3.7c')
+      const commands = readFileSync(invocations, 'utf8').trim().split('\n').filter(Boolean).map((line) => JSON.parse(line))
+      return { ...result, commands, path: readFileSync(path, 'utf8'), output: readFileSync(output, 'utf8'), stage: join(directory, 'libtmux-julia-docs') }
+    } finally { rmSync(directory, { recursive: true, force: true }) }
+  }
+
+  it.each([0, 23])('uses Julia tooling to build its tmux floor and stops on build failure %s', (exitCode) => {
+    const result = juliaSystemDependencies(exitCode)
+    expect(result.status, result.stderr).toBe(exitCode)
+    expect(result.commands[0]).toEqual(['update', '-qq'])
+    expect(result.commands[1]).toEqual(expect.arrayContaining(['install', 'libevent-dev', 'libncurses-dev', 'bison', 'build-essential', 'pkg-config']))
+    expect(result.commands[2]).toEqual(['build-tmux', result.stage, '3.7c'])
+    expect(result.path).toBe(exitCode ? '' : `${result.stage}/tmux/3.7c/bin\n`)
+    expect(result.output).toBe('')
+    if (!exitCode) expect(result.stdout).toContain('tmux 3.7c')
+  })
+
+  it('leaves the tmux floor to the shared build action when the generator has no dev/check-matrix.py', () => {
+    const result = juliaSystemDependencies()
+    expect(result.status, result.stderr).toBe(0)
+    expect(result.commands).toHaveLength(2)
+    expect(result.commands[0]).toEqual(['update', '-qq'])
+    expect(result.commands[1]).toEqual(expect.arrayContaining(['install', 'libevent-dev', 'libncurses-dev', 'bison', 'build-essential', 'pkg-config']))
+    expect(result.output).toBe('julia-tmux=shared\n')
+    expect(result.path).toBe('')
+  })
+
+  it('builds the Julia tmux floor with the pinned shared action before the API export', () => {
+    const deps = workflow.indexOf('      - name: Install native system dependencies\n')
+    const build = workflow.indexOf('      - name: Build the Julia tmux floor\n')
+    const check = workflow.indexOf('      - name: Check the Julia tmux on PATH\n')
+    const exportStep = workflow.indexOf('      - name: Export Julia API from the selected source\n')
+    expect(deps).toBeGreaterThan(-1)
+    expect(build).toBeGreaterThan(deps)
+    expect(check).toBeGreaterThan(build)
+    expect(exportStep).toBeGreaterThan(check)
+    const step = workflow.slice(build, check)
+    expect(step).toContain("if: matrix.port == 'julia' && steps.system-dependencies.outputs.julia-tmux == 'shared'")
+    expect(step).toContain('id: julia-tmux')
+    expect(step).toMatch(/uses: libtmux\/\.github\/actions\/build-tmux@[0-9a-f]{40}\n/)
+    expect(step).toContain('ref: 3.7c')
+    expect(step).toContain('prefix: ${{ runner.temp }}/libtmux-julia-docs/tmux/3.7c')
+    expect(step).toContain("add-to-path: 'true'")
+    expect(workflow.slice(deps, build)).toContain('id: system-dependencies')
+  })
+
+  it.each([
+    ['the built tmux is first on PATH', 'built', true],
+    ['another tmux shadows the built one', 'other', false],
+  ])('checks that %s', (_name, onPath, accepted) => {
+    const directory = mkdtempSync(join(tmpdir(), 'libtmux-julia-path-'))
+    try {
+      const built = join(directory, 'built')
+      const other = join(directory, 'other')
+      for (const bin of [built, other]) {
+        mkdirSync(bin)
+        writeFileSync(join(bin, 'tmux'), '#!/bin/sh\nprintf "tmux 3.7c\\n"\n', { mode: 0o700 })
+      }
+      const result = spawnSync('bash', ['-e', '-c', script('Check the Julia tmux on PATH')], {
+        cwd: directory, encoding: 'utf8', timeout: 5000,
+        env: { ...process.env, PATH: `${onPath === 'built' ? built : other}:${process.env.PATH}`, BINARY: join(built, 'tmux') },
+      })
+      expect(result.status === 0, result.stderr).toBe(accepted)
+      if (accepted) expect(result.stdout).toContain('tmux 3.7c')
     } finally { rmSync(directory, { recursive: true, force: true }) }
   })
 

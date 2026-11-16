@@ -28,12 +28,26 @@ export const CAPABILITIES = [
 ] as const
 export type CapabilityId = (typeof CAPABILITIES)[number]['id']
 
+/**
+ * A path or text an evidence item states once, or as a list of alternatives
+ * for a repository whose layout changed. The docs repository checks its data
+ * at the revision its API model pins, and a port's own docs build checks it at
+ * the port's trunk, so one entry must hold at both.
+ */
+export type Alternatives = string | readonly string[]
+
+export const alternatives = (value: Alternatives): readonly string[] => (typeof value === 'string' ? [value] : value)
+
 /** One thing the port's tests assert or its runner does with the result. */
 export interface ExitEvidence {
-  /** A file in the port repository, cached with the example sources. */
-  file: string
-  /** Text the file holds; the check that the program or test fails when the result is wrong. */
-  contains: string
+  /**
+   * A file in the port repository, cached with the example sources. A list
+   * names the paths one file has had, newest first. The revision holds one of
+   * them, the first that exists there, and the cache keeps only that one.
+   */
+  file: Alternatives
+  /** Text the file holds; the check that the program or test fails when the result is wrong. A list is any one of its texts. */
+  contains: Alternatives
 }
 
 export interface CapabilityEntry {
@@ -69,8 +83,8 @@ export type CapabilityTable = Readonly<Record<string, Partial<Record<CapabilityI
 
 export const capabilityCacheKey = (owner: string, file: string) => landingCacheKey(owner, 'core' as never, file).replace('/core:', ':')
 
-/** Every file an entry relies on: the example and what checks it. */
-export const capabilityFiles = (entry: CapabilityEntry): string[] => [entry.file, ...entry.checkedBy.map((item) => item.file)]
+/** Every file an entry relies on, as the paths it may have: the example, then what checks it. */
+export const capabilityFiles = (entry: CapabilityEntry): (readonly string[])[] => [[entry.file], ...entry.checkedBy.map((item) => alternatives(item.file))]
 
 /** Problems with an entry's record, empty when it states its evidence. */
 export function validateCapability(entry: Partial<CapabilityEntry>): string[] {
@@ -81,7 +95,8 @@ export function validateCapability(entry: Partial<CapabilityEntry>): string[] {
   if (!entry.ci?.command?.trim()) problems.push('names no CI command')
   if (!entry.ci?.job?.trim()) problems.push('names no CI job')
   if (!entry.checkedBy?.length) problems.push('records no evidence that the exit status or output is checked')
-  for (const item of entry.checkedBy ?? []) if (!item.file || !item.contains?.trim()) problems.push('records evidence with no file or text')
+  const blank = (value: Alternatives | undefined) => value === undefined || alternatives(value).length === 0 || alternatives(value).some((text) => !text?.trim())
+  for (const item of entry.checkedBy ?? []) if (blank(item.file) || blank(item.contains)) problems.push('records evidence with no file or text')
   if (entry.tmux !== undefined && !/^\d+\.\d+[a-z]?\+$/.test(entry.tmux)) problems.push('writes the tmux version unlike 3.8+')
   if (entry.ci?.planOutput !== undefined && !/^[A-Za-z_][\w-]*$/.test(entry.ci.planOutput)) problems.push('names a plan output that is not a workflow output name')
   return problems
@@ -190,6 +205,15 @@ export interface ShownCapability {
 }
 
 type Cache = Readonly<Record<string, CachedSource | undefined>>
+
+/** Why an evidence item fails against the example cache; empty when the file the revision has holds one of its texts. */
+export function evidenceProblems(owner: string, item: ExitEvidence, cache: Cache): string[] {
+  const files = alternatives(item.file)
+  const found = files.map((file) => ({ file, cached: cache[capabilityCacheKey(owner, file)] })).find((candidate) => candidate.cached)
+  if (!found) return [`none of ${files.join(', ')} is in the example cache; run node scripts/gen-example-sources.mjs`]
+  const texts = alternatives(item.contains)
+  return texts.some((text) => found.cached!.content.includes(text)) ? [] : [`${found.file} holds none of ${texts.map((text) => JSON.stringify(text)).join(' or ')}`]
+}
 
 /** The capabilities a port shows, in order. An unresolvable anchor or missing cache throws. */
 export function portCapabilities(owner: string, table: CapabilityTable, cache: Cache): ShownCapability[] {

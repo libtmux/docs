@@ -219,7 +219,7 @@ Go module proxy.
 
 Save the program and module file using the displayed names. Use Go 1.26 or newer.
 
-```text title="go.mod"
+```gomod title="go.mod"
 module example.com/capture
 
 go 1.26.0

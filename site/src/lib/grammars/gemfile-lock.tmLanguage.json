@@ -1,0 +1,82 @@
+{
+  "name": "gemfile-lock",
+  "scopeName": "source.gemfile-lock",
+  "patterns": [
+    { "include": "#platforms" },
+    { "include": "#version-section" },
+    { "include": "#section" },
+    { "include": "#source-field" },
+    { "include": "#spec" },
+    { "include": "#dependency" }
+  ],
+  "repository": {
+    "section": {
+      "match": "^([A-Z][A-Z ]*[A-Z])[ \\t]*$",
+      "name": "entity.name.section.gemfile-lock"
+    },
+    "platforms": {
+      "begin": "^(PLATFORMS)[ \\t]*$",
+      "beginCaptures": { "1": { "name": "entity.name.section.gemfile-lock" } },
+      "end": "^(?=\\S)",
+      "patterns": [{ "match": "^[ \\t]+(\\S+)[ \\t]*$", "captures": { "1": { "name": "constant.language.platform.gemfile-lock" } } }]
+    },
+    "version-section": {
+      "begin": "^(BUNDLED WITH|RUBY VERSION)[ \\t]*$",
+      "beginCaptures": { "1": { "name": "entity.name.section.gemfile-lock" } },
+      "end": "^(?=\\S)",
+      "patterns": [{ "include": "#version" }]
+    },
+    "source-field": {
+      "begin": "^[ \\t]+(remote|revision|branch|tag|ref|glob|submodules|specs)(:)",
+      "beginCaptures": {
+        "1": { "name": "support.type.property-name.gemfile-lock" },
+        "2": { "name": "punctuation.separator.key-value.gemfile-lock" }
+      },
+      "end": "$",
+      "patterns": [
+        { "match": "\\b[A-Za-z][A-Za-z0-9+.-]*://\\S+", "name": "string.other.link.gemfile-lock" },
+        { "match": "\\b[0-9a-f]{40}\\b", "name": "constant.numeric.hash.gemfile-lock" },
+        { "match": "\\b(?:true|false)\\b", "name": "constant.language.boolean.gemfile-lock" },
+        { "match": "\\S+", "name": "string.unquoted.gemfile-lock" }
+      ]
+    },
+    "spec": {
+      "begin": "^[ \\t]+([A-Za-z0-9_.-]+)(!)?[ \\t]*(?=\\()",
+      "beginCaptures": {
+        "1": { "name": "entity.name.package.gemfile-lock" },
+        "2": { "name": "keyword.operator.pinned.gemfile-lock" }
+      },
+      "end": "$",
+      "patterns": [
+        {
+          "begin": "\\(",
+          "end": "\\)",
+          "patterns": [
+            { "match": "~>|>=|<=|!=|=|<|>", "name": "keyword.operator.comparison.gemfile-lock" },
+            { "include": "#version" },
+            { "match": ",", "name": "punctuation.separator.comma.gemfile-lock" }
+          ]
+        },
+        {
+          "match": "\\b(sha256)(=)([0-9a-f]+)\\b",
+          "captures": {
+            "1": { "name": "support.type.property-name.gemfile-lock" },
+            "2": { "name": "keyword.operator.assignment.gemfile-lock" },
+            "3": { "name": "constant.numeric.hash.gemfile-lock" }
+          }
+        }
+      ]
+    },
+    "dependency": {
+      "match": "^[ \\t]+([A-Za-z0-9_.-]+)(!)?[ \\t]*$",
+      "captures": {
+        "1": { "name": "entity.name.package.gemfile-lock" },
+        "2": { "name": "keyword.operator.pinned.gemfile-lock" }
+      }
+    },
+    "version": {
+      "match": "\\d+(?:\\.[0-9A-Za-z]+)*(?:-[A-Za-z0-9_-]+)*",
+      "name": "constant.numeric.version.gemfile-lock"
+    }
+  }
+}
