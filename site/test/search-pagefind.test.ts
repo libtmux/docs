@@ -1,6 +1,9 @@
+import { Window } from 'happy-dom'
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
-import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
-import { buildIndex, type FixtureIndex } from './search-fixture'
+import { loadAstroTemplate, renderAstroTemplate, withoutScope } from './astro-templates'
+import { go, options, symbolOf } from './api-page-fixtures'
+import { buildIndex, type FixtureIndex, type FixturePage } from './search-fixture'
+import { mountSearchPanel } from '../src/lib/search-panel'
 import type { ApiTreeJson } from '../src/lib/api-search'
 
 vi.mock('astro:content', () => ({ getCollection: async () => [] }))
@@ -128,5 +131,87 @@ describe('the text a result opens with', () => {
       const [page] = await index.pages()
       expect(page!.content).toBe('Capturing output. Pane.Capture takes a request.')
     } finally { await index.close() }
+  })
+})
+
+/**
+ * "capture pane" in the Go scope, over the real Go reference pages for the symbols that mention both words:
+ * the request type with its fields, the errors and positions it names, and the methods of Pane.
+ */
+describe('ranking "capture pane" in the Go scope', () => {
+  const SYMBOLS = [
+    'tmux.Pane', 'tmux.Pane.Capture', 'tmux.Pane.CaptureBytes', 'tmux.Pane.CaptureTo', 'tmux.Pane.CaptureToFile', 'tmux.Pane.CaptureToBuffer',
+    'tmux.Pane.Title', 'tmux.Pane.Width', 'tmux.Pane.Height', 'tmux.Pane.Active',
+    'tmux.CapturePaneRequest', ...go.symbols.filter((symbol) => symbol.parent === 'tmux.CapturePaneRequest').map((symbol) => symbol.id),
+    'tmux.CaptureRequestError', 'tmux.CaptureRequestError.Field', 'tmux.CaptureRequestError.Reason',
+    'tmux.CapturePosition', 'tmux.CaptureBoundary', 'tmux.CaptureLine', 'tmux.ErrInvalidCaptureRequest',
+  ]
+  let index: FixtureIndex
+  let window: Window
+
+  beforeAll(async () => {
+    env()
+    const reference = await loadAstroTemplate('components/api/ApiReference.astro', options)
+    const layout = await loadAstroTemplate('layouts/BaseLayout.astro')
+    const sidebar = await referenceSidebar()
+    const pages: FixturePage[] = []
+    for (const id of SYMBOLS) {
+      const owner = symbolOf(go, id)
+      const path = `go/latest/reference/${owner.slug}`
+      const body = withoutScope(await renderAstroTemplate(reference, { url: `https://libtmux.org/en/${path}/`, props: { model: go, owner } }))
+      pages.push({
+        url: `/en/${path}/`,
+        html: await renderAstroTemplate(layout, {
+          url: `https://libtmux.org/en/${path}/`,
+          props: { title: owner.name, pagePath: `reference/${owner.slug}`, portSlug: 'go', pageSource: SOURCE },
+          slots: { default: `<main>${sidebar}${body}</main>` },
+        }),
+      })
+    }
+    index = await buildIndex(pages)
+  })
+  afterAll(async () => {
+    window?.close()
+    await index?.close()
+    vi.unstubAllEnvs()
+  })
+
+  it('puts the request type and its fields above the method a reader meant, in Pagefind\'s own order', async () => {
+    const { results } = await index.api.search('capture pane', { filters: { port: ['Go'] } })
+    const order = (await Promise.all(results.map((result) => result.data()))).map((data) => data.meta.title)
+    expect(order[0]).toMatch(/^Capture/)
+    expect(order.indexOf('Pane.Capture')).toBeGreaterThan(0)
+  })
+
+  /** The panel on a page at `url`, searching the fixture index with Pagefind's own client. */
+  function mount(url: string, settings: Partial<Parameters<typeof mountSearchPanel>[2]> = {}) {
+    window?.close()
+    window = new Window({ url })
+    vi.stubGlobal('document', window.document)
+    vi.stubGlobal('Event', window.Event)
+    vi.stubGlobal('CustomEvent', window.CustomEvent)
+    vi.stubGlobal('location', window.location)
+    vi.stubGlobal('history', window.history)
+    window.document.body.innerHTML = `<div class="search-panel">
+      <input class="search-panel__input">
+      <div class="search-panel__scope"><button data-scope="port"></button><button data-scope="reference"></button><button data-scope="all"></button></div>
+      <aside class="search-panel__filters" hidden>
+        <div class="search-panel__facet search-panel__facet--section" hidden><div class="search-panel__filter-list search-panel__section-list"></div></div>
+        <div class="search-panel__facet search-panel__facet--kind" hidden><div class="search-panel__filter-list search-panel__kind-list"></div></div>
+        <div class="search-panel__facet search-panel__facet--port"><div class="search-panel__filter-list"></div></div>
+      </aside>
+      <div class="search-panel__results"></div></div>`
+    const root = window.document.querySelector('.search-panel')! as unknown as HTMLElement
+    const handle = mountSearchPanel(root, '/en/pagefind/', { initialPort: 'Go', mock: index.api, ...settings })
+    const rows = (list: string) => [...root.querySelectorAll(`${list} .search-panel__filter`)].map((row) => row.textContent)
+    return { root, handle, rows }
+  }
+
+  it('shows Pane.Capture first in the panel, and opens its excerpt with the page, not the tree', async () => {
+    const { root } = mount('https://libtmux.org/en/go/latest/search/', { initialQuery: 'capture pane' })
+    await vi.waitFor(() => expect(root.querySelector('.search-panel__result')).not.toBeNull())
+    const first = root.querySelector('.search-panel__result')!
+    expect(first.getAttribute('href')).toBe('/en/go/latest/reference/tmux-pane-capture/')
+    expect(first.querySelector('.search-panel__result-excerpt')?.textContent).toMatch(/^Pane\.Capture/)
   })
 })

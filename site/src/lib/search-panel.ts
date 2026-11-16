@@ -8,6 +8,7 @@
  * (`data-pagefind-meta`), so this renders them under each result.
  */
 
+import { boostExactMembers } from './search-rank'
 import {
   countLine,
   filterCount,
@@ -567,13 +568,16 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings
     }
     const res = await pf.search(q, { filters: activeFilters() })
     if (mine !== token) return
+    // An exact `Owner.member` for the query leads Pagefind's own order.
+    const ranked = await boostExactMembers(q, res.results)
+    if (mine !== token) return
 
     await renderFilters({
       port: res.totalFilters?.port ?? res.filters?.port,
       section: res.filters?.section ?? res.totalFilters?.section,
       kind: res.filters?.kind ?? res.totalFilters?.kind,
     })
-    all = res.results
+    all = ranked
     shown = pending ? Math.max(PAGE_SIZE, pending.shown) : PAGE_SIZE
     selected = -1
     if (all.length === 0) {
