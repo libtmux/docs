@@ -8472,6 +8472,13 @@
   },
   {
    "port": "julia",
+   "symbol": "LibTmux.new_session",
+   "page": "/julia/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "julia",
    "symbol": "LibTmux.NoMatchError",
    "page": "/julia/latest/concepts/queries/",
    "title": "Captured queries",
@@ -8676,6 +8683,34 @@
   {
    "port": "julia",
    "symbol": "LibTmux.Server.tmux",
+   "page": "/julia/latest/examples/cancel-control-wait/",
+   "title": "Cancel a control wait",
+   "section": "examples"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.Server.tmux",
+   "page": "/julia/latest/examples/observe-output/",
+   "title": "Observe pane output",
+   "section": "examples"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.Server.tmux",
+   "page": "/julia/latest/examples/owned-capture/",
+   "title": "Capture a pane",
+   "section": "examples"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.Server.tmux",
+   "page": "/julia/latest/examples/shared-windows/",
+   "title": "Query shared windows",
+   "section": "examples"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.Server.tmux",
    "page": "/julia/latest/guides/installation/",
    "title": "Installation",
    "section": "guides"
@@ -8777,6 +8812,13 @@
    "page": "/julia/latest/examples/owned-capture/",
    "title": "Capture a pane",
    "section": "examples"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.with_server",
+   "page": "/julia/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
   },
   {
    "port": "julia",

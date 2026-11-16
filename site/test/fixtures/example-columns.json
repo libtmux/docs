@@ -46,7 +46,6 @@
   "ports/java/guides/attaching-to-tmux.md": 2,
   "ports/java/mcp/examples.md": 11,
   "ports/java/workspace/internals/examples.md": 3,
-  "ports/julia/examples/observe-output.md": 1,
   "ports/julia/examples/owned-capture.md": 1,
   "ports/julia/examples/shared-windows.md": 3,
   "ports/kotlin/concepts/queries.md": 4,

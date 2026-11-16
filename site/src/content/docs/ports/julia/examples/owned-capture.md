@@ -37,7 +37,7 @@ using LibTmux
 
 function main()
     endpoint = Ref{Server}()
-    result = with_server(; tmux=get(ENV, "LIBTMUX_TEST_TMUX", "tmux")) do server
+    result = with_server() do server
         endpoint[] = server
         new_session(server; name="example", command=["/bin/cat"])
         snap = snapshot(server)
@@ -85,7 +85,8 @@ Captured %0: 24 screen bytes
 
 ## Source and verification
 
-The complete program comes from [examples/owned_capture.jl](https://github.com/libtmux/libtmux-julia/blob/6f62bd72cb8d99f3759ca5e2cc3591165a03c768/examples/owned_capture.jl).
+The complete program is [examples/owned_capture.jl](https://github.com/libtmux/libtmux-julia/blob/6f62bd72cb8d99f3759ca5e2cc3591165a03c768/examples/owned_capture.jl) without the `tmux`
+argument that the repository's own tests use to choose an executable.
 The verification runner executes these displayed files and setup commands
 unchanged, checks the output, and checks that the program stopped its private
 tmux server. Each example runs independently.

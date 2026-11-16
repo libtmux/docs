@@ -485,7 +485,7 @@
       "page": "ports/julia/guides/attaching-to-tmux",
       "shellRecipe": [
         "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-julia.git \\\n  6f62bd72cb8d99f3759ca5e2cc3591165a03c768\ngit -C source checkout -q --detach FETCH_HEAD",
-        "sh run.sh julia --startup-file=no --project=source connect.jl"
+        "julia --startup-file=no --project=source connect.jl"
       ],
       "expectedOutputs": [
         [],
@@ -496,11 +496,7 @@
       "files": [
         {
           "name": "connect.jl",
-          "sha256": "b22b7f00c624ef3d0f1082bad022787c822cc767091ed430a5af290c5080da8a"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "cd35444c4d85ba5411c9bebbcc89a552cf346efe414502078d9a338d5c89f44e"
+          "sha256": "792a11ba4d05669d85343caaea1e975a18bb7027997b2c5a9e7712b86a950468"
         }
       ]
     },
