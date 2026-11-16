@@ -1,4 +1,4 @@
-import { newCheckContext, newCheckPage } from './browser-context.mjs'
+import { holdClock, newCheckContext, newCheckPage } from './browser-context.mjs'
 import { markExternalLinks } from '../src/integrations/external-links.ts'
 import assert from 'node:assert/strict'
 import pixelmatch from 'pixelmatch'
@@ -630,6 +630,7 @@ function dottedDecorations() {
 export async function checkBlockLinksUndecorated(browser, base, { sample = false } = {}) {
   const context = await newCheckContext(browser, base, { reducedMotion: 'reduce', viewport: { width: 1440, height: 1000 } })
   const page = await context.newPage()
+  await page.clock.install()
   page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
   const failures = []
   try {
@@ -638,10 +639,15 @@ export async function checkBlockLinksUndecorated(browser, base, { sample = false
       await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready')
       // Hovering is what asks for a preview, so exercise every block link on the page.
       const cards = page.locator('main a[href]').filter({ has: page.locator('h1, h2, h3, h4, h5, h6, p') })
-      for (let index = 0; index < Math.min(await cards.count(), 8); index++) {
-        await cards.nth(index).hover()
-        // The preview waits out its dwell before it marks a link, so wait past it.
-        await page.waitForTimeout(700)
+      // The preview waits out its dwell before it marks a link, so advance a held clock past it.
+      await holdClock(page)
+      try {
+        for (let index = 0; index < Math.min(await cards.count(), 8); index++) {
+          await cards.nth(index).hover()
+          await page.clock.runFor(700)
+        }
+      } finally {
+        await page.clock.resume()
       }
       await page.mouse.move(0, 0)
       const dotted = await page.evaluate(dottedDecorations)
