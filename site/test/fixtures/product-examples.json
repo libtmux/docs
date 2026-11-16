@@ -126,24 +126,20 @@
       "language": "sh",
       "sourceRevision": "254f8b2be7eb60cacc3ffcb3ea8e456784f582df",
       "sourceRepository": "libtmux/libtmux-swift",
-      "files": [
-        {
-          "name": "run-mcp.sh",
-          "sha256": "6a26dc211be10156871e51638b2fe855d3d2a958145824b0f14ce790825ecbe0"
-        }
-      ],
+      "files": [],
       "toolchain": [
         "Swift 6.2.4"
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "page": "ports/swift/mcp/guides",
       "shellRecipe": [
         "mkdir swift-mcp-client && cd swift-mcp-client",
         "git init libtmux-source && \\\n  git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-swift.git && \\\n  git -C libtmux-source fetch --depth=1 origin 254f8b2be7eb60cacc3ffcb3ea8e456784f582df && \\\n  git -C libtmux-source checkout --detach FETCH_HEAD && \\\n  swift build --package-path libtmux-source --product libtmux-mcp --jobs 2",
-        "sh run-mcp.sh"
+        "realpath libtmux-source/.build/debug/libtmux-mcp",
+        "LIBTMUX_TOOLSETS= LIBTMUX_TOOLS=list_sessions \\\n    libtmux-source/.build/debug/libtmux-mcp"
       ]
     },
     {

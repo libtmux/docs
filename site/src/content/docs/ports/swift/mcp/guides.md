@@ -1,6 +1,6 @@
 ---
 title: Connect a Swift MCP client
-description: Build the Swift MCP executable and connect it to a private tmux server.
+description: Build the Swift MCP executable and configure a client to start it with its own tmux server.
 port: swift
 product: mcp
 equivalence: mcp-client-setup
@@ -9,16 +9,16 @@ sidebar:
   order: 2
 ---
 
-Build the Swift executable, then let your MCP client launch the script below.
-The script owns a private tmux server and exposes only `list_sessions`. It stops
-tmux when the MCP process exits; it does not require an existing tmux session.
+Build the Swift executable, then configure your MCP client to start it. The
+executable serves only the tools you select and does not require an existing
+tmux session.
 
 <a id="build-and-launch"></a>
 
 ## Build the executable
 
 Use Swift 6.2.4, Git, and tmux 3.3a or newer on Linux. Create an empty directory
-for the launcher and source checkout:
+for the source checkout:
 
 ```console
 $ mkdir swift-mcp-client && cd swift-mcp-client
@@ -36,68 +36,53 @@ $ git init libtmux-source && \
 
 Keep the build directory: the executable uses its adjacent resource bundle.
 
-## Save the launcher
+## Connect a client
 
-Save the following file alongside the source checkout. The trap preserves a
-failed-stop socket for inspection and reports cleanup errors on stderr.
+The executable accepts no flags; its endpoint and tool selection come from
+environment variables. Print the absolute path of the built executable:
 
-```sh title="run-mcp.sh"
-#!/bin/sh
-set -eu
-unset TMUX TMUX_PANE LIBTMUX_SOCKET
-project=$(CDPATH= cd -P "$(dirname "$0")" && pwd)
-directory=$(mktemp -d /tmp/libtmux-swift-mcp.XXXXXXXX)
-cleanup() {
-    status=$?
-    trap - 0 HUP INT TERM
-    if [ -S "$directory/s" ]; then
-        if ! tmux -S "$directory/s" kill-server; then
-            printf 'Cannot stop private server; inspect %s\n' "$directory" >&2
-            exit 1
-        fi
-    fi
-    if ! rm -f "$directory/s" || ! rmdir "$directory"; then
-        printf 'Cannot remove private directory: %s\n' "$directory" >&2
-        exit 1
-    fi
-    exit "$status"
-}
-trap cleanup 0
-trap 'exit 129' HUP
-trap 'exit 130' INT
-trap 'exit 143' TERM
-tmux -S "$directory/s" -f /dev/null \
-    set-option -g default-shell /bin/sh \; \
-    set-environment -g ENV '' \; \
-    set-environment -g BASH_ENV '' \; \
-    new-session -d -s mcp-example 'exec /bin/cat'
-LIBTMUX_SOCKET_PATH="$directory/s" \
-LIBTMUX_TMUX_BIN=tmux LIBTMUX_TMUX_CONFIG=/dev/null \
-LIBTMUX_TOOLSETS= LIBTMUX_TOOLS=list_sessions LIBTMUX_EXCLUDE_TOOLS= \
-    "$project/libtmux-source/.build/debug/libtmux-mcp"
+```console
+$ realpath libtmux-source/.build/debug/libtmux-mcp
 ```
+
+Configure the client to run that path with the environment below, which selects
+the `list_sessions` tool alone. The client must have tmux on its `PATH`.
+
+```json
+{
+  "mcpServers": {
+    "tmux": {
+      "command": "<absolute path printed above>",
+      "env": {
+        "LIBTMUX_TOOLSETS": "",
+        "LIBTMUX_TOOLS": "list_sessions"
+      }
+    }
+  }
+}
+```
+
+Without `LIBTMUX_SOCKET` or `LIBTMUX_SOCKET_PATH`, the executable serves the
+dedicated `libtmux-mcp` socket with its bundled minimal tmux configuration. It
+needs no existing tmux session, and when stdio ends it removes only a dedicated
+server that it started.
 
 Run it directly to check startup:
 
 ```console
-$ sh run-mcp.sh
+$ LIBTMUX_TOOLSETS= LIBTMUX_TOOLS=list_sessions \
+    libtmux-source/.build/debug/libtmux-mcp
 ```
 
-It waits for MCP messages on stdin. Send EOF to close the process and trigger
-cleanup. The executable accepts no flags; its endpoint and tool selection come
-from environment variables.
-
-## Connect a client
-
-Configure the client to run `sh` with the launcher's absolute path as its only
-argument. The client must have tmux on its `PATH`. The launcher finds the build
-relative to its own file, so the client's working directory does not matter.
+It reports the socket name and tool selection on stderr, then waits for MCP
+messages on stdin. Send EOF to close the process.
 
 <a id="verify-and-narrow-the-surface"></a>
 
 Ask the client to list its tools, then call
 [`list_sessions`](../tools/list_sessions/). The offered surface contains only
-that tool, and its result contains the launcher's `mcp-example` session.
+that tool. The dedicated server starts with no sessions, so the result is an
+empty `sessions` list.
 
 An empty `LIBTMUX_TOOLSETS` plus the named `LIBTMUX_TOOLS` selection excludes
 other operations. Reconnect after changing the selection. Invalid selections
