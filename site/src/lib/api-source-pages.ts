@@ -6,7 +6,14 @@
  * reads that cache and builds the URL of a file's source page, so a reference
  * entry, a behaviour fact and the source pane all link to one place and none
  * of them reads a branch head.
+ *
+ * A copy is served only for the file, repository and revision the port's model
+ * cites: the page shows the model's line numbers beside the copy's text, and
+ * they agree only at one revision. A cache of another revision throws, so the
+ * build that regenerated the model must regenerate the cache with it.
  */
+import { citedFiles, type ApiModelBase } from '@libtmux/api-model/reference'
+import { API_MODELS } from './api-models'
 import { PORT_BY_SLUG, referenceUrl } from './ports'
 import { linkedVersionFor } from './versions'
 
@@ -19,7 +26,7 @@ export interface PinnedSource {
   sha256: string
 }
 
-interface SourceData {
+export interface SourceData {
   port: string
   /** Paths the model embeds itself, because the build generates them. */
   generated?: string[]
@@ -31,12 +38,31 @@ const RAW = import.meta.glob<string>('../data/api-sources/*.json', { eager: true
 
 const parsed = new Map<string, SourceData | undefined>()
 
+/** Throw unless every copy in `data` is the file the model cites, at the repository and revision it cites it. */
+export function assertPaired(port: string, model: Pick<ApiModelBase, 'repo' | 'revision' | 'symbols'>, data: SourceData): void {
+  const cited = citedFiles({ ...model, port })
+  const stale = Object.entries(data.files).filter(([file, entry]) => {
+    const target = cited.get(file)
+    return !target || target.repo !== entry.repo || target.revision !== entry.revision
+  }).map(([file]) => file)
+  if (!stale.length) return
+  throw new Error(`${port}: ${stale.length} source copies (${stale.slice(0, 3).join(', ')}) are not the files the model cites at ${String(model.revision).slice(0, 12)}; run node scripts/gen-api-sources.mjs --port ${port}`)
+}
+
 function dataFor(port: string): SourceData | undefined {
   if (!parsed.has(port)) {
     const raw = RAW[`../data/api-sources/${port}.json`]
-    parsed.set(port, raw === undefined ? undefined : JSON.parse(raw) as SourceData)
+    const data = raw === undefined ? undefined : JSON.parse(raw) as SourceData
+    if (data && API_MODELS[port]) assertPaired(port, API_MODELS[port], data)
+    parsed.set(port, data)
   }
   return parsed.get(port)
+}
+
+/** Throw unless the port's cache is of this model: the model a page cites is the one its copies must come from. */
+export function requirePairedSources(port: string, model: Pick<ApiModelBase, 'repo' | 'revision' | 'symbols'>): void {
+  const data = dataFor(port)
+  if (data) assertPaired(port, model, data)
 }
 
 /** The pinned copy of a file, or undefined when the port has none. */
