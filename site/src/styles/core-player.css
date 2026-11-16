@@ -216,7 +216,11 @@
   color: var(--ec-codeBg, var(--color-surface));
 }
 
-/* The copy button, at the program's top right and clear of its scrollbar: the code frame's own 2rem square. */
+/*
+ * The copy button, at the program's top right and clear of its scrollbar: the code frame's own 2rem square. It is a
+ * control, so its outline is --control-border like the installer's (record 0067), and the button is never translucent:
+ * an outline dimmed by `opacity` is no longer the 3:1 that token measures.
+ */
 .expressive-code .core-copy {
   position: absolute;
   top: 0.5rem;
@@ -227,19 +231,17 @@
   width: 2rem;
   height: 2rem;
   padding: 0;
-  border: 1px solid var(--color-edge);
+  border: 1px solid var(--control-border);
   border-radius: 0.25rem;
   background: var(--ec-codeBg, var(--color-surface));
   color: var(--color-muted);
   cursor: pointer;
-  opacity: 0.75;
 }
 
 .expressive-code .core-copy:hover,
 .expressive-code .core-copy:focus-visible,
 .expressive-code .core-copy[data-copied] {
   color: var(--ec-codeFg, var(--text-color));
-  opacity: 1;
 }
 
 .expressive-code .core-copy[data-copied] {
