@@ -487,13 +487,15 @@ describe('Haskell recipe', () => {
   const code = home.haskell.files.find((file) => file.name === 'Main.hs')!.code
   const marked = recipe.instrument(code, recipe.steps)
 
-  it('recognises the hook-free version probe without treating ordinary shell commands as probes', () => {
+  it('recognises the hook-free version and daemon-identity probes without treating ordinary shell commands as probes', () => {
     const nonce = 'a'.repeat(64)
     const command = ['run-shell', '-C', `${nonce}:#{version}:${nonce}`]
     const describe = (argv: string[]) => describeInvocation({ argv, exit: 1, stdout: '', stderr: '' }, recipe)
-    const probe = describe(command)
-    expect(probe.role).toBe('probe')
-    expect(probe.tmux).not.toContain(nonce)
+    for (const format of ['version', 'pid']) {
+      const probe = describe(['run-shell', '-C', `${nonce}:#{${format}}:${nonce}`])
+      expect(probe.role).toBe('probe')
+      expect(probe.tmux).not.toContain(nonce)
+    }
     expect(describe(['-V']).role).toBe('probe')
     for (const ordinary of [
       ['run-shell', 'echo hello'],
@@ -569,7 +571,9 @@ describe('the Haskell recording of the landing page program', () => {
 
   it('shows no token or process id that differs on every run', () => {
     expect(JSON.stringify(capability.steps)).not.toMatch(/\bg?[0-9a-f]{64}\b/)
-    expect(step('capture-before').commands.filter((command) => command.role === 'probe')).toHaveLength(1)
+    expect(step('capture-before').commands.filter((command) => command.role === 'probe').map((command) => command.tmux)).toEqual([
+      'run-shell -C 0000:#{version}:0000', 'run-shell -C 0000:#{pid}:0000',
+    ])
     expect(step('capture-before').commands.find((command) => command.role === 'command')!.stdout).toContain('server.pid:12345:')
   })
 

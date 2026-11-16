@@ -645,9 +645,9 @@
   "haskell": {
     "lang": "haskell",
     "sourceRepository": "libtmux/libtmux-haskell",
-    "sourceRevision": "282b89a86a6ef8bc511f040acdb0e1b557db1226",
-    "sourceTree": "4db8f72d6747f4b77f3c2b1eb41f0671c17dd54f",
-    "libraryRevision": "7907db1f8f34feedf9f3ec2ca572eab1e5ed3431",
+    "sourceRevision": "03c914a6298708c786cea21233eb39acf9b7c085",
+    "sourceTree": "9c38e46f3cf0b9ca54d9035f3b1f4ae8d1b13347",
+    "libraryRevision": "ad190fe73c9d09a553c3c160ecf0b6394b7621a6",
     "execution": "owned-tmux",
     "capability": "typed-graph",
     "singleView": "The run command starts and stops a private demo server.",
@@ -672,7 +672,7 @@
       {
         "name": "cabal.project",
         "lang": "text",
-        "code": "packages: .\nindex-state: 2026-11-06T00:00:00Z\n\nsource-repository-package\n  type: git\n  location: https://github.com/libtmux/libtmux-haskell\n  tag: 7907db1f8f34feedf9f3ec2ca572eab1e5ed3431\n"
+        "code": "packages: .\nindex-state: 2026-11-06T00:00:00Z\n\nsource-repository-package\n  type: git\n  location: https://github.com/libtmux/libtmux-haskell\n  tag: ad190fe73c9d09a553c3c160ecf0b6394b7621a6\n"
       }
     ],
     "prerequisites": "Linux x86_64 with glibc 2.39+ and pidfd support; tmux 3.3a or newer; GHC and Cabal satisfying the package manifest; Git, a C11 compiler and network access for the first dependency fetch. The run command owns its demo server.",
