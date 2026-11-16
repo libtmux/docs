@@ -291,7 +291,8 @@ const inventoryPage: InventoryPage = {
       data-pagefind-body={searchable ? '' : undefined}
       data-pagefind-filter={`port:${portSlug ? (PORT_BY_SLUG[portSlug]?.name ?? portSlug) : 'All languages'}`}
     >
-      <div data-pagefind-filter={`section:${section}`} data-pagefind-ignore="all" hidden></div>
+      {/* No `data-pagefind-ignore` here: it would drop the filter with the element. The element holds no text. */}
+      <div data-pagefind-filter={`section:${section}`} hidden></div>
       <slot />
     </div>
     <SiteFooter locale={locale as Locale} source={source} markdownHref={markdownHref} llmsRoot={llmsRoot} port={inVersionTree ? portSlug : undefined} version={inVersionTree ? target.version : undefined} pagePath={pagePath} githubUrl={githubUrl} flush={flush} compact={bare} />
