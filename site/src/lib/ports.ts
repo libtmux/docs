@@ -218,7 +218,7 @@ const FORM_TARGETS: Readonly<Record<string, string>> = {
   julia: 'Julia REPL',
   erlang: 'rebar.config',
   elixir: 'mix.exs',
-  text: 'cabal.project',
+  cabal: 'cabal.project',
   kotlin: 'build.gradle.kts',
   clojure: 'deps.edn',
   scala: 'build.sbt',
@@ -419,7 +419,7 @@ const JULIA_GIT_INSTALL: InstallForm = {
 }
 
 const HASKELL_GIT_INSTALL: InstallForm = {
-  code: 'packages: .\n\nsource-repository-package\n  type: git\n  location: https://github.com/libtmux/libtmux-haskell\n  tag: master', lang: 'text',
+  code: 'packages: .\n\nsource-repository-package\n  type: git\n  location: https://github.com/libtmux/libtmux-haskell\n  tag: master', lang: 'cabal',
 }
 
 const CORE_PORTS: readonly Port[] = [
@@ -814,7 +814,7 @@ const CORE_PORTS: readonly Port[] = [
     productAvailability: { workspace: 'excluded', mcp: 'excluded' },
     packages: [{ id: 'core', name: 'libtmux-haskell', source: { path: 'src', ref: 'master' }, require: 'LibTmux' }],
     installs: [{
-      label: 'Cabal', target: 'cabal.project', lang: 'text', filename: 'cabal.project',
+      label: 'Cabal', target: 'cabal.project', lang: 'cabal', filename: 'cabal.project',
       code: 'packages: .\n\nsource-repository-package\n  type: git\n  location: https://github.com/libtmux/libtmux-haskell\n  tag: {revision}',
       note: 'Save as cabal.project and add libtmux-haskell ^>=0.1.0.0 to your component\'s build-depends. Requires Linux x86_64 with glibc 2.39+ and pidfd support. Choose GHC and Cabal versions that satisfy the package manifest. The core package is available from source; it is not published on Hackage.',
     }],

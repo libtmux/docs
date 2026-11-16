@@ -55,7 +55,7 @@
       },
       {
         "name": "Gemfile.lock",
-        "lang": "text",
+        "lang": "gemfile-lock",
         "code": "GEM\n  remote: https://rubygems.org/\n  specs:\n    fiddle (1.1.8)\n    fileutils (1.8.1)\n    io-console (0.9.5)\n    json (3.0.2)\n    libtmux (0.1.2)\n      fiddle (~> 1.1)\n      io-console (~> 0.8)\n      json (~> 3.0.2)\n      securerandom (~> 0.4)\n      tmpdir (~> 0.3)\n    securerandom (0.4.1)\n    tmpdir (0.3.2)\n      fileutils\n\nPLATFORMS\n  ruby\n  x86_64-linux\n\nDEPENDENCIES\n  libtmux (~> 0.1)\n\nCHECKSUMS\n  fiddle (1.1.8) sha256=7fa8ee3627271497f3add5503acdbc3f40b32f610fc1cf49634f083ef3f32eee\n  fileutils (1.8.1) sha256=2d541a1ee34a9ed5c4f054be8fb819a26b5d654488a31dc8806917cf448b9cc3\n  io-console (0.9.5) sha256=83dd9bbf4c4680416629245b39cd4212eb5f4d9a4ea91804870c1f6b846414d5\n  json (3.0.2) sha256=8e6d7e7b11384c21230430cef90b71f14849a34a1f4452796670f7c981bd19df\n  libtmux (0.1.2) sha256=340498b8e45b5b5d6511668909d9c3104fe7b17e65daaa9cfa50661ce299356a\n  securerandom (0.4.1) sha256=cc5193d414a4341b6e225f0cb4446aceca8e50d5e1888743fac16987638ea0b1\n  tmpdir (0.3.2) sha256=e276ef386182169f8d417d9e90f12dba82a54e81646df0caf21de4a7987a0c27\n\nBUNDLED WITH\n  4.0.20\n"
       }
     ],
@@ -205,7 +205,7 @@
       },
       {
         "name": "go.mod",
-        "lang": "text",
+        "lang": "gomod",
         "code": "module example.com/libtmux-home\n\ngo 1.26.0\n\nrequire github.com/libtmux/libtmux-go v0.1.2\n"
       }
     ],
@@ -620,12 +620,12 @@
       },
       {
         "name": "dune-project",
-        "lang": "lisp",
+        "lang": "dune",
         "code": "(lang dune 3.24)\n"
       },
       {
         "name": "examples/dune",
-        "lang": "lisp",
+        "lang": "dune",
         "code": "(executable\n (name showcase_graph)\n (libraries libtmux libtmux-workspace libtmux-unix unix))\n"
       }
     ],
@@ -666,12 +666,12 @@
       },
       {
         "name": "libtmux-mutate-graph.cabal",
-        "lang": "text",
+        "lang": "cabal",
         "code": "cabal-version: 3.18\nname: libtmux-mutate-graph\nversion: 0.0.0\nbuild-type: Simple\nlicense: MIT\nextra-doc-files: README.md\n\nexecutable mutate-graph\n  main-is: Main.hs\n  default-language: GHC2024\n  ghc-options: -Wall -Werror\n  build-depends:\n    base >=4.22 && <4.23,\n    filepath >=1.5.4 && <1.6,\n    libtmux-haskell ^>=0.1.0.0,\n    text >=2.1.3 && <2.2\n"
       },
       {
         "name": "cabal.project",
-        "lang": "text",
+        "lang": "cabal",
         "code": "packages: .\nindex-state: 2026-11-06T00:00:00Z\n\nsource-repository-package\n  type: git\n  location: https://github.com/libtmux/libtmux-haskell\n  tag: 00b47e6d94b181b5fd94e585be1e9ecefbf93acb\n"
       }
     ],

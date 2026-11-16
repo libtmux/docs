@@ -26,7 +26,7 @@ $ mkdir go-workspace-example && cd go-workspace-example
 Create the module file. It requires the published core and workspace
 modules at `v0.1.0`; the indirect YAML dependency is what `go mod tidy` resolves:
 
-```go title="go.mod"
+```gomod title="go.mod"
 module example.com/workspace
 
 go 1.26.0

@@ -70,7 +70,7 @@ installed.
 Save this file beside the program using the displayed filename. It requires
 `libtmux-go` v0.1.3 ([source](https://github.com/libtmux/libtmux-go/tree/7ad2bfb0f74c02d395fec1962d5bb9556e2200cd)).
 
-```text title="go.mod"
+```gomod title="go.mod"
 module example.com/connect
 
 go 1.26.0

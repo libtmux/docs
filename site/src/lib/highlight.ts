@@ -10,6 +10,7 @@ import { tmuxShell } from './tmux-shell.mjs'
 import { tmuxConfig } from './tmux-config.mjs'
 import { properties } from './properties.mjs'
 import { haskell } from './haskell.mjs'
+import { fileGrammars } from './grammars/index.mjs'
 
 /**
  * Syntax highlighting for the examples in doc comments.
@@ -70,7 +71,7 @@ async function highlighter(): Promise<Highlighter> {
   instance ??= createRenderer(ecConfig).then(({ ec }) => createHighlighter({
     // Include Expressive Code's contrast correction as well as its custom scopes.
     themes: ec.themes.map(({ name, type, settings, colors, fg, bg }) => ({ name, type, settings, colors, fg, bg })),
-    langs: [...LANGS, tmuxUsage, tmuxShell, tmuxConfig, properties, ...haskell],
+    langs: [...LANGS, tmuxUsage, tmuxShell, tmuxConfig, properties, ...haskell, ...fileGrammars],
   }))
   return instance
 }

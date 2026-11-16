@@ -1,0 +1,45 @@
+{
+  "name": "gomod",
+  "scopeName": "source.gomod",
+  "patterns": [
+    { "include": "#comment" },
+    { "include": "#directive" },
+    { "include": "#value" }
+  ],
+  "repository": {
+    "comment": {
+      "match": "//.*$",
+      "name": "comment.line.double-slash.gomod"
+    },
+    "directive": {
+      "match": "^[ \\t]*(module|go|toolchain|godebug|require|replace|exclude|retract|tool|ignore)(?![\\w-])",
+      "captures": { "1": { "name": "keyword.control.directive.gomod" } }
+    },
+    "value": {
+      "patterns": [
+        { "include": "#string" },
+        { "match": "=>", "name": "keyword.operator.replace.gomod" },
+        { "match": "(?<![\\w./-])v\\d+(?:\\.\\d+){0,2}(?:-[0-9A-Za-z.+-]+)?(?:\\+incompatible)?(?![\\w./-])", "name": "constant.numeric.version.gomod" },
+        { "match": "(?<![\\w./-])go\\d+(?:\\.\\d+)*(?:rc\\d+|beta\\d+)?(?![\\w./-])", "name": "constant.numeric.version.gomod" },
+        { "match": "(?<![\\w./-])\\d+(?:\\.\\d+)+(?![\\w./-])", "name": "constant.numeric.version.gomod" },
+        { "match": "(?<![\\w./~-])(?:\\.{1,2}(?=/)|[A-Za-z0-9][\\w.~-]*(?=/))(?:/[\\w.~%+@-]*)*|(?<![\\w./~-])[A-Za-z0-9][\\w~-]*(?:\\.[A-Za-z][\\w~-]*)+(?![\\w./-])", "name": "entity.name.namespace.gomod" },
+        { "match": "[()\\[\\],]", "name": "punctuation.gomod" }
+      ]
+    },
+    "string": {
+      "patterns": [
+        {
+          "begin": "\"",
+          "end": "\"",
+          "name": "string.quoted.double.gomod",
+          "patterns": [{ "match": "\\\\.", "name": "constant.character.escape.gomod" }]
+        },
+        {
+          "begin": "`",
+          "end": "`",
+          "name": "string.quoted.raw.gomod"
+        }
+      ]
+    }
+  }
+}
