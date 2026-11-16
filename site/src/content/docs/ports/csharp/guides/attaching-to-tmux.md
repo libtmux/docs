@@ -23,7 +23,7 @@ interactive attachment and detaching.
 ## Connect to an existing server
 
 Save the complete program as `Program.cs`. When `LIBTMUX_SOCKET_PATH` names a
-socket, `FindWorkAsync` connects a `Server` to it, finds `work`, prints the name
+socket, the program connects a `Server` to it, finds `work`, prints the name
 and leaves that server running.
 
 Without the variable, the program starts a private tmux server in a new

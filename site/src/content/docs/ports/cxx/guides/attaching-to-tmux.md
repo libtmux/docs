@@ -29,7 +29,7 @@ leaves that server running.
 Without the variable, the program starts a private tmux server in a new
 temporary directory and creates a detached `work` session in it. It then
 connects a second `Server` to the socket by path and runs the same lookup. The
-`PrivateServer` destructor stops only the private server and removes its
+private server's destructor stops only the private server and removes its
 directory, also when the lookup throws. If tmux cannot be stopped, it keeps the
 directory, prints its location and makes the program exit with status 1.
 
