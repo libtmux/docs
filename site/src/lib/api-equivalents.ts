@@ -137,6 +137,19 @@ export function equivalentsFor(port: string, symbol: ApiSymbol, alternatives: Al
   })
 }
 
+/**
+ * What differs in each mapped equivalent of one declaration, by the equivalent's page, for the picker on a native page.
+ * A native page's picker rows are drawn in the browser from links, so they take these chips from the table's own rows.
+ */
+export function equivalentDifferences(port: string, publicId: string): Map<string, string[]> {
+  const symbol = symbolIn(port, publicId)
+  const found = new Map<string, string[]>()
+  for (const group of symbol ? equivalentsFor(port, symbol) : []) {
+    for (const row of group.rows) if (!row.current && row.href && row.chips.length && !found.has(row.href)) found.set(row.href, row.chips)
+  }
+  return found
+}
+
 /** "No equivalent is recorded in A, B or C." for the ports the concept table gives only its generic sentence. */
 export function genericAbsenceSentence(names: string[]): string | null {
   return names.length ? `No equivalent is recorded in ${new Intl.ListFormat('en-GB', { type: 'disjunction' }).format(names)}.` : null

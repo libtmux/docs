@@ -18,6 +18,10 @@
 .doc-picker-option { display: flex; align-items: center; gap: .6rem; min-height: 2.25rem; padding: .5rem var(--picker-inset); border-radius: .4rem; color: inherit; text-decoration: none; line-height: 1.4; }
 .doc-picker-option > span { min-width: 0; overflow-wrap: anywhere; }
 .doc-picker-option small { display: block; margin-top: .15rem; font-size: .6875rem; color: var(--color-muted); }
+/* What differs from the page's own declaration: one muted line, cut with an ellipsis rather than wrapped (record 0030). */
+.doc-picker-option .doc-picker-differences { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* A hovered row is darker than the panel, so a muted line mixes toward the text colour there to stay at 4.5:1 (`design-tokens.test.ts` measures it). */
+.doc-picker-option[href]:hover small { color: color-mix(in srgb, var(--color-muted) 60%, var(--text-color)); }
 .doc-picker-option > svg { color: var(--color-muted); }
 .doc-picker-option[aria-current] { background: color-mix(in srgb, var(--color-link) 12%, var(--background-color)); color: var(--color-link); font-weight: 500; }
 .doc-picker-option[aria-current] > svg { color: inherit; }

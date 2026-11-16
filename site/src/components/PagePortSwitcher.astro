@@ -22,6 +22,10 @@ const current = entries.find((entry) => entry.port === portSlug)
 const name = tmux ? 'tmux CLI' : current?.name ?? PORT_BY_SLUG[portSlug ?? '']?.name ?? 'In other ports'
 const shortName = tmux ? 'tmux' : PORT_BY_SLUG[portSlug ?? '']?.shortName ?? name
 const families = portFamilies(entries.map((entry) => entry.port))
+/** A row's accessible name when its label replaces the row's text; the differences stay in it. */
+const rowName = (name: string, link: PagePortLink['links'][number]) => link.label
+  ? `${name}: ${link.label}${link.differences?.length ? `. Differs: ${link.differences.join(', ')}` : ''}`
+  : undefined
 ---
 <details class="doc-picker" data-page-port-switcher data-doc-picker>
   <summary aria-label={label ?? `${name}: choose a programming language or tmux documentation`} data-reserve-label-width={reserveLabelWidth || undefined}>
@@ -71,11 +75,11 @@ const families = portFamilies(entries.map((entry) => entry.port))
             data-preserve-fragment={link.preserveFragment || undefined}
             data-fragment-ids={link.fragmentIds?.join(' ')}
             data-picker-option data-match={`${entry.port} ${entry.name} ${PORT_BY_SLUG[entry.port]?.shortName ?? ''} ${link.label ?? ''}`}
-            aria-label={link.label ? `${entry.name}: ${link.label}` : undefined}
-            title={link.label ? `${entry.name}: ${link.label}` : undefined}
+            aria-label={rowName(entry.name, link)}
+            title={rowName(entry.name, link)}
             aria-current={entry.port === portSlug ? 'page' : undefined}>
             <img class="port-artwork" src={withRoot(branding(entry.port).asset('logo.svg'))} width="20" height="20" alt="" />
-            <span>{entry.name}{links.length > 1 && link.label && <small>{link.label}</small>}</span>
+            <span>{entry.name}{links.length > 1 && link.label && <small>{link.label}</small>}{link.differences && link.differences.length > 0 && <small class="doc-picker-differences" data-picker-differences><span class="sr-only">Differs: </span>{link.differences.join(' · ')}</small>}</span>
             {entry.port === portSlug && <span class="doc-picker-check" aria-hidden="true">✓</span>}
           </a>) : <div class="doc-picker-option doc-picker-option--unmatched" data-port={entry.port} data-port-name={entry.name}
             data-home-href={home?.href} data-home-label={home?.label}
