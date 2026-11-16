@@ -57,7 +57,7 @@
   },
   "julia": {
     "mcp": {
-      "missing": "No Julia program that starts or calls the MCP server is an example its CI runs. The CI-run Julia test, packages/LibTmuxMCP/test/tools.jl, calls the private LibTmuxMCP._invoke_tool through a helper, and the only CI-run client of the installed launcher is a Python script, packages/LibTmuxMCP/test/product_client.py."
+      "missing": "No Julia program that starts or calls the MCP server is an example its CI runs. The CI-run Julia test, packages/LibTmuxMCP/test/tools.jl, calls the private LibTmuxMCP._invoke_tool through a helper, and the only CI-run client of the installed launcher is a Julia test helper, packages/LibTmuxMCP/test/support/product_client.jl."
     },
     "workspace": {
       "file": "packages/LibTmuxWorkspace/examples/owned_load.jl",
@@ -66,7 +66,7 @@
       "to": "@assert result.status == :complete",
       "ci": {
         "workflow": ".github/workflows/julia.yml",
-        "command": "dev/check-matrix.py run"
+        "command": "scripts/check-matrix/check-matrix.jl run"
       }
     }
   },
