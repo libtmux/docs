@@ -15,6 +15,7 @@ import ShellHead from '../components/ShellHead.astro'
 import DocumentationScript from '../components/docs/DocumentationScript.astro'
 import SearchModal from '../components/SearchModal.astro'
 import LinkPreview from '../components/LinkPreview.astro'
+import { ROOT_PORT } from '../lib/search-state'
 import { buildTarget } from '../lib/versions'
 import type { VersionEntry } from '../lib/versions'
 import { withPortRoot, withRoot } from '../lib/site-root'
@@ -289,9 +290,10 @@ const inventoryPage: InventoryPage = {
          at all: "sessions" is a different question in Go than in Swift. -->
     <div
       data-pagefind-body={searchable ? '' : undefined}
-      data-pagefind-filter={`port:${portSlug ? (PORT_BY_SLUG[portSlug]?.name ?? portSlug) : 'All languages'}`}
+      data-pagefind-filter={`port:${portSlug ? (PORT_BY_SLUG[portSlug]?.name ?? portSlug) : ROOT_PORT}`}
     >
-      <div data-pagefind-filter={`section:${section}`} data-pagefind-ignore="all" hidden></div>
+      {/* No `data-pagefind-ignore` here: it would drop the filter with the element. The element holds no text. */}
+      <div data-pagefind-filter={`section:${section}`} hidden></div>
       <slot />
     </div>
     <SiteFooter locale={locale as Locale} source={source} markdownHref={markdownHref} llmsRoot={llmsRoot} port={inVersionTree ? portSlug : undefined} version={inVersionTree ? target.version : undefined} pagePath={pagePath} githubUrl={githubUrl} flush={flush} compact={bare} />

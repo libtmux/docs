@@ -129,7 +129,7 @@ describe('the menu sidebar on protocol reference pages', () => {
     expect(document.querySelector('h1.api-reference-title')?.getAttribute('data-pagefind-weight')).toBe('10')
   })
 
-  it('leaves the sidebar of every other documentation page indexed', async () => {
+  it('keeps the sidebar of every other documentation page out of search, so no excerpt opens with its labels', async () => {
     const layout = await loadAstroTemplate('layouts/DocsLayout.astro', options)
     const window = new Window()
     window.document.body.innerHTML = withoutScope(await renderAstroTemplate(layout, {
@@ -137,7 +137,7 @@ describe('the menu sidebar on protocol reference pages', () => {
     }))
     const sidebars = menus(window.document)
     expect(sidebars).toHaveLength(2)
-    for (const sidebar of sidebars) expect(sidebar.closest('[data-pagefind-ignore]')).toBeNull()
+    for (const sidebar of sidebars) expect(sidebar.closest('[data-pagefind-ignore="all"]'), 'sidebar is outside the index').not.toBeNull()
   })
 
   it('keeps the page content and its contents rail in the layout\'s main column', async () => {

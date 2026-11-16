@@ -117,7 +117,7 @@ const wrapsHref = wraps ? referenceHref(port, wraps.call, version) : undefined
 <DocsLayout title={object ? title : `${info.name} MCP ${title}`} description={object ? plainSummary(object.description, port) : introductions[section]}
   inventoryId={`protocol:${object?.id ?? section}`}
   port={port} statusProduct="mcp" version={version} pagePath={path} pageSource={pageSource} pagePorts={pagePorts}
-  breadcrumbs={breadcrumbs} markdown="rendered" tableOfContents={false} indexNavigation={false} bare>
+  breadcrumbs={breadcrumbs} markdown="rendered" tableOfContents={false} bare>
   <div class:list={['api-reference-layout grid', object && 'api-reference-layout--symbol']}>
     <div class="api-reference-content min-w-0">
       <header id={object ? 'api-overview' : section} class:list={[object && 'api-reference-heading']}>

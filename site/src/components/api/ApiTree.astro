@@ -157,8 +157,9 @@ if (!mark(nodes)) {
 ---
 
 <!-- One element: the scripts sit inside the column, so the page's grid has the
-     column and the text column as its only children. -->
-<div class="api-nav-column">
+     column and the text column as its only children. The whole column is out of
+     the search index: its head, search field and actions would open every excerpt. -->
+<div class="api-nav-column" data-pagefind-ignore="all">
   <script is:inline>
     // Before the tree is parsed, so the drawer's rules apply at first paint.
     // Without JavaScript the column stays inline and closed rows stay links.
