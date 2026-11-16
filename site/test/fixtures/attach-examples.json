@@ -12,17 +12,13 @@
       ],
       "page": "ports/py/guides/attaching-to-tmux",
       "shellRecipe": [
-        "sh run.sh uv run \\\n    --with 'libtmux @ git+https://github.com/tmux-python/libtmux@9fdd083a8181a827889337b63cd4e6daea661a8c' \\\n    connect.py"
+        "uv run \\\n    --with 'libtmux @ git+https://github.com/tmux-python/libtmux@9fdd083a8181a827889337b63cd4e6daea661a8c' \\\n    connect.py"
       ],
       "expectedOutput": "work",
       "files": [
         {
           "name": "connect.py",
-          "sha256": "85c37335c74572af5606ad44a165fe097ad3b2737a061a75a86a9eba6f91af52"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "947db2704b348ea51541e4cffe5ac613fb0b2d5703affe8abd0f35fc8286085e"
+          "sha256": "cf042c4fccd54ba6b380a3ec704072b1cfc06a21418608f3a3917af1830f294b"
         }
       ],
       "tmux": [
