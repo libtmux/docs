@@ -14,24 +14,45 @@
           "contains": "\"expected four panes on server\""
         },
         {
-          "file": "scripts/run-examples.sh",
+          "file": [
+            "scripts/run-examples/run_examples.py",
+            "scripts/run-examples.sh"
+          ],
           "contains": "libtmux  | api_creation | query | | | creation: 2 windows, 4 panes"
         },
         {
           "file": "justfile",
-          "contains": "examples:\n    bash scripts/run-examples.sh"
+          "contains": [
+            "examples:\n    uv run scripts/run-examples/run_examples.py",
+            "examples:\n    bash scripts/run-examples.sh"
+          ]
         },
         {
           "file": "justfile",
-          "contains": "script-env examples example-tables"
+          "contains": [
+            "api-examples examples example-tables",
+            "script-env examples example-tables"
+          ]
         },
         {
-          "file": "scripts/run-examples.sh",
-          "contains": "! grep -qF \"$expect\" \"$out\""
+          "file": [
+            "scripts/run-examples/run_examples.py",
+            "scripts/run-examples.sh"
+          ],
+          "contains": [
+            "row.expect not in out.read_text(errors=\"replace\")",
+            "! grep -qF \"$expect\" \"$out\""
+          ]
         },
         {
-          "file": "scripts/run-examples.sh",
-          "contains": "set -euo pipefail"
+          "file": [
+            "scripts/run-examples/run_examples.py",
+            "scripts/run-examples.sh"
+          ],
+          "contains": [
+            "return child.returncode == 0",
+            "set -euo pipefail"
+          ]
         }
       ]
     },
@@ -49,24 +70,45 @@
           "contains": "lines.iter().any(|line| line.as_bytes() == b\"C-c is text\")"
         },
         {
-          "file": "scripts/run-examples.sh",
+          "file": [
+            "scripts/run-examples/run_examples.py",
+            "scripts/run-examples.sh"
+          ],
           "contains": "libtmux  | api_input | query | | | input: C-c is text"
         },
         {
           "file": "justfile",
-          "contains": "examples:\n    bash scripts/run-examples.sh"
+          "contains": [
+            "examples:\n    uv run scripts/run-examples/run_examples.py",
+            "examples:\n    bash scripts/run-examples.sh"
+          ]
         },
         {
           "file": "justfile",
-          "contains": "script-env examples example-tables"
+          "contains": [
+            "api-examples examples example-tables",
+            "script-env examples example-tables"
+          ]
         },
         {
-          "file": "scripts/run-examples.sh",
-          "contains": "! grep -qF \"$expect\" \"$out\""
+          "file": [
+            "scripts/run-examples/run_examples.py",
+            "scripts/run-examples.sh"
+          ],
+          "contains": [
+            "row.expect not in out.read_text(errors=\"replace\")",
+            "! grep -qF \"$expect\" \"$out\""
+          ]
         },
         {
-          "file": "scripts/run-examples.sh",
-          "contains": "set -euo pipefail"
+          "file": [
+            "scripts/run-examples/run_examples.py",
+            "scripts/run-examples.sh"
+          ],
+          "contains": [
+            "return child.returncode == 0",
+            "set -euo pipefail"
+          ]
         }
       ]
     }

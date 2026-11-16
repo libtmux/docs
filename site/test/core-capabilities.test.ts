@@ -3,7 +3,7 @@ import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import {
-  CAPABILITIES, capabilityCacheKey, capabilityFiles, fileProblems, hygieneProblems, MAX_PROGRAM_LINES, portCapabilities, programProblems, setupProblems, validateCapability, workflowStep,
+  alternatives, CAPABILITIES, capabilityCacheKey, capabilityFiles, evidenceProblems, fileProblems, hygieneProblems, MAX_PROGRAM_LINES, portCapabilities, programProblems, setupProblems, validateCapability, workflowStep,
   type CapabilityEntry, type CapabilityId, type CapabilityTable,
 } from '../src/lib/core-capabilities'
 import { LANG_TO_PORT, checkoutFor, parseMeta, readFence } from '../src/plugins/remark-port-code.mjs'
@@ -57,16 +57,73 @@ describe('the capability showcase data', () => {
     expect(() => portCapabilities('rs', { rs: { 'send-keys': { ...ok, checkedBy: [] } } }, cache)).toThrow(/records no evidence/)
   })
 
+  describe('evidence that names every layout a file has had', () => {
+    const source = { repository: 'libtmux/libtmux-rs', revision: 'a'.repeat(40) }
+    const old = 'scripts/run-examples.sh'
+    const next = 'scripts/run-examples/run_examples.py'
+    const row = 'libtmux  | api_input | query | | | input: C-c is text'
+    const item = { file: [next, old], contains: row }
+    const held = (file: string, content: string) => ({ [capabilityCacheKey('rs', file)]: { ...source, content } })
+
+    it('holds when the revision has only the new layout', () => {
+      expect(evidenceProblems('rs', item, held(next, `TABLE = '''\n${row}\n'''\n`))).toEqual([])
+    })
+
+    it('holds when the revision has only the old layout', () => {
+      expect(evidenceProblems('rs', item, held(old, `${row}\n`))).toEqual([])
+    })
+
+    it('fails, naming every path, when the cache holds neither', () => {
+      expect(evidenceProblems('rs', item, {})).toEqual([`none of ${next}, ${old} is in the example cache; run node scripts/gen-example-sources.mjs`])
+      expect(evidenceProblems('rs', item, held('scripts/other.sh', row))).toHaveLength(1)
+    })
+
+    it('fails when the file the revision has lacks the text', () => {
+      expect(evidenceProblems('rs', item, held(next, "TABLE = ''\n"))).toEqual([`${next} holds none of ${JSON.stringify(row)}`])
+    })
+
+    it('takes any one of several texts, one per layout', () => {
+      const recipe = { file: 'justfile', contains: ['examples:\n    uv run scripts/run-examples/run_examples.py', 'examples:\n    bash scripts/run-examples.sh'] }
+      expect(evidenceProblems('rs', recipe, held('justfile', 'examples:\n    uv run scripts/run-examples/run_examples.py\n'))).toEqual([])
+      expect(evidenceProblems('rs', recipe, held('justfile', 'examples:\n    bash scripts/run-examples.sh\n'))).toEqual([])
+      expect(evidenceProblems('rs', recipe, held('justfile', 'examples:\n    true\n'))).toHaveLength(1)
+    })
+
+    it('still checks a plain path and text, as before', () => {
+      expect(evidenceProblems('rs', { file: old, contains: row }, held(old, row))).toEqual([])
+      expect(evidenceProblems('rs', { file: old, contains: row }, held(next, row))).toHaveLength(1)
+    })
+
+    it('refuses an empty list or a blank alternative', () => {
+      const ok = table.rs!['send-keys']!
+      expect(validateCapability({ ...ok, checkedBy: [{ file: [], contains: row }] })).toEqual(['records evidence with no file or text'])
+      expect(validateCapability({ ...ok, checkedBy: [{ file: [next, ''], contains: row }] })).toEqual(['records evidence with no file or text'])
+      expect(validateCapability({ ...ok, checkedBy: [{ file: old, contains: [] }] })).toEqual(['records evidence with no file or text'])
+      expect(validateCapability({ ...ok, checkedBy: [{ file: old, contains: [row, ' '] }] })).toEqual(['records evidence with no file or text'])
+      expect(validateCapability({ ...ok, checkedBy: [item] })).toEqual([])
+    })
+
+    // The docs repository checks this data at the revision its API model pins, and a port's own docs build checks it at the port's trunk; the two can hold different layouts.
+    it('lets the rs entries name the example runner at both of its layouts', () => {
+      for (const [id, entry] of Object.entries(table.rs!)) {
+        const runner = entry!.checkedBy.filter((evidence) => alternatives(evidence.file).some((file) => file.startsWith('scripts/run-examples')))
+        expect(runner.length, id).toBeGreaterThan(0)
+        for (const evidence of runner) expect(alternatives(evidence.file), id).toEqual([next, old])
+        const recipes = entry!.checkedBy.filter((evidence) => evidence.file === 'justfile')
+        expect(recipes.length, id).toBeGreaterThan(0)
+        for (const evidence of recipes) expect(alternatives(evidence.contains).length, id).toBeGreaterThan(1)
+      }
+    })
+  })
+
   it.each(entries.map((item) => [`${item.owner}/${item.id}`, item] as const))('%s shows a whole program at the revision its API model records', (_name, { owner, entry }) => {
     const pinned = model(owner)
-    for (const file of capabilityFiles(entry)) {
-      const cached = cache[capabilityCacheKey(owner, file)]
-      expect(cached, `${file} is in the example cache`).toBeDefined()
+    for (const files of capabilityFiles(entry)) {
+      const cached = files.map((file) => cache[capabilityCacheKey(owner, file)]).find((found) => found !== undefined)
+      expect(cached, `${files.join(' or ')} is in the example cache`).toBeDefined()
       expect(cached).toMatchObject({ repository: pinned.repo, revision: pinned.revision })
     }
-    for (const item of entry.checkedBy) {
-      expect(cache[capabilityCacheKey(owner, item.file)]!.content, `${item.file} holds the check`).toContain(item.contains)
-    }
+    for (const item of entry.checkedBy) expect(evidenceProblems(owner, item, cache), `${alternatives(item.file).join(' or ')} holds the check`).toEqual([])
     // The page shows the file in full: imports, entry point and server setup, nothing defined elsewhere.
     expect(entry.from ?? entry.to ?? entry.more).toBeUndefined()
     expect(programProblems(entry.lang, stripBuildMarkers(cache[capabilityCacheKey(owner, entry.file)]!.content))).toEqual([])

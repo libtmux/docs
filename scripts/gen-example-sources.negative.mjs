@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 /** Exercise revision binding and deliberately damaged example caches. */
 import assert from 'node:assert/strict'
-import { mkdirSync, mkdtempSync, writeFileSync, rmSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, renameSync, writeFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { execFileSync } from 'node:child_process'
-import { cachedExample } from './gen-example-sources.mjs'
+import * as generator from './gen-example-sources.mjs'
+
+const { cachedExample } = generator
 
 const scratch = mkdtempSync(join(tmpdir(), 'libtmux-example-cache-'))
 const git = (...args) => execFileSync('git', ['-C', scratch, ...args], { encoding: 'utf8', stdio: 'pipe' }).trim()
@@ -51,6 +53,43 @@ try {
     process.chdir(before)
   }
   console.log('ok   an empty checkout path is absent, whatever repository the current directory holds')
+
+  // A file a port moved: the entry names both paths and the revision holds one.
+  const commit = (message) => {
+    git('add', '--all')
+    git('-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '--quiet', '-m', message)
+    return git('rev-parse', 'HEAD')
+  }
+  const moved = ['runner/run.py', 'run.sh']
+  const choose = (revision, current = {}, checkout = scratch) =>
+    generator.cachedAlternative({ repository: 'fixture/example', revision, files: moved, checkout, current })
+  const neither = git('rev-parse', 'HEAD')
+  writeFileSync(join(scratch, 'run.sh'), '#!/bin/sh\n# old layout\n')
+  const oldOnly = commit('Old layout')
+  mkdirSync(join(scratch, 'runner'))
+  renameSync(join(scratch, 'run.sh'), join(scratch, 'runner/run.py'))
+  const newOnly = commit('New layout')
+  writeFileSync(join(scratch, 'run.sh'), '#!/bin/sh\n# old layout again\n')
+  const both = commit('Both layouts')
+
+  assert.equal(choose(oldOnly).file, 'run.sh')
+  assert.equal(choose(oldOnly).cached.content, '#!/bin/sh\n# old layout\n')
+  assert.equal(choose(newOnly).file, 'runner/run.py')
+  assert.equal(choose(newOnly).cached.content, '#!/bin/sh\n# old layout\n')
+  assert.equal(choose(both).file, 'runner/run.py', 'the first alternative the revision holds wins')
+  console.log('ok   an alternative the revision holds is read, whichever layout it is')
+
+  assert.throws(() => choose(neither), /fixture\/example: none of runner\/run\.py, run\.sh exists at [a-f0-9]{40}/)
+  assert.throws(() => choose('0'.repeat(40)), /0{40}/)
+  assert.throws(() => generator.cachedAlternative({ repository: 'fixture/example', revision: neither, files: ['run.sh'], checkout: scratch, current: {} }), /run\.sh/)
+  console.log('ok   no alternative at the revision fails, naming each path tried')
+
+  const offlineMoved = (revision, current) => choose(revision, current, join(scratch, 'absent'))
+  const cachedOld = choose(oldOnly).cached
+  assert.equal(offlineMoved(oldOnly, { 'run.sh': cachedOld }).file, 'run.sh')
+  assert.throws(() => offlineMoved(oldOnly, {}), /fixture\/example: none of runner\/run\.py, run\.sh is cached for [a-f0-9]{40}/)
+  assert.throws(() => offlineMoved(newOnly, { 'run.sh': cachedOld }), /none of runner\/run\.py, run\.sh is cached/)
+  console.log('ok   without a checkout, only an alternative cached for the revision is used')
 } finally {
   rmSync(scratch, { recursive: true, force: true })
 }
