@@ -117,6 +117,12 @@ medium, and outer respectively; measure the complete pnpm command when
 changing a loop. `test:fast` aliases medium. The runner stops an over-budget
 loop and fails.
 
+The runner starts checks in order as CPUs free up, counting the CPUs that Node
+reports for the job, so a container or cgroup quota counts. Short checks start
+first; the site suite, type checks, and browser sample start last. A job with
+fewer CPUs than a loop needs reports `cancelled or exceeded` at the budget
+instead of failing tests on their own wall-clock timeouts.
+
 `scripts/test-tiers.json` assigns existing compiler/rendering, subprocess/Git,
 and full-catalog integration suites to outer, with a reason for each group.
 Publication retains exhaustive link rendering and destination/literal catalog audits.
