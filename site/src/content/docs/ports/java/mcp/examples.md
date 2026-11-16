@@ -19,16 +19,11 @@ For a client configured to launch the server itself, use the
 
 ## Create the project
 
-Use JDK 25, Git, tmux 3.3a or newer, and a Unix host with `env -u`. Create an
-empty project and fetch the 0.1.0 release, which supplies the Gradle wrapper:
+Use JDK 25, Gradle 9, tmux 3.3a or newer, and a Unix host with `env -u`.
+Create an empty project:
 
 ```console
-$ mkdir java-mcp-example && cd java-mcp-example && \
-    git init libtmux-source && \
-    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-java.git && \
-    git -C libtmux-source fetch --depth=1 origin 5c181887918351119bfdb3a046719fa792048e59 && \
-    git -C libtmux-source checkout --detach FETCH_HEAD && \
-    mkdir -p src/main/java
+$ mkdir -p java-mcp-example/src/main/java && cd java-mcp-example
 ```
 
 Save the settings file:
@@ -37,7 +32,7 @@ Save the settings file:
 rootProject.name = "mcp-example"
 ```
 
-Save the build file. Gradle resolves the MCP library from Maven Central. Its SDK and JSON dependencies match that release:
+Save the build file. Gradle resolves `libtmux-mcp` 0.1.2 from Maven Central. Its SDK and JSON dependencies match that release:
 
 ```kotlin title="build.gradle.kts"
 plugins {
@@ -49,7 +44,7 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.libtmux:libtmux-mcp:0.1.0")
+    implementation("io.github.libtmux:libtmux-mcp:0.1.2")
     implementation("io.modelcontextprotocol.sdk:mcp-json-jackson2:2.0.1")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.21.5")
     runtimeOnly("org.slf4j:slf4j-nop:2.0.17")
@@ -141,7 +136,7 @@ public final class McpExample {
 Build the application distribution:
 
 ```console
-$ ./libtmux-source/gradlew --no-daemon --max-workers=2 -p . installDist
+$ gradle --console=plain --no-daemon installDist
 ```
 
 Run the installed application:
@@ -181,5 +176,5 @@ to discover a pane and call `run_shell_command`. Read the typed exit status
 and output. Use `capture_since` for subsequent screen changes; a prompt redraw
 can arrive after command completion.
 
-[Server entry points](https://github.com/libtmux/libtmux-java/blob/5c181887918351119bfdb3a046719fa792048e59/libtmux-mcp/src/main/java/io/github/libtmux/mcp/TmuxMcpServer.java);
-[upstream MCP tests](https://github.com/libtmux/libtmux-java/tree/5c181887918351119bfdb3a046719fa792048e59/libtmux-mcp/src/test).
+[Server entry points](https://github.com/libtmux/libtmux-java/blob/e8a39689d8d60968ac978a1dd2a89c6112333896/libtmux-mcp/src/main/java/io/github/libtmux/mcp/TmuxMcpServer.java);
+[upstream MCP tests](https://github.com/libtmux/libtmux-java/tree/e8a39689d8d60968ac978a1dd2a89c6112333896/libtmux-mcp/src/test).

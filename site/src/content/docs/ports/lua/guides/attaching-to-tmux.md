@@ -55,9 +55,9 @@ end))
 
 ## Setup and run
 
-Use an empty directory on Linux with Git and tmux 3.3a or newer installed.
-
-This example was checked with Lua 5.5.1, luv 1.52.1-0.
+Use an empty directory on Linux with Lua 5.5, LuaRocks, a C compiler, CMake, and
+tmux 3.3a or newer installed. The commands install `libtmux` 0.1.1-1 and its luv
+runtime adapter from LuaRocks into a local rocks tree ([source](https://github.com/libtmux/libtmux-lua/tree/d68f829fe097e38dcbbf7147e276666fe615f0cf)).
 
 Save the launcher as `run.sh`. It starts an isolated tmux server, runs the
 program, checks that the session still exists, then stops only that server.
@@ -92,15 +92,12 @@ export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
 "$binary" -S "$socket" has-session -t '=work'
 ```
 
-Fetch the verified library revision, build, and run:
+Install the rocks and run the program:
 
 ```console
-$ git clone https://github.com/libtmux/libtmux-lua libtmux-source &&
-  git -C libtmux-source checkout 5baa3f9b830ebdbc76fb50b5b3d7a5ad3f76d443 &&
-  luarocks --tree ./rocks install luv 1.52.1-0 &&
-  (cd libtmux-source &&
-    luarocks --tree ../rocks make rockspecs/libtmux-scm-1.rockspec) &&
-  eval "$(luarocks --tree ./rocks path)" &&
+$ luarocks --tree .rocks install luv 1.52.1-0 &&
+  luarocks --tree .rocks install libtmux 0.1.1-1 &&
+  eval "$(luarocks --tree .rocks path)" &&
   sh run.sh lua connect.lua
 ```
 

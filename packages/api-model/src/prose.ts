@@ -241,6 +241,8 @@ const NOT_API: { why: string; test: RegExp }[] = [
   // A YAML key or a doc marker: `environment:`, `docs:watching`.
   { why: 'configuration key', test: /:$|^[a-z]+:[a-z]/ },
   { why: 'Cabal project file', test: /^cabal\.project$/ },
+  // Bundler's manifest, named in prose as the file a Ruby page saves beside its program.
+  { why: 'Bundler manifest file', test: /^Gemfile$/ },
   // A CPAN distribution's changelog, named in prose as a file.
   { why: 'CPAN changelog file', test: /^Changes$/ },
   // A versioned wire format: `libtmux.where/v1`.

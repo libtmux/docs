@@ -64,20 +64,18 @@ func main() {
 
 ## Setup and run
 
-Use an empty directory on Linux with Git and tmux 3.3a or newer installed.
+Use an empty directory on Linux with Go 1.26 or newer and tmux 3.3a or newer
+installed.
 
-This example was checked with Go 1.26.8.
-
-Save this file beside the program using the displayed filename.
+Save this file beside the program using the displayed filename. It requires
+`libtmux-go` v0.1.3 ([source](https://github.com/libtmux/libtmux-go/tree/7ad2bfb0f74c02d395fec1962d5bb9556e2200cd)).
 
 ```text title="go.mod"
 module example.com/connect
 
 go 1.26.0
 
-require github.com/libtmux/libtmux-go v0.0.0
-
-replace github.com/libtmux/libtmux-go => ./libtmux
+require github.com/libtmux/libtmux-go v0.1.3
 ```
 
 Save the launcher as `run.sh`. It starts an isolated tmux server, runs the
@@ -113,13 +111,11 @@ export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
 "$binary" -S "$socket" has-session -t '=work'
 ```
 
-Fetch the verified library revision, build, and run:
+Resolve the module, build, and run:
 
 ```console
-$ git clone https://github.com/libtmux/libtmux-go libtmux &&
-  git -C libtmux checkout bb06e26e116e941813ca40bf45e7e3a47d38f52a &&
-  GOWORK=off go mod tidy &&
-  sh run.sh env GOWORK=off go run .
+$ go mod tidy &&
+  sh run.sh go run .
 ```
 
 The program prints `work`. To use an existing server of your own, set

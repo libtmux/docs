@@ -56,9 +56,10 @@ let main _ =
 
 ## Setup and run
 
-Use an empty directory on Linux with Git and tmux 3.3a or newer installed.
+Use an empty directory on Linux with tmux 3.3a or newer installed. The project
+file installs [`LibTmux.FSharp`](https://www.nuget.org/packages/LibTmux.FSharp/0.1.1) 0.1.1 from NuGet ([source](https://github.com/libtmux/libtmux-dotnet/tree/8d47af7d89638ad267528ac56897cec67df597f7/src/LibTmux.FSharp)).
 
-This example was checked with .NET SDK 10.0.302.
+This example was checked with .NET SDK 10.0.403.
 
 Save this file beside the program using the displayed filename.
 
@@ -70,7 +71,7 @@ Save this file beside the program using the displayed filename.
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Program.fs" />
-    <ProjectReference Include="libtmux-source/src/LibTmux.FSharp/LibTmux.FSharp.fsproj" />
+    <PackageReference Include="LibTmux.FSharp" Version="0.1.1" />
   </ItemGroup>
 </Project>
 ```
@@ -108,14 +109,10 @@ export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
 "$binary" -S "$socket" has-session -t '=work'
 ```
 
-Fetch the verified library revision, build, and run:
+Build and run:
 
 ```console
-$ git clone https://github.com/libtmux/libtmux-dotnet libtmux-source &&
-  git -C libtmux-source checkout 661287848a6cfb407f37114b25e8249a29f99e3f &&
-  dotnet build Connect.fsproj --maxcpucount:1 \
-    -p:DisableImplicitLibraryPacksFolder=true \
-    -p:RestorePackagesPath="$PWD/.packages" &&
+$ dotnet build Connect.fsproj --maxcpucount:1 &&
   sh run.sh dotnet run --project Connect.fsproj --no-build
 ```
 

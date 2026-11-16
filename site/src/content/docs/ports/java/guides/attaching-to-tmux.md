@@ -56,9 +56,33 @@ public final class Connect {
 
 ## Setup and run
 
-Use an empty directory on Linux with Git and tmux 3.3a or newer installed.
+Use an empty directory on Linux with tmux 3.3a or newer, JDK 25 and Gradle 9.
+The build file installs `io.github.libtmux:libtmux` 0.1.2 from Maven Central
+([source](https://github.com/libtmux/libtmux-java/tree/e8a39689d8d60968ac978a1dd2a89c6112333896/libtmux)).
 
-This example was checked with JDK 25.0.3, library bytecode target Java 21.
+This example was checked with JDK 25.0.3 and Gradle 9.7.0.
+
+Save this file beside the program using the displayed filename.
+
+```kotlin title="build.gradle.kts"
+plugins {
+    application
+}
+
+repositories { mavenCentral() }
+dependencies {
+    implementation("io.github.libtmux:libtmux:0.1.2")
+}
+java { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }
+sourceSets.main { java.srcDir("."); java.include("Connect.java") }
+application { mainClass.set("Connect") }
+```
+
+Save this file beside the program using the displayed filename.
+
+```kotlin title="settings.gradle.kts"
+rootProject.name = "connect"
+```
 
 Save the launcher as `run.sh`. It starts an isolated tmux server, runs the
 program, checks that the session still exists, then stops only that server.
@@ -93,13 +117,10 @@ export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
 "$binary" -S "$socket" has-session -t '=work'
 ```
 
-Fetch the verified library revision, build, and run:
+Build and run the program:
 
 ```console
-$ git clone https://github.com/libtmux/libtmux-java libtmux &&
-  git -C libtmux checkout 842228310449e879ebcaa3f910597757c9dbffd6 &&
-  (cd libtmux && ./gradlew :libtmux:jar) &&
-  sh run.sh java --class-path 'libtmux/libtmux/build/libs/*' Connect.java
+$ sh run.sh gradle --console=plain --no-daemon run
 ```
 
 The program prints `work`. To use an existing server of your own, set

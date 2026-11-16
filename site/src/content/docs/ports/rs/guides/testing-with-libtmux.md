@@ -10,11 +10,10 @@ sidebar:
 tableOfContents: true
 ---
 
-The `test-support` feature exposes `TestServer` and asynchronous wait helpers.
-`TestServer` is acceptable in examples for now. Application examples will move
-to the regular [`Server`](../../reference/server-server/) object. The complete
-capture program already uses `Server::builder` with an explicit private socket
-and performs its own shutdown.
+The `test-support` feature exposes `TestServer` and asynchronous wait helpers
+for test suites. The complete examples on this site use the regular
+[`Server`](../../reference/server-server/) object instead: `Server::builder`
+with an explicit private socket, and their own shutdown.
 
 ## Run a complete example
 

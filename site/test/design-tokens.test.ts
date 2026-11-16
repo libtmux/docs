@@ -244,6 +244,23 @@ describe('control outlines', () => {
     const hairline = '.field { border: 1px solid var(--color-edge); }'
     expect(declarations(hairline, '.field')).not.toMatch(/var\(--control-border\)/)
   })
+
+  /** The installer's Copy is a clipboard in a 30px outlined square with the control radius (record 0067), not a text button. */
+  const isIconSquare = (body: string) =>
+    /width:\s*1\.875rem/.test(body) && /height:\s*1\.875rem/.test(body) && /border-radius:\s*0\.375rem/.test(body) &&
+    /border:\s*1px solid var\(--control-border\)/.test(body) && !/font-size/.test(body) && !/padding:\s*0\.3rem/.test(body)
+
+  it.each([
+    ['components/widgets/mcp-install.css', '.lm-mcp-install__copy'],
+    ['components/widgets/package-install.css', '.lm-pkg-install__copy'],
+  ])('%s %s is a clipboard in a 30px outlined square, with no word', (file, selector) => {
+    expect(isIconSquare(declarations(source(file), selector))).toBe(true)
+  })
+
+  it('has a control: the outlined text button the square replaced is not one', () => {
+    const textButton = '.copy { border: 1px solid var(--control-border); border-radius: 0.25rem; font-size: 0.75em; padding: 0.3rem 0.5rem; }'
+    expect(isIconSquare(declarations(textButton, '.copy'))).toBe(false)
+  })
 })
 
 /** One current-row rule for the API tree, the docs and MCP protocol sidebars and the catalog tree. */

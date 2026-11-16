@@ -69,18 +69,25 @@ export async function checkCompleteApiExamples(browser, base) {
   }
 }
 
-/** Exercise the installed widget scripts with accepted and refused clipboard writes. */
-export async function checkClipboard(page, base) {
+/**
+ * Exercise the installed widget scripts with accepted and refused clipboard writes.
+ *
+ * The installers' Copy is a clipboard icon with no word in it (record 0067): a copy shows a checked clipboard
+ * (`data-copied`) and a refusal marks the button `data-failed`. The prompt's Copy is still a word, and says
+ * "Copied". `sabotage` is a negative control: a script that breaks the feedback must make the check fail.
+ */
+export async function checkClipboard(page, base, { sabotage } = {}) {
+  if (sabotage) await page.addInitScript(sabotage)
   const widgets = [
     // `ts/` (bare, no version) is now a noindex redirect to `latest`
     // (site/src/pages/[port]/index.astro), so the per-port install
     // widget it used to carry is gone from the root build; the quickstart
     // widget on the site root (`''`) uses the same markup.
-    ['', '.lm-pkg-install__copy', 'code'],
-    ['ts/latest/mcp/', '.lm-mcp-install__copy', 'code'],
-    ['prompts/', '.lm-agent-prompt__copy', '[data-prompt-text]'],
+    ['', '.lm-pkg-install__copy', 'code', 'icon'],
+    ['ts/latest/mcp/', '.lm-mcp-install__copy', 'code', 'icon'],
+    ['prompts/', '.lm-agent-prompt__copy', '[data-prompt-text]', 'word'],
   ]
-  for (const [path, selector, textSelector] of widgets) {
+  for (const [path, selector, textSelector, kind] of widgets) {
     const response = await page.goto(`${base}/${path}`, { waitUntil: 'domcontentloaded' })
     assert(response?.ok(), `${path}: HTTP ${response?.status()}`)
     const widget = page.locator(`${selector.split('__')[0]}:visible`).first()
@@ -93,10 +100,21 @@ export async function checkClipboard(page, base) {
     assert.equal(await status.getAttribute('aria-live'), 'polite', `${path}: polite copy announcement`)
     assert.equal(await status.getAttribute('aria-atomic'), 'true', `${path}: complete copy announcement`)
     const buttonLabel = await button.getAttribute('aria-label')
+    if (kind === 'icon') {
+      assert.equal(await button.evaluate((element) => element.textContent.trim()), '', `${path}: Copy is an icon, not a word`)
+      assert(await button.evaluate((element) => element.querySelector('svg.lm-copy__idle rect') !== null), `${path}: Copy draws the clipboard`)
+      assert(/^Copy \S/.test(buttonLabel ?? ''), `${path}: the icon names what it copies`)
+    }
     const text = await button.evaluate((element, selector) => {
-      const container = element.parentElement
+      // An installer's Copy sits in its header, outside the code it takes, and names that code by key.
+      const key = element.dataset.copyKey
+      const container = key
+        ? element.closest('[data-copy-scope]').querySelector(`[data-code-key="${key}"]`)
+        : element.parentElement
       const text = container.querySelector(selector).textContent
-      return container.dataset.language === 'console' ? text.replace(/^\$ /gm, '') : text
+      // The prompt is drawn, never copied.
+      const prompt = container.dataset.prompt ?? (container.dataset.language === 'console' ? '$' : '')
+      return prompt ? text.replace(new RegExp(`^${prompt.replace(/[$.*+?^{}()|[\]\\]/g, '\\$&')} `, 'gm'), '') : text
     }, textSelector)
     const textareas = await page.locator('textarea').count()
     for (const mode of ['api', 'rejected', 'fallback', 'false', 'throw']) {
@@ -116,21 +134,26 @@ export async function checkClipboard(page, base) {
           return mode !== 'false'
         } })
       }, mode)
-      await button.evaluate((element) => { element.textContent = 'Copy' })
       const copied = !['false', 'throw'].includes(mode)
-      // Record the transient label before a busy renderer can reset it.
-      await button.evaluate((element, label) => {
+      // Record the transient feedback before a busy renderer can reset it: the prompt's word, or the installers' attribute.
+      await button.evaluate((element, [kind, copied]) => {
+        if (kind === 'word') element.textContent = 'Copy'
+        else { element.removeAttribute('data-copied'); element.removeAttribute('data-failed') }
         window.__copyFeedback = undefined
+        const seen = () => kind === 'word' ? element.textContent === (copied ? 'Copied' : 'Copy failed')
+          : element.hasAttribute(copied ? 'data-copied' : 'data-failed')
         const observer = new MutationObserver(() => {
-          if (element.textContent !== label) return
-          window.__copyFeedback = label
+          if (!seen()) return
+          window.__copyFeedback = 'shown'
           observer.disconnect()
         })
-        observer.observe(element, { childList: true, characterData: true, subtree: true })
-      }, copied ? 'Copied' : 'Copy failed')
+        observer.observe(element, { childList: true, characterData: true, subtree: true, attributes: true })
+      }, [kind, copied])
       await button.click()
-      await page.waitForFunction((label) => window.__copyFeedback === label, copied ? 'Copied' : 'Copy failed')
-      const announcement = copied ? 'Copied to clipboard.' : 'Copy failed. Select and copy the text manually.'
+      await page.waitForFunction(() => window.__copyFeedback === 'shown')
+      // An installer's announcement names what was copied ("Copied command."); the prompt's does not.
+      const announcement = !copied ? 'Copy failed. Select and copy the text manually.'
+        : kind === 'icon' ? `${buttonLabel.replace(/^Copy /, 'Copied ')}.` : 'Copied to clipboard.'
       assert.equal(await status.textContent(), announcement, `${path}: ${mode} accessible result`)
       assert.match(await status.ariaSnapshot(), /status/, `${path}: ${mode} status remains accessible`)
       assert.equal(await button.getAttribute('aria-label'), buttonLabel, `${path}: ${mode} keeps the copy action label`)
@@ -221,7 +244,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     const base = (process.argv[2] ?? 'http://localhost:8080/en').replace(/\/$/, '')
     const page = await newCheckPage(browser, base)
     page.setDefaultTimeout(1000)
-    await checkClipboard(page, base)
+    await checkClipboard(page, base, { sabotage: process.env.LIBTMUX_CHECK_SABOTAGE })
   } finally {
     await browser.close()
   }

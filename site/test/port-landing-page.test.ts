@@ -8,7 +8,7 @@ import { citedTest, landingExample, offersPicker, presetOptions, revisionUrl, su
 import * as showcaseLibrary from '../src/lib/workspace-showcase'
 import { loadCommand } from '../src/lib/workspace-links'
 import { STORAGE_PREFIX } from '../src/lib/workspace-picker'
-import { landingExcerpt, landingProducts, type CachedSource, type LandingExcerpt, type LandingTable } from '../src/lib/port-landing'
+import { isGap, landingExcerpt, landingProducts, type CachedSource, type LandingExcerpt, type LandingTable } from '../src/lib/port-landing'
 import { PICKER_GROUP_LABEL, PORTS, PORT_BY_SLUG, portPageUrl, productStatus, productStatusLine, type DocProduct } from '../src/lib/ports'
 import { REGISTRY } from '../src/lib/registry'
 import LANDING from '../src/data/landing-examples.json'
@@ -164,7 +164,7 @@ describe('the landing page markup', () => {
     expect(document.querySelector('[data-home-language]'), 'no language switcher').toBeNull()
   })
 
-  it('keeps each tested excerpt, with its file, source and CI step, behind a link to embedding it', async () => {
+  it('keeps each tested excerpt, with its file and source, behind a link to embedding it', async () => {
     const document = await render('go')
     const entry = table.go!.mcp as LandingExcerpt
     const resolved = landingExcerpt(PORT_BY_SLUG.go!, 'mcp', table, cache)!
@@ -179,8 +179,11 @@ describe('the landing page markup', () => {
     expect(block.getAttribute('data-meta')).toBe(`role="excerpt" lines="${resolved.ranges.map(({ start, end }) => start === end ? start : `${start}-${end}`).join(',')}"`)
     const caption = disclosure.querySelector('.landing-source')!
     expect(caption.querySelector('a')!.getAttribute('href')).toBe(resolved.sourceUrl)
-    expect(caption.textContent).toContain(entry.ci.workflow)
-    expect(caption.textContent).toContain(entry.ci.command)
+    // The reader gets the file and the fact that it is tested, not the repository's workflow file or command.
+    expect(caption.textContent!.replace(/\s+/g, ' ').trim()).toBe(`Excerpt of ${entry.file}. This program is tested on every change.`)
+    expect(caption.textContent).not.toMatch(/\bCI\b|\.github|\.ya?ml/)
+    expect(caption.textContent).not.toContain(entry.ci.workflow)
+    expect(caption.textContent).not.toContain(entry.ci.command)
   })
 
   it('opens the MCP tab with its task line and the worked example, then the install picker, the links and the excerpt (records 0059, 0061)', async () => {
@@ -439,13 +442,13 @@ describe('the landing page markup', () => {
   })
 
   it('shows the install and links, no workspace file, for a port with none tested', async () => {
-    // Every port that ships a workspace manager now has a tested file, so this renders Java as though it had none.
+    // Every port that ships a workspace manager now has a tested file, so this renders Swift as though it had none.
     const window = openWindow()
-    window.document.body.innerHTML = await renderHtml('java', { '../lib/workspace-showcase': { ...showcaseLibrary, workspaceShowcase: () => undefined } })
+    window.document.body.innerHTML = await renderHtml('swift', { '../lib/workspace-showcase': { ...showcaseLibrary, workspaceShowcase: () => undefined } })
     const panel = window.document.querySelector('[data-landing-panel="workspace"]')!
     expect(panel.querySelector('[data-landing-example]')).toBeNull()
     expect(panel.querySelector('[data-package-install]')).not.toBeNull()
-    expect(panel.querySelector('a[href="/java/latest/workspace/"]')).not.toBeNull()
+    expect(panel.querySelector('a[href="/swift/latest/workspace/"]')).not.toBeNull()
     expect(panel.querySelector('[data-landing-excerpt]'), 'the excerpt stays behind its link').not.toBeNull()
   })
 
@@ -470,7 +473,7 @@ describe('the landing page markup', () => {
     it.each(PORTS)('$slug', async (port) => {
       const document = await render(port.slug)
       for (const product of landingProducts(port).filter((candidate): candidate is DocProduct => candidate !== 'core')) {
-        const gap = port.slug === 'julia' && product === 'mcp'
+        const gap = isGap(table[port.slug]![product]!)
         const excerpt = document.querySelector(`[data-landing-panel="${product}"] [data-landing-excerpt]`)
         expect(excerpt === null, `${port.slug} ${product}`).toBe(gap)
         if (excerpt) expect(excerpt.querySelector('pre')!.textContent, `${port.slug} ${product}`).toBe(landingExcerpt(port, product, table, cache)!.code)

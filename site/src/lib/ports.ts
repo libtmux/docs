@@ -101,6 +101,12 @@ export interface InstallBlock {
 export interface InstallCommand extends InstallBlock {
   /** Tab label — the tool, not the language. */
   label: string
+  /**
+   * Where the code goes, which the installer names above it: `Terminal`, a
+   * file such as `pom.xml` or `Directory.Packages.props`, or a console such as
+   * `Package Manager Console`. A `filename` is the same fact for one snippet.
+   */
+  target: string
   /** Extra fragments required by the same installation method. */
   additionalBlocks?: readonly InstallBlock[]
   /** Exact-version form for a selected historical documentation release. */
@@ -132,43 +138,43 @@ export interface InstallCooldown {
 }
 
 /** NuGet library forms shared by C# and F#, with each package's own version. */
-function nugetInstalls(packageName: string, pinCli = false): readonly InstallCommand[] {
+function nugetInstalls(packageName: string, projectFile: '.csproj' | '.fsproj', pinCli = false): readonly InstallCommand[] {
   return [
     {
-      label: '.NET CLI', lang: 'console',
+      label: '.NET CLI', target: 'Terminal', lang: 'console',
       code: `dotnet package add ${packageName}${pinCli ? ' --version {version}' : ''}`,
       versionedCode: `dotnet package add ${packageName} --version {version}`,
       note: '.NET 10 SDK: run in your project directory. On .NET 8 or 9, use dotnet add package with the same arguments.',
     },
     {
-      label: 'PMC', lang: 'powershell', code: `NuGet\\Install-Package ${packageName} -Version {version}`,
+      label: 'PMC', target: 'Package Manager Console', lang: 'powershell', code: `NuGet\\Install-Package ${packageName} -Version {version}`,
       note: 'Run in Visual Studio on Windows, in Tools > NuGet Package Manager > Package Manager Console. Choose the target project in that console.',
     },
     {
-      label: 'PackageReference', lang: 'xml',
+      label: 'PackageReference', target: projectFile, lang: 'xml',
       code: `<PackageReference Include="${packageName}" Version="{version}" />`,
       note: 'Add this inside an ItemGroup in your .csproj or .fsproj, then run dotnet restore. For central version management, use the CPM tab.',
     },
     {
-      label: 'CPM', lang: 'xml', filename: 'Directory.Packages.props',
+      label: 'CPM', target: 'Directory.Packages.props', lang: 'xml', filename: 'Directory.Packages.props',
       code: `<Project>\n  <PropertyGroup>\n    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>\n  </PropertyGroup>\n  <ItemGroup>\n    <PackageVersion Include="${packageName}" Version="{version}" />\n  </ItemGroup>\n</Project>`,
       additionalBlocks: [{ filename: 'Project file (.csproj or .fsproj)', lang: 'xml', code: `<PackageReference Include="${packageName}" />` }],
       note: 'Save Directory.Packages.props at the solution root, or merge these settings into the existing file. Add the versionless reference inside the project’s ItemGroup, then run dotnet restore.',
     },
     {
-      label: 'Paket CLI', lang: 'console', code: `paket add ${packageName} --version {version} --interactive`,
+      label: 'Paket CLI', target: 'Terminal', lang: 'console', code: `paket add ${packageName} --version {version} --interactive`,
       note: 'Requires Paket and a solution initialized with paket init. The interactive prompt selects the projects that should reference the package.',
     },
     {
-      label: 'Script & Interactive', lang: 'fsharp', code: `#r "nuget: ${packageName}, {version}"`,
+      label: 'Script & Interactive', target: 'F# script', lang: 'fsharp', code: `#r "nuget: ${packageName}, {version}"`,
       note: 'Use in an F# .fsx script, dotnet fsi, or a Polyglot Notebook with NuGet support, on .NET 8 or later. This is not a directive for an ordinary compiled project.',
     },
     {
-      label: 'File-Based Apps', lang: 'csharp', code: `#:package ${packageName}@{version}`,
+      label: 'File-Based Apps', target: 'app.cs', lang: 'csharp', code: `#:package ${packageName}@{version}`,
       note: 'C# file-based apps require the .NET 10 SDK. Place this at the top of a .cs file, before code, then run dotnet run app.cs. F# scripts use the Script & Interactive tab.',
     },
     {
-      label: 'Cake', lang: 'csharp', code: `#addin nuget:?package=${packageName}&version={version}&loaddependencies=true`,
+      label: 'Cake', target: 'build.cake', lang: 'csharp', code: `#addin nuget:?package=${packageName}&version={version}&loaddependencies=true`,
       note: 'Use Cake.Tool 6 or later for a .cake script on .NET 8 or later, with Cake’s in-process NuGet client enabled. This loads the library and its dependencies; it has no Cake task aliases or executable tool. Cake Frosting projects use PackageReference.',
     },
   ]
@@ -203,6 +209,26 @@ export interface InstallForm {
   code: string
   /** Shiki language id. `console` means a shell command and takes the `$`. */
   lang: string
+}
+
+/** Where an install form's code goes, by its language; a shell command goes to the terminal. */
+const FORM_TARGETS: Readonly<Record<string, string>> = {
+  console: 'Terminal',
+  powershell: 'PowerShell',
+  julia: 'Julia REPL',
+  erlang: 'rebar.config',
+  elixir: 'mix.exs',
+  text: 'cabal.project',
+  kotlin: 'build.gradle.kts',
+  clojure: 'deps.edn',
+  scala: 'build.sbt',
+  cmake: 'CMakeLists.txt',
+  swift: 'Package.swift',
+}
+
+/** What the installer names above a form's code: the terminal, or the file it goes in. */
+export function formTarget(form: InstallForm): string {
+  return FORM_TARGETS[form.lang] ?? form.lang
 }
 
 /** Returned dependency objects that belong in a port's reference navigation. */
@@ -410,9 +436,9 @@ const CORE_PORTS: readonly Port[] = [
         source: { repo: 'tmux-python/tmuxp', path: 'src/tmuxp', ref: 'master' },
         executable: 'tmuxp',
         installs: [
-          { label: 'uv tool', lang: 'console', code: 'uv tool install tmuxp', note: 'Installs tmuxp in an isolated Python environment. Run tmuxp load ./workspace.yaml.' },
-          { label: 'uvx', lang: 'console', code: 'uvx tmuxp --help', note: 'Runs without a permanent installation. Replace --help with load ./workspace.yaml to load a workspace.' },
-          { label: 'pipx', lang: 'console', code: 'pipx install tmuxp', note: 'Installs the tmuxp command in an isolated Python environment.' },
+          { label: 'uv tool', target: 'Terminal', lang: 'console', code: 'uv tool install tmuxp', note: 'Installs tmuxp in an isolated Python environment. Run tmuxp load ./workspace.yaml.' },
+          { label: 'uvx', target: 'Terminal', lang: 'console', code: 'uvx tmuxp --help', note: 'Runs without a permanent installation. Replace --help with load ./workspace.yaml to load a workspace.' },
+          { label: 'pipx', target: 'Terminal', lang: 'console', code: 'pipx install tmuxp', note: 'Installs the tmuxp command in an isolated Python environment.' },
         ] },
       { id: 'mcp', name: 'libtmux-mcp', registry: 'https://pypi.org/project/libtmux-mcp/',
         source: { repo: 'tmux-python/libtmux-mcp', path: 'src/libtmux_mcp', ref: 'main' } },
@@ -432,12 +458,14 @@ const CORE_PORTS: readonly Port[] = [
     installs: [
       {
         label: 'pip',
+        target: 'Terminal',
         lang: 'console',
         code: 'pip install libtmux',
         cooldown: { note: noExemption('pip', 'libtmux') },
       },
       {
         label: 'uv',
+        target: 'Terminal',
         lang: 'console',
         code: 'uv add libtmux',
         cooldown: {
@@ -447,6 +475,7 @@ const CORE_PORTS: readonly Port[] = [
       },
       {
         label: 'pipx',
+        target: 'Terminal',
         lang: 'console',
         code: 'pipx install libtmux',
         cooldown: { note: noExemption('pipx', 'libtmux') },
@@ -483,8 +512,8 @@ const CORE_PORTS: readonly Port[] = [
         id: 'async', name: 'libtmux-async', registry: 'https://rubygems.org/gems/libtmux-async', require: 'libtmux/async',
         source: { path: 'gems/libtmux-async', ref: 'master' },
         installs: [
-          { label: 'gem', lang: 'console', code: 'gem install libtmux-async' },
-          { label: 'Bundler', lang: 'ruby', code: 'gem "libtmux-async"' },
+          { label: 'gem', target: 'Terminal', lang: 'console', code: 'gem install libtmux-async' },
+          { label: 'Bundler', target: 'Gemfile', lang: 'ruby', code: 'gem "libtmux-async"' },
         ],
       },
       {
@@ -495,8 +524,8 @@ const CORE_PORTS: readonly Port[] = [
         require: 'libtmux/mcp',
         executable: 'libtmux-mcp',
         installs: [
-          { label: 'gem', lang: 'console', code: 'gem install libtmux-mcp' },
-          { label: 'Bundler', lang: 'ruby', code: 'gem "libtmux-mcp"' },
+          { label: 'gem', target: 'Terminal', lang: 'console', code: 'gem install libtmux-mcp' },
+          { label: 'Bundler', target: 'Gemfile', lang: 'ruby', code: 'gem "libtmux-mcp"' },
         ],
       },
       {
@@ -507,8 +536,8 @@ const CORE_PORTS: readonly Port[] = [
         require: 'libtmux/workspace',
         executable: 'libtmux-workspace',
         installs: [
-          { label: 'gem', lang: 'console', code: 'gem install libtmux-workspace' },
-          { label: 'Bundler', lang: 'ruby', code: 'gem "libtmux-workspace"' },
+          { label: 'gem', target: 'Terminal', lang: 'console', code: 'gem install libtmux-workspace' },
+          { label: 'Bundler', target: 'Gemfile', lang: 'ruby', code: 'gem "libtmux-workspace"' },
         ],
       },
     ],
@@ -522,8 +551,8 @@ const CORE_PORTS: readonly Port[] = [
     publishesOwnTree: true,
     generator: 'public inventory + YARD JSON + RBS',
     installs: [
-      { label: 'gem', lang: 'console', code: 'gem install libtmux' },
-      { label: 'Bundler', lang: 'ruby', code: 'gem "libtmux"' },
+      { label: 'gem', target: 'Terminal', lang: 'console', code: 'gem install libtmux' },
+      { label: 'Bundler', target: 'Gemfile', lang: 'ruby', code: 'gem "libtmux"' },
     ],
     registry: { name: 'RubyGems', url: 'https://rubygems.org/gems/libtmux', icon: 'rubygems' },
     initProject: { code: 'bundle init', lang: 'console' },
@@ -557,6 +586,7 @@ const CORE_PORTS: readonly Port[] = [
     installs: [
       {
         label: 'LuaRocks',
+        target: 'Terminal',
         lang: 'console',
         code: 'luarocks --local install libtmux',
       },
@@ -613,16 +643,16 @@ const CORE_PORTS: readonly Port[] = [
       registry: 'https://www.powershellgallery.com/packages/LibTmux.Workspace',
       source: { path: 'src/LibTmux.Workspace.PowerShell', ref: 'master' },
       installs: [
-        { label: 'PowerShellGet', lang: 'powershell', code: 'Install-Module -Name LibTmux.Workspace',
+        { label: 'PowerShellGet', target: 'PowerShell', lang: 'powershell', code: 'Install-Module -Name LibTmux.Workspace',
           note: 'Installs the matching LibTmux core dependency. Run PowerShell and tmux on the same Unix host.' },
-        { label: 'PSResourceGet', lang: 'powershell', code: 'Install-PSResource -Name LibTmux.Workspace',
+        { label: 'PSResourceGet', target: 'PowerShell', lang: 'powershell', code: 'Install-PSResource -Name LibTmux.Workspace',
           note: 'Installs the matching LibTmux core dependency. Run PowerShell and tmux on the same Unix host.' },
       ],
     }],
     installs: [
-      { label: 'PowerShellGet', lang: 'powershell', code: 'Install-Module -Name LibTmux',
+      { label: 'PowerShellGet', target: 'PowerShell', lang: 'powershell', code: 'Install-Module -Name LibTmux',
         note: 'Requires PowerShell 7.4 or later and tmux on the same Unix host.' },
-      { label: 'PSResourceGet', lang: 'powershell', code: 'Install-PSResource -Name LibTmux',
+      { label: 'PSResourceGet', target: 'PowerShell', lang: 'powershell', code: 'Install-PSResource -Name LibTmux',
         note: 'Requires PowerShell 7.4 or later and tmux on the same Unix host.' },
     ],
     registry: { name: 'PowerShell Gallery', url: 'https://www.powershellgallery.com/packages/LibTmux', icon: 'powershell' },
@@ -659,16 +689,16 @@ const CORE_PORTS: readonly Port[] = [
     packages: [
       { id: 'workspace', name: 'LibTmuxWorkspace', source: { path: 'packages/LibTmuxWorkspace', ref: 'master' },
         require: 'LibTmuxWorkspace', executable: 'libtmux-workspace',
-        installs: [{ label: 'Pkg (Git)', lang: 'julia',
+        installs: [{ label: 'Pkg (Git)', target: 'Julia REPL', lang: 'julia',
           code: 'using Pkg\nPkg.activate(".")\nrepo = "https://github.com/libtmux/libtmux-julia.git"\nref = {revision}\nPkg.add([\n    PackageSpec(url=repo, rev=ref),\n    PackageSpec(url=repo, rev=ref, subdir="packages/LibTmuxWorkspace"),\n])',
           note: 'Run in Julia. Neither package is registered in General, so this installs from Git. Add the core and workspace packages in one call so both use the same revision.' }] },
       { id: 'mcp', name: 'LibTmuxMCP', source: { path: 'packages/LibTmuxMCP', ref: 'master' },
         require: 'LibTmuxMCP', executable: 'libtmux-mcp',
-        installs: [{ label: 'Pkg (Git)', lang: 'julia',
+        installs: [{ label: 'Pkg (Git)', target: 'Julia REPL', lang: 'julia',
           code: 'using Pkg\nPkg.activate(".")\nrepo = "https://github.com/libtmux/libtmux-julia.git"\nref = {revision}\nPkg.add([\n    PackageSpec(url=repo, rev=ref),\n    PackageSpec(url=repo, rev=ref, subdir="packages/LibTmuxMCP"),\n])',
           note: 'Run in Julia. Neither package is registered in General, so this installs from Git. Add the core and MCP packages in one call so both use the same revision.' }] },
     ],
-    installs: [{ label: 'Pkg (Git)', lang: 'julia',
+    installs: [{ label: 'Pkg (Git)', target: 'Julia REPL', lang: 'julia',
       code: 'using Pkg\nPkg.activate(".")\nPkg.add(PackageSpec(\n    url="https://github.com/libtmux/libtmux-julia.git",\n    rev={revision},\n))',
       note: 'Run in Julia with tmux on PATH. The package is not registered in General, so this installs from Git; Manifest.toml records the package tree hash.' }],
     initProject: { code: 'using Pkg\nPkg.activate(".")', lang: 'julia' },
@@ -700,11 +730,11 @@ const CORE_PORTS: readonly Port[] = [
     publishesOwnTree: true,
     generator: 'OTP documentation chunks and native typespecs',
     installs: [
-      { label: 'Rebar3 (Hex)', filename: 'rebar.config', lang: 'erlang',
+      { label: 'Rebar3 (Hex)', target: 'rebar.config', filename: 'rebar.config', lang: 'erlang',
         code: ERLANG_HEX_INSTALL.code,
         additionalBlocks: [{ lang: 'console', code: 'rebar3 compile' }],
         note: 'Merge this deps entry into rebar.config. Requires Erlang/OTP 29.1.2, Rebar3 3.28.0, Linux, tmux 3.3a–3.8, make and a C11 compiler. The API is still developing, so the entry pins an exact version. Commit rebar.lock to retain the resolved package checksum.' },
-      { label: 'Rebar3 (Git)', filename: 'rebar.config', lang: 'erlang',
+      { label: 'Rebar3 (Git)', target: 'rebar.config', filename: 'rebar.config', lang: 'erlang',
         code: ERLANG_SOURCE_INSTALL,
         additionalBlocks: [{ lang: 'console', code: 'rebar3 compile' }],
         note: 'Installs the documented source revision instead of the Hex release. Merge this deps entry into rebar.config. Commit rebar.lock to retain the resolved Git revision.' },
@@ -743,6 +773,7 @@ const CORE_PORTS: readonly Port[] = [
     installs: [
       {
         label: 'mix.exs',
+        target: 'mix.exs',
         lang: 'elixir',
         filename: 'mix.exs',
         code: '{:libtmux, "~> {version}"}',
@@ -783,7 +814,7 @@ const CORE_PORTS: readonly Port[] = [
     productAvailability: { workspace: 'excluded', mcp: 'excluded' },
     packages: [{ id: 'core', name: 'libtmux-haskell', source: { path: 'src', ref: 'master' }, require: 'LibTmux' }],
     installs: [{
-      label: 'Cabal', lang: 'text', filename: 'cabal.project',
+      label: 'Cabal', target: 'cabal.project', lang: 'text', filename: 'cabal.project',
       code: 'packages: .\n\nsource-repository-package\n  type: git\n  location: https://github.com/libtmux/libtmux-haskell\n  tag: {revision}',
       note: 'Save as cabal.project and add libtmux-haskell ^>=0.1.0.0 to your component\'s build-depends. Requires Linux x86_64 with glibc 2.39+ and pidfd support. Choose GHC and Cabal versions that satisfy the package manifest. The core package is available from source; it is not published on Hackage.',
     }],
@@ -825,13 +856,13 @@ const CORE_PORTS: readonly Port[] = [
       id: 'workspace', name: 'libtmux/workspace', require: '(asdf:load-system "libtmux/workspace")',
       executable: 'mise exec -- tools/lisp.sh tools/workspace-cli.lisp', source: { path: 'src', ref: 'master' },
       installs: [{
-        label: 'Source checkout', lang: 'console',
+        label: 'Source checkout', target: 'Terminal', lang: 'console',
         code: 'git clone https://github.com/libtmux/libtmux-lisp.git\ncd libtmux-lisp\nmise trust\nmise install\nmise run setup',
         note: 'Loads the workspace ASDF systems and command from the same locked source checkout as the core library.',
       }],
     }],
     installs: [{
-      label: 'Source checkout', lang: 'console',
+      label: 'Source checkout', target: 'Terminal', lang: 'console',
       code: 'git clone https://github.com/libtmux/libtmux-lisp.git\ncd libtmux-lisp\nmise trust\nmise install\nmise run setup',
       note: 'The 0.1.0 ASDF systems are unreleased. This installs the pinned SBCL, ASDF and Qlot toolchain from source.',
     }],
@@ -875,6 +906,7 @@ const CORE_PORTS: readonly Port[] = [
         installs: [
           {
             label: 'npx',
+            target: 'Terminal',
             lang: 'console',
             code: 'npx -y @libtmux/workspace-cli --help',
             note: 'Runs tmux-workspace without installing it. Pass a command such as load ./workspace.yaml in place of --help.',
@@ -885,6 +917,7 @@ const CORE_PORTS: readonly Port[] = [
           },
           {
             label: 'bunx',
+            target: 'Terminal',
             lang: 'console',
             code: 'bunx --bun @libtmux/workspace-cli --help',
             note: '--bun runs the command on Bun. Without it, bunx runs the command on Node when Node is installed, because its shebang names node.',
@@ -895,6 +928,7 @@ const CORE_PORTS: readonly Port[] = [
           },
           {
             label: 'pnpm dlx',
+            target: 'Terminal',
             lang: 'console',
             code: 'pnpm dlx @libtmux/workspace-cli --help',
             cooldown: {
@@ -904,6 +938,7 @@ const CORE_PORTS: readonly Port[] = [
           },
           {
             label: 'yarn dlx',
+            target: 'Terminal',
             lang: 'console',
             code: 'yarn dlx @libtmux/workspace-cli --help',
             note: 'Yarn refuses a release younger than its npmMinimalAgeGate, one day by default.',
@@ -914,6 +949,7 @@ const CORE_PORTS: readonly Port[] = [
           },
           {
             label: 'npm -g',
+            target: 'Terminal',
             lang: 'console',
             code: 'npm install -g @libtmux/workspace-cli',
             note: 'Puts tmux-workspace on PATH, so a workspace loads with tmux-workspace load ./workspace.yaml.',
@@ -924,6 +960,7 @@ const CORE_PORTS: readonly Port[] = [
           },
           {
             label: 'pnpm -g',
+            target: 'Terminal',
             lang: 'console',
             code: 'pnpm add -g @libtmux/workspace-cli',
             cooldown: {
@@ -933,6 +970,7 @@ const CORE_PORTS: readonly Port[] = [
           },
           {
             label: 'bun -g',
+            target: 'Terminal',
             lang: 'console',
             code: 'bun add -g @libtmux/workspace-cli',
             cooldown: {
@@ -955,6 +993,7 @@ const CORE_PORTS: readonly Port[] = [
     installs: [
       {
         label: 'npm',
+        target: 'Terminal',
         lang: 'console',
         code: 'npm install libtmux',
         cooldown: {
@@ -964,6 +1003,7 @@ const CORE_PORTS: readonly Port[] = [
       },
       {
         label: 'pnpm',
+        target: 'Terminal',
         lang: 'console',
         code: 'pnpm add libtmux',
         cooldown: {
@@ -973,6 +1013,7 @@ const CORE_PORTS: readonly Port[] = [
       },
       {
         label: 'yarn',
+        target: 'Terminal',
         lang: 'console',
         code: 'yarn add libtmux',
         cooldown: {
@@ -982,6 +1023,7 @@ const CORE_PORTS: readonly Port[] = [
       },
       {
         label: 'bun',
+        target: 'Terminal',
         lang: 'console',
         code: 'bun add libtmux',
         cooldown: { bypass: 'bun add --minimum-release-age=0 libtmux', note: noExemption('Bun', 'libtmux') },
@@ -1006,7 +1048,7 @@ const CORE_PORTS: readonly Port[] = [
         reference: 'https://docs.rs/tmux-workspace',
         source: { path: 'crates/tmux-workspace', ref: 'master' },
         executable: 'tmux-workspace',
-        installs: [{ label: 'cargo', lang: 'console', code: 'cargo install --locked tmux-workspace',
+        installs: [{ label: 'cargo', target: 'Terminal', lang: 'console', code: 'cargo install --locked tmux-workspace',
           note: 'Needs Rust 1.85 or newer. This builds and installs the native CLI; run tmux-workspace --help afterward.' }] },
       { id: 'mcp', name: 'tmux-mcp', registry: 'https://crates.io/crates/tmux-mcp',
         reference: 'https://docs.rs/tmux-mcp',
@@ -1038,6 +1080,7 @@ const CORE_PORTS: readonly Port[] = [
     installs: [
       {
         label: 'cargo',
+        target: 'Terminal',
         lang: 'console',
         code: 'cargo add libtmux',
       },
@@ -1077,6 +1120,7 @@ const CORE_PORTS: readonly Port[] = [
         installs: [
           {
             label: 'go install',
+            target: 'Terminal',
             lang: 'console',
             code: 'go install github.com/libtmux/libtmux-go/workspace/cmd/tmux-workspace@latest',
             note: 'Needs Go 1.26 or newer. Puts tmux-workspace in $(go env GOBIN), or in $(go env GOPATH)/bin when GOBIN is unset; rerunning it upgrades.',
@@ -1102,6 +1146,7 @@ const CORE_PORTS: readonly Port[] = [
     installs: [
       {
         label: 'go get',
+        target: 'Terminal',
         lang: 'console',
         code: 'go get github.com/libtmux/libtmux-go/tmux@latest',
       },
@@ -1124,7 +1169,7 @@ const CORE_PORTS: readonly Port[] = [
         registry: 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-workspace-cli',
         source: { path: 'libtmux-workspace-cli', ref: 'master' },
         executable: 'tmux-workspace',
-        installs: [{ label: 'Gradle', lang: 'console', code: './gradlew \\\n    --max-workers=2 \\\n    --no-parallel \\\n    :libtmux-workspace-cli:installDist',
+        installs: [{ label: 'Gradle', target: 'Terminal', lang: 'console', code: './gradlew \\\n    --max-workers=2 \\\n    --no-parallel \\\n    :libtmux-workspace-cli:installDist',
           note: 'Run from a libtmux-java checkout with JDK 25 or newer. The launcher is libtmux-workspace-cli/build/install/tmux-workspace/bin/tmux-workspace; keep its adjacent libraries.' }] },
       { id: 'mcp', name: 'libtmux-mcp', coordinate: 'io.github.libtmux:libtmux-mcp',
         registry: 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-mcp',
@@ -1156,6 +1201,7 @@ const CORE_PORTS: readonly Port[] = [
     installs: [
       {
         label: 'Gradle',
+        target: 'build.gradle.kts',
         lang: 'kotlin',
         code: `dependencies {
     implementation(platform("io.github.libtmux:libtmux-bom:{version}"))
@@ -1167,6 +1213,7 @@ const CORE_PORTS: readonly Port[] = [
       },
       {
         label: 'Maven',
+        target: 'pom.xml',
         lang: 'xml',
         code: `<dependencyManagement>
   <dependencies>
@@ -1216,7 +1263,7 @@ const CORE_PORTS: readonly Port[] = [
     tagGrammar: 'semver',
     renderer: 'astro',
     generator: 'docfx metadata (--outputFormat markdown)',
-    installs: nugetInstalls('LibTmux'),
+    installs: nugetInstalls('LibTmux', '.csproj'),
     registry: { name: 'NuGet', url: 'https://www.nuget.org/packages/LibTmux', icon: 'nuget' },
     initProject: { code: 'dotnet new console', lang: 'console' },
     installForms: {
@@ -1240,18 +1287,21 @@ const CORE_PORTS: readonly Port[] = [
         installs: [
           {
             label: 'dotnet tool',
+            target: 'Terminal',
             lang: 'console',
             code: 'dotnet tool install --global LibTmux.Workspace.Cli',
             note: 'Add $HOME/.dotnet/tools to PATH if the shell cannot find tmux-workspace.',
           },
           {
             label: 'dnx',
+            target: 'Terminal',
             lang: 'console',
             code: 'dnx LibTmux.Workspace.Cli --yes -- --help',
             note: 'Runs it once from NuGet without installing anything; needs the .NET 10 SDK.',
           },
           {
             label: 'Tool manifest',
+            target: 'Terminal',
             lang: 'console',
             code: 'dotnet tool install LibTmux.Workspace.Cli',
             note: 'Run at a repository root: it writes dotnet-tools.json, which pins the version for everyone who clones it. Run it as dotnet tmux-workspace.',
@@ -1266,7 +1316,7 @@ const CORE_PORTS: readonly Port[] = [
     packages: [
       { id: 'workspace', name: 'tmux-workspace', source: { path: 'apps/workspace', ref: 'master' },
         executable: 'tmux-workspace',
-        installs: [{ label: 'CMake', lang: 'console', code: 'cmake --preset cxx-dev -DLIBTMUX_BUILD_WORKSPACE_CLI=ON && \\\n    cmake --build --preset cxx-dev --target tmux-workspace --parallel 2',
+        installs: [{ label: 'CMake', target: 'Terminal', lang: 'console', code: 'cmake --preset cxx-dev -DLIBTMUX_BUILD_WORKSPACE_CLI=ON && \\\n    cmake --build --preset cxx-dev --target tmux-workspace --parallel 2',
           note: 'Run from a libtmux-cxx checkout with Clang 18.1.3, libc++ 18.1, CMake 3.25 or newer, and Ninja. The command is build/cxx-dev/apps/workspace/tmux-workspace.' }] },
       { id: 'mcp', name: 'libtmux-mcp-server', source: { path: 'apps/mcp', ref: 'master' } },
     ],
@@ -1289,6 +1339,7 @@ const CORE_PORTS: readonly Port[] = [
     installs: [
       {
         label: 'CMake',
+        target: 'CMakeLists.txt',
         lang: 'cmake',
         code: `include(FetchContent)
 FetchContent_Declare(
@@ -1302,6 +1353,7 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
       },
       {
         label: 'vcpkg',
+        target: 'vcpkg-configuration.json',
         lang: 'json',
         code: `{
   "registries": [
@@ -1317,6 +1369,7 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
       },
       {
         label: 'Submodule',
+        target: 'Terminal',
         lang: 'console',
         code: 'git submodule add \\\n  https://github.com/libtmux/libtmux-cxx.git \\\n  third_party/libtmux',
         note: 'Then add_subdirectory(third_party/libtmux) and link libtmux::libtmux.',
@@ -1343,7 +1396,7 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
       { id: 'workspace', name: 'tmux-workspace', registry: 'https://swiftpackageindex.com/libtmux/libtmux-swift',
         source: { path: 'Sources/TmuxWorkspaceCLI', ref: 'master' },
         executable: 'tmux-workspace',
-        installs: [{ label: 'SwiftPM', lang: 'console', code: 'swift build \\\n    --jobs 2 \\\n    --traits YAMLWorkspaces \\\n    --force-resolved-versions \\\n    --product tmux-workspace',
+        installs: [{ label: 'SwiftPM', target: 'Terminal', lang: 'console', code: 'swift build \\\n    --jobs 2 \\\n    --traits YAMLWorkspaces \\\n    --force-resolved-versions \\\n    --product tmux-workspace',
           note: 'Run from a libtmux-swift checkout with Swift 6.2 or newer on Linux, or Xcode Swift 6.3 or newer on macOS. The command is .build/debug/tmux-workspace.' }] },
       { id: 'mcp', name: 'libtmux-mcp', registry: 'https://swiftpackageindex.com/libtmux/libtmux-swift',
         source: { path: 'Sources/LibTmuxMCP', ref: 'master' } },
@@ -1377,6 +1430,7 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
     installs: [
       {
         label: 'Package.swift',
+        target: 'Package.swift',
         lang: 'swift',
         code: `.package(
     url: "https://github.com/libtmux/libtmux-swift.git",
@@ -1413,9 +1467,9 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
     productAvailability: { workspace: 'available', mcp: 'excluded' },
     packages: [{ id: 'workspace', name: 'libtmux-workspace-cli', executable: 'tmux-workspace',
       source: { path: 'cli', ref: 'master' },
-      installs: [{ label: 'opam (source)', lang: 'console', code: 'git clone https://github.com/libtmux/libtmux-ocaml.git && \\\n  cd libtmux-ocaml && \\\n  opam install .',
+      installs: [{ label: 'opam (source)', target: 'Terminal', lang: 'console', code: 'git clone https://github.com/libtmux/libtmux-ocaml.git && \\\n  cd libtmux-ocaml && \\\n  opam install .',
         note: 'Build the CLI from source, then use tmux-workspace apply with a validated JSON workspace.' }] }],
-    installs: [{ label: 'opam (source)', lang: 'console',
+    installs: [{ label: 'opam (source)', target: 'Terminal', lang: 'console',
       code: 'git clone https://github.com/libtmux/libtmux-ocaml.git && \\\n  cd libtmux-ocaml && \\\n  opam install .',
       note: 'Source installation; no registry release. Requires OCaml 5.5.2, Linux and tmux 3.3a through 3.8.' }],
     initProject: { lang: 'console', code: 'dune init project my_tmux_app' },
@@ -1448,24 +1502,24 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
       { id: 'async', name: 'LibTmux-Async', registry: 'https://metacpan.org/dist/LibTmux-Async', reference: 'https://metacpan.org/pod/LibTmux::Async',
         require: 'LibTmux::Async::Server', source: { path: 'packages/async', ref: 'master' },
         installs: [
-          { label: 'cpm', lang: 'console', code: 'cpm install --global LibTmux::Async',
+          { label: 'cpm', target: 'Terminal', lang: 'console', code: 'cpm install --global LibTmux::Async',
             note: 'Adds Future and IO::Async with its required Ppoll backend. The installer resolves the core distribution it depends on.' },
-          { label: 'cpm (source)', lang: 'console', code: 'cpm install --global ./packages/async',
+          { label: 'cpm (source)', target: 'Terminal', lang: 'console', code: 'cpm install --global ./packages/async',
             note: 'From the source checkout after core installation.' },
         ] },
       { id: 'workspace', name: 'LibTmux-Workspace', registry: 'https://metacpan.org/dist/LibTmux-Workspace', reference: 'https://metacpan.org/pod/LibTmux::Workspace',
         require: 'LibTmux::Workspace', executable: 'libtmux-workspace', source: { path: 'packages/workspace', ref: 'master' },
         installs: [
-          { label: 'cpm', lang: 'console', code: 'cpm install --global LibTmux::Workspace',
+          { label: 'cpm', target: 'Terminal', lang: 'console', code: 'cpm install --global LibTmux::Workspace',
             note: 'Installs the libtmux-workspace command. The installer resolves the core distribution it depends on.' },
-          { label: 'cpm (source)', lang: 'console', code: 'cpm install --global ./packages/workspace',
+          { label: 'cpm (source)', target: 'Terminal', lang: 'console', code: 'cpm install --global ./packages/workspace',
             note: 'From the source checkout after core installation.' },
         ] },
     ],
     installs: [
-      { label: 'cpm', lang: 'console', code: 'cpm install --global LibTmux',
+      { label: 'cpm', target: 'Terminal', lang: 'console', code: 'cpm install --global LibTmux',
         note: 'Requires Perl 5.44.0, Linux x86_64 LP64, and tmux 3.3a or newer.' },
-      { label: 'cpm (source)', lang: 'console',
+      { label: 'cpm (source)', target: 'Terminal', lang: 'console',
         code: 'git clone https://github.com/libtmux/libtmux-perl.git && \\\n  cd libtmux-perl && \\\n  cpm install --global ./packages/core',
         note: 'Installs the development tree from Git rather than the CPAN release.' },
     ],
@@ -1492,9 +1546,9 @@ target_link_libraries(your_target PRIVATE libtmux::libtmux)`,
     registry: { name: 'Raku Land', url: 'https://raku.land/zef:libtmux/LibTmux', icon: 'raku-land' },
     packages: [{ id: 'core', name: 'LibTmux', coordinate: 'LibTmux:auth<zef:libtmux>', require: 'LibTmux', source: { path: 'lib', ref: 'master' } }],
     installs: [
-      { label: 'zef', lang: 'console', code: "zef install 'LibTmux:auth<zef:libtmux>'",
+      { label: 'zef', target: 'Terminal', lang: 'console', code: "zef install 'LibTmux:auth<zef:libtmux>'",
         note: 'Requires Linux, Raku 6.d and tmux 3.3a through 3.8. The authority names the Fez publisher, zef:libtmux.' },
-      { label: 'zef (source)', lang: 'console',
+      { label: 'zef (source)', target: 'Terminal', lang: 'console',
         code: 'git clone https://github.com/libtmux/libtmux-raku.git && \\\n  cd libtmux-raku && \\\n  zef install .',
         note: 'Install a checkout instead of the published distribution.' },
     ],
@@ -1529,7 +1583,7 @@ const WRAPPER_LIBRARIES: readonly WrapperLibrary[] = [
     packages: [{ id: 'async', name: 'libtmux-clojure-core-async',
       coordinate: 'io.github.libtmux:libtmux-clojure-core-async',
       source: { path: 'libtmux-clojure-core-async', ref: 'master' }, require: 'libtmux.core-async' }],
-    installs: [{ label: 'Tools.deps', lang: 'clojure', filename: 'deps.edn',
+    installs: [{ label: 'Tools.deps', target: 'deps.edn', lang: 'clojure', filename: 'deps.edn',
       code: '{:deps {io.github.libtmux/libtmux-clojure {:mvn/version "{version}"}}}',
       note: 'Build and install the source checkout first; this module has no published registry release.' }],
     initProject: { code: 'mkdir clojure-tmux && cd clojure-tmux', lang: 'console' },
@@ -1548,8 +1602,8 @@ const WRAPPER_LIBRARIES: readonly WrapperLibrary[] = [
     registry: { name: 'Maven Central', url: 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-kotlin', icon: 'maven' },
     ecosystemHost: { name: 'Dokka', url: 'https://javadoc.io/doc/io.github.libtmux/libtmux-kotlin', rationale: 'Kotlin API documentation from the Dokka archive published with the package.' },
     installs: [
-      { label: 'Gradle', lang: 'kotlin', code: 'implementation("io.github.libtmux:libtmux-kotlin:{version}")' },
-      { label: 'Maven', lang: 'xml', code: '<dependency>\n  <groupId>io.github.libtmux</groupId>\n  <artifactId>libtmux-kotlin</artifactId>\n  <version>{version}</version>\n</dependency>' },
+      { label: 'Gradle', target: 'build.gradle.kts', lang: 'kotlin', code: 'implementation("io.github.libtmux:libtmux-kotlin:{version}")' },
+      { label: 'Maven', target: 'pom.xml', lang: 'xml', code: '<dependency>\n  <groupId>io.github.libtmux</groupId>\n  <artifactId>libtmux-kotlin</artifactId>\n  <version>{version}</version>\n</dependency>' },
     ],
     initProject: { code: 'gradle init --type kotlin-application --dsl kotlin', lang: 'console' },
     installForms: {
@@ -1567,9 +1621,9 @@ const WRAPPER_LIBRARIES: readonly WrapperLibrary[] = [
     registry: { name: 'Maven Central', url: 'https://central.sonatype.com/artifact/io.github.libtmux/libtmux-scala_3', icon: 'maven' },
     ecosystemHost: { name: 'Scaladoc', url: 'https://javadoc.io/doc/io.github.libtmux/libtmux-scala_3', rationale: 'Scala 3 API documentation from the Scaladoc archive published with the package.' },
     installs: [
-      { label: 'sbt', lang: 'scala', code: 'libraryDependencies += "io.github.libtmux" %% "libtmux-scala" % "{version}"' },
-      { label: 'Gradle', lang: 'kotlin', code: 'implementation("io.github.libtmux:libtmux-scala_3:{version}")' },
-      { label: 'Maven', lang: 'xml', code: '<dependency>\n  <groupId>io.github.libtmux</groupId>\n  <artifactId>libtmux-scala_3</artifactId>\n  <version>{version}</version>\n</dependency>' },
+      { label: 'sbt', target: 'build.sbt', lang: 'scala', code: 'libraryDependencies += "io.github.libtmux" %% "libtmux-scala" % "{version}"' },
+      { label: 'Gradle', target: 'build.gradle.kts', lang: 'kotlin', code: 'implementation("io.github.libtmux:libtmux-scala_3:{version}")' },
+      { label: 'Maven', target: 'pom.xml', lang: 'xml', code: '<dependency>\n  <groupId>io.github.libtmux</groupId>\n  <artifactId>libtmux-scala_3</artifactId>\n  <version>{version}</version>\n</dependency>' },
     ],
     initProject: { code: 'sbt new scala/scala3.g8', lang: 'console' },
     installForms: {
@@ -1585,7 +1639,7 @@ const WRAPPER_LIBRARIES: readonly WrapperLibrary[] = [
     sourceReferenceDirectory: 'docs/fsharp-reference/reference',
     packageName: 'LibTmux.FSharp',
     registry: { name: 'NuGet', url: 'https://www.nuget.org/packages/LibTmux.FSharp', icon: 'nuget' },
-    installs: nugetInstalls('LibTmux.FSharp', true),
+    installs: nugetInstalls('LibTmux.FSharp', '.fsproj', true),
     initProject: { code: 'dotnet new console --language F#', lang: 'console' },
     installForms: {
       release: { code: 'dotnet package add LibTmux.FSharp', lang: 'console' },

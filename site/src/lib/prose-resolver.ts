@@ -44,7 +44,7 @@ const PATHS: Record<string, { repo: string; revision: string; paths: string[] }>
   powershell: powershellPaths, julia: juliaPaths, elixir: elixirPaths, ocaml: ocamlPaths, haskell: haskellPaths, lisp: lispPaths,
 }
 const TREES = Object.fromEntries(Object.entries(PATHS).map(([port, data]) => [port, new Set(data.paths)]))
-const FILE_RE = /^(?:cabal\.project|[\w./@-]+\.(py|ts|tsx|js|rs|go|java|cs|cpp|hpp|h|swift|jl|ex|exs|hs|cabal|ps1|psm1|psd1|ml|mli|opam|lisp|asd|md|toml|json|ya?ml|sh))$/
+const FILE_RE = /^(?:cabal\.project|[\w./@-]+\.(py|ts|tsx|js|rs|go|java|cs|csproj|fsproj|cpp|hpp|h|swift|jl|ex|exs|hs|cabal|ps1|psm1|psd1|ml|mli|opam|lisp|asd|md|toml|json|ya?ml|sh))$/
 
 type ProseDecision = MentionDecision & { file?: boolean }
 

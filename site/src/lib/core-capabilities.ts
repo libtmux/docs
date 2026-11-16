@@ -11,6 +11,7 @@
  */
 
 // gen-example-sources.mjs imports this module with bare Node; local imports need `.ts`.
+import { stripBuildMarkers } from './example-excerpt.ts'
 import { landingCacheKey, workflowRuns, type CachedSource, type LandingCi } from './port-landing.ts'
 
 /** The showcase's capabilities, in the order a reader sees them. */
@@ -92,8 +93,13 @@ export const MAX_PROGRAM_LINES = 150
 /**
  * What a reader needs to paste a program and build it: its imports and its
  * entry point, with no helper module of the repository. Empty when the file
- * qualifies. The check is per language; a language with no rule here has no
- * entry, so a new port must say what makes its program complete.
+ * qualifies. The completeness rule is per language; a language with no rule
+ * here has no entry, so a new port must say what makes its program complete.
+ * The hygiene rules (`hygieneProblems`) apply to every language.
+ *
+ * `content` is the text a reader sees. A port's own marker lines are removed
+ * before display (`stripBuildMarkers`), so one that reaches this check is a
+ * form that removal does not know.
  */
 export function programProblems(lang: string, content: string): string[] {
   const rules: Record<string, { imports: RegExp; entry: RegExp; local?: RegExp }> = {
@@ -105,19 +111,77 @@ export function programProblems(lang: string, content: string): string[] {
     typescript: { imports: /^import /m, entry: /^(?:await |void |main\()|^(?:async )?function main\(/m },
   }
   const rule = rules[lang]
-  if (!rule) return [`has no completeness rule for ${lang}`]
   const problems: string[] = []
-  if (!rule.imports.test(content)) problems.push('has no import lines')
-  if (!rule.entry.test(content)) problems.push('has no entry point')
-  if (rule.local?.test(content)) problems.push('uses a helper of the repository')
-  if (content.trimEnd().split('\n').length > MAX_PROGRAM_LINES) problems.push(`runs past ${MAX_PROGRAM_LINES} lines`)
+  if (!rule) problems.push(`has no completeness rule for ${lang}`)
+  else {
+    if (!rule.imports.test(content)) problems.push('has no import lines')
+    if (!rule.entry.test(content)) problems.push('has no entry point')
+    if (rule.local?.test(content)) problems.push('uses a helper of the repository')
+    if (content.trimEnd().split('\n').length > MAX_PROGRAM_LINES) problems.push(`runs past ${MAX_PROGRAM_LINES} lines`)
+  }
+  return [...new Set([...problems, ...hygieneProblems(content)])]
+}
+
+/**
+ * Rules for text a reader copies, whatever its language: a program or setup
+ * must not carry what only the port's repository has. Each rule names a form
+ * that appears in a real program of this site's ports.
+ */
+const HYGIENE: readonly { problem: string, test: RegExp }[] = [
+  {
+    problem: 'shows a site-build marker',
+    // The comment leaders of the ports' languages, then `docs:`, `region:`, `endregion`, `fsharp-snippet:` or `example: begin`, anywhere on a line; `#region` stands alone.
+    test: /(?:\/\/|#|--|;|%|\/\*|\(\*)[ \t]*(?:docs:[\w-]+|region:[ \t]*\S|endregion\b|fsharp-snippet:|endfsharp-snippet\b|example:[ \t]*(?:begin|end)\b)|^[ \t]*#(?:end)?region\b/m,
+  },
+  { problem: 'reads a variable only the repository tests set', test: /\bLIBTMUX_TEST_\w+/ },
+  {
+    problem: 'uses a helper of the repository',
+    // A repository-relative include, the helper of its tests, or the harness that runs an example.
+    test: /\brequire_relative\b|\buse\s+lib\b|\bFindBin\b|\blibtmux::test(?:ing)?\b|["<]libtmux\/testing\/|\bExample\.(?:run|check|raises)\b|\b[A-Z]\w*Fixture\b/,
+  },
+  {
+    problem: 'is test code of the repository',
+    // A test server or fixture, and the declaration of a test in the ports' test frameworks.
+    test: /\b(?:ScopedTmuxServer|TestServer)\b|\b(?:mcp_session|mcp_server)\b|@pytest\.|^[ \t]*(?:async )?def test_\w+|^[ \t]*@Test\b|^[ \t]*TEST(?:_F)?\(|#\[(?:tokio::)?test\]|\bfunc Test\w+\(\w+ \*testing\.T\)|^[ \t]*\[(?:Fact|Theory)\b|\bimport org\.junit\b/m,
+  },
+]
+
+/** Problems with the text of a program a reader copies, empty when it carries nothing of the repository. */
+export function hygieneProblems(content: string): string[] {
+  return HYGIENE.filter(({ test }) => test.test(content)).map(({ problem }) => problem)
+}
+
+/**
+ * Problems with the path of a file a program is quoted from. A test file of
+ * the repository needs its harness, so a reader cannot run what it holds, even
+ * where the quoted lines happen to name nothing of the harness.
+ */
+export function fileProblems(file: string): string[] {
+  const test = /(?:^|\/)(?:tests?|__tests__)\/|(?:^|\/)test_[^/]+$|(?:_test|_spec|Tests?|\.test|\.spec)\.\w+$/
+  return test.test(file) ? ['is a test file of the repository'] : []
+}
+
+/**
+ * Problems with the setup commands shown beside a program. A published port
+ * installs its library from the registry, so a command that clones or checks
+ * out the library's repository is wrong there; for a port with nothing
+ * published, that source install is the only one.
+ */
+export function setupProblems(commands: string, { published }: { published: boolean }): string[] {
+  const problems = hygieneProblems(commands)
+  if (published && /(?:^|&&|;|\|\||\()[ \t]*(?:\$ )?git\s+(?:-C\s+\S+\s+)?(?:clone|checkout|fetch)\b/m.test(commands)) {
+    problems.push('clones or checks out the library of a published port; install it from the registry')
+  }
   return problems
 }
 
 export interface ShownCapability {
   id: CapabilityId
   label: string
+  /** The program a reader sees: the port's file without the comments its own tooling reads. */
   code: string
+  /** The file as the port holds it at the revision. A recording is of this text, and its hash is taken over it. */
+  source: string
   lang: string
   file: string
   sourceUrl: string
@@ -137,11 +201,12 @@ export function portCapabilities(owner: string, table: CapabilityTable, cache: C
     const key = capabilityCacheKey(owner, entry.file)
     const cached = cache[key]
     if (!cached) throw new Error(`core-capabilities: ${key} is not in the example cache; run node scripts/gen-example-sources.mjs`)
-    const incomplete = programProblems(entry.lang, cached.content)
+    const code = stripBuildMarkers(cached.content).replace(/\n$/, '')
+    const incomplete = programProblems(entry.lang, code)
     if (incomplete.length) throw new Error(`core-capabilities: ${owner}/${id} ${incomplete.join('; ')}`)
     return [{
       id, label, lang: entry.lang, file: entry.file, ci: entry.ci,
-      code: cached.content.replace(/\n$/, ''),
+      code, source: cached.content.replace(/\n$/, ''),
       sourceUrl: `https://github.com/${cached.repository}/blob/${cached.revision}/${entry.file}`,
       ...(entry.tmux ? { tmux: entry.tmux } : {}),
     }]

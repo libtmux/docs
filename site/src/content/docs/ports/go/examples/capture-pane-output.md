@@ -19,8 +19,8 @@ lines from [the complete program](#the-complete-program), which creates a
 private tmux server, captures its output, and cleans up. Each step names the
 tmux command behind the call, which the [native version of this
 example](/tmux/examples/capture-pane-output/) builds in shell. Follow the [setup and
-run instructions](#setup-and-run) below. You need tmux and a Unix environment;
-no existing tmux session is required.
+run instructions](#setup-and-run) below. You need tmux 3.3a or newer and a Unix
+environment; no existing tmux session is required.
 
 ## Steps
 
@@ -214,8 +214,8 @@ func capture() (err error) {
 
 ## Setup and run
 
-Use an empty directory. The commands pin the library
-revision used to verify the program.
+Use an empty directory. The module file requires `libtmux-go` v0.1.3 from the
+Go module proxy.
 
 Save the program and module file using the displayed names. Use Go 1.26 or newer.
 
@@ -224,21 +224,17 @@ module example.com/capture
 
 go 1.26.0
 
-require github.com/libtmux/libtmux-go v0.0.0
-
-replace github.com/libtmux/libtmux-go => ./libtmux
+require github.com/libtmux/libtmux-go v0.1.3
 ```
 
 ```console
-$ git clone https://github.com/libtmux/libtmux-go libtmux &&
-  git -C libtmux checkout bb06e26e116e941813ca40bf45e7e3a47d38f52a &&
-  GOWORK=off go mod tidy &&
-  GOWORK=off go run .
+$ go mod tidy &&
+  go run .
 ```
 
 <a id="source-inclusion"></a>
 
 ## Where this comes from
 
-This complete program was run against the library revision pinned above.
-The displayed code is checked against the bytes from that run.
+This program uses `libtmux-go` v0.1.3 from the Go module proxy. Its [source](https://github.com/libtmux/libtmux-go/tree/7ad2bfb0f74c02d395fec1962d5bb9556e2200cd)
+is on GitHub.

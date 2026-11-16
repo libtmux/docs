@@ -32,43 +32,30 @@ launches the stdio server does not need embedding code.
 
 ### Prepare the project
 
-Use Bun 1.4.2 or newer, Git, and tmux 3.3a or newer on Unix. Create an empty
+Use Bun 1.4.2 or newer and tmux 3.3a or newer on Unix. Create an empty
 consumer directory:
 
 ```console
 $ mkdir mcp-example && cd mcp-example
 ```
 
-Fetch the source revision used by this example:
-
-```console
-$ git init libtmux-source && \
-    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-ts.git && \
-    git -C libtmux-source fetch --depth 1 origin 3fe1ca654b81b8cbf4a13b777a001a3298c87a6f && \
-    git -C libtmux-source checkout --detach FETCH_HEAD
-```
-
-Create the project manifest. The core and MCP packages come from that source
-tree; the SDK version matches the MCP package's dependency:
+Create the project manifest. It installs `libtmux` and `@libtmux/mcp` 0.1.2 from
+npm. The SDK version matches the MCP package's dependency:
 
 ```json title="package.json"
 {
   "private": true,
   "type": "module",
-  "workspaces": [
-    "libtmux-source/packages/libtmux",
-    "libtmux-source/packages/mcp"
-  ],
   "dependencies": {
-    "libtmux": "workspace:*",
-    "@libtmux/mcp": "workspace:*",
-    "@modelcontextprotocol/sdk": "1.30.0"
+    "libtmux": "0.1.2",
+    "@libtmux/mcp": "0.1.2",
+    "@modelcontextprotocol/sdk": "1.32.1"
   }
 }
 ```
 
-The local workspaces keep the consumer and companion on the same core
-module from that checkout.
+`@libtmux/mcp` depends on the same `libtmux` version, so the program and the
+MCP package share one core module.
 
 Install the dependencies:
 
@@ -175,9 +162,9 @@ Use the result's structured session IDs for later tool requests. Check
 `isError` before reading successful output; the
 [tool reference](../tools/list_sessions/) describes its schema.
 
-[Embedded server source](https://github.com/libtmux/libtmux-ts/blob/3fe1ca654b81b8cbf4a13b777a001a3298c87a6f/packages/mcp/src/server.ts);
-[upstream agent example](https://github.com/libtmux/libtmux-ts/blob/3fe1ca654b81b8cbf4a13b777a001a3298c87a6f/examples/mcp-agent/mcp-agent.ts);
-[upstream example tests](https://github.com/libtmux/libtmux-ts/blob/3fe1ca654b81b8cbf4a13b777a001a3298c87a6f/examples/mcp-agent/mcp-agent.test.ts).
+[Embedded server source](https://github.com/libtmux/libtmux-ts/blob/9a6b695471fbb77ac1e494b879ee9bc59adc201d/packages/mcp/src/server.ts);
+[upstream agent example](https://github.com/libtmux/libtmux-ts/blob/9a6b695471fbb77ac1e494b879ee9bc59adc201d/examples/mcp-agent/mcp-agent.ts);
+[upstream example tests](https://github.com/libtmux/libtmux-ts/blob/9a6b695471fbb77ac1e494b879ee9bc59adc201d/examples/mcp-agent/mcp-agent.test.ts).
 
 For declarative application code, see
 [Workspace builder examples](../../workspace/internals/examples/).

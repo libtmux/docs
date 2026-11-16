@@ -12,10 +12,12 @@ tableOfContents: true
 
 This complete Lua program starts a private tmux server, sends a command,
 and captures the line it prints. It includes imports, setup, and cleanup.
-You need tmux and a Unix environment; no existing session is required.
+You need tmux 3.3a or newer and a Unix environment; no existing session is
+required.
 
-Save both files shown below. Run `sh run.sh` after the [setup](#setup-and-run);
-the launcher creates the server and passes its socket to the Lua program.
+Save the program as `capture.lua` and run it after the [setup](#setup-and-run).
+The library connects to a running server and does not start one, so the program
+starts its own with the `tmux` command and stops it at the end.
 
 ## Read what's on screen
 
@@ -24,6 +26,7 @@ avoids mistaking the echoed command for its output.
 
 ```lua title="capture.lua"
 local adapter = require("libtmux.runtime.luv")
+local uv = require("luv")
 
 local function must(value, err)
     if err ~= nil then error(tostring(err), 0) end
@@ -34,38 +37,101 @@ local function quote(text)
     return "'" .. text:gsub("'", "'\\''") .. "'"
 end
 
-local socket = assert(arg[1], "pass the private socket path")
-local binary = assert(arg[2], "pass the absolute tmux executable path")
-
-must(adapter.run(function(runtime)
-    local server = must(runtime:connect({ binary = binary, socket_path = socket }):await())
-    local created = must(server:new_session({
-        name = "capture", argv = { "/bin/sh" },
-    }):await())
-    local pane = created.pane
-    local command = "printf '\\nlibtmux capture ready\\n'; "
-        .. quote(binary) .. " -S " .. quote(socket) .. " wait-for -S capture-ready"
-    must(pane:send_text(command):await())
-    must(pane:send_keys({ "Enter" }):await())
-    must(server:command({ "wait-for", "capture-ready" }, { timeout = 5000 }):await())
-
-    local capture = must(pane:capture({ history_lines = 20 }):await())
-    local found = false
-    for line in must(capture:text()):gmatch("[^\r\n]+") do
-        if line == "libtmux capture ready" then found = true end
+local binary
+for directory in (os.getenv("PATH") or ""):gmatch("[^:]+") do
+    local candidate = uv.fs_realpath(directory .. "/tmux")
+    if candidate and uv.fs_access(candidate, "X") then
+        binary = candidate
+        break
     end
-    assert(found, "The completed command did not produce the expected line")
-    print("libtmux capture ready")
-    must(server:close():await())
-    return true
-end))
+end
+assert(binary, "tmux must be installed on PATH")
+
+-- A private server: a socket and an empty config of its own, so this
+-- neither touches nor is changed by a tmux you already use.
+local directory = assert(uv.fs_mkdtemp("/tmp/libtmux-capture-XXXXXX"))
+local socket = directory .. "/tmux.sock"
+
+local function tmux(arguments)
+    local args = { "-S", socket }
+    for _, argument in ipairs(arguments) do
+        args[#args + 1] = argument
+    end
+
+    local timer = assert(uv.new_timer())
+    local process, status
+    process = assert(uv.spawn(binary, {
+        args = args,
+        stdio = { nil, 1, 2 },
+    }, function(code)
+        status = code
+        process:close()
+        timer:stop()
+        timer:close()
+    end))
+    timer:start(10000, 0, function()
+        process:kill("sigkill")
+    end)
+    uv.run()
+    assert(status == 0, "tmux command failed or timed out")
+end
+
+local ok, failure = xpcall(function()
+    -- This Lua API connects to an existing daemon. Start our own first,
+    -- and keep it alive with no session so the program creates them all.
+    tmux({
+        "-f", "/dev/null", "start-server", ";",
+        "set-option", "-s", "exit-empty", "off",
+    })
+
+    must(adapter.run(function(runtime)
+        local server = must(runtime:connect({
+            binary = binary,
+            socket_path = socket,
+        }):await())
+        local created = must(server:new_session({
+            name = "capture", argv = { "/bin/sh" },
+            environment = { ENV = "/dev/null" },
+        }):await())
+        local pane = created.pane
+        local command = "printf '\\nlibtmux capture ready\\n'; "
+            .. quote(binary) .. " -S " .. quote(socket)
+            .. " wait-for -S capture-ready"
+        must(pane:send_text(command):await())
+        must(pane:send_keys({ "Enter" }):await())
+        must(server:command({ "wait-for", "capture-ready" }, {
+            timeout = 5000,
+        }):await())
+
+        local capture = must(pane:capture({ history_lines = 20 }):await())
+        local found = false
+        for line in must(capture:text()):gmatch("[^\r\n]+") do
+            if line == "libtmux capture ready" then found = true end
+        end
+        assert(found, "The command did not print the expected line")
+        print("libtmux capture ready")
+        must(server:close():await())
+        return true
+    end))
+end, debug.traceback)
+
+local cleaned, cleanup_error = pcall(function()
+    if uv.fs_stat(socket) then tmux({ "kill-server" }) end
+    local removed, _, code = uv.fs_unlink(socket)
+    assert(removed or code == "ENOENT", "could not remove owned socket")
+    assert(uv.fs_rmdir(directory))
+end)
+
+if not cleaned then io.stderr:write(tostring(cleanup_error), "\n") end
+if not ok then error(failure, 0) end
+assert(cleaned, "cleanup failed; retained " .. directory)
 ```
 
 <a id="wait-for-text-instead-of-guessing-a-delay"></a>
 
 ## Wait for output or completion
 
-The pane prints its line, then signals a tmux `wait-for` channel on the same private socket. The awaited command has a five-second deadline. Capture runs after that signal and checks the complete line. The launcher stops its server on success or failure; if stopping fails, it reports the error and keeps the socket directory.
+The pane prints its line, then signals a tmux `wait-for` channel on the same private socket. The awaited command has a five-second deadline. Capture runs after that signal and checks the complete line. The program stops its server on success or failure; if stopping fails, it reports the error and keeps the socket directory.
 
 Capture reads screen state and scrollback, so output that has scrolled away
 may be absent. The program prints `libtmux capture ready` when its check passes
@@ -73,59 +139,25 @@ and exits unsuccessfully if an operation fails.
 
 ## Setup and run
 
-Use an empty directory and save the files using the displayed names. You need
-Lua 5.5, LuaRocks, a C compiler, and CMake. The commands install libtmux and its luv runtime adapter into a local rocks tree.
-
-Save this launcher beside the Lua program.
-
-```sh title="run.sh"
-#!/bin/sh
-set -eu
-
-binary=$(command -v tmux)
-case "$binary" in
-    /*) ;;
-    *) printf '%s\n' 'tmux must resolve to an absolute path' >&2; exit 1 ;;
-esac
-mkdir -p /tmp/libtmux-lua-dev
-directory=$(mktemp -d /tmp/libtmux-lua-dev/capture.XXXXXX)
-socket="$directory/tmux.sock"
-
-cleanup() {
-    status=$?
-    trap - 0 HUP INT TERM
-    if [ -S "$socket" ]; then
-        if ! "$binary" -S "$socket" kill-server; then
-            printf 'Could not stop server; retained %s\n' "$directory" >&2
-            exit 1
-        fi
-    fi
-    rm -rf "$directory" || exit 1
-    exit "$status"
-}
-trap cleanup 0
-trap 'exit 1' HUP INT TERM
-
-export ENV=/dev/null
-"$binary" -S "$socket" -f /dev/null new-session -d -s bootstrap /bin/cat
-lua capture.lua "$socket" "$binary"
-```
-
-The commands pin the library revision used to run this program.
+Use an empty directory and save the program as `capture.lua`. You need
+Lua 5.5, LuaRocks, a C compiler, and CMake. The commands install `libtmux`
+0.1.1-1 and its luv runtime adapter from LuaRocks into a local rocks tree.
 
 ```console
-$ git clone https://github.com/libtmux/libtmux-lua libtmux-source &&
-  git -C libtmux-source checkout 5baa3f9b830ebdbc76fb50b5b3d7a5ad3f76d443 &&
-  luarocks --tree ./rocks install luv 1.52.1-0 &&
-  (cd libtmux-source &&
-    luarocks --tree ../rocks make rockspecs/libtmux-scm-1.rockspec) &&
-  eval "$(luarocks --tree ./rocks path)" &&
-  sh run.sh
+$ luarocks --tree .rocks install luv 1.52.1-0 &&
+  luarocks --tree .rocks install libtmux 0.1.1-1
+```
+
+Put the rocks on the module path and run the program:
+
+```console
+$ eval "$(luarocks --tree .rocks path)" &&
+  lua capture.lua
 ```
 
 <a id="source-inclusion"></a>
 
 ## Where this comes from
 
-The displayed files were compiled or loaded with their native tools and run
-on Linux with tmux 3.2a and 3.7c. The rendering checks preserve those file bytes.
+This program uses `libtmux` 0.1.1-1 from LuaRocks. Its [source](https://github.com/libtmux/libtmux-lua/tree/d68f829fe097e38dcbbf7147e276666fe615f0cf)
+is on GitHub.

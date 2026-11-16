@@ -3,8 +3,8 @@
     {
       "port": "kotlin",
       "page": "ports/kotlin/concepts/server-session-window-pane",
-      "sourceRevision": "5c181887918351119bfdb3a046719fa792048e59",
-      "runtime": "Temurin JDK 25.0.3",
+      "sourceRevision": "e8a39689d8d60968ac978a1dd2a89c6112333896",
+      "runtime": "Temurin JDK 25.0.3; Gradle 9.7.0; libtmux-kotlin 0.1.2",
       "tmuxVersions": [
         "3.3a",
         "3.7c"
@@ -16,7 +16,7 @@
         },
         {
           "name": "build.gradle.kts",
-          "sha256": "8c58be9952882697a411fe07d19d7f5a4d79e4ef64bde65facc97ee7d8e5822f"
+          "sha256": "dff2b10298f0d34b81480f8b2c084d7790907054236d48a4a132612fab0c5e9f"
         },
         {
           "name": "gradle.properties",
@@ -24,7 +24,7 @@
         },
         {
           "name": "run.sh",
-          "sha256": "ea8339a28da6dd07d7c71bc1e264b246b0ea4561865e11d48b3642448a251bee"
+          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
         },
         {
           "name": "Hierarchy.kt",
@@ -36,12 +36,10 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-java libtmux-source &&\n  git -C libtmux-source checkout 5c181887918351119bfdb3a046719fa792048e59",
-        "sh run.sh ./libtmux-source/gradlew --project-dir . run \\\n  -Pexample=Hierarchy --console=plain --max-workers=2",
-        "sh run.sh ./libtmux-source/gradlew --project-dir . run \\\n  -Pexample=Refresh --console=plain --max-workers=2"
+        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Hierarchy",
+        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Refresh"
       ],
       "expectedOutputs": [
-        [],
         [
           "work-one: editor",
           "work-two: logs",
@@ -51,13 +49,13 @@
           "editor -> renamed"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and the library from Maven Central 0.1.0. Native checks cover assertions, stdout and cleanup."
+      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup."
     },
     {
       "port": "kotlin",
       "page": "ports/kotlin/concepts/queries",
-      "sourceRevision": "5c181887918351119bfdb3a046719fa792048e59",
-      "runtime": "Temurin JDK 25.0.3",
+      "sourceRevision": "e8a39689d8d60968ac978a1dd2a89c6112333896",
+      "runtime": "Temurin JDK 25.0.3; Gradle 9.7.0; libtmux-kotlin 0.1.2",
       "tmuxVersions": [
         "3.3a",
         "3.7c"
@@ -69,7 +67,7 @@
         },
         {
           "name": "build.gradle.kts",
-          "sha256": "8c58be9952882697a411fe07d19d7f5a4d79e4ef64bde65facc97ee7d8e5822f"
+          "sha256": "dff2b10298f0d34b81480f8b2c084d7790907054236d48a4a132612fab0c5e9f"
         },
         {
           "name": "gradle.properties",
@@ -77,7 +75,7 @@
         },
         {
           "name": "run.sh",
-          "sha256": "ea8339a28da6dd07d7c71bc1e264b246b0ea4561865e11d48b3642448a251bee"
+          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
         },
         {
           "name": "Local.kt",
@@ -93,13 +91,11 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-java libtmux-source &&\n  git -C libtmux-source checkout 5c181887918351119bfdb3a046719fa792048e59",
-        "sh run.sh ./libtmux-source/gradlew --project-dir . run \\\n  -Pexample=Local --console=plain --max-workers=2",
-        "sh run.sh ./libtmux-source/gradlew --project-dir . run \\\n  -Pexample=Cardinality --console=plain --max-workers=2",
-        "sh run.sh ./libtmux-source/gradlew --project-dir . run \\\n  -Pexample=Relations --console=plain --max-workers=2"
+        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Local",
+        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Cardinality",
+        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Relations"
       ],
       "expectedOutputs": [
-        [],
         [
           "work-one, work-two"
         ],
@@ -113,13 +109,13 @@
           "no editor: work-two"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and the library from Maven Central 0.1.0. Native checks cover assertions, stdout and cleanup."
+      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup."
     },
     {
       "port": "kotlin",
       "page": "ports/kotlin/concepts/transports",
-      "sourceRevision": "5c181887918351119bfdb3a046719fa792048e59",
-      "runtime": "Temurin JDK 25.0.3",
+      "sourceRevision": "e8a39689d8d60968ac978a1dd2a89c6112333896",
+      "runtime": "Temurin JDK 25.0.3; Gradle 9.7.0; libtmux-kotlin 0.1.2",
       "tmuxVersions": [
         "3.7c"
       ],
@@ -130,7 +126,7 @@
         },
         {
           "name": "build.gradle.kts",
-          "sha256": "8c58be9952882697a411fe07d19d7f5a4d79e4ef64bde65facc97ee7d8e5822f"
+          "sha256": "dff2b10298f0d34b81480f8b2c084d7790907054236d48a4a132612fab0c5e9f"
         },
         {
           "name": "gradle.properties",
@@ -138,7 +134,7 @@
         },
         {
           "name": "run.sh",
-          "sha256": "ea8339a28da6dd07d7c71bc1e264b246b0ea4561865e11d48b3642448a251bee"
+          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
         },
         {
           "name": "Local.kt",
@@ -150,12 +146,10 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-java libtmux-source &&\n  git -C libtmux-source checkout 5c181887918351119bfdb3a046719fa792048e59",
-        "sh run.sh ./libtmux-source/gradlew --project-dir . run \\\n  -Pexample=Local --console=plain --max-workers=2",
-        "sh run.sh ./libtmux-source/gradlew --project-dir . run \\\n  -Pexample=Control --console=plain --max-workers=2"
+        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Local",
+        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Control"
       ],
       "expectedOutputs": [
-        [],
         [
           "work-one, work-two"
         ],
@@ -164,13 +158,13 @@
           "control client closed; server still running"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and the library from Maven Central 0.1.0. Native checks cover assertions, stdout and cleanup."
+      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup. Local.kt also passes on tmux 3.3a; Control.kt refuses tmux earlier than 3.7."
     },
     {
       "port": "kotlin",
       "page": "ports/kotlin/concepts/workspaces",
-      "sourceRevision": "5c181887918351119bfdb3a046719fa792048e59",
-      "runtime": "Temurin JDK 25.0.3",
+      "sourceRevision": "e8a39689d8d60968ac978a1dd2a89c6112333896",
+      "runtime": "Temurin JDK 25.0.3; Gradle 9.7.0; libtmux-kotlin 0.1.2",
       "tmuxVersions": [
         "3.3a",
         "3.7c"
@@ -182,7 +176,7 @@
         },
         {
           "name": "build.gradle.kts",
-          "sha256": "8c58be9952882697a411fe07d19d7f5a4d79e4ef64bde65facc97ee7d8e5822f"
+          "sha256": "dff2b10298f0d34b81480f8b2c084d7790907054236d48a4a132612fab0c5e9f"
         },
         {
           "name": "gradle.properties",
@@ -190,7 +184,7 @@
         },
         {
           "name": "run.sh",
-          "sha256": "ea8339a28da6dd07d7c71bc1e264b246b0ea4561865e11d48b3642448a251bee"
+          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
         },
         {
           "name": "Layout.kt",
@@ -202,12 +196,10 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-java libtmux-source &&\n  git -C libtmux-source checkout 5c181887918351119bfdb3a046719fa792048e59",
-        "sh run.sh ./libtmux-source/gradlew --project-dir . run \\\n  -Pexample=Layout --console=plain --max-workers=2",
-        "sh run.sh ./libtmux-source/gradlew --project-dir . run \\\n  -Pexample=ReuseLayout --console=plain --max-workers=2"
+        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Layout",
+        "sh run.sh gradle --console=plain --no-daemon run -Pexample=ReuseLayout"
       ],
       "expectedOutputs": [
-        [],
         [
           "tools: 2 panes"
         ],
@@ -215,13 +207,13 @@
           "one tools window after two calls"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and the library from Maven Central 0.1.0. Native checks cover assertions, stdout and cleanup."
+      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup."
     },
     {
       "port": "scala",
       "page": "ports/scala/concepts/server-session-window-pane",
-      "sourceRevision": "5c181887918351119bfdb3a046719fa792048e59",
-      "runtime": "Temurin JDK 25.0.3",
+      "sourceRevision": "e8a39689d8d60968ac978a1dd2a89c6112333896",
+      "runtime": "Temurin JDK 25.0.3; Gradle 9.7.0; libtmux-scala_3 0.1.2",
       "tmuxVersions": [
         "3.3a",
         "3.7c"
@@ -233,7 +225,7 @@
         },
         {
           "name": "build.gradle.kts",
-          "sha256": "e14d7b03051f9895e952ecaae81afbe8bd7ce2008f85cc97096fed8b9795cdaf"
+          "sha256": "777a04b776cb7b1c53233afa16663c205551ceef17be5beaec52ce4afd7e74d1"
         },
         {
           "name": "gradle.properties",
@@ -241,7 +233,7 @@
         },
         {
           "name": "run.sh",
-          "sha256": "ea8339a28da6dd07d7c71bc1e264b246b0ea4561865e11d48b3642448a251bee"
+          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
         },
         {
           "name": "Hierarchy.scala",
@@ -253,12 +245,10 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-java libtmux-source &&\n  git -C libtmux-source checkout 5c181887918351119bfdb3a046719fa792048e59",
-        "sh run.sh ./libtmux-source/gradlew --project-dir . run \\\n  -Pexample=Hierarchy --console=plain --max-workers=2",
-        "sh run.sh ./libtmux-source/gradlew --project-dir . run \\\n  -Pexample=Refresh --console=plain --max-workers=2"
+        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Hierarchy",
+        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Refresh"
       ],
       "expectedOutputs": [
-        [],
         [
           "work-one: editor",
           "work-two: logs",
@@ -268,13 +258,13 @@
           "editor -> renamed"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and the library from Maven Central 0.1.0. Native checks cover assertions, stdout and cleanup."
+      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup."
     },
     {
       "port": "scala",
       "page": "ports/scala/concepts/queries",
-      "sourceRevision": "5c181887918351119bfdb3a046719fa792048e59",
-      "runtime": "Temurin JDK 25.0.3",
+      "sourceRevision": "e8a39689d8d60968ac978a1dd2a89c6112333896",
+      "runtime": "Temurin JDK 25.0.3; Gradle 9.7.0; libtmux-scala_3 0.1.2",
       "tmuxVersions": [
         "3.3a",
         "3.7c"
@@ -286,7 +276,7 @@
         },
         {
           "name": "build.gradle.kts",
-          "sha256": "e14d7b03051f9895e952ecaae81afbe8bd7ce2008f85cc97096fed8b9795cdaf"
+          "sha256": "777a04b776cb7b1c53233afa16663c205551ceef17be5beaec52ce4afd7e74d1"
         },
         {
           "name": "gradle.properties",
@@ -294,7 +284,7 @@
         },
         {
           "name": "run.sh",
-          "sha256": "ea8339a28da6dd07d7c71bc1e264b246b0ea4561865e11d48b3642448a251bee"
+          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
         },
         {
           "name": "Local.scala",
@@ -310,13 +300,11 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-java libtmux-source &&\n  git -C libtmux-source checkout 5c181887918351119bfdb3a046719fa792048e59",
-        "sh run.sh ./libtmux-source/gradlew --project-dir . run \\\n  -Pexample=Local --console=plain --max-workers=2",
-        "sh run.sh ./libtmux-source/gradlew --project-dir . run \\\n  -Pexample=Cardinality --console=plain --max-workers=2",
-        "sh run.sh ./libtmux-source/gradlew --project-dir . run \\\n  -Pexample=Relations --console=plain --max-workers=2"
+        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Local",
+        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Cardinality",
+        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Relations"
       ],
       "expectedOutputs": [
-        [],
         [
           "work-one, work-two"
         ],
@@ -330,13 +318,13 @@
           "no editor: work-two"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and the library from Maven Central 0.1.0. Native checks cover assertions, stdout and cleanup."
+      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup."
     },
     {
       "port": "scala",
       "page": "ports/scala/concepts/transports",
-      "sourceRevision": "5c181887918351119bfdb3a046719fa792048e59",
-      "runtime": "Temurin JDK 25.0.3",
+      "sourceRevision": "e8a39689d8d60968ac978a1dd2a89c6112333896",
+      "runtime": "Temurin JDK 25.0.3; Gradle 9.7.0; libtmux-scala_3 0.1.2",
       "tmuxVersions": [
         "3.7c"
       ],
@@ -347,7 +335,7 @@
         },
         {
           "name": "build.gradle.kts",
-          "sha256": "e14d7b03051f9895e952ecaae81afbe8bd7ce2008f85cc97096fed8b9795cdaf"
+          "sha256": "777a04b776cb7b1c53233afa16663c205551ceef17be5beaec52ce4afd7e74d1"
         },
         {
           "name": "gradle.properties",
@@ -355,7 +343,7 @@
         },
         {
           "name": "run.sh",
-          "sha256": "ea8339a28da6dd07d7c71bc1e264b246b0ea4561865e11d48b3642448a251bee"
+          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
         },
         {
           "name": "Local.scala",
@@ -367,12 +355,10 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-java libtmux-source &&\n  git -C libtmux-source checkout 5c181887918351119bfdb3a046719fa792048e59",
-        "sh run.sh ./libtmux-source/gradlew --project-dir . run \\\n  -Pexample=Local --console=plain --max-workers=2",
-        "sh run.sh ./libtmux-source/gradlew --project-dir . run \\\n  -Pexample=Control --console=plain --max-workers=2"
+        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Local",
+        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Control"
       ],
       "expectedOutputs": [
-        [],
         [
           "work-one, work-two"
         ],
@@ -381,13 +367,13 @@
           "control client closed; server still running"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and the library from Maven Central 0.1.0. Native checks cover assertions, stdout and cleanup."
+      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup. Local.scala also passes on tmux 3.3a; Control.scala refuses tmux earlier than 3.7."
     },
     {
       "port": "scala",
       "page": "ports/scala/concepts/workspaces",
-      "sourceRevision": "5c181887918351119bfdb3a046719fa792048e59",
-      "runtime": "Temurin JDK 25.0.3",
+      "sourceRevision": "e8a39689d8d60968ac978a1dd2a89c6112333896",
+      "runtime": "Temurin JDK 25.0.3; Gradle 9.7.0; libtmux-scala_3 0.1.2",
       "tmuxVersions": [
         "3.3a",
         "3.7c"
@@ -399,7 +385,7 @@
         },
         {
           "name": "build.gradle.kts",
-          "sha256": "e14d7b03051f9895e952ecaae81afbe8bd7ce2008f85cc97096fed8b9795cdaf"
+          "sha256": "777a04b776cb7b1c53233afa16663c205551ceef17be5beaec52ce4afd7e74d1"
         },
         {
           "name": "gradle.properties",
@@ -407,7 +393,7 @@
         },
         {
           "name": "run.sh",
-          "sha256": "ea8339a28da6dd07d7c71bc1e264b246b0ea4561865e11d48b3642448a251bee"
+          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
         },
         {
           "name": "Layout.scala",
@@ -419,12 +405,10 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-java libtmux-source &&\n  git -C libtmux-source checkout 5c181887918351119bfdb3a046719fa792048e59",
-        "sh run.sh ./libtmux-source/gradlew --project-dir . run \\\n  -Pexample=Layout --console=plain --max-workers=2",
-        "sh run.sh ./libtmux-source/gradlew --project-dir . run \\\n  -Pexample=ReuseLayout --console=plain --max-workers=2"
+        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Layout",
+        "sh run.sh gradle --console=plain --no-daemon run -Pexample=ReuseLayout"
       ],
       "expectedOutputs": [
-        [],
         [
           "tools: 2 panes"
         ],
@@ -432,25 +416,25 @@
           "one tools window after two calls"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and the library from Maven Central 0.1.0. Native checks cover assertions, stdout and cleanup."
+      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup."
     },
     {
       "port": "fsharp",
       "page": "ports/fsharp/concepts/server-session-window-pane",
-      "sourceRevision": "2d99ead5aba8d968e85dcac8c9a9a518452e6ba6",
-      "runtime": ".NET SDK 10.0.302",
+      "sourceRevision": "8d47af7d89638ad267528ac56897cec67df597f7",
+      "runtime": ".NET SDK 10.0.403; LibTmux.FSharp 0.1.1",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "files": [
         {
           "name": "Query.fsproj",
-          "sha256": "cede2d70f84c645ef1e609e648d1794abdd8d96fb8f0f957a274d11ea2aec212"
+          "sha256": "878ee558f6c48bae48dd555706740a16ba3c88d07fb36079d34d8346dc2c8b0a"
         },
         {
           "name": "run.sh",
-          "sha256": "dacfb3ef36d757bb66b1c97bacc575348e2466866dee63d53b95895932f8e40b"
+          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
         },
         {
           "name": "Hierarchy.fs",
@@ -462,12 +446,10 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet libtmux-source &&\n  git -C libtmux-source checkout 2d99ead5aba8d968e85dcac8c9a9a518452e6ba6",
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Hierarchy \\\n  -p:DisableImplicitLibraryPacksFolder=true -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Hierarchy",
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Refresh \\\n  -p:DisableImplicitLibraryPacksFolder=true -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Refresh"
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Hierarchy &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Hierarchy",
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Refresh &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Refresh"
       ],
       "expectedOutputs": [
-        [],
         [
           "work-one: editor",
           "work-two: logs",
@@ -477,25 +459,25 @@
           "editor -> renamed"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and pinned library. Native checks cover assertions, stdout and cleanup."
+      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup."
     },
     {
       "port": "fsharp",
       "page": "ports/fsharp/concepts/queries",
-      "sourceRevision": "2d99ead5aba8d968e85dcac8c9a9a518452e6ba6",
-      "runtime": ".NET SDK 10.0.302",
+      "sourceRevision": "8d47af7d89638ad267528ac56897cec67df597f7",
+      "runtime": ".NET SDK 10.0.403; LibTmux.FSharp 0.1.1",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "files": [
         {
           "name": "Query.fsproj",
-          "sha256": "cede2d70f84c645ef1e609e648d1794abdd8d96fb8f0f957a274d11ea2aec212"
+          "sha256": "878ee558f6c48bae48dd555706740a16ba3c88d07fb36079d34d8346dc2c8b0a"
         },
         {
           "name": "run.sh",
-          "sha256": "dacfb3ef36d757bb66b1c97bacc575348e2466866dee63d53b95895932f8e40b"
+          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
         },
         {
           "name": "Local.fs",
@@ -511,13 +493,11 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet libtmux-source &&\n  git -C libtmux-source checkout 2d99ead5aba8d968e85dcac8c9a9a518452e6ba6",
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Local \\\n  -p:DisableImplicitLibraryPacksFolder=true -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Local",
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Cardinality \\\n  -p:DisableImplicitLibraryPacksFolder=true -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Cardinality",
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Relations \\\n  -p:DisableImplicitLibraryPacksFolder=true -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Relations"
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Local &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Local",
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Cardinality &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Cardinality",
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Relations &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Relations"
       ],
       "expectedOutputs": [
-        [],
         [
           "work-one, work-two"
         ],
@@ -531,25 +511,24 @@
           "no editor: work-two"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and pinned library. Native checks cover assertions, stdout and cleanup."
+      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup."
     },
     {
       "port": "fsharp",
       "page": "ports/fsharp/concepts/transports",
-      "sourceRevision": "2d99ead5aba8d968e85dcac8c9a9a518452e6ba6",
-      "runtime": ".NET SDK 10.0.302",
+      "sourceRevision": "8d47af7d89638ad267528ac56897cec67df597f7",
+      "runtime": ".NET SDK 10.0.403; LibTmux.FSharp 0.1.1",
       "tmuxVersions": [
-        "3.2a",
         "3.7c"
       ],
       "files": [
         {
           "name": "Query.fsproj",
-          "sha256": "cede2d70f84c645ef1e609e648d1794abdd8d96fb8f0f957a274d11ea2aec212"
+          "sha256": "878ee558f6c48bae48dd555706740a16ba3c88d07fb36079d34d8346dc2c8b0a"
         },
         {
           "name": "run.sh",
-          "sha256": "dacfb3ef36d757bb66b1c97bacc575348e2466866dee63d53b95895932f8e40b"
+          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
         },
         {
           "name": "Local.fs",
@@ -561,12 +540,10 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet libtmux-source &&\n  git -C libtmux-source checkout 2d99ead5aba8d968e85dcac8c9a9a518452e6ba6",
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Local \\\n  -p:DisableImplicitLibraryPacksFolder=true -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Local",
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Control \\\n  -p:DisableImplicitLibraryPacksFolder=true -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Control"
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Local &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Local",
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Control &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Control"
       ],
       "expectedOutputs": [
-        [],
         [
           "work-one, work-two"
         ],
@@ -575,25 +552,25 @@
           "control client closed; server still running"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and pinned library. Native checks cover assertions, stdout and cleanup."
+      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup. Local.fs also passes on tmux 3.3a; Control.fs refuses tmux earlier than 3.7."
     },
     {
       "port": "fsharp",
       "page": "ports/fsharp/concepts/workspaces",
-      "sourceRevision": "2d99ead5aba8d968e85dcac8c9a9a518452e6ba6",
-      "runtime": ".NET SDK 10.0.302",
+      "sourceRevision": "8d47af7d89638ad267528ac56897cec67df597f7",
+      "runtime": ".NET SDK 10.0.403; LibTmux.FSharp 0.1.1",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "files": [
         {
           "name": "Query.fsproj",
-          "sha256": "cede2d70f84c645ef1e609e648d1794abdd8d96fb8f0f957a274d11ea2aec212"
+          "sha256": "878ee558f6c48bae48dd555706740a16ba3c88d07fb36079d34d8346dc2c8b0a"
         },
         {
           "name": "run.sh",
-          "sha256": "dacfb3ef36d757bb66b1c97bacc575348e2466866dee63d53b95895932f8e40b"
+          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
         },
         {
           "name": "Layout.fs",
@@ -605,12 +582,10 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet libtmux-source &&\n  git -C libtmux-source checkout 2d99ead5aba8d968e85dcac8c9a9a518452e6ba6",
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Layout \\\n  -p:DisableImplicitLibraryPacksFolder=true -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Layout",
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=ReuseLayout \\\n  -p:DisableImplicitLibraryPacksFolder=true -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=ReuseLayout"
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Layout &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Layout",
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=ReuseLayout &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=ReuseLayout"
       ],
       "expectedOutputs": [
-        [],
         [
           "tools: 2 panes"
         ],
@@ -618,21 +593,21 @@
           "one tools window after two calls"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and pinned library. Native checks cover assertions, stdout and cleanup."
+      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup."
     },
     {
       "port": "go",
       "page": "ports/go/concepts/server-session-window-pane",
-      "sourceRevision": "bb06e26e116e941813ca40bf45e7e3a47d38f52a",
-      "runtime": "Go 1.26.8",
+      "sourceRevision": "7ad2bfb0f74c02d395fec1962d5bb9556e2200cd",
+      "runtime": "Go 1.26.5",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "files": [
         {
           "name": "go.mod",
-          "sha256": "f0ee6f28f1960092884e9a6f29e5d411e77e69737d53c551c115de97eb4cc0bb"
+          "sha256": "8c0c29089909ffe9131e52fbfb49b9fba63c201f4ce7789e3a64d67eee860a31"
         },
         {
           "name": "run.sh",
@@ -648,9 +623,9 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-go libtmux-source &&\n  git -C libtmux-source checkout bb06e26e116e941813ca40bf45e7e3a47d38f52a &&\n  GOWORK=off go mod tidy",
-        "sh run.sh env GOWORK=off go run Create.go",
-        "sh run.sh env GOWORK=off go run Snapshot.go"
+        "go mod tidy",
+        "sh run.sh go run Create.go",
+        "sh run.sh go run Snapshot.go"
       ],
       "expectedOutputs": [
         [],
@@ -669,16 +644,16 @@
     {
       "port": "go",
       "page": "ports/go/concepts/queries",
-      "sourceRevision": "bb06e26e116e941813ca40bf45e7e3a47d38f52a",
-      "runtime": "Go 1.26.8",
+      "sourceRevision": "7ad2bfb0f74c02d395fec1962d5bb9556e2200cd",
+      "runtime": "Go 1.26.5",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "files": [
         {
           "name": "go.mod",
-          "sha256": "f0ee6f28f1960092884e9a6f29e5d411e77e69737d53c551c115de97eb4cc0bb"
+          "sha256": "8c0c29089909ffe9131e52fbfb49b9fba63c201f4ce7789e3a64d67eee860a31"
         },
         {
           "name": "run.sh",
@@ -698,10 +673,10 @@
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-go libtmux-source &&\n  git -C libtmux-source checkout bb06e26e116e941813ca40bf45e7e3a47d38f52a &&\n  GOWORK=off go mod tidy",
-        "sh run.sh env GOWORK=off go run Local.go",
-        "sh run.sh env GOWORK=off go run Cardinality.go",
-        "sh run.sh env GOWORK=off go run Relations.go"
+        "go mod tidy",
+        "sh run.sh go run Local.go",
+        "sh run.sh go run Cardinality.go",
+        "sh run.sh go run Relations.go"
       ],
       "expectedOutputs": [
         [],
@@ -729,38 +704,36 @@
     {
       "port": "rs",
       "page": "ports/rs/concepts/queries",
-      "sourceRevision": "e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4",
+      "sourceRevision": "15cfa2b1845d9894c93d8025d8b83e75d756f073",
       "runtime": "Rust 1.97.1",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "files": [
         {
           "name": "Cargo.toml",
-          "sha256": "eec2768c91550287d8874e602ab424e1e367b364e6d35be4a1596d979ddbddc9"
+          "sha256": "0e1d4745afd726abdc06273aa6e88278f5c9bda599718abec34b65507a545b2c"
         },
         {
           "name": "matching.rs",
-          "sha256": "5602d7f469302ca339aec0239f7b24a4f81ced3bdca6c39ade6d303a9b47e6db"
+          "sha256": "3caf64380fdb7a07e985e5caf313d7293652b0abb4a54af8f40ce50360e74d97"
         },
         {
           "name": "cardinality.rs",
-          "sha256": "abd96178295e9ac864a10ccdc4d156643d2efe0f0a20761cdee2840161399e7d"
+          "sha256": "67ad245a613aa7ad0a03aadcc9929d593ad3b3ef105ba0a599ad68a6ec3e594d"
         },
         {
           "name": "refresh.rs",
-          "sha256": "2252dc6a8e77d1c692be5c24cb4b76369325dffb923b11230eab25fb41bc7228"
+          "sha256": "6014f3bfa6a482c8e6d3f99a50a588c30aa5ae0aaf45168586d2a671fbeceb6a"
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs libtmux-source &&\n  git -C libtmux-source checkout e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4",
         "cargo +1.97.1 run --quiet --bin matching",
         "cargo +1.97.1 run --quiet --bin cardinality",
         "cargo +1.97.1 run --quiet --bin refresh"
       ],
       "expectedOutputs": [
-        [],
         [
           "query: prod-api",
           "active panes: 2"
@@ -773,65 +746,61 @@
           "fresh listing: renamed"
         ]
       ],
-      "verificationScope": "Each displayed program has its own imports, private server, bounded operations, result assertions, and cleanup. Run through the exact displayed project and pinned library; recorded execution evidence is required."
+      "verificationScope": "Each displayed program has its own imports, private server, bounded operations, result assertions, and cleanup. Run through the exact displayed project and published library; recorded execution evidence is required."
     },
     {
       "port": "rs",
       "page": "ports/rs/concepts/transports",
-      "sourceRevision": "e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4",
+      "sourceRevision": "15cfa2b1845d9894c93d8025d8b83e75d756f073",
       "runtime": "Rust 1.97.1",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "files": [
         {
           "name": "Cargo.toml",
-          "sha256": "8d66d8a077f464653d595acae0e8c3b91967bf2c9bba623bf080f6c58907f3ea"
+          "sha256": "705e13eb6f45f85e39c65eac9864975bca9d0d02945b4a6d22680ee6bc78b8fd"
         },
         {
           "name": "subprocess.rs",
-          "sha256": "966b8ca918fbf5d3befb4ccfeefc4a6e274ed63e5c7933892d78ffec767b5b6b"
+          "sha256": "09914ab9a3bad2c6bb45a84b83563efc3632d95884c8fa39d1846af3151a81e5"
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs libtmux-source &&\n  git -C libtmux-source checkout e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4",
         "cargo +1.97.1 run --quiet --bin subprocess"
       ],
       "expectedOutputs": [
-        [],
         [
           "sessions: work",
           "missing session: tmux refused the command"
         ]
       ],
-      "verificationScope": "Exact displayed program and pinned library setup; native runs and separately recorded command failure and owned-server cleanup checks."
+      "verificationScope": "Exact displayed program and published library setup; native runs and separately recorded command failure and owned-server cleanup checks."
     },
     {
       "port": "rs",
       "page": "ports/rs/guides/batching-commands",
-      "sourceRevision": "e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4",
+      "sourceRevision": "15cfa2b1845d9894c93d8025d8b83e75d756f073",
       "runtime": "Rust 1.97.1",
       "tmuxVersions": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "files": [
         {
           "name": "Cargo.toml",
-          "sha256": "385a4b4d48cdff06c12fc4d4906e0f665f70f19d09b418cd6943b73124ec0565"
+          "sha256": "9dcd4f2bc082b47a8854c3eef7ec0764bcec6b1a7bff71bba444361ca1d5a194"
         },
         {
           "name": "batching.rs",
-          "sha256": "aae01800c8c46c11e9a89106d41f8018eb5f52dfce131e6fb38d2184df8c6c50"
+          "sha256": "f5ce38ec08a9f422a2fb881e6831163edf5d84dce676dbe1b21541b66d9a7c51"
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs libtmux-source &&\n  git -C libtmux-source checkout e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4",
         "cargo +1.97.1 run --quiet --bin batching"
       ],
       "expectedOutputs": [
-        [],
         [
           "sequential: 3 dispatches; one, two",
           "folding: 2 dispatches; one, two",
@@ -839,40 +808,37 @@
           "refused plan: failed, skipped"
         ]
       ],
-      "verificationScope": "Exact displayed program and pinned library setup; native runs and separately recorded command failure and owned-server cleanup checks."
+      "verificationScope": "Exact displayed program and published library setup; native runs and separately recorded command failure and owned-server cleanup checks."
     },
     {
       "port": "rs",
       "page": "ports/rs/guides/control-mode",
-      "sourceRevision": "e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4",
+      "sourceRevision": "15cfa2b1845d9894c93d8025d8b83e75d756f073",
       "runtime": "Rust 1.97.1",
       "tmuxVersions": [
-        "3.2a",
         "3.7c"
       ],
       "files": [
         {
           "name": "Cargo.toml",
-          "sha256": "3e1ab381bffedbfaa6bb11330b2c3c8c8d2ffcf4646f6d1662a66677d1ba1dcd"
+          "sha256": "c13f4cfaae5d3d1bb9e14dcb794f51a403fbc35a77fc7bb1d2237a24eb74e454"
         },
         {
           "name": "control.rs",
-          "sha256": "413bd653689bbb489be5054a06e2e2be75f8e6544674e8455557a2b6eecdeac1"
+          "sha256": "3be2443d6a992bd1ac3ff0097ec3b7ed5633449ac1ab794f6c1a727b15a5e63e"
         }
       ],
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs libtmux-source &&\n  git -C libtmux-source checkout e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4",
         "cargo +1.97.1 run --quiet --bin control"
       ],
       "expectedOutputs": [
-        [],
         [
           "captured: hello from control",
           "attached control clients: 1",
           "connection closed; server still running"
         ]
       ],
-      "verificationScope": "Exact displayed program and pinned library setup; native runs and separately recorded command failure and owned-server cleanup checks."
+      "verificationScope": "Exact displayed program and published library setup; native runs and separately recorded command failure and owned-server cleanup checks."
     }
   ]
 }

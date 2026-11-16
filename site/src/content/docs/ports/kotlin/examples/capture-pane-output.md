@@ -12,7 +12,8 @@ tableOfContents: true
 
 This complete Kotlin program starts a private tmux server, sends a command,
 and captures the line it prints. It includes imports, setup, and cleanup.
-You need tmux and a Unix environment; no existing session is required.
+You need tmux 3.3a or newer and a Unix environment; no existing session is
+required.
 
 ## Read what's on screen
 
@@ -37,8 +38,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 
 fun main() = runBlocking {
-    val root = Files.createDirectories(Path.of("/tmp/libtmux-java-dev"))
-    val directory = Files.createTempDirectory(root, "capture-")
+    val directory = Files.createTempDirectory("libtmux-capture-")
     val socket = directory.resolve("tmux.sock")
     val config = ServerConfig.builder()
         .endpoint(ServerEndpoint.socketPath(socket))
@@ -99,7 +99,8 @@ and exits unsuccessfully if an operation fails.
 ## Setup and run
 
 Use an empty directory and save the files using the displayed names. You need
-JDK 25. The pinned repository supplies Gradle; the project files select Kotlin 2.4.10 and include the library build.
+JDK 25 and Gradle 9. The project files select Kotlin 2.4.10 and install
+`libtmux-kotlin` 0.1.2 from Maven Central.
 
 Save `settings.gradle.kts` beside `Capture.kt`.
 
@@ -117,7 +118,7 @@ plugins {
 
 repositories { mavenCentral() }
 dependencies {
-    implementation("io.github.libtmux:libtmux-kotlin:0.1.0")
+    implementation("io.github.libtmux:libtmux-kotlin:0.1.2")
 }
 kotlin {
     jvmToolchain(25)
@@ -134,17 +135,16 @@ kotlin.daemon.jvmargs=-Xmx2g
 org.gradle.workers.max=2
 ```
 
-The commands fetch the Gradle wrapper from the 0.1.0 release; Gradle resolves the library from Maven Central.
+Build and run the program:
 
 ```console
-$ git clone https://github.com/libtmux/libtmux-java libtmux-source &&
-  git -C libtmux-source checkout 5c181887918351119bfdb3a046719fa792048e59 &&
-  ./libtmux-source/gradlew --project-dir . run --console=plain --max-workers=2
+$ gradle --console=plain --no-daemon run
 ```
 
 <a id="source-inclusion"></a>
 
 ## Where this comes from
 
-The displayed files were compiled or loaded with their native tools and run
-on Linux with tmux 3.3a and 3.7c. The rendering checks preserve those file bytes.
+This program uses `libtmux-kotlin` 0.1.2 from Maven Central. Its
+[source](https://github.com/libtmux/libtmux-java/tree/e8a39689d8d60968ac978a1dd2a89c6112333896/libtmux-kotlin)
+is on GitHub.

@@ -21,8 +21,9 @@ on its own private server.
 
 ## Setup and run
 
-Use an empty directory with Git, rustup with the 1.97.1 toolchain installed,
-tmux 3.3a or newer, and a Unix environment. The program creates a private socket under `/tmp/libtmux-rs-dev`,
+Use an empty directory with rustup, the 1.97.1 toolchain installed, tmux
+3.3a or newer, and a Unix environment. Cargo installs `libtmux` 0.1.2 from
+crates.io. The program creates a private socket in a temporary directory,
 starts `cat` in its panes, and stops only the server it created. No existing
 session, socket, or environment variable is required.
 
@@ -35,24 +36,14 @@ version = "0.0.0"
 edition = "2024"
 publish = false
 
-[workspace]
-exclude = ["libtmux-source"]
-
 [dependencies]
-libtmux = { path = "libtmux-source/crates/libtmux", default-features = false, features = ["plan"] }
+libtmux = { version = "=0.1.2", default-features = false, features = ["plan"] }
 tempfile = "=3.27.0"
 tokio = { version = "=1.53.1", features = ["macros", "rt", "time"] }
 
 [[bin]]
 name = "batching"
 path = "batching.rs"
-```
-
-Fetch the library revision used by the example:
-
-```console
-$ git clone https://github.com/libtmux/libtmux-rs libtmux-source &&
-  git -C libtmux-source checkout e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4
 ```
 
 Only the [plan][plan-feature] feature is enabled. `control-mode` is unnecessary for these
@@ -152,15 +143,9 @@ async fn demonstrate(server: &Server) -> Result<(), ExampleError> {
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), ExampleError> {
-    let root = std::path::Path::new("/tmp/libtmux-rs-dev");
-    std::fs::create_dir_all(root)?;
     let directory = tempfile::Builder::new()
         .prefix("docs-batching-")
-        .tempdir_in(root)?;
-    std::fs::write(
-        directory.path().join("owner"),
-        std::process::id().to_string(),
-    )?;
+        .tempdir()?;
     let server = Server::builder()
         .socket_path(directory.path().join("tmux.sock"))
         .config_file("/dev/null")
@@ -168,7 +153,7 @@ async fn main() -> Result<(), ExampleError> {
         .build()?;
     let outcome = tokio::time::timeout(Duration::from_secs(10), demonstrate(&server)).await;
 
-    // Stop the owned daemon before closing the client executor.
+    // Stop the tmux server this program started, then release the client.
     let killed = server.kill().await;
     let closed = server.shutdown().await;
     let cleanup_failed = killed.is_err() || closed.is_err();
@@ -179,16 +164,19 @@ async fn main() -> Result<(), ExampleError> {
         Err(error) => failures.push(format!("example deadline: {error}")),
     }
     if let Err(error) = killed {
-        failures.push(format!("daemon cleanup: {error}"));
+        failures.push(format!("could not stop tmux: {error}"));
     }
     if let Err(error) = closed {
-        failures.push(format!("executor cleanup: {error}"));
+        failures.push(format!("could not close the client: {error}"));
     }
     if cleanup_failed {
         let retained = directory.keep();
-        failures.push(format!("inspect retained directory {}", retained.display()));
+        failures.push(format!(
+            "left the temporary directory at {}",
+            retained.display()
+        ));
     } else if let Err(error) = directory.close() {
-        failures.push(format!("directory cleanup: {error}"));
+        failures.push(format!("could not remove the directory: {error}"));
     }
     if failures.is_empty() {
         Ok(())
@@ -274,9 +262,9 @@ plan runs the whole recording again and is not a rollback or resume operation.
 ## Cleanup and other routes
 
 Each command has a five-second limit, and the workload has a ten-second
-deadline. The program stops its owned daemon and closes its executor even if
-a plan or assertion fails. A cleanup failure preserves the private directory
-and reports its path.
+deadline. The program stops the tmux server it started and releases the client
+even if a plan or assertion fails. A cleanup failure keeps the private
+directory and reports its path.
 
 Plans can also run through control mode when both features are enabled:
 `run_over_control_mode(&sender)` sends recorded operations over that connection,
@@ -285,9 +273,9 @@ Blocking plan `Pause` operations are refused on a control connection before
 recorded commands are sent. See [Control mode](../control-mode/) for connection
 ownership and notification draining.
 
-Source contracts: [Plan](https://github.com/libtmux/libtmux-rs/blob/e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4/crates/libtmux/src/plan.rs),
-[planners](https://github.com/libtmux/libtmux-rs/blob/e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4/crates/libtmux/src/plan/planner.rs),
-and [execution and outcomes](https://github.com/libtmux/libtmux-rs/blob/e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4/crates/libtmux/src/plan/run.rs)
-at the displayed library revision.
+Source contracts: [Plan](https://github.com/libtmux/libtmux-rs/blob/15cfa2b1845d9894c93d8025d8b83e75d756f073/crates/libtmux/src/plan.rs),
+[planners](https://github.com/libtmux/libtmux-rs/blob/15cfa2b1845d9894c93d8025d8b83e75d756f073/crates/libtmux/src/plan/planner.rs),
+and [execution and outcomes](https://github.com/libtmux/libtmux-rs/blob/15cfa2b1845d9894c93d8025d8b83e75d756f073/crates/libtmux/src/plan/run.rs)
+in the library release used above.
 
-[plan-feature]: https://github.com/libtmux/libtmux-rs/blob/e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4/crates/libtmux/Cargo.toml#L115
+[plan-feature]: https://github.com/libtmux/libtmux-rs/blob/15cfa2b1845d9894c93d8025d8b83e75d756f073/crates/libtmux/Cargo.toml#L148

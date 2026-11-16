@@ -36,6 +36,8 @@ for (const scheme of ['light', 'dark']) {
       viewport: { width, height },
       colorScheme: scheme,
     })
+    // A negative control: a script that breaks what a check looks at must make the check fail.
+    if (process.env.LIBTMUX_CHECK_SABOTAGE) await context.addInitScript(process.env.LIBTMUX_CHECK_SABOTAGE)
     await context.grantPermissions(['clipboard-read', 'clipboard-write'], {
       origin: new URL(BASE).origin,
     })
@@ -117,18 +119,21 @@ for (const scheme of ['light', 'dark']) {
       const install = (port) => page.locator(`.home-examples > [data-home-language="${port}"] .lm-pkg-install`)
       await choose('ruby')
       check(await install('ruby').isVisible(), `${scheme}/${viewport}: Ruby install is not visible`)
-      check(await install('ruby').locator('code').first().textContent().then((text) => /gem install/.test(text ?? '')),
+      check(await install('ruby').locator('.lm-install__body code').first().textContent().then((text) => /gem install/.test(text ?? '')),
         `${scheme}/${viewport}: Ruby install command is missing`)
       await choose('lua')
       check(await install('lua').isVisible() && !(await install('ruby').isVisible()),
         `${scheme}/${viewport}: Lua selection did not replace the Ruby install`)
-      check(await install('lua').locator('code').first().textContent().then((text) => /luarocks\s+(?:--local\s+)?install/.test(text ?? '')),
+      check(await install('lua').locator('.lm-install__body code').first().textContent().then((text) => /luarocks\s+(?:--local\s+)?install/.test(text ?? '')),
         `${scheme}/${viewport}: Lua install command is missing`)
       await choose('ruby')
       const copy = install('ruby').locator('.lm-pkg-install__copy').first()
+      // Copy is a clipboard icon with no word in it, and shows a checked clipboard (`data-copied`) after a copy.
+      check(await copy.textContent().then((text) => (text ?? '').trim() === ''),
+        `${scheme}/${viewport}: Ruby copy control has a word in it, not a clipboard icon`)
       await copy.click()
-      await copy.filter({ hasText: /copied/i }).waitFor({ timeout: 1000 }).catch(() => {})
-      check(await copy.textContent().then((text) => /copied/i.test(text ?? '')),
+      await copy.and(page.locator('[data-copied]')).waitFor({ timeout: 1000 }).catch(() => {})
+      check(await copy.evaluate((element) => element.hasAttribute('data-copied')),
         `${scheme}/${viewport}: Ruby copy control did not confirm the copy`)
       check(await page.evaluate(() => navigator.clipboard.readText()).then((text) => /gem install/.test(text)),
         `${scheme}/${viewport}: Ruby copy control wrote the wrong command`)

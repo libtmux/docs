@@ -26,15 +26,13 @@ or newer, and a Unix environment. You do not need an existing tmux session.
 In an empty directory, save this file as `package.json`:
 
 ```json title="package.json"
-{"type":"module","dependencies":{"libtmux":"file:./libtmux/packages/libtmux"}}
+{"type":"module","private":true,"dependencies":{"libtmux":"0.1.2"}}
 ```
 
-Install the library revision used to run the examples:
+Install `libtmux` 0.1.2 from npm ([source](https://github.com/libtmux/libtmux-ts/tree/9a6b695471fbb77ac1e494b879ee9bc59adc201d)):
 
 ```console
-$ git clone https://github.com/libtmux/libtmux-ts libtmux &&
-  git -C libtmux checkout 3fe1ca654b81b8cbf4a13b777a001a3298c87a6f &&
-  bun install
+$ bun install
 ```
 
 Save any program below in that directory and run its command. Each program

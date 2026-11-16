@@ -1,0 +1,12 @@
+/* The installer's Copy shows a clipboard, and a checked clipboard for a moment after a copy. */
+.lm-copy__done {
+  display: none;
+}
+
+[data-copied] > .lm-copy__idle {
+  display: none;
+}
+
+[data-copied] > .lm-copy__done {
+  display: block;
+}

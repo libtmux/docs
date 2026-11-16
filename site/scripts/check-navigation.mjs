@@ -1404,7 +1404,7 @@ export async function checkApiExampleOwnership(page, base, path = 'ts/latest/ref
 export async function checkMcpInstallRevisit(browser, base) {
   const page = await newCheckPage(browser, base, { reducedMotion: 'reduce' })
   try {
-    const shown = () => page.evaluate(() => [...document.querySelectorAll('.lm-mcp-install__panel')]
+    const shown = () => page.evaluate(() => [...document.querySelectorAll('.lm-install__body .lm-mcp-install__panel')]
       .filter((panel) => panel.checkVisibility()).length)
     await page.goto(`${base}/ts/latest/mcp/`)
     await page.locator('html[data-page-readiness="ready"]').waitFor({ state: 'attached' })
