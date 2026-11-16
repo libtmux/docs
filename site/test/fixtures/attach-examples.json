@@ -178,21 +178,17 @@
       ],
       "page": "ports/csharp/guides/attaching-to-tmux",
       "shellRecipe": [
-        "dotnet build Connect.csproj --maxcpucount:1 &&\n  sh run.sh dotnet run --project Connect.csproj --no-build"
+        "dotnet build Connect.csproj --maxcpucount:1 &&\n  dotnet run --project Connect.csproj --no-build"
       ],
       "expectedOutput": "work",
       "files": [
         {
           "name": "Program.cs",
-          "sha256": "0936735d8c29c384b1040d37eca077690017d23eb6c21b9b6de489dde595f072"
+          "sha256": "f6c59857bbe66af4516f3c51fbfe1465fe24e1191437094533155c9d21289516"
         },
         {
           "name": "Connect.csproj",
           "sha256": "606ee1d6da184663df6dbd0a8cd9df1810e9a52a32b8427f3053115b23965dd2"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "bb6c3ecf7e120beacaee494336835da637c8f2a97c2881a75654eb1d494fef9e"
         }
       ],
       "tmux": [
