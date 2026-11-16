@@ -11,8 +11,12 @@ vi.mock('astro:content', () => ({ getCollection: vi.fn(async () => []) }))
  */
 const Code = createComponent((_result: unknown, props: { code: string }) => renderTemplate`<pre><code>${props.code}</code></pre>`)
 
+/** The layout is a stub that says which layout family and outline the page asked it for. */
+const LAYOUT = '---\nconst { documentationLayout, tableOfContents } = Astro.props\n---\n<div data-layout={documentationLayout ?? "prose"} data-contents={String(tableOfContents ?? true)}><slot /></div>'
+
 async function render(slug: string) {
-  const page = await loadAstroTemplate('pages/tmux/[version]/manual/[...slug].astro', { real: ['components/api/ApiBadge.astro', 'components/SectionHeading.astro'], modules: { 'astro-expressive-code/components': { Code } } })
+  const page = await loadAstroTemplate('pages/tmux/[version]/manual/[...slug].astro', { real: ['components/api/ApiBadge.astro', 'components/SectionHeading.astro'],
+    stubs: { 'layouts/DocsLayout.astro': LAYOUT }, modules: { 'astro-expressive-code/components': { Code } } })
   const container = await experimental_AstroContainer.create({ astroConfig: { site: 'https://libtmux.org' } })
   return withoutScope(await container.renderToString(page as Parameters<typeof container.renderToString>[0], {
     request: new Request(`https://libtmux.org/tmux/3.7c/manual/${slug}/`), params: { version: '3.7c', slug },
@@ -29,5 +33,20 @@ describe('tmux manual command page', () => {
     expect(labels).toEqual(expect.arrayContaining(['Common uses', 'Syntax', 'Options', 'Use from a library']))
     // Each bar entry points at a heading the page really has.
     for (const [, id] of bar.matchAll(/href="#([^"]+)"/g)) expect(html, id).toContain(`id="${id}"`)
+  })
+
+  // The section bar is the page's one outline (TmuxManualPage): a right "On this page" rail beside it lists the same sections twice.
+  it('is in the reference layout with no outline rail beside its section bar', async () => {
+    const html = await render('capture-pane')
+    expect(html).toContain('data-layout="reference"')
+    expect(html).toContain('data-contents="false"')
+  })
+
+  // The full manual and the command index have no section bar; their headings are the outline.
+  it.each(['full', ''])('keeps the outline of the page without a section bar: %j', async (slug) => {
+    const html = await render(slug)
+    expect(html).not.toContain('manual-sections')
+    expect(html).toContain('data-layout="prose"')
+    expect(html).toContain('data-contents="true"')
   })
 })

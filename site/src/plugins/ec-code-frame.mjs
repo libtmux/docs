@@ -75,6 +75,17 @@ export function codeFrame() {
   return {
     name: 'code-frame',
     baseStyles: `
+      /*
+       * The copy button's outline is --control-border drawn whole (record 0067), so the button is never dimmed: Expressive
+       * Code shows it at 0.75 opacity, on a pointer device when the frame is hovered or focused and always on touch, which
+       * takes the outline under the 3:1 that token measures. These are its own selectors, so nothing shows that was hidden.
+       */
+      @media (hover: none) { .copy button { opacity: 1; } }
+      @media (hover: hover) {
+        .frame:hover .copy button:not(:hover),
+        .frame:focus-within :focus-visible ~ .copy button:not(:hover),
+        .frame .copy .feedback.show ~ button:not(:hover) { opacity: 1; }
+      }
       /* The role label, after the file name. */
       .frame .header .role { align-self: center; padding-inline: 0.75rem; font-size: 0.8125rem; font-weight: 400; line-height: 1.3; color: var(--color-foreground-muted, var(--color-muted)); }
       .frame .header .role b { font-weight: 600; color: var(--text-color, inherit); }

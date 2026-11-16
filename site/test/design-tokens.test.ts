@@ -226,6 +226,7 @@ describe('control outlines', () => {
     ['components/widgets/mcp-install.css', '.lm-mcp-install__copy'],
     ['components/widgets/package-install.css', '.lm-pkg-install__copy'],
     ['components/widgets/AgentPrompt.astro', '.lm-agent-prompt__copy'],
+    ['styles/core-player.css', '.expressive-code .core-copy'],
     ['styles/global.css', '.scheme-switch'],
     ['styles/global.css', '.scheme-cycle'],
   ]
@@ -255,6 +256,11 @@ describe('control outlines', () => {
     ['components/widgets/package-install.css', '.lm-pkg-install__copy'],
   ])('%s %s is a clipboard in a 30px outlined square, with no word', (file, selector) => {
     expect(isIconSquare(declarations(source(file), selector))).toBe(true)
+  })
+
+  // An outline drawn through `opacity` is not the outline that was measured: the button's own opacity dims it as well.
+  it('draws the code player copy button at full opacity, so its outline keeps the measured 3:1', () => {
+    expect(declarations(source('styles/core-player.css'), '.expressive-code .core-copy')).not.toMatch(/opacity:/)
   })
 
   it('has a control: the outlined text button the square replaced is not one', () => {

@@ -277,7 +277,8 @@ const wrapsHref = wraps ? referenceHref(port, wraps.call, version) : undefined
   }
   .mcp-signature { white-space: pre-wrap; overflow-wrap: anywhere; }
   .api-overview section { margin-block-start: 1.5rem; }
-  .api-overview h2 { font-size: 1.125rem; font-weight: 600; margin-bottom: .75rem; padding-bottom: .4rem; border-bottom: 1px solid var(--api-border); }
+  /* The sections of the object (Arguments, Result, Annotations, Types, Protocol data) are the page's H2s: 24/32 at 600 (15-typesetting). */
+  .api-overview h2 { font-size: 1.5rem; line-height: 2rem; font-weight: 600; margin-bottom: .75rem; padding-bottom: .4rem; border-bottom: 1px solid var(--api-border); }
   .mcp-overview { font-size: .9375rem; line-height: 1.65; }
   .mcp-method-description { display: block; margin-top: .25rem; }
   .mcp-schema-type { font-size: .8125rem; color: var(--color-muted); margin-bottom: .75rem; }

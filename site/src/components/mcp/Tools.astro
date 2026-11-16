@@ -66,7 +66,7 @@ const spread = Math.round((ranked[0].n / ranked[ranked.length - 1].n) * 10) / 10
   localeStatuses={ALL_TRANSLATED}
 >
   <main class="mx-auto max-w-5xl px-4 py-12">
-    <h1 class="text-3xl font-semibold tracking-tight">MCP tool surface</h1>
+    <h1 class="page-title">MCP tool surface</h1>
     <p class="mt-3 max-w-3xl text-lg">
       Check which tools your MCP server registers before configuring a client.
       The ports register <strong>{data.universe.length} distinct tool
@@ -80,7 +80,7 @@ const spread = Math.round((ranked[0].n / ranked[ranked.length - 1].n) * 10) / 10
       the {data.referenceDocumented} tools documented by libtmux-mcp.
     </p>
 
-    <h2 class="mt-10 text-xl font-semibold">Names and platform limits</h2>
+    <h2 class="section-heading mt-10">Names and platform limits</h2>
     <div class="mt-4 space-y-4 max-w-3xl">
       {/*
         Conditional because no port prefixes today. .NET was the one that did,
@@ -125,7 +125,7 @@ const spread = Math.round((ranked[0].n / ranked[ranked.length - 1].n) * 10) / 10
       </p>
     </div>
 
-    <h2 class="mt-12 text-xl font-semibold">Tools registered in every port</h2>
+    <h2 class="section-heading mt-12">Tools registered in every port</h2>
     <p class="mt-2 max-w-3xl">
       These {everywhere.length} tools are registered in every port on
       non-Windows hosts. Apply the wire prefixes and C++ Windows limits
@@ -141,7 +141,7 @@ const spread = Math.round((ranked[0].n / ranked[ranked.length - 1].n) * 10) / 10
       }
     </ul>
 
-    <h2 class="mt-12 text-xl font-semibold">Tool availability</h2>
+    <h2 class="section-heading mt-12">Tool availability</h2>
     <p class="mt-2 max-w-3xl text-sm opacity-80">
       Sorted by the number of ports that register each name. Arguments and
       behavior can differ; check the chosen server's tool schema.
@@ -188,7 +188,7 @@ const spread = Math.round((ranked[0].n / ranked[ranked.length - 1].n) * 10) / 10
       </table>
     </div>
 
-    <h2 class="mt-12 text-xl font-semibold">Where these came from</h2>
+    <h2 class="section-heading mt-12">Where these came from</h2>
     <div class="mt-4 overflow-x-auto">
       <table class="w-full min-w-max border-collapse text-sm">
         <thead>

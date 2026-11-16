@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { Window } from 'happy-dom'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
+import { PORT_BY_SLUG, portPageUrl, referenceUrl } from '../src/lib/ports'
 import {
   OTHER_LETTER,
   countStatus,
@@ -14,6 +16,8 @@ import {
   summaryLine,
   type IndexEntry,
 } from '../src/lib/symbol-index'
+
+vi.mock('astro:content', () => ({ getCollection: vi.fn(async () => []) }))
 
 const entry = (name: string, port = 'go', over: Partial<IndexEntry> = {}): IndexEntry => ({ port, name, id: `${port}.${name}`, kind: 'method', ...over })
 
@@ -105,6 +109,41 @@ describe('the A-Z page of a port build', () => {
     expect(html).toContain('data-exclude="true"')
   })
 
+  // A port's A-Z page is a page of the port's core reference (record 0021): four levels in the breadcrumb, the sidebar's head
+  // above the column, and the way up at the end. The tree beside it is the reference's, so it is stubbed to say what it was given.
+  it('names Core Library in the breadcrumb, heads the column with the way up and ends on the ladder', async () => {
+    vi.stubEnv('LIBTMUX_DOCS_PORT', 'go')
+    vi.stubEnv('LIBTMUX_DOCS_LOCALE', 'en')
+    vi.stubEnv('LIBTMUX_DOCS_VERSION', 'latest')
+    const page = await loadAstroTemplate('pages/reference/symbols/[letter].astro', {
+      real: ['components/api/SymbolIndex.astro', 'components/api/ApiBadge.astro', 'components/PageToolbar.astro', 'components/docs/PageEnd.astro'],
+      stubs: {
+        'layouts/BaseLayout.astro': '<slot name="context" /><slot />',
+        'components/api/ApiTree.astro': '---\nconst { head } = Astro.props\n---\n<aside data-tree><a data-up href={head?.up.href}>{head?.up.label}</a><a data-title href={head?.title.href}>{head?.title.label}</a></aside>',
+      },
+      modules: { '../../../i18n/resolve': { buildLocale: () => 'en' } },
+    })
+    const go = PORT_BY_SLUG.go!
+    const [home, core, reference] = [portPageUrl(go, 'latest'), portPageUrl(go, 'latest', 'core'), referenceUrl(go, 'latest')]
+    const window = new Window()
+    window.document.body.innerHTML = await renderAstroTemplate(page, { url: `https://libtmux.org${reference}symbols/c/`, props: {
+      letter: 'C', letters: ['C'], entries: [entry('Capture')], total: 1, shared: [], port: 'go',
+    } })
+    const document = window.document
+    const trail = [...document.querySelectorAll('nav[aria-label="Breadcrumb"] [data-breadcrumb-item]')]
+    expect(trail.map((item) => item.textContent?.trim())).toEqual(['Go', 'Core Library', 'API reference', 'Symbols: C'])
+    expect(trail.map((item) => item.getAttribute('href'))).toEqual([home, core, reference, null])
+    expect(document.querySelector('[data-up]')?.textContent).toBe('Core Library')
+    expect(document.querySelector('[data-up]')?.getAttribute('href')).toBe(core)
+    expect(document.querySelector('[data-title]')?.textContent).toBe('API reference')
+    const up = [...document.querySelectorAll('nav.page-end [data-page-end-up] a')]
+    expect(up.map((link) => link.textContent?.trim())).toEqual(['API reference', 'Core Library', 'Go'])
+    expect(up.map((link) => link.getAttribute('href'))).toEqual([reference, core, home])
+    // One main landmark, and the list is in the column the tree sits beside.
+    expect(document.querySelectorAll('main')).toHaveLength(1)
+    expect(document.querySelector('main .api-reference-content [data-symidx]')).not.toBeNull()
+  })
+
   // The shared shell build runs with LIBTMUX_DOCS_PORT set to the empty
   // string. A port of '' must reach the layout as no port at all: its
   // inventory scope falls back with `??`, and an empty scope fails the build.
@@ -125,5 +164,7 @@ describe('the A-Z page of a port build', () => {
     expect(html).toContain('data-port="null"')
     expect(html).toContain('data-version="null"')
     expect(html).toContain('data-exclude="false"')
+    // The cross-port page is a root page: no port ladder to end on.
+    expect(html).not.toContain('page-end')
   })
 })

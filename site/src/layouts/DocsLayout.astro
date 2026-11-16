@@ -119,6 +119,13 @@ interface Props {
    * heading sizes and which `not-prose` does not stop.
    */
   reference?: boolean
+  /**
+   * The layout family the page belongs to, which sets the width of the frame and how the context strip behaves.
+   *
+   * A page with a context draws as `prose` unless it says otherwise. A page of the reference family, with its own
+   * section bar and API tree, says `reference` and leaves `tableOfContents` off, so no outline rail repeats the bar.
+   */
+  documentationLayout?: 'prose' | 'reference'
   navigation?: SidebarItem[]
   /** False keeps the sidebar's own text out of search, as the API tree does; a protocol reference lists every object in it. */
   indexNavigation?: boolean
@@ -158,6 +165,7 @@ const {
   editLabel,
   bare = false,
   reference = false,
+  documentationLayout: requestedLayout,
   navigation,
   indexNavigation = true,
   apiNavigation: requestedApiNavigation,
@@ -176,6 +184,7 @@ const version = requestedVersion ?? buildTarget(process.env).version
 // caller formats `pagePath` the same way BaseLayout does.
 const currentPath = Astro.url.pathname
 const hasContext = Boolean(port) || /^(tmux|guides|topics|concepts|examples)(\/|$)/.test(pagePath)
+const documentationLayout = requestedLayout ?? (hasContext ? 'prose' : undefined)
 const contextVersion = port ? version : pagePath.match(/^tmux\/([^/]+)\/(?:reference|manual)/)?.[1] ?? 'latest'
 
 const tocItems =
@@ -217,7 +226,7 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
   description={description}
   pagePath={pagePath}
   portSlug={port}
-  documentationLayout={hasContext ? 'prose' : undefined}
+  documentationLayout={documentationLayout}
   version={version}
   noindex={noindex}
   searchable={searchable}
@@ -239,7 +248,8 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
   </div>}
   {port && statusProduct && <ProductNotice slot="status" port={port} product={statusProduct} />}
   {hasContext && <DocumentationContext slot="context" port={port} version={contextVersion} locale={locale}
-    sourcePath={localeSourcePath(Astro.url.pathname, locale)} localeStatuses={localeStatuses} tableOfContents={tocItems.length > 0}>
+    sourcePath={localeSourcePath(Astro.url.pathname, locale)} localeStatuses={localeStatuses} tableOfContents={tocItems.length > 0}
+    reference={documentationLayout === 'reference'}>
     <DocumentationNavigationButtons slot="navigation" tableOfContents={tocItems.length > 0} api={Boolean(apiNavigation)} />
   </DocumentationContext>}
   <CodeTabs />

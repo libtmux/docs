@@ -75,6 +75,7 @@ const manualHtml = command || isManual
 
 <DocsLayout title={title} description={description} pagePath={pagePath}
   headings={headings} navigation={navigation} breadcrumbs={breadcrumbs} pagePorts={pagePorts}
+  documentationLayout={command ? 'reference' : undefined} tableOfContents={!command}
   apiNavigation={{ inventory: commandNavigation.json, base: tmuxManualUrl(version), version: commandNavigation.version,
     selected: command?.name ?? '', fullManual: tmuxManualUrl(version, 'full') }}
   pageSource={source} markdownIndex={!slug}

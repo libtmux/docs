@@ -18,7 +18,7 @@ import { linkTmuxManualCatalog } from '../../lib/tmux-catalog-html'
 import {
   CATALOG_KINDS, CATALOG_TITLE, OPTION_SCOPE_FLAGS, OPTION_TYPES, tmuxCatalog, tmuxCatalogDefault, tmuxCatalogDescription,
   tmuxCatalogEntries, tmuxCatalogEntry, tmuxCatalogGroup, tmuxCatalogHistory, tmuxCatalogChangeText, tmuxCatalogManualUrl, tmuxCatalogNavigation,
-  tmuxCatalogPageTitle, tmuxCatalogSourceUrl, tmuxCatalogUrl, tmuxCatalogValues, catalogTypeCounts, type CatalogKind,
+  tmuxCatalogPageTitle, tmuxCatalogSourceUrl, tmuxCatalogUrl, tmuxCatalogValues, catalogRegionLabel, catalogTypeCounts, type CatalogKind,
 } from '../../lib/tmux-catalog'
 import { tmuxCatalogReferences, tmuxCatalogUses } from '../../lib/tmux-catalog-usage'
 import '../../styles/api.css'
@@ -103,7 +103,7 @@ const typeChips = kind ? catalogTypeCounts(tmuxCatalogEntries(version, kind)) : 
           <ApiBadge label={info!.singular} variant="kind" value={entry.kind} />
           <span>tmux</span><span class="api-badge api-badge--mod api-reference-version"><span class="api-badge__label">{model.version}</span></span>
         </div>}
-        <h1 class="scroll-mt-24 text-2xl font-semibold tracking-tight">
+        <h1 class="scroll-mt-24 api-reference-title">
           {entry ? <code><SymbolName name={entry.name} /></code> : title}
         </h1>
         {entry?.summary && <p class="api-reference-summary">{entry.summary}</p>}
@@ -212,7 +212,7 @@ const typeChips = kind ? catalogTypeCounts(tmuxCatalogEntries(version, kind)) : 
                 <a href={tmuxCatalogUrl(version, row.kind, row.name)}><ApiBadge label={row.kind} variant="kind" value={row.kind} compact /><SymbolName name={row.name} /></a>
               </li>)}</ul>
             </>}
-            {rows.length > 0 && <div class="catalog-table" role="region" tabindex="0" aria-label={`${bucket.label} ${info!.label.toLowerCase()}, scrollable`}>
+            {rows.length > 0 && <div class="catalog-table" role="region" tabindex="0" aria-label={catalogRegionLabel(bucket.label, info!.label)}>
               <table>
                 <thead><tr>{catalogColumns.map((column) => <th scope="col" class={`catalog-col--${column.toLowerCase()}`}>{column}</th>)}</tr></thead>
                 <tbody>{rows.map((row) => <tr data-catalog-row data-name={row.name.toLowerCase()} data-type={row.type ?? ''} data-summary={row.summary.toLowerCase()}>

@@ -89,7 +89,7 @@ async function components(stubs: Readonly<Record<string, string>> = {}) {
     'api/ApiPageContents.astro', 'api/ApiTree.astro', 'api/ApiTreeItems.astro',
     'api/ApiBadge.astro', 'api/SymbolName.astro', 'TableOfContents/TableOfContents.astro',
     'TableOfContents/TableOfContentsList.astro', 'MobileToC.astro',
-    'docs/DocumentationContext.astro', 'docs/DocumentationNavigationButtons.astro',
+    'docs/DocumentationContext.astro', 'docs/DocumentationNavigationButtons.astro', 'docs/PageEnd.astro',
   ].map((name) => new URL(`../src/components/${name}`, import.meta.url).href))
   realTemplates.add(new URL('../src/layouts/DocsLayout.astro', import.meta.url).href)
   const compiled = new Map<string, string>()
@@ -200,7 +200,35 @@ it.each([{ port: 'go', term: 'struct' }, { port: 'ts', term: 'class' }])('render
     details.querySelector('summary')?.textContent === 'On this page' && details.querySelector(`a[href="#${term}"]`))).toBe(true)
   checkHeadings(win.document, path)
   expect(win.document.querySelector('a[href$=".json"]')?.getAttribute('href')).toBe(`${path.slice(0, -1)}.json`)
+  // The glossary ends on the way up, as every port page does (record 0021): nearest level first, the page itself left out.
+  expectUpLadder(win.document, port, 'v9-proof', ['API reference', 'Core Library'])
 })
+
+/** The page's PageEnd offers no sequence and names each level above the page, nearest first, with the breadcrumb's targets. */
+function expectUpLadder(document: Document, port: string, version: string, levels: string[]) {
+  const info = ports.PORT_BY_SLUG[port]!
+  const hrefs: Record<string, string> = { 'API reference': ports.referenceUrl(info, version), 'Core Library': ports.portPageUrl(info, version, 'core'), [info.name]: ports.portPageUrl(info, version) }
+  const end = document.querySelector('nav.page-end[aria-label="Continue"]')
+  expect(end, `${port} ends the page`).not.toBeNull()
+  expect(end!.querySelector('[data-page-end-prev], [data-page-end-next]')).toBeNull()
+  const up = [...end!.querySelectorAll('[data-page-end-up] a')]
+  expect(up.map((link) => link.textContent?.trim())).toEqual([...levels, info.name])
+  expect(up.map((link) => link.getAttribute('href'))).toEqual([...levels, info.name].map((level) => hrefs[level]))
+  expect(end!.closest('.api-reference-content'), 'inside the content column').not.toBeNull()
+}
+
+it.each([{ port: 'lisp' }, { port: 'haskell' }])('ends the $port API reference index on the way up', async ({ port }) => {
+  vi.stubEnv('LIBTMUX_DOCS_VERSION', 'v9-proof')
+  const component = await (await components())('ApiReference')
+  const container = await experimental_AstroContainer.create()
+  const path = ports.referenceUrl(ports.PORT_BY_SLUG[port], 'v9-proof')
+  const win = new Window({ url: `https://libtmux.org${path}` })
+  windows.push(win)
+  win.document.body.innerHTML = await container.renderToString(component, {
+    props: { model: models.API_MODELS[port] }, params: { slug: undefined }, request: new Request(`https://libtmux.org${path}`),
+  })
+  expectUpLadder(win.document, port, 'v9-proof', ['Core Library'])
+}, 60_000)
 
 // A page selects its declaration by the model's own identifier, which for Python's members and
 // a few of Swift's is not the id the sidebar inventory keys them by.
