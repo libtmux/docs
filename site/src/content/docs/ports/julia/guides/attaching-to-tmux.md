@@ -23,17 +23,34 @@ covers interactive attachment and detaching.
 ## Connect to an existing server
 
 Save the complete program as `connect.jl`. The environment variable
-`LIBTMUX_SOCKET_PATH` selects the existing server. The launcher below sets
-it to a private socket for trying the example.
+`LIBTMUX_SOCKET_PATH` selects the existing server, and `print_work` connects
+to it and finds `work`. Without the variable, the program starts a private
+server with [`with_server`](../../reference/libtmux-with_server/), creates
+`work` with [`new_session`](../../reference/libtmux-new_session/), and calls
+`print_work` with the socket path of that server. `with_server` stops the
+private server and removes its socket directory when the block returns or
+throws. A failed shutdown throws an error.
 
 ```julia title="connect.jl"
 using LibTmux
 
-function main()
-    server = Server(; socket_path=ENV["LIBTMUX_SOCKET_PATH"])
+function print_work(socket_path)
+    server = Server(; socket_path)
     captured = snapshot(server)
     session = onlymatch(SessionWhere(; name="work"), sessions(captured))
     println(session.name)
+end
+
+function main()
+    socket_path = get(ENV, "LIBTMUX_SOCKET_PATH", nothing)
+    if socket_path === nothing
+        with_server() do owner
+            new_session(owner; name="work", command=["/bin/cat"])
+            print_work(owner.socket_path)
+        end
+    else
+        print_work(socket_path)
+    end
 end
 
 main()
@@ -46,8 +63,8 @@ returns captured state. The local
 state; [`onlymatch`](../../reference/libtmux-onlymatch/) requires exactly
 one result. Reading or filtering captured values does not refresh them.
 
-The server value borrows the daemon. It does not own a process to close, and
-the program does not destroy the caller's sessions.
+The server value in `print_work` borrows the daemon. It does not own a process
+to close, and the program does not destroy the caller's sessions.
 
 ## Setup and run
 
@@ -63,46 +80,15 @@ $ git -C source fetch -q --depth=1 \
 $ git -C source checkout -q --detach FETCH_HEAD
 ```
 
-Save the launcher as `run.sh`. It starts an isolated tmux server, runs the
-program, checks that the session still exists, then stops only that server.
-Cleanup runs after failures too. A failed shutdown keeps its socket directory
-and prints its location for inspection.
-
-```sh title="run.sh"
-#!/bin/sh
-set -eu
-
-binary=$(command -v tmux)
-directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-julia-attach.XXXXXX")
-socket="$directory/tmux.sock"
-
-cleanup() {
-    status=$?
-    trap - 0 HUP INT TERM
-    if [ -S "$socket" ] && ! "$binary" -S "$socket" kill-server; then
-        printf 'Cannot stop tmux; kept %s\n' "$directory" >&2
-        exit 1
-    fi
-    rm -rf "$directory" || exit 1
-    exit "$status"
-}
-trap cleanup 0
-trap 'exit 1' HUP INT TERM
-
-unset TMUX TMUX_PANE
-export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
-"$binary" -S "$socket" -f /dev/null new-session -d -s work /bin/cat
-"$@"
-"$binary" -S "$socket" has-session -t '=work'
-```
+Run the program:
 
 ```console
-$ sh run.sh julia --startup-file=no --project=source connect.jl
+$ julia --startup-file=no --project=source connect.jl
 ```
 
 The program prints `work`. To use your own existing server, set
-`LIBTMUX_SOCKET_PATH` to its socket and run the program without the launcher.
-The launcher owns only the demonstration server.
+`LIBTMUX_SOCKET_PATH` to its socket before running the program; it prints
+`work` and leaves that server running.
 
 <a id="finding-a-session-instead-of-always-creating-one"></a>
 

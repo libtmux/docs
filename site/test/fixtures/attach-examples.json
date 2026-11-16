@@ -354,21 +354,17 @@
       ],
       "page": "ports/ruby/guides/attaching-to-tmux",
       "shellRecipe": [
-        "bundle config set --local path vendor/bundle &&\n  bundle install &&\n  sh run.sh bundle exec ruby connect.rb"
+        "bundle config set --local path vendor/bundle &&\n  bundle install &&\n  bundle exec ruby connect.rb"
       ],
       "expectedOutput": "work",
       "files": [
         {
           "name": "connect.rb",
-          "sha256": "b683160fe4caefea0e65c4670519a2bfaa6c4f16f402fc86c730a42df2943f5d"
+          "sha256": "a888fdcda38e13b3401ed35810245a8525faa6aa930a36800fa0ca6d4ad48786"
         },
         {
           "name": "Gemfile",
           "sha256": "6634416a9f2b1f3bafc69333bec5ee1a4cbd67e0ab7443e9c567f35498e20444"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "4d06c2acca46bb7ccf0a240924240c940ff6329bbd288376005b4a0e910dabf5"
         }
       ],
       "tmux": [
@@ -388,17 +384,13 @@
       ],
       "page": "ports/lua/guides/attaching-to-tmux",
       "shellRecipe": [
-        "luarocks --tree .rocks install luv 1.52.1-0 &&\n  luarocks --tree .rocks install libtmux 0.1.1-1 &&\n  eval \"$(luarocks --tree .rocks path)\" &&\n  sh run.sh lua connect.lua"
+        "luarocks --tree .rocks install luv 1.52.1-0 &&\n  luarocks --tree .rocks install libtmux 0.1.1-1 &&\n  eval \"$(luarocks --tree .rocks path)\" &&\n  lua connect.lua"
       ],
       "expectedOutput": "work",
       "files": [
         {
           "name": "connect.lua",
-          "sha256": "4941e3f804521ec54e8692d83f6f3f22a0badb56affe4c24232ea28973fed2d6"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "18b752e8b0c36ef899af7bb5d4454469b34e5a70f6cfd7939ef5efec13c931a1"
+          "sha256": "8b17cc5fa72cbaad43d03df76baadcd819fc76a95308f080e6d22879e9a11899"
         }
       ],
       "tmux": [
@@ -419,7 +411,7 @@
       "page": "ports/powershell/guides/attaching-to-tmux",
       "shellRecipe": [
         "pwsh -NoLogo -NoProfile -Command '\n  $ErrorActionPreference = \"Stop\"\n  Install-PSResource -Name LibTmux -Version 0.1.0 `\n    -Repository PSGallery -Scope CurrentUser -TrustRepository\n'",
-        "sh run.sh pwsh -NoLogo -NoProfile -File connect.ps1"
+        "pwsh -NoLogo -NoProfile -File connect.ps1"
       ],
       "expectedOutputs": [
         [],
@@ -430,11 +422,7 @@
       "files": [
         {
           "name": "connect.ps1",
-          "sha256": "9b7d64c848a6498380e574702fdca35fca7a66e227fd84711e7ecc38319889a9"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "69a251952304d1af76082f1e36bd59fc3ea6e5ecc64e40540cbabae3e3e4fbc8"
+          "sha256": "13e4510e887f08bf82ae740aaf41b99e16cf322ef981b98e990a91818b829593"
         }
       ]
     },
@@ -449,7 +437,7 @@
       "page": "ports/julia/guides/attaching-to-tmux",
       "shellRecipe": [
         "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-julia.git \\\n  6f62bd72cb8d99f3759ca5e2cc3591165a03c768\ngit -C source checkout -q --detach FETCH_HEAD",
-        "sh run.sh julia --startup-file=no --project=source connect.jl"
+        "julia --startup-file=no --project=source connect.jl"
       ],
       "expectedOutputs": [
         [],
@@ -460,11 +448,7 @@
       "files": [
         {
           "name": "connect.jl",
-          "sha256": "b22b7f00c624ef3d0f1082bad022787c822cc767091ed430a5af290c5080da8a"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "cd35444c4d85ba5411c9bebbcc89a552cf346efe414502078d9a338d5c89f44e"
+          "sha256": "792a11ba4d05669d85343caaea1e975a18bb7027997b2c5a9e7712b86a950468"
         }
       ]
     },
@@ -479,7 +463,7 @@
       ],
       "page": "ports/elixir/guides/attaching-to-tmux",
       "shellRecipe": [
-        "sh run.sh elixir connect.exs"
+        "elixir connect.exs"
       ],
       "expectedOutputs": [
         [
@@ -489,11 +473,7 @@
       "files": [
         {
           "name": "connect.exs",
-          "sha256": "3e31d5064fb69384b1a618275ae0f027f9515c52cf1de2555c87fce022990b8e"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "06102da59a219f3ade2c03eb92eda1056107bce3f4e0056580d72f76324f3b82"
+          "sha256": "dde8e2bb0b70be37f0b3d423e7d6be322d6d8561709633fb99b16b47696fc8e6"
         }
       ]
     },
