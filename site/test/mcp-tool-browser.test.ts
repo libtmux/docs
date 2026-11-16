@@ -176,13 +176,13 @@ describe('the capability a tool\'s metadata states', () => {
   })
 })
 
-describe('one concept banner', () => {
+describe('one product banner', () => {
   const css = readFileSync(new URL('../src/components/ProductNotice.astro', import.meta.url), 'utf8')
   const rule = (id: string) => new RegExp(`html:not\\(\\[data-product-notice-dismissed~='${id}'\\]\\) \\.prerelease-notice\\[data-prerelease-notice\\]:has\\(~ \\.product-notice\\[data-product-notice='${id}'\\]\\)`)
 
-  it.each(['mcp-concept', 'workspace-concept'])('hides the site\'s release bar above a %s note until the note is dismissed', (id) => {
+  it.each(['mcp-concept', 'workspace-concept', 'mcp-in-development'])('hides the site\'s release bar above a %s note until the note is dismissed', (id) => {
     expect(css).toMatch(rule(id))
     // Control: the rule names one status, so a note that says something else keeps the release bar above it.
-    expect(css.replaceAll(id, 'mcp-in-development')).not.toMatch(rule(id))
+    expect(css.replaceAll(id, 'mcp-unknown')).not.toMatch(rule(id))
   })
 })
