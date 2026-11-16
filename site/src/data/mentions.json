@@ -12441,6 +12441,13 @@
   },
   {
    "port": "ocaml",
+   "symbol": "Libtmux_eio.with_private_daemon",
+   "page": "/ocaml/latest/guides/recovery/",
+   "title": "Recover an operation after cancelling its waiter",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
    "symbol": "Libtmux_eio.Workspace",
    "page": "/ocaml/latest/guides/packages/",
    "title": "Choose the packages your application needs",
@@ -12494,6 +12501,13 @@
    "page": "/ocaml/latest/guides/query-interchange/",
    "title": "Share a scalar pane query",
    "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_json.Workspace",
+   "page": "/ocaml/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
   },
   {
    "port": "ocaml",
