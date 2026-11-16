@@ -41,13 +41,14 @@ describe('examples without a shell launcher', () => {
     expect(launcherProblems(text, { mcp: page.includes('/mcp/') }), page).toEqual([])
   })
 
+  interface RecordedExample { port: string, page: string, files: { name: string }[], shellRecipe: string[] }
   const recorded = globSync('*-examples.json', { cwd: fixtures })
     .filter((name) => name !== 'api-examples.json')
-    .flatMap((name) => (JSON.parse(readFileSync(`${fixtures}${name}`, 'utf8')).examples ?? [])
-      .filter((example: { port: string }) => PORTS.includes(example.port))
-      .map((example: { port: string, page: string, files: { name: string }[], shellRecipe: string[] }) => ({
-        record: `${name}: ${example.port} ${example.page}`, example,
-      })))
+    .flatMap((name) => {
+      const { examples = [] } = JSON.parse(readFileSync(`${fixtures}${name}`, 'utf8')) as { examples?: RecordedExample[] }
+      return examples.filter((example) => PORTS.includes(example.port))
+        .map((example) => ({ record: `${name}: ${example.port} ${example.page}`, example }))
+    })
 
   it.each(recorded)('$record records no launcher file or command', ({ example }) => {
     expect(example.files.filter((file) => file.name.endsWith('.sh')).map((file) => file.name)).toEqual([])
