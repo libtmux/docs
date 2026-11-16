@@ -727,6 +727,28 @@ describe('source-bound guide staging', () => {
   })
 })
 
+describe('source-bound source copies and behaviour facts', () => {
+  const build = readFileSync(join(root, 'scripts/build-site.sh'), 'utf8')
+  const sources = 'gen-api-sources.mjs" --port "$LIBTMUX_DOCS_PORT" --source-bound'
+  const behavior = 'gen-api-behavior.mjs" --source-bound "$LIBTMUX_DOCS_PORT"'
+  // The model is regenerated from the selected checkout; the copies and facts that cite its lines follow it,
+  // before the first page is built from them.
+  const followsModel = (text: string) => {
+    const model = text.lastIndexOf('gen-api-model.mjs" --port "$LIBTMUX_DOCS_PORT"')
+    const first = text.indexOf('rm -rf "$out_dir"')
+    return [sources, behavior].every((command) => text.indexOf(command) > model && text.indexOf(command) < first) && model > -1
+  }
+
+  it('regenerates them from the selected checkout after its model and before any page is built', () => {
+    expect(followsModel(build)).toBe(true)
+  })
+
+  it('notices a build left with the copies committed for another revision', () => {
+    expect(followsModel(build.replace(sources, 'gen-api-sources.mjs" --check'))).toBe(false)
+    expect(followsModel(build.replace(behavior, 'gen-api-behavior.mjs" --check'))).toBe(false)
+  })
+})
+
 function doxygenProbe(version: string, aliases = 1, overloads = 2, protection = 'public') {
   const directory = mkdtempSync(join(tmpdir(), 'libtmux-doxygen-test-'))
   try {

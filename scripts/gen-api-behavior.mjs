@@ -12,6 +12,12 @@
  *
  * `--check` regenerates in memory and fails when the committed sidecar differs; without the port's checkout it
  * re-verifies the committed facts against their recorded evidence lines instead.
+ *
+ * `--source-bound <port>` is for a build that has just regenerated the port's model from a verified checkout
+ * (`scripts/build-site.sh`): the sidecar is rewritten for that model's revision, so the two always agree, and a
+ * missing checkout is an error. A curated fact whose quoted words moved to another line is re-pinned to where they
+ * now stand; one whose words are gone, and any fact that does not verify, is left out with a warning instead of
+ * failing a port's build over an enrichment, so the page never cites a line that does not say what the row says.
  */
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
@@ -34,14 +40,27 @@ export function pinnedLines(checkout, revision, file) {
   } catch { return undefined }
 }
 
-export function sidecarPath(port) { return join(root, `site/src/data/api/${port}.behavior.json`) }
 export function curatedPath() { return join(root, 'site/src/data/api-behavior-curated.json') }
 
-/** Build the sidecar of one port from its model, its pinned source and the curated entries. */
-export function buildSidecar(port, { model, curated = {}, linesOf }) {
+/** Where a curated fact's quoted words stand now: its recorded line, else the one line of the file that holds them. */
+export function locateQuote(lines, entry, style) {
+  const marker = style === 'go' ? /^\s*\/\/ ?/ : /^\s*\/\/\/ ?/
+  const holds = (number) => squash((lines[number - 1] ?? '').replace(marker, '')).includes(squash(entry.quote))
+  if (holds(entry.line)) return entry.line
+  const found = lines.flatMap((_, index) => (holds(index + 1) ? [index + 1] : []))
+  return found.length === 1 ? found[0] : undefined
+}
+
+/**
+ * Build the sidecar of one port from its model, its pinned source and the curated entries.
+ * `tolerant` is for a model regenerated at a new revision, whose lines may have moved: it re-pins a curated fact
+ * to its quote and reports what it leaves out in `dropped` instead of `problems`.
+ */
+export function buildSidecar(port, { model, curated = {}, linesOf, tolerant = false }) {
   const { style } = PORTS[port]
   const symbols = {}
   const problems = []
+  const dropped = []
   for (const symbol of model.symbols) {
     const lines = symbol.source?.file ? linesOf(symbol.source.file) : undefined
     if (!lines) continue
@@ -49,12 +68,16 @@ export function buildSidecar(port, { model, curated = {}, linesOf }) {
     const quotes = {}
     for (const entry of curated[symbol.publicId ?? symbol.id] ?? []) {
       if (!BEHAVIOR_ROWS.includes(entry.row)) { problems.push(`${symbol.id}: unknown row ${entry.row}`); continue }
-      behavior[entry.row] = { text: entry.text, source: { file: symbol.source.file, line: entry.line }, origin: 'curated', ...(entry.via ? { via: entry.via } : {}) }
+      const line = tolerant ? locateQuote(lines, entry, style) : entry.line
+      if (line === undefined) { dropped.push(`${symbol.id} ${entry.row}: no single line holds the quoted words`); continue }
+      behavior[entry.row] = { text: entry.text, source: { file: symbol.source.file, line }, origin: 'curated', ...(entry.via ? { via: entry.via } : {}) }
       quotes[entry.row] = entry.quote
     }
     if (!Object.keys(behavior).length) continue
     const ordered = orderBehavior(behavior)
-    for (const problem of verifyBehavior(symbol, ordered, lines, style, quotes)) problems.push(problem)
+    const unsound = verifyBehavior(symbol, ordered, lines, style, quotes)
+    if (tolerant && unsound.length) { dropped.push(...unsound); continue }
+    for (const problem of unsound) problems.push(problem)
     const evidence = {}
     for (const row of [...BEHAVIOR_ROWS, 'requires']) {
       const fact = ordered[row]
@@ -64,7 +87,7 @@ export function buildSidecar(port, { model, curated = {}, linesOf }) {
     }
     symbols[symbol.publicId ?? symbol.id] = { behavior: ordered, evidence }
   }
-  return { sidecar: { port, repo: model.repo, revision: model.revision, symbols }, problems }
+  return { sidecar: { port, repo: model.repo, revision: model.revision, symbols }, problems, dropped }
 }
 
 /**
@@ -96,41 +119,58 @@ export function verifySidecar(port, sidecar, model) {
   return problems
 }
 
-function run() {
-  const check = process.argv.includes('--check')
-  const only = process.argv.slice(2).filter((arg) => PORTS[arg])
-  const curated = existsSync(curatedPath()) ? JSON.parse(readFileSync(curatedPath(), 'utf8')) : {}
+/**
+ * Regenerate, check or source-bind the sidecars of the named ports (every port when none is named).
+ * Returns whether every one of them is sound; the caller turns a `false` into an exit status.
+ */
+export function run(argv = process.argv.slice(2), {
+  dataDir = join(root, 'site/src/data/api'), curatedFile = curatedPath(), checkoutOf = (port) => checkoutOverride(port) ?? home(PORTS[port].checkout),
+} = {}) {
+  const check = argv.includes('--check')
+  const sourceBound = argv.includes('--source-bound')
+  const named = argv.filter((arg) => !arg.startsWith('--'))
+  const only = named.filter((arg) => PORTS[arg])
+  if (sourceBound) {
+    if (check || named.length !== 1) throw new Error('gen-api-behavior: --source-bound rewrites one port: name it and do not pass --check')
+    // A port whose comments are not read has no sidecar to bring to the model's revision.
+    if (!only.length) { console.log(`gen-api-behavior: ${named[0]} has no behaviour extractor; nothing to regenerate`); return true }
+  }
+  const curated = existsSync(curatedFile) ? JSON.parse(readFileSync(curatedFile, 'utf8')) : {}
   let failed = false
   for (const port of only.length ? only : Object.keys(PORTS)) {
-    const model = JSON.parse(readFileSync(join(root, `site/src/data/api/${port}.json`), 'utf8'))
-    const checkout = checkoutOverride(port) ?? home(PORTS[port].checkout)
+    const model = JSON.parse(readFileSync(join(dataDir, `${port}.json`), 'utf8'))
+    const checkout = checkoutOf(port)
+    const path = join(dataDir, `${port}.behavior.json`)
     const cache = new Map()
     const linesOf = (file) => {
       if (!cache.has(file)) cache.set(file, pinnedLines(checkout, model.revision, file))
       return cache.get(file)
     }
     if (!linesOf(model.symbols.find((symbol) => symbol.source?.file)?.source.file)) {
+      if (sourceBound) throw new Error(`gen-api-behavior: ${port}: no checkout holds ${String(model.revision).slice(0, 12)}, the revision of the model this build renders; the sidecar cannot be paired with it`)
       // No checkout (CI): the committed facts are held to the lines they recorded and to the model's revision.
-      if (check && existsSync(sidecarPath(port))) {
-        const found = verifySidecar(port, JSON.parse(readFileSync(sidecarPath(port), 'utf8')), model)
+      if (check && existsSync(path)) {
+        const found = verifySidecar(port, JSON.parse(readFileSync(path, 'utf8')), model)
         if (found.length) { console.error(`gen-api-behavior: ${port}: ${found.length} unsound committed facts\n  ${found.slice(0, 10).join('\n  ')}`); failed = true }
         else console.log(`gen-api-behavior: ${port}: no checkout; committed facts match their evidence lines`)
       } else console.log(`gen-api-behavior: ${port}: no checkout holds ${String(model.revision).slice(0, 12)}; set LIBTMUX_DOCS_CHECKOUT_${port.toUpperCase()}. Skipped.`)
       continue
     }
-    const { sidecar, problems } = buildSidecar(port, { model, curated: curated[port], linesOf })
+    const { sidecar, problems, dropped } = buildSidecar(port, { model, curated: curated[port], linesOf, tolerant: sourceBound })
+    for (const reason of dropped) console.warn(`gen-api-behavior: ${port}: left out: ${reason}`)
     if (problems.length) { console.error(`gen-api-behavior: ${port}: ${problems.length} unsound facts\n  ${problems.slice(0, 10).join('\n  ')}`); failed = true; continue }
     const text = `${JSON.stringify(sidecar, null, 1)}\n`
-    const path = sidecarPath(port)
     if (check) {
       if (!existsSync(path) || readFileSync(path, 'utf8') !== text) { console.error(`gen-api-behavior: ${port}: stale; run node scripts/gen-api-behavior.mjs ${port}`); failed = true }
       else console.log(`gen-api-behavior: ${port}: matches (${Object.keys(sidecar.symbols).length} declarations)`)
     } else {
       writeFileSync(path, text)
-      console.log(`gen-api-behavior: ${port}: wrote ${Object.keys(sidecar.symbols).length} declarations`)
+      console.log(`gen-api-behavior: ${port}: wrote ${Object.keys(sidecar.symbols).length} declarations at ${String(model.revision).slice(0, 12)}`)
     }
   }
-  if (failed) process.exit(1)
+  return !failed
 }
 
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) run()
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  try { if (!run()) process.exit(1) } catch (error) { console.error(error.message); process.exit(1) }
+}

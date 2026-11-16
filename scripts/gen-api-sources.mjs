@@ -12,13 +12,21 @@
  * A port whose checkout or revision is not on this machine keeps its committed
  * cache and says so; it is never an error to lack a checkout.
  *
- * Usage: node scripts/gen-api-sources.mjs [--check] [--port go]
+ * `--source-bound` is for a build that has just regenerated this port's model
+ * from a verified checkout (`scripts/build-site.sh`). The model then names a
+ * revision the committed cache was not made for, so the cache is rewritten
+ * from that checkout, and a cited file no checkout can supply is an error
+ * rather than a skip: the page must not show another revision's bytes beside
+ * this model's line numbers.
+ *
+ * Usage: node scripts/gen-api-sources.mjs [--check] [--port go [--source-bound]]
  */
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { fileURLToPath } from 'node:url'
+import { citedFiles } from '../packages/api-model/src/cited-files.ts'
 import { checkoutCandidates } from './lib/port-checkout.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -26,7 +34,8 @@ const DEFAULT_MODELS = join(root, 'site/src/data/api')
 const DEFAULT_OUT = join(root, 'site/src/data/api-sources')
 
 const digest = (content) => createHash('sha256').update(content).digest('hex')
-const REVISION = /^[a-f0-9]{40}$/
+
+export { citedFiles }
 
 /** A relative path inside a repository: no escape, no query, no hidden separator. */
 export const isCanonicalPath = (file) => typeof file === 'string' && file !== '' && !file.startsWith('/')
@@ -40,29 +49,6 @@ const REPO_CHECKOUTS = {
 }
 
 const expand = (p) => (p.startsWith('~/') ? join(process.env.HOME ?? '', p.slice(2)) : p)
-
-/** Every file a model's declarations and signatures cite, keyed by path. */
-export function citedFiles(model) {
-  const cited = new Map()
-  const collisions = []
-  const add = (source) => {
-    if (!source?.file) return
-    const repo = source.repo ?? model.repo
-    const revision = source.revision ?? model.revision
-    if (!repo || !REVISION.test(revision ?? '')) return
-    const known = cited.get(source.file)
-    if (known && (known.repo !== repo || known.revision !== revision)) collisions.push(source.file)
-    else cited.set(source.file, { repo, revision, file: source.file })
-  }
-  for (const symbol of model.symbols ?? []) {
-    add(symbol.source)
-    for (const signature of symbol.signatures ?? []) add(signature.source)
-  }
-  if (collisions.length) {
-    throw new Error(`${model.port}: ${[...new Set(collisions)].join(', ')} cited at two revisions or repositories; a file path must name one`)
-  }
-  return cited
-}
 
 /** Local checkouts that may hold a port's revision, best first. */
 export function checkoutsFor(port, repo, options = {}) {
@@ -144,8 +130,10 @@ export function staleness(port, model, current, fresh) {
 export function run({
   modelsDir = DEFAULT_MODELS, outDir = DEFAULT_OUT, check = process.argv.includes('--check'),
   only = process.argv.includes('--port') ? process.argv[process.argv.indexOf('--port') + 1] : undefined,
+  sourceBound = process.argv.includes('--source-bound'),
   checkouts,
 } = {}) {
+  if (sourceBound && (check || !only)) throw new Error('gen-api-sources: --source-bound rewrites one port: pass --port and not --check')
   mkdirSync(outDir, { recursive: true })
   const totals = []
   const failures = []
@@ -158,6 +146,9 @@ export function run({
     const previous = existsSync(target) ? JSON.parse(readFileSync(target, 'utf8')) : undefined
     const { data, unavailable, absent } = cachePort(port, model, previous, checkouts ? { checkouts: (repo) => checkouts(port, repo) } : undefined)
     const count = Object.keys(data.files).length
+    if (sourceBound && unavailable.length) {
+      throw new Error(`gen-api-sources: ${port}: ${unavailable.length} cited files have no checkout holding ${String(model.revision).slice(0, 12)}: ${unavailable.slice(0, 5).join(', ')}`)
+    }
     if (unavailable.length) {
       console.log(`gen-api-sources: ${port}: ${unavailable.length} cited files have no checkout holding their revision and no verified cache; skipped`)
     }
@@ -170,6 +161,7 @@ export function run({
     }
     totals.push([port, count, Object.values(data.files).reduce((sum, entry) => sum + Buffer.byteLength(entry.content), 0)])
   }
+  if (sourceBound && !totals.length) throw new Error(`gen-api-sources: no model for ${only} in ${modelsDir}`)
   if (failures.length) throw new Error(failures.join('\n'))
   for (const [port, count, bytes] of totals) console.log(`gen-api-sources: ${port}: ${count} files, ${bytes} bytes`)
   console.log(`gen-api-sources: ${check ? 'cache matches' : 'wrote'} ${totals.reduce((sum, [, count]) => sum + count, 0)} revision-bound source files`)
