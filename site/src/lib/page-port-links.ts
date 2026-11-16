@@ -29,7 +29,15 @@ export const SHARED_PAGE_PATHS = ['mcp', 'mcp/tools', 'meta/parity', 'meta/suppo
 export interface PagePortLink {
   port: string
   name: string
-  links: { href: string; label?: string; preserveFragment?: boolean; fragmentIds?: string[]; fallback?: 'section' }[]
+  links: {
+    href: string
+    label?: string
+    /** What differs from the page's own declaration, as the equivalents table lists it; the picker joins it into one muted line. */
+    differences?: string[]
+    preserveFragment?: boolean
+    fragmentIds?: string[]
+    fallback?: 'section'
+  }[]
   /** A separate exit when this language has no equivalent page. */
   home?: { href: string; label: string }
 }
@@ -115,7 +123,7 @@ export function pagePortLinks({
         links = [{ href, preserveFragment: true, fragmentIds }]
       }
     } else if (symbol) {
-      const targets = new Map<string, { label: string; note?: string }>()
+      const targets = new Map<string, { label: string; note?: string; differences: string[] }>()
       for (const alternative of alternatives) {
         const match = alternative.rows.find((row) => row.port === port.slug && row.status === 'mapped')
         // Resolve against the target port's version, which this caller knows.
@@ -125,10 +133,12 @@ export function pagePortLinks({
         if (href && !targets.has(href)) targets.set(href, {
           label: targetSymbol ? `${targetSymbol.name} (${match?.kind ?? targetSymbol.kind})` : alternative.label,
           note: match?.note,
+          differences: match?.chips ?? [],
         })
       }
       links = [...targets].map(([href, target]) => ({ href,
         ...(targets.size > 1 || target.note ? { label: target.label } : {}),
+        ...(target.differences.length ? { differences: target.differences } : {}),
       }))
       if (port.slug === symbolPort) {
         const href = productReference

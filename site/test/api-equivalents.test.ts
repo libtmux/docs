@@ -3,7 +3,7 @@ import { Window } from 'happy-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { CONCEPTS, type ApiSymbol } from '@libtmux/api-model/reference'
 import { API_MODELS, referenceAlternatives } from '../src/lib/api-models'
-import { equivalentsFor, genericAbsenceSentence, unmappedSentence, type EquivalentsGroup } from '../src/lib/api-equivalents'
+import { equivalentDifferences, equivalentsFor, genericAbsenceSentence, unmappedSentence, type EquivalentsGroup } from '../src/lib/api-equivalents'
 import { pagePortLinks } from '../src/lib/page-port-links'
 import { loadAstroTemplate, withoutScope } from './astro-templates'
 
@@ -86,6 +86,27 @@ describe('the header picker', () => {
     const g = group('go', capture, CONCEPTS['capture-pane'].label)
     expect(linked).toEqual(g.rows.filter((row) => row.status === 'mapped').map((row) => row.port).sort())
     for (const row of g.absent) expect(links.find((entry) => entry.port === row.port)!.links).toEqual([])
+  })
+
+  it('carries each linked row\'s differences from the table, and none where the table records none', () => {
+    const links = pagePortLinks({ pagePath: 'reference/tmux-pane-capture', portSlug: 'go', version: 'latest', defaults: {}, docs: [] })
+    const g = group('go', capture, CONCEPTS['capture-pane'].label)
+    for (const row of g.rows.filter((entry) => !entry.current)) {
+      const [link, ...others] = links.find((entry) => entry.port === row.port)!.links
+      expect(others, row.port).toEqual([])
+      expect(link!.differences, row.port).toEqual(row.chips.length ? row.chips : undefined)
+    }
+    expect(links.find((entry) => entry.port === 'swift')!.links[0]!.differences).toEqual(['async', 'on Server'])
+    // The page's own row has nothing to differ from.
+    expect(links.find((entry) => entry.port === 'go')!.links.map((link) => link.differences)).toEqual([undefined])
+  })
+
+  it('lists the same differences by target for a native page, and nothing for a declaration no concept names', () => {
+    const g = group('go', capture, CONCEPTS['capture-pane'].label)
+    const found = equivalentDifferences('go', 'tmux.Pane.Capture')
+    for (const row of g.rows.filter((entry) => !entry.current)) expect(found.get(row.href!), row.port).toEqual(row.chips.length ? row.chips : undefined)
+    expect(found.size).toBe(g.rows.filter((entry) => !entry.current && entry.chips.length).length)
+    expect(equivalentDifferences('go', 'tmux.NoSuchDeclaration').size).toBe(0)
   })
 })
 
