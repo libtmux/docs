@@ -360,15 +360,12 @@ jobs:
           PY
 
       - name: Install native system dependencies
-        if: steps.mcp.outputs.required == 'true' || matrix.port == 'cxx' || matrix.port == 'erlang'
+        if: (steps.mcp.outputs.required == 'true' && matrix.port != 'julia') || matrix.port == 'cxx' || matrix.port == 'erlang'
         env:
           PORT: ${{ matrix.port }}
         run: |
           set -euo pipefail
           packages=(tmux)
-          if [[ "$PORT" == julia ]]; then
-            packages=(build-essential pkg-config libevent-dev libncurses-dev bison)
-          fi
           if [[ "$PORT" == erlang ]]; then
             packages=(build-essential)
           fi
@@ -381,15 +378,18 @@ jobs:
             sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-18 100
             sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-18 100
           fi
-          if [[ "$PORT" == julia ]]; then
-            stage="$RUNNER_TEMP/libtmux-julia-docs"
-            python3 "$LIBTMUX_DOCS_GENERATOR_CHECKOUT/dev/check-matrix.py" build-tmux "$stage" 3.7c
-            bin="$stage/tmux/3.7c/bin"
-            "$bin/tmux" -V
-            printf '%s\n' "$bin" >> "$GITHUB_PATH"
-          elif [[ "$PORT" != erlang ]]; then
+          if [[ "$PORT" != erlang ]]; then
             tmux -V
           fi
+
+      # Julia documents the MCP server against its tmux floor. The shared action
+      # installs its own build packages and puts tmux on PATH for the later steps.
+      - name: Build tmux 3.7c for Julia
+        if: matrix.port == 'julia' && steps.mcp.outputs.required == 'true'
+        uses: libtmux/.github/actions/build-tmux@30f81842b1e639ea4e25f93f1f2543504178e228
+        with:
+          ref: 3.7c
+          add-to-path: true
 
       - name: Install tested Doxygen producer
         if: matrix.port == 'cxx'
