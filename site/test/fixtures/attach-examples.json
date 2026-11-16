@@ -162,21 +162,17 @@
       ],
       "page": "ports/csharp/guides/attaching-to-tmux",
       "shellRecipe": [
-        "dotnet build Connect.csproj --maxcpucount:1 &&\n  sh run.sh dotnet run --project Connect.csproj --no-build"
+        "dotnet build Connect.csproj --maxcpucount:1 &&\n  dotnet run --project Connect.csproj --no-build"
       ],
       "expectedOutput": "work",
       "files": [
         {
           "name": "Program.cs",
-          "sha256": "0936735d8c29c384b1040d37eca077690017d23eb6c21b9b6de489dde595f072"
+          "sha256": "f6c59857bbe66af4516f3c51fbfe1465fe24e1191437094533155c9d21289516"
         },
         {
           "name": "Connect.csproj",
           "sha256": "606ee1d6da184663df6dbd0a8cd9df1810e9a52a32b8427f3053115b23965dd2"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "bb6c3ecf7e120beacaee494336835da637c8f2a97c2881a75654eb1d494fef9e"
         }
       ],
       "tmux": [
@@ -196,25 +192,21 @@
       ],
       "page": "ports/cxx/guides/attaching-to-tmux",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-cxx libtmux-source &&\n  git -C libtmux-source checkout 393d4b0ad666f18a6581f1eb281741a75a7503f0 &&\n  cmake -S . -B build -G Ninja \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ \\\n    -DCMAKE_EXE_LINKER_FLAGS=-stdlib=libc++ &&\n  cmake --build build --target connect --parallel 2 &&\n  sh run.sh ./build/connect"
+        "git clone https://github.com/libtmux/libtmux-cxx libtmux-source &&\n  git -C libtmux-source checkout 393d4b0ad666f18a6581f1eb281741a75a7503f0 &&\n  cmake -S . -B build -G Ninja \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ \\\n    -DCMAKE_EXE_LINKER_FLAGS=-stdlib=libc++ &&\n  cmake --build build --target connect --parallel 2 &&\n  ./build/connect"
       ],
       "expectedOutput": "work",
       "files": [
         {
           "name": "connect.cpp",
-          "sha256": "e7cf8fedee0d797982c249ed194885c23c5c8f6d29e583592105dd09a191f875"
+          "sha256": "54360d06c83b14a8db4994f72ec23dadd7458e237a65da3424d54ede79f845b3"
         },
         {
           "name": "CMakeLists.txt",
           "sha256": "b21ea46308497a8fb5b6c7acda8c915a568da7f1573ae08aed67b379a217713a"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "e2d5c1be7459ab5be9f163902b6be34abfd8195c2d5ac003cb3342d178a829a4"
         }
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ]
     },
@@ -228,26 +220,22 @@
       ],
       "page": "ports/swift/guides/attaching-to-tmux",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-swift libtmux-source &&\n  git -C libtmux-source checkout 254f8b2be7eb60cacc3ffcb3ea8e456784f582df &&\n  sh run.sh swift run --jobs 2 Connect"
+        "git clone https://github.com/libtmux/libtmux-swift libtmux-source &&\n  git -C libtmux-source checkout 254f8b2be7eb60cacc3ffcb3ea8e456784f582df &&\n  swift run --jobs 2 Connect"
       ],
       "expectedOutput": "work",
       "files": [
         {
           "name": "Connect.swift",
           "path": "Sources/Connect/Connect.swift",
-          "sha256": "9821b15aa0bb09ab626164f6f6a1e900f7263fafc5ff3d6297520505c8ebdc07"
+          "sha256": "ea4c58db803bfea275a8f5716765e931b2a949c43229d6704382ff7b8a7cdf42"
         },
         {
           "name": "Package.swift",
           "sha256": "bc9db4a88cdd0236c4985176f03a46c9dfac4f2401312149876d0fc013a91440"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "71f88925278d500b86c6571b92063ecf723275e8983468f6429d9fe2f6b2fe56"
         }
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ]
     },
@@ -348,21 +336,17 @@
       ],
       "page": "ports/fsharp/guides/attaching-to-tmux",
       "shellRecipe": [
-        "dotnet build Connect.fsproj --maxcpucount:1 &&\n  sh run.sh dotnet run --project Connect.fsproj --no-build"
+        "dotnet build Connect.fsproj --maxcpucount:1 &&\n  dotnet run --project Connect.fsproj --no-build"
       ],
       "expectedOutput": "work",
       "files": [
         {
           "name": "Program.fs",
-          "sha256": "22a62e8423aa21ecb88aba93bf1cbf0520aa84c968ce18bb0559122b314517bc"
+          "sha256": "035b38c9db7169392a34b09bc91857f40a8e78d6ec32996d9866379e199ded2b"
         },
         {
           "name": "Connect.fsproj",
           "sha256": "dfe3aea0a74c91c02a57cf5ad88be362c16fc62fa5f349c9d2a8d538a5482c99"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "ecb16ad7a624faf847875e73372706fa988893af7177c46a7912ed9364de88da"
         }
       ],
       "tmux": [

@@ -29,8 +29,8 @@ the test creates, including when startup or an assertion fails. Preserve the
 original failure and report cleanup errors so a leaked server remains visible.
 
 A connection to an existing server has a different lifetime. The
-[attach program](../attaching-to-tmux/) leaves that server running and lets its
-launcher own cleanup.
+[attach program](../attaching-to-tmux/) leaves that server running. When it starts
+a private server of its own, it stops only that one.
 
 ## Wait for the state you assert
 

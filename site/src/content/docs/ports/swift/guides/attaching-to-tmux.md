@@ -22,9 +22,16 @@ interactive attachment and detaching.
 
 ## Connect to an existing server
 
-Save the complete program as `Sources/Connect/Connect.swift`. `LIBTMUX_SOCKET_PATH` selects
-the existing server. The launcher below supplies a private socket for trying
-the example.
+Save the complete program as `Sources/Connect/Connect.swift`. When
+`LIBTMUX_SOCKET_PATH` names a socket, `findWork` connects a `Server` to it,
+finds `work`, prints the name and leaves that server running.
+
+Without the variable, `demonstrate` starts a private tmux server in a new
+temporary directory and creates a detached `work` session in it. It then
+connects a second `Server` to the socket by path and runs the same lookup.
+Afterward it stops only the private server and removes its directory, also when
+the lookup fails. If tmux cannot be stopped, it keeps the directory and prints
+its location.
 
 ```swift title="Connect.swift"
 import Foundation
@@ -37,14 +44,63 @@ enum ConnectError: Error {
 @main
 struct Connect {
     static func main() async throws {
-        guard let socket = ProcessInfo.processInfo.environment["LIBTMUX_SOCKET_PATH"] else {
-            throw ConnectError.failed("Set LIBTMUX_SOCKET_PATH to an existing socket")
+        let environment = ProcessInfo.processInfo.environment
+        if let socket = environment["LIBTMUX_SOCKET_PATH"], !socket.isEmpty {
+            try await findWork(socket: socket)
+        } else {
+            try await demonstrate()
         }
+    }
+
+    static func findWork(socket: String) async throws {
         let server = try Server(socketPath: socket)
         guard try await server.hasSession("=work") else {
             throw ConnectError.failed("The work session does not exist")
         }
         print("work")
+    }
+
+    static func demonstrate() async throws {
+        let unique = UUID().uuidString.prefix(8)
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("libtmux-attach-\(unique)")
+        try FileManager.default.createDirectory(
+            at: directory, withIntermediateDirectories: false,
+            attributes: [.posixPermissions: 0o700]
+        )
+        let socket = directory.appendingPathComponent("tmux.sock").path
+        var failure: (any Error)?
+        do {
+            let server = try Server(
+                socketPath: socket, configurationFile: "/dev/null"
+            )
+            _ = try await server.newSession(named: "work")
+            try await findWork(socket: socket)
+        } catch {
+            failure = error
+        }
+
+        var cleanupFailed = false
+        if FileManager.default.fileExists(atPath: socket) {
+            do { try await Server(socketPath: socket).killServer() }
+            catch {
+                report("Cannot stop tmux; kept \(directory.path): \(error)")
+                cleanupFailed = true
+            }
+        }
+        if !cleanupFailed {
+            do { try FileManager.default.removeItem(at: directory) }
+            catch {
+                report("Cannot remove \(directory.path): \(error)")
+                cleanupFailed = true
+            }
+        }
+        if let failure { throw failure }
+        if cleanupFailed { throw ConnectError.failed("Cleanup failed") }
+    }
+
+    static func report(_ message: String) {
+        FileHandle.standardError.write(Data((message + "\n").utf8))
     }
 }
 ```
@@ -74,50 +130,17 @@ let package = Package(
 )
 ```
 
-Save the launcher as `run.sh`. It starts an isolated tmux server, runs the
-program, checks that the session still exists, then stops only that server.
-Cleanup runs after failures too. A failed shutdown keeps its socket directory
-and prints its location for inspection.
-
-```sh title="run.sh"
-#!/bin/sh
-set -eu
-
-binary=$(command -v tmux)
-directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-swift-attach.XXXXXX")
-socket="$directory/tmux.sock"
-
-cleanup() {
-    status=$?
-    trap - 0 HUP INT TERM
-    if [ -S "$socket" ] && ! "$binary" -S "$socket" kill-server; then
-        printf 'Cannot stop tmux; kept %s\n' "$directory" >&2
-        exit 1
-    fi
-    rm -rf "$directory" || exit 1
-    exit "$status"
-}
-trap cleanup 0
-trap 'exit 1' HUP INT TERM
-
-unset TMUX TMUX_PANE
-export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
-"$binary" -S "$socket" -f /dev/null new-session -d -s work /bin/cat
-"$@"
-"$binary" -S "$socket" has-session -t '=work'
-```
-
 Fetch the verified library revision, build, and run:
 
 ```console
 $ git clone https://github.com/libtmux/libtmux-swift libtmux-source &&
   git -C libtmux-source checkout 254f8b2be7eb60cacc3ffcb3ea8e456784f582df &&
-  sh run.sh swift run --jobs 2 Connect
+  swift run --jobs 2 Connect
 ```
 
 The program prints `work`. To use an existing server of your own, set
-`LIBTMUX_SOCKET_PATH` to its socket and run the program without the launcher.
-That launcher is responsible for the demonstration server's lifetime.
+`LIBTMUX_SOCKET_PATH` to its socket before running the program; the program
+leaves that server running.
 
 <a id="finding-a-session-instead-of-always-creating-one"></a>
 
