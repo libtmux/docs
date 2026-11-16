@@ -354,6 +354,7 @@ jobs:
           PY
 
       - name: Install native system dependencies
+        id: system-dependencies
         if: steps.mcp.outputs.required == 'true' || matrix.port == 'cxx' || matrix.port == 'erlang'
         env:
           PORT: ${{ matrix.port }}
@@ -376,14 +377,39 @@ jobs:
             sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-18 100
           fi
           if [[ "$PORT" == julia ]]; then
-            stage="$RUNNER_TEMP/libtmux-julia-docs"
-            python3 "$LIBTMUX_DOCS_GENERATOR_CHECKOUT/dev/check-matrix.py" build-tmux "$stage" 3.7c
-            bin="$stage/tmux/3.7c/bin"
-            "$bin/tmux" -V
-            printf '%s\n' "$bin" >> "$GITHUB_PATH"
+            legacy="$LIBTMUX_DOCS_GENERATOR_CHECKOUT/dev/check-matrix.py"
+            if [[ -f "$legacy" ]]; then
+              stage="$RUNNER_TEMP/libtmux-julia-docs"
+              python3 "$legacy" build-tmux "$stage" 3.7c
+              bin="$stage/tmux/3.7c/bin"
+              "$bin/tmux" -V
+              printf '%s\n' "$bin" >> "$GITHUB_PATH"
+            else
+              echo 'julia-tmux=shared' >> "$GITHUB_OUTPUT"
+            fi
           elif [[ "$PORT" != erlang ]]; then
             tmux -V
           fi
+
+      # A Julia generator without dev/check-matrix.py has no tmux builder of its
+      # own; it builds tmux through this action, as its own workflow does.
+      - name: Build the Julia tmux floor
+        id: julia-tmux
+        if: matrix.port == 'julia' && steps.system-dependencies.outputs.julia-tmux == 'shared'
+        uses: libtmux/.github/actions/build-tmux@30f81842b1e639ea4e25f93f1f2543504178e228
+        with:
+          ref: 3.7c
+          prefix: ${{ runner.temp }}/libtmux-julia-docs/tmux/3.7c
+          add-to-path: 'true'
+
+      - name: Check the Julia tmux on PATH
+        if: matrix.port == 'julia' && steps.system-dependencies.outputs.julia-tmux == 'shared'
+        env:
+          BINARY: ${{ steps.julia-tmux.outputs.binary }}
+        run: |
+          set -euo pipefail
+          [[ "$(command -v tmux)" == "$BINARY" ]]
+          tmux -V
 
       - name: Install tested Doxygen producer
         if: matrix.port == 'cxx'
