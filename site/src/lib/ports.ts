@@ -792,7 +792,7 @@ const CORE_PORTS: readonly Port[] = [
       prerelease: HASKELL_GIT_INSTALL,
       git: HASKELL_GIT_INSTALL,
     },
-    installNote: 'Create sessions, capture snapshots, run typed queries, rename sessions and windows, and set pane titles. Start and stop the daemon yourself. Additional server, window and pane commands, events and workspace tooling are planned; MCP is excluded.',
+    installNote: 'Start a private server for one scope or adopt a running one, create sessions, capture snapshots, run typed queries, rename sessions and windows, and set pane titles. Starting or retiring a daemon needs Linux 6.5 or newer. Additional server, window and pane commands, events and workspace tooling are planned; MCP is excluded.',
   },
   {
     slug: 'lisp',

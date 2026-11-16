@@ -266,13 +266,18 @@ with the same data digests differently.
 
 Capture selects `ReadSnapshot`, whose queue sends `display-message` and
 `if-shell`; `list-clients` runs when sessions exist. Graph enumeration uses
-tmux format loops. Server adoption probes the version with `run-shell -C`.
-Session creation sends `new-session`; renames and pane titles use
-`rename-session`, `rename-window` and `select-pane`. Recovery inspects or
-retires existing owners without redispatch. `withRuntime` and `tryTmux` run
-caller-supplied `IO`; pure snapshot navigation sends no command. The older
-private scalar and graph readers are not public capture paths. The scalar-only
-API retains the ordinary reader and has no command entries.
+tmux format loops. Server adoption probes the version, and the daemon's process
+ID where the host allows a kill capability, with hook-free `run-shell -C` reads.
+`withOwnedServer` sends `start-server` and `set-option -g exit-empty off` from
+one start client, then runs the same two probes; `killServer` signals through
+a held process descriptor and sends no `kill-server`. Session creation sends
+`new-session`; renames and pane titles use `rename-session`, `rename-window`
+and `select-pane`. Recovery inspects or retires existing owners without
+redispatch. `withRuntime` and `tryTmux` run caller-supplied `IO`, and the
+callback of `withOwnedServer` is not attributed to the wrapper; pure snapshot
+navigation sends no command. The older private scalar and graph readers are not
+public capture paths. The scalar-only API retains the ordinary reader and has
+no command entries.
 
 ### Erlang compiler artifact
 

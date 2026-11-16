@@ -924,7 +924,8 @@ const LANGUAGE_ORDER: Record<string, Record<string, string[]>> = {
   // Server opens on its module, whose page holds the handle's operations.
   haskell: {
     server: ['LibTmux.Server', 'LibTmux.Server#t:Server', 'LibTmux.Server#t:ServerConfig', 'LibTmux.Server#v:serverConfig',
-      'LibTmux.Server#v:withServer', 'LibTmux.Server#v:capture', 'LibTmux.Server#v:serverGeneration'],
+      'LibTmux.Server#v:withServer', 'LibTmux.Server#t:OwnedServerConfig', 'LibTmux.Server#v:defaultOwnedServerConfig',
+      'LibTmux.Server#v:withOwnedServer', 'LibTmux.Server#v:killServer', 'LibTmux.Server#v:capture', 'LibTmux.Server#v:serverGeneration'],
     session: ['LibTmux.Snapshot#t:Session', 'LibTmux.Snapshot#t:SessionRef', 'LibTmux.Id#t:SessionId'],
     window: ['LibTmux.Snapshot#t:Window', 'LibTmux.Snapshot#t:WindowLink', 'LibTmux.Snapshot#t:WindowRef', 'LibTmux.Id#t:WindowId'],
     pane: ['LibTmux.Snapshot#t:Pane', 'LibTmux.Snapshot#t:PaneOccurrence', 'LibTmux.Snapshot#t:PaneRef', 'LibTmux.Id#t:PaneId'],

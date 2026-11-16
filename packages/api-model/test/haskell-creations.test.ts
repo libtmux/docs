@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import artifact from './fixtures/haskell-creations-native/artifact.json'
+import lifecycle from './fixtures/haskell-lifecycle-native/artifact.json'
 import { extractHaskellArtifact } from '../src/languages/haskell'
 import { navSidecar } from '../src/nav-sidecar'
 import { SymbolIndex, tokenizeDoc } from '../src/reference'
@@ -31,6 +32,31 @@ describe('the native Haskell creation profile', () => {
       'LibTmux.Creation', 'LibTmux.Creation#t:SessionOptions', 'LibTmux.Creation#t:InitialProcess',
     ]))
     expect(nav.assignments.server.map((entry) => entry.id)).toContain('LibTmux.Server#t:CreationRecovery')
+  })
+
+  it('replays the lifecycle export with its public declarations, no private origin and the lifecycle beside withServer', () => {
+    const model = extractHaskellArtifact(lifecycle, lifecycle.revision)
+    const symbol = (id: string) => model.symbols.find((entry) => entry.id === id)!
+    for (const [name, signature] of [
+      ['withOwnedServer', 'withOwnedServer :: OwnedServerConfig -> (Server -> IO a) -> IO a'],
+      ['killServer', 'killServer :: Server -> IO ()'],
+      ['defaultOwnedServerConfig', 'defaultOwnedServerConfig :: OwnedServerConfig'],
+    ]) expect(symbol(`LibTmux.Server#v:${name}`).signatures[0].raw).toBe(signature)
+    for (const [name, type] of [['tmuxExecutable', 'PosixPath'], ['operationTimeout', 'NominalDiffTime']]) {
+      expect(symbol(`LibTmux.Server#v:OwnedServerConfig.${name}`)).toMatchObject({
+        kind: 'property', parent: 'LibTmux.Server#t:OwnedServerConfig', signatures: [{ raw: `${name} :: !${type}` }],
+      })
+    }
+    expect(model.symbols.some((entry) => entry.id.includes('Internal'))).toBe(false)
+    expect(extractHaskellArtifact(artifact).symbols.some((entry) => entry.id.includes('OwnedServer'))).toBe(false)
+    const nav = navSidecar('haskell', structuredClone(model))!
+    expect(nav.diagnostics).toMatchObject({ unmatched: [], ambiguous: [], staleUnsettled: [] })
+    const server = nav.assignments.server.map((entry) => entry.id)
+    const open = server.indexOf('LibTmux.Server#v:withServer')
+    expect(server.slice(open, open + 5)).toEqual([
+      'LibTmux.Server#v:withServer', 'LibTmux.Server#t:OwnedServerConfig', 'LibTmux.Server#v:defaultOwnedServerConfig',
+      'LibTmux.Server#v:withOwnedServer', 'LibTmux.Server#v:killServer',
+    ])
   })
 
   it('resolves every native declaration and authored reference', () => {
