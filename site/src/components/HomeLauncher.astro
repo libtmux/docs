@@ -98,7 +98,7 @@ const initial = entries[0].port
           animation.onfinish = () => animations.delete(animation)
         }
       }
-      const name = chosen?.dataset.portName ?? 'Language'
+      const name = chosen?.dataset.portName ?? 'Programming language'
       picker.querySelector('summary')!.setAttribute('aria-label', chosen ? `${name}: choose a programming language` : 'Choose a programming language')
       document.documentElement.setAttribute('data-pkg-port', port)
       if (brands[port]) {
@@ -129,7 +129,7 @@ const initial = entries[0].port
         check.textContent = '✓'
         chosen.append(check)
       }
-      const name = chosen?.dataset.portName ?? 'Language'
+      const name = chosen?.dataset.portName ?? 'Programming language'
       picker.open = false
       try {
         if (chosen) localStorage.setItem(storageKey, port)

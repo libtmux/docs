@@ -1,0 +1,204 @@
+/*
+ * The design system's tokens that no other stylesheet declares.
+ *
+ * Names and values follow the libtmux.org Design System's token list, so a
+ * token there maps one to one onto `--<name>` here. Tokens that already live
+ * elsewhere stay where they are: the page ground, text, link and neutral
+ * surfaces per port in `brand.css`, the kind marks and signature inks in
+ * `api-kinds.css`, the three surface aliases and radii in `global.css`.
+ *
+ * Neutrals are the same in every port's palette, so these extras need no
+ * per-brand block. The dark values repeat for the three ways a page reaches
+ * dark: the resolved `data-theme-mode`, and the system preference before the
+ * theme script has run, as `brand.css` does.
+ *
+ * Not layered, for the reason `gp-sphinx-tokens.css` gives.
+ */
+
+:root {
+  /* An outline that identifies a control: inputs, pickers, segmented filters, copy buttons. 3.3:1 on the page ground. */
+  --control-border: #7f8d9b;
+  --scrim: rgba(15, 20, 25, 0.5);
+  --diff-bg: #fdf3d8;
+
+  /* The mark's primary pane is the port's brand colour and its base is the same in every port. The upper and lower panes are per-port art in libtmux/assets, with no source here. */
+  --logo-primary: var(--brand-color);
+  --logo-base: #231f20;
+
+  /* Asides keep their hue for border and icon; titles read in the ink. */
+  --aside-note: oklch(0.65 0.15 250);
+  --aside-tip: oklch(0.73 0.13 120);
+  --aside-caution: oklch(0.72 0.15 80);
+  --aside-danger: oklch(0.68 0.14 10);
+  --aside-note-ink: oklch(0.47 0.15 250);
+  --aside-tip-ink: oklch(0.46 0.12 130);
+  --aside-caution-ink: oklch(0.48 0.12 70);
+  --aside-danger-ink: oklch(0.48 0.16 20);
+
+  /* Outline modifier badges. */
+  --mod-async-fg: #7c3aed;
+  --mod-async-border: #a78bfa;
+  --mod-abstract-fg: #4338ca;
+  --mod-abstract-border: #818cf8;
+  --mod-classmethod-fg: #b45309;
+  --mod-classmethod-border: #f59e0b;
+  --mod-final-fg: #047857;
+  --mod-final-border: #34d399;
+  --mod-default-fg: #4b5563;
+  --mod-default-border: #9ca3af;
+
+  /* Code: Shiki GitHub light and dark through Expressive Code, JSON and YAML keys, tmux usage blocks. */
+  --syntax-bg: #ffffff;
+  --syntax-fg: #24292e;
+  --syntax-keyword: #bf3441;
+  --syntax-string: #032f62;
+  --syntax-comment: #616972;
+  --syntax-function: #6f42c1;
+  --syntax-constant: #005cc5;
+  --syntax-variable: #ae4b07;
+  --json-key: #963b63;
+  --json-string: #755400;
+  --json-number: #6840a0;
+  --yaml-key: #1e7734;
+  --tmux-usage-tmux: #6d28d9;
+  --tmux-usage-command: #16713a;
+  --tmux-usage-flag: #7e22ce;
+  --tmux-usage-param: #8a5400;
+  --tmux-usage-bracket: #586579;
+  --lm-reroll-from: #6366f1;
+  --lm-reroll-to: #a855f7;
+
+  /* The current row of every navigation list: its text is --theme-primary on this tint, semibold, with no start-edge bar. */
+  --current-row-bg: color-mix(in oklab, var(--theme-primary), transparent 90%);
+}
+
+html[data-theme-mode="dark"] {
+  --control-border: #718294;
+  --scrim: rgba(0, 0, 0, 0.6);
+  --diff-bg: #3a2c0c;
+  --aside-note-ink: oklch(0.82 0.09 250);
+  --aside-tip-ink: oklch(0.84 0.11 125);
+  --aside-caution-ink: oklch(0.85 0.12 85);
+  --aside-danger-ink: oklch(0.82 0.1 15);
+  --mod-async-fg: #c4b5fd;
+  --mod-async-border: #7c3aed;
+  --mod-abstract-fg: #a5b4fc;
+  --mod-abstract-border: #4338ca;
+  --mod-classmethod-fg: #fcd34d;
+  --mod-classmethod-border: #d97706;
+  --mod-final-fg: #6ee7b7;
+  --mod-final-border: #059669;
+  --mod-default-fg: #cbd5e1;
+  --mod-default-border: #64748b;
+  --syntax-bg: #24292e;
+  --syntax-fg: #e1e4e8;
+  --syntax-keyword: #f97583;
+  --syntax-string: #9ecbff;
+  --syntax-comment: #99a0a6;
+  --syntax-function: #b392f0;
+  --syntax-constant: #79b8ff;
+  --syntax-variable: #ffab70;
+  --json-key: #f0a0c0;
+  --json-string: #e6c86e;
+  --json-number: #c3a6f4;
+  --yaml-key: #85e89d;
+  --tmux-usage-tmux: #cb84e0;
+  --tmux-usage-command: #98c379;
+  --tmux-usage-flag: #56b6c2;
+  --tmux-usage-param: #e5c07b;
+  --tmux-usage-bracket: #ccced4;
+  --lm-reroll-from: #818cf8;
+  --lm-reroll-to: #c084fc;
+  --current-row-bg: color-mix(in oklab, var(--theme-primary), transparent 85%);
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme-mode]):not([data-theme="light"]) {
+    --control-border: #718294;
+    --scrim: rgba(0, 0, 0, 0.6);
+    --diff-bg: #3a2c0c;
+    --aside-note-ink: oklch(0.82 0.09 250);
+    --aside-tip-ink: oklch(0.84 0.11 125);
+    --aside-caution-ink: oklch(0.85 0.12 85);
+    --aside-danger-ink: oklch(0.82 0.1 15);
+    --mod-async-fg: #c4b5fd;
+    --mod-async-border: #7c3aed;
+    --mod-abstract-fg: #a5b4fc;
+    --mod-abstract-border: #4338ca;
+    --mod-classmethod-fg: #fcd34d;
+    --mod-classmethod-border: #d97706;
+    --mod-final-fg: #6ee7b7;
+    --mod-final-border: #059669;
+    --mod-default-fg: #cbd5e1;
+    --mod-default-border: #64748b;
+    --syntax-bg: #24292e;
+    --syntax-fg: #e1e4e8;
+    --syntax-keyword: #f97583;
+    --syntax-string: #9ecbff;
+    --syntax-comment: #99a0a6;
+    --syntax-function: #b392f0;
+    --syntax-constant: #79b8ff;
+    --syntax-variable: #ffab70;
+    --json-key: #f0a0c0;
+    --json-string: #e6c86e;
+    --json-number: #c3a6f4;
+    --yaml-key: #85e89d;
+    --tmux-usage-tmux: #cb84e0;
+    --tmux-usage-command: #98c379;
+    --tmux-usage-flag: #56b6c2;
+    --tmux-usage-param: #e5c07b;
+    --tmux-usage-bracket: #ccced4;
+    --lm-reroll-from: #818cf8;
+    --lm-reroll-to: #c084fc;
+    --current-row-bg: color-mix(in oklab, var(--theme-primary), transparent 85%);
+  }
+}
+
+/* Space, size and measure. Neither theme changes them. */
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+
+  --radius-xs: 4px;
+
+  /* Columns and reading measures. */
+  --context-height: 3rem;
+  --sidebar-width: 16rem;
+  --outline-width: 14rem;
+  --content-max: 100rem;
+  --pane-width: 34rem;
+  --measure-prose: 72ch;
+  --measure-reference: 100ch;
+  --code-columns-example: 80;
+  --code-columns-api: 60;
+
+  /* Controls and rows. Density changes a row's height, never its type size. */
+  --control-sm: 2rem;
+  --control-md: 2.5rem;
+  --control-lg: 3.5rem;
+  --touch-target: 2.75rem;
+  --row-compact: 1.75rem;
+  --row-default: 2.125rem;
+  --kind-mark: 1.25rem;
+  --list-budget: 28rem;
+
+  --opacity-deprecated: 0.7;
+
+  --z-context: 35;
+  --z-topnav: 40;
+  --z-drawer: 50;
+  --z-pane: 55;
+  --z-dialog: 60;
+
+  /* Breakpoints. A custom property cannot name a media query, so these document the widths the queries use. */
+  --bp-phone: 30rem;
+  --bp-tablet: 48rem;
+  --bp-nav: 64rem;
+  --bp-outline: 80rem;
+}

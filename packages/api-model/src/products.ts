@@ -23,11 +23,14 @@ export function inheritProductFromOwners(symbols: ApiSymbol[]): void {
   }
 }
 
-/** Build a source link from the declaration's repository before the port fallback. */
+/**
+ * Build a source link from the declaration's repository before the port fallback.
+ * A file the model embeds links to its source page, `<reference>/sources/<file>/`.
+ */
 export function sourceUrl(model: ApiModelBase, symbol: ApiSymbol, referenceBase?: string): string | undefined {
   const { file, line } = symbol.source
   if (model.generatedSources?.[file] !== undefined) {
-    return referenceBase ? `${referenceBase}sources/${file}` : undefined
+    return referenceBase ? `${referenceBase}sources/${file}/${line ? `#L${line}` : ''}` : undefined
   }
   const repo = symbol.source.repo ?? model.repo
   const revision = symbol.source.revision ?? model.revision

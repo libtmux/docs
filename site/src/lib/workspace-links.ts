@@ -5,11 +5,11 @@ import type { Mention } from './tmux-links'
 
 export type WorkspaceEntityKind = 'command' | 'option' | 'key'
 
-/** One generated group: the ports it serves share these CLI Manual and Configuration entries. */
+/** One generated group: the ports it serves share these CLI manual and Configuration entries. */
 interface Group {
   ports: string[]
   program: string
-  /** Name, route below the port root, and whether the CLI Manual's index lists it. */
+  /** Name, route below the port root, and whether the CLI manual's index lists it. */
   commands: [string, string, boolean][]
   options: [string, string, string][]
   keys: [string, string, string][]
@@ -31,7 +31,7 @@ function many(rows: [string, string, string][]): Map<string, Location[]> {
   return map
 }
 
-/** What a port's CLI Manual and Configuration reference define; nothing for a port without them. */
+/** What a port's CLI manual and Configuration reference define; nothing for a port without them. */
 function portEntities(port: string): PortEntities | undefined {
   if (!entities.size) {
     for (const group of (data as { groups: Group[] }).groups) {
@@ -48,7 +48,7 @@ function portEntities(port: string): PortEntities | undefined {
 }
 
 /**
- * The program that loads a workspace file and the CLI Manual page that documents
+ * The program that loads a workspace file and the CLI manual page that documents
  * `load`, for a port whose manual lists the command; nothing for a port without one.
  */
 export function loadCommand(port: string): { program: string; path: string } | undefined {
@@ -59,7 +59,7 @@ export function loadCommand(port: string): { program: string; path: string } | u
 
 /**
  * The one place a workspace name becomes a destination: its page in the port's
- * CLI Manual or Configuration reference, at the table row that defines it.
+ * CLI manual or Configuration reference, at the table row that defines it.
  */
 export function workspaceEntityHref(port: string, location: Location, version = linkedVersionFor(port)): string {
   return `${portPageUrl(PORT_BY_SLUG[port]!, version, location.path)}${location.anchor ? `#${location.anchor}` : ''}`

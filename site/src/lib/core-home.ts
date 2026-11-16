@@ -199,9 +199,9 @@ export function coreHomeHeadings(port: string, version: string): { depth: 2; slu
   const keys = new Set(Object.values(home.capabilities).flat().map((row) => row.key))
   const rest = (group: keyof typeof CAPABILITY_GROUPS) => home.capabilities[group].filter((row) => row.key !== 'current-pane' && row.key !== 'test-fixtures').length > 0
   return [
+    { depth: 2, slug: 'what-it-does', text: 'What it does' },
     { depth: 2, slug: 'install', text: 'Install' },
     { depth: 2, slug: 'at-a-glance', text: 'At a glance' },
-    { depth: 2, slug: 'what-it-does', text: 'What it does' },
     ...Object.entries(CAPABILITY_GROUPS).filter(([group]) => rest(group as keyof typeof CAPABILITY_GROUPS))
       .map(([group, text]) => ({ depth: 2 as const, slug: group === 'typed' ? 'typed-api' : 'over-the-tmux-cli', text })),
     ...(keys.has('current-pane') ? [{ depth: 2 as const, slug: 'know-where-youre-running', text: "Know where you're running" }] : []),

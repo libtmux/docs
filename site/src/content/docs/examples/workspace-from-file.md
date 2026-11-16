@@ -15,7 +15,9 @@ and pane counts, then removes its private server. The first four steps write
 the command file, and the last four load and inspect it. It requires tmux 3.3a
 or newer and a POSIX shell.
 
-## 1. Create a detached session
+## Write the command file
+
+### 1. Create a detached session
 
 `new-session -d` creates a session without attaching a terminal. `-s dev` names
 it and `-n editor` names its first window. `-x 100 -y 30` sizes that window,
@@ -25,7 +27,7 @@ program in the first pane.
 ```text excerpt="workspace.conf" from="new-session"
 ```
 
-## 2. Split the window
+### 2. Split the window
 
 `split-window -h` adds a pane beside the first one. `-t '=dev:editor'` names the
 window with an exact session name, so the split cannot reach a session whose
@@ -36,7 +38,7 @@ name only starts with `dev`.
 
 The `editor` window now has two panes. Each runs `sh`.
 
-## 3. Add a second window
+### 3. Add a second window
 
 `new-window -n logs` adds a window named `logs` with one pane. A new window
 becomes the current one.
@@ -44,7 +46,7 @@ becomes the current one.
 ```text excerpt="workspace.conf" from="new-window"
 ```
 
-## 4. Choose what is selected
+### 4. Choose what is selected
 
 `select-window` and `select-pane` move the focus back to the first pane of the
 `editor` window. `.0` is the pane's index in that window.
@@ -67,7 +69,9 @@ select-window -t '=dev:editor'
 select-pane -t '=dev:editor.0'
 ```
 
-## 5. Start a server that stays up
+## Load the file
+
+### 5. Start a server that stays up
 
 `start-server` starts the private server before any session exists. The `\;`
 passes a literal semicolon to tmux, so `set-option -s exit-empty off` runs as
@@ -78,7 +82,7 @@ before creating one.
 ```sh excerpt="workspace.sh" from="start-server" to="exit-empty off"
 ```
 
-## 6. Load the file
+### 6. Load the file
 
 `source-file` runs each line of the file as a tmux command on this server.
 Errors stay visible and make the script fail. Paths in the file are relative to
@@ -87,7 +91,7 @@ the directory you run the script from, so keep `workspace.conf` beside it.
 ```sh excerpt="workspace.sh" from="source-file"
 ```
 
-## 7. List what was built
+### 7. List what was built
 
 `list-windows` prints one row per window of the exact session `dev`. `-F`
 formats each row with `#{window_name}` and `#{window_panes}`.
@@ -95,7 +99,7 @@ formats each row with `#{window_name}` and `#{window_panes}`.
 ```sh excerpt="workspace.sh" from="list-windows" to="window_panes"
 ```
 
-## 8. Clean up
+### 8. Clean up
 
 `kill-server` stops the private server. `trap cleanup EXIT` runs `cleanup` on
 every exit, including a failed `source-file`, so the server never outlives the

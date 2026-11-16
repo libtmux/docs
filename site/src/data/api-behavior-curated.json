@@ -1,0 +1,13 @@
+{
+  "go": {
+    "tmux.Pane.Capture": [
+      {
+        "row": "transport",
+        "text": "Printed captures cannot safely cross a control connection, so [Pane.Capture] and [Pane.CaptureBytes] use a subprocess or reject a connection.",
+        "line": 172,
+        "quote": "Printed captures cannot safely cross a control connection",
+        "via": "CaptureToFile"
+      }
+    ]
+  }
+}

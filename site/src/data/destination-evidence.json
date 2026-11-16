@@ -6052,7 +6052,7 @@
       "identity": "github.com/libtmux/libtmux-go",
       "versionChecks": [
         {
-          "version": "0.0.1-alpha.11",
+          "version": "0.1.3",
           "source": "libtmux/libtmux-go:go.mod",
           "ports": [
             "go"
@@ -6060,7 +6060,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-11-08",
+      "checkedAt": "2026-11-14",
       "entries": [
         "go:module"
       ]
@@ -6104,7 +6104,7 @@
       "identity": "github.com/libtmux/libtmux-go/mcp",
       "versionChecks": [
         {
-          "version": "0.0.1-alpha.14",
+          "version": "0.1.3",
           "source": "libtmux/libtmux-go:mcp/go.mod",
           "ports": [
             "go"
@@ -6112,7 +6112,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-11-08",
+      "checkedAt": "2026-11-14",
       "entries": [
         "go:mcp"
       ]
@@ -6156,7 +6156,7 @@
       "identity": "github.com/libtmux/libtmux-go/mcp/cmd/libtmux-mcp",
       "versionChecks": [
         {
-          "version": "0.0.1-alpha.14",
+          "version": "0.1.3",
           "source": "libtmux/libtmux-go:mcp/go.mod",
           "ports": [
             "go"
@@ -6164,7 +6164,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-11-08",
+      "checkedAt": "2026-11-14",
       "entries": [
         "go:libtmux-mcp"
       ]
@@ -6208,7 +6208,7 @@
       "identity": "github.com/libtmux/libtmux-go/tmux",
       "versionChecks": [
         {
-          "version": "0.0.1-alpha.11",
+          "version": "0.1.3",
           "source": "libtmux/libtmux-go:go.mod",
           "ports": [
             "go"
@@ -6216,7 +6216,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-11-08",
+      "checkedAt": "2026-11-14",
       "entries": [
         "go:tmux"
       ]
@@ -6260,7 +6260,7 @@
       "identity": "github.com/libtmux/libtmux-go/tmux/tmuxtest",
       "versionChecks": [
         {
-          "version": "0.0.1-alpha.11",
+          "version": "0.1.3",
           "source": "libtmux/libtmux-go:go.mod",
           "ports": [
             "go"
@@ -6268,7 +6268,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-11-08",
+      "checkedAt": "2026-11-14",
       "entries": [
         "go:tmuxtest"
       ]
@@ -6312,7 +6312,7 @@
       "identity": "github.com/libtmux/libtmux-go/tmuxq",
       "versionChecks": [
         {
-          "version": "0.0.1-alpha.11",
+          "version": "0.1.3",
           "source": "libtmux/libtmux-go:go.mod",
           "ports": [
             "go"
@@ -6320,7 +6320,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-11-08",
+      "checkedAt": "2026-11-14",
       "entries": [
         "go:tmuxq"
       ]
@@ -6364,7 +6364,7 @@
       "identity": "github.com/libtmux/libtmux-go/workspace",
       "versionChecks": [
         {
-          "version": "0.0.1-alpha.11",
+          "version": "0.1.3",
           "source": "libtmux/libtmux-go:workspace/go.mod",
           "ports": [
             "go"
@@ -6372,7 +6372,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-11-08",
+      "checkedAt": "2026-11-14",
       "entries": [
         "go:workspace"
       ]
@@ -6416,7 +6416,7 @@
       "identity": "github.com/libtmux/libtmux-go/workspace/cmd/tmux-workspace",
       "versionChecks": [
         {
-          "version": "0.0.1-alpha.11",
+          "version": "0.1.3",
           "source": "libtmux/libtmux-go:workspace/go.mod",
           "ports": [
             "go"
@@ -6424,7 +6424,7 @@
           "check": "confirmed"
         }
       ],
-      "checkedAt": "2026-11-08",
+      "checkedAt": "2026-11-14",
       "entries": [
         "go:tmux-workspace"
       ]

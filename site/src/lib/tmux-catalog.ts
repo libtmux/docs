@@ -399,3 +399,10 @@ export function tmuxCatalogKindsForSymbol(port: string, symbol: ApiSymbol): Cata
   }
   return [...kinds]
 }
+
+/** The types present in a list of entries, with counts, most common first: the filter chips of a kind page. */
+export function catalogTypeCounts(entries: readonly Pick<CatalogEntry, 'type'>[]): [string, number][] {
+  const counts = new Map<string, number>()
+  for (const entry of entries) if (entry.type) counts.set(entry.type, (counts.get(entry.type) ?? 0) + 1)
+  return [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+}

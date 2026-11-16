@@ -65,6 +65,13 @@ function count(name: string, where: Where, surface: string, context = '') {
   }
 }
 
+/**
+ * Go doc comments have no code span, so their prose names a hook as a bare word that nothing links. Each entry is a
+ * declaration and the hook its comment names that way; the test fails when the comment stops naming it.
+ */
+const UNLINKED_GO_HOOKS = new Map([['tmux.Pane.WaitForText', 'after-capture-pane']])
+const unlinkedGoHooks = new Set<string>()
+
 const docsRoot = fileURLToPath(new URL('../src/content/docs/', import.meta.url))
 const files = (directory: string): string[] => readdirSync(directory, { withFileTypes: true }).flatMap((entry) =>
   entry.isDirectory() ? files(join(directory, entry.name)) : /\.mdx?$/.test(entry.name) ? [join(directory, entry.name)] : [])
@@ -125,7 +132,10 @@ describe('tmux catalog coverage', () => {
           for (const span of apiSpans(text, port, index, symbol)) {
             const label = span.kind === 'ref' ? span.label : 'text' in span ? span.text : ''
             const href = span.kind === 'link' ? span.href : span.kind === 'ref' && span.link ? span.link.href : undefined
-            for (const match of label.matchAll(TOKEN)) count(match[0], href?.includes('/catalog/') ? 'catalog' : href ? 'elsewhere' : 'plain', `api ${span.kind === 'text' ? 'prose' : 'code'}`, `${symbol.id}: ${label.slice(Math.max(0, match.index! - 50), match.index! + 60)}`)
+            for (const match of label.matchAll(TOKEN)) {
+              if (!href && span.kind === 'text' && port === 'go' && UNLINKED_GO_HOOKS.get(symbol.id) === match[0]) { unlinkedGoHooks.add(symbol.id); continue }
+              count(match[0], href?.includes('/catalog/') ? 'catalog' : href ? 'elsewhere' : 'plain', `api ${span.kind === 'text' ? 'prose' : 'code'}`, `${symbol.id}: ${label.slice(Math.max(0, match.index! - 50), match.index! + 60)}`)
+            }
           }
         }
       }
@@ -143,5 +153,6 @@ describe('tmux catalog coverage', () => {
       expect((row.catalog + row.elsewhere) / (row.catalog + row.elsewhere + row.plain), kind).toBeGreaterThan(0.9)
     }
     expect(tally.get('all hook')!.plain, 'every hook mention links').toBe(0)
+    expect([...unlinkedGoHooks].sort(), 'each excused Go hook mention is still in its comment').toEqual([...UNLINKED_GO_HOOKS.keys()].sort())
   })
 })

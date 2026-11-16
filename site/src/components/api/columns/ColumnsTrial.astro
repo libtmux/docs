@@ -1,0 +1,62 @@
+---
+/**
+ * Every MillerColumns variant over the Go API: the story view of the component.
+ * The address carries the variant, the stage width, the selection and the
+ * column tools, so a state is a link.
+ */
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import { buildTarget } from '../../../lib/versions'
+import { PORT_BY_SLUG, referenceUrl } from '../../../lib/ports'
+import { VARIANT_IDS, VARIANTS, PAGE_SIZES } from '../../../lib/columns/types'
+import { STAGE_WIDTHS } from '../../../lib/columns/url-state'
+import '../../../styles/columns.css'
+import '../../../styles/api-columns.css'
+import '../../../styles/columns-trial.css'
+
+const port = 'go'
+const version = buildTarget(process.env).version
+const base = referenceUrl(PORT_BY_SLUG[port]!, version)
+---
+<BaseLayout title="Columns, all variants" description="MillerColumns variants A to G over the Go API reference." pagePath="reference/trial/columns"
+  portSlug={port} version={version} noindex searchable={false} documentationLayout="reference" markdown="rendered">
+  <div class="columns-trial" data-columns-trial data-base={base} data-port-name="Go">
+    <h1>Columns, all variants</h1>
+    <p class="columns-trial__what" data-what></p>
+    <div class="columns-trial__bar">
+      <span>Variant <span class="columns-trial__scroll"><span class="api-columns__seg" role="group" aria-label="Variant">
+        {VARIANT_IDS.map((v) => <button type="button" data-pick-variant={v}><b>{v.toUpperCase()}</b> {VARIANTS[v].name}</button>)}
+      </span></span></span>
+      <span>Stage <span class="columns-trial__scroll"><span class="api-columns__seg" role="group" aria-label="Stage width in pixels">
+        {STAGE_WIDTHS.map((w) => <button type="button" data-pick-width={w}>{w === 'fit' ? 'Fit' : w}</button>)}
+      </span></span></span>
+      <span>Jump to
+        <button type="button" class="miller__btn" data-jump="sym:tmux.Pane.Capture">A method, three levels below the groups</button>
+        <button type="button" class="miller__btn" data-jump="b:pane">A group</button>
+        <button type="button" class="miller__btn" data-jump="__root">The top</button>
+      </span>
+    </div>
+    <div class="columns-trial__props" data-col-props hidden role="group" aria-label="Column props">
+      <span>Column props</span>
+      <label>Search
+        <select data-col-prop="search"><option value="off">off</option><option value="button">button</option><option value="open">open</option></select>
+      </label>
+      <label><input type="checkbox" data-col-prop="paginate" /> Pages</label>
+      <label>Page size <select data-col-prop="pageSize">{PAGE_SIZES.map((size) => <option>{size}</option>)}</select></label>
+      <label><input type="checkbox" data-col-prop="virtual" /> Virtual rows</label>
+      <label>Filter at <select data-col-prop="filterAt"><option value="top">top</option><option value="bottom">bottom</option></select></label>
+      <code data-col-code></code>
+    </div>
+    <div class="columns-trial__miller" data-trial-miller></div>
+    <p class="columns-trial__status" data-status></p>
+    <script>
+      import { mountColumnsTrial } from './trial-columns'
+
+      const start = () => {
+        const root = document.querySelector<HTMLElement>('[data-columns-trial]')
+        if (root && !root.dataset.mounted) { root.dataset.mounted = ''; mountColumnsTrial(root) }
+      }
+      start()
+      document.addEventListener('astro:page-load', start)
+    </script>
+  </div>
+</BaseLayout>

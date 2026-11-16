@@ -705,6 +705,7 @@ const OVERRIDES: Record<string, { unsettled?: Record<string, string> }> = {
       'tmux.SparseArray': 'generic sparse container used by the format parser',
       'tmux.SparseEntry': 'generic sparse container used by the format parser',
       'tmux.SocketSelection': 'socket endpoint resolution; sits below Server rather than inside it',
+      'tmux.SocketSource': 'socket endpoint resolution; sits below Server rather than inside it',
       'tmux.MenuItem': 'display-menu entry; see the Menus note below',
       'tmux.PromptType': 'command-prompt UI; see the Menus note below',
       'tmux.TreeSortOrder': 'choose-tree UI; see the Menus note below',

@@ -291,7 +291,7 @@ describe('workspace and MCP mentions render like tmux mentions', () => {
   const REPORTED = '`tmuxp load` handles attachment. `tmuxp freeze` writes the structure. `shell_command_before` supplies setup.'
 
   describe('a command or key named in code', () => {
-    it('links to the CLI Manual and the Configuration reference with the badge a tmux mention carries', async () => {
+    it('links to the CLI manual and the Configuration reference with the badge a tmux mention carries', async () => {
       const tree = await workspace(REPORTED)
       expect(hrefs(tree)).toEqual([
         '/py/latest/workspace/cli/load/', '/py/latest/workspace/cli/freeze/',

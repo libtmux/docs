@@ -1,41 +1,15 @@
 @import url('./external-links.css');
 
-/* Paint the destination without changing its size or obscuring its text. */
-[data-anchor-arrival], [data-anchor-arrival] > :is(td, th) {
-  animation: libtmux-anchor-arrival 2.6s ease-out;
-}
-html:is(.fonts-pending, .link-hints-pending) [data-anchor-arrival] {
-  animation-play-state: paused;
-}
-@keyframes libtmux-anchor-arrival {
-  0%, 55% { background-color: color-mix(in srgb, var(--color-link, #2879d0) 18%, transparent); }
-  100% { background-color: transparent; }
-}
-/* Extend only the painted heading surface; its text and neighbors never move. */
-:is(h1, h2, h3, h4, h5, h6)[data-anchor-arrival] {
-  animation-name: libtmux-heading-arrival;
-}
-@keyframes libtmux-heading-arrival {
-  0%, 55% {
-    background-color: color-mix(in srgb, var(--color-link, #2879d0) 18%, transparent);
-    box-shadow: 0 0 0 .25rem color-mix(in srgb, var(--color-link, #2879d0) 18%, transparent);
+/*
+ * Arriving at an anchor draws no box (design system record 0049): no tint behind the heading, the row or the
+ * declaration, and no shadow around it. The heading's link icon shows as it does on hover (`api-headings.css`) and the
+ * section bar marks the section. A forced palette replaces every colour, so there the destination takes an outline in
+ * the system's highlight colour.
+ */
+@media (forced-colors: active) {
+  :is(h1, h2, h3, h4, h5, h6, dt.gp-sphinx-api-header, [data-anchor-arrival]):is(:target, [data-anchor-arrival]),
+  :target > :is(h1, h2, h3, h4, h5, h6) {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
   }
-  100% { background-color: transparent; box-shadow: 0 0 0 .25rem transparent; }
-}
-@media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-  [data-anchor-arrival], [data-anchor-arrival] > :is(td, th) {
-    animation: none;
-    background-color: color-mix(in srgb, var(--color-link, #2879d0) 18%, transparent) !important;
-  }
-  :is(h1, h2, h3, h4, h5, h6)[data-anchor-arrival] {
-    box-shadow: 0 0 0 .25rem color-mix(in srgb, var(--color-link, #2879d0) 18%, transparent);
-  }
-}
-/* Native fragments remain visible when scripting is unavailable. */
-html:not([data-anchor-navigation]) :is(:target, :has(> .section-anchor-alias:target)) {
-  background-color: color-mix(in srgb, var(--color-link, #2879d0) 12%, transparent) !important;
-}
-html:not([data-anchor-navigation]) :is(h1, h2, h3, h4, h5, h6):is(:target, :has(> .section-anchor-alias:target)) {
-  box-shadow: 0 0 0 .25rem color-mix(in srgb, var(--color-link, #2879d0) 12%, transparent);
 }

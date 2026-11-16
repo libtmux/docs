@@ -8,14 +8,18 @@ import { apiTmuxSections } from '../../lib/api-tmux-sections'
 import ApiScalarMembers from './ApiScalarMembers.astro'
 import ApiMemberList from './ApiMemberList.astro'
 import ApiRelationships from './ApiRelationships.astro'
+import RelationshipCollection from './RelationshipCollection.astro'
+import ApiIndexHead from './ApiIndexHead.astro'
 import { apiRelationshipSections, type ApiRelationshipPath } from '../../lib/api-relationships'
+import { lacksCallEdges, sameOwnerMembers } from '../../lib/api-collections'
 import ApiBadge from '../../components/api/ApiBadge.astro'
 import ApiGlossaryContent from './ApiGlossaryContent.astro'
 import { apiGlossary, apiGlossaryHeadings, API_GLOSSARY_TITLE, apiGlossaryHref } from '../../lib/api-glossary'
 import ApiQualifiedName from '../../components/api/ApiQualifiedName.astro'
 import ApiType from '../../components/api/ApiType.astro'
 import ApiPageContents from '../../components/api/ApiPageContents.astro'
-import { apiEntryFields, apiEntrySections, apiMemberGroups, apiMemberSections, fieldsLabel, fieldsRepeated, memberTable, memberTableColumns, relatedTypeLinks, variantPayloads, type ApiSection } from '../../lib/api-sections'
+import SourcePane from './SourcePane.astro'
+import { apiEntryFields, apiEntrySections, apiMemberGroups, apiMemberSections, fieldsLabel, fieldsRepeated, memberCollectionFacts, memberTable, memberTableColumns, relatedTypeLinks, variantPayloads, type ApiSection } from '../../lib/api-sections'
 import PageToolbar from '../../components/PageToolbar.astro'
 import PagePortSwitcher from '../../components/PagePortSwitcher.astro'
 import DocumentationContext from '../../components/docs/DocumentationContext.astro'
@@ -24,8 +28,8 @@ import { pagePortsFor } from '../../lib/page-ports-for'
 import { pageBreadcrumbs } from '../../lib/sidebar'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import { apiInventoryIdentity } from '../../lib/inventory-targets'
-import { withRoot } from '../../lib/site-root'
-import { API_MODELS, API_NAV, PORT_NAME, indexFor, isMemberOwner, ownersOf, pageSlug, referenceAlternatives, topLevelTypesOf } from '../../lib/api-models'
+import { withPortRoot, withRoot } from '../../lib/site-root'
+import { API_MODELS, API_NAV, PORT_NAME, symbolIndexLetter, indexFor, isMemberOwner, ownersOf, pageSlug, topLevelTypesOf } from '../../lib/api-models'
 import { PORT_BY_SLUG, referenceUrl } from '../../lib/ports'
 import { productApiHref } from '../../lib/product-api'
 import { alternateDocs } from '../../lib/perl-pod'
@@ -38,6 +42,10 @@ import { buildLocale } from '../../i18n/resolve'
 import { buildTarget, defaultVersionFor } from '../../lib/versions'
 import ApiDoc from '../../components/api/ApiDoc.astro'
 import ApiTree from '../../components/api/ApiTree.astro'
+import ApiColumnsBar from './columns/ApiColumnsBar.astro'
+import { sidebarHeadAt } from '../../lib/sidebar-head'
+import { apiPageEnd } from '../../lib/page-end'
+import PageEnd from '../docs/PageEnd.astro'
 import type { PortNavData } from '../../lib/api-models'
 import { apiTreeVersion, bucketAncestors, bucketForSymbol, navTree, referenceTree, referenceTreeFor, referenceNavigation, referenceIndexSections, referenceIndexSectionsFor, treeRowSymbol, type TreeBucket } from '../../lib/api-tree'
 import { sidebarSelection } from '../../lib/api-sidebar'
@@ -211,23 +219,6 @@ const moduleAnchors = new Set(model ? modulesIn(model).map((m) => m.name) : [])
 const moduleLabel = ['java', 'kotlin', 'scala', 'go'].includes(port ?? '') ? 'Package'
   : ['csharp', 'fsharp', 'cxx'].includes(port ?? '') ? 'Namespace' : 'Module'
 
-/** Share the entry's verified relationships, including cmdlets and facade modules. */
-const conceptEntries =
-  owner && port ? referenceAlternatives(port, owner.publicId ?? owner.id) : []
-
-/**
- * An unmapped language is not evidence that the language lacks the concept.
- * Native differences are described in the entry's "In other ports" section.
- */
-const counterparts = portModel
-  ? Object.keys(API_MODELS)
-      .filter((p) => p !== port)
-      .map((p) => {
-        const entry = conceptEntries.flatMap((group) => group.ports).find((entry) => entry.port === p && entry.href)
-        return { ...entry, port: p, label: PORT_NAME[p] ?? p }
-      })
-  : []
-
 const sourceUrl = (symbol: ApiSymbol): string | undefined => model
   ? apiSourceUrl(model, symbol, refBase)
   : undefined
@@ -374,6 +365,11 @@ const payloads = table?.columns === 'variants' && model ? variantPayloads(model.
 // A row repeats a type drawn in full elsewhere when a variant has a page of its own, or when the port's fields do: C# properties.
 const rowsRepeat = (columns?: string) => columns === 'variants' || (columns === 'fields' && fieldsRepeated(port))
 const membersLabel = aliasedMembers ? `Members of ${aliasedMembers.name}` : tableColumns === 'fields' || tableColumns === 'variants' ? tableHeading : owner?.variant || (language === 'julia' && owner?.kind === 'struct' && shown.every((member) => member.kind === 'property')) ? 'Fields' : 'Members'
+const memberFacts = memberCollectionFacts(shown, membersLabel, (member) => nativeKind(member, language))
+const { countNoun } = memberFacts
+const budgeted = !tableColumns && memberFacts.budgeted
+const mixedKinds = memberFacts.mixed
+const mixedInherited = new Set(otherInherited.map((member) => nativeKind(member, language))).size > 1
 const glossaryContext = apiGlossary(`${refBase}glossary/`)
 const pageSections: ApiSection[] = glossary ? apiGlossaryHeadings(glossaryContext.path).map((heading) => ({
   id: heading.slug, label: heading.text, nested: heading.depth === 3,
@@ -385,6 +381,8 @@ const pageSections: ApiSection[] = glossary ? apiGlossaryHeadings(glossaryContex
 ] : []
 const relationshipSections = owner && model ? apiRelationshipSections(model, owner) : []
 const paths = (source?.paths ?? []).filter((path) => !owner || path.symbols.some((symbol) => symbol.id === owner.id))
+if (owner && model && port && sameOwnerMembers(model, owner)) pageSections.push({ id: 'api-same-owner', label: 'Same owner' })
+if (owner && model && port && lacksCallEdges(model, owner, relationshipSections)) pageSections.push({ id: 'api-recorded-calls', label: 'Recorded calls' })
 if (relationshipSections.some((section) => ['api-calls', 'api-called-by'].includes(section.id))) pageSections.push({ id: 'api-call-network', label: 'Call neighborhood' })
 if (paths.length) pageSections.push({ id: 'api-source-paths', label: 'Paths through the source', count: paths.length })
 pageSections.push(...relationshipSections.map((section) => ({ id: section.id, label: section.label, count: section.items.length })))
@@ -406,6 +404,9 @@ const displayName = owner ? (language === 'haskell' || language === 'erlang' ? n
   : language === 'clojure' || language === 'lisp' ? nativeQualifiedName(model, owner)
   : declaringType ? `${declaringType.name}.${owner.name}` : owner.name) : pageTitle
 const breadcrumbs = source?.breadcrumbs ?? await pageBreadcrumbs(displayName, glossary ? 'reference/glossary' : slug ? `reference/${slug}` : 'reference', version, port)
+// A symbol page ends on the previous and next row of its tree and the way up the breadcrumb climbs (record 0021).
+const end = owner && model && sidebarInventory
+  ? apiPageEnd({ inventory: sidebarInventory, selected: sidebarSelection(sidebarInventory, treeRowSymbol(model, owner)), base: refBase, breadcrumbs }) : undefined
 const pagePath = glossary ? 'reference/glossary' : source?.pagePath ?? (slug ? `reference/${slug}` : 'reference')
 const description = glossary ? glossaryContext.description : source?.description ?? (language === 'haskell'
   ? 'Modules, data types, constructors, record fields and functions in libtmux for Haskell.'
@@ -452,6 +453,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
           <span class="sr-only">{label} API contents</span>
         </button>
   </DocumentationContext>}
+  {model && sidebarInventory && <ApiColumnsBar port={port} portName={label} base={refBase} glossary={glossary} />}
   <!-- Flush: the tree's column runs from the header to the footer against the
        viewport's edge, as Learn's does, and only the text column is padded. -->
   <main class:list={["api-reference-layout grid", owner && 'api-reference-layout--symbol', glossary && 'api-reference-layout--glossary']}>
@@ -475,19 +477,20 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
         withMembers={withMembers}
         currentPath={Astro.url.pathname}
         version={apiTreeVersion(model, tree, dependencyNavigation?.hrefs)}
+        head={await sidebarHeadAt(port, version, Astro.url.pathname)}
       />
     )}
 
     <div class="api-reference-content min-w-0 px-4 py-6 lg:px-6">
       <PageToolbar breadcrumbs={breadcrumbs} />
       <header id={owner ? 'api-overview' : undefined} class:list={[owner && 'api-reference-heading']}>
-        {owner && <div class="api-reference-eyebrow">
+        {/* The kind, project and release are context, not the page's subject: out of the search index so a type that is only named here never outranks the declaration. The version is stated once, in the context strip. */}
+        {owner && <div class="api-reference-eyebrow" data-pagefind-ignore="all">
           <ApiBadge label={owner.command?.kind ?? nativeKind(owner, language)} variant="kind" value={nativeKind(owner, language)} />
           <span>{source?.model.project ?? portMeta?.projectName}</span>
           {owner.doc?.since && <span>Since {owner.doc.since}</span>}
-          <span class="api-badge api-badge--mod api-reference-version"><span class="api-badge__label">{version}</span></span>
         </div>}
-        <h1 class="scroll-mt-24 text-2xl font-semibold tracking-tight">
+        <h1 class="scroll-mt-24 api-reference-title" data-pagefind-weight={owner ? '10' : undefined}>
           <SymbolName name={displayName} />
         </h1>
         {owner && <>
@@ -554,6 +557,12 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                 ? 'Browse the LibTmux cmdlets by the tmux objects and operations they control. Each command includes syntax, parameter sets, pipeline types, and examples.'
                 : `Browse the ${label} types and operations for working with tmux. Start with the core objects below, or search for a type or member.`}
             </p>
+            {
+              port && !source ? <ApiIndexHead port={port} base={refBase} /> : (
+                /* The A-Z view, for a reader who knows roughly what a name is. The index head carries it as its second view; a source reference has no head. */
+                <p class="mt-2"><a href={withRoot(`/reference/symbols/${symbolIndexLetter(model.symbols.map((s) => s.name)).toLowerCase()}/`)}>{label} symbol index (A–Z)</a></p>
+              )
+            }
             {paths.length > 0 && <ApiRelationships paths={paths} hrefFor={hrefFor} />}
             {sections.map((mod) => (
               /*
@@ -716,6 +725,9 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                 <span hidden data-pagefind-meta={`file:${owner.source.file}`} />
               )}
               {owner?.kind && <span hidden data-pagefind-meta={`kind:${nativeKind(owner, language)}`} />}
+              {declaringType && <span hidden data-pagefind-meta={`owner:${declaringType.name}`} />}
+              {/* The Kind facet in search filters on the same word the result shows. */}
+              {owner?.kind && <span hidden data-pagefind-filter={`kind:${nativeKind(owner, language)}`} />}
             <details class="api-source-details" data-pagefind-ignore="all" open>
               <script is:inline>
                 window.__initApiSourceDetails?.(document)
@@ -757,22 +769,6 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                     <a href={sourceUrl(owner)} rel="nofollow noopener">
                       {owner.source.file}
                     </a>
-                  </dd>
-                </>
-              )}
-              {counterparts.some((c) => c.href) && (
-                <>
-                  <dt>Other languages</dt>
-                  <dd class="api-definition-langs">
-                    {counterparts.map((c) =>
-                      c.href ? (
-                        <span class="api-lang"><a href={c.href}>{c.label}</a>{c.note && c.kind && <ApiBadge label={c.kind} variant="kind" value={c.kind} plain />}</span>
-                      ) : (
-                        <span class="api-lang-absent" title={`No ${c.label} counterpart is mapped`}>
-                          {c.label}
-                        </span>
-                      ),
-                    )}
                   </dd>
                 </>
               )}
@@ -826,8 +822,14 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
             )}
             {shown.length > 0 && (
               <div class="api-members mt-8">
-                <h2 class="api-section-heading text-lg font-semibold" id="api-members">{aliasedMembers ? <>Members of <a class="api-members-target" href={hrefFor(aliasedMembers)}><code>{aliasedMembers.name}</code></a></> : membersLabel}<span class="api-section-count">{shown.length}</span><a class="api-heading-link" href="#api-members" aria-label={`Link to ${membersLabel}`}>#</a></h2>
-                {tableColumns ? <ApiScalarMembers owner={owner} members={listed} index={index} hrefFor={hrefFor} columns={tableColumns} label={tableHeading} payloads={payloads} repeated={rowsRepeat(tableColumns)} /> : <ApiMemberList groups={memberGroups} showGroups={showMemberGroups} index={index} hrefFor={hrefFor} language={language} />}
+                <h2 class="api-section-heading text-lg font-semibold" id="api-members">{aliasedMembers ? <>Members of <a class="api-members-target" href={hrefFor(aliasedMembers)}><code>{aliasedMembers.name}</code></a></> : membersLabel}<span class="api-section-count">{shown.length} {countNoun}</span><a class="api-heading-link" href="#api-members" aria-label={`Link to ${membersLabel}`}>#</a></h2>
+                {tableColumns ? <ApiScalarMembers owner={owner} members={listed} index={index} hrefFor={hrefFor} columns={tableColumns} label={tableHeading} payloads={payloads} repeated={rowsRepeat(tableColumns)} />
+                  : budgeted ? <>
+                    <ApiMemberList groups={memberGroups} showGroups={showMemberGroups} index={index} hrefFor={hrefFor} language={language} mixed={mixedKinds}
+                      budget={{ region: aliasedMembers ? membersLabel : `${membersLabel} of ${owner.name}`, owner: aliasedMembers?.name ?? owner.name, searchHref: port ? withPortRoot(`/${port}/${version}/search/`) : withRoot('/search/') }} />
+                    <p class="api-collection-note">Order: the accessors that walk the hierarchy, the operations the ports share, then the rest.</p>
+                  </>
+                  : <ApiMemberList groups={memberGroups} showGroups={showMemberGroups} index={index} hrefFor={hrefFor} language={language} mixed={mixedKinds} />}
               </div>
             )}
 
@@ -842,7 +844,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                     <li>
                       <span><ApiBadge label={nativeKind(m, language)} variant="kind" value={nativeKind(m, language)} compact preview={false} /><a class="api-member-link" href={hrefFor(m)}>{m.name}</a></span>
                       <span class="api-member-badges">
-                        <ApiBadge label={nativeKind(m, language)} variant="kind" value={nativeKind(m, language)} plain />
+                        {mixedInherited && <ApiBadge label={nativeKind(m, language)} variant="kind" value={nativeKind(m, language)} plain />}
                         <a class="api-badge api-badge--mod" href={apiGlossaryHref('inherited', Astro.url.pathname)} title={`Inherited from ${m.inheritedFrom}`} aria-description={`Inherited from ${m.inheritedFrom}`} data-preview-context={`Inherited from ${m.inheritedFrom}.`}><span class="api-badge__label">inherited</span></a>
                       </span>
                       {m.doc?.summary && (
@@ -856,9 +858,9 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
               </>
             )}
             <ApiRelationships owner={owner} model={model} sections={relationshipSections} paths={paths} hrefFor={hrefFor} />
-            <ApiTmuxSections sections={tmuxSections} />
-            {related.length > 0 && <section class="api-related-types" aria-labelledby="api-related-types">
-              <h2 class="api-section-heading text-lg font-semibold" id="api-related-types">Related types<a class="api-heading-link" href="#api-related-types" aria-label="Link to Related types">#</a></h2>
+            <ApiTmuxSections sections={tmuxSections} port={port!} />
+            {related.length > 0 && <RelationshipCollection class="api-related-types" id="api-related-types" label="Related types" kind="type references"
+              why="Types this declaration takes, returns or names, from its signature and members. External types link to their own documentation.">
               <div class="api-related-cards">
                 {related.map((item) => <div class="api-index-card api-related-card">
                   <a class="api-index-card__link" href={item.href} title={item.identity}>
@@ -868,7 +870,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                   {item.symbol.doc?.summary && <p><ApiDoc text={item.symbol.doc.summary} index={index} context={item.symbol} citations={false} /></p>}
                 </div>)}
               </div>
-            </section>}
+            </RelationshipCollection>}
             {usage.length > 0 && <section class="api-tmux-usage" aria-labelledby="api-tmux-usage">
               <h2 class="api-section-heading text-lg font-semibold" id="api-tmux-usage">In libtmux<a class="api-heading-link" href="#api-tmux-usage" aria-label="Link to In libtmux">#</a></h2>
               {usage.map((entry) => <>
@@ -879,8 +881,11 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
           </>
         )
       }
+      {end && <PageEnd {...end} />}
     </div>
-    {(owner || glossary) && <ApiPageContents sections={pageSections} related={related} />}
+    {/* A symbol page has its section bar; the right-hand list stays only where there is no bar. */}
+    {(owner || glossary) && <ApiPageContents sections={pageSections} related={related} outline={!owner} />}
+    {owner && <SourcePane />}
   </main>
 
 <script>

@@ -54,8 +54,8 @@ it('links a :doc: role to the upstream site only where the port has one', () => 
 it('turns a directive and its indented body into an aside and resumes the prose', () => {
   const text = 'Log a pane.\n\n.. warning::\n   Writes anywhere. See :func:`split_window`.\n\n   Be careful.\n\nAfter the aside.'
   const markdown = restToMarkdown(text, py)
-  expect(markdown).toContain('<aside class="lm-aside lm-aside--caution lm-aside--hybrid" role="note">')
-  expect(markdown).toContain('<span>Warning</span>')
+  expect(markdown).toContain('<aside class="lm-aside lm-aside--caution lm-aside--compact lm-aside--ink" role="note">')
+  expect(markdown).toContain('<span>Warning.</span>')
   expect(markdown).toContain('Writes anywhere. See [`split_window`](/py/v0.46.2/mcp/tools/split_window/).\n\nBe careful.')
   expect(markdown.endsWith('</aside>\n\n\nAfter the aside.') || markdown.endsWith('</aside>\n\nAfter the aside.')).toBe(true)
   expect(markdown).not.toMatch(/\.\. warning::/)

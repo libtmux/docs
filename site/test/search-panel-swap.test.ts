@@ -50,3 +50,19 @@ it('mounts a panel that is not in a dialog when its page arrives by swap', () =>
   expect(mountSearchPanel).toHaveBeenCalledTimes(1)
   expect(waitForAppearance).toHaveBeenCalledTimes(1)
 })
+
+it('keeps the query when the dialog closes and focuses the field when it opens again', () => {
+  const win = new Window({ url: 'https://libtmux.org/en/ts/latest/guides/panes/' })
+  windows.push(win)
+  const handle = { focus: vi.fn(), clear: vi.fn(), ready: Promise.resolve() }
+  Object.assign(win, { mountSearchPanel: vi.fn(() => handle), waitForAppearance: vi.fn() })
+  win.document.body.innerHTML = modal('only')
+  win.eval(client)
+
+  open(win, 'only')
+  expect(handle.focus).toHaveBeenCalledTimes(1)
+  win.document.getElementById('only')!.dispatchEvent(new win.Event('close'))
+  expect(handle.clear).not.toHaveBeenCalled()
+  open(win, 'only')
+  expect(handle.focus).toHaveBeenCalledTimes(2)
+})

@@ -3,7 +3,7 @@ description: Use `tmux-workspace` to load, inspect and save workspace files.
 product: workspace
 sidebar:
   group: CLI reference
-  label: CLI Manual
+  label: CLI manual
   order: 21
 tableOfContents: true
 title: tmux-workspace CLI manual

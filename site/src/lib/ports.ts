@@ -6,10 +6,12 @@ import { COOLDOWN_SLOTS } from './cooldown.ts'
 import { parseTag, type TagGrammar } from './versions.ts'
 
 /**
- * Which renderer produces a self-hosted reference.
- * `none` for ports whose reference lives on an ecosystem host.
+ * Which renderer draws a port's reference on libtmux.org: the Astro model
+ * renderer, a Sphinx build, or DocC inside the site's shell. Every port has
+ * one; an ecosystem host (docs.rs, pkg.go.dev, javadoc.io, HexDocs, Dokka,
+ * Scaladoc) is an alternative beside it, named by `ecosystemHost`.
  */
-export type Renderer = 'sphinx' | 'astro' | 'native-skinned' | 'none'
+export type Renderer = 'sphinx' | 'astro' | 'native-skinned'
 
 /** Documentation products layered on each language library. */
 export const DOC_PRODUCTS = {
@@ -1024,7 +1026,7 @@ const CORE_PORTS: readonly Port[] = [
     versionedDocs: true,
     tagGrammar: 'semver',
     tagPrefix: 'libtmux@',
-    renderer: 'none',
+    renderer: 'astro',
     publishesOwnTree: true,
     ecosystemHost: {
       name: 'docs.rs',
@@ -1089,7 +1091,7 @@ const CORE_PORTS: readonly Port[] = [
     versionedDocs: true,
     publishesOwnTree: true,
     tagGrammar: 'semver',
-    renderer: 'none',
+    renderer: 'astro',
     ecosystemHost: {
       name: 'pkg.go.dev',
       url: 'https://pkg.go.dev/github.com/libtmux/libtmux-go/tmux',
@@ -1143,7 +1145,7 @@ const CORE_PORTS: readonly Port[] = [
     versionedDocs: true,
     publishesOwnTree: true,
     tagGrammar: 'semver',
-    renderer: 'none',
+    renderer: 'astro',
     ecosystemHost: {
       name: 'javadoc.io',
       url: 'https://javadoc.io/doc/io.github.libtmux/libtmux',
@@ -1600,7 +1602,7 @@ export const PORTS: readonly Port[] = CORE_PORTS.flatMap((parent) => [
     repo: parent.repo, checkout: parent.checkout, worktree: parent.worktree,
     docsDispatch: parent.docsDispatch && { ...parent.docsDispatch, language: library.slug },
     tagGrammar: parent.tagGrammar, tagPrefix: parent.tagPrefix,
-    versionedDocs: parent.versionedDocs, renderer: 'none', generator: '', referenceKind: 'model',
+    versionedDocs: parent.versionedDocs, renderer: 'astro', generator: '', referenceKind: 'model',
     publishesOwnTree: true,
     ...library,
   })),

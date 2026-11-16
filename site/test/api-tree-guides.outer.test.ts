@@ -8,8 +8,10 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
  */
 const read = (path: string) => readFileSync(new URL(path, import.meta.url), 'utf8')
 const styles = ['../src/styles/kind-marks.css', '../src/styles/api-tree.css'].map(read).join('\n')
+// The tree sizes its rows from the token the site defines; a page without it has no row height to measure.
+const TOUCH_TARGET = /--touch-target:\s*([^;]+);/.exec(read('../src/styles/tokens.css'))![1]
 
-const page = (css: string) => `<!doctype html><html><head><style>:root { --text-color: #1a1c1e; --background-color: #ffffff; }
+const page = (css: string) => `<!doctype html><html><head><style>:root { --text-color: #1a1c1e; --background-color: #ffffff; --touch-target: ${TOUCH_TARGET}; }
 body { margin: 0; font: 14px/1.5 sans-serif; width: 18rem; }\n${css}</style></head><body></body></html>`
 
 let browser: Browser
@@ -29,9 +31,13 @@ const outline = `<div id="api-nav" class="api-nav" data-presentation="outline"><
 const outlinePage = (css: string) => page(`*, ::before, ::after { box-sizing: border-box; }\n${css}`)
   .replace(/<body>[\s\S]*<\/body>/, `<body>${outline}</body>`).replace('width: 18rem', 'width: 15rem')
 
-/** Each row's mark offset, height and guide lines, and the centres of the marks that its ancestors draw. */
-async function outlineRows(css: string, options: { hasTouch?: boolean; forcedColors?: 'active' } = {}) {
-  const context = await browser.newContext({ viewport: { width: 400, height: 600 }, ...options })
+/**
+ * Each row's mark offset, height and guide lines, and the centres of the marks that its ancestors draw. The window is wider
+ * than the phone breakpoint (30rem) unless a test says otherwise, so a row is the desktop row that it measures.
+ */
+async function outlineRows(css: string, options: { hasTouch?: boolean; forcedColors?: 'active'; width?: number } = {}) {
+  const { width = 800, ...emulation } = options
+  const context = await browser.newContext({ viewport: { width, height: 600 }, ...emulation })
   const target = await context.newPage()
   await target.setContent(outlinePage(css))
   const rows = await target.evaluate(() => {
@@ -105,11 +111,12 @@ describe('sidebar rows and guide lines', () => {
     expect(Math.abs(wrapped.countAbove), 'count against line 1').toBeLessThan(1)
   })
 
-  it('grow each row to 2.75rem on a coarse pointer', async () => {
-    const fine = await outlineRows(styles)
-    const coarse = await outlineRows(styles, { hasTouch: true })
-    expect(fine.filter((row) => row.lineCount === 1).map((row) => row.height)).toEqual([32, 32, 32, 32])
-    expect(coarse.filter((row) => row.lineCount === 1).map((row) => row.height)).toEqual([44, 44, 44, 44])
+  // 08-responsive-and-accessible: "Tree and picker rows reach `touch-target` below `bp-phone`", and a coarse pointer reaches it at any width.
+  it('grow each row to 2.75rem on a coarse pointer and below the phone breakpoint', async () => {
+    const heights = (rows: Awaited<ReturnType<typeof outlineRows>>) => rows.filter((row) => row.lineCount === 1).map((row) => row.height)
+    expect(heights(await outlineRows(styles))).toEqual([32, 32, 32, 32])
+    expect(heights(await outlineRows(styles, { hasTouch: true })), 'a coarse pointer').toEqual([44, 44, 44, 44])
+    expect(heights(await outlineRows(styles, { width: 390 })), 'a 390px window with a fine pointer').toEqual([44, 44, 44, 44])
   })
 })
 

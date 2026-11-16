@@ -1,29 +1,21 @@
 ---
 // BackToTop component with beautiful, accessible styling for light and dark modes
 // Features:
-// - Soft borders and shadows for elegant appearance
-// - Backdrop blur for modern glass effect
-// - Smooth hover animations with scale transform
-// - Focus visible ring for keyboard navigation
+// - Control outline, page ground and muted ink from the design tokens
+// - Hover scale
+// - The shared focus ring (base rule in global.css)
 // - ARIA attributes for screen reader support
 ---
 
 <button
   id="back-to-top"
-  class="fixed bottom-8 right-8 z-50 p-3 rounded-full 
-  bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm
-  text-gray-700 dark:text-gray-300
-  border border-gray-200/80 dark:border-gray-700/50
-  shadow-md shadow-gray-200/50 dark:shadow-black/20
-  hover:bg-gray-50 dark:hover:bg-gray-700/80
-  hover:text-gray-900 dark:hover:text-white
-  hover:border-gray-300 dark:hover:border-gray-600
-  hover:shadow-lg hover:shadow-gray-300/50 dark:hover:shadow-black/30
-  hover:scale-110
-  focus-visible:outline-none focus-visible:ring-2 
-  focus-visible:ring-theme-primary/50 dark:focus-visible:ring-theme-primary/40
+  class="fixed bottom-8 right-8 z-50 p-3 rounded-full
+  bg-[var(--background-color)] text-muted
+  border border-control shadow-md
+  hover:bg-surface-hover hover:text-[var(--text-color)]
+  hover:shadow-lg hover:scale-110
   focus-visible:scale-110
-  cursor-pointer 
+  cursor-pointer
   opacity-0 translate-y-4 pointer-events-none"
   aria-label="Back to top"
   title="Scroll to top"

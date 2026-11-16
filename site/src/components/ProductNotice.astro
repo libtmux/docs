@@ -55,6 +55,12 @@ const id = `${product}-${status?.name}`
   </div>
 </div>}
 
+<style is:global>
+  /* A concept note already says the work can change, so the site's release bar above it hides: one banner, not two (PageProductHome). A reader who dismissed the concept note gets the release bar back. */
+  html:not([data-product-notice-dismissed~='mcp-concept']) .prerelease-notice[data-prerelease-notice]:has(~ .product-notice[data-product-notice='mcp-concept']),
+  html:not([data-product-notice-dismissed~='workspace-concept']) .prerelease-notice[data-prerelease-notice]:has(~ .product-notice[data-product-notice='workspace-concept']) { display: none; }
+</style>
+
 <script>
   const STORAGE_PREFIX = 'libtmux-docs.product-notice.'
 

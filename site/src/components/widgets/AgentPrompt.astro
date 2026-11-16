@@ -8,6 +8,7 @@ import { DEFAULT_LOCALE, localeRoot } from '../../i18n/locales'
 import { SITE_ROOT } from '../../lib/site-root'
 import RerollButton from '../RerollButton.astro'
 import TaskPicker from './TaskPicker.astro'
+import '../../styles/documentation-picker.css'
 
 /**
  * The prompt a reader copies into a coding agent, with a picker for which
@@ -47,8 +48,13 @@ interface Props {
   defaultPort?: string
   /** Active topic on load. */
   defaultTopic?: string
-  /** Hide the tabs when the page supplies a shared language picker. */
+  /**
+   * Show the language picker in the controls row, or hide it when the page supplies a shared one.
+   * It was a bar of one tab per language, which wrapped to two rows at 1280px and to six at 375px.
+   */
   showLanguageTabs?: boolean
+  /** Show the chosen task's summary beside the controls; a page that states it under its own heading hides it. */
+  showSummary?: boolean
   /** Allow a homepage reader to clear their explicit task choice. */
   showTaskReset?: boolean
   /** Offer published documentation versions in the prompt controls. */
@@ -62,7 +68,7 @@ interface Props {
   copyButton?: 'gutter' | 'overlay'
 }
 
-const { ports, defaultPort, defaultTopic = 'setup', showLanguageTabs = true, showTaskReset = false, showVersionPicker = true, variant = 'full', copyButton = 'overlay' } = Astro.props as Props
+const { ports, defaultPort, defaultTopic = 'setup', showLanguageTabs = true, showSummary = true, showTaskReset = false, showVersionPicker = true, variant = 'full', copyButton = 'overlay' } = Astro.props as Props
 // A page that names its task, such as /prompts/<topic>/, opens on it. The
 // others open on the task the reader last chose.
 const topicPinned = 'defaultTopic' in Astro.props
@@ -75,6 +81,7 @@ if (!TOPICS.some((t) => t.id === defaultTopic)) {
   throw new Error(`AgentPrompt: unknown defaultTopic "${defaultTopic}"`)
 }
 const initialSlug = defaultPort && items.some((p) => p.slug === defaultPort) ? defaultPort : items[0]!.slug
+const initialPort = items.find((p) => p.slug === initialSlug)!
 
 /*
  * Absolute, and always the default locale.
@@ -161,26 +168,43 @@ const activePortRules = items
   data-resettable-task={showTaskReset ? '' : undefined}
   data-root={SITE_ROOT || '/'}
 >
-  {
-    showLanguageTabs && items.length > 1 && (
-      <div class="lm-agent-prompt__tabs" role="tablist" aria-label="Language">
-        {items.map((p) => (
-          <button
-            type="button"
-            class="lm-agent-prompt__tab"
-            role="tab"
-            data-tab-value={p.slug}
-            aria-selected={p.slug === initialSlug ? 'true' : 'false'}
-            tabindex={p.slug === initialSlug ? '0' : '-1'}
-          >
-            {p.name}
-          </button>
-        ))}
-      </div>
-    )
-  }
-
   <div class="lm-agent-prompt__controls">
+    {
+      showLanguageTabs && items.length > 1 && (
+        <div class="lm-agent-prompt__lang" data-lang-picker role="group" aria-label="Programming language">
+          <span class="lm-agent-prompt__label">Programming language</span>
+          {/* Without script the prompt is the default language's and nothing here changes it, so the control is the name alone. */}
+          <span class="lm-agent-prompt__lang-static" data-lang-static>{initialPort.name}</span>
+          <div class="lm-agent-prompt__lang-picker" data-lang-enhanced hidden>
+            <details class="doc-picker" data-doc-picker data-lang-menu>
+              <summary aria-label={`Programming language: ${initialPort.name}`}>
+                <span data-lang-current>{initialPort.name}</span>
+                <svg class="doc-picker-caret" width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
+              </summary>
+              <div class="doc-picker-panel" data-picker-panel>
+                <p class="doc-picker-title">Choose a programming language <span class="doc-picker-count">{items.length}</span></p>
+                <label class="doc-picker-search" data-picker-search-label hidden>
+                  <span class="sr-only">Find a programming language</span>
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3.5 3.5"/></svg>
+                  <input type="search" placeholder="Find a language…" autocomplete="off" data-picker-search />
+                </label>
+                <nav aria-label="Programming languages">
+                  {items.map((p) => (
+                    <a class="doc-picker-option" href={`?lang=${p.slug}`} data-lang-option={p.slug} data-lang-name={p.name} data-picker-option
+                      data-match={`${p.slug} ${p.name} ${p.shortName ?? ''}`} aria-current={p.slug === initialSlug ? 'true' : undefined}>
+                      <span>{p.name}</span>
+                      <span class="doc-picker-check" aria-hidden="true" hidden={p.slug !== initialSlug}>✓</span>
+                    </a>
+                  ))}
+                </nav>
+                <p class="doc-picker-empty" data-picker-empty hidden>No matching languages.</p>
+                <p class="sr-only" role="status" data-picker-status></p>
+              </div>
+            </details>
+          </div>
+        </div>
+      )
+    }
     <div class="lm-agent-prompt__task">
       {showTaskReset ? <TaskPicker defaultTopic={defaultTopic} /> : <label class="lm-agent-prompt__control">
         <span class="lm-agent-prompt__label">Task</span>
@@ -206,7 +230,7 @@ const activePortRules = items
         <option value={versionFor(initialSlug)} selected>{versionFor(initialSlug)}</option>
       </select>
     </label>}
-    <p class="lm-agent-prompt__summary" data-summary>
+    <p class="lm-agent-prompt__summary" data-summary hidden={!showSummary}>
       {TOPICS.find((t) => t.id === defaultTopic)!.summary}
     </p>
   </div>
@@ -240,7 +264,6 @@ const activePortRules = items
    * for why that matters against Tailwind v4's preflight. */
   .lm-agent-prompt {
     --lm-agent-prompt-bg: var(--background-color);
-    --lm-agent-prompt-bg-tabs: var(--color-surface);
     --lm-agent-prompt-border: var(--color-edge);
     --lm-agent-prompt-fg: var(--text-color);
     --lm-agent-prompt-fg-muted: var(--color-muted);
@@ -266,42 +289,6 @@ const activePortRules = items
     --lm-agent-prompt-scroll-hover: rgb(100 116 139);
   }
 
-  .lm-agent-prompt__tabs {
-    display: flex;
-    flex-wrap: wrap;
-    background: var(--lm-agent-prompt-bg-tabs);
-    border-bottom: 1px solid var(--lm-agent-prompt-border);
-  }
-
-  .lm-agent-prompt__tab {
-    appearance: none;
-    background: transparent;
-    border: 0;
-    border-bottom: 2px solid transparent;
-    color: var(--lm-agent-prompt-fg-muted);
-    cursor: pointer;
-    font: inherit;
-    font-size: 0.9rem;
-    padding: 0.45rem 0.9rem;
-    white-space: nowrap;
-  }
-
-  .lm-agent-prompt__tab:hover {
-    color: var(--lm-agent-prompt-fg);
-    background: var(--lm-agent-prompt-hover);
-  }
-
-  .lm-agent-prompt__tab:focus-visible {
-    outline: 2px solid var(--lm-agent-prompt-accent);
-    outline-offset: -2px;
-  }
-
-  .lm-agent-prompt__tab[aria-selected='true'] {
-    color: var(--lm-agent-prompt-accent);
-    border-bottom-color: var(--lm-agent-prompt-accent);
-    background: var(--lm-agent-prompt-bg);
-  }
-
   .lm-agent-prompt__controls {
     display: flex;
     flex-wrap: wrap;
@@ -315,6 +302,64 @@ const activePortRules = items
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
+  }
+
+  /* The language, first in the row: a picker with a search, where the list is long enough to need one. */
+  .lm-agent-prompt__lang {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-width: 0;
+  }
+
+  .lm-agent-prompt__lang-picker {
+    width: 11rem;
+    flex: 0 1 11rem;
+    min-width: 0;
+  }
+
+  .lm-agent-prompt__lang-picker .doc-picker > summary {
+    min-height: 2.25rem;
+    padding: 0.25rem 0.55rem;
+  }
+
+  [data-lang-current] {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  /* The name that stands in for the picker before script draws it is the picker's own size, so drawing it moves nothing. */
+  .lm-agent-prompt__lang-static {
+    display: inline-flex;
+    align-items: center;
+    box-sizing: border-box;
+    width: 11rem;
+    min-width: 0;
+    min-height: 2.25rem;
+    padding: 0.25rem 0.55rem;
+    border: 1px solid transparent;
+    font-size: 0.8125rem;
+  }
+
+  .lm-agent-prompt__lang [hidden],
+  .lm-agent-prompt__summary[hidden] {
+    display: none !important;
+  }
+
+  .lm-agent-prompt--full {
+    container-type: inline-size;
+  }
+
+  @container (max-width: 36rem) {
+    .lm-agent-prompt--full .lm-agent-prompt__controls { gap: 0.5rem; padding-inline: 0.6rem; }
+    .lm-agent-prompt--full .lm-agent-prompt__lang,
+    .lm-agent-prompt--full .lm-agent-prompt__task { flex: 1 1 100%; }
+    .lm-agent-prompt--full .lm-agent-prompt__lang-picker { flex: 1; width: auto; }
+    .lm-agent-prompt--full .lm-agent-prompt__lang-static { flex: 1; width: auto; }
+    .lm-agent-prompt--full .lm-agent-prompt__summary { display: none; }
   }
 
   /* The task control and its reroll button, at the control's own spacing
@@ -434,7 +479,8 @@ const activePortRules = items
 
   .lm-agent-prompt__code code {
     font-family: var(--lm-agent-prompt-mono);
-    font-size: 0.875rem;
+    /* Code blocks are 13px at 1.7 (record 0032); signature headers keep 14px. */
+    font-size: 0.8125rem;
     line-height: 1.7;
     white-space: pre;
     color: var(--lm-agent-prompt-code-fg);
@@ -483,7 +529,7 @@ const activePortRules = items
 
   .lm-agent-prompt__copy {
     appearance: none;
-    border: 1px solid var(--lm-agent-prompt-border);
+    border: 1px solid var(--control-border);
     border-radius: 0.25rem;
     background: var(--lm-agent-prompt-bg);
     color: var(--lm-agent-prompt-fg-muted);
@@ -555,6 +601,8 @@ const activePortRules = items
   const TOPIC_KEY = 'libtmux-docs.agent-prompt.topic'
   /** `?prompt=<topic>` opens a shared link on that task, whatever was saved. */
   const TOPIC_PARAM = 'prompt'
+  /** `?lang=<port>` does the same for the language. */
+  const LANG_PARAM = 'lang'
 
   function islandFor(widget: HTMLElement): Island | undefined {
     const root = widget.parentElement ?? document
@@ -631,15 +679,22 @@ const activePortRules = items
   }
 
   function selectPort(widget: HTMLElement, slug: string, persist: boolean) {
-    const tabs = widget.querySelectorAll<HTMLButtonElement>('.lm-agent-prompt__tab')
     // A widget locked to one port ignores a shared choice it cannot show, the
     // same rule PackageInstall follows, rather than rendering nothing.
     if (!widget.dataset.ports?.split(' ').includes(slug)) return
-    tabs.forEach((tab) => {
-      const match = tab.dataset.tabValue === slug
-      tab.setAttribute('aria-selected', match ? 'true' : 'false')
-      tab.setAttribute('tabindex', match ? '0' : '-1')
-    })
+    const menu = widget.querySelector<HTMLDetailsElement>('[data-lang-menu]')
+    if (menu) {
+      for (const option of menu.querySelectorAll<HTMLAnchorElement>('[data-lang-option]')) {
+        const current = option.dataset.langOption === slug
+        if (current) option.setAttribute('aria-current', 'true')
+        else option.removeAttribute('aria-current')
+        option.querySelector<HTMLElement>('.doc-picker-check')!.hidden = !current
+        if (current) {
+          menu.querySelector('[data-lang-current]')!.textContent = option.dataset.langName ?? slug
+          menu.querySelector('summary')!.setAttribute('aria-label', `Programming language: ${option.dataset.langName ?? slug}`)
+        }
+      }
+    }
     widget.setAttribute('data-active-port', slug)
     if (persist) {
       // The document attribute is what <head> reads before first paint, so
@@ -843,11 +898,18 @@ const activePortRules = items
     } catch {
       saved = null
     }
+    // A shared link names a language as it names a task, and wins over the reader's last choice.
+    const linked = new URL(window.location.href).searchParams.get(LANG_PARAM)
     widgets().forEach((widget) => {
       const enhanced = widget.querySelector<HTMLElement>('[data-task-enhanced]')
       if (enhanced) {
         widget.querySelector<HTMLElement>('[data-task-native]')!.hidden = true
         enhanced.hidden = false
+      }
+      const language = widget.querySelector<HTMLElement>('[data-lang-enhanced]')
+      if (language) {
+        widget.querySelector<HTMLElement>('[data-lang-static]')!.hidden = true
+        language.hidden = false
       }
       const topic = startingTopic(widget)
       const select = widget.querySelector<HTMLSelectElement>('[data-select="topic"]')
@@ -857,7 +919,7 @@ const activePortRules = items
       // A saved language this widget does not offer falls back to its own
       // port; selectPort would ignore it and leave the restored task unrendered.
       const offered = widget.dataset.ports?.split(' ') ?? []
-      const start = saved && offered.includes(saved) ? saved : stateOf(widget).port
+      const start = linked && offered.includes(linked) ? linked : saved && offered.includes(saved) ? saved : stateOf(widget).port
       if (start) selectPort(widget, start, false)
       else render(widget)
     })
@@ -875,6 +937,24 @@ const activePortRules = items
       menu.open = false
       menu.querySelector('summary')!.focus({ preventScroll: true })
     }
+  }, { capture: true })
+
+  // Choosing a language: show it, remember it for this and the other widgets, and put it in the address.
+  document.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement
+    const option = target.closest<HTMLAnchorElement>('[data-lang-option]')
+    if (!option || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+    const widget = option.closest<HTMLElement>('.lm-agent-prompt')!
+    event.preventDefault()
+    const slug = option.dataset.langOption!
+    selectPort(widget, slug, true)
+    window.dispatchEvent(new CustomEvent(SYNC_EVENT, { detail: { origin: widget, slug } }))
+    const url = new URL(window.location.href)
+    url.searchParams.set(LANG_PARAM, slug)
+    history.replaceState(history.state, '', url)
+    const menu = option.closest('details')!
+    menu.open = false
+    menu.querySelector('summary')!.focus({ preventScroll: true })
   }, { capture: true })
 
   document.addEventListener('click', (event) => {
@@ -896,11 +976,6 @@ const activePortRules = items
       rerollTopic(rerolled)
       return
     }
-    const tab = target.closest<HTMLButtonElement>('.lm-agent-prompt__tab')
-    const widget = tab?.closest<HTMLElement>('.lm-agent-prompt')
-    if (!tab || !widget || !tab.dataset.tabValue) return
-    selectPort(widget, tab.dataset.tabValue, true)
-    window.dispatchEvent(new CustomEvent(SYNC_EVENT, { detail: { origin: widget, slug: tab.dataset.tabValue } }))
   })
 
   document.addEventListener('change', (event) => {

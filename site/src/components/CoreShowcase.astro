@@ -23,6 +23,11 @@ import { homeCodeColumns } from '../lib/quickstarts'
  * the example toggles alone. Every example is a program the port's CI runs, listed
  * in the page footer; see `lib/core-capabilities.ts`.
  *
+ * Nothing here changes size after the first paint. The dropdown is drawn closed, and
+ * a wide page shows its list through `::details-content` without waiting for the script
+ * to open it; each tab reserves the width of its semibold form, so moving the current
+ * tab moves no other.
+ *
  * A port whose only example is its quickstart gets that one panel, with no
  * list. Returns nothing when the port has neither.
  */
@@ -54,7 +59,7 @@ const version = buildTarget(process.env).version
 const apis = new Map(shown.map((item) => [item.id, apisUsed(port, CORE_APIS[port]?.[item.id] ?? [], item.quickstart ? quickstartCode : item.code, version, `${port}/${item.id}`)]))
 ---
 {shown.length > 0 && <div class="core-showcase" data-core-showcase={port}>
-  {shown.length > 1 && <details class="core-showcase__picker" open>
+  {shown.length > 1 && <details class="core-showcase__picker">
     <summary><span class="sr-only">Capability: </span><span data-capability-current>{shown[0]!.label}</span>
       <svg class="doc-picker-caret" width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
     </summary>
@@ -62,14 +67,19 @@ const apis = new Map(shown.map((item) => [item.id, apisUsed(port, CORE_APIS[port
       <nav aria-label="Capabilities">
         {shown.map((item, index) => <a class="core-showcase__option" href={`?capability=${item.id}`} data-capability-option={item.id}
           aria-current={index === 0 ? 'true' : undefined}>
-          <span>{item.label}{item.tmux && <small class="core-showcase__tmux">tmux {item.tmux}</small>}</span>
+          <span><span class="core-showcase__label" data-text={item.label}>{item.label}</span>{item.tmux && <small class="core-showcase__tmux">tmux {item.tmux}</small>}</span>
         </a>)}
       </nav>
     </div>
   </details>}
+  {/* Without a script every panel is stacked below with its title, so these links jump to them. */}
+  {shown.length > 1 && <nav class="core-showcase__static" aria-label="Capabilities">
+    {shown.map((item) => <a href={`#capability-${item.id}`}>{item.label}</a>)}
+  </nav>}
   <div class="core-showcase__panels">
-    {shown.map((item, index) => item.quickstart ? <section class="core-showcase__panel" data-capability-panel={item.id} data-default={index === 0 ? '' : undefined}
+    {shown.map((item, index) => item.quickstart ? <section class="core-showcase__panel" id={`capability-${item.id}`} data-capability-panel={item.id} data-default={index === 0 ? '' : undefined}
       style={`--home-code-columns: ${homeCodeColumns(quickstartCode)}`}>
+      {shown.length > 1 && <h3 class="core-showcase__panel-title">{item.label}</h3>}
       {player
         ? <CorePlayer port={port} language={PORT_BY_SLUG[port]!.name} example={quickstart!} recording={player.recording} capability={player.capability} />
         : <HomeExample port={port} language={PORT_BY_SLUG[port]!.name} example={quickstart!} heading={false} fixed />}
@@ -80,8 +90,9 @@ const apis = new Map(shown.map((item) => [item.id, apisUsed(port, CORE_APIS[port
           {apis.get(item.id)!.more > 0 && <li><a href={apis.get(item.id)!.moreHref}>+{apis.get(item.id)!.more} more</a></li>}
         </ul>
       </div>}
-    </section> : <section class="core-showcase__panel" data-capability-panel={item.id} data-default={index === 0 ? '' : undefined}
+    </section> : <section class="core-showcase__panel" id={`capability-${item.id}`} data-capability-panel={item.id} data-default={index === 0 ? '' : undefined}
       style={`--home-code-columns: ${homeCodeColumns(item.code)}`}>
+      {shown.length > 1 && <h3 class="core-showcase__panel-title">{item.label}</h3>}
       {capabilityPlayers.get(item.id)
         ? <CorePlayer port={port} language={PORT_BY_SLUG[port]!.name} example={capabilityExample({ ...item, ...cachedSource(item.id) })} recording={capabilityPlayers.get(item.id)!.recording}
           capability={capabilityPlayers.get(item.id)!.capability} capabilityId={item.id} options={false} run={false} />
@@ -132,7 +143,7 @@ const apis = new Map(shown.map((item) => [item.id, apisUsed(port, CORE_APIS[port
       const id = new URL(location.href).searchParams.get('capability')
       select(id && ids.includes(id) ? id : ids[0]!)
     }
-    // The list is always open beside the example on a wide page, and a dropdown on a narrow one.
+    // The list is always open beside the example on a wide page (the stylesheet shows it before this runs), and a dropdown on a narrow one.
     const layout = () => { picker.open = wide.matches }
     root.addEventListener('click', (event) => {
       const link = (event.target as Element).closest<HTMLAnchorElement>('[data-capability-option]')
@@ -162,11 +173,14 @@ const apis = new Map(shown.map((item) => [item.id, apisUsed(port, CORE_APIS[port
   .core-showcase__links a { color: var(--color-link); }
   .core-showcase__panels, .core-showcase__panel, .core-showcase__picker { min-width: 0; max-width: 100%; }
   .core-showcase :global(.expressive-code) { max-width: 100%; }
-  .core-showcase__picker > summary { display: flex; justify-content: space-between; align-items: center; min-height: 2.5rem; padding: .25rem .75rem; cursor: pointer; border: 1px solid var(--color-edge); border-radius: .4rem; list-style: none; }
+  .core-showcase__picker > summary { display: flex; justify-content: space-between; align-items: center; min-height: 2.5rem; padding: .25rem .75rem; cursor: pointer; border: 1px solid var(--control-border); border-radius: .4rem; list-style: none; }
   .core-showcase__picker > summary::-webkit-details-marker { display: none; }
   .core-showcase__option { display: block; padding: .45rem .75rem; border-radius: .35rem; font-size: .875rem; color: inherit; text-decoration: none; }
   .core-showcase__option:hover { background: var(--color-surface-hover); }
   .core-showcase__option[aria-current='true'] { font-weight: 600; background: var(--color-surface-hover); }
+  /* A tab takes the width of its label in semibold, so the current tab's weight change moves nothing beside it. */
+  .core-showcase__label { display: inline-flex; flex-direction: column; }
+  .core-showcase__label::after { content: attr(data-text); height: 0; overflow: hidden; visibility: hidden; font-weight: 600; user-select: none; pointer-events: none; }
   /* The panels share one grid cell, so the column is as tall as the tallest and switching moves nothing below. */
   .core-showcase__panels { display: grid; container-type: inline-size; }
   .core-showcase__panel { grid-area: 1 / 1; visibility: hidden; }
@@ -178,16 +192,26 @@ const apis = new Map(shown.map((item) => [item.id, apisUsed(port, CORE_APIS[port
   .core-showcase__apilist code { font-size: inherit; overflow-wrap: anywhere; }
   /* The treatment of the front page examples: column-fit type size, a fixed height, scrolling inside the block. */
   .core-showcase__panel > :global(.expressive-code) {
-    --ec-codeFontSize: clamp(.8125rem, calc((100cqi - 2rem) / (var(--home-code-columns, 80) * .625)), .9375rem);
+    --ec-codeFontSize: clamp(.78125rem, calc((100cqi - 2rem) / (var(--home-code-columns, 80) * .625)), .875rem);
   }
   .core-showcase__panel > :global(.expressive-code pre) { height: calc(34rem - var(--home-toolbar-row, 0rem)); max-height: none; overflow: auto; tab-size: 8; scrollbar-gutter: stable; }
   .core-showcase__panel h3 { margin: 0 0 .6rem; font-size: 1rem; }
+  /* No script: every capability shows in turn under its title, and the list of anchors replaces the picker. */
+  .core-showcase__static, .core-showcase__panel-title { display: none; }
+  :global(html:not([data-js])) .core-showcase__picker { display: none; }
+  :global(html:not([data-js])) .core-showcase__static { display: flex; flex-wrap: wrap; gap: .375rem; }
+  .core-showcase__static a { padding: .45rem .75rem; border: 1px solid var(--color-edge); border-radius: .35rem; font-size: .875rem; color: inherit; text-decoration: none; }
+  :global(html:not([data-js])) .core-showcase__panels { display: block; }
+  :global(html:not([data-js])) .core-showcase__panel { visibility: visible; margin-top: 1.5rem; scroll-margin-top: 5rem; }
+  :global(html:not([data-js])) .core-showcase__panel-title { display: block; }
   .core-showcase__tmux {
     margin-inline-start: .5rem; padding: .05rem .4rem; border: 1px solid var(--color-edge); border-radius: .75rem;
     font-size: .6875rem; font-weight: 500; color: var(--color-muted);
   }
   .core-showcase :global(.expressive-code pre) { overflow: auto; tab-size: 8; }
   @media (min-width: 56rem) {
+    /* The list shows closed or open: the server draws the dropdown closed, which is right for a phone, and a wide page needs no script to open it. */
+    .core-showcase__picker::details-content { content-visibility: visible; }
     .core-showcase__picker > summary { display: none !important; }
     .core-showcase__panel-list nav { display: flex; flex-wrap: wrap; gap: .375rem; }
     .core-showcase__option { border: 1px solid var(--color-edge); }

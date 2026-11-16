@@ -116,7 +116,6 @@ describe('the Core player\'s links', () => {
   const UNLINKED: Record<string, string[]> = {
     elixir: ['System.cmd', 'Session.active_window', 'Ref.from_observation', 'Window.rename!', 'Pane.split!', 'Session.new_window!', 'Pane.send_text!', 'Pane.send_keys!', 'Pane.capture!', 'Window.panes'],
     fsharp: ['Window.rename', 'Window.activePane', 'Session.newWindow', 'Pane.select', 'Window.select', 'Seq.find'],
-    go: ['Pane.WaitForText'],
     julia: ['wait_for_text'],
     lua: ['tmux', 'Pane:wait_for_text'],
     powershell: ['Snapshot.Panes'],

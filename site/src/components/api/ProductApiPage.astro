@@ -6,11 +6,13 @@ import ApiMemberList from './ApiMemberList.astro'
 import ApiScalarMembers from './ApiScalarMembers.astro'
 import ApiTmuxSections from './ApiTmuxSections.astro'
 import mentionsData from '../../data/mentions.json'
-import { apiEntryFields, apiEntrySections, apiMemberGroups, fieldsRepeated, memberTable, variantPayloads } from '../../lib/api-sections'
+import { apiEntryFields, apiEntrySections, apiMemberGroups, fieldsRepeated, memberCollectionFacts, memberTable, variantPayloads } from '../../lib/api-sections'
+import { nativeKind } from '../../lib/api-labels'
 import { apiTmuxSections } from '../../lib/api-tmux-sections'
 import { productApiAlternatives, productApiHref, productApiIndex } from '../../lib/product-api'
 import { DOC_PRODUCTS, PORT_BY_SLUG, portPageUrl, productApiPath, type DocProduct } from '../../lib/ports'
 import { symbolSource } from '../../lib/markdown-twins'
+import { withPortRoot } from '../../lib/site-root'
 import { alternateDocs } from '../../lib/perl-pod'
 import '../../styles/api.css'
 import '../../styles/vendor/gp-sphinx-api.css'
@@ -28,6 +30,8 @@ const listed = table ? table.rest : members
 const groups = apiMemberGroups(listed, memberSignals(model.port, mentionsData.mentions))
 const showGroups = groups.length > 1
 const membersHeading = table ? 'Other members' : 'Members'
+const memberFacts = memberCollectionFacts(listed, 'Members', (member) => nativeKind(member, model.port))
+const memberBudget = { region: `${membersHeading} of ${symbol.name}`, owner: symbol.name, searchHref: withPortRoot(`/${model.port}/${version}/search/`) }
 // The ids a member's inline entry carried stay as anchors, so links to them keep landing here.
 const anchorsFor = (member: ApiSymbol) => [...new Set([
   member.publicId ?? member.id,
@@ -57,15 +61,15 @@ const tmuxSections = apiTmuxSections(model.port, symbol, alternativesFor(symbol)
   {symbol.apiScope === 'supporting' && <p>This type appears in public signatures. It is not a package entry point.</p>}
   <ApiEntry symbol={symbol} index={index} port={model.port} alternativesFor={alternativesFor} heading linkRows={false} sourceUrl={(entry) => sourceUrl(model, entry)}
     alternate={(entry) => alternateDocs(model, entry, version)} />
-  <ApiTmuxSections sections={tmuxSections} />
+  <ApiTmuxSections sections={tmuxSections} port={model.port} />
   {table && <div class="api-field-table mt-8">
     <h2 class="api-section-heading text-lg font-semibold" id={table.id}>{table.label}<span class="api-section-count">{table.rows.length}</span><a class="api-heading-link" href={`#${table.id}`} aria-label={`Link to ${table.label}`}>#</a></h2>
     <ApiScalarMembers owner={symbol} members={table.rows} index={index} hrefFor={hrefFor} columns={table.columns} label={table.label} payloads={payloads} repeated={table.columns === 'variants' || (table.columns === 'fields' && fieldsRepeated(model.port))} />
   </div>}
   {table && <div class="sr-only">{table.rows.flatMap(anchorsFor).map((id) => <span id={id} />)}</div>}
   {listed.length > 0 && <div class="api-members mt-8">
-    <h2 class="api-section-heading text-lg font-semibold" id="api-members">{membersHeading}<span class="api-section-count">{listed.length}</span><a class="api-heading-link" href="#api-members" aria-label={`Link to ${membersHeading}`}>#</a></h2>
-    <ApiMemberList groups={groups} showGroups={showGroups} index={index} hrefFor={hrefFor} anchorsFor={anchorsFor} />
+    <h2 class="api-section-heading text-lg font-semibold" id="api-members">{membersHeading}<span class="api-section-count">{listed.length} members</span><a class="api-heading-link" href="#api-members" aria-label={`Link to ${membersHeading}`}>#</a></h2>
+    <ApiMemberList groups={groups} showGroups={showGroups} index={index} hrefFor={hrefFor} anchorsFor={anchorsFor} mixed={memberFacts.mixed} budget={memberFacts.budgeted ? memberBudget : undefined} />
   </div>}
   </div>
 

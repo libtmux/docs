@@ -14,15 +14,22 @@
 .home-example-player {
   container: core-player / inline-size;
   --mcp-mono: var(--font-ibm-plex-mono, ui-monospace, 'SFMono-Regular', Menlo, monospace);
+  --hang-w: 1.1rem;
+  --hang-gap: 0.4rem;
+  --hang-need: calc(var(--hang-w) + var(--hang-gap) + 1px + 0.375rem);
+  /* A layout states the margin it leaves left of its code frames in --code-hang-room (default 1rem); the player moves in by what the rail needs beyond it. */
+  margin-inline-start: max(0px, calc(var(--hang-need) - var(--code-hang-room, 1rem)));
   border: 1px solid var(--color-edge);
   border-radius: var(--card-radius, 0.5rem);
   background: var(--color-surface);
-  overflow: hidden;
+  /* The rail hangs outside the card, so the card does not clip; the code rounds its own corner in its place. */
+  overflow: visible;
 }
 
 .home-example-player:fullscreen {
   display: flex;
   flex-direction: column;
+  margin-inline-start: 0;
   border-radius: 0;
   background: var(--color-background-primary, var(--color-surface));
 }
@@ -59,11 +66,17 @@
   border-top: 1px solid var(--color-edge);
 }
 
-/* The program is set a size smaller than the homepage's, so that most of its lines fit the column beside the tmux. */
+/* The program is set a size smaller than the homepage's, so that most of its lines fit the column beside the tmux; the frame's padding, 1rem a side, is part of what the column holds. */
 .home-example-player .home-example-stage > .home-example-code > .home-example-view .expressive-code {
   --ec-codeFontSize: clamp(0.75rem, calc((100cqi - 2rem) / (var(--home-code-columns) * 0.625)), 0.875rem);
+  position: relative;
 }
 
+/*
+ * The step markers hang in a rail outside the player (.core-hang, record 0058), at a negative margin. No part of the code holds
+ * them, so the code keeps the frame's standard padding; and the player's move in by what the rail needs beyond its layout's room
+ * is part of the first paint, so the script that draws the markers shifts nothing.
+ */
 /* More specific than the landing page's cap on every program in its panels, which holds for the stand-alone example. */
 .home-example-player .home-example-stage > .home-example-code > .home-example-view .expressive-code {
   margin: 0;
@@ -84,6 +97,12 @@
   overflow: auto;
   tab-size: 8;
   scrollbar-gutter: stable;
+}
+
+/* The card does not clip, so the code rounds its own start corners (the end corner too where the code stands alone above the tmux). */
+.home-example[data-player] .home-example-player .home-example-stage > .home-example-code > .home-example-view .expressive-code pre {
+  border-start-start-radius: calc(var(--card-radius, 0.5rem) - 1px);
+  border-start-end-radius: calc(var(--card-radius, 0.5rem) - 1px);
 }
 
 /* Named, because the code column is a container of its own (the font size follows its width) and must not answer for the player. */
@@ -109,11 +128,15 @@
     border-top: 0;
     border-inline-start: 1px solid var(--color-edge);
   }
+
+  .home-example[data-player] .home-example-player .home-example-stage > .home-example-code > .home-example-view .expressive-code pre {
+    border-start-end-radius: 0;
+  }
 }
 
-/* The call being shown. A tint, not a bar: the code's own colours stay readable on it. */
-.home-example-view .ec-line.is-call {
-  cursor: pointer;
+/* The call a reader is previewing from its marker, then the call being shown. A tint, not a bar: the code's own colours stay readable on it. */
+.home-example-view .ec-line.is-hover {
+  background: color-mix(in srgb, var(--color-link) 8%, transparent);
 }
 
 .home-example-view .ec-line.is-current {
@@ -122,6 +145,122 @@
 
 .home-example-view .ec-line.is-current.is-pinned {
   background: color-mix(in srgb, var(--color-link) 24%, transparent);
+}
+
+/*
+ * Expressive Code resets every element inside its container (`.expressive-code
+ * :not(:is(svg, svg *))`), so the two controls drawn into it are prefixed with
+ * the container to outrank that reset.
+ *
+ * Text in the code selects as anywhere else. A numbered marker beside each
+ * call's first line is a button, the one way into a step from the code. A
+ * pointer over it or focus on it previews the step; it is drawn by the script,
+ * so a page without one has no dead buttons.
+ *
+ * The rail is a sibling of the scrolling code and as tall as it. Its track
+ * follows the code's vertical scroll (the script sets the transform); a marker
+ * sits at its line by transform too. The rail clips what has scrolled out of
+ * the code, but not the focus ring beside it.
+ */
+.expressive-code .core-hang {
+  position: absolute;
+  z-index: 1;
+  inset-block: 0 0;
+  inset-inline-start: calc(-1 * (var(--hang-w) + var(--hang-gap) + 1px));
+  width: var(--hang-w);
+  clip-path: inset(0 -0.5rem);
+  pointer-events: none;
+}
+
+.expressive-code .core-hang__in {
+  position: relative;
+}
+
+.expressive-code .core-step {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+  padding: 0;
+  transform: translateY(var(--y, 0));
+  border: 1px solid var(--color-muted);
+  border-radius: 50%;
+  background: var(--ec-codeBg, var(--color-surface));
+  color: var(--color-muted);
+  font: 600 0.625rem / 1 var(--font-sans, inherit);
+  cursor: pointer;
+  pointer-events: auto;
+  user-select: none;
+}
+
+.expressive-code .core-step::before {
+  content: attr(data-n);
+}
+
+.expressive-code .core-step:hover,
+.expressive-code .core-step:focus-visible {
+  border-color: var(--color-link);
+  color: var(--color-link);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-link) 25%, transparent);
+}
+
+.expressive-code .core-step:focus-visible {
+  outline: 2px solid var(--focus-ring-color, currentColor);
+  outline-offset: 2px;
+}
+
+.expressive-code .core-step.is-current {
+  border-color: var(--color-link);
+  background: var(--color-link);
+  color: var(--ec-codeBg, var(--color-surface));
+}
+
+/* The copy button, at the program's top right and clear of its scrollbar: the code frame's own 2rem square. */
+.expressive-code .core-copy {
+  position: absolute;
+  top: 0.5rem;
+  right: 1.25rem;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid var(--color-edge);
+  border-radius: 0.25rem;
+  background: var(--ec-codeBg, var(--color-surface));
+  color: var(--color-muted);
+  cursor: pointer;
+  opacity: 0.75;
+}
+
+.expressive-code .core-copy:hover,
+.expressive-code .core-copy:focus-visible,
+.expressive-code .core-copy[data-copied] {
+  color: var(--ec-codeFg, var(--text-color));
+  opacity: 1;
+}
+
+.expressive-code .core-copy[data-copied] {
+  border-color: currentColor;
+  color: var(--color-link);
+}
+
+.expressive-code .core-copy:focus-visible {
+  outline: 2px solid var(--focus-ring-color, currentColor);
+  outline-offset: 2px;
+}
+
+@media print {
+  .expressive-code .core-copy,
+  .expressive-code .core-hang {
+    display: none;
+  }
+
+  .home-example-player {
+    margin-inline-start: 0;
+  }
 }
 
 /* The side */
@@ -143,7 +282,9 @@
 .core-player__results {
   flex: 1;
   min-height: 0;
+  margin: 0;
   padding: 0 1rem 0.75rem;
+  list-style: none;
   border-top: 1px solid var(--color-edge);
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -165,29 +306,17 @@
 }
 
 /*
- * The markup is drawn at the state before the first call, which is where the
- * script starts a reader who has not asked for less motion. A page without
- * script, and a reduced-motion reader's page until the script binds (it starts
- * finished), show the final frame and result instead.
+ * The markup is drawn at the first call, which is where the script opens the
+ * player for every reader, reduced motion included (nothing plays until the
+ * reader presses play). A page without script shows the final frame and every
+ * result instead.
  */
-html:not([data-js]) .core-player__tmux > .mcp-frame:first-child {
+html:not([data-js]) .core-player__tmux > .mcp-frame:not(:last-child) {
   display: none;
 }
 
-html:not([data-js]) .core-player__tmux > .mcp-frame[data-off]:last-child {
+html:not([data-js]) .core-player__tmux > .mcp-frame:last-child {
   display: block;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html[data-js] .home-example-player:not([data-live]) .core-player__tmux > .mcp-frame:first-child,
-  html[data-js] .home-example-player:not([data-live]) .core-player__results > .core-result:first-child {
-    visibility: hidden;
-  }
-
-  html[data-js] .home-example-player:not([data-live]) .core-player__tmux > .mcp-frame:last-child,
-  html[data-js] .home-example-player:not([data-live]) .core-player__results > .core-result:last-child {
-    visibility: visible;
-  }
 }
 
 html:not([data-js]) .core-result + .core-result {
@@ -213,6 +342,10 @@ html[data-js] .core-player__results > .core-result[data-off] {
   visibility: hidden;
 }
 
+.core-result {
+  list-style: none;
+}
+
 .core-result__title {
   display: flex;
   align-items: center;
@@ -222,6 +355,11 @@ html[data-js] .core-player__results > .core-result[data-off] {
   font-size: 0.75rem;
   font-weight: 400;
   line-height: 1.4;
+}
+
+/* The script unhides the pin, a 1.75rem button with a -0.25rem block margin each side: the row is its 1.25rem before and after. */
+.core-result__title {
+  min-height: 1.25rem;
 }
 
 .core-result__title code {

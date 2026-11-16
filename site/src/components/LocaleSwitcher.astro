@@ -27,7 +27,7 @@ const entries = Object.entries(localeStatuses) as [Locale, LocaleStatus][]
 {
   entries.length > 0 && (
     <details class="doc-picker" data-doc-picker data-locale-picker>
-      <summary aria-label={`${LOCALE_LABEL[locale]}: ${t(locale, 'i18n.available')}`}>
+      <summary aria-label={`${t(locale, 'i18n.translationLanguage')}: ${LOCALE_LABEL[locale]}`}>
         {/* The current language in its own name, so a reader who cannot read
             the interface language can still find the control. */}
         <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><circle cx="8" cy="8" r="6" /><path d="M2 6h12M2 10h12M8 2c3 3 3 9 0 12-3-3-3-9 0-12Z" /></svg>
@@ -35,7 +35,7 @@ const entries = Object.entries(localeStatuses) as [Locale, LocaleStatus][]
         <svg class="doc-picker-caret" viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
       </summary>
       <div class="doc-picker-panel locale-picker-panel" data-picker-panel>
-        <PickerSearch label={t(locale, 'i18n.available')} placeholder={t(locale, 'i18n.findLanguage')} emptyMessage={t(locale, 'i18n.noMatchingLanguages')} />
+        <PickerSearch label={t(locale, 'i18n.translationLanguage')} placeholder={t(locale, 'i18n.findLanguage')} emptyMessage={t(locale, 'i18n.noMatchingLanguages')} />
         <ul>
         {entries.map(([l, status]) => (
           <li>

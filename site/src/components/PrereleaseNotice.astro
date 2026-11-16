@@ -33,15 +33,20 @@ const { centered = false, port } = Astro.props
 const unreleased = port && releaseMaturity(registryFor(port), port.tagGrammar) === 'unreleased'
 ---
 
-<div class:list={['prerelease-notice', { 'prerelease-notice--centered': centered }]} data-prerelease-notice>
+<div class:list={['prerelease-notice', 'prerelease-notice--collapsible', { 'prerelease-notice--centered': centered }]} data-prerelease-notice>
   <div class="prerelease-notice__inner">
     <p class="prerelease-notice__text">
       <strong class="prerelease-notice__badge">{unreleased ? 'Unreleased' : 'Early release'}</strong>
-      <span>
+      <span class="prerelease-notice__lead" aria-hidden="true">{unreleased ? 'Not released yet.' : 'APIs may still change.'}</span>
+      <span class="prerelease-notice__full">
         {unreleased ? `${port.packageName} has not been released. Its API may change during development.` : 'libtmux is released, and its APIs may still change between releases.'}
         This site's structure and URLs may change too.
       </span>
     </p>
+    {/* Below 30rem the sentence waits behind this disclosure, which opens without a script; the rule that reveals it is `.prerelease-notice:has(details[open])`. */}
+    <details class="prerelease-notice__more">
+      <summary><span class="prerelease-notice__more-open">More</span><span class="prerelease-notice__more-close">Less</span><span class="sr-only"> about this notice</span></summary>
+    </details>
     <button
       class="prerelease-notice__dismiss"
       type="button"

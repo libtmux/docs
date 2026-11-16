@@ -56,7 +56,7 @@ describe('source link audit', () => {
   it.each(['java', 'kotlin', 'scala'] as const)('accepts the embedded source route for a real %s declaration', (port) => {
     const { model, declaration, file, git, revision, invoke } = fixture(port)
     expect(sourceUrl(model, declaration, `/pr-42/en/${port}/v1/reference/`))
-      .toBe(`/pr-42/en/${port}/v1/reference/sources/${file}`)
+      .toBe(`/pr-42/en/${port}/v1/reference/sources/${file}/${declaration.source.line ? `#L${declaration.source.line}` : ''}`)
     expect(git('ls-tree', '--name-only', revision, '--', file)).toBe('')
     const result = invoke()
     expect(result.error).toBeUndefined()
@@ -91,7 +91,7 @@ describe('source link audit', () => {
     model.symbols = [ordinary]
     model.generatedSources = { [ordinary.source.file]: 'package embedded;\nclass Server {}\n' }
     expect(sourceUrl(model, ordinary, '/en/kotlin/latest/reference/'))
-      .toBe('/en/kotlin/latest/reference/sources/src/Server.java')
+      .toBe('/en/kotlin/latest/reference/sources/src/Server.java/#L2')
     const result = invoke()
     expect(result.status, result.stderr).toBe(0)
     expect(result.stdout).toContain('1 generated declaration and method locations')

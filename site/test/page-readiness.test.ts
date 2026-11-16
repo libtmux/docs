@@ -79,6 +79,18 @@ it('treats decoration failure as a required appearance failure', async () => {
   expect(root().classList.contains('link-hints-pending')).toBe(true)
   expect(win.document.querySelector('[role="alert"]')?.textContent).toContain('Reload')
 })
+it('names what failed, says why and offers the one action, as the shared failure layout does', async () => {
+  decorate.mockImplementationOnce(() => { throw new Error('decoration failed') })
+  initializePageReadiness(decorate, 'icon')
+  await ready()
+  const alert = win.document.querySelector('#page-load-status')!
+  expect(alert.getAttribute('role')).toBe('alert')
+  expect(alert.querySelector('strong')!.textContent).toBe('The page did not finish loading.')
+  expect(alert.querySelector('span')!.textContent).toContain('Reload to try again.')
+  expect(alert.querySelector('button')!.textContent).toBe('Reload')
+  // Never an apology or "an error occurred".
+  expect(alert.textContent).not.toMatch(/sorry|error occurred|something went wrong/i)
+})
 it('does not turn a required failure into success when remaining resources settle', async () => {
   const module = script()
   initializePageReadiness(decorate, 'icon')

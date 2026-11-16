@@ -3,148 +3,120 @@ import { DEFAULT_LOCALE } from '../../../i18n/locales'
 import { buildLocale } from '../../../i18n/resolve'
 import type { ApiSymbol } from '@libtmux/api-model'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
-import PageToolbar from '../../../components/PageToolbar.astro'
-import ApiBadge from '../../../components/api/ApiBadge.astro'
+import SymbolIndex from '../../../components/api/SymbolIndex.astro'
 import { withRoot } from '../../../lib/site-root'
 import { API_MODELS, PORT_NAME, referenceHref } from '../../../lib/api-models'
+import { coreApiSymbols } from '../../../lib/product-api'
+import { PORT_BY_SLUG, referenceUrl } from '../../../lib/ports'
+import { buildTarget } from '../../../lib/versions'
+import { groupByLetter, letterLabel, summaryLine, type IndexEntry } from '../../../lib/symbol-index'
 import '../../../styles/api.css'
 import '../../../styles/vendor/gp-sphinx-api.css'
 
 /**
- * Every public symbol in every port, A to Z.
+ * Every public symbol, A to Z.
  *
- * The per-port index answers "what is in this library"; this answers "where
- * does this name live", which is the question a reader arrives with when they
- * have seen a name in someone else's code and do not know which of eight
- * libraries it belongs to — or whether it belongs to more than one.
+ * The root build lists every port: the per-port index answers "what is in this
+ * library", this answers "where does this name live", the question a reader
+ * arrives with when they have seen a name in someone else's code and do not
+ * know which of the libraries it belongs to, or whether it belongs to more than
+ * one. A port's build lists that port alone, at the same route under its
+ * reference (`/<port>/<version>/reference/symbols/<letter>/`): an A-Z view for a
+ * reader who knows roughly what something is called, with the kind of each name,
+ * names many types declare folded into one row, and a filter.
  *
  * One page per initial letter. All eleven thousand on a single page is
  * several megabytes of HTML that no browser is glad to receive, and the
  * alphabet is the split a reader already understands.
  */
 export async function getStaticPaths() {
-  // Root build only, like the reference route itself: inside a port shell
-  // this would render fourteen more copies of the same eleven thousand rows.
-  if (process.env.LIBTMUX_DOCS_PORT) return []
   // Default locale only, for the same reason the reference route itself is
   // gated: the symbol index is the reference's own front door, and the
   // reference is not translated. A Japanese copy would be an English index
   // at a Japanese URL, linking across to /en/ for every row.
   if (buildLocale() !== DEFAULT_LOCALE) return []
 
-  const byLetter = new Map<string, { port: string; symbol: ApiSymbol }[]>()
-  for (const [port, model] of Object.entries(API_MODELS) as [string, { symbols: ApiSymbol[] }][]) {
-    for (const symbol of model.symbols) {
-      // The bare name, not the qualified id: a reader looking up `capture`
-      // does not know it is `libtmux::Pane::capture` yet.
-      const first = symbol.name.replace(/^[^A-Za-z0-9]+/, '').charAt(0).toUpperCase()
-      const letter = /[A-Z]/.test(first) ? first : '0'
-      const list = byLetter.get(letter) ?? []
-      list.push({ port, symbol })
-      byLetter.set(letter, list)
+  const buildPort = process.env.LIBTMUX_DOCS_PORT
+  const version = buildTarget(process.env).version
+  const sources: [string, ApiSymbol[]][] = buildPort
+    ? API_MODELS[buildPort] ? [[buildPort, coreApiSymbols(API_MODELS[buildPort]!)]] : []
+    : (Object.entries(API_MODELS) as [string, { symbols: ApiSymbol[] }][]).map(([port, model]) => [port, model.symbols])
+
+  const entries: IndexEntry[] = []
+  for (const [port, symbols] of sources) {
+    const names = new Map(symbols.map((symbol) => [symbol.id, symbol.name]))
+    for (const symbol of symbols) {
+      const id = symbol.publicId ?? symbol.id
+      // The index never lists a symbol the reference has no page for.
+      const href = referenceHref(port, id, buildPort ? version : undefined)
+      if (!href) continue
+      entries.push({
+        port, name: symbol.name, id, kind: symbol.kind, href,
+        owner: symbol.parent ? names.get(symbol.parent) : undefined,
+        summary: summaryLine(symbol.doc?.summary),
+      })
     }
   }
 
-  const letters = [...byLetter.keys()].sort()
-  return letters.map((letter) => ({
-    params: { letter: letter.toLowerCase() },
-    props: {
-      letter,
-      letters,
-      entries: (byLetter.get(letter) ?? []).sort(
-        (a, b) => a.symbol.name.localeCompare(b.symbol.name) || a.port.localeCompare(b.port),
-      ),
-    },
+  const groups = groupByLetter(entries)
+  const letters = groups.map((group) => group.letter)
+  const portsByName = new Map<string, Set<string>>()
+  for (const entry of entries) portsByName.set(entry.name, (portsByName.get(entry.name) ?? new Set()).add(entry.port))
+  const shared = [...portsByName].filter(([, ports]) => ports.size > 1).map(([name]) => name)
+
+  return groups.map((group) => ({
+    params: { letter: group.letter.toLowerCase() },
+    props: { letter: group.letter, letters, entries: group.entries, total: entries.length, shared, port: buildPort },
   }))
 }
 
 interface Props {
   letter: string
   letters: string[]
-  entries: { port: string; symbol: ApiSymbol }[]
+  entries: IndexEntry[]
+  total: number
+  shared: string[]
+  port?: string
 }
-const { letter, letters, entries } = Astro.props as Props
-const breadcrumbs = [
-  { name: 'libtmux', url: withRoot('/') },
-  { name: 'Reference', url: withRoot('/reference/') },
-  { name: `Symbols: ${letter}`, url: withRoot(`/reference/symbols/${letter.toLowerCase()}/`) },
-]
+const { letter, letters, entries, total, shared, port } = Astro.props as Props
 
-/**
- * Names carried by more than one port, marked as such.
- *
- * This is the cross-language axis the concept map cannot cover: `Pane` is
- * `Pane` everywhere and needs no mapping, so nothing would otherwise say that
- * all eight ports have one.
- */
-const portsByName = new Map<string, Set<string>>()
-for (const { port, symbol } of entries) {
-  const set = portsByName.get(symbol.name) ?? new Set<string>()
-  set.add(port)
-  portsByName.set(symbol.name, set)
-}
+const portMeta = port ? PORT_BY_SLUG[port] : undefined
+const portName = port ? (PORT_NAME[port] ?? portMeta?.name ?? port) : undefined
+const here = (l: string) => withRoot(`/reference/symbols/${l.toLowerCase()}/`)
+const referenceRoot = portMeta ? referenceUrl(portMeta, buildTarget(process.env).version) : withRoot('/reference/')
+const breadcrumbs = port
+  ? [
+      { name: portName!, url: withRoot('/') },
+      { name: 'API reference', url: referenceRoot },
+      { name: `Symbols: ${letterLabel(letter)}`, url: here(letter) },
+    ]
+  : [
+      { name: 'libtmux', url: withRoot('/') },
+      { name: 'Reference', url: withRoot('/reference/') },
+      { name: `Symbols: ${letterLabel(letter)}`, url: here(letter) },
+    ]
+const title = port ? `${portName} API index` : 'Symbol index'
 ---
 
 <BaseLayout
-  title={`Symbols: ${letter}`}
+  title={`${title}: ${letterLabel(letter)}`}
   breadcrumbs={breadcrumbs}
-  description={`Public libtmux symbols beginning with ${letter}.`}
+  description={`Public ${portName ?? 'libtmux'} symbols beginning with ${letterLabel(letter)}.`}
   pagePath={`reference/symbols/${letter.toLowerCase()}`}
+  portSlug={port || undefined}
+  version={port ? buildTarget(process.env).version : undefined}
+  inventoryExclude={Boolean(port)}
   noindex={true}
 >
-  <main class="mx-auto max-w-5xl px-4 py-10">
-    <PageToolbar breadcrumbs={breadcrumbs} />
-    <h1 class="text-2xl font-semibold tracking-tight">Symbol index</h1>
-    <p class="mt-3 max-w-2xl">
-      Public symbols by name. {entries.length} beginning
-      with <strong>{letter}</strong>.
-    </p>
-
-    <nav class="mt-6 flex flex-wrap gap-1" aria-label="Letters">
-      {
-        letters.map((l) => (
-          <a
-            class:list={[
-              'rounded border border-slate-200 px-2 py-1 font-mono text-sm dark:border-slate-800',
-              l === letter
-                ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900'
-                : 'hover:bg-surface-hover',
-            ]}
-            href={withRoot(`/reference/symbols/${l.toLowerCase()}/`)}
-          >
-            {l === '0' ? '#' : l}
-          </a>
-        ))
-      }
-    </nav>
-
-    <ul class="mt-8 divide-y divide-slate-200 dark:divide-slate-800">
-      {
-        entries.map(({ port, symbol }) => {
-          const id = symbol.publicId ?? symbol.id
-          const href = referenceHref(port, id)
-          const shared = (portsByName.get(symbol.name)?.size ?? 1) > 1
-          return (
-            <li class="grid grid-cols-[1fr_auto] items-baseline gap-4 py-1.5">
-              <span class="min-w-0">
-                {href ? (
-                  <a href={href} class="font-mono">
-                    {symbol.name}
-                  </a>
-                ) : (
-                  <span class="font-mono">{symbol.name}</span>
-                )}
-                <span class="ml-2 truncate font-mono text-xs opacity-50">{id}</span>
-              </span>
-              <span class="whitespace-nowrap text-xs opacity-60">
-                <ApiBadge label={symbol.kind === 'typealias' ? 'type alias' : symbol.kind} variant="kind" value={symbol.kind} plain />
-                <span class="ml-2">{PORT_NAME[port] ?? port}</span>
-                {shared && <span class="ml-2 opacity-70" title="Also in other ports">·shared</span>}
-              </span>
-            </li>
-          )
-        })
-      }
-    </ul>
-  </main>
+  <SymbolIndex
+    title={title}
+    letter={letter}
+    letters={letters.map((l) => ({ letter: l, href: here(l) }))}
+    entries={entries}
+    breadcrumbs={breadcrumbs}
+    port={port}
+    portName={portName}
+    total={total}
+    shared={new Set(shared)}
+  />
 </BaseLayout>

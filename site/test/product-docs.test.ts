@@ -363,7 +363,7 @@ async function referenceSidebar(inventory: ApiTreeJson, selectedSymbol: string) 
   const window = new Window()
   window.document.body.innerHTML = await renderAstroTemplate(template, { props: {
     presentation: 'outline', inventory, selectedSymbol, referenceBase: '/reference/', portName: 'Sample', tree: [], members: [],
-    withMembers: new Set(), currentPath: '/reference/', version: 'test', treeLabel: 'Sample: API Reference',
+    withMembers: new Set(), currentPath: '/reference/', version: 'test', treeLabel: 'Sample: API reference',
   } })
   return window
 }
@@ -697,7 +697,7 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
           new URL(link.getAttribute('href')!, urlFor(page.path)).pathname === guide), `${page.path} native example guide`).toBe(true)
       }
       const section = page.section === 'source-guide' ? 'guides' : page.section.split('/')[0] || 'home'
-      const sectionLabel = section === 'reference' ? 'API Reference' : section[0].toUpperCase() + section.slice(1)
+      const sectionLabel = section === 'reference' ? 'API reference' : section[0].toUpperCase() + section.slice(1)
       expect(picker?.querySelector('.surface-current .surface-label')?.textContent, `${page.path} current app`).toBe(surface)
       expect(picker?.querySelectorAll('.surface-current .status-badge').length).toBe(1)
       expect(picker?.querySelector('.surface-current .status-badge')?.getAttribute('data-status'), `${page.path} badge`)
@@ -871,7 +871,11 @@ describe.skipIf(!SITE_BUILT)('assembled MCP and Workspace Manager docs', () => {
         expect(document.querySelector('main .api-reference-layout--symbol'), object.id).not.toBeNull()
         const row = document.querySelector('[data-section-navigation] nav [aria-current="page"]')
         expect(row?.textContent?.trim(), `${object.id} current row`).toBe(object.name)
-        expect(row?.closest('details.sidebar-section')?.querySelector(':scope > summary')?.textContent?.trim(), `${object.id} group`).toBe(mcpObjectGroup(object))
+        // A protocol group is a label over its rows (SidebarSection `overline`), not a disclosure: the label is the
+        // nearest overline before the page's row, as mcp-protocol-sidebar.test.ts reads it from the source render.
+        let label = row?.previousElementSibling
+        while (label && !label.matches('[data-sidebar-overline]')) label = label.previousElementSibling
+        expect(label?.textContent?.trim(), `${object.id} group`).toBe(mcpObjectGroup(object))
         expect(document.querySelector('.api-reference-content h1 code')?.textContent).toBe(object.name)
         const declaration = document.getElementById(object.id)
         expect(declaration?.getAttribute('data-domain')).toBe('mcp')

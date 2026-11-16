@@ -199,6 +199,8 @@ export async function checkDevSample(browser, base) {
         const layout = await page.evaluate(() => {
           const controls = ['.site-header__search', '.scheme-switch, .scheme-cycle', '.site-header__menu-button']
             .map((selector) => [...document.querySelectorAll(selector)].find((node) => node.checkVisibility()))
+            // The Menu button is absent under a ContextStrip from 48rem.
+            .filter(Boolean)
             .map((node) => { const { top, height } = node.getBoundingClientRect(); return { top, height } })
           const table = document.querySelector('table')
           const head = [...(table?.tHead?.rows[0]?.cells ?? [])]
@@ -256,11 +258,12 @@ export async function checkDevSample(browser, base) {
       if (path === 'api-example-probe/') {
         const declaration = page.locator('dt.gp-sphinx-api-header').first()
         const identity = await declaration.getAttribute('id')
-        assert.equal(await declaration.locator('a.headerlink').getAttribute('href'), `#${identity}`,
-          'A declaration permalink lands on its signature bar')
+        assert.equal(await declaration.locator('a.headerlink').count(), 0, 'The page is the entry, so its header draws no permalink')
+        assert.equal(await page.evaluate((id) => document.getElementById(id)?.matches('dt.gp-sphinx-api-header'), identity), true,
+          'The declaration id lands on its signature bar')
         assert.equal(await declaration.locator(':scope > .section-anchor-alias').getAttribute('id'), `${identity}.declaration`,
           'The previous declaration fragment remains available')
-        const equivalents = page.locator('section:has(> #api-other-ports) .tmux-usage a')
+        const equivalents = page.locator('section:has(> #api-other-ports) .api-eq-table .api-elsewhere-value a')
         const hrefs = await equivalents.evaluateAll((links) => links.map((link) => link.getAttribute('href')))
         const java = hrefs.find((href) => /\/java\/latest\/reference\/.*capture/.test(href))
         assert(java, 'Pane.capture has its verified Java equivalent')

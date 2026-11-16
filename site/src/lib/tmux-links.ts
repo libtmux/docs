@@ -9,7 +9,7 @@ export type { TmuxEntityKind } from './tmux-manual-data'
  * The one place a tmux name becomes a destination.
  *
  * Every command, option, hook and format-variable link resolves here, and an
- * unknown name has none. Commands live in the CLI Manual; options, hooks and
+ * unknown name has none. Commands live in the CLI manual; options, hooks and
  * format variables live in the catalog, which links back to the manual entry.
  */
 export function tmuxEntityHref(kind: TmuxEntityKind, name: string, version = 'latest'): string | undefined {

@@ -24,7 +24,7 @@ const { items, minHeadingLevel = 2, maxHeadingLevel = 3, labelledBy } = Astro.pr
 
 <starlight-toc data-min-h={minHeadingLevel} data-max-h={maxHeadingLevel}>
   <nav aria-labelledby={labelledBy ?? 'starlight__on-this-page'} class="toc-nav">
-    {!labelledBy && <h2 id="starlight__on-this-page" class="text-sm font-semibold text-slate-900 dark:text-white mb-4">
+    {!labelledBy && <h2 id="starlight__on-this-page" class="text-sm font-semibold text-[var(--text-color)] mb-4">
       On this page
     </h2>}
     <TableOfContentsList toc={items} />
@@ -59,11 +59,8 @@ const { items, minHeadingLevel = 2, maxHeadingLevel = 3, labelledBy } = Astro.pr
     background: transparent;
   }
   .toc-nav::-webkit-scrollbar-thumb {
-    background-color: rgb(203 213 225); /* slate-300 */
+    background-color: var(--color-edge);
     border-radius: 3px;
-  }
-  :global([data-theme-mode="dark"]) .toc-nav::-webkit-scrollbar-thumb {
-    background-color: rgb(71 85 105); /* slate-600 */
   }
 </style>
 

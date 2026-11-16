@@ -270,6 +270,45 @@ export interface DocBlock {
   changed?: string
 }
 
+/** A place in the pinned source a fact is read from. */
+export interface BehaviorSource {
+  file: string
+  /** 1-based line of the sentence or declaration the fact cites. */
+  line: number
+}
+
+/**
+ * One statement about how a call behaves, with the line it came from.
+ *
+ * `text` is the doc comment's own sentence (or a structural statement about the signature), never a paraphrase or a
+ * guess from another port or a name; `source` lets a reader check it against the code at the pinned revision.
+ */
+export interface BehaviorFact {
+  text: string
+  source: BehaviorSource
+  /** Where the sentence stands: a doc comment, the declaration's own signature, or a curated entry that cites a line. */
+  origin: 'doc comment' | 'signature' | 'curated'
+  /** The declaration whose doc comment states it, when it is not the one the fact describes. */
+  via?: string
+}
+
+/**
+ * Facts that change how a call is used, in the order a reader needs them. Absent rows are omitted: nothing here is
+ * "unknown", and nothing is inferred from another port.
+ */
+export interface Behavior {
+  completion?: BehaviorFact
+  boundedBy?: BehaviorFact
+  returns?: BehaviorFact
+  ownership?: BehaviorFact
+  mutation?: BehaviorFact
+  errors?: BehaviorFact
+  transport?: BehaviorFact
+  cleanup?: BehaviorFact
+  /** The tmux version or feature a field or call states it needs. */
+  requires?: { tmux?: string; feature?: string; source: BehaviorSource }
+}
+
 /** One documented symbol. */
 export interface ApiSymbol {
   /** Product exporting this declaration; absent in older core models. */
@@ -320,6 +359,8 @@ export interface ApiSymbol {
   /** Declaration forwarded by a native export, such as a Scala companion field. */
   exportedFrom?: string
   doc?: DocBlock
+  /** What the doc comment and signature state about completion, ownership, errors and the like, each with its source line. */
+  behavior?: Behavior
   /** Base classes, implemented interfaces or public Scala upper bounds, as written. */
   extends?: string[]
   /**

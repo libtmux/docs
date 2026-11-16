@@ -1,0 +1,115 @@
+/*
+ * Windows high contrast and print (design system, 08-responsive-and-accessible.md).
+ *
+ * In forced-colours mode every colour becomes a system colour, so a row marked only by a tint is no longer marked.
+ * Each current row takes Highlight with HighlightText, and what it holds follows. Chromium paints a Canvas backplate
+ * behind text that sits on a forced Highlight, which leaves HighlightText text unreadable, so these rules opt out of the
+ * forced palette (`forced-color-adjust: none`) and set every colour they need as a system colour themselves. The
+ * declarations are `!important` because a component's scoped rule (`.sidebar-link.active[data-astro-cid-…]`) outranks a
+ * plain one here. Kind marks keep their border (kind-marks.css); a mark on a highlighted row inverts so the row's fill
+ * does not swallow it. `test/forced-colors-print.test.ts` reads the surfaces that tint a row from the sources that draw
+ * them and fails for one that has no rule here.
+ */
+@media (forced-colors: active) {
+  .api-nav__leaf[aria-current='page'],
+  .api-nav__row:has(> [aria-current='page']),
+  .api-nav__tree > .api-nav__item[aria-expanded='false']:has([aria-current='page']) > .api-nav__row,
+  .sidebar-link.active,
+  .sidebar-section:not([open]):has([aria-current='page']) > summary,
+  .doc-picker-option[aria-current],
+  [aria-pressed='true'],
+  [role='tab'][aria-selected='true'] {
+    forced-color-adjust: none;
+    background: Highlight !important;
+    color: HighlightText !important;
+  }
+  .api-nav__leaf[aria-current='page'] *,
+  .api-nav__row:has(> [aria-current='page']) *,
+  .api-nav__tree > .api-nav__item[aria-expanded='false']:has([aria-current='page']) > .api-nav__row *,
+  .sidebar-link.active *,
+  .sidebar-section:not([open]):has([aria-current='page']) > summary *,
+  .doc-picker-option[aria-current] *,
+  [aria-pressed='true'] *,
+  [role='tab'][aria-selected='true'] * {
+    color: HighlightText !important;
+  }
+  .api-nav__leaf[aria-current='page'] > .api-nav__kind,
+  .api-nav__row:has(> [aria-current='page']) > .api-nav__kind,
+  .sidebar-link.active > .api-nav__kind {
+    background: HighlightText !important;
+    color: Highlight !important;
+    border-color: HighlightText !important;
+  }
+  .api-nav__leaf[aria-current='page'] > .api-nav__kind *,
+  .api-nav__row:has(> [aria-current='page']) > .api-nav__kind *,
+  .sidebar-link.active > .api-nav__kind * {
+    color: Highlight !important;
+  }
+
+  /* A focus ring is a Highlight outline wherever a component draws one; a row's own offset stays. */
+  :focus-visible {
+    outline-color: Highlight !important;
+  }
+  .api-nav__leaf[aria-current='page']:focus-visible,
+  .sidebar-link.active:focus-visible {
+    outline-color: HighlightText !important;
+  }
+}
+
+/*
+ * Print is a document: the page's chrome goes, every line of code shows wrapped, collapsed sections open and an
+ * external link writes out its address after its text. Kind words stay visible (a mark alone is a colour and a glyph).
+ */
+@media print {
+  .site-header,
+  .prerelease-notice,
+  .documentation-context,
+  .docs-shell > aside,
+  #mobile-sidebar,
+  #mobile-sidebar-overlay,
+  .mobile-toolbar,
+  .mobile-fallback,
+  .api-nav-column,
+  .api-nav-toggle,
+  .doc-picker,
+  .home-launcher,
+  .landing-products,
+  .mcp-replay__controls,
+  .home-example-options,
+  .page-end,
+  #back-to-top,
+  .search-modal,
+  .expressive-code .copy {
+    display: none !important;
+  }
+
+  /* A frame's own cap, the fixed height a player gives its program and a page's height limit all lift, and a long line wraps. */
+  .expressive-code pre {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    white-space: pre-wrap !important;
+  }
+  .home-example-stage {
+    height: auto !important;
+  }
+
+  /* A closed disclosure shows its content: the summary stays and the content is drawn below it. */
+  details:not([open])::details-content {
+    content-visibility: visible !important;
+  }
+
+  /* The address of a link that leaves the site, after its text, in place of the external-link glyph the shell appends. */
+  main a[href^='http']:not(.api-leg--action)::after,
+  main a[data-external-link]:not(.api-leg--action)::after {
+    content: ' (' attr(href) ')' !important;
+    display: inline !important;
+    inline-size: auto !important;
+    block-size: auto !important;
+    margin-inline-start: 0 !important;
+    background: none !important;
+    mask: none !important;
+    font-weight: 400;
+    overflow-wrap: anywhere;
+  }
+}

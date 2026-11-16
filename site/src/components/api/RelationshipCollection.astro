@@ -1,0 +1,80 @@
+---
+/**
+ * One browsing surface scoped to the current declaration.
+ *
+ * Every related-content section has the same anatomy: a heading, the relationship it draws on (containment,
+ * inheritance, type references, source calls, task material, task equivalence) as muted mono text, a count, one
+ * sentence saying why its entries belong, the entries, and a limit line that says what the data does not record.
+ * The relation kind is a label, not a control, so it is set as text and not as a pill.
+ */
+interface Props {
+  id: string
+  label: string
+  /** The relationship, in the vocabulary the page teaches once. */
+  kind: 'containment' | 'inheritance' | 'type references' | 'source calls' | 'references' | 'task material' | 'task equivalence'
+  /** The heading level: 2 for a page section, 3 inside another card. */
+  level?: 2 | 3
+  /** "4 of 175 shown", "16 other ports mapped". */
+  count?: string
+  /** Why these entries belong here, one sentence. */
+  why?: string
+  /** What the data does not say, or how many entries were left out. */
+  limit?: string
+  class?: string
+}
+const { id, label, kind, level = 2, count, why, limit, class: className } = Astro.props as Props
+const Heading = level === 2 ? 'h2' : 'h3'
+const parts = (text: string) => text.split(/`([^`]+)`/)
+---
+<section class:list={['api-collection', className]} aria-labelledby={id}>
+  <Heading class="api-section-heading text-lg font-semibold" id={id}>{label}<a class="api-heading-link" href={`#${id}`} aria-label={`Link to ${label}`}>#</a></Heading>
+  <span class="api-collection__kind">{kind}</span>
+  {count && <span class="api-collection__count">{count}</span>}
+  {why && <p class="api-collection__why">{parts(why).map((part, i) => i % 2 ? <code>{part}</code> : part)}</p>}
+  <slot />
+  {limit && <p class="api-collection__limit">{parts(limit).map((part, i) => i % 2 ? <code>{part}</code> : part)}</p>}
+</section>
+<style is:global>
+  .api-collection {
+    --collection-measure: var(--measure-prose, 72ch);
+    --collection-control-border: var(--control-border, #7f8d9b);
+    margin-block-start: 2rem;
+    /* The heading, the relation kind and the count share one row; everything after spans the section. The first two
+       columns shrink below their one-line width on a narrow screen, so the row wraps instead of widening the page. */
+    display: grid;
+    grid-template-columns: minmax(0, max-content) minmax(0, max-content) minmax(0, 1fr);
+    column-gap: .5rem;
+    align-items: baseline;
+  }
+  html[data-theme-mode='dark'] .api-collection { --collection-control-border: var(--control-border, #718294); }
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme-mode]):not([data-theme='light']) .api-collection { --collection-control-border: var(--control-border, #718294); }
+  }
+  .api-collection > * { grid-column: 1 / -1; }
+  .api-collection > :is(h2, h3) { grid-column: 1; margin: 0 0 .5rem; }
+  .api-collection > .api-collection__kind { grid-column: 2; }
+  .api-collection > .api-collection__count { grid-column: 3; }
+  .api-collection__kind { font: 400 12px/1 var(--font-mono, ui-monospace, monospace); color: var(--color-foreground-muted); }
+  .api-collection__count { font: 400 12px/1 var(--font-sans, sans-serif); color: var(--color-foreground-muted); font-variant-numeric: tabular-nums; }
+  .api-collection__why { margin: 0 0 .5rem; max-inline-size: var(--collection-measure); font-size: 13px; line-height: 19.5px; color: var(--color-foreground-muted); }
+  .api-collection__limit { margin: .5rem 0 0; font-size: 12px; line-height: 18px; color: var(--color-foreground-muted); }
+  /* A collection with no data says why, instead of vanishing: a dashed block, not a finding. */
+  .api-collection__state { display: grid; gap: 6px; justify-items: start; margin-block-end: .75rem; padding: 16px; border: 1px dashed var(--collection-control-border); border-radius: var(--radius-md, 6px); font-size: 14px; }
+  .api-collection__state strong { font-size: 15px; font-weight: 600; }
+  .api-collection__state p { margin: 0; color: var(--color-foreground-muted); line-height: 21px; }
+  /* Rows: kind mark, owner-qualified name, one-line summary; sparse summaries stay sparse. */
+  .api-collection__rows { list-style: none; margin: 0; padding: 0; border-block-start: 1px solid var(--color-background-border); }
+  .api-collection__row { display: grid; grid-template-columns: 1.5rem minmax(0, 1fr); gap: 2px 10px; align-items: start; min-block-size: var(--row-compact, 1.75rem); padding: 6px 8px; border-block-end: 1px solid color-mix(in oklab, var(--color-background-border) 60%, transparent); color: var(--text-color); text-decoration: none; }
+  a.api-collection__row:hover { background: var(--color-api-background-hover, var(--color-surface-hover)); }
+  .api-collection__row:focus-visible { outline: 2px solid var(--focus-ring-color, var(--theme-primary)); outline-offset: -2px; }
+  /* Kind marks are outlined in lists, and sit on the first line of a row that wraps. */
+  .api-collection__rows .api-nav__kind { align-self: start; --mk-fill: transparent; --mk-bd: color-mix(in srgb, var(--mk-hue, currentColor) 60%, transparent); }
+  .api-collection__name { font: 600 14px/20px var(--font-mono, ui-monospace, monospace); overflow-wrap: anywhere; }
+  .api-collection__name .owner { font: 400 13px/20px var(--font-sans, sans-serif); color: var(--color-foreground-muted); }
+  .api-collection__sum { grid-column: 2; font-size: 13px; line-height: 19px; color: var(--color-foreground-muted); }
+  .api-collection__sum.sparse { font-style: italic; }
+  @media (min-width: 48rem) {
+    .api-collection__rows--cols .api-collection__row { grid-template-columns: 1.5rem minmax(14rem, 22rem) minmax(0, 1fr); }
+    .api-collection__rows--cols .api-collection__sum { grid-column: 3; }
+  }
+</style>

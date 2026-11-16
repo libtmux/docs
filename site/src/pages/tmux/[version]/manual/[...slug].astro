@@ -1,5 +1,7 @@
 ---
 import DocsLayout from '../../../../layouts/DocsLayout.astro'
+import '../../../../styles/api.css'
+import '../../../../styles/vendor/gp-sphinx-api.css'
 import SectionHeading from '../../../../components/SectionHeading.astro'
 import { Code } from 'astro-expressive-code/components'
 import TmuxUsage from '../../../../components/tmux/TmuxUsage.astro'
@@ -54,6 +56,15 @@ const headings = tmuxManualHeadings(version, slug)
 const notes = tmuxCommandNotes(version, slug)
 const implementations = command ? tmuxCommandSources(version, command.name) : []
 const usage = command ? tmuxResolvedUsage(version, command.name) : undefined
+// The command's sections in reading order, for the bar under its summary (the reference layout's section bar).
+const sectionBar = command ? [
+  ...(notes ? [{ id: rowAnchor(command.name, 'common uses'), label: 'Common uses' }] : []),
+  { id: rowAnchor(command.name, 'syntax'), label: 'Syntax' },
+  { id: rowAnchor(command.name, notes ? 'options' : 'behavior'), label: notes ? 'Options' : 'Behavior' },
+  ...(guides.length > 0 ? [{ id: rowAnchor(command.name, 'guides'), label: 'Guides' }] : []),
+  ...(implementations.length > 0 ? [{ id: rowAnchor(command.name, 'implementation'), label: 'C implementation' }] : []),
+  ...(tmuxLibrarySection(command.name) ? [{ id: rowAnchor(command.name, 'use from a library'), label: 'Use from a library' }] : []),
+] : []
 const source: PageSource = { repo: TMUX_REPOSITORY, path: 'tmux.1', ref: reference.sourceCommit }
 const manualHtml = command || isManual
   ? await highlightTmuxManual(linkTmuxManualCatalog(
@@ -70,7 +81,16 @@ const manualHtml = command || isManual
   canonicalOverride={new URL(tmuxManualUrl(version, slug), Astro.site).href}
   noindex={version !== 'latest'} searchable={version === 'latest'}>
   {command ? <>
+    {/* The kind and release above the title, as the catalog and the C reference show them. */}
+    <div class="api-reference-eyebrow manual-eyebrow">
+      <ApiBadge label="command" variant="kind" value="command" />
+      <span>tmux</span>
+      <span class="api-badge api-badge--mod api-reference-version"><span class="api-badge__label">{reference.version}</span></span>
+    </div>
     <p>{command.summary}</p>
+    <nav class="api-section-links manual-sections" aria-label="Reference sections" data-pagefind-ignore="all">
+      {sectionBar.map((section, i) => <a href={`#${section.id}`} data-api-section-link aria-current={i === 0 ? 'location' : undefined}>{section.label}</a>)}
+    </nav>
     {notes && <>
       <SectionHeading id={rowAnchor(command.name, 'common uses')} legacyId="examples">Common uses</SectionHeading>
       <p>{notes.context}</p>
@@ -137,6 +157,14 @@ const manualHtml = command || isManual
     <pre class="tmux-license">{reference.license}</pre>
   </details>
 </DocsLayout>
+
+<style is:global>
+  /* The eyebrow is written after the title in the markup so the title keeps its place in the layout; here it is drawn above it. */
+  article:has(> .manual-eyebrow) { display: flex; flex-direction: column; }
+  article:has(> .manual-eyebrow) > * { order: 1; }
+  article:has(> .manual-eyebrow) > .manual-eyebrow { order: -1; margin: 0; }
+  article:has(> .manual-eyebrow) > div > h1 { margin-top: .5rem; }
+</style>
 
 <style>
   .tmux-syntax, .tmux-license { white-space: pre-wrap; overflow-wrap: anywhere; }

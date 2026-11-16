@@ -190,7 +190,7 @@ const homeEntries = PORTS.map((port) => ({
       </div>
     </main>
   ) : (
-  <main class="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+  <main class="home-page mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
     <HomeIntro solutions={homeSolutions} />
 
     <!-- Agent prompt -->
@@ -221,7 +221,4 @@ const homeEntries = PORTS.map((port) => ({
 
 <style>
   .home-agent-prompt { container-type: inline-size; }
-  .home-agent-prompt :global(.lm-agent-prompt__code code) {
-    font-size: clamp(.8125rem, calc((100cqi - 2rem) / (88 * .6)), .9375rem);
-  }
 </style>

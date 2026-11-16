@@ -15,6 +15,8 @@ import * as models from '../src/lib/api-models'
 import * as sections from '../src/lib/api-sections'
 import * as inventory from '../src/lib/inventory-targets'
 import * as relationships from '../src/lib/api-relationships'
+import * as collections from '../src/lib/api-collections'
+import * as equivalents from '../src/lib/api-equivalents'
 import * as tmuxSections from '../src/lib/api-tmux-sections'
 import * as tree from '../src/lib/api-tree'
 import * as search from '../src/lib/api-search'
@@ -27,8 +29,11 @@ import * as ports from '../src/lib/ports'
 import * as products from '../src/lib/product-api'
 import * as versions from '../src/lib/versions'
 import * as roots from '../src/lib/site-root'
+import * as docsPaths from '../src/lib/docs-paths'
 import * as sidebar from '../src/lib/sidebar'
 import * as documentation from '../src/lib/documentation-navigation'
+import * as sidebarHead from '../src/lib/sidebar-head'
+import * as pageEnd from '../src/lib/page-end'
 import * as pagePorts from '../src/lib/page-ports-for'
 import * as markdown from '../src/lib/markdown-twins'
 import * as manual from '../src/lib/tmux-manual-data'
@@ -62,9 +67,9 @@ async function components(stubs: Readonly<Record<string, string>> = {}) {
     '@libtmux/api-model/reference': model,
     ...Object.fromEntries(Object.entries({
       'api-glossary': glossary, 'api-models': models, 'api-sections': sections, 'inventory-targets': inventory,
-      'api-relationships': relationships, 'api-tmux-sections': tmuxSections, 'api-tree': tree, 'api-search': search, 'api-sidebar': apiSidebar,
+      'api-relationships': relationships, 'api-collections': collections, 'api-equivalents': equivalents, 'api-tmux-sections': tmuxSections, 'api-tree': tree, 'api-search': search, 'api-sidebar': apiSidebar,
       'api-labels': labels, 'word-break': wordBreak, 'native-name': nativeName, ports, 'product-api': products,
-      versions, 'site-root': roots, sidebar, 'documentation-navigation': documentation,
+      versions, 'site-root': roots, 'docs-paths': docsPaths, sidebar, 'documentation-navigation': documentation, 'sidebar-head': sidebarHead, 'page-end': pageEnd,
       'page-ports-for': pagePorts, 'markdown-twins': markdown, 'tmux-manual-data': manual, 'tmux-reference': reference, 'tmux-catalog': catalog,
       branding, 'mention-badge': mentionBadge, 'perl-pod': perlPod,
     }).map(([name, exports]) => [new URL(`../src/lib/${name}.ts`, import.meta.url).href, exports])),
@@ -689,7 +694,7 @@ it('names each product reference navigation by its product and marks the declara
       props: { model, symbol, version: 'latest' }, request: new Request(`https://libtmux.org${href}`),
     })
     const navigation = [...win.document.querySelectorAll('.api-nav nav')]
-    expect(navigation.map((nav) => nav.getAttribute('aria-label')), `${port} ${product}`).toEqual([`${label[product]}: API Reference`])
+    expect(navigation.map((nav) => nav.getAttribute('aria-label')), `${port} ${product}`).toEqual([`${label[product]}: API reference`])
     expect(navigation[0]!.querySelector('[aria-current="page"]')?.getAttribute('href'), `${port} ${product} current declaration`).toBe(href)
   }
 }, 120_000)

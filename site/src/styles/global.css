@@ -8,6 +8,7 @@
 @import "tailwindcss" source("../");
 @import "./gp-sphinx-tokens.css";
 @import "./brand.css";
+@import "./tokens.css";
 @import "./api-kinds.css";
 @import "./kind-marks.css";
 @import "./api-headings.css";
@@ -15,6 +16,8 @@
 @import "./image-loading.css" layer(components);
 /* Unlayered, like the widgets, so prose margins cannot outrank it. */
 @import "./aside.css";
+/* Forced colours and print, after the files whose rules they override. */
+@import "./a11y-print.css";
 @plugin "@tailwindcss/typography";
 @plugin "@libtmux/theme";
 
@@ -108,6 +111,7 @@
   --color-edge: var(--color-background-border);
   --color-muted: var(--color-foreground-muted);
   --color-accent: var(--color-link);
+  --color-control: var(--control-border);
 }
 
 /* Theme color palettes (--color-<theme>-<slot>) are defined once, in the
@@ -118,6 +122,13 @@
 @layer base {
   /* Short and long pages keep the same width with classic scrollbars. */
   html { scrollbar-gutter: stable; }
+
+  /* Every focusable control shows the one ring. A control's own rule, which is unlayered, still wins where a clipped
+     container needs the ring inside its edge. */
+  :where(a[href], button, summary, input, select, textarea, [tabindex]:not([tabindex="-1"])):focus-visible {
+    outline: 2px solid var(--focus-ring-color);
+    outline-offset: 2px;
+  }
 
   html[data-js] .section-search[hidden] { display: block !important; visibility: hidden; }
 
@@ -187,9 +198,9 @@
   --theme-text: var(--color-emerald-text);
 
   /* Button size variables */
-  --button-height-sm: 2rem; /* 32px */
-  --button-height-md: 2.5rem; /* 40px */
-  --button-height-lg: 3.5rem; /* 56px - Increased for more prominent hero buttons */
+  --button-height-sm: var(--control-sm);
+  --button-height-md: var(--control-md);
+  --button-height-lg: var(--control-lg);
   --button-height: var(--button-height-md);
 
   /* Focus styling */
@@ -208,7 +219,7 @@
   --button-bg-secondary-hover: color-mix(in oklab, var(--theme-primary), white 90%);
 
 
-  --input-border: oklch(0.8 0 0);
+  --input-border: var(--control-border);
   --input-bg: white;
   --input-text: black;
   --input-focus-ring: color-mix(in oklab, var(--theme-primary), transparent 70%);
@@ -289,8 +300,8 @@ html[data-theme-mode="dark"] .prose .row-anchor-link:hover { color: var(--theme-
   .prose .row-anchor-link { opacity: 1; }
 }
 .prose :is(.row-anchor-link, .row-label-link):focus-visible {
-  outline: 2px solid var(--theme-primary);
-  outline-offset: 3px;
+  outline: 2px solid var(--focus-ring-color);
+  outline-offset: 2px;
 }
 
 /*
@@ -379,7 +390,6 @@ html[data-theme-mode="dark"] {
   --button-bg-secondary-hover: color-mix(in oklab, var(--theme-primary), white 90%);
   --button-bg-secondary-active: color-mix(in oklab, var(--theme-primary), white 85%);
 
-  --input-border: oklch(0.3 0 0);
   --input-bg: color-mix(in oklab, var(--background-color), black 5%);
   --input-text: white;
 }
@@ -387,6 +397,38 @@ html[data-theme-mode="dark"] {
 /* Separate adjacent program and command blocks. */
 .prose .expressive-code + .expressive-code {
   margin-block-start: 1.5rem;
+}
+
+/*
+ * The margin a layout leaves left of its code frames, where line numbers and step markers hang (record 0058). A frame whose
+ * rail needs more than this moves in by the difference; a layout that says nothing leaves 1rem, a phone's gutter. The docs
+ * shell leaves its page gutter, and from lg the gap beside the sidebar (`lg:gap-8`, 2rem), which holds the whole rail: a
+ * frame there sits level with the headings. The home page leaves its page padding (1rem, 1.5rem from sm) and 2rem from lg.
+ */
+.docs-shell {
+  --code-hang-room: 1rem;
+}
+
+@media (min-width: 64rem) {
+  .docs-shell {
+    --code-hang-room: 2rem;
+  }
+}
+
+.home-page {
+  --code-hang-room: 1rem;
+}
+
+@media (min-width: 40rem) {
+  .home-page {
+    --code-hang-room: 1.5rem;
+  }
+}
+
+@media (min-width: 64rem) {
+  .home-page {
+    --code-hang-room: 2rem;
+  }
 }
 
 /* Preserve literal tabs while keeping compact indentation. */
@@ -413,7 +455,7 @@ html[data-theme-mode="dark"] {
  * A block highlighted by `highlightInline` outside the widgets, which carry
  * their own copy of this. Shiki writes each token's light and dark colours as
  * custom properties, and this reads the one in use; the scrollbar is the thin
- * slate one the widgets use.
+ * thin one the widgets use, in the hairline colour.
  */
 .lm-highlighted span {
   color: var(--shiki-light);
@@ -425,12 +467,9 @@ html[data-theme-mode="dark"] .lm-highlighted span {
 
 pre.lm-highlighted {
   scrollbar-width: thin;
-  scrollbar-color: rgb(203 213 225) transparent;
+  scrollbar-color: var(--color-edge) transparent;
 }
 
-html[data-theme-mode="dark"] pre.lm-highlighted {
-  scrollbar-color: rgb(71 85 105) transparent;
-}
 
 /* Emerald Theme */
 html[data-theme="emerald"] {
@@ -514,43 +553,126 @@ html[data-theme="purple"][data-theme-mode="dark"] {
    wins. One block per heading; h5/h6 carry the weight/margins that the
    typography plugin doesn't style. */
 @layer utilities {
+  /*
+   * One type scale for every page family (15-typesetting.md): page title
+   * 32/38, section 24/32, subsection 18/26, all 600. Each step is 75% of the
+   * one above, so the levels stay distinct; the content H2 was 80% of its
+   * H1 and read as one size. IBM Plex stops at 700 and the three levels ask
+   * for 600, a weight the family ships.
+   */
   .prose h1 {
-    font-size: 2.5em;
-    /* 700, not the typography plugin's 800: IBM Plex stops at 700, so an 800
-       here is a weight the browser fakes by smearing the Bold — on the
-       largest text on the page. Every other heading already asks for a
-       weight the family ships (h2 700, strong 600). */
-    font-weight: 700;
+    font-size: 2rem;
+    line-height: 2.375rem;
+    font-weight: 600;
     margin-top: 1.75rem;
     margin-bottom: 1rem;
   }
 
   .prose h2 {
-    font-size: 2em;
-    margin-top: 1.75rem;
-    margin-bottom: 1.25rem;
+    font-size: 1.5rem;
+    line-height: 2rem;
+    font-weight: 600;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
     scroll-margin-top: 3.5rem; /* Accounts for top nav height */
   }
 
   .prose h3 {
-    font-size: 1.5em;
-    margin-bottom: 1.25rem;
-    margin-top: 1.25rem;
+    font-size: 1.125rem;
+    line-height: 1.625rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    margin-top: 1.75rem;
     scroll-margin-top: 3.5rem; /* Accounts for top nav height */
   }
 
   .prose h4 {
-    font-size: 1.25em;
-    margin-bottom: 1.25rem;
+    font-size: 1rem;
+    line-height: 1.5rem;
+    margin-bottom: 0.5rem;
     scroll-margin-top: 3.5rem; /* Accounts for top nav height */
   }
 
   .prose h5 {
-    font-size: 1.125em;
+    font-size: 1rem;
   }
 
   .prose h6 {
-    font-size: 1em;
+    font-size: 1rem;
+  }
+}
+
+/*
+ * The same three steps for pages that set their headings without `.prose`:
+ * the search page, the meta pages, the symbol index and the 404. Names follow
+ * the design tokens (`page-title`, `section-heading`, `subsection-heading`).
+ */
+@layer components {
+  .page-title {
+    font-size: 2rem;
+    line-height: 2.375rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .section-heading {
+    font-size: 1.5rem;
+    line-height: 2rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  .subsection-heading {
+    font-size: 1.125rem;
+    line-height: 1.625rem;
+    font-weight: 600;
+  }
+}
+
+/*
+ * The landing title (15-typesetting.md): 48/48 600, for the port landing and
+ * the product homes (MCP, Workspace Manager) only. The product home's title
+ * was the prose H1, so it read 40/700 beside a 48/600 port landing. In
+ * `utilities`, so it outranks `.prose h1`.
+ */
+@layer utilities {
+  .prose .product-hero h1 {
+    font-size: 3rem;
+    line-height: 3rem;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+}
+
+/*
+ * Prose colour and measure (15-typesetting.md). Body text is the page's own
+ * text colour, not the typography plugin's slate; a prose block stops at 72
+ * characters on every page family, while grids, tables and code frames keep
+ * the full column. `--measure-prose` is the foundations token; the fallback
+ * is its value.
+ */
+@layer utilities {
+  .prose {
+    --tw-prose-body: var(--text-color);
+    --tw-prose-headings: var(--text-color);
+    --tw-prose-bold: var(--text-color);
+    --tw-prose-invert-body: var(--text-color);
+    --tw-prose-invert-headings: var(--text-color);
+    --tw-prose-invert-bold: var(--text-color);
+  }
+
+  .prose :where(p, ul, ol, dl, blockquote) {
+    max-width: var(--measure-prose, 72ch);
+  }
+
+  /* An API declaration drawn inside prose reads at the reference measure (README "Space, size and density"). */
+  .prose dl.gp-sphinx-api-container {
+    max-width: var(--measure-reference, 100ch);
+  }
+
+  /* Even right edges: a paragraph with several mentions fills its lines. */
+  .prose :where(p) {
+    text-wrap: pretty;
   }
 }
 
@@ -689,6 +811,50 @@ html[data-theme="purple"][data-theme-mode="dark"] {
   }
 }
 
+/*
+ * Glossary headings descend (15-typesetting.md). The per-port glossary set its
+ * H1 at 24/32 600 (`text-2xl`) above an H2 at 32/700 and an H3 at 24/600, so
+ * the page's own title was the smallest heading but one. The H1 takes the page
+ * title size; the H2 and H3 take the shared scale above, with a rule before
+ * each section, a term chip at 16px, and the spacing the scale calls for
+ * (H2 40/12, H3 28/8, paragraphs 12) so a term and its definition read as one
+ * unit. The lede is 18/28 at the prose measure.
+ */
+@layer utilities {
+  .api-reference-layout--glossary .api-reference-content > header h1 {
+    font-size: 2rem;
+    line-height: 2.375rem;
+    font-weight: 600;
+  }
+
+  .api-glossary-body :where(p) {
+    margin-block: 0 0.75rem;
+    line-height: 1.75rem;
+  }
+
+  .api-glossary-body .api-glossary-lede {
+    margin-top: 1.5rem;
+    font-size: 1.125rem;
+  }
+
+  .api-glossary-body h2 {
+    margin-top: 2.5rem;
+    margin-bottom: 0.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--color-background-border);
+  }
+
+  .api-glossary-body h3 {
+    margin-top: 1.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .api-glossary-body h3 code {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+}
+
 /* Inline code (not in pre blocks) */
 @layer components {
   /* Source-owned guides can contain path-like prose tokens that are wider
@@ -699,8 +865,12 @@ html[data-theme="purple"][data-theme-mode="dark"] {
 
   .prose code:not(pre code) {
     overflow-wrap: anywhere;
-    @apply bg-gray-100 dark:bg-gray-800 text-[var(--theme-primary)] dark:text-[var(--theme-accent)];
-    @apply px-1.5 py-0.5 rounded text-sm font-medium;
+    @apply bg-[var(--color-inline-code-background)] text-[var(--theme-primary)] dark:text-[var(--theme-accent)];
+    /* Body weight at 0.875em; the 3px side padding keeps "editor;" from
+       reading "editor ;" (records 0025 and the typesetting page). */
+    @apply rounded font-normal;
+    padding: 0.125rem 0.1875rem;
+    font-size: 0.875em;
     @apply before:content-none! after:content-none!;
   }
 }
@@ -732,7 +902,7 @@ html[data-theme="purple"][data-theme-mode="dark"] {
   .prose kbd {
     display: inline-block;
     padding: 0.05em 0.4em;
-    border: 1px solid var(--color-edge);
+    border: 1px solid var(--control-border);
     border-bottom-width: 2px;
     border-radius: 0.3em;
     background: var(--color-surface);
@@ -774,6 +944,27 @@ html[data-theme="purple"][data-theme-mode="dark"] {
     overflow-x: auto;
     border-collapse: collapse;
     font-size: 0.9em;
+    /* A table wider than its column scrolls inside a bordered box, and the
+       clipped edge says so: a fade on the side that has more. The two
+       `local` gradients are the page ground and cover the `scroll` shadows
+       once the box has been scrolled to that end, so only an edge with
+       hidden content shows its shadow (15-typesetting.md, Tables). */
+    border: 1px solid var(--color-background-border);
+    border-radius: 0.25rem;
+    background:
+      linear-gradient(to right, var(--background-color) 30%, transparent) left center / 2rem 100% no-repeat local,
+      linear-gradient(to left, var(--background-color) 30%, transparent) right center / 2rem 100% no-repeat local,
+      linear-gradient(to right, var(--table-edge-shadow, rgb(0 0 0 / 0.16)), transparent) left center / 0.75rem 100% no-repeat scroll,
+      linear-gradient(to left, var(--table-edge-shadow, rgb(0 0 0 / 0.16)), transparent) right center / 0.75rem 100% no-repeat scroll;
+  }
+
+  html[data-theme-mode='dark'] .prose :where(table) {
+    --table-edge-shadow: rgb(255 255 255 / 0.18);
+  }
+
+  .prose :where(table:focus-visible) {
+    outline: 2px solid var(--focus-ring-color, var(--theme-primary));
+    outline-offset: 2px;
   }
 
   .prose :where(th) {
@@ -806,7 +997,9 @@ html[data-theme="purple"][data-theme-mode="dark"] {
     border: 1px solid var(--color-background-border);
     border-radius: 0.2em;
     padding: 0.1em 0.3em;
-    font-size: 0.9em;
+    /* Mono cells keep at least 13px: a package name is never set smaller than
+       the table text around it. */
+    font-size: max(0.8125rem, 0.9em);
   }
 
   .prose :where(tbody tr:hover) {
@@ -821,6 +1014,53 @@ html[data-theme="purple"][data-theme-mode="dark"] {
 @layer utilities {
   .prose table:not([class]) :is(th, td) {
     padding-inline: 0.75rem;
+  }
+}
+
+/*
+ * Japanese text (15-typesetting.md, PageLocale, record 0052). Latin keeps IBM
+ * Plex Sans, first in the stack as `var(--font-sans)`: the Fonts API registers
+ * the face under a hashed family name, so the variable is the only way to name
+ * it. Plex has no Japanese glyphs, so every kana and kanji falls through to the
+ * reader's own Japanese sans, named explicitly so an unnamed fallback never
+ * lands on a Mincho serif: Hiragino on macOS and iOS, Yu Gothic and Meiryo on
+ * Windows, Noto Sans CJK on Linux and Android. The browser tries each family
+ * per character, so the generic faces inside the variable come up empty for
+ * kana and the named faces are reached. No web font: IBM Plex Sans JP would add
+ * megabytes per weight for one translated locale (decided 2026-11-14). `lang`
+ * is on the page root, so the browser also picks the Japanese glyph variants.
+ *
+ * No Latin tracking (`letter-spacing: 0`), line height 1.85, about 40
+ * characters a line, and phrase-aware breaks where the browser supports
+ * `word-break: auto-phrase`, with strict line-breaking rules. Code, command
+ * names and API names stay in the Latin mono face.
+ */
+@layer components {
+  :lang(ja) {
+    font-family: var(--font-sans), 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', 'Yu Gothic', Meiryo, 'Noto Sans CJK JP', 'Noto Sans JP', system-ui, sans-serif;
+    letter-spacing: 0;
+    word-break: auto-phrase;
+    line-break: strict;
+  }
+
+  :lang(ja) :where(code, kbd, pre, samp) {
+    font-family: var(--font-mono);
+  }
+
+  :lang(ja) :where(h1, h2, h3, h4, .doc-card h3) {
+    text-wrap: balance;
+  }
+}
+
+/* In `utilities`, where the typography plugin's own measure and leading live. */
+@layer utilities {
+  :lang(ja) .prose :where(p, ul, ol, dl, blockquote),
+  :lang(ja) .locale-notice {
+    max-width: 40em;
+  }
+
+  :lang(ja) .prose :where(p, li, dd, blockquote) {
+    line-height: 1.85;
   }
 }
 
@@ -889,6 +1129,13 @@ body[data-documentation-layout='reference'] {
 @media (min-width: 40rem) {
   body:has(.home-launcher) .prerelease-notice--centered {
     --site-gutter: 1.5rem;
+  }
+}
+
+/* The home page's own gutter widens to 2rem here (lg:px-8, the code hang room), and the notice keeps its edge. */
+@media (min-width: 64rem) {
+  body:has(.home-launcher) .prerelease-notice--centered {
+    --site-gutter: 2rem;
   }
 }
 
@@ -990,6 +1237,64 @@ body[data-documentation-layout='reference'] {
 }
 
 /*
+ * The release notice is one line under `bp-phone` (30rem): the badge, a few
+ * words and "More", which opens the sentence below them. Every other width
+ * shows the sentence beside the badge and has no use for the short text or the
+ * disclosure. The disclosure is a <details>, so it opens without a script.
+ */
+.prerelease-notice__lead,
+.prerelease-notice__more { display: none; }
+.prerelease-notice__more summary { list-style: none; cursor: pointer; }
+.prerelease-notice__more summary::-webkit-details-marker { display: none; }
+.prerelease-notice__more-close { display: none; }
+
+@media (max-width: 29.999rem) {
+  .prerelease-notice--collapsible .prerelease-notice__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0 .25rem;
+    min-height: 2.25rem;
+    padding-block: .25rem;
+  }
+  .prerelease-notice--collapsible .prerelease-notice__text {
+    flex: 1 1 0;
+    min-width: 0;
+    flex-wrap: wrap;
+    align-items: center;
+    row-gap: .25rem;
+    min-height: 2rem;
+  }
+  .prerelease-notice--collapsible .prerelease-notice__badge { margin-inline-end: 0; }
+  .prerelease-notice--collapsible .prerelease-notice__lead {
+    display: block;
+    flex: 1 1 0;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .prerelease-notice--collapsible .prerelease-notice__text > .prerelease-notice__full { display: none; flex-basis: 100%; padding-bottom: .25rem; }
+  .prerelease-notice--collapsible:has(.prerelease-notice__more[open]) .prerelease-notice__full { display: block; }
+  .prerelease-notice--collapsible:has(.prerelease-notice__more[open]) .prerelease-notice__lead { display: none; }
+  .prerelease-notice--collapsible .prerelease-notice__more { display: block; flex: none; }
+  .prerelease-notice--collapsible .prerelease-notice__more summary {
+    display: inline-flex;
+    align-items: center;
+    height: 2rem;
+    padding-inline: .5rem;
+    border-radius: .25rem;
+    font-size: .8125rem;
+    text-decoration: underline;
+    text-underline-offset: .15em;
+  }
+  .prerelease-notice--collapsible .prerelease-notice__more summary:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: -2px; }
+  .prerelease-notice--collapsible .prerelease-notice__more[open] .prerelease-notice__more-open { display: none; }
+  .prerelease-notice--collapsible .prerelease-notice__more[open] .prerelease-notice__more-close { display: inline; }
+  .prerelease-notice--collapsible .prerelease-notice__dismiss { position: static; flex: none; }
+}
+
+/*
  * The colour-scheme control, and why its selected state is CSS.
  *
  * `ThemeScript` sets `data-color-scheme` on the root in <head>, so the right
@@ -1007,7 +1312,7 @@ body[data-documentation-layout='reference'] {
   align-items: center;
   gap: 0.125rem;
   margin: 0;
-  border: 1px solid var(--color-background-border);
+  border: 1px solid var(--control-border);
   border-radius: var(--radius-md, 0.375rem);
   padding: 0.125rem;
 }
@@ -1067,10 +1372,10 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
 
 .scheme-switch__option:focus-within {
   outline: 2px solid var(--focus-ring-color);
-  outline-offset: 1px;
+  outline-offset: 2px;
 }
 
-.scheme-cycle { display: none; align-items: center; justify-content: center; width: 2rem; height: 1.75rem; padding: .25rem; border: 1px solid var(--color-background-border); border-radius: var(--radius-md, .375rem); color: var(--topnav-link-color); background: transparent; cursor: pointer; }
+.scheme-cycle { display: none; align-items: center; justify-content: center; width: 2rem; height: 1.75rem; padding: .25rem; border: 1px solid var(--control-border); border-radius: var(--radius-md, .375rem); color: var(--topnav-link-color); background: transparent; cursor: pointer; }
 .scheme-cycle [data-scheme-cycle-icon] { display: flex; }
 .scheme-cycle:hover { background: var(--color-surface-hover); }
 .scheme-cycle:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
@@ -1083,8 +1388,8 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
   .scheme-switch:has(+ .scheme-cycle:not([hidden])) { display: none; }
 }
 
-/* Keep full language names by hiding the scheme labels first. */
-@media (max-width: 95.999rem) {
+/* The scheme labels share the chips' threshold, 80rem: the Menu button no longer takes the room beside them. */
+@media (max-width: 79.999rem) {
   .scheme-switch__label {
     position: absolute;
     width: 1px;
@@ -1192,7 +1497,7 @@ html[data-color-scheme='light'] .scheme-switch__option[data-scheme='dark'] {
   min-height: 0;
   gap: 0.35rem;
   padding: 0 0.5rem;
-  border: 1px solid var(--color-background-border);
+  border: 1px solid var(--control-border);
   border-radius: var(--radius-md, 0.375rem);
   background: color-mix(in oklab, var(--topnav-background), var(--topnav-text-color) 7%);
   color: var(--topnav-link-color);
@@ -1265,7 +1570,7 @@ html[data-theme-mode='dark'] .site-header .header-picker > summary:is(:hover, :f
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  border: 1px solid var(--color-background-border);
+  border: 1px solid var(--control-border);
   border-radius: var(--radius-md, 0.375rem);
   padding: 0.3rem 0.5rem;
   font-size: 0.875rem;
@@ -1322,17 +1627,6 @@ html[data-theme-mode='dark'] .site-header .header-picker > summary:is(:hover, :f
 .site-header__panel-row:first-child {
   border-top: 0;
   padding-top: 0;
-}
-
-/* ── Where the pieces move ──────────────────────────────
- *
- * Wide screens also show the color-scheme labels.
- */
-@media (min-width: 96rem) {
-  .site-header__menu-label {
-    display: none;
-  }
-
 }
 
 /* Narrow phones: the search label goes, the icon stays. Below this the bar is
@@ -1454,19 +1748,37 @@ html[data-theme-mode='dark'] .site-header .header-picker > summary:is(:hover, :f
 @media (min-width: 48rem) {
   .site-header__panel-destinations { display: none; }
 }
+/* Under a ContextStrip the Menu holds the destinations only below 48rem (bp-tablet); from there it would hold two links the product picker already offers. */
+@media (min-width: 48rem) {
+  .site-header__menu--overflow { display: none; }
+}
+/* The shortcut cap rides with the labels, from 80rem. */
+.site-header__search-hint {
+  display: none;
+  padding: .125rem .3rem;
+  border: 1px solid var(--control-border, #7f8d9b);
+  border-bottom-width: 2px;
+  border-radius: var(--radius-xs, .25rem);
+  background: transparent;
+  color: var(--topnav-link-color);
+  font: 500 .6875rem/1 var(--font-mono, ui-monospace, monospace);
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+@media (min-width: 80rem) {
+  .site-header__search-hint { display: inline-block; }
+}
 /* A host's name is longer than the word it replaces, so the labels wait for more room than the search label does. */
 @media (max-width: 79.999rem) {
   .site-header__destinations :is(.header-link__label, .header-picker__label) { display: none; }
 }
-@media (max-width: 95.999rem) {
+/* The Menu button carries its word with the other labels, from the chips' 80rem: below it the word would squeeze the language picker beside it. */
+@media (max-width: 79.999rem) {
   .site-header__menu-label { display: none; }
   .site-header__bar { gap: 0.5rem; }
 }
 @media (max-width: 69.999rem) {
   .site-header__search-label { display: none; }
-}
-@media (max-width: 25rem) {
-  .site-header__menu-label { display: none; }
 }
 @media (max-width: 20rem) {
   body { --site-gutter: .5rem; }

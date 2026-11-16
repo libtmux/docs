@@ -9,57 +9,9 @@ import { productApiHref, productApiRoots } from '../src/lib/product-api'
 import { symbolMarkdown } from '../src/lib/symbol-markdown'
 import { productAvailable, PORTS, type DocProduct } from '../src/lib/ports'
 import { loadAstroTemplate } from './astro-templates'
+import { parseRules, type Rule } from './css-rules'
 
 const style = (name: string) => readFileSync(new URL(`../src/styles/${name}`, import.meta.url), 'utf8')
-
-interface Rule { media: string[]; selectors: string[]; declarations: Record<string, string> }
-
-/**
- * The style rules of a stylesheet with the `@media` conditions around each.
- * Comments go first; quotes and parentheses keep a `;` or `{` inside a string or `url()` out of the split.
- */
-function parseRules(source: string): Rule[] {
-  const rules: Rule[] = []
-  const stack: { prelude: string; declarations: Record<string, string> }[] = [{ prelude: '', declarations: {} }]
-  let buffer = ''
-  let quote = ''
-  let parens = 0
-  const declare = () => {
-    const at = buffer.indexOf(':')
-    if (at > 0 && stack.length > 1) stack.at(-1)!.declarations[buffer.slice(0, at).trim()] = buffer.slice(at + 1).trim()
-    buffer = ''
-  }
-  for (const char of source.replace(/\/\*[\s\S]*?\*\//g, '')) {
-    if (quote) { if (char === quote) quote = ''; buffer += char; continue }
-    if (char === '"' || char === "'") { quote = char; buffer += char; continue }
-    if (char === '(') parens++
-    if (char === ')') parens--
-    if (char === '{' && parens === 0) { stack.push({ prelude: buffer.trim(), declarations: {} }); buffer = '' }
-    else if (char === '}' && parens === 0) {
-      declare()
-      const done = stack.pop()!
-      if (Object.keys(done.declarations).length > 0) {
-        const selectors: string[] = []
-        let depth = 0
-        let start = 0
-        for (let i = 0; i < done.prelude.length; i++) {
-          const c = done.prelude[i]
-          if (c === '(' || c === '[') depth++
-          if (c === ')' || c === ']') depth--
-          if (c === ',' && depth === 0) { selectors.push(done.prelude.slice(start, i).trim()); start = i + 1 }
-        }
-        selectors.push(done.prelude.slice(start).trim())
-        rules.push({
-          media: stack.map((frame) => frame.prelude).filter((prelude) => prelude.startsWith('@media'))
-            .map((prelude) => prelude.slice('@media'.length).replace(/\s+/g, ' ').trim()),
-          selectors, declarations: done.declarations,
-        })
-      }
-    } else if (char === ';' && parens === 0) declare()
-    else buffer += char
-  }
-  return rules
-}
 
 const inFinePointer = (rule: Rule) => rule.media.some((media) => /\(hover: hover\)/.test(media) && /\(pointer: fine\)/.test(media))
 const inMedia = (rule: Rule, feature: string) => rule.media.some((media) => media.includes(feature))
@@ -417,7 +369,7 @@ describe('product reference pages', () => {
     expect(heading, 'the Members heading has an id').not.toBeNull()
     expect(heading.classList.contains('api-section-heading')).toBe(true)
     expect(heading.firstChild?.textContent).toBe('Members')
-    expect(heading.querySelector('.api-section-count')?.textContent).toBe(String(members.length))
+    expect(heading.querySelector('.api-section-count')?.textContent).toBe(`${members.length} members`)
     const link = heading.querySelector('a.api-heading-link')!
     expect(link.getAttribute('href')).toBe('#api-members')
     expect(link.getAttribute('aria-label')).toBe('Link to Members')
@@ -509,7 +461,7 @@ const { symbol, member, nameHref } = Astro.props
       const membersHeading = document.querySelector('.api-members > h2#api-members')
       if (rest.length > 0) {
         expect(membersHeading!.firstChild?.textContent).toBe('Other members')
-        expect(membersHeading!.querySelector('.api-section-count')?.textContent).toBe(String(rest.length))
+        expect(membersHeading!.querySelector('.api-section-count')?.textContent).toBe(`${rest.length} members`)
         expect(heading.compareDocumentPosition(membersHeading!) & 4, 'Fields come before Members').toBeGreaterThan(0)
       } else expect(membersHeading).toBeNull()
       const ids = [...document.querySelectorAll('[id]')].map((element) => element.id)
@@ -531,7 +483,7 @@ const { symbol, member, nameHref } = Astro.props
       expect(members.filter(isField).length).toBeGreaterThan(0)
       expect(document.querySelector('#api-fields, .api-field-table, table')).toBeNull()
       expect(document.querySelector('.api-members > h2#api-members')?.firstChild?.textContent).toBe('Members')
-      expect(document.querySelector('.api-members > h2#api-members .api-section-count')?.textContent).toBe(String(members.length))
+      expect(document.querySelector('.api-members > h2#api-members .api-section-count')?.textContent).toBe(`${members.length} members`)
       expect(document.querySelectorAll('.api-members .api-member-list > li')).toHaveLength(members.length)
       expect(document.querySelectorAll('dl[data-member="true"]')).toHaveLength(0)
     }, 60_000)

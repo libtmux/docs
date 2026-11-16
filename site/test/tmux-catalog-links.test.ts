@@ -210,7 +210,7 @@ describe('guides and topics', () => {
   })
 })
 
-describe('the CLI Manual', () => {
+describe('the CLI manual', () => {
   it('links the names its own text mentions, and the entries it defines', () => {
     const html = linkTmuxManualCatalog(tmuxManual('3.7c').manual, '3.7c', undefined, { definitions: true })
     const tree = fromHtml(html, { fragment: true })
