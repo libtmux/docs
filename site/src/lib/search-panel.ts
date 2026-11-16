@@ -129,6 +129,8 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings
   let api: PagefindApi | null = null
   let loading: Promise<PagefindApi | null> | null = null
   let failed = false
+  // Pagefind counts only the facets it has loaded, and a search loads those it filters by.
+  let inventoried = false
   let shown = restore && needsMoreResults(restore, PAGE_SIZE) ? restore.shown : PAGE_SIZE
   let all: { id: string; data: () => Promise<PagefindResultData> }[] = []
   let selected = -1
@@ -553,6 +555,7 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings
       status('Type to search.')
       const idle = await pagefind()
       if (idle && mine === token) {
+        inventoried = true
         const counts = await idle.filters()
         if (mine === token) await renderFilters(counts)
       }
@@ -565,6 +568,10 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings
       if (failed) failure()
       else status('No search index in this build. Run a full build to generate one.')
       return
+    }
+    if (!inventoried) {
+      inventoried = true
+      await pf.filters()
     }
     const res = await pf.search(q, { filters: activeFilters() })
     if (mine !== token) return

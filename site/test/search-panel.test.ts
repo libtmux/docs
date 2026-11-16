@@ -131,7 +131,7 @@ describe('port search defaults', () => {
     let release: (counts: Record<string, Record<string, number>>) => void = () => {}
     filters.mockReturnValueOnce(new Promise((resolve) => { release = resolve }))
     handle.clear()
-    await vi.waitFor(() => expect(filters).toHaveBeenCalledOnce())
+    await vi.waitFor(() => expect(filters).toHaveBeenCalledTimes(2))
     query('capture')
     await vi.waitFor(() => expect(results()).toHaveLength(2))
     const counts = () => [...root.querySelectorAll('.search-panel__facet--port .search-panel__filter-count')].map((count) => count.textContent)

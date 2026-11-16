@@ -214,4 +214,14 @@ describe('ranking "capture pane" in the Go scope', () => {
     expect(first.getAttribute('href')).toBe('/en/go/latest/reference/tmux-pane-capture/')
     expect(first.querySelector('.search-panel__result-excerpt')?.textContent).toMatch(/^Pane\.Capture/)
   })
+
+  it('offers the Section and Kind facets for a search that arrives by URL, with the counts of every group', async () => {
+    const port = mount('https://libtmux.org/en/go/latest/search/?q=capture', { url: true })
+    await port.handle.ready
+    expect(port.rows('.search-panel__section-list')).toEqual([expect.stringMatching(/^API reference\d+$/)])
+    const api = mount('https://libtmux.org/en/go/latest/search/?q=capture&scope=reference', { url: true })
+    await api.handle.ready
+    expect(api.rows('.search-panel__kind-list').length).toBeGreaterThan(1)
+    expect(api.root.querySelector('.search-panel__status')?.textContent).toContain('results in Go API only')
+  })
 })
