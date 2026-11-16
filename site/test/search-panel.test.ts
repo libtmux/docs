@@ -1,7 +1,7 @@
 import { Window } from 'happy-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mountSearchPanel, type PagefindApi, type PagefindResultData, type SearchPanelOptions } from '../src/lib/search-panel'
-import { readSnapshot, withSnapshot, type SearchSnapshot } from '../src/lib/search-state'
+import { readSnapshot, ROOT_PORT, withSnapshot, type SearchSnapshot } from '../src/lib/search-state'
 
 let window: Window
 afterEach(() => {
@@ -46,6 +46,8 @@ function fixture(initialPort?: string, options: FixtureOptions = {}) {
     url: `/en/${port === 'Go' ? 'go' : 'rs'}/latest/topics/capture/`,
     excerpt: `${port} capture`, meta: { title: `${port} capture` },
   } }))
+  // A tmux page belongs to no port: it is indexed under the root, `All languages`.
+  const manual = { port: ROOT_PORT, data: { url: '/en/tmux/latest/manual/new-session/', excerpt: 'new-session', meta: { title: 'tmux new-session' } } }
   // A long list for paging and restoring: `total` rows of the Go port, each a method of Pane.
   const long = Array.from({ length: options.total ?? 0 }, (_, i) => ({
     id: `m${i}`, data: async () => ({ url: `/en/go/latest/reference/m${i}/`, excerpt: `row ${i}`, meta: { title: `Pane.m${i}`, owner: 'Pane', kind: 'method' } }),
@@ -56,7 +58,8 @@ function fixture(initialPort?: string, options: FixtureOptions = {}) {
     if (query === 'long') {
       return { results: long, totalFilters: { port: { Go: long.length } }, filters: { section: { reference: long.length, guides: 2 }, kind: { method: long.length } } }
     }
-    const hits = query === 'capture' ? pages.filter((page) => !ports || ports.includes(page.port)) : []
+    const known = query === 'capture' ? pages : query === 'new-session' ? [manual] : []
+    const hits = known.filter((page) => !ports || ports.includes(page.port))
     const counts: Record<string, number> = query === 'capture' ? { Go: 1, Rust: 1 } : {}
     return {
       results: hits.map((page) => ({ id: page.port, data: async () => page.data })),
@@ -83,13 +86,22 @@ describe('port search defaults', () => {
   it('searches the port first, offers the wider scope on no results, and keeps the port when reopened', async () => {
     const { root, search, handle, query, results } = fixture('Go')
     await vi.waitFor(() => expect(results()).toEqual(['/en/go/latest/topics/capture/']))
-    expect(search).toHaveBeenNthCalledWith(1, 'capture', { filters: { port: ['Go'] } })
+    expect(search).toHaveBeenNthCalledWith(1, 'capture', { filters: { port: { any: ['Go', ROOT_PORT] } } })
     query('absent')
     await vi.waitFor(() => expect(results()).toEqual([]))
     expect(root.querySelector('.search-panel__widen')?.textContent).toBe('Search all languages')
     handle.clear()
     query('capture')
     await vi.waitFor(() => expect(results()).toEqual(['/en/go/latest/topics/capture/']))
+  })
+
+  it('includes the root tmux pages in the port scope and leaves them out of the API scope', async () => {
+    const { results, scope, query } = fixture('Go')
+    await vi.waitFor(() => expect(results()).toHaveLength(1))
+    query('new-session')
+    await vi.waitFor(() => expect(results()).toEqual(['/en/tmux/latest/manual/new-session/']))
+    scope('reference')
+    await vi.waitFor(() => expect(results()).toEqual([]))
   })
 
   it('lets a reader broaden to all languages, then pick ports, without the initial port returning', async () => {
