@@ -132,6 +132,17 @@ describe('a tool page', () => {
     }
   })
 
+  it('shows Python\'s toolset alone, because libtmux-mcp states no process reach or tmux effects for a tool', async () => {
+    for (const [name, tier] of [['list_panes', 'Inspect'], ['send_keys', 'Execute']]) {
+      const capability = (await page('py', 'tools', name)).querySelector('[data-mcp-capability]')!
+      expect([...capability.querySelectorAll('dt')].map((term) => term.textContent), name).toEqual(['Toolset'])
+      expect(capability.querySelector('dd')!.textContent, name).toMatch(new RegExp(`^${tier}`))
+    }
+    // Control: a server that states them gets the rows, so their absence here is the metadata's.
+    const rows = [...(await page('go', 'tools', 'send_keys')).querySelectorAll('[data-mcp-capability] dt')].map((term) => term.textContent)
+    expect(rows).toEqual(expect.arrayContaining(['Toolset', 'Process reach', 'tmux effects']))
+  })
+
   it('has no capability row for a server that states none, and no Wraps row for a tool with no recorded call', async () => {
     const ruby = await page('ruby', 'tools', mcpObjects('ruby').find((entry) => entry.kind === 'tool')!.name)
     expect(ruby.querySelector('[data-mcp-capability], .mcp-tier')).toBeNull()
