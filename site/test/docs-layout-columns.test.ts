@@ -71,3 +71,18 @@ it('keeps the outline out of the search index, whichever of its two renderings i
   expect(document.getElementById('mobile-toc')?.className).toContain('xl:hidden')
   expect(document.querySelector('[data-toc-rail]')?.className).toMatch(/\bhidden\b.*\bxl:block\b/)
 })
+
+it('draws a reference-family page in the reference layout, with no outline beside its section bar, when the page says so', async () => {
+  const document = await renderLayout({ documentationLayout: 'reference', tableOfContents: false })
+  expect(document.querySelector('[data-layout]')?.getAttribute('data-layout')).toBe('reference')
+  expect(document.querySelector('[data-context]')?.getAttribute('data-reference')).toBe('true')
+  expect(document.querySelector('[data-context]')?.getAttribute('data-contents')).toBe('false')
+  expect(document.querySelector('[data-toc-rail], #mobile-toc, nav.toc-nav'), 'no outline rail or drawer').toBeNull()
+})
+
+it('keeps the prose layout for a page that does not ask for another', async () => {
+  const document = await renderLayout({})
+  expect(document.querySelector('[data-layout]')?.getAttribute('data-layout')).toBe('prose')
+  expect(document.querySelector('[data-context]')?.getAttribute('data-reference')).not.toBe('true')
+  expect(document.querySelector('[data-context]')?.getAttribute('data-contents')).toBe('true')
+})

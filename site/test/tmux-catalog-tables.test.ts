@@ -43,6 +43,14 @@ describe('catalog kind pages', () => {
     expect(heads(await render('format'))).toEqual(['Name,Type,Summary'])
   })
 
+  // A reader of a screen reader hears the label whole: "Session options options, scrollable" says the word twice.
+  it.each(['option', 'hook', 'format'] as const)('names each %s scroll region once, with no word repeated', async (kind) => {
+    const labels = [...(await render(kind)).matchAll(/class="catalog-table" role="region" tabindex="0" aria-label="([^"]+)"/g)].map((m) => m[1]!)
+    expect(labels.length).toBeGreaterThan(0)
+    for (const label of labels) expect(label, label).not.toMatch(/\b(\w+) \1\b/i)
+    expect(labels.every((label) => label.endsWith(', scrollable'))).toBe(true)
+  })
+
   it('counts the types a kind has for its filter chips', () => {
     const chips = catalogTypeCounts(tmuxCatalogEntries('3.7c', 'option'))
     expect(chips[0]![0]).toBe('string')
