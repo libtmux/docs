@@ -6,142 +6,27 @@ import { withRoot } from '../../lib/site-root'
 import { PORTS, portHomeUrl } from '../../lib/ports'
 import { buildRows } from '../../lib/parity-hosts'
 import '../../styles/meta.css'
-import parityData from '../../data/parity.json'
 import { defaultVersionFor } from '../../lib/versions'
 
 /**
- * Cross-language parity: how each port is built, and — for the four ports
- * that publish a per-symbol Python-parity ledger — what that ledger
- * actually says, read through scripts/normalise-parity.mjs.
- *
- * The full inventory of each ledger's own format, and exactly how each
- * provenance call is made, lives in that script's header comment rather
- * than duplicated here: this file only renders site/src/data/parity.json,
- * it doesn't re-derive it. Regenerate that file with:
- *
- *   node scripts/normalise-parity.mjs
- *
- * Rust, C++ and TypeScript keep parity trackers of their own too (a Python
- * parity-claims checker script, a multi-file manifest under
- * tools/parity/data/, and baseline/current JSON snapshots under
- * packages/libtmux/parity/, respectively) — three more shapes, out of scope
- * for this pass exactly as the four normalised below were the in-scope ones.
+ * How each port is built: where its reference is hosted, what draws the page
+ * and what generates the API model. The rows come from `buildRows`. No port
+ * tracks parity with Python libtmux, so the page carries no per-symbol
+ * ledger.
  */
 
-const PARITY_PORTS = ['csharp', 'go', 'java', 'swift'] as const
-const PORT_LABEL: Record<(typeof PARITY_PORTS)[number], string> = {
-  csharp: 'C#',
-  go: 'Go',
-  java: 'Java',
-  swift: 'Swift',
-}
-
-// Explicit shape for site/src/data/parity.json (scripts/normalise-parity.mjs's
-// output) rather than letting TS infer one structurally from today's JSON
-// literal: every port happens to be `available: true` on this build, and an
-// inferred type has no room left for the `available: false` branch a missing
-// sibling checkout would produce. Generic type args are kept out of the
-// template below (Astro's template expressions compile through a JSX-like
-// transform that doesn't reliably parse multi-argument generics such as
-// `Record<string, Tally>` inline) — every lookup that needs one is a plain
-// function call into this frontmatter script instead.
-interface Tally {
-  total: number
-  testVerified: number
-  claimed: number
-  unknown: number
-  disposition: Record<string, number>
-}
-
-interface AvailablePort {
-  available: true
-  ledgerFormat: string
-  ledgerPaths: string[]
-  pythonRevision: string | null
-  scopeNote?: string | null
-  contractClassesFound?: Record<string, boolean>
-  portTally: Tally
-  byModule: Record<string, Tally>
-}
-
-interface UnavailablePort {
-  available: false
-  reason: string
-}
-
-type PortEntry = AvailablePort | UnavailablePort
-
-interface ParityManifest {
-  legend: { testVerified: string; claimed: string; unknown: string }
-  revisionSkew: { note: string }
-  moduleUnion: string[]
-  ports: Record<'csharp' | 'go' | 'java' | 'swift', PortEntry>
-}
-
-const parity = parityData as unknown as ParityManifest
-const javaPort = parity.ports.java
-const javaContractClasses = javaPort.available ? javaPort.contractClassesFound : undefined
-
-function moduleTally(port: PortEntry, mod: string): Tally | undefined {
-  return port.available ? port.byModule[mod] : undefined
-}
-
-// Precomputed here, not filtered+mapped in the template: TS narrowing from a
-// `.filter(p => p.available)` doesn't carry into a later `.map()` callback,
-// since each is its own closure re-reading the union-typed source.
-const scopeNotes = PARITY_PORTS.flatMap((slug) => {
-  const port = parity.ports[slug]
-  return port.available && port.scopeNote ? [{ slug, note: port.scopeNote }] : []
-})
-
-/** Compact, mix-aware cell text: most ports are uniform (all test-verified, or
- * all unknown), but the matrix renders whatever the tally actually holds
- * rather than assuming that. */
-function cellSummary(tally: Tally | undefined): { text: string; title: string } {
-  if (!tally) return { text: 'No rows', title: 'No rows for this module in this ledger.' }
-  const parts: string[] = []
-  if (tally.testVerified) parts.push(`${tally.testVerified} verified`)
-  if (tally.claimed) parts.push(`${tally.claimed} claimed`)
-  if (tally.unknown) parts.push(`${tally.unknown} unknown`)
-  const dispositionText = Object.entries(tally.disposition)
-    .map(([k, v]) => `${k}: ${v}`)
-    .join(', ')
-  return { text: parts.join(' · ') || '0', title: `disposition: ${dispositionText}` }
-}
-
-function cellClass(tally: Tally | undefined): string {
-  if (!tally || tally.total === 0) return 'meta-none'
-  if (tally.unknown === tally.total) return 'meta-unk'
-  if (tally.testVerified === tally.total) return 'meta-ok'
-  return 'meta-warn'
-}
-
-/** "all 626 C# rows" or "1573 of 1588 Go rows" — read from the actual tally
- * rather than asserted as prose, so a ledger that stops being entirely
- * test-verified on a future regen doesn't leave a false claim sitting here. */
-function verifiedSummary(label: string, port: PortEntry): string {
-  if (!port.available) return `${label} unavailable`
-  const { testVerified, total } = port.portTally
-  return testVerified === total ? `all ${total} ${label} rows` : `${testVerified} of ${total} ${label} rows`
-}
-const csharpGoVerifiedSummary = `${verifiedSummary('C#', parity.ports.csharp)} and ${verifiedSummary('Go', parity.ports.go)}`
 const breadcrumbs = [{ name: 'libtmux', url: withRoot('/') }, { name: 'Parity', url: withRoot('/meta/parity/') }]
 ---
 
 <BaseLayout
   title="Parity"
   breadcrumbs={breadcrumbs}
-  description="What each libtmux port is built from, and what its own parity ledger actually verifies."
-
+  description="What each libtmux port is built from."
   localeStatuses={ALL_TRANSLATED}
 >
   <main class="meta-page">
     <PageToolbar breadcrumbs={breadcrumbs} />
     <h1>Parity</h1>
-    <p>
-      Python is the reference implementation; every other port tracks how much of its public
-      surface it covers.
-    </p>
 
     <h2>How each port is built</h2>
     <p class="meta-note">
@@ -178,143 +63,5 @@ const breadcrumbs = [{ name: 'libtmux', url: withRoot('/') }, { name: 'Parity', 
         </tbody>
       </table>
     </div>
-
-    <h2 class="meta-wide">Per-symbol parity</h2>
-    <p>
-      Four ports publish a per-symbol Python-parity ledger, each in its own format (Rust, C++ and
-      TypeScript keep trackers too, in three more shapes not sampled here). Every cell below is
-      marked according to the evidence found in its source checkout during the build:
-    </p>
-    <dl class="meta-small">
-      <div class="meta-legend">
-        <dt class="meta-ok">test-verified</dt>
-        <dd>{parity.legend.testVerified}</dd>
-      </div>
-      <div class="meta-legend">
-        <dt class="meta-warn">claimed</dt>
-        <dd>{parity.legend.claimed}</dd>
-      </div>
-      <div class="meta-legend">
-        <dt class="meta-unk">unknown</dt>
-        <dd>{parity.legend.unknown}</dd>
-      </div>
-    </dl>
-
-    <aside class="meta-aside meta-small">
-      <p class="meta-aside-title">The four ledgers don't share a Python baseline</p>
-      <p>{parity.revisionSkew.note}</p>
-    </aside>
-
-    <h3>Per-port summary</h3>
-    <div class="meta-scroll" tabindex="0" role="region" aria-label="Per-port summary, scrollable">
-      <table>
-        <thead>
-          <tr>
-            <th scope="col">Port</th>
-            <th scope="col">Ledger format</th>
-            <th scope="col">Python revision</th>
-            <th scope="col">Rows</th>
-            <th scope="col">Test-verified</th>
-            <th scope="col">Claimed</th>
-            <th scope="col">Unknown</th>
-          </tr>
-        </thead>
-        <tbody>
-          {
-            PARITY_PORTS.map((slug) => {
-              const p = parity.ports[slug]
-              if (!p.available) {
-                return (
-                  <tr>
-                    <td>{PORT_LABEL[slug]}</td>
-                    <td class="meta-note" colspan={6}>
-                      Ledger unavailable on this build: {p.reason}
-                    </td>
-                  </tr>
-                )
-              }
-              return (
-                <tr>
-                  <td>{PORT_LABEL[slug]}</td>
-                  <td class="meta-fmt">{p.ledgerFormat}</td>
-                  <td class="meta-mono">{p.pythonRevision ?? 'not recorded'}</td>
-                  <td>{p.portTally.total}</td>
-                  <td class="meta-ok">{p.portTally.testVerified}</td>
-                  <td class="meta-warn">{p.portTally.claimed}</td>
-                  <td class="meta-unk">{p.portTally.unknown}</td>
-                </tr>
-              )
-            })
-          }
-        </tbody>
-      </table>
-    </div>
-    <p class="meta-note">
-      C# and Go publish per-symbol ledgers that are entirely pre-triaged; on this build,
-      {csharpGoVerifiedSummary} resolve as test-verified: the cited evidence (a test file for
-      C#, a test function for Go) exists in that port's checkout. Java's and Swift's ledgers
-      carry no per-symbol
-      implementation-status field at all: Java's by explicit disclaimer in its own source files
-      ("a row's presence says Python has it, not that Java does" / "a catalogue, not a status
-      report"), confirmed here by checking that the contract-test classes those files cite
-      ({javaContractClasses?.PythonApiParityContract ? 'found' : 'not found'} /{' '}
-      {javaContractClasses?.PythonBehaviorParityTest ? 'found' : 'not found'}) don't
-      exist in the checkout; Swift's by the absence of any Swift-side status field across all five
-      of its parity files.
-    </p>
-
-    <h3>By Python module</h3>
-    <p class="meta-small">
-      Rows are the union of modules across all four ledgers. Only C#'s ledger has its own module
-      field, used directly; Go, Java and Swift have none, so their rows are derived mechanically
-      from each entry's source-file path instead using the same mapping as C#'s module field. “No rows” means the
-      ledger has no entries for that module; for C#, most of the
-      <code>_internal</code>/<code>_vendor</code> rows are that by declared scope
-      (public-API-only), not by omission.
-    </p>
-    <div class="meta-scroll" tabindex="0" role="region" aria-label="Parity by Python module, scrollable">
-      <table>
-        <thead>
-          <tr>
-            <th scope="col">Python module</th>
-            {PARITY_PORTS.map((slug) => <th scope="col">{PORT_LABEL[slug]}</th>)}
-          </tr>
-        </thead>
-        <tbody>
-          {
-            parity.moduleUnion.map((mod) => (
-              <tr>
-                <td class="meta-mono">{mod}</td>
-                {PARITY_PORTS.map((slug) => {
-                  const tally = moduleTally(parity.ports[slug], mod)
-                  const { text, title } = cellSummary(tally)
-                  return (
-                    <td class={cellClass(tally)} title={title}>
-                      {text}
-                    </td>
-                  )
-                })}
-              </tr>
-            ))
-          }
-        </tbody>
-      </table>
-    </div>
-
-    <h3>Per-ledger notes</h3>
-    <ul class="meta-notes">
-      {
-        scopeNotes.map(({ slug, note }) => (
-          <li>
-            <strong>{PORT_LABEL[slug]}:</strong> {note}
-          </li>
-        ))
-      }
-      <li>
-        <strong>Go:</strong> the "Python revision" column above reads "not
-        recorded". See the revision-skew note above for what Go's manifest
-        records instead.
-      </li>
-    </ul>
   </main>
 </BaseLayout>
