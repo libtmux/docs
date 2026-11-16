@@ -51,6 +51,15 @@ describe('catalog kind pages', () => {
     expect(labels.every((label) => label.endsWith(', scrollable'))).toBe(true)
   })
 
+  it('sets the page title at the reference scale, as the manual and the C reference do (15-typesetting)', async () => {
+    for (const kind of ['option', 'hook', 'format'] as const) {
+      const title = /<h1 class="([^"]*)"/.exec(await render(kind))?.[1] ?? ''
+      expect(title.split(' '), kind).toContain('api-reference-title')
+      // Tailwind's text-2xl is 24/32: the section size, not the title's 32/38.
+      expect(title).not.toMatch(/\btext-(?:xl|2xl|3xl)\b/)
+    }
+  })
+
   it('counts the types a kind has for its filter chips', () => {
     const chips = catalogTypeCounts(tmuxCatalogEntries('3.7c', 'option'))
     expect(chips[0]![0]).toBe('string')
