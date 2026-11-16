@@ -2984,6 +2984,13 @@
   },
   {
    "port": "elixir",
+   "symbol": "LibTmux.Server",
+   "page": "/elixir/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "elixir",
    "symbol": "LibTmux.Server.new/1",
    "page": "/elixir/latest/concepts/observations/",
    "title": "Captured tmux state",
@@ -2992,6 +2999,13 @@
   {
    "port": "elixir",
    "symbol": "LibTmux.Server.new/1",
+   "page": "/elixir/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Server.run/3",
    "page": "/elixir/latest/guides/attaching-to-tmux/",
    "title": "Attaching to tmux",
    "section": "guides"
