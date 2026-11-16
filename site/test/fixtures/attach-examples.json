@@ -208,25 +208,21 @@
       ],
       "page": "ports/cxx/guides/attaching-to-tmux",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-cxx libtmux-source &&\n  git -C libtmux-source checkout 393d4b0ad666f18a6581f1eb281741a75a7503f0 &&\n  cmake -S . -B build -G Ninja \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ \\\n    -DCMAKE_EXE_LINKER_FLAGS=-stdlib=libc++ &&\n  cmake --build build --target connect --parallel 2 &&\n  sh run.sh ./build/connect"
+        "git clone https://github.com/libtmux/libtmux-cxx libtmux-source &&\n  git -C libtmux-source checkout 393d4b0ad666f18a6581f1eb281741a75a7503f0 &&\n  cmake -S . -B build -G Ninja \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ \\\n    -DCMAKE_EXE_LINKER_FLAGS=-stdlib=libc++ &&\n  cmake --build build --target connect --parallel 2 &&\n  ./build/connect"
       ],
       "expectedOutput": "work",
       "files": [
         {
           "name": "connect.cpp",
-          "sha256": "e7cf8fedee0d797982c249ed194885c23c5c8f6d29e583592105dd09a191f875"
+          "sha256": "54360d06c83b14a8db4994f72ec23dadd7458e237a65da3424d54ede79f845b3"
         },
         {
           "name": "CMakeLists.txt",
           "sha256": "b21ea46308497a8fb5b6c7acda8c915a568da7f1573ae08aed67b379a217713a"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "e2d5c1be7459ab5be9f163902b6be34abfd8195c2d5ac003cb3342d178a829a4"
         }
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ]
     },
