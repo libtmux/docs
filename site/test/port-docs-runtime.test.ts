@@ -556,6 +556,33 @@ if (argv.includes(process.env.FAILING_TASK)) process.exit(23)
   })
 })
 
+describe('Raku documentation producer', () => {
+  // libtmux-raku moved its exporter from tools/ to scripts/export-docs/; a source ref from before that still has the old path.
+  it.each(['scripts/export-docs/export-docs.raku', 'tools/export-docs.raku'])('installs dependencies and runs %s from the source root', (exporter) => {
+    const directory = mkdtempSync(join(tmpdir(), 'libtmux-raku-export-'))
+    try {
+      const source = join(directory, 'selected source')
+      const calls = join(directory, 'calls')
+      mkdirSync(dirname(join(source, exporter)), { recursive: true })
+      writeFileSync(join(source, exporter), '')
+      for (const tool of ['zef', 'raku']) {
+        writeFileSync(join(directory, tool), `#!${process.execPath}
+require('node:fs').appendFileSync(process.env.EXPORT_CALLS, JSON.stringify({ tool: '${tool}', argv: process.argv.slice(2) }) + '\\n')
+`, { mode: 0o700 })
+      }
+      const result = spawnSync('bash', ['-e', '-c', script('Export the selected Raku declarations and native RakuDoc')], {
+        cwd: source, encoding: 'utf8', timeout: 1000,
+        env: { ...process.env, PATH: `${directory}:${process.env.PATH}`, EXPORT_CALLS: calls },
+      })
+      expect(result.status, result.stderr).toBe(0)
+      expect(readFileSync(calls, 'utf8').trim().split('\n').map((line) => JSON.parse(line))).toEqual([
+        { tool: 'zef', argv: ['install', '--/test', '--deps-only', '.'] },
+        { tool: 'raku', argv: ['-I.', exporter] },
+      ])
+    } finally { rmSync(directory, { recursive: true, force: true }) }
+  })
+})
+
 describe('Erlang documentation producer', () => {
   function toolchain(source?: string) {
     const directory = mkdtempSync(join(tmpdir(), 'libtmux-erlang-toolchain-'))

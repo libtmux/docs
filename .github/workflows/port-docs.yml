@@ -674,7 +674,13 @@ jobs:
         run: |
           set -euo pipefail
           zef install --/test --deps-only .
-          raku -I. tools/export-docs.raku
+          # The exporter moved to scripts/export-docs/; a source ref from before that
+          # still has it under tools/.
+          exporter=tools/export-docs.raku
+          if [[ -f scripts/export-docs/export-docs.raku ]]; then
+            exporter=scripts/export-docs/export-docs.raku
+          fi
+          raku -I. "$exporter"
       - name: Install the Raku usage scanner dependency
         if: matrix.port == 'raku'
         run: zef install --/test JSON::Fast
