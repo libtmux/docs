@@ -604,7 +604,13 @@ jobs:
           set -euo pipefail
           opam install . --deps-only --with-doc --yes
           opam exec -- dune build @install tools/api_export.exe
-          opam exec -- python3 tools/export_api.py --output _build/docs/ocaml.json
+          # The wrapper moved to scripts/export_api/ after the options, panes and clients
+          # showcases; a source ref from before that still has it under tools/.
+          wrapper=tools/export_api.py
+          if [[ -f scripts/export_api/export_api.py ]]; then
+            wrapper=scripts/export_api/export_api.py
+          fi
+          opam exec -- python3 "$wrapper" --output _build/docs/ocaml.json
 
       - name: Verify OCaml producer input ownership
         if: matrix.port == 'ocaml'
