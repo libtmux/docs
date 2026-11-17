@@ -33007,7 +33007,7 @@
           "in": "LibTmux::Model::PaneRef.join"
         },
         {
-          "at": "lib/LibTmux/Model.rakumod:348",
+          "at": "lib/LibTmux/Model.rakumod:578",
           "has": [
             "invalid-argument('Source and target pane must differ') if self.id eq $target.id;"
           ]
@@ -33028,7 +33028,7 @@
           "in": "LibTmux::Model::PaneRef.move"
         },
         {
-          "at": "lib/LibTmux/Model.rakumod:348",
+          "at": "lib/LibTmux/Model.rakumod:578",
           "has": [
             "invalid-argument('Source and target pane must differ') if self.id eq $target.id;"
           ]
