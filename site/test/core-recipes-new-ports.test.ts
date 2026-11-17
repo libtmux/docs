@@ -402,12 +402,13 @@ describe('OCaml recipe', () => {
   const code = home.ocaml.files.find((file) => file.name === 'examples/showcase_graph.ml')!.code
   const marked = recipe.instrument(code, recipe.steps)
 
-  it('adds one line to the displayed program, which opens the helper after the module aliases', () => {
+  it('adds one line to the displayed program, which opens the helper before any alias of the library\'s modules', () => {
     expect(withoutOcamlMarks(marked)).toBe(code)
     const lines = marked.split('\n')
     const added = lines.filter((line: string) => line.endsWith('docs:mark *)'))
     expect(added).toEqual(['open Docs_mark (* docs:mark *)'])
-    expect(lines[lines.indexOf(added[0]!) - 1]).toBe('module Execution = Libtmux_workspace.Execution')
+    expect(lines[lines.indexOf(added[0]!) - 1]).toBe('open Libtmux')
+    expect(lines.indexOf(added[0]!), 'the helper is open where the first function that makes a call is defined').toBeLessThan(lines.findIndex((line: string) => line.startsWith('let capture_graph')))
   })
 
   it('finds every call on one line of every view of the program, the repeated ones by their occurrence', () => {
@@ -420,7 +421,7 @@ describe('OCaml recipe', () => {
   it('refuses an anchor the program does not hold, a function the helper does not wrap, and a program without the alias to open it after', () => {
     expect(() => recipe.instrument(code, [{ id: 'x', anchor: 'Client.nope', call: 'Client.capture', value: '"null"' }])).toThrow(/not on exactly one line/)
     expect(() => recipe.instrument(code, [{ id: 'x', anchor: 'Client.link_window', call: 'Client.nope', value: '"null"' }])).toThrow(/helper wraps/)
-    expect(() => recipe.instrument(code.replace('module Execution = Libtmux_workspace.Execution', ''), recipe.steps)).toThrow(/module Execution/)
+    expect(() => recipe.instrument(code.replace('open Libtmux\n', ''), recipe.steps)).toThrow(/open Libtmux/)
   })
 
   it('wraps each function once, with its steps in the order its calls run, and stops the program at a call it did not plan', () => {
@@ -430,6 +431,9 @@ describe('OCaml recipe', () => {
     expect(helper).toContain('| 0, Ok _ -> mark "close" ("null")')
     expect(helper.split('module Client = struct').length - 1).toBe(1)
     expect(helper.split('module Workspace = struct').length - 1).toBe(1)
+    // The program names both through `Libtmux_unix`, wherever its aliases sit, so the shadow of `Libtmux_unix` holds the marked ones.
+    expect(helper).toMatch(/module Libtmux_unix = struct\n  include Libtmux_unix\n\n  module Workspace = Marked_workspace\n\n  module Client = Marked_client\n/)
+    expect(helper).toContain('| 0, Ok value -> mark "retire"')
   })
 })
 
@@ -446,7 +450,7 @@ describe('the OCaml recording of the landing page program', () => {
     expect(capability.steps.map((each) => [each.id, each.label, each.anchor, each.type])).toEqual(OCAML['typed-graph'].steps.map((each: { id: string; label: string; anchor: string; type: string }) => [each.id, each.label, each.anchor, each.type]))
   })
 
-  it('starts with no server: the workspace plan the program submits starts it', () => {
+  it('starts with no server: the program starts a private daemon of its own, and submitting a plan to it sends nothing but the version probe', () => {
     expect(capability.tmuxBefore.sessions).toEqual([])
     expect(sent('submit'), 'submitting a plan sends nothing but the version probe').toEqual([])
     expect(step('submit').commands.map((command) => command.tmux)).toEqual(['-V'])
@@ -478,11 +482,16 @@ describe('the OCaml recording of the landing page program', () => {
     expect(tmuxChanges(step('wait-linked').tmux, state).phrases).toEqual(['linked window linked:7:editor'])
   })
 
-  it('ends with the call that closes the workspace, after which the daemon exits on its own and no command is sent', () => {
+  it('closes the workspace inside the daemon\'s scope, and ends with the call that owns the daemon, which stops it by its process id and sends no command', () => {
     const close = step('close')
-    expect(close.stopsServer).toBe(true)
+    expect(close.stopsServer).toBeUndefined()
     expect(close.commands).toEqual([])
-    expect(close.tmux.sessions).toEqual([])
+    expect(close.tmux.sessions).toHaveLength(2)
+    const retire = step('retire')
+    expect(retire.stopsServer).toBe(true)
+    expect(retire.commands).toEqual([])
+    expect(retire.tmux.sessions).toEqual([])
+    expect(retire.returned).toEqual({ sessions: 2, windows: 2, links: 3, panes: 2 })
   })
 
   it('plays every call in every view of the program, each on the line its anchor names', () => {

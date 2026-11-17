@@ -22,33 +22,77 @@ interactive attachment and detaching.
 
 ## Connect to an existing server
 
-Save the complete program as `Connect.java`. `LIBTMUX_SOCKET_PATH` selects
-the existing server. The launcher below supplies a private socket for trying
-the example.
+Save the complete program as `Connect.java`. When `LIBTMUX_SOCKET_PATH` names
+the socket of a running server, `printWork` opens a new `Server` handle on that
+socket and finds the `work` session. The program leaves that server running.
+
+Without the variable, the program starts a private server with a `work` session
+running `cat`, reads it through a separate handle in the same way, and then
+stops the server it started and removes its socket directory. If that server
+cannot be stopped, the program reports the retained directory and exits with
+an error.
 
 ```java title="Connect.java"
 import io.github.libtmux.Server;
 import io.github.libtmux.ServerConfig;
 import io.github.libtmux.ServerEndpoint;
 import io.github.libtmux.Session;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.Objects;
 
 public final class Connect {
-    public static void main(String[] args) {
-        String socket = Objects.requireNonNull(System.getenv("LIBTMUX_SOCKET_PATH"),
-                "Set LIBTMUX_SOCKET_PATH to an existing socket");
+    public static void main(String[] args) throws IOException {
+        String existing = System.getenv("LIBTMUX_SOCKET_PATH");
+        if (existing != null) {
+            printWork(Path.of(existing));
+        } else {
+            demonstrate();
+        }
+    }
+
+    // A new Server handle reaches a running server through its socket path.
+    static void printWork(Path socket) {
         ServerConfig config = ServerConfig.builder()
-                .endpoint(ServerEndpoint.socketPath(Path.of(socket)))
+                .endpoint(ServerEndpoint.socketPath(socket))
                 .defaultTimeout(Duration.ofSeconds(5))
                 .build();
         try (Server server = Server.open(config)) {
             Session session = server.sessions().stream()
                     .filter(candidate -> candidate.name().equals("work"))
                     .findFirst()
-                    .orElseThrow(() -> new IllegalStateException("The work session does not exist"));
+                    .orElseThrow(() -> new IllegalStateException(
+                            "The work session does not exist"));
             System.out.println(session.name());
+        }
+    }
+
+    // Without LIBTMUX_SOCKET_PATH, start a private server to attach to.
+    static void demonstrate() throws IOException {
+        Path directory = Files.createTempDirectory("libtmux-attach-");
+        Path socket = directory.resolve("tmux.sock");
+        ServerConfig config = ServerConfig.builder()
+                .endpoint(ServerEndpoint.socketPath(socket))
+                .configFile(Path.of("/dev/null"))
+                .defaultTimeout(Duration.ofSeconds(5))
+                .build();
+        boolean stopped = false;
+        try (Server owner = Server.open(config)) {
+            try {
+                owner.newSession(s -> s.named("work").running("/bin/cat"));
+                printWork(socket);
+            } finally {
+                if (Files.exists(socket)) owner.killServer();
+                stopped = true;
+            }
+        } finally {
+            if (stopped || !Files.exists(socket)) {
+                Files.deleteIfExists(socket);
+                Files.delete(directory);
+            } else {
+                System.err.println("Cannot stop tmux; kept " + directory);
+            }
         }
     }
 }
@@ -84,48 +128,14 @@ Save this file beside the program using the displayed filename.
 rootProject.name = "connect"
 ```
 
-Save the launcher as `run.sh`. It starts an isolated tmux server, runs the
-program, checks that the session still exists, then stops only that server.
-Cleanup runs after failures too. A failed shutdown keeps its socket directory
-and prints its location for inspection.
-
-```sh title="run.sh"
-#!/bin/sh
-set -eu
-
-binary=$(command -v tmux)
-directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-java-attach.XXXXXX")
-socket="$directory/tmux.sock"
-
-cleanup() {
-    status=$?
-    trap - 0 HUP INT TERM
-    if [ -S "$socket" ] && ! "$binary" -S "$socket" kill-server; then
-        printf 'Cannot stop tmux; kept %s\n' "$directory" >&2
-        exit 1
-    fi
-    rm -rf "$directory" || exit 1
-    exit "$status"
-}
-trap cleanup 0
-trap 'exit 1' HUP INT TERM
-
-unset TMUX TMUX_PANE
-export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
-"$binary" -S "$socket" -f /dev/null new-session -d -s work /bin/cat
-"$@"
-"$binary" -S "$socket" has-session -t '=work'
-```
-
 Build and run the program:
 
 ```console
-$ sh run.sh gradle --console=plain --no-daemon run
+$ gradle --console=plain --no-daemon run
 ```
 
-The program prints `work`. To use an existing server of your own, set
-`LIBTMUX_SOCKET_PATH` to its socket and run the program without the launcher.
-That launcher is responsible for the demonstration server's lifetime.
+The program prints `work`. To attach to a server of your own, set
+`LIBTMUX_SOCKET_PATH` to its socket path before running the same command.
 
 <a id="finding-a-session-instead-of-always-creating-one"></a>
 

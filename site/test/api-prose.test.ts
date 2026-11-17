@@ -447,7 +447,10 @@ describe('the capability directory of Erlang, OCaml, Common Lisp, Raku, Perl and
   // directory has a correct reader and no table.
   const OWNERS: { port: string; id: string; rows: number; refs?: number }[] = [
     { port: 'erlang', id: 'tmux_server', rows: 8 },
-    { port: 'ocaml', id: 'Libtmux_unix.Client', rows: 8 },
+    // The model pinned at ffab5fe holds eight groups, but its "Changing things" list has a bullet with prose after the
+    // reference ("Server: {!Client.kill_server} stops the daemon and closes this client"), which is not references
+    // alone and ends the run at five rows. Eight again once libtmux-ocaml words that bullet as a reference alone.
+    { port: 'ocaml', id: 'Libtmux_unix.Client', rows: 5 },
     { port: 'lisp', id: 'libtmux:client', rows: 8 },
     { port: 'raku', id: 'LibTmux::Server', rows: 7, refs: 46 },
     { port: 'perl', id: 'LibTmux::Server', rows: 10, refs: 43 },

@@ -96,11 +96,13 @@ describe('Expressive Code frames', () => {
   let render: (code: string, meta: string, language?: string) => Promise<ReturnType<typeof toHtml> & string>
   let rendered: (code: string, meta: string, language?: string) => Promise<any>
   let baseStyles: string
+  let themeStyles: string
   let script: string
 
   beforeAll(async () => {
     const renderer = await createRenderer(ecConfig)
     baseStyles = renderer.baseStyles
+    themeStyles = renderer.themeStyles
     script = renderer.jsModules.filter((module: string) => module.includes('data-cap-toggle')).join('\n')
     rendered = async (code, meta, language = 'go') => (await renderer.ec.render({ code, language, meta })).renderedGroupAst
     render = async (code, meta, language) => toHtml(await rendered(code, meta, language))
@@ -337,6 +339,21 @@ describe('Expressive Code frames', () => {
       const off = await rendered(go(3), 'frame="none" copy="off"')
       expect(select('.copy', off), 'one copy control per frame').toBeUndefined()
       expect(select('pre', off)).toBeDefined()
+    })
+
+    // The frame's own copy button is a control like the installer's: its outline is --control-border (3:1 on the ground,
+    // record 0067), drawn whole. Expressive Code defaults to the code colour at 40%, which is about 1.4:1.
+    it('outlines the button in --control-border at full strength, in the light and the dark theme', () => {
+      const declared = [...themeStyles.matchAll(/--ec-frm-inlBtnBrd:\s*([^;]+);/g)].map((match) => match[1]!.trim())
+      expect(declared.length).toBeGreaterThanOrEqual(1)
+      for (const value of declared) expect(value).toBe('var(--control-border)')
+      expect([...themeStyles.matchAll(/--ec-frm-inlBtnBrdOpa:\s*([^;]+);/g)].map((match) => match[1]!.trim())).not.toContainEqual(expect.not.stringMatching(/^1$/))
+    })
+
+    it('shows the button at full opacity wherever it shows, so the outline keeps its contrast', () => {
+      // On a pointer device it appears with the frame hovered or focused; on touch it is always there.
+      expect(baseStyles).toMatch(/\.frame:hover \.copy button:not\(:hover\)[^{]*\{[^}]*opacity:\s*1\b/)
+      expect(baseStyles).toMatch(/hover:\s*none\)\s*\{[^{}]*\.copy button\s*\{[^}]*opacity:\s*1\b/)
     })
   })
 

@@ -392,6 +392,20 @@ export function referenceNavigation(port: string): ReferenceNavigation | undefin
   return { model: { ...model, symbols: [...symbols.values()] }, tree, members, hrefs }
 }
 
+/**
+ * What the API tree beside a port's reference lists, for a page that is not a declaration.
+ *
+ * The same inventory, buckets and dependency links a declaration page hands the tree, so the column reads the same
+ * on the A-Z page as beside any symbol.
+ */
+export function referenceColumn(port: string): { inventory: ApiTreeJson; tree: TreeBucket[]; hrefs?: Record<string, string>; version: string } | undefined {
+  const model = API_MODELS[port]
+  if (!model) return undefined
+  const dependency = PORT_BY_SLUG[port]?.apiDependencyNavigation?.length ? referenceNavigation(port) : undefined
+  const tree = dependency?.tree ?? navTree(port)
+  return { inventory: referenceTree(port), tree, hrefs: dependency?.hrefs, version: apiTreeVersion(model, tree, dependency?.hrefs) }
+}
+
 /** The port-scoped inventory served to lazy branches and symbol search. */
 export function referenceTree(port: string): ApiTreeJson {
   const navigation = referenceNavigation(port)

@@ -21,6 +21,9 @@ const targets: Readonly<Record<string, readonly string[]>> = {
   layout: ['Libtmux_unix.Client.select_layout'],
 }
 
+/** The comment lines that mark a region of a program for the port's own tooling: a reader of the example does not see them. */
+const MARKER = /^[ \t]*\(\*[ \t]*docs:[\w-]+(?:[ \t].*?)?[ \t]*\*\)[ \t]*$/
+
 /** Read whole, CI-executed programs at the same commit as the public interface. */
 export function attachCompleteOcamlExamples(symbols: ApiSymbol[], read: (path: string) => string, revision: string): void {
   const manifest = JSON.parse(read('examples/showcase.json')) as {
@@ -38,7 +41,7 @@ export function attachCompleteOcamlExamples(symbols: ApiSymbol[], read: (path: s
         JSON.stringify(example.command) !== JSON.stringify(['opam', 'exec', '--', 'dune', 'exec',
           example.file.replace(/\.ml$/, '.exe'), '--', 'tmux'])) throw new Error('Invalid OCaml whole program')
     found.add(example.capability)
-    const code = read(example.file)
+    const code = read(example.file).split('\n').filter((line) => !MARKER.test(line)).join('\n')
     if (!code.includes('let () =') || code.split('\n').length > 151) throw new Error('Incomplete OCaml entry point')
     const sourceUrl = `https://github.com/libtmux/libtmux-ocaml/blob/${revision}/${example.file}`
     for (const target of targets[example.capability]!) {

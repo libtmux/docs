@@ -21,23 +21,65 @@ covers interactive attachment and detaching.
 ## Connect to an existing server
 
 Save the complete program as `connect.exs`. The environment variable
-`LIBTMUX_SOCKET_PATH` selects the existing server. The launcher below sets it
-to a private socket for trying the example. The first line installs libtmux
-from Hex. Its requirement, `~> 0.1`, accepts any release from 0.1.0 up to, but
-not including, 1.0.0.
+`LIBTMUX_SOCKET_PATH` selects the existing server, and `print_work` connects
+to it and finds `work`. Without the variable, the program starts a private
+server of its own in a new temporary directory, creates `work` with
+`new_session!`, and calls `print_work` with that socket through a second
+`Server` value. The library works on a running server and does not
+start one, so the program has `tmux` start the daemon. It stops the private
+server with [`Server.run/3`](../../reference/libtmux-server-run-3/) and
+removes the directory after success or failure. If the server does not stop,
+the program reports the error and keeps the directory.
+
+The first line installs libtmux from Hex. Its requirement, `~> 0.1`, accepts
+any release from 0.1.0 up to, but not including, 1.0.0.
 
 ```elixir title="connect.exs"
 Mix.install([{:libtmux, "~> 0.1"}])
 
-alias LibTmux.{Selection, Server, Snapshot}
+alias LibTmux.{Command, Selection, Server, Snapshot}
 
 tmux = System.find_executable("tmux") || raise "tmux is not on PATH"
-socket = System.fetch_env!("LIBTMUX_SOCKET_PATH")
 
-server = Server.new(executable: tmux, socket: socket)
-snapshot = Server.snapshot!(server)
-session = snapshot |> Snapshot.sessions() |> Selection.one!(name: "work")
-IO.puts(session.name)
+print_work = fn socket ->
+  server = Server.new(executable: tmux, socket: socket)
+  snapshot = Server.snapshot!(server)
+  session = snapshot |> Snapshot.sessions() |> Selection.one!(name: "work")
+  IO.puts(session.name)
+end
+
+case System.get_env("LIBTMUX_SOCKET_PATH") do
+  nil ->
+    # No server was named: start one this program owns.
+    id = Base.encode16(:crypto.strong_rand_bytes(8), case: :lower)
+    dir = Path.join(System.tmp_dir!(), "libtmux-attach-" <> id)
+    socket = Path.join(dir, "tmux.sock")
+    owner = Server.new(executable: tmux, socket: socket)
+    File.mkdir!(dir)
+    File.chmod!(dir, 0o700)
+
+    try do
+      # libtmux works on a running server, so tmux starts the daemon itself.
+      start = ~w(start-server ; set-option -s exit-empty off)
+      {_, 0} = System.cmd(tmux, ["-S", socket, "-f", "/dev/null" | start])
+      Server.new_session!(owner, "work", command: {:argv, ["/bin/cat"]})
+      print_work.(socket)
+    after
+      kill = Command.new("kill-server", [])
+      running = File.exists?(socket)
+      stopped = not running or match?({:ok, _}, Server.run(owner, kill))
+
+      if stopped do
+        File.rm_rf!(dir)
+      else
+        IO.puts(:stderr, "Cannot stop tmux; kept #{dir}")
+        System.halt(1)
+      end
+    end
+
+  socket ->
+    print_work.(socket)
+end
 ```
 
 [`Server.new/1`](../../reference/libtmux-server-new-1/) describes a server that
@@ -54,47 +96,16 @@ the program does not destroy the caller's sessions.
 ## Setup and run
 
 Use an empty directory on Linux with Elixir 1.20.4 or newer, Erlang/OTP 29.1.2
-or a newer 29.x release, a C11 compiler, tmux 3.3 or newer, a POSIX shell, and
-access to hex.pm. Save the launcher as `run.sh`. It starts an isolated tmux
-server, runs the program, checks that the session still exists, then stops only
-that server. Cleanup runs after failures too. A failed shutdown keeps its socket
-directory and prints its location for inspection.
-
-```sh title="run.sh"
-#!/bin/sh
-set -eu
-
-binary=$(command -v tmux)
-directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-elixir-attach.XXXXXX")
-socket="$directory/tmux.sock"
-
-cleanup() {
-    status=$?
-    trap - 0 HUP INT TERM
-    if [ -S "$socket" ] && ! "$binary" -S "$socket" kill-server; then
-        printf 'Cannot stop tmux; kept %s\n' "$directory" >&2
-        exit 1
-    fi
-    rm -rf "$directory" || exit 1
-    exit "$status"
-}
-trap cleanup 0
-trap 'exit 1' HUP INT TERM
-
-unset TMUX TMUX_PANE
-export LIBTMUX_SOCKET_PATH="$socket"
-"$binary" -S "$socket" -f /dev/null new-session -d -s work /bin/cat
-"$@"
-"$binary" -S "$socket" has-session -t '=work'
-```
+or a newer 29.x release, a C11 compiler, tmux 3.3 or newer, and access to
+hex.pm.
 
 ```console
-$ sh run.sh elixir connect.exs
+$ elixir connect.exs
 ```
 
 The program prints `work`. To use your own existing server, set
-`LIBTMUX_SOCKET_PATH` to its socket and run the program without the launcher.
-The launcher owns only the demonstration server.
+`LIBTMUX_SOCKET_PATH` to its socket before running the program; it prints
+`work` and leaves that server running.
 
 ## Find or create a session
 

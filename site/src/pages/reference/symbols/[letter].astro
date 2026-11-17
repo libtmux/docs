@@ -1,11 +1,20 @@
 ---
-import { DEFAULT_LOCALE } from '../../../i18n/locales'
+import { DEFAULT_LOCALE, localeSourcePath } from '../../../i18n/locales'
 import { buildLocale } from '../../../i18n/resolve'
 import type { ApiSymbol } from '@libtmux/api-model'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import SymbolIndex from '../../../components/api/SymbolIndex.astro'
+import ApiTree from '../../../components/api/ApiTree.astro'
+import PagePortSwitcher from '../../../components/PagePortSwitcher.astro'
+import DocumentationContext from '../../../components/docs/DocumentationContext.astro'
+import PageEnd from '../../../components/docs/PageEnd.astro'
 import { withRoot } from '../../../lib/site-root'
 import { API_MODELS, PORT_NAME, referenceHref } from '../../../lib/api-models'
+import { referenceColumn } from '../../../lib/api-tree'
+import { apiPageEnd } from '../../../lib/page-end'
+import { pagePortsFor } from '../../../lib/page-ports-for'
+import { sidebarHeadAt } from '../../../lib/sidebar-head'
+import { pageBreadcrumbs, type BreadcrumbItem } from '../../../lib/sidebar'
 import { coreApiSymbols } from '../../../lib/product-api'
 import { PORT_BY_SLUG, referenceUrl } from '../../../lib/ports'
 import { buildTarget } from '../../../lib/versions'
@@ -83,18 +92,22 @@ const { letter, letters, entries, total, shared, port } = Astro.props as Props
 const portMeta = port ? PORT_BY_SLUG[port] : undefined
 const portName = port ? (PORT_NAME[port] ?? portMeta?.name ?? port) : undefined
 const here = (l: string) => withRoot(`/reference/symbols/${l.toLowerCase()}/`)
-const referenceRoot = portMeta ? referenceUrl(portMeta, buildTarget(process.env).version) : withRoot('/reference/')
-const breadcrumbs = port
-  ? [
-      { name: portName!, url: withRoot('/') },
-      { name: 'API reference', url: referenceRoot },
-      { name: `Symbols: ${letterLabel(letter)}`, url: here(letter) },
-    ]
+const version = buildTarget(process.env).version
+const referenceRoot = portMeta ? referenceUrl(portMeta, version) : withRoot('/reference/')
+const pageTitle = `Symbols: ${letterLabel(letter)}`
+// A port's A-Z page is a page of its core reference (record 0021): the breadcrumb names Port / Core Library / API reference
+// / page like every other trail, the column opens with the way up, and the page ends on the ladder. The cross-port page is a
+// root page with none of that.
+const column = port ? referenceColumn(port) : undefined
+const breadcrumbs: BreadcrumbItem[] = port
+  ? await pageBreadcrumbs(pageTitle, `reference/symbols/${letter.toLowerCase()}`, version, port)
   : [
       { name: 'libtmux', url: withRoot('/') },
       { name: 'Reference', url: withRoot('/reference/') },
-      { name: `Symbols: ${letterLabel(letter)}`, url: here(letter) },
+      { name: pageTitle, url: here(letter) },
     ]
+const end = column ? apiPageEnd({ inventory: column.inventory, selected: '', base: referenceRoot, breadcrumbs }) : undefined
+const pagePorts = port ? await pagePortsFor('reference', port, version) : []
 const title = port ? `${portName} API index` : 'Symbol index'
 ---
 
@@ -104,19 +117,67 @@ const title = port ? `${portName} API index` : 'Symbol index'
   description={`Public ${portName ?? 'libtmux'} symbols beginning with ${letterLabel(letter)}.`}
   pagePath={`reference/symbols/${letter.toLowerCase()}`}
   portSlug={port || undefined}
-  version={port ? buildTarget(process.env).version : undefined}
+  version={port ? version : undefined}
+  documentationLayout={column ? 'reference' : undefined}
+  flush={Boolean(column)}
   inventoryExclude={Boolean(port)}
   noindex={true}
 >
-  <SymbolIndex
-    title={title}
-    letter={letter}
-    letters={letters.map((l) => ({ letter: l, href: here(l) }))}
-    entries={entries}
-    breadcrumbs={breadcrumbs}
-    port={port}
-    portName={portName}
-    total={total}
-    shared={new Set(shared)}
-  />
+  {column && <div slot="header-navigation" class="site-header-language">
+    <PagePortSwitcher entries={pagePorts} portSlug={port} reserveLabelWidth />
+  </div>}
+  {column && <DocumentationContext slot="context" port={port} version={version} locale={buildLocale()}
+    sourcePath={localeSourcePath(Astro.url.pathname, buildLocale())} reference>
+    <button type="button" class="api-nav-toggle" slot="navigation" data-api-nav-toggle data-pagefind-ignore="all" aria-controls="api-nav" aria-expanded="false">
+      <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+        <path stroke-linecap="round" d="M2 4h12M2 8h12M2 12h8" />
+      </svg>
+      <span class="sr-only">{portName} API contents</span>
+    </button>
+  </DocumentationContext>}
+  {column ? (
+    <main class="api-reference-layout grid">
+      <ApiTree
+        presentation="outline"
+        inventory={column.inventory}
+        referenceBase={referenceRoot}
+        glossaryHref={`${referenceRoot}glossary/`}
+        portName={portName!}
+        tree={column.tree}
+        hrefs={column.hrefs}
+        members={[]}
+        withMembers={new Set()}
+        currentPath={Astro.url.pathname}
+        version={column.version}
+        head={await sidebarHeadAt(port, version, Astro.url.pathname)}
+      />
+      <div class="api-reference-content min-w-0 px-4 py-6 lg:px-6">
+        <SymbolIndex
+          embedded
+          title={title}
+          letter={letter}
+          letters={letters.map((l) => ({ letter: l, href: here(l) }))}
+          entries={entries}
+          breadcrumbs={breadcrumbs}
+          port={port}
+          portName={portName}
+          total={total}
+          shared={new Set(shared)}
+        />
+        {end && <PageEnd {...end} />}
+      </div>
+    </main>
+  ) : (
+    <SymbolIndex
+      title={title}
+      letter={letter}
+      letters={letters.map((l) => ({ letter: l, href: here(l) }))}
+      entries={entries}
+      breadcrumbs={breadcrumbs}
+      port={port}
+      portName={portName}
+      total={total}
+      shared={new Set(shared)}
+    />
+  )}
 </BaseLayout>

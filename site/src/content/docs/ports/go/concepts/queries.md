@@ -25,9 +25,9 @@ still supplies a criterion. `tmux.Ptr` is useful for these pointer fields.
 ## Setup and run
 
 Use an empty directory on Linux or macOS with Go 1.26 or newer and
-tmux 3.3a or newer. Save these two files and any complete Go program below.
-Each program includes its imports and entry point; run it by filename so
-other examples in the directory do not introduce duplicate `main` functions.
+tmux 3.3a or newer. Save the module file and any complete Go program below. Each
+program includes its imports and entry point; run it by filename so other
+examples in the directory do not introduce duplicate `main` functions.
 
 ```gomod title="go.mod"
 module example.com/concepts
@@ -37,39 +37,12 @@ go 1.26.0
 require github.com/libtmux/libtmux-go v0.1.3
 ```
 
-The launcher starts two sessions on a private socket: `work-one` with an
-`editor` window and `work-two` with a `logs` window. Each pane runs `cat` to
-keep it alive. Every run gets a fresh fixture. The launcher stops only that
-server on success or failure, and retains its directory if shutdown fails.
-
-```sh title="run.sh"
-#!/bin/sh
-set -eu
-
-binary=$(command -v tmux)
-directory=$(mktemp -d /tmp/libtmux-go-concepts.XXXXXX)
-socket="$directory/tmux.sock"
-
-cleanup() {
-    status=$?
-    trap - 0 HUP INT TERM
-    if [ -S "$socket" ] && ! "$binary" -S "$socket" kill-server; then
-        printf 'Cannot stop tmux; kept %s\n' "$directory" >&2
-        exit 1
-    fi
-    rm -rf "$directory" || exit 1
-    exit "$status"
-}
-trap cleanup 0
-trap 'exit 1' HUP INT TERM
-
-unset TMUX TMUX_PANE
-export LIBTMUX_SOCKET_PATH="$socket"
-"$binary" -S "$socket" -f /dev/null new-session -d -s work-one -n editor /bin/cat
-"$binary" -S "$socket" new-session -d -s work-two -n logs /bin/cat
-"$@"
-"$binary" -S "$socket" has-session -t '=work-one'
-```
+Each program starts its own tmux server on a socket in a new temporary
+directory and creates two sessions: `work-one` with an `editor` window and
+`work-two` with a `logs` window. Each pane runs `cat` to keep it alive. When the
+program ends, `withServer` stops only that server and removes the directory,
+including after an error. If tmux does not stop, the error names the directory
+the program kept.
 
 Resolve this module's dependencies. The module file requires `libtmux-go`
 v0.1.3 from the Go module proxy ([source](https://github.com/libtmux/libtmux-go/tree/7ad2bfb0f74c02d395fec1962d5bb9556e2200cd)):
@@ -79,9 +52,9 @@ $ go mod tidy
 ```
 
 The programs use a five-second context for tmux operations. Errors reach
-`main`, which reports the error and exits unsuccessfully. The launcher's
-cleanup runs independently of that context. A cancelled mutation can already
-have reached tmux; inspect the current state before retrying it.
+`main`, which reports the error and exits unsuccessfully. Cleanup runs
+independently of that context. A cancelled mutation can already have reached
+tmux; inspect the current state before retrying it.
 
 <a id="go-rust-java-c-typed-fields-that-fail-queries-at-compile-time"></a>
 <a id="typed-and-local-filters"></a>
@@ -102,6 +75,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 	"time"
@@ -110,24 +84,15 @@ import (
 	"github.com/libtmux/libtmux-go/tmuxq"
 )
 
+const limit = 5 * time.Second
+
 func main() {
-	if err := run(); err != nil {
+	if err := withServer(demonstrate); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func run() error {
-	socket := os.Getenv("LIBTMUX_SOCKET_PATH")
-	if socket == "" {
-		return errors.New("run this program with run.sh")
-	}
-	server, err := tmux.NewServer(tmux.ServerOptions{SocketPath: socket, ConfigFile: "/dev/null"})
-	if err != nil {
-		return err
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
+func demonstrate(ctx context.Context, server tmux.Server) error {
 	snapshot, err := server.Snapshot(ctx)
 	if err != nil {
 		return err
@@ -176,10 +141,47 @@ func run() error {
 	fmt.Println("invalid regular expression: rejected")
 	return nil
 }
+
+func withServer(demo func(context.Context, tmux.Server) error) (err error) {
+	dir, err := os.MkdirTemp("", "libtmux-concepts-")
+	if err != nil {
+		return err
+	}
+	server, err := tmux.NewServer(tmux.ServerOptions{
+		SocketPath: filepath.Join(dir, "tmux.sock"),
+		ConfigFile: "/dev/null",
+	})
+	if err != nil {
+		return errors.Join(err, os.RemoveAll(dir))
+	}
+	stop := func() error {
+		ctx, cancel := context.WithTimeout(context.Background(), limit)
+		defer cancel()
+		if err := server.Kill(ctx); err != nil {
+			return fmt.Errorf(
+				"cannot stop tmux; kept %s: %w", dir, err,
+			)
+		}
+		return os.RemoveAll(dir)
+	}
+	defer func() { err = errors.Join(err, stop()) }()
+	ctx, cancel := context.WithTimeout(context.Background(), limit)
+	defer cancel()
+	fixture := [][2]string{{"work-one", "editor"}, {"work-two", "logs"}}
+	for _, names := range fixture {
+		_, err := server.NewSession(ctx, tmux.NewSessionRequest{
+			Name: names[0], WindowName: names[1], Command: "cat",
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return demo(ctx, server)
+}
 ```
 
 ```console
-$ sh run.sh go run Local.go
+$ go run Local.go
 ```
 
 Expected program output:
@@ -211,30 +213,22 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/libtmux/libtmux-go/tmux"
 	"github.com/libtmux/libtmux-go/tmuxq"
 )
 
+const limit = 5 * time.Second
+
 func main() {
-	if err := run(); err != nil {
+	if err := withServer(demonstrate); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func run() error {
-	socket := os.Getenv("LIBTMUX_SOCKET_PATH")
-	if socket == "" {
-		return errors.New("run this program with run.sh")
-	}
-	server, err := tmux.NewServer(tmux.ServerOptions{SocketPath: socket, ConfigFile: "/dev/null"})
-	if err != nil {
-		return err
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
+func demonstrate(ctx context.Context, server tmux.Server) error {
 	sessions, err := server.Sessions(ctx)
 	if err != nil {
 		return err
@@ -272,10 +266,47 @@ func run() error {
 	}
 	return nil
 }
+
+func withServer(demo func(context.Context, tmux.Server) error) (err error) {
+	dir, err := os.MkdirTemp("", "libtmux-concepts-")
+	if err != nil {
+		return err
+	}
+	server, err := tmux.NewServer(tmux.ServerOptions{
+		SocketPath: filepath.Join(dir, "tmux.sock"),
+		ConfigFile: "/dev/null",
+	})
+	if err != nil {
+		return errors.Join(err, os.RemoveAll(dir))
+	}
+	stop := func() error {
+		ctx, cancel := context.WithTimeout(context.Background(), limit)
+		defer cancel()
+		if err := server.Kill(ctx); err != nil {
+			return fmt.Errorf(
+				"cannot stop tmux; kept %s: %w", dir, err,
+			)
+		}
+		return os.RemoveAll(dir)
+	}
+	defer func() { err = errors.Join(err, stop()) }()
+	ctx, cancel := context.WithTimeout(context.Background(), limit)
+	defer cancel()
+	fixture := [][2]string{{"work-one", "editor"}, {"work-two", "logs"}}
+	for _, names := range fixture {
+		_, err := server.NewSession(ctx, tmux.NewSessionRequest{
+			Name: names[0], WindowName: names[1], Command: "cat",
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return demo(ctx, server)
+}
 ```
 
 ```console
-$ sh run.sh go run Cardinality.go
+$ go run Cardinality.go
 ```
 
 Expected program output:
@@ -309,30 +340,22 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/libtmux/libtmux-go/tmux"
 	"github.com/libtmux/libtmux-go/tmuxq"
 )
 
+const limit = 5 * time.Second
+
 func main() {
-	if err := run(); err != nil {
+	if err := withServer(demonstrate); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func run() error {
-	socket := os.Getenv("LIBTMUX_SOCKET_PATH")
-	if socket == "" {
-		return errors.New("run this program with run.sh")
-	}
-	server, err := tmux.NewServer(tmux.ServerOptions{SocketPath: socket, ConfigFile: "/dev/null"})
-	if err != nil {
-		return err
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
+func demonstrate(ctx context.Context, server tmux.Server) error {
 	snapshot, err := server.Snapshot(ctx)
 	if err != nil {
 		return err
@@ -383,10 +406,47 @@ func run() error {
 	fmt.Println("live session listing: window relations not captured")
 	return nil
 }
+
+func withServer(demo func(context.Context, tmux.Server) error) (err error) {
+	dir, err := os.MkdirTemp("", "libtmux-concepts-")
+	if err != nil {
+		return err
+	}
+	server, err := tmux.NewServer(tmux.ServerOptions{
+		SocketPath: filepath.Join(dir, "tmux.sock"),
+		ConfigFile: "/dev/null",
+	})
+	if err != nil {
+		return errors.Join(err, os.RemoveAll(dir))
+	}
+	stop := func() error {
+		ctx, cancel := context.WithTimeout(context.Background(), limit)
+		defer cancel()
+		if err := server.Kill(ctx); err != nil {
+			return fmt.Errorf(
+				"cannot stop tmux; kept %s: %w", dir, err,
+			)
+		}
+		return os.RemoveAll(dir)
+	}
+	defer func() { err = errors.Join(err, stop()) }()
+	ctx, cancel := context.WithTimeout(context.Background(), limit)
+	defer cancel()
+	fixture := [][2]string{{"work-one", "editor"}, {"work-two", "logs"}}
+	for _, names := range fixture {
+		_, err := server.NewSession(ctx, tmux.NewSessionRequest{
+			Name: names[0], WindowName: names[1], Command: "cat",
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return demo(ctx, server)
+}
 ```
 
 ```console
-$ sh run.sh go run Relations.go
+$ go run Relations.go
 ```
 
 Expected program output:

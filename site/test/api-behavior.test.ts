@@ -20,9 +20,10 @@ describe('behaviour facts on the model', () => {
       expect(sidecar.revision, port).toBe(API_MODELS[port].revision)
       expect(API_MODELS[port].symbols.filter((symbol) => symbol.behavior).length, port).toBe(Object.keys(sidecar.symbols).length)
     }
+    // A model of another revision than the sidecar is refused, never paired with its lines.
     const stale = { ...(goSidecar as unknown as BehaviorSidecar), revision: 'f'.repeat(40) }
     const copy = { ...API_MODELS.go, symbols: API_MODELS.go.symbols.map((symbol) => ({ ...symbol, behavior: undefined })) }
-    expect(attachBehavior(copy, stale)).toBe(0)
+    expect(() => attachBehavior(copy, stale)).toThrow(new RegExp(`is for ffffffffffff, the model for ${API_MODELS.go.revision!.slice(0, 12)}; run node scripts/gen-api-behavior\\.mjs go`))
     expect(copy.symbols.some((symbol) => symbol.behavior)).toBe(false)
     // A port whose comments were not read has no facts at all.
     expect(API_MODELS.py.symbols.some((symbol) => symbol.behavior)).toBe(false)

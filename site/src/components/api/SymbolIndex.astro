@@ -8,6 +8,7 @@
  */
 import ApiBadge from './ApiBadge.astro'
 import PageToolbar from '../PageToolbar.astro'
+import type { BreadcrumbItem } from '../../lib/sidebar'
 import { PORT_NAME } from '../../lib/api-models'
 import {
   countStatus, groupRepeats, isSpecialName, kindCounts, letterLabel, ownerCount,
@@ -19,7 +20,9 @@ interface Props {
   letter: string
   letters: { letter: string; href: string }[]
   entries: IndexEntry[]
-  breadcrumbs: { name: string; url: string }[]
+  breadcrumbs: BreadcrumbItem[]
+  /** The page's main landmark is its layout's, as on a port's reference page, so this draws a division inside it. */
+  embedded?: boolean
   /** The port this index covers; omitted, it spans every port. */
   port?: string
   portName?: string
@@ -27,7 +30,8 @@ interface Props {
   /** Names that also exist in another port, for the cross-port index. */
   shared?: ReadonlySet<string>
 }
-const { title, letter, letters, entries, breadcrumbs, port, portName, total = entries.length, shared } = Astro.props as Props
+const { title, letter, letters, entries, breadcrumbs, embedded = false, port, portName, total = entries.length, shared } = Astro.props as Props
+const Root = embedded ? 'div' : 'main'
 
 const publicEntries = entries.filter((entry) => !isSpecialName(entry.name))
 const specialEntries = entries.filter((entry) => isSpecialName(entry.name))
@@ -38,7 +42,7 @@ const word = (kind: string) => (kind === 'typealias' ? 'type alias' : kind)
 const filterLabel = `Filter the ${portName ?? ''} API index`.replace('  ', ' ')
 ---
 
-<main class="symidx" data-symidx data-total={entries.length}>
+<Root class:list={['symidx', embedded && 'symidx--embedded']} data-symidx data-total={entries.length}>
   <PageToolbar breadcrumbs={breadcrumbs} />
   <h1 class="page-title">{title}</h1>
   <p class="symidx__lede">
@@ -118,10 +122,12 @@ const filterLabel = `Filter the ${portName ?? ''} API index`.replace('  ', ' ')
     </>)}
   </ul>
   <p class="symidx__empty" data-symidx-empty hidden>No symbols match. Clear the filter, or <a href="../../../search/">search the documentation</a>.</p>
-</main>
+</Root>
 
 <style is:global>
   .symidx { max-width: 64rem; margin-inline: auto; padding: 2.5rem 1rem; }
+  /* Inside a reference page's content column, which sets the page's own padding and edges. */
+  .symidx--embedded { max-width: none; margin-inline: 0; padding: 0; }
   .symidx__lede { max-width: var(--measure-prose, 72ch); margin: 0.75rem 0 0; line-height: 1.75rem; }
   .symidx__sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .symidx__tools { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; margin-top: 1.25rem; }

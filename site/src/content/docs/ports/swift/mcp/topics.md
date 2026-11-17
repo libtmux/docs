@@ -23,7 +23,7 @@ Use `inspect` for discovery and terminal reads. Add `manage` for topology
 changes and `execute` for input and process creation. Select `teardown`
 explicitly when removal is needed on an existing or explicitly selected
 server. A default dedicated daemon can receive teardown tools when the
-launcher verifies its own minimal-configuration provenance.
+executable verifies the launch marker of its own minimal configuration.
 
 Tool selection shapes the callable interface. Execute tools act with the
 tmux user's authority; selecting a socket does not confine shell effects.

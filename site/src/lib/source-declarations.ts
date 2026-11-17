@@ -9,7 +9,7 @@
  * single line.
  */
 import type { ApiModel, ApiSymbol } from '@libtmux/api-model'
-import { pinnedSource, sourceFilesFor } from './api-source-pages'
+import { pinnedSource, requirePairedSources, sourceFilesFor } from './api-source-pages'
 import { languageForFile } from './code-language'
 import { nativeQualifiedName, nativeShortName } from './native-name'
 
@@ -233,7 +233,8 @@ export interface SourcePageProps {
 }
 
 /** The static routes of a port's source pages: one per pinned file and one per embedded file. */
-export function sourceRoutes(port: string, model: Pick<ApiModel, 'port' | 'symbols' | 'generatedSources'>): { params: { path: string }; props: SourcePageProps }[] {
+export function sourceRoutes(port: string, model: Pick<ApiModel, 'port' | 'repo' | 'revision' | 'symbols' | 'generatedSources'>): { params: { path: string }; props: SourcePageProps }[] {
+  requirePairedSources(port, model)
   const byFile = new Map<string, ApiSymbol[]>()
   for (const symbol of model.symbols) {
     for (const file of new Set([symbol.source?.file, ...(symbol.signatures ?? []).map((signature) => signature.source?.file)])) {
@@ -266,7 +267,7 @@ export type SourceIndexEntry = [file: string, line: number, from: number, to: nu
  * The symbols of a port that have a source page, by reference slug, so the
  * pane can show a declaration it was not opened from (a reload, a related type).
  */
-export function sourceIndex(port: string, model: Pick<ApiModel, 'port' | 'symbols' | 'generatedSources'>, routes = sourceRoutes(port, model)): Record<string, SourceIndexEntry> {
+export function sourceIndex(port: string, model: Pick<ApiModel, 'port' | 'repo' | 'revision' | 'symbols' | 'generatedSources'>, routes = sourceRoutes(port, model)): Record<string, SourceIndexEntry> {
   const declared = new Map<string, SourceDeclaration>()
   for (const { props } of routes) for (const declaration of props.declarations) declared.set(`${props.file}:${declaration.slug}:${declaration.line}`, declaration)
   const index: Record<string, SourceIndexEntry> = {}

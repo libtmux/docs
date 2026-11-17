@@ -34,8 +34,9 @@ returning a capture error.
 ## Connect to an existing server
 
 Use the [complete attach program](../attaching-to-tmux/) to select an existing
-socket and find the `work` session. That example leaves tmux running; its
-launcher owns setup and cleanup for trying it safely.
+socket and find the `work` session. That example leaves your tmux server
+running. Without a socket, it starts a demonstration server of its own and
+stops it before exiting.
 
 ## Where to go next
 

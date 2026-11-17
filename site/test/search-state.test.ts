@@ -7,6 +7,7 @@ import {
   orderedSections,
   parseSearchState,
   readSnapshot,
+  ROOT_PORT,
   scopeLabel,
   searchStateQuery,
   withSnapshot,
@@ -34,8 +35,9 @@ describe('search URL state', () => {
 })
 
 describe('scope and facets as Pagefind filters', () => {
-  it('searches the current port for the port scope', () => {
-    expect(filtersFor({ q: 'x', scope: 'port' }, 'Go')).toEqual({ port: ['Go'] })
+  it('searches the current port and the root pages for the port scope', () => {
+    expect(filtersFor({ q: 'x', scope: 'port' }, 'Go')).toEqual({ port: { any: ['Go', ROOT_PORT] } })
+    expect(filtersFor({ q: 'x', scope: 'port', section: 'guides' }, 'Go')).toEqual({ port: { any: ['Go', ROOT_PORT] }, section: ['guides'] })
   })
 
   it('narrows the API scope to reference pages whatever section was asked for', () => {
@@ -50,7 +52,7 @@ describe('scope and facets as Pagefind filters', () => {
     expect(filtersFor({ q: 'x', scope: 'all' }, 'Go', ['Go', 'Rust'])).toEqual({ port: { any: ['Go', 'Rust'] } })
     expect(filtersFor({ q: 'x', scope: 'all' }, 'Go', ['Rust'])).toEqual({ port: ['Rust'] })
     expect(filtersFor({ q: 'x', scope: 'all' }, 'Go')).toBeUndefined()
-    expect(filtersFor({ q: 'x', scope: 'port' }, 'Go', ['Rust'])).toEqual({ port: ['Go'] })
+    expect(filtersFor({ q: 'x', scope: 'port' }, 'Go', ['Rust'])).toEqual({ port: { any: ['Go', ROOT_PORT] } })
   })
 
   it('names the scope and counts the filters a reader can clear', () => {

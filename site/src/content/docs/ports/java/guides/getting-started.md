@@ -34,8 +34,9 @@ try-with-resources closes the `Server` handle.
 ## Connect to an existing server
 
 Use the [complete attach program](../attaching-to-tmux/) to select an existing
-socket and find the `work` session. That example leaves tmux running; its
-launcher owns setup and cleanup for trying it safely.
+socket and find the `work` session. That example leaves the existing server
+running. Without `LIBTMUX_SOCKET_PATH`, it starts a private server to attach to
+and stops it before it exits.
 
 ## Where to go next
 

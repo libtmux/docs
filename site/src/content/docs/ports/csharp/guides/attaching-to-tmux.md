@@ -22,24 +22,73 @@ interactive attachment and detaching.
 
 ## Connect to an existing server
 
-Save the complete program as `Program.cs`. `LIBTMUX_SOCKET_PATH` selects
-the existing server. The launcher below supplies a private socket for trying
-the example.
+Save the complete program as `Program.cs`. When `LIBTMUX_SOCKET_PATH` names a
+socket, the program connects a `Server` to it, finds `work`, prints the name
+and leaves that server running.
+
+Without the variable, the program starts a private tmux server in a new
+temporary directory and creates a detached `work` session in it. It then
+connects a second `Server` to the socket by path and runs the same lookup. The
+`finally` block stops only the private server and removes its directory. If
+tmux cannot be stopped, the program keeps the directory and prints its location.
 
 ```csharp title="Program.cs"
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using LibTmux;
 
-string socket = Environment.GetEnvironmentVariable("LIBTMUX_SOCKET_PATH")
-    ?? throw new InvalidOperationException("Set LIBTMUX_SOCKET_PATH to an existing socket");
-using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-Server server = await Server.ConnectAsync(
-    new ServerConnectionOptions { SocketPath = socket }, timeout.Token);
-if (!await server.HasSessionAsync("work", cancellationToken: timeout.Token))
-    throw new InvalidOperationException("The work session does not exist");
-Console.WriteLine("work");
+if (OperatingSystem.IsWindows())
+    throw new PlatformNotSupportedException("Use Linux or macOS");
+
+static async Task FindWorkAsync(string socket, CancellationToken token)
+{
+    Server server = await Server.ConnectAsync(
+        new ServerConnectionOptions { SocketPath = socket }, token);
+    if (!await server.HasSessionAsync("work", cancellationToken: token))
+        throw new InvalidOperationException("The work session does not exist");
+    Console.WriteLine("work");
+}
+
+using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+CancellationToken token = timeout.Token;
+string? existing = Environment.GetEnvironmentVariable("LIBTMUX_SOCKET_PATH");
+if (!string.IsNullOrEmpty(existing))
+{
+    await FindWorkAsync(existing, token);
+    return;
+}
+
+DirectoryInfo directory = Directory.CreateTempSubdirectory("libtmux-attach-");
+OwnedServerScope? owned = null;
+try
+{
+    string socket = Path.Combine(directory.FullName, "tmux.sock");
+    owned = await Server.CreateOwnedAsync(
+        new ServerConnectionOptions
+        {
+            SocketPath = socket,
+            ConfigurationFile = "/dev/null",
+        }, token);
+    await owned.Value.CreateSessionAsync(
+        new NewSessionRequest { Name = "work", Command = "/bin/cat" }, token);
+    await FindWorkAsync(socket, token);
+}
+finally
+{
+    if (owned is not null)
+    {
+        try { await owned.DisposeAsync(); }
+        catch (Exception)
+        {
+            Console.Error.WriteLine(
+                $"Cannot stop tmux; kept {directory.FullName}");
+            throw;
+        }
+    }
+    directory.Delete(recursive: true);
+}
 ```
 
 ## Setup and run
@@ -67,49 +116,16 @@ Save this file beside the program using the displayed filename.
 </Project>
 ```
 
-Save the launcher as `run.sh`. It starts an isolated tmux server, runs the
-program, checks that the session still exists, then stops only that server.
-Cleanup runs after failures too. A failed shutdown keeps its socket directory
-and prints its location for inspection.
-
-```sh title="run.sh"
-#!/bin/sh
-set -eu
-
-binary=$(command -v tmux)
-directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-dotnet-attach.XXXXXX")
-socket="$directory/tmux.sock"
-
-cleanup() {
-    status=$?
-    trap - 0 HUP INT TERM
-    if [ -S "$socket" ] && ! "$binary" -S "$socket" kill-server; then
-        printf 'Cannot stop tmux; kept %s\n' "$directory" >&2
-        exit 1
-    fi
-    rm -rf "$directory" || exit 1
-    exit "$status"
-}
-trap cleanup 0
-trap 'exit 1' HUP INT TERM
-
-unset TMUX TMUX_PANE
-export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
-"$binary" -S "$socket" -f /dev/null new-session -d -s work /bin/cat
-"$@"
-"$binary" -S "$socket" has-session -t '=work'
-```
-
 Build and run:
 
 ```console
 $ dotnet build Connect.csproj --maxcpucount:1 &&
-  sh run.sh dotnet run --project Connect.csproj --no-build
+  dotnet run --project Connect.csproj --no-build
 ```
 
 The program prints `work`. To use an existing server of your own, set
-`LIBTMUX_SOCKET_PATH` to its socket and run the program without the launcher.
-That launcher is responsible for the demonstration server's lifetime.
+`LIBTMUX_SOCKET_PATH` to its socket before running the program; the program
+leaves that server running.
 
 <a id="finding-a-session-instead-of-always-creating-one"></a>
 

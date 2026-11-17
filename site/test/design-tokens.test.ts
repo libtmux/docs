@@ -190,6 +190,25 @@ describe('contrast of the shared chrome', () => {
     }
   })
 
+  // The port picker's label and differences are 11px muted text: on the panel, and on the row under the pointer.
+  it('keeps the port picker\'s muted lines at 4.5:1 on the panel and on a hovered row, in every palette and in the base tokens', () => {
+    const share = Number(/\.doc-picker-option\[href\]:hover small \{ color: color-mix\(in srgb, var\(--color-muted\) (\d+)%, var\(--text-color\)\)/.exec(read('documentation-picker.css'))?.[1]) / 100
+    expect(share).toBeGreaterThan(0)
+    const tokens = read('gp-sphinx-tokens.css')
+    // The page ground and text colour the base tokens sit on are `--background-color` and `--text-color` in global.css.
+    const base: Record<(typeof modes)[number], Record<string, string>> = { light: { ...rule(tokens, ':root'), ground: '#ffffff', text: '#000000' }, dark: { ...rule(tokens, "[data-theme-mode='dark']"), ground: '#131416', text: '#cfd0d0' } }
+    const sets = [
+      ...Object.entries(palettes).flatMap(([slug, palette]) => modes.map((mode) => [`${slug} ${mode}`, palette[mode].muted, palette[mode].hover, palette[mode].background, palette[mode].text] as const)),
+      ...modes.map((mode) => [`base ${mode}`, base[mode]['--color-foreground-muted']!, base[mode]['--color-api-background-hover']!, base[mode]['ground']!, base[mode]['text']!] as const),
+    ]
+    for (const [name, muted, hover, panel, text] of sets) {
+      expect(ratio(hex(muted), hex(panel)), `${name} on the panel`).toBeGreaterThanOrEqual(4.5)
+      expect(ratio(tint(hex(muted), share, hex(text)), hex(hover)), `${name} on a hovered row`).toBeGreaterThanOrEqual(4.5)
+    }
+    // Control: the muted colour alone misses on a hovered row in the base tokens, which is why the line mixes toward the text colour.
+    for (const mode of modes) expect(ratio(hex(base[mode]['--color-foreground-muted']!), hex(base[mode]['--color-api-background-hover']!)), `base ${mode}`).toBeLessThan(4.5)
+  })
+
   it('fails the pairs this slice replaced, so the checks above can fail', () => {
     const light = palettes.go.light
     const oldInputBorder = oklch('oklch(0.8 0 0)')
@@ -226,6 +245,7 @@ describe('control outlines', () => {
     ['components/widgets/mcp-install.css', '.lm-mcp-install__copy'],
     ['components/widgets/package-install.css', '.lm-pkg-install__copy'],
     ['components/widgets/AgentPrompt.astro', '.lm-agent-prompt__copy'],
+    ['styles/core-player.css', '.expressive-code .core-copy'],
     ['styles/global.css', '.scheme-switch'],
     ['styles/global.css', '.scheme-cycle'],
   ]
@@ -255,6 +275,11 @@ describe('control outlines', () => {
     ['components/widgets/package-install.css', '.lm-pkg-install__copy'],
   ])('%s %s is a clipboard in a 30px outlined square, with no word', (file, selector) => {
     expect(isIconSquare(declarations(source(file), selector))).toBe(true)
+  })
+
+  // An outline drawn through `opacity` is not the outline that was measured: the button's own opacity dims it as well.
+  it('draws the code player copy button at full opacity, so its outline keeps the measured 3:1', () => {
+    expect(declarations(source('styles/core-player.css'), '.expressive-code .core-copy')).not.toMatch(/opacity:/)
   })
 
   it('has a control: the outlined text button the square replaced is not one', () => {

@@ -22,17 +22,36 @@ interactive attachment and detaching.
 
 ## Connect to an existing server
 
-Save the complete program as `connect.rb`. `LIBTMUX_SOCKET_PATH` selects
-the existing server. The launcher below supplies a private socket for trying
-the example.
+Save the complete program as `connect.rb`. `LIBTMUX_SOCKET_PATH` selects the
+existing server, and `print_work` connects a `Server` to it and finds `work`.
+Without the variable, the program starts a private server of its own with
+[`LibTmux::Server.start`](../../reference/libtmux-server-start/), creates
+`work` with [`new_session`](../../reference/libtmux-server-new_session/),
+and connects a second `Server` to that socket by path. Leaving the `start`
+block stops the private server and removes its socket directory, including
+after an error. A server that does not stop raises an error.
 
 ```ruby title="connect.rb"
 require "libtmux"
 
-LibTmux::Server.open(socket_path: ENV.fetch("LIBTMUX_SOCKET_PATH")) do |server|
-  session = server.snapshot.sessions.find { |candidate| candidate.name == "work" }
-  raise "The work session does not exist" unless session
-  puts session.name
+def print_work(socket_path)
+  LibTmux::Server.open(socket_path: socket_path) do |server|
+    sessions = server.snapshot.sessions
+    session = sessions.find { |candidate| candidate.name == "work" }
+    raise "The work session does not exist" unless session
+    puts session.name
+  end
+end
+
+socket_path = ENV["LIBTMUX_SOCKET_PATH"]
+if socket_path
+  print_work(socket_path)
+else
+  # No server was named: start one this program owns.
+  LibTmux::Server.start do |owner|
+    owner.new_session(name: "work", command: ["/bin/cat"])
+    print_work(owner.endpoint.socket_path)
+  end
 end
 ```
 
@@ -50,50 +69,17 @@ source "https://rubygems.org"
 gem "libtmux", "0.1.2"
 ```
 
-Save the launcher as `run.sh`. It starts an isolated tmux server, runs the
-program, checks that the session still exists, then stops only that server.
-Cleanup runs after failures too. A failed shutdown keeps its socket directory
-and prints its location for inspection.
-
-```sh title="run.sh"
-#!/bin/sh
-set -eu
-
-binary=$(command -v tmux)
-directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-ruby-attach.XXXXXX")
-socket="$directory/tmux.sock"
-
-cleanup() {
-    status=$?
-    trap - 0 HUP INT TERM
-    if [ -S "$socket" ] && ! "$binary" -S "$socket" kill-server; then
-        printf 'Cannot stop tmux; kept %s\n' "$directory" >&2
-        exit 1
-    fi
-    rm -rf "$directory" || exit 1
-    exit "$status"
-}
-trap cleanup 0
-trap 'exit 1' HUP INT TERM
-
-unset TMUX TMUX_PANE
-export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
-"$binary" -S "$socket" -f /dev/null new-session -d -s work /bin/cat
-"$@"
-"$binary" -S "$socket" has-session -t '=work'
-```
-
 Install the gem and run the program:
 
 ```console
 $ bundle config set --local path vendor/bundle &&
   bundle install &&
-  sh run.sh bundle exec ruby connect.rb
+  bundle exec ruby connect.rb
 ```
 
 The program prints `work`. To use an existing server of your own, set
-`LIBTMUX_SOCKET_PATH` to its socket and run the program without the launcher.
-That launcher is responsible for the demonstration server's lifetime.
+`LIBTMUX_SOCKET_PATH` to its socket before running the program; it prints
+`work` and leaves that server running.
 
 <a id="finding-a-session-instead-of-always-creating-one"></a>
 

@@ -27,7 +27,7 @@ for the published client.
 
 Use Rust 1.97.1, the repository's pinned toolchain; the manifests require
 Rust 1.97 or newer. The live example requires Unix and tmux 3.2a or newer on
-`PATH`. The check script also requires Bash.
+`PATH`.
 
 Clone the repository:
 
@@ -73,9 +73,8 @@ then captures it through the Tokio adapter. It also reads a detached snapshot
 after shutting down the runtime. It kills its own server and removes its
 socket under `/tmp/libtmux-rs-dev/` when finished.
 
-Set `LIBTMUX_TEST_TMUX` to choose a different tmux executable. Both programs
-print human-readable output to stdout, report errors to stderr, and exit zero
-on success and nonzero on failure.
+Both programs print human-readable output to stdout, report errors to
+stderr, and exit zero on success and nonzero on failure.
 
 The [offline consumer][offline] builds a capture request synchronously. The
 [live consumer][live] passes that same core type to the adapter and receives
@@ -85,12 +84,18 @@ have concrete types; a runtime type parameter does not spread through the API.
 ## What the experiment decides
 
 A strict core can own useful values and requests while the adapter owns I/O.
-The core has no optional, build, target, or test dependencies either. The
-workspace's [check script][checks] verifies the dependency graph and runs both
-programs:
+The core has no optional, build, target, or test dependencies either. This
+command lists the core's dependencies for every feature, edge kind and target.
+Its only line is the core itself:
 
 ```console
-$ bash check.sh
+$ cargo tree \
+    --locked \
+    -p libtmux \
+    --all-features \
+    --edges all \
+    --target all \
+    --prefix none
 ```
 
 The adapter bounds each output pipe to 2 MiB and gives each command five
@@ -108,7 +113,6 @@ integrations remain outside this prototype.
 [prototype]: https://github.com/libtmux/libtmux-rs/tree/d7541fbace16d6a45882cd0af0ea6880f9c21748/experiments/standard-library-core
 [offline]: https://github.com/libtmux/libtmux-rs/blob/d7541fbace16d6a45882cd0af0ea6880f9c21748/experiments/standard-library-core/demo/src/offline.rs
 [live]: https://github.com/libtmux/libtmux-rs/blob/d7541fbace16d6a45882cd0af0ea6880f9c21748/experiments/standard-library-core/demo/src/live.rs
-[checks]: https://github.com/libtmux/libtmux-rs/blob/d7541fbace16d6a45882cd0af0ea6880f9c21748/experiments/standard-library-core/check.sh
 [quinn]: https://github.com/quinn-rs/quinn/tree/eaec0db4bcb698f76df736d89938743c88a2ad5f/quinn-proto
 [tungstenite]: https://github.com/snapview/tokio-tungstenite/tree/6ee9b33f76d35f9cc7125c3c7511bce4b1e829c4
 [orphan]: https://doc.rust-lang.org/error_codes/E0117.html

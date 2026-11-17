@@ -156,6 +156,15 @@ local assemblies without a selected source checkout make no provenance claim.
 Run IDs and timestamps are excluded from the version tree so an identical
 immutable rerun can produce identical bytes.
 
+A source-bound build regenerates the port's API model from the selected
+checkout, and in the same step the pinned source copies
+(`site/src/data/api-sources/<port>.json`) and, for Go and Rust, the behaviour
+sidecar (`site/src/data/api/<port>.behavior.json`). The source pages, the
+source pane and BehaviorFacts cite the model's lines, so they are read from
+that checkout at the model's revision. The build stops when a cited text file
+cannot be read there, and the site refuses a model paired with copies or a
+sidecar of another revision.
+
 Selected-source builds also capture MCP contracts from the selected product's
 runtime. The shared job installs its language tools before assembly: Rust and
 Swift use the checkout's exact toolchain version, Go its MCP module, Bun its

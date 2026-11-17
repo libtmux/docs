@@ -49,6 +49,11 @@ export default defineEcConfig({
     codeLineHeight: '1.7',
     uiFontFamily: 'var(--font-ibm-plex-sans)',
     uiFontSize: '0.875rem',
-    frames: { frameBoxShadowCssValue: 'none' },
+    frames: {
+      frameBoxShadowCssValue: 'none',
+      // The frame's copy button is a control: outlined in --control-border at full strength like the installer's (record 0067).
+      inlineButtonBorder: 'var(--control-border)',
+      inlineButtonBorderOpacity: '1',
+    },
   },
 })

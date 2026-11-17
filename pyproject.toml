@@ -35,7 +35,7 @@ include = [
     "packages/api-model/scripts/**/*.py",
     "packages/api-model/test/test_*.py",
 ]
-extend-exclude = ["output"]
+extend-exclude = ["output", ".port-sources"]
 
 [tool.ruff.lint]
 extend-select = [

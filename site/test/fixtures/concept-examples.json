@@ -23,21 +23,17 @@
           "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1"
         },
         {
-          "name": "run.sh",
-          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
-        },
-        {
           "name": "Hierarchy.kt",
-          "sha256": "5443942fb2c68dfd767bb41953590d29a9da3b2500a4d1269d3fd9e47c2ca528"
+          "sha256": "7267fed0a45c7d6bc8922299455759d5458c702a8c4fb48c574bae9d83985832"
         },
         {
           "name": "Refresh.kt",
-          "sha256": "1906afc0b0dee23b964f92560b834a4a308f7dc0545e269d2d66b21d6f942b9a"
+          "sha256": "a182c4777349e642ce4f00bb5b6d6ad01f19bd11eaa1bc81bd10479d9eda8c84"
         }
       ],
       "shellRecipe": [
-        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Hierarchy",
-        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Refresh"
+        "gradle --console=plain --no-daemon run -Pexample=Hierarchy",
+        "gradle --console=plain --no-daemon run -Pexample=Refresh"
       ],
       "expectedOutputs": [
         [
@@ -49,7 +45,7 @@
           "editor -> renamed"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup."
+      "verificationScope": "Each displayed program runs independently with its displayed project and published library. Native checks cover assertions, stdout and cleanup."
     },
     {
       "port": "kotlin",
@@ -74,26 +70,22 @@
           "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1"
         },
         {
-          "name": "run.sh",
-          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
-        },
-        {
           "name": "Local.kt",
-          "sha256": "1b24c8458c02b970db86394e03e45917035548082ecdf5c1576cd6fd54671802"
+          "sha256": "f7182e2daf8de231719b7ddd7e906b9e3bc9819f24a79fc61289c75b6ae1cc9b"
         },
         {
           "name": "Cardinality.kt",
-          "sha256": "4e544e598603d444598d92cb6405b7e11ef8ea38e20b6c11c0d5f4d16e493108"
+          "sha256": "8e3445da297b5d306750ac77cb014ad7070eb4069a15f8124e873f4924aa7d76"
         },
         {
           "name": "Relations.kt",
-          "sha256": "4255357d8f85f8c61a4424bddd384836aa13ecbb5bc2f5ee066f2d3184a8f14a"
+          "sha256": "63b70a36bc6d510cb219103d813f11853f139053205edeb4bb27f832733f2367"
         }
       ],
       "shellRecipe": [
-        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Local",
-        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Cardinality",
-        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Relations"
+        "gradle --console=plain --no-daemon run -Pexample=Local",
+        "gradle --console=plain --no-daemon run -Pexample=Cardinality",
+        "gradle --console=plain --no-daemon run -Pexample=Relations"
       ],
       "expectedOutputs": [
         [
@@ -109,7 +101,7 @@
           "no editor: work-two"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup."
+      "verificationScope": "Each displayed program runs independently with its displayed project and published library. Native checks cover assertions, stdout and cleanup."
     },
     {
       "port": "kotlin",
@@ -133,21 +125,17 @@
           "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1"
         },
         {
-          "name": "run.sh",
-          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
-        },
-        {
           "name": "Local.kt",
-          "sha256": "1b24c8458c02b970db86394e03e45917035548082ecdf5c1576cd6fd54671802"
+          "sha256": "f7182e2daf8de231719b7ddd7e906b9e3bc9819f24a79fc61289c75b6ae1cc9b"
         },
         {
           "name": "Control.kt",
-          "sha256": "5617b3a3967ccf5911d9b8adaa4a7790b1ee2dbdc4b2af7de316692945675bea"
+          "sha256": "8c9dbc271e64dffcaef6a93c9e6939dd9f82449bf92572f60b9b210878b80ce3"
         }
       ],
       "shellRecipe": [
-        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Local",
-        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Control"
+        "gradle --console=plain --no-daemon run -Pexample=Local",
+        "gradle --console=plain --no-daemon run -Pexample=Control"
       ],
       "expectedOutputs": [
         [
@@ -158,7 +146,7 @@
           "control client closed; server still running"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup. Local.kt also passes on tmux 3.3a; Control.kt refuses tmux earlier than 3.7."
+      "verificationScope": "Each displayed program runs independently with its displayed project and published library. Native checks cover assertions, stdout and cleanup. Local.kt also passes on tmux 3.3a; Control.kt refuses tmux earlier than 3.7."
     },
     {
       "port": "kotlin",
@@ -183,21 +171,17 @@
           "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1"
         },
         {
-          "name": "run.sh",
-          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
-        },
-        {
           "name": "Layout.kt",
-          "sha256": "2ce63e4cbd402cd9c693238d5aac1dd4e1ef69ce765b319bf4dc25ad06987e29"
+          "sha256": "5ebde131422307ea07407eabf0f92e91f0be2100cb3241f21a81bcee6badf161"
         },
         {
           "name": "ReuseLayout.kt",
-          "sha256": "3c927e91817bb570a90d7f736d3eea9437bd97a70f4d67dee4a64d5ff4c9aa57"
+          "sha256": "df9aabc6ed9b05de7446a02babe60cb1070bc25f954b182e6dd6d6ee7e407db0"
         }
       ],
       "shellRecipe": [
-        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Layout",
-        "sh run.sh gradle --console=plain --no-daemon run -Pexample=ReuseLayout"
+        "gradle --console=plain --no-daemon run -Pexample=Layout",
+        "gradle --console=plain --no-daemon run -Pexample=ReuseLayout"
       ],
       "expectedOutputs": [
         [
@@ -207,7 +191,7 @@
           "one tools window after two calls"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup."
+      "verificationScope": "Each displayed program runs independently with its displayed project and published library. Native checks cover assertions, stdout and cleanup."
     },
     {
       "port": "scala",
@@ -232,21 +216,17 @@
           "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1"
         },
         {
-          "name": "run.sh",
-          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
-        },
-        {
           "name": "Hierarchy.scala",
-          "sha256": "bf83e9625aed62a5585f403de180f83f163de4292ae5f53d333ba9c1dd06a91f"
+          "sha256": "d6f34de510c21dc80c6f07e5ce7b216e3fe3619a4a2fc849c386818598a68a82"
         },
         {
           "name": "Refresh.scala",
-          "sha256": "7ed6ee12473851261ef6117b57841fcc420bf22635e306b8c054795af15a75a8"
+          "sha256": "25c1b75b105898d66b120f516528686d8fd87fb717f96c3a98f9dbdd72175314"
         }
       ],
       "shellRecipe": [
-        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Hierarchy",
-        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Refresh"
+        "gradle --console=plain --no-daemon run -Pexample=Hierarchy",
+        "gradle --console=plain --no-daemon run -Pexample=Refresh"
       ],
       "expectedOutputs": [
         [
@@ -258,7 +238,7 @@
           "editor -> renamed"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup."
+      "verificationScope": "Each displayed program runs independently with its displayed project and published library. Native checks cover assertions, stdout and cleanup."
     },
     {
       "port": "scala",
@@ -283,26 +263,22 @@
           "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1"
         },
         {
-          "name": "run.sh",
-          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
-        },
-        {
           "name": "Local.scala",
-          "sha256": "7d714f11710c2a1cf613d6e9a2c2bd43547f2b6a183c758178298a1fe8f90599"
+          "sha256": "f4b0a7d6d497fb211a8edd532bb093050fc08a049469efd9e545647f3b0a6913"
         },
         {
           "name": "Cardinality.scala",
-          "sha256": "2abf4f046a9253958c1d6a25ceb0b41f2a0bbcd70b62f42242a736e5b603c60c"
+          "sha256": "718dd6ea75405865011b9e7f794f5cf9085d2e481829d52ced1dac1ae281e8ef"
         },
         {
           "name": "Relations.scala",
-          "sha256": "a197b7e27f24d7c5717cd5cd28f215977471e5791c9f4470aefcfc4d2f1048d2"
+          "sha256": "7b93c5c05a2ce02d0ec9a7c9cc31b842893cf5984ec4d4afea802c88c9965ead"
         }
       ],
       "shellRecipe": [
-        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Local",
-        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Cardinality",
-        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Relations"
+        "gradle --console=plain --no-daemon run -Pexample=Local",
+        "gradle --console=plain --no-daemon run -Pexample=Cardinality",
+        "gradle --console=plain --no-daemon run -Pexample=Relations"
       ],
       "expectedOutputs": [
         [
@@ -318,7 +294,7 @@
           "no editor: work-two"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup."
+      "verificationScope": "Each displayed program runs independently with its displayed project and published library. Native checks cover assertions, stdout and cleanup."
     },
     {
       "port": "scala",
@@ -342,21 +318,17 @@
           "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1"
         },
         {
-          "name": "run.sh",
-          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
-        },
-        {
           "name": "Local.scala",
-          "sha256": "7d714f11710c2a1cf613d6e9a2c2bd43547f2b6a183c758178298a1fe8f90599"
+          "sha256": "f4b0a7d6d497fb211a8edd532bb093050fc08a049469efd9e545647f3b0a6913"
         },
         {
           "name": "Control.scala",
-          "sha256": "a541715d9c976c57716a679524d060579c13cf276890f0b74732ec326b680f62"
+          "sha256": "2adafcba941caee96869a2812066a4371bdf3043f86eb256552f527960b68787"
         }
       ],
       "shellRecipe": [
-        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Local",
-        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Control"
+        "gradle --console=plain --no-daemon run -Pexample=Local",
+        "gradle --console=plain --no-daemon run -Pexample=Control"
       ],
       "expectedOutputs": [
         [
@@ -367,7 +339,7 @@
           "control client closed; server still running"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup. Local.scala also passes on tmux 3.3a; Control.scala refuses tmux earlier than 3.7."
+      "verificationScope": "Each displayed program runs independently with its displayed project and published library. Native checks cover assertions, stdout and cleanup. Local.scala also passes on tmux 3.3a; Control.scala refuses tmux earlier than 3.7."
     },
     {
       "port": "scala",
@@ -392,21 +364,17 @@
           "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1"
         },
         {
-          "name": "run.sh",
-          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
-        },
-        {
           "name": "Layout.scala",
-          "sha256": "bc3501864a170b3f208064ef720fa104daf8e1e264101ebe8ad7e88708ffd451"
+          "sha256": "2cb08f1bda607853fd71a0aba51f4db2923156b1aa4c0444abd09bf0537dc0e3"
         },
         {
           "name": "ReuseLayout.scala",
-          "sha256": "7b37add5e44fbb60fee277c95b6728c815826dac4869b749c8a737cce530f204"
+          "sha256": "0abf731c17199753cdd9cf8f94858822e06716c945f33ba721cb4cb6d7fadde5"
         }
       ],
       "shellRecipe": [
-        "sh run.sh gradle --console=plain --no-daemon run -Pexample=Layout",
-        "sh run.sh gradle --console=plain --no-daemon run -Pexample=ReuseLayout"
+        "gradle --console=plain --no-daemon run -Pexample=Layout",
+        "gradle --console=plain --no-daemon run -Pexample=ReuseLayout"
       ],
       "expectedOutputs": [
         [
@@ -416,7 +384,7 @@
           "one tools window after two calls"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup."
+      "verificationScope": "Each displayed program runs independently with its displayed project and published library. Native checks cover assertions, stdout and cleanup."
     },
     {
       "port": "fsharp",
@@ -433,21 +401,17 @@
           "sha256": "878ee558f6c48bae48dd555706740a16ba3c88d07fb36079d34d8346dc2c8b0a"
         },
         {
-          "name": "run.sh",
-          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
-        },
-        {
           "name": "Hierarchy.fs",
-          "sha256": "1b2b94d47c06e1f2ce86e46b3d55eb0576414e2f2e59d8d0328e94e206506046"
+          "sha256": "ea4c4e8779e485b30a1090f1fb2277c3464a2a1f9245d990c1efa66fae53dce5"
         },
         {
           "name": "Refresh.fs",
-          "sha256": "55e801b201571844a295b9b6f002632d0b34c45212773e998d251ac4fc4eaedf"
+          "sha256": "111408dbf77817c992277815de17625fb01e861edf53285702d6c4f4fc07200e"
         }
       ],
       "shellRecipe": [
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Hierarchy &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Hierarchy",
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Refresh &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Refresh"
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Hierarchy &&\n  dotnet run --project Query.fsproj --no-build -p:Example=Hierarchy",
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Refresh &&\n  dotnet run --project Query.fsproj --no-build -p:Example=Refresh"
       ],
       "expectedOutputs": [
         [
@@ -459,7 +423,7 @@
           "editor -> renamed"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup."
+      "verificationScope": "Each displayed program runs independently with its displayed project and published library. Native checks cover assertions, stdout and cleanup."
     },
     {
       "port": "fsharp",
@@ -476,26 +440,22 @@
           "sha256": "878ee558f6c48bae48dd555706740a16ba3c88d07fb36079d34d8346dc2c8b0a"
         },
         {
-          "name": "run.sh",
-          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
-        },
-        {
           "name": "Local.fs",
-          "sha256": "367291c85b89affaddbd6104932c4ab5e14b49fc01e339f2eb82ff67f0adbd15"
+          "sha256": "f4e66283ae7e0a533f4af9d4c69f4b9ad4939bf03ebf03f7c54e68cac7c35264"
         },
         {
           "name": "Cardinality.fs",
-          "sha256": "705ca5f30a953763a11d3bc206ffe647616d8537e4a15373f1da48c1bf1a88d9"
+          "sha256": "44b0dfebf9e68e9c13b8764aba80768277fc23b13c7344bd21f2aeab6edbc7ad"
         },
         {
           "name": "Relations.fs",
-          "sha256": "19d95e24c7a274257ba65e15fae9b773e0418e5266ef0436f5ba78c16e7d8040"
+          "sha256": "65e9e9635d4b340ac7693944c018a61ba8828c250bf54166100d4c167462883c"
         }
       ],
       "shellRecipe": [
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Local &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Local",
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Cardinality &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Cardinality",
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Relations &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Relations"
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Local &&\n  dotnet run --project Query.fsproj --no-build -p:Example=Local",
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Cardinality &&\n  dotnet run --project Query.fsproj --no-build -p:Example=Cardinality",
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Relations &&\n  dotnet run --project Query.fsproj --no-build -p:Example=Relations"
       ],
       "expectedOutputs": [
         [
@@ -511,7 +471,7 @@
           "no editor: work-two"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup."
+      "verificationScope": "Each displayed program runs independently with its displayed project and published library. Native checks cover assertions, stdout and cleanup."
     },
     {
       "port": "fsharp",
@@ -527,21 +487,17 @@
           "sha256": "878ee558f6c48bae48dd555706740a16ba3c88d07fb36079d34d8346dc2c8b0a"
         },
         {
-          "name": "run.sh",
-          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
-        },
-        {
           "name": "Local.fs",
-          "sha256": "367291c85b89affaddbd6104932c4ab5e14b49fc01e339f2eb82ff67f0adbd15"
+          "sha256": "f4e66283ae7e0a533f4af9d4c69f4b9ad4939bf03ebf03f7c54e68cac7c35264"
         },
         {
           "name": "Control.fs",
-          "sha256": "f51c2714f86a4951f1717ec0f6fd565e551def94e70013dec597152f44b52031"
+          "sha256": "b30ee1366e5a0690db0957496847b556af93c5541665cec0628665618e22f2a9"
         }
       ],
       "shellRecipe": [
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Local &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Local",
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Control &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Control"
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Local &&\n  dotnet run --project Query.fsproj --no-build -p:Example=Local",
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Control &&\n  dotnet run --project Query.fsproj --no-build -p:Example=Control"
       ],
       "expectedOutputs": [
         [
@@ -552,7 +508,7 @@
           "control client closed; server still running"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup. Local.fs also passes on tmux 3.3a; Control.fs refuses tmux earlier than 3.7."
+      "verificationScope": "Each displayed program runs independently with its displayed project and published library. Native checks cover assertions, stdout and cleanup. Local.fs also passes on tmux 3.3a; Control.fs refuses tmux earlier than 3.7."
     },
     {
       "port": "fsharp",
@@ -569,21 +525,17 @@
           "sha256": "878ee558f6c48bae48dd555706740a16ba3c88d07fb36079d34d8346dc2c8b0a"
         },
         {
-          "name": "run.sh",
-          "sha256": "1634ee683b38a3687065734786076f2603e5c084dccab79c524b90ed00424625"
-        },
-        {
           "name": "Layout.fs",
-          "sha256": "bb000c5be099288ee305204d32533c6296c498225654968698db282a4859ddc7"
+          "sha256": "42953399d6224b4077908a0365df3dc519bd62daab971887e7d3aeb66afe822f"
         },
         {
           "name": "ReuseLayout.fs",
-          "sha256": "1b81e1fdf0b1a8346c9c5cf10add566798dc07c5418fed049d0a291c03d7b313"
+          "sha256": "9c89e0fcb2704ad3308dbe36069bff2821d18a92b58ff27de04134f67c94fb14"
         }
       ],
       "shellRecipe": [
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Layout &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Layout",
-        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=ReuseLayout &&\n  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=ReuseLayout"
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=Layout &&\n  dotnet run --project Query.fsproj --no-build -p:Example=Layout",
+        "dotnet build Query.fsproj --maxcpucount:1 -p:Example=ReuseLayout &&\n  dotnet run --project Query.fsproj --no-build -p:Example=ReuseLayout"
       ],
       "expectedOutputs": [
         [
@@ -593,7 +545,7 @@
           "one tools window after two calls"
         ]
       ],
-      "verificationScope": "Each displayed program runs independently with its displayed project, launcher and published library. Native checks cover assertions, stdout and cleanup."
+      "verificationScope": "Each displayed program runs independently with its displayed project and published library. Native checks cover assertions, stdout and cleanup."
     },
     {
       "port": "go",
@@ -610,22 +562,18 @@
           "sha256": "8c0c29089909ffe9131e52fbfb49b9fba63c201f4ce7789e3a64d67eee860a31"
         },
         {
-          "name": "run.sh",
-          "sha256": "c198606b019bc0d077c83c90032b6e690ed1901c718ddd0cbe8f88e0a077ec40"
-        },
-        {
           "name": "Create.go",
-          "sha256": "a5b7ae2cd453887395709de50ff1ae6ccb9318ebbaa88ccf874b789a851ed3d9"
+          "sha256": "8c92498c5cda96524054c1c322a4dea746d8627482e16127c5f0d51a916e440a"
         },
         {
           "name": "Snapshot.go",
-          "sha256": "c085f116c805cde587eebe0ad9d9189798b9191bab8b6f1ae402396a1fd17c03"
+          "sha256": "2b88a01142597055efa30d5c46eac3bcf94b1d66c21bc87f44894b5e7da84a2b"
         }
       ],
       "shellRecipe": [
         "go mod tidy",
-        "sh run.sh go run Create.go",
-        "sh run.sh go run Snapshot.go"
+        "go run Create.go",
+        "go run Snapshot.go"
       ],
       "expectedOutputs": [
         [],
@@ -656,27 +604,23 @@
           "sha256": "8c0c29089909ffe9131e52fbfb49b9fba63c201f4ce7789e3a64d67eee860a31"
         },
         {
-          "name": "run.sh",
-          "sha256": "c198606b019bc0d077c83c90032b6e690ed1901c718ddd0cbe8f88e0a077ec40"
-        },
-        {
           "name": "Local.go",
-          "sha256": "cdc231b445cf0ed10e74ddc80c486da7beaf46fe115f3b9072edef27a09c5305"
+          "sha256": "3a40f6d018d8f7fcd54ebbb3e8c713125ca079ded0362f2ed8f0735773ce13dd"
         },
         {
           "name": "Cardinality.go",
-          "sha256": "6ccab5e42c7b50a29147d0066d0d3b3a113a9531449a17bf8dcb4913b63e4f5f"
+          "sha256": "9fc6aab3f38b866a33dca1fcd3239f944f9c7b5dbe3d1cd5965ebfbd5e6e33cb"
         },
         {
           "name": "Relations.go",
-          "sha256": "b68f5614cdd02bb8a9835c94fa00c588e2cfe412248a30be9ef1d7f298b3c9a8"
+          "sha256": "4293b7ba5eddf56513a9001a8d135af1b13e5dc5a54ec8d986e3b9d15fa9a7bb"
         }
       ],
       "shellRecipe": [
         "go mod tidy",
-        "sh run.sh go run Local.go",
-        "sh run.sh go run Cardinality.go",
-        "sh run.sh go run Relations.go"
+        "go run Local.go",
+        "go run Cardinality.go",
+        "go run Relations.go"
       ],
       "expectedOutputs": [
         [],

@@ -41,7 +41,7 @@ environment = Dict(
     "SHELL" => "/bin/sh",
 )
 
-with_server(; tmux=get(ENV, "LIBTMUX_TEST_TMUX", "tmux"), env=environment) do server
+with_server(; env=environment) do server
     created = new_session(server; name="stream", command=["/bin/cat"])
     pane = only(panes(snapshot(server))).ref
     open_control(server, created) do connection
@@ -95,7 +95,8 @@ observed terminal echo: λ
 
 ## Source and verification
 
-The complete program comes from [examples/output_stream.jl](https://github.com/libtmux/libtmux-julia/blob/6f62bd72cb8d99f3759ca5e2cc3591165a03c768/examples/output_stream.jl).
+The complete program is [examples/output_stream.jl](https://github.com/libtmux/libtmux-julia/blob/6f62bd72cb8d99f3759ca5e2cc3591165a03c768/examples/output_stream.jl) without the `tmux`
+argument that the repository's own tests use to choose an executable.
 The verification runner executes these displayed files and setup commands
 unchanged, checks the output, and checks that the program stopped its private
 tmux server. Each example runs independently.

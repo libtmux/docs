@@ -203,25 +203,32 @@ describe('where a page puts the bar', () => {
 })
 
 /**
- * One banner, not two (PageProductHome, proposal 2): a concept product's own bar says the work can change, so the site's
- * release bar, which promises the same, is hidden above it until the concept bar is dismissed.
+ * One banner, not two (PageProductHome, proposal 2): a product's own bar says the work can change, whether the product is a
+ * concept example or in development, so the site's release bar, which promises the same, is hidden above it until the
+ * product bar is dismissed.
  */
-describe('one banner on a concept product\'s page', () => {
+describe('one banner on a product\'s page', () => {
   const rules = parseRules(/<style is:global>([\s\S]*?)<\/style>/.exec(source('components/ProductNotice.astro'))![1]!)
   /** Whether a rule hides the release bar for a product bar with this id, while that bar has not been dismissed. */
   const hidesRelease = (found: typeof rules, id: string) => found.some((rule) => rule.declarations.display === 'none'
     && rule.selectors.some((selector) => selector.startsWith(`html:not([data-product-notice-dismissed~='${id}'])`)
       && selector.includes('.prerelease-notice[data-prerelease-notice]') && selector.includes(`.product-notice[data-product-notice='${id}']`)))
-  const concepts = [...new Set(PRIMARY.flatMap((port) => PRODUCTS.map((product) => expectedStatus(port.slug, product)?.id)).filter((id): id is string => Boolean(id?.endsWith('-concept'))))]
+  const statuses = [...new Set(PRIMARY.flatMap((port) => PRODUCTS.map((product) => expectedStatus(port.slug, product)?.id)).filter((id): id is string => Boolean(id)))]
 
-  it('hides the release bar above every concept bar the site draws', () => {
-    expect(concepts.sort()).toEqual(['mcp-concept', 'workspace-concept'])
-    for (const id of concepts) expect(hidesRelease(rules, id), id).toBe(true)
+  it('hides the release bar above every product bar the site draws', () => {
+    expect(statuses.sort()).toEqual(['mcp-concept', 'mcp-in-development', 'workspace-concept'])
+    for (const id of statuses) expect(hidesRelease(rules, id), id).toBe(true)
   })
 
-  it('leaves the release bar over a bar that says something else, and fails for a concept bar that has no rule', () => {
-    expect(hidesRelease(rules, 'mcp-in-development')).toBe(false)
+  it('names Python\'s MCP page among them, so its bar is the only banner', () => {
+    expect(expectedStatus('py', 'mcp')?.id).toBe('mcp-in-development')
+    expect(hidesRelease(rules, 'mcp-in-development')).toBe(true)
+  })
+
+  it('fails for a product bar that has no rule, and for a rule that names another status', () => {
     expect(hidesRelease(rules.filter((rule) => !rule.selectors.some((selector) => selector.includes('workspace-concept'))), 'workspace-concept')).toBe(false)
+    expect(hidesRelease(rules.filter((rule) => !rule.selectors.some((selector) => selector.includes('mcp-in-development'))), 'mcp-in-development')).toBe(false)
+    expect(hidesRelease(rules, 'mcp-unknown')).toBe(false)
   })
 })
 

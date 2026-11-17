@@ -126,24 +126,20 @@
       "language": "sh",
       "sourceRevision": "254f8b2be7eb60cacc3ffcb3ea8e456784f582df",
       "sourceRepository": "libtmux/libtmux-swift",
-      "files": [
-        {
-          "name": "run-mcp.sh",
-          "sha256": "6a26dc211be10156871e51638b2fe855d3d2a958145824b0f14ce790825ecbe0"
-        }
-      ],
+      "files": [],
       "toolchain": [
         "Swift 6.2.4"
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "page": "ports/swift/mcp/guides",
       "shellRecipe": [
         "mkdir swift-mcp-client && cd swift-mcp-client",
         "git init libtmux-source && \\\n  git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-swift.git && \\\n  git -C libtmux-source fetch --depth=1 origin 254f8b2be7eb60cacc3ffcb3ea8e456784f582df && \\\n  git -C libtmux-source checkout --detach FETCH_HEAD && \\\n  swift build --package-path libtmux-source --product libtmux-mcp --jobs 2",
-        "sh run-mcp.sh"
+        "realpath libtmux-source/.build/debug/libtmux-mcp",
+        "LIBTMUX_TOOLSETS= LIBTMUX_TOOLS=list_sessions \\\n    libtmux-source/.build/debug/libtmux-mcp"
       ]
     },
     {
@@ -189,15 +185,11 @@
       "files": [
         {
           "name": "settings.gradle.kts",
-          "sha256": "0714b53c34a0d0d191cd7c52dc0f75f8821bc8d87fa567e0a9da9c1cdb8347e0"
+          "sha256": "c41bdd6a501835ca2334368c4addd0d86da4f7faaeac4a3078920639f4a737cf"
         },
         {
           "name": "build.gradle.kts",
           "sha256": "ee2f9d76719195761685a5bde12d8d89cf42420e08a641fd119771b38fc64c16"
-        },
-        {
-          "name": "run-mcp.sh",
-          "sha256": "74c371248dc84b1ec2fc89013ec570912dd35c096177bfb2b49833901d14484a"
         }
       ],
       "toolchain": [
@@ -213,7 +205,9 @@
       "shellRecipe": [
         "mkdir java-mcp-client && cd java-mcp-client",
         "gradle --console=plain --no-daemon installDist",
-        "sh run-mcp.sh"
+        "tmux -L mcp-example new-session -d -s mcp-example",
+        "LIBTMUX_TOOLSETS= LIBTMUX_TOOLS=list_sessions \\\n    build/install/libtmux-mcp/bin/libtmux-mcp \\\n    --socket-name mcp-example < /dev/null",
+        "tmux -L mcp-example kill-server"
       ]
     },
     {

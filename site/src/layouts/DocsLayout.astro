@@ -119,9 +119,14 @@ interface Props {
    * heading sizes and which `not-prose` does not stop.
    */
   reference?: boolean
+  /**
+   * The layout family the page belongs to, which sets the width of the frame and how the context strip behaves.
+   *
+   * A page with a context draws as `prose` unless it says otherwise. A page of the reference family, with its own
+   * section bar and API tree, says `reference` and leaves `tableOfContents` off, so no outline rail repeats the bar.
+   */
+  documentationLayout?: 'prose' | 'reference'
   navigation?: SidebarItem[]
-  /** False keeps the sidebar's own text out of search, as the API tree does; a protocol reference lists every object in it. */
-  indexNavigation?: boolean
   apiNavigation?: { inventory: ApiTreeJson; base: string; version: string; selected: string; fullManual?: string }
   breadcrumbs?: BreadcrumbItem[]
   pagePorts?: PagePortLink[]
@@ -158,8 +163,8 @@ const {
   editLabel,
   bare = false,
   reference = false,
+  documentationLayout: requestedLayout,
   navigation,
-  indexNavigation = true,
   apiNavigation: requestedApiNavigation,
   breadcrumbs: requestedBreadcrumbs,
   pagePorts: requestedPagePorts,
@@ -176,6 +181,7 @@ const version = requestedVersion ?? buildTarget(process.env).version
 // caller formats `pagePath` the same way BaseLayout does.
 const currentPath = Astro.url.pathname
 const hasContext = Boolean(port) || /^(tmux|guides|topics|concepts|examples)(\/|$)/.test(pagePath)
+const documentationLayout = requestedLayout ?? (hasContext ? 'prose' : undefined)
 const contextVersion = port ? version : pagePath.match(/^tmux\/([^/]+)\/(?:reference|manual)/)?.[1] ?? 'latest'
 
 const tocItems =
@@ -217,7 +223,7 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
   description={description}
   pagePath={pagePath}
   portSlug={port}
-  documentationLayout={hasContext ? 'prose' : undefined}
+  documentationLayout={documentationLayout}
   version={version}
   noindex={noindex}
   searchable={searchable}
@@ -239,7 +245,8 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
   </div>}
   {port && statusProduct && <ProductNotice slot="status" port={port} product={statusProduct} />}
   {hasContext && <DocumentationContext slot="context" port={port} version={contextVersion} locale={locale}
-    sourcePath={localeSourcePath(Astro.url.pathname, locale)} localeStatuses={localeStatuses} tableOfContents={tocItems.length > 0}>
+    sourcePath={localeSourcePath(Astro.url.pathname, locale)} localeStatuses={localeStatuses} tableOfContents={tocItems.length > 0}
+    reference={documentationLayout === 'reference'}>
     <DocumentationNavigationButtons slot="navigation" tableOfContents={tocItems.length > 0} api={Boolean(apiNavigation)} />
   </DocumentationContext>}
   <CodeTabs />
@@ -265,7 +272,7 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
 
   <!-- Mobile sidebar drawer -->
   {!apiNavigation && <><div id="mobile-sidebar-overlay" class="fixed inset-0 z-40 bg-[var(--scrim)] opacity-0 invisible lg:hidden"></div>
-  <aside id="mobile-sidebar" data-documentation-scroll="mobile" data-pagefind-ignore={indexNavigation ? undefined : 'all'} inert class="drawer-surface fixed left-0 top-0 z-50 h-full w-64 -translate-x-full overflow-y-auto lg:hidden">
+  <aside id="mobile-sidebar" data-documentation-scroll="mobile" data-pagefind-ignore="all" inert class="drawer-surface fixed left-0 top-0 z-50 h-full w-64 -translate-x-full overflow-y-auto lg:hidden">
     <div class="p-4">
       <div class="mb-6 flex items-center justify-between">
         <h2 class="text-lg font-semibold text-[var(--text-color)]">Navigation</h2>
@@ -301,7 +308,7 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
       treeLabel={product && selectedDocumentation ? `${selectedDocumentation.surface.label}: ${selectedDocumentation.section.label}` : port ? `${PORT_BY_SLUG[port].name} API` : 'tmux commands'}
       searchLabel={port ? 'Find a type or member' : 'Find a command'} searchPlaceholder={port ? 'Find symbol' : 'Find command'}
       filters={[{ id: 'all', label: 'All' }, { id: 'types', label: port ? 'Types' : 'Sections' }, { id: 'members', label: port ? 'Members' : 'Commands' }]} />
-      : <aside class="hidden w-64 shrink-0 lg:block" data-pagefind-ignore={indexNavigation ? undefined : 'all'}>
+      : <aside class="hidden w-64 shrink-0 lg:block" data-pagefind-ignore="all">
       <div data-documentation-scroll="desktop" class="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto">
         <Sidebar locale={locale} port={port} product={product} version={version} currentPath={currentPath} navigation={sidebarNavigation} />
       </div>
@@ -339,7 +346,7 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
     */}
     {
       tocItems.length > 0 && (
-        <aside class="hidden w-56 shrink-0 xl:block" data-toc-rail>
+        <aside class="hidden w-56 shrink-0 xl:block" data-toc-rail data-pagefind-ignore="all">
           <TableOfContents items={tocItems} />
         </aside>
       )
