@@ -450,10 +450,11 @@ describe('the capability directory of Erlang, OCaml, Common Lisp, Raku, Perl and
     { port: 'erlang', id: 'tmux_session', rows: 3, refs: 12 },
     { port: 'erlang', id: 'tmux_window', rows: 3, refs: 12 },
     { port: 'erlang', id: 'tmux_pane', rows: 7, refs: 35 },
-    // The model pinned at ffab5fe holds eight groups, but its "Changing things" list has a bullet with prose after the
-    // reference ("Server: {!Client.kill_server} stops the daemon and closes this client"), which is not references
-    // alone and ends the run at five rows. Eight again once libtmux-ocaml words that bullet as a reference alone.
-    { port: 'ocaml', id: 'Libtmux_unix.Client', rows: 5 },
+    { port: 'ocaml', id: 'Libtmux_unix.Client', rows: 8 },
+    { port: 'ocaml', id: 'Libtmux.Session', rows: 5, refs: 13 },
+    { port: 'ocaml', id: 'Libtmux.Window', rows: 6, refs: 15 },
+    { port: 'ocaml', id: 'Libtmux.Pane', rows: 7, refs: 21 },
+    { port: 'ocaml', id: 'Libtmux.Operations', rows: 7, refs: 49 },
     { port: 'lisp', id: 'libtmux:client', rows: 8 },
     { port: 'raku', id: 'LibTmux::Server', rows: 7, refs: 46 },
     { port: 'raku', id: 'LibTmux::Model::SessionRef', rows: 6, refs: 16 },
