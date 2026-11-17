@@ -57,8 +57,9 @@ export async function checkHomeLanguageIcon(page, port = null) {
     assert(Math.abs(image.height - 24) < .1, 'Non-square artwork fits the icon box height')
     assert(Math.abs(image.x - box.x) < 1 && Math.abs(image.y - box.y) <= 2, 'The image fits beside the label, allowing a small optical correction')
   }
-  const menuSources = await page.locator('[data-home-launcher] .port-artwork').evaluateAll((images) => images.map((img) => img.getAttribute('src')))
-  assert(menuSources.length === PORTS.length && menuSources.every((src) => !src.includes('/brand/languages/')), 'Menu options keep their libtmux artwork')
+  const menuIcons = await page.locator('[data-home-launcher] .port-artwork').evaluateAll((images) => images.map((img) => [img.dataset.languageIcon, img.getAttribute('src')]))
+  assert(menuIcons.length === PORTS.length && menuIcons.every(([port, src]) => src.endsWith(`/brand/languages/${port}/icon.svg`)), 'Menu options show each language icon')
+  assert.deepEqual(new Set(menuIcons.map(([port]) => port)), new Set(PORTS.map((port) => port.slug)), 'Every port has one menu icon')
 }
 
 /** Keep compact labels inside their row and example options inside the code panel. */

@@ -333,12 +333,14 @@ describe('pickers, touch targets, focus and labels', () => {
     expect(source('components/docs/SurfacePicker.astro')).not.toMatch(/\.surface-picker-footer \{[^}]*margin:[^;]*-\.75rem/)
   })
 
-  it('sets the port picker at 32rem with 20px marks and one-line details', () => {
+  it('draws port picker rows with 26px language icons in a panel as wide as its rows', () => {
     const switcher = source('components/PagePortSwitcher.astro')
-    expect(switcher).toContain('.port-picker-panel { --picker-width: 32rem; }')
-    expect(switcher).toMatch(/\.port-artwork \{[^}]*width: 1\.25rem; height: 1\.25rem;/)
+    expect(switcher).toContain('.port-picker-panel[data-details] { --picker-width: 32rem; }')
+    expect(switcher).not.toContain('.port-picker-panel { --picker-width: 32rem; }')
+    expect(switcher).toMatch(/\.port-artwork \{[^}]*width: 1\.625rem; height: 1\.625rem;/)
+    expect(switcher).toContain('src={withRoot(`/brand/languages/${entry.port}/icon.svg`)} width="26" height="26"')
+    expect(switcher).not.toContain("branding(entry.port).asset('logo.svg')")
     expect(switcher).toContain('white-space: nowrap')
-    expect(switcher).not.toMatch(/width="26"|size=\{26\}/)
   })
 
   it('lifts rows to the touch target below the phone breakpoint', () => {
