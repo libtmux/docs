@@ -142,14 +142,14 @@
     },
     "erlang": {
       "repo": "libtmux/libtmux-erlang",
-      "revision": "33fd7fe985454e375d5ac8533043cabf4a0b2fa5",
+      "revision": "48aacd01add3256181ac57cfb29ae3047b93a39e",
       "distributions": [
         {
           "name": "libtmux_erlang",
           "version": "0.0.1",
           "manifest": "apps/libtmux_erlang/src/libtmux_erlang.app.src",
           "repo": "libtmux/libtmux-erlang",
-          "revision": "33fd7fe985454e375d5ac8533043cabf4a0b2fa5"
+          "revision": "48aacd01add3256181ac57cfb29ae3047b93a39e"
         }
       ],
       "units": []

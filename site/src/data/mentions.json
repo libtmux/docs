@@ -3845,6 +3845,13 @@
   },
   {
    "port": "erlang",
+   "symbol": "tmux_pane:wait_exit/2",
+   "page": "/erlang/latest/guides/operations/",
+   "title": "Owned operations",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
    "symbol": "tmux_query",
    "page": "/erlang/latest/guides/api-documentation/",
    "title": "Native API documentation",
