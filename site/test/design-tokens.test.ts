@@ -333,6 +333,10 @@ describe('pickers, touch targets, focus and labels', () => {
     expect(source('components/docs/SurfacePicker.astro')).not.toMatch(/\.surface-picker-footer \{[^}]*margin:[^;]*-\.75rem/)
   })
 
+  it('draws one rule above a page end that holds only the up row', () => {
+    expect(source('components/docs/PageEnd.astro')).toContain('.page-end__up:first-child { padding-top: 0; border-top: 0; }')
+  })
+
   it('keeps the member row head span first so its kind mark keeps its gap', () => {
     const list = source('components/api/ApiMemberList.astro')
     expect(list.indexOf('<span><ApiBadge label={kindOf(m)}')).toBeGreaterThan(-1)

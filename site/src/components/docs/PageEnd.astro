@@ -57,6 +57,8 @@ const { prev, next, groups, up } = Astro.props
   .page-end__group li a:has(> code) { text-decoration-style: dotted; }
   .page-end__group li code { font-size: .8125rem; }
   .page-end__up { display: flex; flex-wrap: wrap; gap: .25rem 1.25rem; margin: 0; padding: .75rem 0 0; border-top: 1px dashed var(--color-edge); list-style: none; font-size: .875rem; }
+  /* With no sequence or related groups above it, the up row needs no second rule under the page-end border. */
+  .page-end__up:first-child { padding-top: 0; border-top: 0; }
   .page-end__up li { margin: 0; }
   .page-end__up a { display: inline-flex; align-items: center; gap: .3rem; color: var(--color-foreground-muted); text-decoration: none; }
   .page-end__up a:hover { color: var(--color-link); text-decoration: underline; }
