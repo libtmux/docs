@@ -454,6 +454,9 @@ describe('the capability directory of Erlang, OCaml, Common Lisp, Raku, Perl and
     { port: 'lisp', id: 'libtmux:client', rows: 8 },
     { port: 'raku', id: 'LibTmux::Server', rows: 7, refs: 46 },
     { port: 'perl', id: 'LibTmux::Server', rows: 10, refs: 43 },
+    { port: 'perl', id: 'LibTmux::Session', rows: 3, refs: 6 },
+    { port: 'perl', id: 'LibTmux::Window', rows: 3, refs: 8 },
+    { port: 'perl', id: 'LibTmux::Pane', rows: 4, refs: 13 },
     { port: 'clojure', id: 'libtmux.core/open!', rows: 9, refs: 62 },
   ]
 
@@ -464,6 +467,12 @@ describe('the capability directory of Erlang, OCaml, Common Lisp, Raku, Perl and
     expect(directory.rows).toHaveLength(rows)
     for (const row of directory.rows) expect(row.groups.flatMap((group) => group.refs).length, row.title).toBeGreaterThan(0)
     if (refs) expect(directory.rows.flatMap((row) => row.groups.flatMap((group) => group.refs))).toHaveLength(refs)
+  })
+
+  it('keeps the test-only tmux override out of every Perl reference example', () => {
+    const examples = API_MODELS.perl.symbols.flatMap((symbol) => symbol.doc?.examples ?? [])
+    expect(examples.length).toBeGreaterThan(0)
+    for (const example of examples) expect(example.code).not.toContain('LIBTMUX_TEST_TMUX')
   })
 
   it('fences the Raku Server\'s code and links the methods its description names', () => {
