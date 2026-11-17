@@ -34,7 +34,7 @@ export function extractRakuArtifact(input: unknown, expectedRevision?: string): 
     library.workingTree === artifact.workingTree, 'library provenance differs')
   check(producer?.name === 'RakuAST and RakuDoc export' && producer.version === 1 &&
     producer.repository === artifact.repo && typeof producer.revision === 'string' && SHA.test(producer.revision) &&
-    EXPORTER_PATHS.includes(producer.path) && typeof producer.sha256 === 'string' && HASH.test(producer.sha256) &&
+    typeof producer.path === 'string' && EXPORTER_PATHS.includes(producer.path) && typeof producer.sha256 === 'string' && HASH.test(producer.sha256) &&
     typeof producer.workingTree === 'boolean', 'exporter identity')
   check(!artifact.workingTree && !producer.workingTree, 'uncommitted inputs cannot be published')
   producer.compiler = artifact.compiler.replace(/^v/, '')
