@@ -402,7 +402,7 @@ export function apiEntrySections(symbol: ApiSymbol, port?: string, index?: Symbo
   const sections: ApiSection[] = []
   if (symbol.doc?.body) sections.push({ id: `${anchor}.description`, label: 'Description' })
   if (symbol.command) sections.push({ id: `${anchor}.command`, label: 'Command details' })
-  if (apiMethodDetails(symbol, port).length) sections.push({ id: `${anchor}.methods`, label: 'Methods' })
+  if (apiMethodDetails(symbol, port).some(({ signature }) => apiMethodHasContent(symbol, signature))) sections.push({ id: `${anchor}.methods`, label: 'Methods' })
   if (fields.typeParameters.length || apiInheritedTypeParameters(symbol, index).length) {
     sections.push({ id: `${anchor}.type-parameters`, label: 'Type parameters' })
   }
@@ -434,6 +434,15 @@ export function apiOverloadId(symbol: ApiSymbol, signature: Signature): string {
 }
 
 /** Dispatch methods retain their own documentation and stable fragment identities. */
+/**
+ * Whether a method entry shows anything beyond the declaration above it: its own signature
+ * when there are several, a different source line, an extension it needs, or its own prose.
+ */
+export function apiMethodHasContent(symbol: ApiSymbol, signature: Signature) {
+  return symbol.signatures.length > 1 || Boolean(signature.extension || signature.doc?.summary || signature.doc?.body)
+    || (signature.source !== undefined && JSON.stringify(signature.source) !== JSON.stringify(symbol.source))
+}
+
 export function apiMethodDetails(symbol: ApiSymbol, port?: string) {
   // Haskell constructors are exported data declarations, not dispatch methods.
   if (port === 'haskell') return []
