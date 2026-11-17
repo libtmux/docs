@@ -61,8 +61,9 @@ const box = budget ? { class: 'api-member-budget', role: 'region', tabindex: 0, 
   <ul class="api-member-list mt-3">
     {group.members.map((m) => (
       <li data-member-kind={kindOf(m)}>
-        {anchorsFor?.(m).map((id) => <span id={id} class="sr-only" />)}
         <span><ApiBadge label={kindOf(m)} variant="kind" value={kindOf(m)} compact preview={false} /><a class="api-member-link" href={hrefFor(m)}>{m.name}</a>{m.type && <span class="api-member-type">: <ApiType type={m.type} index={index} context={m} /></span>}</span>
+        {/* Hidden anchors follow the head: the mark's spacing, baseline and hover rules select `li > span:first-child`. */}
+        {anchorsFor?.(m).map((id) => <span id={id} class="sr-only" />)}
         {(mixed || m.inheritedFrom) && <span class="api-member-badges">
           {mixed && <ApiBadge label={kindOf(m)} variant="kind" value={kindOf(m)} plain />}
           {m.inheritedFrom && <a class="api-badge api-badge--mod" href={apiGlossaryHref('inherited', Astro.url.pathname)} title={`Inherited from ${m.inheritedFrom}`} aria-description={`Inherited from ${m.inheritedFrom}`} data-preview-context={`Inherited from ${m.inheritedFrom}.`}><span class="api-badge__label">inherited</span></a>}

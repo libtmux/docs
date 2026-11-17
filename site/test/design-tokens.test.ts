@@ -333,6 +333,13 @@ describe('pickers, touch targets, focus and labels', () => {
     expect(source('components/docs/SurfacePicker.astro')).not.toMatch(/\.surface-picker-footer \{[^}]*margin:[^;]*-\.75rem/)
   })
 
+  it('keeps the member row head span first so its kind mark keeps its gap', () => {
+    const list = source('components/api/ApiMemberList.astro')
+    expect(list.indexOf('<span><ApiBadge label={kindOf(m)}')).toBeGreaterThan(-1)
+    expect(list.indexOf('<span><ApiBadge label={kindOf(m)}')).toBeLessThan(list.indexOf('anchorsFor?.(m)'))
+    expect(source('styles/kind-marks.css')).toContain('.api-member-list li > span:first-child) > .api-nav__kind:first-child')
+  })
+
   it('draws port picker rows with 26px language icons in a panel as wide as its rows', () => {
     const switcher = source('components/PagePortSwitcher.astro')
     expect(switcher).toContain('.port-picker-panel[data-details] { --picker-width: 32rem; }')
