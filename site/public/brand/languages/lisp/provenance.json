@@ -1,19 +1,22 @@
 {
   "name": "Common Lisp",
   "asset": "icon.svg",
-  "sourceUrl": "https://raw.githubusercontent.com/libtmux/assets/ef6c550b8d1120fe6873e610ddbe550f95016a46/assets/lisp/library/logo.svg",
-  "resolvedUrl": "https://raw.githubusercontent.com/libtmux/assets/ef6c550b8d1120fe6873e610ddbe550f95016a46/assets/lisp/library/logo.svg",
-  "sourcePage": "https://github.com/libtmux/assets/tree/ef6c550b8d1120fe6873e610ddbe550f95016a46/assets/lisp",
-  "retrievedAt": "2026-11-07T19:46:31-06:00",
-  "sha256": "6235af4b33af33c0895d103933f0f201c42620c2494f6ec95f356df83d2849ec",
-  "copyright": "The libtmux Common Lisp artwork is maintained by the libtmux project.",
+  "sourceUrl": "https://www.lisperati.com/lisplogo_alien.svg",
+  "resolvedUrl": "https://www.lisperati.com/lisplogo_alien.svg",
+  "sourcePage": "https://www.lisperati.com/logo.html",
+  "retrievedAt": "2026-11-17T15:12:08+00:00",
+  "sha256": "22fc8912952cb6e52c4cc40bdd388edc1e1a2a4a85990f1b31c91f29c09e6f47",
+  "copyright": "The Lisp alien, from the Public Domain Lisp Logo Set by Conrad Barski, M.D.",
   "license": {
-    "name": "Project-owner artwork; no new license assigned",
+    "name": "Public domain dedication by the author",
     "urls": [
-      "https://github.com/libtmux/assets/blob/ef6c550b8d1120fe6873e610ddbe550f95016a46/THIRD_PARTY.md#libtmux-and-tmuxp"
+      "https://www.lisperati.com/logo.html"
     ],
-    "notes": "The source kit assigns no new license to the project owner's artwork or trademarks. Used to identify the Common Lisp port; no endorsement by a Common Lisp standards body is implied."
+    "notes": "The author states: \"Anyone may use these freely for any purpose and in any way.\" Attribution is not required; credit to Conrad Barski is given here. Common Lisp has no official logo; the alien is one of the marks in common use and identifies the Common Lisp port in the language selector."
   },
-  "modifications": "None. The reviewed library SVG bytes are preserved.",
-  "upstreamRevision": "ef6c550b8d1120fe6873e610ddbe550f95016a46"
+  "modifications": "Cropped the empty A4 canvas to the alien by changing the root width, height and viewBox to 57.5 380 527.6 365.8. Added a crop notice. The artwork paths and colours are unchanged; the original is kept beside it.",
+  "sourceCopy": {
+    "file": "lisplogo_alien.svg",
+    "sha256": "11c774b2e3ecf6cb67f49d5fcc3030b9dfc8abd91fc51b99d0d7e318d1035b5b"
+  }
 }
