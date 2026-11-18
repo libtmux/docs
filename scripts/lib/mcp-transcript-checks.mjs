@@ -97,6 +97,24 @@ export function verifyRecording(steps, { port, runTool, expected, present = [], 
   })
 }
 
+/**
+ * The agent's closing reply, as a recording stores it: the example's reply once the
+ * session shows it states nothing the panes did not print. Text in double quotes is
+ * output, and each such value must appear in a recorded result. A reply that quotes
+ * nothing proves nothing, so it is refused as well.
+ *
+ * @param {string} reply
+ * @param {{ content: unknown[], structuredContent?: unknown }[]} steps
+ * @param {string} port
+ */
+export function recordedReply(reply, steps, port) {
+  const quoted = [...reply.matchAll(/"([^"]+)"/g)].map((match) => match[1])
+  if (!quoted.length) throw new Error(`${port}: the reply quotes nothing the session printed`)
+  const printed = steps.map((step) => JSON.stringify(answer(step))).join('\n')
+  for (const text of quoted) if (!printed.includes(text)) throw new Error(`${port}: the reply quotes "${text}" but the recording lacks it`)
+  return reply
+}
+
 /** A path as a server writes it inside JSON text when it escapes slashes, as Swift's does. */
 const escapedSlashes = (text) => text.replaceAll('/', '\\/')
 

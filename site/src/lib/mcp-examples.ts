@@ -1,7 +1,11 @@
 // scripts/gen-mcp-transcript.mjs imports this module with bare Node, so it has no imports.
 
 export interface ExampleStep { tool: string; arguments: Record<string, unknown>; caption: string }
-export interface ExampleDefinition { prompt: string; steps: ExampleStep[] }
+/**
+ * `reply` is the agent's closing message. The text in double quotes is output the session printed:
+ * `gen-mcp-transcript.mjs` refuses a recording that lacks any of it, and stores the reply with the recording.
+ */
+export interface ExampleDefinition { prompt: string; reply: string; steps: ExampleStep[] }
 
 /** The error code a server answers when a call sends the example's stand-in generation: the page tells the reader it is refused as this. */
 export const STALE_TARGET = 'stale_target'
@@ -12,6 +16,7 @@ const RUN_IN_CREATED = 'Run the command in the pane the create result returned (
 const RUN_IN_LISTED = 'Run the command in the pane the list returned (%0).'
 const REMOVE = 'Remove the session once the result is read.'
 const REMOVE_BY_ID = 'Remove the session by the id the create result returned ($0).'
+const REPLY = 'pytest printed "2 passed" and checks.log ends with "checks finished". I removed the checks session.'
 const CHECKS = 'Create a tmux session called checks, run pytest -q in it, show me the result, then remove the session.'
 const SPLIT = 'Create a tmux session called checks, split its window into two panes, run pytest -q in one and show checks.log in the other, show me the results, then remove the session.'
 const SPLIT_PANE = 'Split the pane the create result returned (%0) in two.'
@@ -33,7 +38,7 @@ const RUN_COMMAND = { command: 'pytest -q' }
  * output schemas.
  */
 export const EXAMPLES: Record<string, ExampleDefinition> = {
-  py: { prompt: SPLIT, steps: [
+  py: { prompt: SPLIT, reply: REPLY, steps: [
     { tool: 'create_session', arguments: { session_name: 'checks' }, caption: CREATE },
     { tool: 'split_window', arguments: { pane_id: '%0', direction: 'right' }, caption: SPLIT_PANE },
     { tool: 'list_windows', arguments: { session_name: 'checks' }, caption: LAYOUT },
@@ -41,7 +46,7 @@ export const EXAMPLES: Record<string, ExampleDefinition> = {
     { tool: 'run_command', arguments: { pane_id: '%1', ...SHOW_LOG_COMMAND }, caption: SHOW_LOG },
     { tool: 'kill_session', arguments: { session_name: 'checks' }, caption: REMOVE },
   ] },
-  ts: { prompt: SPLIT, steps: [
+  ts: { prompt: SPLIT, reply: REPLY, steps: [
     { tool: 'create_session', arguments: { name: 'checks' }, caption: CREATE },
     { tool: 'split_window', arguments: { paneId: '%0', direction: 'right' }, caption: SPLIT_PANE },
     { tool: 'list_windows', arguments: { session: 'checks' }, caption: LAYOUT },
@@ -49,7 +54,7 @@ export const EXAMPLES: Record<string, ExampleDefinition> = {
     { tool: 'run_shell_command', arguments: { paneId: '%1', ...SHOW_LOG_COMMAND }, caption: SHOW_LOG },
     { tool: 'kill_session', arguments: { session: 'checks' }, caption: REMOVE },
   ] },
-  swift: { prompt: SPLIT, steps: [
+  swift: { prompt: SPLIT, reply: REPLY, steps: [
     { tool: 'create_session', arguments: { name: 'checks' }, caption: CREATE },
     { tool: 'list_panes', arguments: { session: 'checks' }, caption: 'List the panes in the new session.' },
     { tool: 'split_window', arguments: { paneId: '%0', direction: 'right' }, caption: 'Split the pane the list returned (%0) in two.' },
@@ -58,7 +63,7 @@ export const EXAMPLES: Record<string, ExampleDefinition> = {
     { tool: 'run_shell_command', arguments: { paneId: '%1', ...SHOW_LOG_COMMAND }, caption: SHOW_LOG },
     { tool: 'kill_session', arguments: { session: 'checks' }, caption: REMOVE },
   ] },
-  csharp: { prompt: SPLIT, steps: [
+  csharp: { prompt: SPLIT, reply: REPLY, steps: [
     { tool: 'create_session', arguments: { name: 'checks' }, caption: CREATE },
     { tool: 'split_window', arguments: { paneId: '%0', direction: 'Right' }, caption: SPLIT_PANE },
     { tool: 'list_windows', arguments: { session: 'checks' }, caption: LAYOUT },
@@ -66,7 +71,7 @@ export const EXAMPLES: Record<string, ExampleDefinition> = {
     { tool: 'run_shell_command', arguments: { paneId: '%1', ...SHOW_LOG_COMMAND }, caption: SHOW_LOG },
     { tool: 'kill_session', arguments: { session: 'checks' }, caption: REMOVE },
   ] },
-  cxx: { prompt: SPLIT, steps: [
+  cxx: { prompt: SPLIT, reply: REPLY, steps: [
     { tool: 'create_session', arguments: { name: 'checks' }, caption: CREATE },
     { tool: 'list_panes', arguments: {}, caption: 'List the panes, each with its session id.' },
     { tool: 'split_window', arguments: { paneId: '%0', direction: 'horizontal' }, caption: 'Split the pane the list returned (%0) in two.' },
@@ -75,7 +80,7 @@ export const EXAMPLES: Record<string, ExampleDefinition> = {
     { tool: 'run_shell_command', arguments: { paneId: '%1', ...SHOW_LOG_COMMAND }, caption: SHOW_LOG },
     { tool: 'kill_session', arguments: { session: 'checks' }, caption: REMOVE },
   ] },
-  rs: { prompt: SPLIT, steps: [
+  rs: { prompt: SPLIT, reply: REPLY, steps: [
     { tool: 'create_session', arguments: { name: 'checks' }, caption: CREATE },
     { tool: 'list_panes', arguments: {}, caption: 'List the panes, each with its window id.' },
     { tool: 'split_window', arguments: { pane: '%0', direction: 'right' }, caption: 'Split the pane the list returned (%0) in two.' },
@@ -84,7 +89,7 @@ export const EXAMPLES: Record<string, ExampleDefinition> = {
     { tool: 'run_shell_command', arguments: { pane: '%1', ...SHOW_LOG_COMMAND }, caption: SHOW_LOG },
     { tool: 'kill_session', arguments: { session: 'checks' }, caption: REMOVE },
   ] },
-  go: { prompt: SPLIT, steps: [
+  go: { prompt: SPLIT, reply: REPLY, steps: [
     { tool: 'create_session', arguments: { session_name: 'checks' }, caption: CREATE },
     { tool: 'list_panes', arguments: {}, caption: 'List the panes, each with the session it belongs to.' },
     { tool: 'split_window', arguments: { pane_id: '%0', direction: 'right' }, caption: 'Split the pane the list returned (%0) in two.' },
@@ -93,7 +98,7 @@ export const EXAMPLES: Record<string, ExampleDefinition> = {
     { tool: 'run_shell_command', arguments: { pane_id: '%1', ...SHOW_LOG_COMMAND }, caption: SHOW_LOG },
     { tool: 'kill_session', arguments: { session_id: '$0' }, caption: REMOVE_BY_ID },
   ] },
-  java: { prompt: SPLIT, steps: [
+  java: { prompt: SPLIT, reply: REPLY, steps: [
     { tool: 'create_session', arguments: { session_name: 'checks' }, caption: CREATE },
     { tool: 'list_panes', arguments: {}, caption: 'List the panes, each with the session it belongs to.' },
     { tool: 'split_window', arguments: { pane_id: '%0', direction: 'right' }, caption: 'Split the pane the list returned (%0) in two.' },
@@ -103,7 +108,7 @@ export const EXAMPLES: Record<string, ExampleDefinition> = {
     { tool: 'kill_session', arguments: { session_id: '$0' }, caption: REMOVE_BY_ID },
   ] },
   // Ruby's targets carry the server's generation, which differs on every run; the recorder sends the listed one and keeps this token.
-  ruby: { prompt: SPLIT, steps: [
+  ruby: { prompt: SPLIT, reply: REPLY, steps: [
     { tool: 'tmux_capabilities', arguments: {}, caption: 'Ask the server which tools and limits are enabled.' },
     { tool: 'tmux_create', arguments: { kind: 'session', name: 'checks', argv: ['sh'] }, caption: CREATE },
     { tool: 'tmux_create', arguments: { kind: 'pane', parent: { kind: 'pane', id: '%1', generation: '3f9a1c' }, direction: 'horizontal', argv: ['sh'] }, caption: 'Split the pane the create result returned (%1) in two.' },
@@ -115,7 +120,7 @@ export const EXAMPLES: Record<string, ExampleDefinition> = {
     { tool: 'tmux_close', arguments: { target: { kind: 'session', id: '$1', generation: '3f9a1c' } }, caption: 'Remove the session by the id the create result returned ($1).' },
   ] },
   // LibTmuxMCP has no split tool, so the split is a tmux command typed into the pane. Its targets carry the server's generation, which differs on every run: the recorder sends the listed one and keeps this token.
-  julia: { prompt: SPLIT, steps: [
+  julia: { prompt: SPLIT, reply: REPLY, steps: [
     { tool: 'create_session', arguments: { name: 'checks', command: ['sh'] }, caption: CREATE },
     { tool: 'send_keys', arguments: { target: { paneId: '%1', generation: '3f9a1c' }, keys: ['tmux split-window -h sh', 'Enter'] }, caption: 'This server has no split tool, so split from inside the pane the create result returned (%1) with tmux itself.' },
     { tool: 'list_panes', arguments: { scope: { sessionId: '$1', generation: '3f9a1c' } }, caption: 'List the panes of the session the create result returned ($1); each carries its position and size.' },
