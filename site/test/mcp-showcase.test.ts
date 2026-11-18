@@ -418,6 +418,33 @@ describe('the showcase section', () => {
     expect(document.body.textContent).not.toMatch(/recorded against|private tmux|illustrative|is shown as|generation differs/i)
   })
 
+  describe('with the agent\'s reply in the recording', () => {
+    const reply = 'pytest printed "2 passed" and the log ends with "checks finished". I removed the checks session.'
+    const withReply = async (port: string, text?: string) => {
+      const transcript = { ...(await transcriptFor(port))!, ...(text ? { reply: text } : {}) }
+      return section(port, buildShowcase(port, 'latest', onDisk(port), transcript))
+    }
+
+    it.each(['go', 'julia'])('closes the %s chat with the recorded reply, quoting what it printed, after the last call', async (port) => {
+      const document = await withReply(port, reply)
+      const closing = document.querySelectorAll('.mcp-turn--answer')
+      expect(closing).toHaveLength(1)
+      expect(closing[0]!.querySelector('.mcp-turn__say')!.textContent!.replace(/\s+/g, ' ').replace(/^ ?Agent/, '').trim()).toBe(reply.replaceAll('"', ''))
+      expect([...closing[0]!.querySelectorAll('q')].map((quoted) => quoted.textContent)).toEqual(['2 passed', 'checks finished'])
+      expect(closing[0]!.getAttribute('data-turn')).toBe(String(EXAMPLES[port]!.steps.length))
+      expect(closing[0]!.previousElementSibling, 'the last call comes before it').toBe([...document.querySelectorAll('article.mcp-turn')].at(-1))
+    })
+
+    it('shows the recorded reply in place of the answer derived from the panes, and no closing turn where a recording has neither', async () => {
+      const recorded = await withReply('go', reply)
+      expect(recorded.querySelectorAll('.mcp-turn--answer')).toHaveLength(1)
+      expect(recorded.querySelector('.mcp-turn--answer')!.textContent).not.toContain('it printed')
+      // Control: Go's recording without a reply still closes on the answer derived from its panes, and Julia's, which has none to derive, does not close.
+      expect([...(await withReply('go')).querySelectorAll('.mcp-turn--answer q')].map((quoted) => quoted.textContent)).toEqual([expect.stringMatching(/^2 passed/), expect.stringMatching(/checks finished$/)])
+      expect((await withReply('julia')).querySelector('.mcp-turn--answer')).toBeNull()
+    })
+  })
+
   it('says nothing of the sandbox or of a stand-in generation, for Julia or any port', async () => {
     const julia = await section('julia')
     const items = [...julia.querySelectorAll('article.mcp-turn')]
