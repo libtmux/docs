@@ -333,6 +333,13 @@ describe('pickers, touch targets, focus and labels', () => {
     expect(source('components/docs/SurfacePicker.astro')).not.toMatch(/\.surface-picker-footer \{[^}]*margin:[^;]*-\.75rem/)
   })
 
+  it('gives touch screens touch-target taps on the header, the sidebar head and the outline drawer without growing them', () => {
+    const css = source('styles/global.css')
+    const coarse = css.slice(css.indexOf('@media (pointer: coarse) {\n  .site-header'), css.indexOf('#mobile-toc li > a') + 120)
+    expect(coarse).toContain(':is(.sidebar-head__up, .sidebar-head__title)::before { content: \'\'; position: absolute; inset: calc((100% - var(--touch-target)) / 2) -.25rem; }')
+    expect(coarse).toContain('#mobile-toc li > a { display: flex; align-items: center; min-height: var(--touch-target); }')
+  })
+
   it('draws a picker row\'s differences in the caution ink, as the design system does', () => {
     expect(source('styles/documentation-picker.css')).toContain('.doc-picker-option .doc-picker-differences, .doc-picker-option[href]:hover .doc-picker-differences { color: var(--aside-caution-ink); font-weight: 500; }')
   })

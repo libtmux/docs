@@ -252,12 +252,16 @@ html {
    (type, columns, panels, marks) keeps its proportions (record 0071). rem here is the reader's default size. */
 html { font-size: clamp(1rem, 1rem + (100vw - 120rem) / 480, 1.25rem); }
 
-/* On touch screens the header's chips, scheme button, wordmark and language trigger keep their drawn size and take a
-   touch-target-tall hit area, so the bar does not grow (record 0071). */
+/* On touch screens the header's chips, scheme button, wordmark and language trigger, and the sidebar head's up link
+   and title, keep their drawn size and take a touch-target-tall hit area, so the bar and the head do not grow
+   (record 0071). The outline drawer's links are a list, so they take the full row height instead. */
 @media (pointer: coarse) {
-  .site-header :is(.topnav-chip, .scheme-cycle, .site-header__mark), .site-header-language .doc-picker > summary { position: relative; }
+  .site-header :is(.topnav-chip, .scheme-cycle, .site-header__mark), .site-header-language .doc-picker > summary,
+  .sidebar-head__up, .sidebar-head__title { position: relative; }
   .site-header :is(.topnav-chip, .scheme-cycle, .site-header__mark)::before,
-  .site-header-language .doc-picker > summary::before { content: ''; position: absolute; inset: calc((100% - var(--touch-target)) / 2) -.25rem; }
+  .site-header-language .doc-picker > summary::before,
+  :is(.sidebar-head__up, .sidebar-head__title)::before { content: ''; position: absolute; inset: calc((100% - var(--touch-target)) / 2) -.25rem; }
+  #mobile-toc li > a { display: flex; align-items: center; min-height: var(--touch-target); }
 }
 
 /* Header controls are already visible above the reserved reading area. Do not
