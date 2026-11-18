@@ -650,7 +650,7 @@ const bar = `<div class="bd-bar">${SETS.map((s) => {
     padding: 0 var(--px, 0) round(calc((var(--bh) - 2 * var(--bwv, var(--bw, 1px)) - var(--gh)) / 2), var(--step));
     border: var(--bw, 1px) solid var(--bdv, var(--tbd)); border-radius: var(--r, 4px);
     background: var(--bgv, var(--tbg)); color: var(--fgv, var(--tfg));
-    font: var(--fw, 600) var(--fs, 12px)/1 var(--ff, var(--font-sans)); letter-spacing: var(--ls, 0);
+    font: var(--fw, 600) var(--fs, 0.75rem)/1 var(--ff, var(--font-sans)); letter-spacing: var(--ls, 0);
     box-shadow: var(--sh, none); white-space: nowrap; user-select: none; text-decoration: none;
   }
   .bd-b[data-x] { --gh: calc(var(--lr, 1) * (1ex + var(--xo, .01em))); }
@@ -711,13 +711,13 @@ const bar = `<div class="bd-bar">${SETS.map((s) => {
   /* Q legend chip: the prose mark, then the word, in one chip. One line of text: both sit on the same snapped baseline,
      and the run is centred as a whole by its cap height. */
   @property --bd-lpb { syntax: '<length>'; inherits: true; initial-value: 0px; }
-  .bd-leg { font: 600 11px/1 var(--font-sans); --bd-lpb: round(calc((20px - 2px - 1cap) / 2), var(--step)); display: inline-flex; align-items: stretch; }
+  .bd-leg { font: 600 0.6875rem/1 var(--font-sans); --bd-lpb: round(calc((20px - 2px - 1cap) / 2), var(--step)); display: inline-flex; align-items: stretch; }
   .bd-leg > .bd-b { border-right-width: 0; border-radius: 4px 0 0 4px; padding-bottom: var(--bd-lpb); }
   .bd-leg > .bd-b > .bd-b__l { text-box: trim-both cap alphabetic; }
   .bd-leg__w {
     display: flex; align-items: flex-end; height: 20px; padding: 0 8px var(--bd-lpb) 3px; box-sizing: border-box;
     border: 1px solid color-mix(in srgb, var(--uh) var(--ba), transparent); border-left-width: 0; border-radius: 0 4px 4px 0;
-    background: var(--ub); color: var(--uf); font: 600 11px/1 var(--font-sans);
+    background: var(--ub); color: var(--uf); font: 600 0.6875rem/1 var(--font-sans);
   }
   .bd-leg__wl { display: block; text-box: trim-both cap alphabetic; }
   .bd-quiet { margin-right: .6rem; color: var(--bd-muted); font: 600 .625rem/1 var(--font-sans); text-transform: uppercase; letter-spacing: .08em; }
@@ -758,17 +758,17 @@ const bar = `<div class="bd-bar">${SETS.map((s) => {
   @property --bd-sp { syntax: '<length>'; inherits: true; initial-value: 0px; }
   .bd-split {
     --bd-sp: round(calc((22px - 2px - 1cap) / 2), var(--step));
-    display: inline-flex; align-items: stretch; box-sizing: border-box; height: 22px; font-size: 14px; vertical-align: middle; white-space: nowrap; overflow: hidden;
+    display: inline-flex; align-items: stretch; box-sizing: border-box; height: 22px; font-size: 0.875rem; vertical-align: middle; white-space: nowrap; overflow: hidden;
     border: 1px solid color-mix(in srgb, var(--uh) 30%, transparent); border-radius: 4px; text-decoration: none;
   }
   /* The cap and the name are one line of text on one baseline. */
   .bd-split__k {
     display: flex; align-items: flex-end; justify-content: center; min-width: 26px; padding: 0 5px var(--bd-sp); box-sizing: border-box;
     border-right: 1px solid color-mix(in srgb, var(--uh) 30%, transparent);
-    background: color-mix(in srgb, var(--uh) 18%, var(--bd-bg)); color: var(--uf); font: 700 12px/1 var(--font-mono);
+    background: color-mix(in srgb, var(--uh) 18%, var(--bd-bg)); color: var(--uf); font: 700 0.75rem/1 var(--font-mono);
   }
   .bd-split__kl, .bd-split__nl { display: block; text-box: trim-both cap alphabetic; }
-  .bd-split__n { display: flex; align-items: flex-end; padding: 0 7px var(--bd-sp); background: color-mix(in srgb, var(--bd-fg) 4%, transparent); font: 400 14px/1 var(--font-mono); }
+  .bd-split__n { display: flex; align-items: flex-end; padding: 0 7px var(--bd-sp); background: color-mix(in srgb, var(--bd-fg) 4%, transparent); font: 400 0.875rem/1 var(--font-mono); }
   .bd-split code { padding: 0; border: 0; background: none; font: inherit; }
   .bd-split:hover .bd-split__n { background: color-mix(in srgb, var(--bd-fg) 9%, transparent); }
   .bd-split:focus-visible { outline: 2px solid var(--uh); outline-offset: 1px; }
@@ -790,7 +790,7 @@ const bar = `<div class="bd-bar">${SETS.map((s) => {
   .bd-c-af .bd-b::after {
     content: attr(data-word); position: absolute; bottom: calc(100% + 6px); left: 50%; translate: -50% 0; z-index: 5; display: none;
     padding: 3px 8px; border: 1px solid var(--sbd); border-radius: 3.5px; background: var(--sbg); color: #fff;
-    font: 700 11px/1 var(--font-sans); letter-spacing: .01em; box-shadow: var(--bd-shade);
+    font: 700 0.6875rem/1 var(--font-sans); letter-spacing: .01em; box-shadow: var(--bd-shade);
   }
   .bd-c-af .bd-b:hover::after, .bd-c-af .bd-b:focus-visible::after, .bd-c-af .bd-m:hover .bd-b::after, .bd-c-af .bd-m:focus-visible .bd-b::after { display: block; }
   .bd-c-af .bd-b:focus-visible { outline: 2px solid var(--tbd); outline-offset: 1px; }

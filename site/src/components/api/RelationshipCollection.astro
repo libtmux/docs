@@ -54,13 +54,13 @@ const parts = (text: string) => text.split(/`([^`]+)`/)
   .api-collection > :is(h2, h3) { grid-column: 1; margin: 0 0 .5rem; }
   .api-collection > .api-collection__kind { grid-column: 2; }
   .api-collection > .api-collection__count { grid-column: 3; }
-  .api-collection__kind { font: 400 12px/1 var(--font-mono, ui-monospace, monospace); color: var(--color-foreground-muted); }
-  .api-collection__count { font: 400 12px/1 var(--font-sans, sans-serif); color: var(--color-foreground-muted); font-variant-numeric: tabular-nums; }
-  .api-collection__why { margin: 0 0 .5rem; max-inline-size: var(--collection-measure); font-size: 13px; line-height: 19.5px; color: var(--color-foreground-muted); }
-  .api-collection__limit { margin: .5rem 0 0; font-size: 12px; line-height: 18px; color: var(--color-foreground-muted); }
+  .api-collection__kind { font: 400 0.75rem/1 var(--font-mono, ui-monospace, monospace); color: var(--color-foreground-muted); }
+  .api-collection__count { font: 400 0.75rem/1 var(--font-sans, sans-serif); color: var(--color-foreground-muted); font-variant-numeric: tabular-nums; }
+  .api-collection__why { margin: 0 0 .5rem; max-inline-size: var(--collection-measure); font-size: 0.8125rem; line-height: 19.5px; color: var(--color-foreground-muted); }
+  .api-collection__limit { margin: .5rem 0 0; font-size: 0.75rem; line-height: 18px; color: var(--color-foreground-muted); }
   /* A collection with no data says why, instead of vanishing: a dashed block, not a finding. */
-  .api-collection__state { display: grid; gap: 6px; justify-items: start; margin-block-end: .75rem; padding: 16px; border: 1px dashed var(--collection-control-border); border-radius: var(--radius-md, 6px); font-size: 14px; }
-  .api-collection__state strong { font-size: 15px; font-weight: 600; }
+  .api-collection__state { display: grid; gap: 6px; justify-items: start; margin-block-end: .75rem; padding: 16px; border: 1px dashed var(--collection-control-border); border-radius: var(--radius-md, 6px); font-size: 0.875rem; }
+  .api-collection__state strong { font-size: 0.9375rem; font-weight: 600; }
   .api-collection__state p { margin: 0; color: var(--color-foreground-muted); line-height: 21px; }
   /* Rows: kind mark, owner-qualified name, one-line summary; sparse summaries stay sparse. */
   .api-collection__rows { list-style: none; margin: 0; padding: 0; border-block-start: 1px solid var(--color-background-border); }
@@ -69,9 +69,9 @@ const parts = (text: string) => text.split(/`([^`]+)`/)
   .api-collection__row:focus-visible { outline: 2px solid var(--focus-ring-color, var(--theme-primary)); outline-offset: -2px; }
   /* Kind marks are outlined in lists, and sit on the first line of a row that wraps. */
   .api-collection__rows .api-nav__kind { align-self: start; --mk-fill: transparent; --mk-bd: color-mix(in srgb, var(--mk-hue, currentColor) 60%, transparent); }
-  .api-collection__name { font: 600 14px/20px var(--font-mono, ui-monospace, monospace); overflow-wrap: anywhere; }
-  .api-collection__name .owner { font: 400 13px/20px var(--font-sans, sans-serif); color: var(--color-foreground-muted); }
-  .api-collection__sum { grid-column: 2; font-size: 13px; line-height: 19px; color: var(--color-foreground-muted); }
+  .api-collection__name { font: 600 0.875rem/1.25rem var(--font-mono, ui-monospace, monospace); overflow-wrap: anywhere; }
+  .api-collection__name .owner { font: 400 0.8125rem/1.25rem var(--font-sans, sans-serif); color: var(--color-foreground-muted); }
+  .api-collection__sum { grid-column: 2; font-size: 0.8125rem; line-height: 19px; color: var(--color-foreground-muted); }
   .api-collection__sum.sparse { font-style: italic; }
   @media (min-width: 48rem) {
     .api-collection__rows--cols .api-collection__row { grid-template-columns: 1.5rem minmax(14rem, 22rem) minmax(0, 1fr); }

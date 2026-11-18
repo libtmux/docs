@@ -83,7 +83,7 @@ html[data-theme-mode='dark'] .lm-install {
   border-radius: 999px;
   background: var(--lm-install-raised);
   color: var(--text-color);
-  font: 600 11.5px/1 var(--font-sans);
+  font: 600 0.7188rem/1 var(--font-sans);
   cursor: pointer;
 }
 
@@ -137,7 +137,7 @@ html[data-theme-mode='dark'] .lm-install {
 
 .lm-install__sole {
   display: block;
-  font: 500 13px/1 var(--font-sans);
+  font: 500 0.8125rem/1 var(--font-sans);
   color: var(--text-color);
   white-space: nowrap;
 }
@@ -163,7 +163,7 @@ html[data-theme-mode='dark'] .lm-install {
   flex: 0 1 auto;
   min-width: 0;
   color: var(--lm-install-muted);
-  font: 400 12px/1 var(--font-mono);
+  font: 400 0.75rem/1 var(--font-mono);
   white-space: nowrap;
 }
 
@@ -223,7 +223,7 @@ html[data-theme-mode='dark'] .lm-install {
   align-items: baseline;
   gap: 0.25rem 0.55rem;
   color: var(--lm-install-muted);
-  font-size: 12.5px;
+  font-size: 0.7812rem;
 }
 
 .lm-install__facts code {
@@ -231,7 +231,7 @@ html[data-theme-mode='dark'] .lm-install {
   border: 0;
   background: none;
   color: var(--text-color);
-  font: 600 12.5px/1.3 var(--font-mono);
+  font: 600 0.7812rem/1.3 var(--font-mono);
 }
 
 .lm-install__facts a {
@@ -277,7 +277,7 @@ html[data-theme-mode='dark'] .lm-install {
   border-radius: 5px;
   background: transparent;
   color: var(--lm-install-muted);
-  font: 500 12px/1.3 var(--font-sans);
+  font: 500 0.75rem/1.3 var(--font-sans);
   white-space: nowrap;
   cursor: pointer;
 }
@@ -311,7 +311,7 @@ html[data-theme-mode='dark'] .lm-install {
   border-radius: 999px;
   background: var(--lm-install-raised);
   color: var(--lm-install-muted);
-  font: 500 12.5px/1 var(--font-sans);
+  font: 500 0.7812rem/1 var(--font-sans);
   cursor: pointer;
 }
 
@@ -376,7 +376,7 @@ html[data-mcp-install-cooldown-enabled='1'][data-mcp-install-cooldown-type='bypa
   padding: 0.55rem 0.875rem;
   border-bottom: 1px solid var(--lm-install-edge);
   background: var(--lm-install-add-bg);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.5;
 }
 
@@ -391,7 +391,7 @@ html[data-mcp-install-cooldown-enabled='1'][data-mcp-install-cooldown-type='bypa
 .lm-install__k {
   flex: none;
   color: var(--lm-install-add-edge);
-  font: 600 12px/1 var(--font-sans);
+  font: 600 0.75rem/1 var(--font-sans);
 }
 
 .lm-install__cooldown[data-tone='bypass'] .lm-install__k {
@@ -423,7 +423,7 @@ html[data-mcp-install-cooldown-enabled='1'][data-mcp-install-cooldown-type='bypa
   border-radius: 5px;
   background: var(--background-color);
   color: var(--text-color);
-  font: 500 12.5px/1 var(--font-mono);
+  font: 500 0.7812rem/1 var(--font-mono);
 }
 
 .lm-install__acts {
@@ -443,7 +443,7 @@ html[data-mcp-install-cooldown-enabled='1'][data-mcp-install-cooldown-type='bypa
   border: 0;
   background: none;
   color: var(--color-link);
-  font: 500 12.5px/1.3 var(--font-sans);
+  font: 500 0.7812rem/1.3 var(--font-sans);
   text-decoration: underline;
   text-underline-offset: 2px;
   cursor: pointer;
