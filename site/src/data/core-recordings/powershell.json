@@ -69,7 +69,7 @@
             },
             {
               "role": "probe",
-              "tmux": "run-shell -C libtmux-version-9eb0dfcf30e045b580be4b633d34eec2-#{version},#{pid},#{start_time}",
+              "tmux": "run-shell -C libtmux-version-532a8795f0944b1787a20bfdcfea69ea-#{version},#{pid},#{start_time}",
               "mutates": false,
               "exit": 1,
               "stdout": "",
@@ -80,12 +80,12 @@
               "tmux": "new-session -P -F '#{pid}:#{start_time}\t#{session_id}\t#{window_id}\t#{pane_id}\t#{window_index}' -d -s demo",
               "mutates": true,
               "exit": 0,
-              "stdout": "3510344:1793891486\t$0\t@0\t%0\t0",
+              "stdout": "2693433:1794972755\t$0\t@0\t%0\t0",
               "stderr": ""
             },
             {
               "role": "probe",
-              "tmux": "run-shell -C libtmux-version-848391bd0d37410dac7828954ad5371a-#{version},#{pid},#{start_time}",
+              "tmux": "run-shell -C libtmux-version-4da29c12cbd744d3910d9a74009413f5-#{version},#{pid},#{start_time}",
               "mutates": false,
               "exit": 1,
               "stdout": "",
@@ -93,7 +93,7 @@
             },
             {
               "role": "probe",
-              "tmux": "run-shell -C libtmux-version-3af7a118836742eca89113f5bfd67ca4-#{version},#{pid},#{start_time}",
+              "tmux": "run-shell -C libtmux-version-cc489ef9e48749a0805725ac75735fef-#{version},#{pid},#{start_time}",
               "mutates": false,
               "exit": 1,
               "stdout": "",
@@ -109,10 +109,10 @@
             },
             {
               "role": "command",
-              "tmux": "display-message -p -t $0 #{config_files}LT945f7a6878c6439da904d2#{line}LT945f7a6878c6439da904d2#{next_session_id}LT945f7a6878c6439da904d2#{pid}LT945f7a6878c6439da904d2#{socket_path}LT945f7a6878c6439da904d2#{start_time}LT945f7a6878c6439da904d2#{uid}LT945f7a6878c6439da904d2#{user}LT945f7a6878c6439da904d2#{version}LT945f7a6878c6439da904d2#{active_window_index}LT945f7a6878c6439da904d2#{last_window_ind…",
+              "tmux": "display-message -p -t $0 #{config_files}LTa755737243064b7d82612e#{line}LTa755737243064b7d82612e#{next_session_id}LTa755737243064b7d82612e#{pid}LTa755737243064b7d82612e#{socket_path}LTa755737243064b7d82612e#{start_time}LTa755737243064b7d82612e#{uid}LTa755737243064b7d82612e#{user}LTa755737243064b7d82612e#{version}LTa755737243064b7d82612e#{active_window_index}LTa755737243064b7d82612e#{last_window_ind…",
               "mutates": false,
               "exit": 0,
-              "stdout": "/dev/nullLT945f7a6878c6439da904d2LT945f7a6878c6439da904d2$1LT945f7a6878c6439da904d23510344LT945f7a6878c6439da904d2/tmp/tmux-1000/libtmux-home-12345LT945f7a6878c6439da904d21793891486LT945f7a6878c6439da904d21000LT945f7a6878c6439da904d2dLT945f7a6878c6439da904d23.8aLT945f7a6878c6439da904d20LT945f7a6878c6439da904d20LT945f7a6878c6439da904d21793891487LT945f7a6878c6439da904d2LT945f7a…",
+              "stdout": "/dev/nullLTa755737243064b7d82612eLTa755737243064b7d82612e$1LTa755737243064b7d82612e2693433LTa755737243064b7d82612e/tmp/tmux-1000/libtmux-home-12345LTa755737243064b7d82612e1794972755LTa755737243064b7d82612e1000LTa755737243064b7d82612edLTa755737243064b7d82612e3.8aLTa755737243064b7d82612e0LTa755737243064b7d82612e0LTa755737243064b7d82612e1794972755LTa755737243064b7d82612eLTa75573…",
               "stderr": "",
               "shortened": true
             }
@@ -165,10 +165,10 @@
           "commands": [
             {
               "role": "command",
-              "tmux": "list-windows -t $0 -F #{config_files}LT945f7a6878c6439da904d2#{line}LT945f7a6878c6439da904d2#{next_session_id}LT945f7a6878c6439da904d2#{pid}LT945f7a6878c6439da904d2#{socket_path}LT945f7a6878c6439da904d2#{start_time}LT945f7a6878c6439da904d2#{uid}LT945f7a6878c6439da904d2#{user}LT945f7a6878c6439da904d2#{version}LT945f7a6878c6439da904d2#{active_window_index}LT945f7a6878c6439da904d2#{last_window_index}…",
+              "tmux": "list-windows -t $0 -F #{config_files}LTa755737243064b7d82612e#{line}LTa755737243064b7d82612e#{next_session_id}LTa755737243064b7d82612e#{pid}LTa755737243064b7d82612e#{socket_path}LTa755737243064b7d82612e#{start_time}LTa755737243064b7d82612e#{uid}LTa755737243064b7d82612e#{user}LTa755737243064b7d82612e#{version}LTa755737243064b7d82612e#{active_window_index}LTa755737243064b7d82612e#{last_window_index}…",
               "mutates": false,
               "exit": 0,
-              "stdout": "/dev/nullLT945f7a6878c6439da904d21LT945f7a6878c6439da904d2$1LT945f7a6878c6439da904d23510344LT945f7a6878c6439da904d2/tmp/tmux-1000/libtmux-home-12345LT945f7a6878c6439da904d21793891486LT945f7a6878c6439da904d21000LT945f7a6878c6439da904d2dLT945f7a6878c6439da904d23.8aLT945f7a6878c6439da904d20LT945f7a6878c6439da904d20LT945f7a6878c6439da904d21793891487LT945f7a6878c6439da904d2LT945f7…",
+              "stdout": "/dev/nullLTa755737243064b7d82612e1LTa755737243064b7d82612e$1LTa755737243064b7d82612e2693433LTa755737243064b7d82612e/tmp/tmux-1000/libtmux-home-12345LTa755737243064b7d82612e1794972755LTa755737243064b7d82612e1000LTa755737243064b7d82612edLTa755737243064b7d82612e3.8aLTa755737243064b7d82612e0LTa755737243064b7d82612e0LTa755737243064b7d82612e1794972755LTa755737243064b7d82612eLTa7557…",
               "stderr": "",
               "shortened": true
             }
@@ -226,10 +226,10 @@
             },
             {
               "role": "command",
-              "tmux": "display-message -p -t $0:0 #{config_files}LT945f7a6878c6439da904d2#{line}LT945f7a6878c6439da904d2#{next_session_id}LT945f7a6878c6439da904d2#{pid}LT945f7a6878c6439da904d2#{socket_path}LT945f7a6878c6439da904d2#{start_time}LT945f7a6878c6439da904d2#{uid}LT945f7a6878c6439da904d2#{user}LT945f7a6878c6439da904d2#{version}LT945f7a6878c6439da904d2#{active_window_index}LT945f7a6878c6439da904d2#{last_window_i…",
+              "tmux": "display-message -p -t $0:0 #{config_files}LTa755737243064b7d82612e#{line}LTa755737243064b7d82612e#{next_session_id}LTa755737243064b7d82612e#{pid}LTa755737243064b7d82612e#{socket_path}LTa755737243064b7d82612e#{start_time}LTa755737243064b7d82612e#{uid}LTa755737243064b7d82612e#{user}LTa755737243064b7d82612e#{version}LTa755737243064b7d82612e#{active_window_index}LTa755737243064b7d82612e#{last_window_i…",
               "mutates": false,
               "exit": 0,
-              "stdout": "/dev/nullLT945f7a6878c6439da904d2LT945f7a6878c6439da904d2$1LT945f7a6878c6439da904d23510344LT945f7a6878c6439da904d2/tmp/tmux-1000/libtmux-home-12345LT945f7a6878c6439da904d21793891486LT945f7a6878c6439da904d21000LT945f7a6878c6439da904d2dLT945f7a6878c6439da904d23.8aLT945f7a6878c6439da904d20LT945f7a6878c6439da904d20LT945f7a6878c6439da904d21793891487LT945f7a6878c6439da904d2LT945f7a…",
+              "stdout": "/dev/nullLTa755737243064b7d82612eLTa755737243064b7d82612e$1LTa755737243064b7d82612e2693433LTa755737243064b7d82612e/tmp/tmux-1000/libtmux-home-12345LTa755737243064b7d82612e1794972755LTa755737243064b7d82612e1000LTa755737243064b7d82612edLTa755737243064b7d82612e3.8aLTa755737243064b7d82612e0LTa755737243064b7d82612e0LTa755737243064b7d82612e1794972755LTa755737243064b7d82612eLTa75573…",
               "stderr": "",
               "shortened": true
             }
@@ -280,10 +280,10 @@
           "commands": [
             {
               "role": "command",
-              "tmux": "list-panes -t $0:0 -F #{config_files}LT945f7a6878c6439da904d2#{line}LT945f7a6878c6439da904d2#{next_session_id}LT945f7a6878c6439da904d2#{pid}LT945f7a6878c6439da904d2#{socket_path}LT945f7a6878c6439da904d2#{start_time}LT945f7a6878c6439da904d2#{uid}LT945f7a6878c6439da904d2#{user}LT945f7a6878c6439da904d2#{version}LT945f7a6878c6439da904d2#{active_window_index}LT945f7a6878c6439da904d2#{last_window_index}…",
+              "tmux": "list-panes -t $0:0 -F #{config_files}LTa755737243064b7d82612e#{line}LTa755737243064b7d82612e#{next_session_id}LTa755737243064b7d82612e#{pid}LTa755737243064b7d82612e#{socket_path}LTa755737243064b7d82612e#{start_time}LTa755737243064b7d82612e#{uid}LTa755737243064b7d82612e#{user}LTa755737243064b7d82612e#{version}LTa755737243064b7d82612e#{active_window_index}LTa755737243064b7d82612e#{last_window_index}…",
               "mutates": false,
               "exit": 0,
-              "stdout": "/dev/nullLT945f7a6878c6439da904d21LT945f7a6878c6439da904d2$1LT945f7a6878c6439da904d23510344LT945f7a6878c6439da904d2/tmp/tmux-1000/libtmux-home-12345LT945f7a6878c6439da904d21793891486LT945f7a6878c6439da904d21000LT945f7a6878c6439da904d2dLT945f7a6878c6439da904d23.8aLT945f7a6878c6439da904d20LT945f7a6878c6439da904d20LT945f7a6878c6439da904d21793891487LT945f7a6878c6439da904d2LT945f7…",
+              "stdout": "/dev/nullLTa755737243064b7d82612e1LTa755737243064b7d82612e$1LTa755737243064b7d82612e2693433LTa755737243064b7d82612e/tmp/tmux-1000/libtmux-home-12345LTa755737243064b7d82612e1794972755LTa755737243064b7d82612e1000LTa755737243064b7d82612edLTa755737243064b7d82612e3.8aLTa755737243064b7d82612e0LTa755737243064b7d82612e0LTa755737243064b7d82612e1794972755LTa755737243064b7d82612eLTa7557…",
               "stderr": "",
               "shortened": true
             }
@@ -339,10 +339,10 @@
             },
             {
               "role": "command",
-              "tmux": "display-message -p -t %1 #{config_files}LT945f7a6878c6439da904d2#{line}LT945f7a6878c6439da904d2#{next_session_id}LT945f7a6878c6439da904d2#{pid}LT945f7a6878c6439da904d2#{socket_path}LT945f7a6878c6439da904d2#{start_time}LT945f7a6878c6439da904d2#{uid}LT945f7a6878c6439da904d2#{user}LT945f7a6878c6439da904d2#{version}LT945f7a6878c6439da904d2#{active_window_index}LT945f7a6878c6439da904d2#{last_window_ind…",
+              "tmux": "display-message -p -t %1 #{config_files}LTa755737243064b7d82612e#{line}LTa755737243064b7d82612e#{next_session_id}LTa755737243064b7d82612e#{pid}LTa755737243064b7d82612e#{socket_path}LTa755737243064b7d82612e#{start_time}LTa755737243064b7d82612e#{uid}LTa755737243064b7d82612e#{user}LTa755737243064b7d82612e#{version}LTa755737243064b7d82612e#{active_window_index}LTa755737243064b7d82612e#{last_window_ind…",
               "mutates": false,
               "exit": 0,
-              "stdout": "/dev/nullLT945f7a6878c6439da904d2LT945f7a6878c6439da904d2$1LT945f7a6878c6439da904d23510344LT945f7a6878c6439da904d2/tmp/tmux-1000/libtmux-home-12345LT945f7a6878c6439da904d21793891486LT945f7a6878c6439da904d21000LT945f7a6878c6439da904d2dLT945f7a6878c6439da904d23.8aLT945f7a6878c6439da904d20LT945f7a6878c6439da904d20LT945f7a6878c6439da904d21793891487LT945f7a6878c6439da904d2LT945f7a…",
+              "stdout": "/dev/nullLTa755737243064b7d82612eLTa755737243064b7d82612e$1LTa755737243064b7d82612e2693433LTa755737243064b7d82612e/tmp/tmux-1000/libtmux-home-12345LTa755737243064b7d82612e1794972755LTa755737243064b7d82612e1000LTa755737243064b7d82612edLTa755737243064b7d82612e3.8aLTa755737243064b7d82612e0LTa755737243064b7d82612e0LTa755737243064b7d82612e1794972755LTa755737243064b7d82612eLTa75573…",
               "stderr": "",
               "shortened": true
             }
@@ -413,10 +413,10 @@
             },
             {
               "role": "command",
-              "tmux": "list-windows -t $0 -F #{config_files}LT945f7a6878c6439da904d2#{line}LT945f7a6878c6439da904d2#{next_session_id}LT945f7a6878c6439da904d2#{pid}LT945f7a6878c6439da904d2#{socket_path}LT945f7a6878c6439da904d2#{start_time}LT945f7a6878c6439da904d2#{uid}LT945f7a6878c6439da904d2#{user}LT945f7a6878c6439da904d2#{version}LT945f7a6878c6439da904d2#{active_window_index}LT945f7a6878c6439da904d2#{last_window_index}…",
+              "tmux": "list-windows -t $0 -F #{config_files}LTa755737243064b7d82612e#{line}LTa755737243064b7d82612e#{next_session_id}LTa755737243064b7d82612e#{pid}LTa755737243064b7d82612e#{socket_path}LTa755737243064b7d82612e#{start_time}LTa755737243064b7d82612e#{uid}LTa755737243064b7d82612e#{user}LTa755737243064b7d82612e#{version}LTa755737243064b7d82612e#{active_window_index}LTa755737243064b7d82612e#{last_window_index}…",
               "mutates": false,
               "exit": 0,
-              "stdout": "/dev/nullLT945f7a6878c6439da904d22LT945f7a6878c6439da904d2$1LT945f7a6878c6439da904d23510344LT945f7a6878c6439da904d2/tmp/tmux-1000/libtmux-home-12345LT945f7a6878c6439da904d21793891486LT945f7a6878c6439da904d21000LT945f7a6878c6439da904d2dLT945f7a6878c6439da904d23.8aLT945f7a6878c6439da904d20LT945f7a6878c6439da904d21LT945f7a6878c6439da904d21793891487LT945f7a6878c6439da904d2LT945f7…",
+              "stdout": "/dev/nullLTa755737243064b7d82612e2LTa755737243064b7d82612e$1LTa755737243064b7d82612e2693433LTa755737243064b7d82612e/tmp/tmux-1000/libtmux-home-12345LTa755737243064b7d82612e1794972755LTa755737243064b7d82612e1000LTa755737243064b7d82612edLTa755737243064b7d82612e3.8aLTa755737243064b7d82612e0LTa755737243064b7d82612e1LTa755737243064b7d82612e1794972755LTa755737243064b7d82612eLTa7557…",
               "stderr": "",
               "shortened": true
             }
@@ -580,7 +580,7 @@
           "commands": [
             {
               "role": "probe",
-              "tmux": "run-shell -C libtmux-version-794fde4fa0e24f36858d4dc06671bf17-#{version},#{pid},#{start_time}",
+              "tmux": "run-shell -C libtmux-version-ce4ffe5b419c4b109e7524b2b239fe76-#{version},#{pid},#{start_time}",
               "mutates": false,
               "exit": 1,
               "stdout": "",
@@ -631,7 +631,7 @@
               "tmux": "display-message -t %1 -p -- '#{pane_pid}\t#{history_size}\t#{history_limit}\t#{pane_height}\t#{cursor_y}\t#{pane_dead}\t#{alternate_on}\t#{pane_width}'",
               "mutates": false,
               "exit": 0,
-              "stdout": "3510586\t0\t2000\t24\t2\t0\t0\t39",
+              "stdout": "2693947\t0\t2000\t24\t2\t0\t0\t39",
               "stderr": ""
             },
             {
@@ -655,7 +655,7 @@
               "tmux": "display-message -t %1 -p -- '#{pane_pid}\t#{history_size}\t#{history_limit}\t#{pane_height}\t#{cursor_y}\t#{pane_dead}\t#{alternate_on}\t#{pane_width}'",
               "mutates": false,
               "exit": 0,
-              "stdout": "3510586\t0\t2000\t24\t2\t0\t0\t39",
+              "stdout": "2693947\t0\t2000\t24\t2\t0\t0\t39",
               "stderr": ""
             },
             {
@@ -663,7 +663,7 @@
               "tmux": "display-message -t %1 -p -- '#{pane_pid}\t#{history_size}\t#{history_limit}\t#{pane_height}\t#{cursor_y}\t#{pane_dead}\t#{alternate_on}\t#{pane_width}'",
               "mutates": false,
               "exit": 0,
-              "stdout": "3510586\t0\t2000\t24\t2\t0\t0\t39",
+              "stdout": "2693947\t0\t2000\t24\t2\t0\t0\t39",
               "stderr": ""
             },
             {
@@ -687,15 +687,15 @@
               "tmux": "display-message -t %1 -p -- '#{pane_pid}\t#{history_size}\t#{history_limit}\t#{pane_height}\t#{cursor_y}\t#{pane_dead}\t#{alternate_on}\t#{pane_width}'",
               "mutates": false,
               "exit": 0,
-              "stdout": "3510586\t0\t2000\t24\t2\t0\t0\t39",
+              "stdout": "2693947\t0\t2000\t24\t2\t0\t0\t39",
               "stderr": ""
             }
           ],
           "notifications": [
-            "%client-session-changed client-3510845 $0 demo",
+            "%client-session-changed client-2694388 $0 demo",
             "%session-changed $0 demo",
-            "%exit",
-            "%client-detached client-3510845"
+            "%client-detached client-2694388",
+            "%exit"
           ],
           "transient": [],
           "tmux": {
@@ -776,10 +776,10 @@
             },
             {
               "role": "command",
-              "tmux": "display-message -p -t $0:.%1 #{config_files}LT945f7a6878c6439da904d2#{line}LT945f7a6878c6439da904d2#{next_session_id}LT945f7a6878c6439da904d2#{pid}LT945f7a6878c6439da904d2#{socket_path}LT945f7a6878c6439da904d2#{start_time}LT945f7a6878c6439da904d2#{uid}LT945f7a6878c6439da904d2#{user}LT945f7a6878c6439da904d2#{version}LT945f7a6878c6439da904d2#{active_window_index}LT945f7a6878c6439da904d2#{last_window…",
+              "tmux": "display-message -p -t $0:.%1 #{config_files}LTa755737243064b7d82612e#{line}LTa755737243064b7d82612e#{next_session_id}LTa755737243064b7d82612e#{pid}LTa755737243064b7d82612e#{socket_path}LTa755737243064b7d82612e#{start_time}LTa755737243064b7d82612e#{uid}LTa755737243064b7d82612e#{user}LTa755737243064b7d82612e#{version}LTa755737243064b7d82612e#{active_window_index}LTa755737243064b7d82612e#{last_window…",
               "mutates": false,
               "exit": 0,
-              "stdout": "/dev/nullLT945f7a6878c6439da904d2LT945f7a6878c6439da904d2$1LT945f7a6878c6439da904d23510344LT945f7a6878c6439da904d2/tmp/tmux-1000/libtmux-home-12345LT945f7a6878c6439da904d21793891486LT945f7a6878c6439da904d21000LT945f7a6878c6439da904d2dLT945f7a6878c6439da904d23.8aLT945f7a6878c6439da904d20LT945f7a6878c6439da904d21LT945f7a6878c6439da904d21793891490LT945f7a6878c6439da904d2LT945f7a…",
+              "stdout": "/dev/nullLTa755737243064b7d82612eLTa755737243064b7d82612e$1LTa755737243064b7d82612e2693433LTa755737243064b7d82612e/tmp/tmux-1000/libtmux-home-12345LTa755737243064b7d82612e1794972755LTa755737243064b7d82612e1000LTa755737243064b7d82612edLTa755737243064b7d82612e3.8aLTa755737243064b7d82612e0LTa755737243064b7d82612e1LTa755737243064b7d82612e1794972758LTa755737243064b7d82612eLTa75573…",
               "stderr": "",
               "shortened": true
             }
@@ -868,10 +868,10 @@
             },
             {
               "role": "command",
-              "tmux": "display-message -p -t $0:1 #{config_files}LT945f7a6878c6439da904d2#{line}LT945f7a6878c6439da904d2#{next_session_id}LT945f7a6878c6439da904d2#{pid}LT945f7a6878c6439da904d2#{socket_path}LT945f7a6878c6439da904d2#{start_time}LT945f7a6878c6439da904d2#{uid}LT945f7a6878c6439da904d2#{user}LT945f7a6878c6439da904d2#{version}LT945f7a6878c6439da904d2#{active_window_index}LT945f7a6878c6439da904d2#{last_window_i…",
+              "tmux": "display-message -p -t $0:1 #{config_files}LTa755737243064b7d82612e#{line}LTa755737243064b7d82612e#{next_session_id}LTa755737243064b7d82612e#{pid}LTa755737243064b7d82612e#{socket_path}LTa755737243064b7d82612e#{start_time}LTa755737243064b7d82612e#{uid}LTa755737243064b7d82612e#{user}LTa755737243064b7d82612e#{version}LTa755737243064b7d82612e#{active_window_index}LTa755737243064b7d82612e#{last_window_i…",
               "mutates": false,
               "exit": 0,
-              "stdout": "/dev/nullLT945f7a6878c6439da904d2LT945f7a6878c6439da904d2$1LT945f7a6878c6439da904d23510344LT945f7a6878c6439da904d2/tmp/tmux-1000/libtmux-home-12345LT945f7a6878c6439da904d21793891486LT945f7a6878c6439da904d21000LT945f7a6878c6439da904d2dLT945f7a6878c6439da904d23.8aLT945f7a6878c6439da904d21LT945f7a6878c6439da904d21LT945f7a6878c6439da904d21793891490LT945f7a6878c6439da904d2LT945f7a…",
+              "stdout": "/dev/nullLTa755737243064b7d82612eLTa755737243064b7d82612e$1LTa755737243064b7d82612e2693433LTa755737243064b7d82612e/tmp/tmux-1000/libtmux-home-12345LTa755737243064b7d82612e1794972755LTa755737243064b7d82612e1000LTa755737243064b7d82612edLTa755737243064b7d82612e3.8aLTa755737243064b7d82612e1LTa755737243064b7d82612e1LTa755737243064b7d82612e1794972758LTa755737243064b7d82612eLTa75573…",
               "stderr": "",
               "shortened": true
             }
@@ -943,7 +943,7 @@
           "id": "snapshot",
           "label": "Get-TmuxSnapshot",
           "anchor": "Get-TmuxSnapshot",
-          "type": "Snapshot",
+          "type": "Server",
           "returned": {
             "sessions": 1,
             "windows": 2,
@@ -952,7 +952,7 @@
           "commands": [
             {
               "role": "probe",
-              "tmux": "run-shell -C libtmux-version-a7d8fcdedab64c999d442b663da6731f-#{version},#{pid},#{start_time}",
+              "tmux": "run-shell -C libtmux-version-8517b6bbf6a64ba5a98a1afeae0a7d85-#{version},#{pid},#{start_time}",
               "mutates": false,
               "exit": 1,
               "stdout": "",
@@ -960,28 +960,28 @@
             },
             {
               "role": "command",
-              "tmux": "list-sessions -F #{config_files}LT945f7a6878c6439da904d2#{line}LT945f7a6878c6439da904d2#{next_session_id}LT945f7a6878c6439da904d2#{pid}LT945f7a6878c6439da904d2#{socket_path}LT945f7a6878c6439da904d2#{start_time}LT945f7a6878c6439da904d2#{uid}LT945f7a6878c6439da904d2#{user}LT945f7a6878c6439da904d2#{version}LT945f7a6878c6439da904d2#{active_window_index}LT945f7a6878c6439da904d2#{last_window_index}LT945…",
+              "tmux": "list-sessions -F #{config_files}LTa755737243064b7d82612e#{line}LTa755737243064b7d82612e#{next_session_id}LTa755737243064b7d82612e#{pid}LTa755737243064b7d82612e#{socket_path}LTa755737243064b7d82612e#{start_time}LTa755737243064b7d82612e#{uid}LTa755737243064b7d82612e#{user}LTa755737243064b7d82612e#{version}LTa755737243064b7d82612e#{active_window_index}LTa755737243064b7d82612e#{last_window_index}LTa75…",
               "mutates": false,
               "exit": 0,
-              "stdout": "/dev/nullLT945f7a6878c6439da904d20LT945f7a6878c6439da904d2$1LT945f7a6878c6439da904d23510344LT945f7a6878c6439da904d2/tmp/tmux-1000/libtmux-home-12345LT945f7a6878c6439da904d21793891486LT945f7a6878c6439da904d21000LT945f7a6878c6439da904d2dLT945f7a6878c6439da904d23.8aLT945f7a6878c6439da904d21LT945f7a6878c6439da904d21LT945f7a6878c6439da904d21793891490LT945f7a6878c6439da904d2LT945f7…",
+              "stdout": "/dev/nullLTa755737243064b7d82612e0LTa755737243064b7d82612e$1LTa755737243064b7d82612e2693433LTa755737243064b7d82612e/tmp/tmux-1000/libtmux-home-12345LTa755737243064b7d82612e1794972755LTa755737243064b7d82612e1000LTa755737243064b7d82612edLTa755737243064b7d82612e3.8aLTa755737243064b7d82612e1LTa755737243064b7d82612e1LTa755737243064b7d82612e1794972758LTa755737243064b7d82612eLTa7557…",
               "stderr": "",
               "shortened": true
             },
             {
               "role": "command",
-              "tmux": "list-windows -a -F #{config_files}LT945f7a6878c6439da904d2#{line}LT945f7a6878c6439da904d2#{next_session_id}LT945f7a6878c6439da904d2#{pid}LT945f7a6878c6439da904d2#{socket_path}LT945f7a6878c6439da904d2#{start_time}LT945f7a6878c6439da904d2#{uid}LT945f7a6878c6439da904d2#{user}LT945f7a6878c6439da904d2#{version}LT945f7a6878c6439da904d2#{active_window_index}LT945f7a6878c6439da904d2#{last_window_index}LT9…",
+              "tmux": "list-windows -a -F #{config_files}LTa755737243064b7d82612e#{line}LTa755737243064b7d82612e#{next_session_id}LTa755737243064b7d82612e#{pid}LTa755737243064b7d82612e#{socket_path}LTa755737243064b7d82612e#{start_time}LTa755737243064b7d82612e#{uid}LTa755737243064b7d82612e#{user}LTa755737243064b7d82612e#{version}LTa755737243064b7d82612e#{active_window_index}LTa755737243064b7d82612e#{last_window_index}LTa…",
               "mutates": false,
               "exit": 0,
-              "stdout": "/dev/nullLT945f7a6878c6439da904d22LT945f7a6878c6439da904d2$1LT945f7a6878c6439da904d23510344LT945f7a6878c6439da904d2/tmp/tmux-1000/libtmux-home-12345LT945f7a6878c6439da904d21793891486LT945f7a6878c6439da904d21000LT945f7a6878c6439da904d2dLT945f7a6878c6439da904d23.8aLT945f7a6878c6439da904d21LT945f7a6878c6439da904d21LT945f7a6878c6439da904d21793891490LT945f7a6878c6439da904d2LT945f7…",
+              "stdout": "/dev/nullLTa755737243064b7d82612e2LTa755737243064b7d82612e$1LTa755737243064b7d82612e2693433LTa755737243064b7d82612e/tmp/tmux-1000/libtmux-home-12345LTa755737243064b7d82612e1794972755LTa755737243064b7d82612e1000LTa755737243064b7d82612edLTa755737243064b7d82612e3.8aLTa755737243064b7d82612e1LTa755737243064b7d82612e1LTa755737243064b7d82612e1794972758LTa755737243064b7d82612eLTa7557…",
               "stderr": "",
               "shortened": true
             },
             {
               "role": "command",
-              "tmux": "list-panes -a -F #{config_files}LT945f7a6878c6439da904d2#{line}LT945f7a6878c6439da904d2#{next_session_id}LT945f7a6878c6439da904d2#{pid}LT945f7a6878c6439da904d2#{socket_path}LT945f7a6878c6439da904d2#{start_time}LT945f7a6878c6439da904d2#{uid}LT945f7a6878c6439da904d2#{user}LT945f7a6878c6439da904d2#{version}LT945f7a6878c6439da904d2#{active_window_index}LT945f7a6878c6439da904d2#{last_window_index}LT945…",
+              "tmux": "list-panes -a -F #{config_files}LTa755737243064b7d82612e#{line}LTa755737243064b7d82612e#{next_session_id}LTa755737243064b7d82612e#{pid}LTa755737243064b7d82612e#{socket_path}LTa755737243064b7d82612e#{start_time}LTa755737243064b7d82612e#{uid}LTa755737243064b7d82612e#{user}LTa755737243064b7d82612e#{version}LTa755737243064b7d82612e#{active_window_index}LTa755737243064b7d82612e#{last_window_index}LTa75…",
               "mutates": false,
               "exit": 0,
-              "stdout": "/dev/nullLT945f7a6878c6439da904d22LT945f7a6878c6439da904d2$1LT945f7a6878c6439da904d23510344LT945f7a6878c6439da904d2/tmp/tmux-1000/libtmux-home-12345LT945f7a6878c6439da904d21793891486LT945f7a6878c6439da904d21000LT945f7a6878c6439da904d2dLT945f7a6878c6439da904d23.8aLT945f7a6878c6439da904d21LT945f7a6878c6439da904d21LT945f7a6878c6439da904d21793891490LT945f7a6878c6439da904d2LT945f7…",
+              "stdout": "/dev/nullLTa755737243064b7d82612e2LTa755737243064b7d82612e$1LTa755737243064b7d82612e2693433LTa755737243064b7d82612e/tmp/tmux-1000/libtmux-home-12345LTa755737243064b7d82612e1794972755LTa755737243064b7d82612e1000LTa755737243064b7d82612edLTa755737243064b7d82612e3.8aLTa755737243064b7d82612e1LTa755737243064b7d82612e1LTa755737243064b7d82612e1794972758LTa755737243064b7d82612eLTa7557…",
               "stderr": "",
               "shortened": true
             }
@@ -1048,7 +1048,7 @@
         },
         {
           "id": "pane-lookup",
-          "label": "Snapshot.Panes",
+          "label": "Server.Panes",
           "anchor": "$snapshot.Panes |",
           "type": "Pane",
           "returned": {
@@ -1270,7 +1270,7 @@
               "tmux": "kill-session -t $0",
               "mutates": true,
               "exit": 0,
-              "stdout": "3510344:1793891486",
+              "stdout": "2693433:1794972755",
               "stderr": ""
             }
           ],
