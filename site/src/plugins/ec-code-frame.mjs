@@ -18,10 +18,11 @@ import { formatLines, lineNumbers, parseLines, rangeFragment, requestedCap, role
  *   numbers from line 1. The excerpt's range links to its lines (`#L63-L72`),
  *   which highlight on arrival. A program nothing cites stays unnumbered,
  *   because it is for copying (record 0054).
- * - A line cap (`height="16"`) for a long program or output: the frame stops
- *   at that many lines, scrolls inside, and a bar under it says how many it
- *   shows and offers the rest. Copy always copies every line, and print
- *   shows every line.
+ * - A line cap (`height="16"`), set by the frame's author for a long program or
+ *   output: the frame stops at that many lines, scrolls inside, and a bar
+ *   under it says how many it shows and offers the rest. A frame without one
+ *   shows every line. Copy always copies every line, and print shows every
+ *   line.
  * - `copy="off"` removes the frame's own Copy button, for a component that draws
  *   one of its own, so a frame has one copy control.
  *

@@ -13,7 +13,8 @@
  *   lines="59-78"                the source lines an excerpt quotes; ranges
  *                                joined by a comma ("12-40,55-60") are shown
  *                                one after the other with a blank row between
- *   height="16" | "full"         show this many lines, then scroll
+ *   height="16" | "full"         show this many lines, then scroll; without it a
+ *                                frame shows every line
  *   program="main.go"            on an excerpt: the complete program on the same
  *                                page holds these lines, so the range links to them
  *   cite="6,59-78"               on a complete program: the lines excerpts of the
@@ -26,10 +27,6 @@ const EN_DASH = '–'
 /** The role names a frame header can carry. */
 const ROLE_NAMES = { excerpt: 'Excerpt', program: 'Complete program' }
 
-/** A complete program this long or longer takes a line cap unless its author asks for `full`. */
-export const LONG_PROGRAM_LINES = 40
-/** The cap a long complete program takes. */
-export const PROGRAM_CAP_LINES = 24
 /** A cap this close to the total hides a line or two behind a button, so it is dropped. */
 const CAP_SLACK = 3
 
@@ -126,15 +123,15 @@ export function lineCap(total, requested) {
 }
 
 /**
- * The cap a frame asks for: its `height`, else the long-program default.
+ * The cap a frame asks for: its author's `height`, and nothing else. A frame
+ * shows every line unless its author sets a cap (record 0027).
  * @param {{ height?: string, role?: string }} request
  * @param {number} total
  */
 export function requestedCap(request, total) {
   // An excerpt is short and every line of it is explained.
-  if (request.height === 'full' || request.role === 'excerpt') return 0
-  if (request.height !== undefined) return lineCap(total, Number(request.height))
-  return request.role === 'program' && total >= LONG_PROGRAM_LINES ? lineCap(total, PROGRAM_CAP_LINES) : 0
+  if (request.height === undefined || request.height === 'full' || request.role === 'excerpt') return 0
+  return lineCap(total, Number(request.height))
 }
 
 /**
