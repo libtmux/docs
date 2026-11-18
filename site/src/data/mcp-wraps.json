@@ -267,5 +267,42 @@
       "wait_for_channel": { "call": "libtmux::Server::wait_for", "source": "apps/mcp/src/tool_catalog.cpp:2488" },
       "wait_for_text": { "call": "libtmux::Server::wait_for_text", "source": "apps/mcp/src/wait_for_text.cpp:187" }
     }
+  },
+  "swift": {
+    "repo": "libtmux/libtmux-swift",
+    "revision": "7993e7044347629b08020e9b02ae8bcffa0e5898",
+    "tools": {
+      "capture_pane": { "call": "Server.captureRange(_:startingAt:endingAt:joiningWrappedLines:maximumLines:)", "source": "Sources/LibTmuxMCP/CapabilityHandlers.swift:344" },
+      "clear_pane_scrollback": { "call": "Server.clearHistory(_:)", "source": "Sources/LibTmuxMCP/CapabilityHandlers.swift:793" },
+      "create_session": { "call": "Server.newSession(named:startDirectory:windowName:width:height:)", "source": "Sources/LibTmuxMCP/ToolsCreation.swift:5" },
+      "create_window": { "call": "Server.newWindow(in:named:startDirectory:)", "source": "Sources/LibTmuxMCP/CapabilityHandlers.swift:644" },
+      "kill_pane": { "call": "Server.kill(_:)", "source": "Sources/LibTmuxMCP/CapabilityHandlers.swift:802" },
+      "kill_session": { "call": "Server.kill(_:)", "source": "Sources/LibTmuxMCP/CapabilityHandlers.swift:820" },
+      "kill_window": { "call": "Server.kill(_:)", "source": "Sources/LibTmuxMCP/CapabilityHandlers.swift:811" },
+      "list_panes": { "call": "Server.snapshot()", "source": "Sources/LibTmuxMCP/CapabilityHandlers.swift:241" },
+      "list_sessions": { "call": "Server.sessions()", "source": "Sources/LibTmuxMCP/CapabilityHandlers.swift:224" },
+      "list_windows": { "call": "Server.snapshot()", "source": "Sources/LibTmuxMCP/CapabilityHandlers.swift:230" },
+      "move_window": { "call": "Server.move(_:to:at:)", "source": "Sources/LibTmuxMCP/CapabilityHandlers.swift:532" },
+      "paste_text": { "call": "Server.paste(buffer:into:)", "source": "Sources/LibTmuxMCP/ToolsDriving.swift:49" },
+      "rename_session": { "call": "Server.rename(_:to:)", "source": "Sources/LibTmuxMCP/CapabilityHandlers.swift:472" },
+      "rename_window": { "call": "Server.rename(_:to:)", "source": "Sources/LibTmuxMCP/CapabilityHandlers.swift:480" },
+      "respawn_pane": { "call": "Server.respawn(_:running:killingExisting:startDirectory:)", "source": "Sources/LibTmuxMCP/CapabilityHandlers.swift:764" },
+      "select_layout": { "call": "Server.selectLayout(_:_:)", "source": "Sources/LibTmuxMCP/CapabilityHandlers.swift:595" },
+      "select_pane": { "call": "Server.select(_:)", "source": "Sources/LibTmuxMCP/CapabilityHandlers.swift:487" },
+      "select_window": { "call": "Server.select(_:)", "source": "Sources/LibTmuxMCP/CapabilityHandlers.swift:515" },
+      "send_keys": { "call": "Server.sendKeys(_:to:literally:)", "source": "Sources/LibTmuxMCP/CapabilityHandlers.swift:700" },
+      "set_history_limit": { "call": "Server.setOption(_:to:scope:)", "source": "Sources/LibTmuxMCP/CapabilityHandlers.swift:604" },
+      "set_mouse_enabled": { "call": "Server.setOption(_:to:scope:)", "source": "Sources/LibTmuxMCP/CapabilityHandlers.swift:612" },
+      "set_pane_title": { "call": "Server.setTitle(_:of:)", "source": "Sources/LibTmuxMCP/CapabilityHandlers.swift:621" },
+      "set_synchronize_panes": { "call": "Server.setOption(_:to:scope:)", "source": "Sources/LibTmuxMCP/CapabilityHandlers.swift:779" },
+      "show_environment": { "call": "Server.environment(_:)", "source": "Sources/LibTmuxMCP/CapabilityHandlers.swift:387" },
+      "show_hooks": { "call": "Server.hooks(_:)", "source": "Sources/LibTmuxMCP/CapabilityHandlers.swift:405" },
+      "show_option": { "call": "Server.options(_:)", "source": "Sources/LibTmuxMCP/ToolsConfiguration.swift:7" },
+      "signal_channel": { "call": "Server.signal(_:)", "source": "Sources/LibTmuxMCP/ToolsWaiting.swift:118" },
+      "split_window": { "call": "Server.split(_:direction:size:startDirectory:)", "source": "Sources/LibTmuxMCP/CapabilityHandlers.swift:661" },
+      "swap_pane": { "call": "Server.swap(_:with:)", "source": "Sources/LibTmuxMCP/CapabilityHandlers.swift:546" },
+      "wait_for_channel": { "call": "Server.wait(for:)", "source": "Sources/LibTmuxMCP/ToolsWaiting.swift:88" },
+      "wait_for_text": { "call": "Server.waitForOutput(in:matching:stoppingAt:requiringFreshOutput:startingAt:timeout:tailLimit:)", "source": "Sources/LibTmuxMCP/ToolsWaiting.swift:51" }
+    }
   }
 }
