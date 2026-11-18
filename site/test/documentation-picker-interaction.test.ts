@@ -389,3 +389,26 @@ it.each(['workspace/guides', 'workspace/internals/guides'])('keeps %s counterpar
       .toBe(`Go to ${port.name}${workspace ? ' Workspace Manager' : ''} home`)
   }
 })
+
+it('opens as a bottom sheet on a phone in portrait and as a popover under its trigger otherwise', () => {
+  const portraitPhone = (query: string) => query.includes('max-width: 29.999rem')
+  let sheet = true
+  vi.spyOn(win, 'matchMedia').mockImplementation((query: string) => ({ matches: sheet && portraitPhone(query), media: query } as unknown as MediaQueryList))
+  initDocumentationNavigation()
+  const picker = win.document.querySelector('details')!
+  const panel = picker.querySelector<HTMLElement>('[data-picker-panel]')!
+  picker.open = true
+  picker.dispatchEvent(new win.Event('toggle'))
+  expect(picker.dataset.panelMode).toBe('sheet')
+  expect(win.document.documentElement.hasAttribute('data-sheet-open')).toBe(true)
+  expect(panel.style.top).toBe('')
+  picker.open = false
+  picker.dispatchEvent(new win.Event('toggle'))
+  expect(win.document.documentElement.hasAttribute('data-sheet-open')).toBe(false)
+  sheet = false
+  picker.open = true
+  picker.dispatchEvent(new win.Event('toggle'))
+  expect(picker.dataset.panelMode).toBe('popover')
+  expect(win.document.documentElement.hasAttribute('data-sheet-open')).toBe(false)
+  expect(panel.style.top).not.toBe('')
+})
