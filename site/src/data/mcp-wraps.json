@@ -10,5 +10,46 @@
       "kill_window": { "call": "tmux.Window.Kill", "source": "mcp/lifecycle_tools.go:101" },
       "kill_pane": { "call": "tmux.Pane.Kill", "source": "mcp/lifecycle_tools.go:143" }
     }
+  },
+  "py": {
+    "repo": "tmux-python/libtmux-mcp",
+    "revision": "4daddc0dfca96c43bf521d818bf91564e1434760",
+    "tools": {
+      "capture_pane": { "call": "libtmux.Pane.capture_pane", "source": "src/libtmux_mcp/tools/pane_tools/io.py:665" },
+      "capture_since": { "call": "libtmux.Pane.capture_pane", "source": "src/libtmux_mcp/tools/pane_tools/capture_since.py:86" },
+      "clear_pane": { "call": "libtmux.Pane.reset", "source": "src/libtmux_mcp/tools/pane_tools/io.py:711" },
+      "create_session": { "call": "libtmux.Server.new_session", "source": "src/libtmux_mcp/tools/server_tools.py:143" },
+      "create_window": { "call": "libtmux.Session.new_window", "source": "src/libtmux_mcp/tools/session_tools.py:190" },
+      "display_message": { "call": "libtmux.Pane.display_message", "source": "src/libtmux_mcp/tools/pane_tools/meta.py:100" },
+      "enter_copy_mode": { "call": "libtmux.Pane.copy_mode", "source": "src/libtmux_mcp/tools/pane_tools/copy_mode.py:58" },
+      "exit_copy_mode": { "call": "libtmux.Pane.send_keys", "source": "src/libtmux_mcp/tools/pane_tools/copy_mode.py:109" },
+      "kill_pane": { "call": "libtmux.Pane.kill", "source": "src/libtmux_mcp/tools/pane_tools/lifecycle.py:65" },
+      "kill_server": { "call": "libtmux.Server.kill", "source": "src/libtmux_mcp/tools/server_tools.py:175" },
+      "kill_session": { "call": "libtmux.Session.kill", "source": "src/libtmux_mcp/tools/session_tools.py:275" },
+      "kill_window": { "call": "libtmux.Window.kill", "source": "src/libtmux_mcp/tools/window_tools.py:342" },
+      "list_sessions": { "call": "libtmux.Server.sessions", "source": "src/libtmux_mcp/tools/server_tools.py:65" },
+      "move_window": { "call": "libtmux.Window.move_window", "source": "src/libtmux_mcp/tools/window_tools.py:487" },
+      "paste_buffer": { "call": "libtmux.Pane.paste_buffer", "source": "src/libtmux_mcp/tools/buffer_tools.py:276" },
+      "paste_text": { "call": "libtmux.Pane.paste_buffer", "source": "src/libtmux_mcp/tools/pane_tools/io.py:801" },
+      "pipe_pane": { "call": "libtmux.Pane.pipe", "source": "src/libtmux_mcp/tools/pane_tools/pipe.py:104" },
+      "rename_session": { "call": "libtmux.Session.rename_session", "source": "src/libtmux_mcp/tools/session_tools.py:224" },
+      "rename_window": { "call": "libtmux.Window.rename_window", "source": "src/libtmux_mcp/tools/window_tools.py:301" },
+      "resize_pane": { "call": "libtmux.Pane.resize", "source": "src/libtmux_mcp/tools/pane_tools/layout.py:83" },
+      "resize_window": { "call": "libtmux.Window.resize", "source": "src/libtmux_mcp/tools/window_tools.py:439" },
+      "respawn_pane": { "call": "libtmux.Pane.respawn", "source": "src/libtmux_mcp/tools/pane_tools/lifecycle.py:168" },
+      "select_layout": { "call": "libtmux.Window.select_layout", "source": "src/libtmux_mcp/tools/window_tools.py:391" },
+      "select_pane": { "call": "libtmux.Pane.select", "source": "src/libtmux_mcp/tools/pane_tools/layout.py:134" },
+      "select_window": { "call": "libtmux.Window.select", "source": "src/libtmux_mcp/tools/session_tools.py:329" },
+      "send_keys": { "call": "libtmux.Pane.send_keys", "source": "src/libtmux_mcp/tools/pane_tools/io.py:164" },
+      "send_keys_batch": { "call": "libtmux.Pane.send_keys", "source": "src/libtmux_mcp/tools/pane_tools/io.py:269" },
+      "set_environment": { "call": "libtmux.common.EnvironmentMixin.set_environment", "source": "src/libtmux_mcp/tools/env_tools.py:118" },
+      "set_option": { "call": "libtmux.options.OptionsMixin.set_option", "source": "src/libtmux_mcp/tools/option_tools.py:147" },
+      "set_pane_title": { "call": "libtmux.Pane.set_title", "source": "src/libtmux_mcp/tools/pane_tools/lifecycle.py:221" },
+      "show_environment": { "call": "libtmux.common.EnvironmentMixin.show_environment", "source": "src/libtmux_mcp/tools/env_tools.py:55" },
+      "show_hook": { "call": "libtmux.hooks.HooksMixin.show_hook", "source": "src/libtmux_mcp/tools/hook_tools.py:226" },
+      "show_hooks": { "call": "libtmux.hooks.HooksMixin.show_hooks", "source": "src/libtmux_mcp/tools/hook_tools.py:178" },
+      "show_option": { "call": "libtmux.options.OptionsMixin.show_option", "source": "src/libtmux_mcp/tools/option_tools.py:97" },
+      "swap_pane": { "call": "libtmux.Pane.swap", "source": "src/libtmux_mcp/tools/pane_tools/layout.py:223" }
+    }
   }
 }
