@@ -132,5 +132,38 @@
       "swap_pane": { "call": "io.github.libtmux.Pane.Pane.swapWith", "source": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Operations.java:281" },
       "wait_for_channel": { "call": "io.github.libtmux.Channel.Channel.awaitReservingCapacity", "source": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Channels.java:44" }
     }
+  },
+  "rs": {
+    "repo": "libtmux/libtmux-rs",
+    "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+    "tools": {
+      "capture_pane": { "call": "pane.Pane.capture_with", "source": "crates/tmux-mcp/src/tools/inspect.rs:239" },
+      "clear_pane_scrollback": { "call": "pane.Pane.clear_history", "source": "crates/tmux-mcp/src/tools/control.rs:599" },
+      "create_session": { "call": "server.Server.new_session", "source": "crates/tmux-mcp/src/tools/control.rs:282" },
+      "create_window": { "call": "session.Session.new_window", "source": "crates/tmux-mcp/src/tools/contract.rs:958" },
+      "get_server_info": { "call": "server.Server.hierarchy", "source": "crates/tmux-mcp/src/tools/inspect.rs:158" },
+      "get_tmux_variables": { "call": "server.Server.format", "source": "crates/tmux-mcp/src/tools/contract.rs:698" },
+      "kill_pane": { "call": "pane.Pane.kill", "source": "crates/tmux-mcp/src/tools/control.rs:243" },
+      "kill_session": { "call": "session.Session.kill", "source": "crates/tmux-mcp/src/tools/control.rs:313" },
+      "kill_window": { "call": "window.Window.kill", "source": "crates/tmux-mcp/src/tools/control.rs:221" },
+      "list_panes": { "call": "server.Server.panes", "source": "crates/tmux-mcp/src/tools/inspect.rs:143" },
+      "list_sessions": { "call": "server.Server.sessions", "source": "crates/tmux-mcp/src/tools/inspect.rs:116" },
+      "list_windows": { "call": "server.Server.windows", "source": "crates/tmux-mcp/src/tools/inspect.rs:132" },
+      "move_window": { "call": "window.Window.move_to", "source": "crates/tmux-mcp/src/tools/contract.rs:811" },
+      "paste_text": { "call": "pane.Pane.paste_buffer", "source": "crates/tmux-mcp/src/tools/control.rs:724" },
+      "rename_session": { "call": "session.Session.rename", "source": "crates/tmux-mcp/src/tools/contract.rs:730" },
+      "rename_window": { "call": "window.Window.rename", "source": "crates/tmux-mcp/src/tools/contract.rs:762" },
+      "resize_pane": { "call": "pane.Pane.resize_by", "source": "crates/tmux-mcp/src/tools/control.rs:344" },
+      "resize_window": { "call": "window.Window.resize", "source": "crates/tmux-mcp/src/tools/contract.rs:785" },
+      "respawn_pane": { "call": "pane.Pane.respawn", "source": "crates/tmux-mcp/src/tools/contract.rs:1038" },
+      "select_layout": { "call": "window.Window.select_layout", "source": "crates/tmux-mcp/src/tools/control.rs:573" },
+      "select_window": { "call": "window.Window.select", "source": "crates/tmux-mcp/src/tools/control.rs:495" },
+      "set_pane_title": { "call": "pane.Pane.set_title", "source": "crates/tmux-mcp/src/tools/contract.rs:857" },
+      "set_synchronize_panes": { "call": "window.Window.set_typed_option", "source": "crates/tmux-mcp/src/tools/contract.rs:1068" },
+      "signal_channel": { "call": "server.Server.signal_channel", "source": "crates/tmux-mcp/src/tools/control.rs:755" },
+      "split_window": { "call": "pane.Pane.split", "source": "crates/tmux-mcp/src/tools/contract.rs:1013" },
+      "swap_pane": { "call": "pane.Pane.swap_with", "source": "crates/tmux-mcp/src/tools/contract.rs:834" },
+      "wait_for_channel": { "call": "server.Server.wait_for_channel", "source": "crates/tmux-mcp/src/tools/observe.rs:517" }
+    }
   }
 }
