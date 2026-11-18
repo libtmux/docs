@@ -161,13 +161,14 @@ describe('the library call a tool wraps', () => {
   })
 
   it('records only calls that are in the port\'s API model, for tools the port registers', () => {
-    const data = JSON.parse(readFileSync(new URL('../src/data/mcp-wraps.json', import.meta.url), 'utf8')) as Record<string, { revision: string; tools: Record<string, { call: string; source: string }> }>
+    const data = JSON.parse(readFileSync(new URL('../src/data/mcp-wraps.json', import.meta.url), 'utf8')) as Record<string, { repo: string; revision: string; tools: Record<string, { call: string; source: string }> }>
     for (const [port, entry] of Object.entries(data)) {
       expect(MCP_REFERENCE[port]!.revision, `${port}: recorded at the documented revision`).toBe(entry.revision)
+      expect(MCP_REFERENCE[port]!.repo, `${port}: recorded in the documented repository`).toBe(entry.repo)
       for (const [tool, wrapped] of Object.entries(entry.tools)) {
         expect(mcpObjects(port).some((object) => object.name === tool), `${port} ${tool} is registered`).toBe(true)
         expect(API_MODELS[port]!.symbols.some((symbol) => (symbol.publicId ?? symbol.id) === wrapped.call), `${port} ${tool} wraps ${wrapped.call}`).toBe(true)
-        expect(wrapped.source).toMatch(/^mcp\/[\w.]+:\d+$/)
+        expect(wrapped.source).toMatch(/^[\w./-]+:[1-9]\d*$/)
         expect(mcpWraps(port, tool)).toMatchObject({ call: wrapped.call })
       }
     }
