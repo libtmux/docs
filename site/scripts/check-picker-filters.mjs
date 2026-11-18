@@ -1,11 +1,16 @@
 import { newCheckContext } from './browser-context.mjs'
 import assert from 'node:assert/strict'
 
+/** A popover keeps 7px from every edge; a bottom or side sheet (record 0071) meets the edges it opens from. */
 async function bounds(page, panel) {
   const box = await panel.boundingBox()
-  const viewport = await page.evaluate(() => ({ width: document.documentElement.clientWidth, height: innerHeight }))
-  assert(box && box.x >= 7 && box.y >= 7 && box.x + box.width <= viewport.width - 7
-    && box.y + box.height <= viewport.height - 7, `Picker stays within the viewport: ${JSON.stringify({ box, viewport })}`)
+  const { viewport, mode } = await panel.evaluate((node) => ({
+    viewport: { width: document.documentElement.clientWidth, height: innerHeight },
+    mode: node.closest('[data-panel-mode]')?.getAttribute('data-panel-mode') ?? 'popover',
+  }))
+  const inset = mode === 'popover' ? 7 : 0
+  assert(box && box.x >= inset && box.y >= inset && box.x + box.width <= viewport.width - inset
+    && box.y + box.height <= viewport.height - inset, `Picker stays within the viewport: ${JSON.stringify({ box, viewport, mode })}`)
 }
 
 async function exercise(page, selector, query, count) {
