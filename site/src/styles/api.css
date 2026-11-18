@@ -963,7 +963,6 @@ html:has(:is(.api-reference-layout--symbol, .api-reference-layout--glossary)):no
   display: flex;
   gap: 0.5rem;
   padding: 0.4rem 0.35rem;
-  border-left: 2px solid transparent;
   color: var(--color-muted);
   font-size: 0.75rem;
   line-height: 1.5;
@@ -972,7 +971,7 @@ html:has(:is(.api-reference-layout--symbol, .api-reference-layout--glossary)):no
 }
 :is(.api-page-contents, .api-glossary-contents) a:hover { color: var(--color-link); }
 :is(.api-page-contents, .api-glossary-contents) a[aria-current="location"] {
-  border-left-color: var(--color-link);
+  background: var(--current-row-bg);
   color: var(--color-link);
   font-weight: 600;
 }
@@ -1445,7 +1444,6 @@ a.api-doc-link.is-cross-lit:not(.api-mention--chip):not(:has(.api-literal--link)
 }
 .api-nav__row.is-cross-lit, a.api-member-link.is-cross-lit {
   background: color-mix(in srgb, var(--color-link) 10%, transparent);
-  box-shadow: inset 2px 0 0 var(--color-link);
 }
 @media (forced-colors: active) {
   .is-cross-lit { outline: 2px solid Highlight; }
