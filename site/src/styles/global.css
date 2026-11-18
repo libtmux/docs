@@ -1034,13 +1034,16 @@ html[data-theme="purple"][data-theme-mode="dark"] {
  * Plex Sans, first in the stack as `var(--font-sans)`: the Fonts API registers
  * the face under a hashed family name, so the variable is the only way to name
  * it. Plex has no Japanese glyphs, so every kana and kanji falls through to the
- * reader's own Japanese sans, named explicitly so an unnamed fallback never
- * lands on a Mincho serif: Hiragino on macOS and iOS, Yu Gothic and Meiryo on
- * Windows, Noto Sans CJK on Linux and Android. The browser tries each family
- * per character, so the generic faces inside the variable come up empty for
- * kana and the named faces are reached. No web font: IBM Plex Sans JP would add
- * megabytes per weight for one translated locale (decided 2026-11-14). `lang`
- * is on the page root, so the browser also picks the Japanese glyph variants.
+ * reader's own Japanese sans. The variable is that hashed family followed by
+ * the build's fallbacks, and the Japanese build's (`lib/sans-fallbacks.ts`)
+ * name the Japanese faces first, so a generic face such as `ui-sans-serif`
+ * never comes up ahead of them and an unnamed fallback never lands on a
+ * Mincho serif: Hiragino on macOS and iOS, Yu Gothic and Meiryo on Windows,
+ * Noto Sans CJK on Linux and Android, then `system-ui` and `sans-serif`. The
+ * browser tries each family per character, so Latin stays in Plex. No web
+ * font: IBM Plex Sans JP would add megabytes per weight for one translated
+ * locale (decided 2026-11-14). `lang` is on the page root, so the browser also
+ * picks the Japanese glyph variants.
  *
  * No Latin tracking (`letter-spacing: 0`), line height 1.85, about 40
  * characters a line, and phrase-aware breaks where the browser supports
@@ -1049,7 +1052,7 @@ html[data-theme="purple"][data-theme-mode="dark"] {
  */
 @layer components {
   :lang(ja) {
-    font-family: var(--font-sans), 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', 'Yu Gothic', Meiryo, 'Noto Sans CJK JP', 'Noto Sans JP', system-ui, sans-serif;
+    font-family: var(--font-sans);
     letter-spacing: 0;
     word-break: auto-phrase;
     line-break: strict;

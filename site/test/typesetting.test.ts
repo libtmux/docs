@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it, vi } from 'vitest'
 import { directoryPattern, introBeforeCards } from '../src/lib/section-index'
+import { sansFallbacks } from '../src/lib/sans-fallbacks'
 import { loadAstroTemplate, renderAstroTemplate, withoutScope } from './astro-templates'
 import { siteCss } from './site-css'
 
@@ -154,14 +155,23 @@ describe('Japanese', () => {
   const ja = rule(':lang(ja)')
   const stack = ja['font-family']!.split(',').map((face) => face.trim().replace(/^'|'$/g, ''))
 
-  it('keeps Latin in IBM Plex Sans, names the reader\'s own Japanese sans faces behind it and ships no web font (record 0052)', () => {
+  it('names the hashed Plex family alone, then the reader\'s own Japanese sans faces, ahead of any generic fallback, and ships no web font (record 0052)', () => {
     // Plex has no Japanese glyphs, so every kana and kanji falls through to the next named face. The site's Plex is
-    // registered under a hashed family name, so `--font-sans` (which resolves to it) stands for "IBM Plex Sans" here.
+    // registered under a hashed family name, and the Fonts API's `--font-ibm-plex-sans` is that family followed by the
+    // build's `fallbacks`. The Japanese build's fallbacks open with the Japanese sans faces, so `--font-sans` is the stack:
+    // the hashed family, then these, then system-ui and sans-serif. The generic faces the English build lists first
+    // (ui-sans-serif, system-ui) must not come up ahead of them.
     expect(css).toMatch(/--font-sans: var\(--font-ibm-plex-sans\)/)
-    expect(stack).toEqual(['var(--font-sans)', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', 'Yu Gothic', 'Meiryo', 'Noto Sans CJK JP', 'Noto Sans JP', 'system-ui', 'sans-serif'])
+    expect(stack).toEqual(['var(--font-sans)'])
+    const fallbacks = sansFallbacks('ja')
+    expect(fallbacks.slice(0, 9)).toEqual(['Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', 'Yu Gothic', 'Meiryo', 'Noto Sans CJK JP', 'Noto Sans JP', 'system-ui', 'sans-serif'])
+    expect(fallbacks.indexOf('ui-sans-serif'), 'no generic face ahead of the Japanese ones').toBe(-1)
+    expect(sansFallbacks('en').slice(0, 3)).toEqual(['ui-sans-serif', 'system-ui', 'sans-serif'])
+    const config = readFileSync(new URL('../astro.config.ts', import.meta.url), 'utf8')
+    expect(config).toMatch(/cssVariable: '--font-ibm-plex-sans',[^}]*fallbacks: sansFallbacks\(buildLocale\(\)\)/)
     expect(css).not.toMatch(/@font-face[^}]*(Noto Sans JP|Plex Sans JP)/)
     // A Mincho face must never be named.
-    expect(stack.join(' ')).not.toMatch(/Mincho|(?<!sans-)serif/i)
+    expect(fallbacks.join(' ')).not.toMatch(/Mincho|(?<!sans-)serif/i)
   })
 
   it('drops Latin tracking and breaks at phrases', () => {
