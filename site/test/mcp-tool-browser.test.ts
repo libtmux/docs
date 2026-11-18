@@ -146,8 +146,8 @@ describe('a tool page', () => {
   it('has no capability row for a server that states none, and no Wraps row for a tool with no recorded call', async () => {
     const ruby = await page('ruby', 'tools', mcpObjects('ruby').find((entry) => entry.kind === 'tool')!.name)
     expect(ruby.querySelector('[data-mcp-capability], .mcp-tier')).toBeNull()
-    const list = await page('go', 'tools', 'list_sessions')
-    expect([...list.querySelectorAll('dt')].map((term) => term.textContent)).not.toContain('Wraps')
+    const batch = await page('go', 'tools', 'call_read_tools_batch')
+    expect([...batch.querySelectorAll('dt')].map((term) => term.textContent)).not.toContain('Wraps')
   })
 })
 
