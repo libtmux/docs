@@ -3,8 +3,10 @@ import {
   countLine,
   filterCount,
   filtersFor,
+  nativeSection,
   needsMoreResults,
   orderedSections,
+  pageSection,
   parseSearchState,
   readSnapshot,
   ROOT_PORT,
@@ -31,6 +33,25 @@ describe('search URL state', () => {
   it('takes the default scope for an unknown one', () => {
     expect(parseSearchState('?q=x&scope=nope', 'port').scope).toBe('port')
     expect(parseSearchState('', 'all')).toEqual({ q: '', scope: 'all', section: undefined, kind: undefined })
+  })
+})
+
+describe('the section of a page', () => {
+  it('is the first path segment after any port and version, as the layout writes it', () => {
+    expect(pageSection('guides/capturing-output')).toBe('guides')
+    expect(pageSection('reference/tmux-pane-capture')).toBe('reference')
+    expect(pageSection('tmux/latest/manual/new-session')).toBe('manual')
+    expect(pageSection('')).toBe('home')
+  })
+
+  it('places a native Sphinx page by its path in the tree, with the names the Astro pages use', () => {
+    expect(nativeSection('api/pane/')).toBe('reference')
+    expect(nativeSection('api/testing/')).toBe('reference')
+    expect(nativeSection('genindex/')).toBe('reference')
+    expect(nativeSection('py-modindex/')).toBe('reference')
+    expect(nativeSection('quickstart/')).toBe('guides')
+    expect(nativeSection('topics/architecture/')).toBe('topics')
+    expect(nativeSection('')).toBe('home')
   })
 })
 
