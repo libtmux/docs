@@ -1,19 +1,26 @@
 {
   "name": "Raku",
   "asset": "icon.svg",
-  "sourceUrl": "https://raw.githubusercontent.com/libtmux/assets/55dd6eac4347ba22270788b74a71ec0cba12e287/assets/raku/library/logo.svg",
-  "resolvedUrl": "https://raw.githubusercontent.com/libtmux/assets/55dd6eac4347ba22270788b74a71ec0cba12e287/assets/raku/library/logo.svg",
-  "sourcePage": "https://github.com/libtmux/assets/tree/55dd6eac4347ba22270788b74a71ec0cba12e287/assets/raku",
-  "retrievedAt": "2026-11-13T22:50:00-06:00",
-  "sha256": "d29de9b0d137e07e41e919a1b4e339b3b4f25830320dd47bb503ac6507cd14cb",
-  "copyright": "The libtmux Raku artwork is maintained by the libtmux project.",
+  "sourceUrl": "https://raw.githubusercontent.com/Raku/doc-website/7f0554aafbf50029da1ae78e489f3b27662848e2/Website/plugins/camelia/images/Camelia.svg",
+  "resolvedUrl": "https://raw.githubusercontent.com/Raku/doc-website/7f0554aafbf50029da1ae78e489f3b27662848e2/Website/plugins/camelia/images/Camelia.svg",
+  "sourcePage": "https://github.com/Raku/doc-website/blob/7f0554aafbf50029da1ae78e489f3b27662848e2/Website/plugins/camelia/images/Camelia.svg",
+  "retrievedAt": "2026-11-17T15:12:08+00:00",
+  "sha256": "0084d2ba099a6c76c868039bc0450edc60b0f030bffb522ab6329621084f4630",
+  "copyright": "The Camelia image is copyright 2009 by Larry Wall.",
   "license": {
-    "name": "Project-owner artwork; no new license assigned",
+    "name": "Artistic License 2.0, or any subsequent version; Camelia is a trademark of Larry Wall",
     "urls": [
-      "https://github.com/libtmux/assets/blob/55dd6eac4347ba22270788b74a71ec0cba12e287/THIRD_PARTY.md#libtmux-and-tmuxp"
+      "https://github.com/Raku/mu/blob/955caf36c4387c2f39cff15552f7f69bca47f6d4/misc/camelia.txt",
+      "https://commons.wikimedia.org/wiki/File:Camelia.svg"
     ],
-    "notes": "The source kit assigns no new license to the project owner's artwork or trademarks. Used to identify the Raku port; it is the libtmux library tile, not the Raku language logo, and no endorsement by the Raku project is implied."
+    "notes": "camelia.txt grants use under the Artistic License 2.0, and non-exclusive trademark use to label anything related to the language; a TM label is required only when Camelia is a page's main logo, not for icons. Used to identify Raku in the language selector; no endorsement is implied.",
+    "localCopy": {
+      "file": "LICENSE.txt",
+      "sourceUrl": "https://raw.githubusercontent.com/Raku/doc-website/7f0554aafbf50029da1ae78e489f3b27662848e2/LICENSE",
+      "retrievedAt": "2026-11-17T15:12:08+00:00",
+      "sha256": "685e534b60d4e2b4fbb1a259a83b5a86e877a919bbb9efc95994276f706a3a71"
+    }
   },
-  "modifications": "None. The reviewed library SVG bytes are preserved.",
-  "upstreamRevision": "55dd6eac4347ba22270788b74a71ec0cba12e287"
+  "modifications": "None.",
+  "upstreamRevision": "7f0554aafbf50029da1ae78e489f3b27662848e2"
 }

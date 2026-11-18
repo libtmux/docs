@@ -16,7 +16,7 @@ import { equivalentsFor } from '../../lib/api-equivalents'
 import ApiProse from './ApiProse.astro'
 import ApiType from './ApiType.astro'
 import { asideFor } from '../../lib/aside'
-import { aliasDeclaration, apiErrorsLabel, apiCommandFacts, apiCommandRelatedLinks, apiOverloadId, apiOverloadIdentity, apiEntryFields, apiMethodDetails, anonymousDeclarationLabel, nativeSignatureText as unformattedNativeSignatureText, parameterBindingText, usesNativeSignatures } from '../../lib/api-sections'
+import { aliasDeclaration, apiErrorsLabel, apiCommandFacts, apiCommandRelatedLinks, apiOverloadId, apiOverloadIdentity, apiEntryFields, apiMethodDetails, apiMethodHasContent, anonymousDeclarationLabel, nativeSignatureText as unformattedNativeSignatureText, parameterBindingText, usesNativeSignatures } from '../../lib/api-sections'
 import { tmuxCommandsFor, tmuxManualUrl } from '../../lib/tmux-manual-data'
 import { tmuxCommandItems, tmuxCommandRows, tmuxCommandSeparator, tmuxSymbolSends } from '../../lib/tmux-reference'
 import { CATALOG_KINDS, tmuxCatalogKindsForSymbol, tmuxCatalogUrl } from '../../lib/tmux-catalog'
@@ -457,7 +457,8 @@ const hasBody =
 
     {methods.length > 0 && (
       <div class="gp-sphinx-api-methods" id={`${anchor}.methods`}>
-        <h2 class="rubric api-section-heading">Methods<a class="api-heading-link" href={`#${anchor}.methods`} aria-label="Link to Methods">#</a></h2>
+        {/* A lone method that repeats the declaration keeps its anchor and inventory entry but no heading. */}
+        {methods.some(({ signature }) => apiMethodHasContent(symbol, signature)) && <h2 class="rubric api-section-heading">Methods<a class="api-heading-link" href={`#${anchor}.methods`} aria-label="Link to Methods">#</a></h2>}
         {methods.map(({ id, label, signature }) => {
           const methodSource = signature.source && sourceUrl?.({ ...symbol, source: signature.source })
           return (

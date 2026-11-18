@@ -94,7 +94,7 @@ html[data-theme-mode='dark'] .lm-mcp-install {
   height: 2.625rem;
   padding: 0;
   box-shadow: inset 0 -2px transparent;
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.3;
 }
 
@@ -106,7 +106,7 @@ html[data-theme-mode='dark'] .lm-mcp-install {
 .lm-install__seg .lm-mcp-install__tab {
   padding: 0.25rem 0.55rem;
   border-radius: 5px;
-  font: 500 12px/1.3 var(--font-sans);
+  font: 500 0.75rem/1.3 var(--font-sans);
 }
 
 .lm-install__seg .lm-mcp-install__tab[aria-selected='true'] {

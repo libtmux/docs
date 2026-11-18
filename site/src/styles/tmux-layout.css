@@ -44,7 +44,7 @@
 .gp-tmux-layout text {
   fill: var(--text-color);
   font-family: var(--font-ibm-plex-mono, ui-monospace, 'SFMono-Regular', Menlo, monospace);
-  font-size: 12px;
+  font-size: 0.75rem;
   /* Even monospace advance, as in the site's code blocks. */
   font-kerning: none;
   text-rendering: optimizeSpeed;

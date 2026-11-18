@@ -333,12 +333,25 @@ describe('pickers, touch targets, focus and labels', () => {
     expect(source('components/docs/SurfacePicker.astro')).not.toMatch(/\.surface-picker-footer \{[^}]*margin:[^;]*-\.75rem/)
   })
 
-  it('sets the port picker at 32rem with 20px marks and one-line details', () => {
+  it('draws one rule above a page end that holds only the up row', () => {
+    expect(source('components/docs/PageEnd.astro')).toContain('.page-end__up:first-child { padding-top: 0; border-top: 0; }')
+  })
+
+  it('keeps the member row head span first so its kind mark keeps its gap', () => {
+    const list = source('components/api/ApiMemberList.astro')
+    expect(list.indexOf('<span><ApiBadge label={kindOf(m)}')).toBeGreaterThan(-1)
+    expect(list.indexOf('<span><ApiBadge label={kindOf(m)}')).toBeLessThan(list.indexOf('anchorsFor?.(m)'))
+    expect(source('styles/kind-marks.css')).toContain('.api-member-list li > span:first-child) > .api-nav__kind:first-child')
+  })
+
+  it('draws port picker rows with 26px language icons in a panel as wide as its rows', () => {
     const switcher = source('components/PagePortSwitcher.astro')
-    expect(switcher).toContain('.port-picker-panel { --picker-width: 32rem; }')
-    expect(switcher).toMatch(/\.port-artwork \{[^}]*width: 1\.25rem; height: 1\.25rem;/)
+    expect(switcher).toContain('.port-picker-panel[data-details] { --picker-width: 32rem; }')
+    expect(switcher).not.toContain('.port-picker-panel { --picker-width: 32rem; }')
+    expect(switcher).toMatch(/\.port-artwork \{[^}]*width: 1\.625rem; height: 1\.625rem;/)
+    expect(switcher).toContain('src={withRoot(`/brand/languages/${entry.port}/icon.svg`)} width="26" height="26"')
+    expect(switcher).not.toContain("branding(entry.port).asset('logo.svg')")
     expect(switcher).toContain('white-space: nowrap')
-    expect(switcher).not.toMatch(/width="26"|size=\{26\}/)
   })
 
   it('lifts rows to the touch target below the phone breakpoint', () => {

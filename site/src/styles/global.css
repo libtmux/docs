@@ -248,6 +248,17 @@ html {
   scroll-padding-top: calc(var(--topnav-height, 3rem) + 1.5rem);
 }
 
+/* Large displays enlarge the whole page: the root is 16px to 1920px and grows to 20px at 3840px, so every rem size
+   (type, columns, panels, marks) keeps its proportions (record 0071). rem here is the reader's default size. */
+html { font-size: clamp(1rem, 1rem + (100vw - 120rem) / 480, 1.25rem); }
+
+/* On touch screens the header's chips, scheme button and wordmark keep their drawn size and take a touch-target-tall
+   hit area, so the bar does not grow (record 0071). */
+@media (pointer: coarse) {
+  .site-header :is(.topnav-chip, .scheme-cycle, .site-header__mark) { position: relative; }
+  .site-header :is(.topnav-chip, .scheme-cycle, .site-header__mark)::before { content: ''; position: absolute; inset: calc((100% - var(--touch-target)) / 2) -.25rem; }
+}
+
 /* Header controls are already visible above the reserved reading area. Do not
    scroll the document to bring a focused control out from behind the header. */
 html:has(.site-header :focus) {
@@ -1168,7 +1179,7 @@ body[data-documentation-layout='reference'] {
   background: var(--brand-solid);
   color: var(--brand-on-solid);
   padding: 0.2rem 0.4rem;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   line-height: 1;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -1761,7 +1772,7 @@ html[data-theme-mode='dark'] .site-header .header-picker > summary:is(:hover, :f
   border-radius: var(--radius-xs, .25rem);
   background: transparent;
   color: var(--topnav-link-color);
-  font: 500 .6875rem/1 var(--font-mono, ui-monospace, monospace);
+  font: 500 0.75rem/1 var(--font-mono, ui-monospace, monospace);
   letter-spacing: 0;
   white-space: nowrap;
 }

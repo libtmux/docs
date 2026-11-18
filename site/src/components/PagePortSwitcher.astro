@@ -2,7 +2,6 @@
 import type { PagePortLink } from '../lib/page-port-links'
 import { PORT_BY_SLUG } from '../lib/ports'
 import { portFamilies } from '../lib/port-families'
-import { branding } from '../lib/branding'
 import { withRoot, withPortRoot } from '../lib/site-root'
 import TmuxLogo from './tmux/Logo.astro'
 import '../styles/documentation-picker.css'
@@ -26,6 +25,11 @@ const families = portFamilies(entries.map((entry) => entry.port))
 const rowName = (name: string, link: PagePortLink['links'][number]) => link.label
   ? `${name}: ${link.label}${link.differences?.length ? `. Differs: ${link.differences.join(', ')}` : ''}`
   : undefined
+/** Rows with a second line (an API among several, or its differences) widen the panel; a list of names keeps the shared picker width. */
+const details = entries.some((entry) => {
+  const links = entry.links.filter((link) => !link.fallback)
+  return links.some((link) => (links.length > 1 && link.label) || link.differences?.length)
+})
 ---
 <details class="doc-picker" data-page-port-switcher data-doc-picker>
   <summary aria-label={label ?? `${name}: choose a programming language or tmux documentation`} data-reserve-label-width={reserveLabelWidth || undefined}>
@@ -53,7 +57,7 @@ const rowName = (name: string, link: PagePortLink['links'][number]) => link.labe
     </span>}
     <svg class="doc-picker-caret" viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
   </summary>
-  <div class="doc-picker-panel port-picker-panel" data-picker-panel>
+  <div class="doc-picker-panel port-picker-panel" data-picker-panel data-details={details || undefined}>
     <p class="doc-picker-title">Choose a port <span class="doc-picker-title-actions"><slot name="title-actions" /><span class="doc-picker-count">{entries.length}</span></span></p>
     <label class="doc-picker-search" data-picker-search-label hidden>
       <span class="sr-only">Find a port</span>
@@ -78,13 +82,13 @@ const rowName = (name: string, link: PagePortLink['links'][number]) => link.labe
             aria-label={rowName(entry.name, link)}
             title={rowName(entry.name, link)}
             aria-current={entry.port === portSlug ? 'page' : undefined}>
-            <img class="port-artwork" src={withRoot(branding(entry.port).asset('logo.svg'))} width="20" height="20" alt="" />
+            <img class="port-artwork" data-language-icon={entry.port} src={withRoot(`/brand/languages/${entry.port}/icon.svg`)} width="26" height="26" alt="" />
             <span>{entry.name}{links.length > 1 && link.label && <small>{link.label}</small>}{link.differences && link.differences.length > 0 && <small class="doc-picker-differences" data-picker-differences><span class="sr-only">Differs: </span>{link.differences.join(' · ')}</small>}</span>
             {entry.port === portSlug && <span class="doc-picker-check" aria-hidden="true">✓</span>}
           </a>) : <div class="doc-picker-option doc-picker-option--unmatched" data-port={entry.port} data-port-name={entry.name}
             data-home-href={home?.href} data-home-label={home?.label}
             data-picker-option data-match={`${entry.port} ${entry.name} ${overview?.label ?? ''}`}>
-            <img class="port-artwork" src={withRoot(branding(entry.port).asset('logo.svg'))} width="20" height="20" alt="" />
+            <img class="port-artwork" data-language-icon={entry.port} src={withRoot(`/brand/languages/${entry.port}/icon.svg`)} width="26" height="26" alt="" />
             <span>{entry.name}<small>No matching page</small></span>
             {home && <a class="doc-picker-home" data-picker-home href={home.href}
               aria-label={home.label} title={home.label}>
@@ -99,7 +103,7 @@ const rowName = (name: string, link: PagePortLink['links'][number]) => link.labe
       <a class="doc-picker-option" href={withPortRoot('/tmux/')} data-picker-option
         data-match="just tmux cli terminal manual commands guides topics reference"
         aria-current={tmux ? 'location' : undefined}>
-        <TmuxLogo size={20} /><span>tmux CLI</span>
+        <TmuxLogo size={26} /><span>tmux CLI</span>
         <span class="tmux-destination" aria-hidden="true">
           {tmux && <span class="doc-picker-check">✓</span>}<span>→</span>
         </span>
@@ -118,22 +122,22 @@ const rowName = (name: string, link: PagePortLink['links'][number]) => link.labe
   .page-port-icon { display: grid; place-items: center; flex: none; }
   .page-port-icon > img { width: 1.5rem; height: 1.5rem; object-fit: contain; }
   /* The Python SVG reserves space below the snakes for a shadow. */
-  .page-port-icon > img[data-language-icon="py"] { transform: translateY(8.333%); }
+  :is(.page-port-icon > img, .port-artwork)[data-language-icon="py"] { transform: translateY(8.333%); }
   /* The Rust SVG is one dark shape. A rule inside an image does not reliably follow the page's Light, Dark or System choice, so the page lightens the mark on a dark theme. */
-  :global(html[data-theme-mode='dark']) .page-port-icon > img[data-language-icon="rs"] { filter: invert(1); }
+  :global(html[data-theme-mode='dark']) :is(.page-port-icon > img, .port-artwork)[data-language-icon="rs"] { filter: invert(1); }
   @media (prefers-color-scheme: dark) {
-    :global(html:not([data-theme-mode]):not([data-theme='light'])) .page-port-icon > img[data-language-icon="rs"] { filter: invert(1); }
+    :global(html:not([data-theme-mode]):not([data-theme='light'])) :is(.page-port-icon > img, .port-artwork)[data-language-icon="rs"] { filter: invert(1); }
   }
   /* Forced colors repaint the page from the system palette, which neither the theme nor the device scheme predicts: Firefox can paint a dark theme white. The mark keeps its own light plate there; the filter would invert the plate too, and !important outranks the theme rules above. */
   @media (forced-colors: active) {
-    .page-port-icon > img[data-language-icon="rs"] { filter: none !important; background-color: #fff; forced-color-adjust: none; }
+    :is(.page-port-icon > img, .port-artwork)[data-language-icon="rs"] { filter: none !important; background-color: #fff; forced-color-adjust: none; }
   }
   .page-port-short-name { display: none; }
   .port-family + .port-family { margin-top: .65rem; }
-  .port-family h3 { margin: .75rem var(--picker-inset) .25rem; font-size: .6875rem; font-weight: 400; text-transform: uppercase; letter-spacing: .025em; color: var(--color-muted); }
-  /* 32rem holds two columns of one-line rows; the mark is 20px so a row is a label and one muted line (record 0030). */
-  .port-picker-panel { --picker-width: 32rem; }
-  .port-artwork { flex: none; width: 1.25rem; height: 1.25rem; object-fit: contain; }
+  .port-family h3 { margin: .75rem var(--picker-inset) .25rem; font-size: 0.75rem; font-weight: 400; text-transform: uppercase; letter-spacing: .025em; color: var(--color-muted); }
+  /* Each row shows the language's own icon at 26px. A panel of names keeps the shared picker width; rows with an API line or differences widen it to 32rem (records 0068, 0070). */
+  .port-picker-panel[data-details] { --picker-width: 32rem; }
+  .port-artwork { flex: none; width: 1.625rem; height: 1.625rem; object-fit: contain; }
   .port-picker-panel .doc-picker-option small { overflow: hidden; margin-top: 0; text-overflow: ellipsis; white-space: nowrap; }
   .port-picker-panel .doc-picker-option > span { overflow-wrap: normal; }
   .tmux-area { margin-top: .75rem; padding-top: .5rem; border-top: 1px solid var(--color-edge); }

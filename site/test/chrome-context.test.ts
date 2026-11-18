@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { Window, type HTMLButtonElement, type HTMLElement } from 'happy-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { initDocumentationNavigation } from '../src/components/docs/documentation-navigation'
-import { atLeast, below, BP } from '../src/lib/breakpoints'
+import { atLeast, below, BP, PANEL_QUERIES } from '../src/lib/breakpoints'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 import { parseHtml } from './header-page'
 
@@ -18,8 +18,13 @@ afterEach(() => {
 })
 
 describe('breakpoints', () => {
-  it('carry the design tokens bp-phone, bp-tablet, bp-nav and bp-outline', () => {
-    expect(BP).toEqual({ phone: 30, tablet: 48, nav: 64, outline: 80 })
+  it('carry the design tokens bp-phone, bp-tablet, bp-nav, bp-outline and bp-large', () => {
+    expect(BP).toEqual({ phone: 30, tablet: 48, nav: 64, outline: 80, large: 120 })
+  })
+
+  it('open panels as a bottom sheet on phones in portrait and a side sheet on short landscape screens', () => {
+    expect(PANEL_QUERIES.sheet).toBe('(max-width: 29.999rem), (max-width: 47.999rem) and (orientation: portrait)')
+    expect(PANEL_QUERIES.side).toBe('(max-height: 29.999rem) and (orientation: landscape)')
   })
 
   it('answer "below" a thousandth of a rem under the width that "at least" starts at, so no width matches both', () => {

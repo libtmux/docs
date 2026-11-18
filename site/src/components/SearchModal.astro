@@ -46,6 +46,20 @@ const fallbackLinks = meta ? [{ label: `${meta.name} API index`, href: reference
     background: var(--scrim);
   }
 
+  /* Phones in portrait and short landscape screens give search the whole screen (record 0071). */
+  @media (max-width: 29.999rem), (max-height: 29.999rem) and (orientation: landscape) {
+    .search-modal {
+      width: 100vw;
+      max-width: none;
+      height: 100dvh;
+      max-height: none;
+      margin: 0;
+      padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom));
+      border: 0;
+      border-radius: 0;
+    }
+  }
+
   .search-modal:not([open]) {
     display: none;
   }

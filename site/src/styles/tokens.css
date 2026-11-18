@@ -201,4 +201,7 @@ html[data-theme-mode="dark"] {
   --bp-tablet: 48rem;
   --bp-nav: 64rem;
   --bp-outline: 80rem;
+  /* From 120rem the root size grows (record 0071); under 30rem tall is `short`: landscape phones, split screens. */
+  --bp-large: 120rem;
+  --bp-short: 30rem;
 }

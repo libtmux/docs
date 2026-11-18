@@ -1,15 +1,20 @@
 {
   "name": "OCaml",
   "asset": "icon.svg",
-  "sourceUrl": "https://raw.githubusercontent.com/libtmux/libtmux-ocaml/cb2c4469394f8c3b4a45331969730130f6f10a29/docs/assets/logo.svg",
-  "sourcePage": "https://github.com/libtmux/libtmux-ocaml/blob/cb2c4469394f8c3b4a45331969730130f6f10a29/docs/assets/source.json",
-  "upstreamRevision": "cb2c4469394f8c3b4a45331969730130f6f10a29",
-  "sha256": "510affa78d0068e768a33146edd5028a409d4d599172809ad21ced27cf07ce9f",
-  "modifications": "Uses the approved port logo as its language-picker icon.",
+  "sourceUrl": "https://raw.githubusercontent.com/ocaml/ocaml-logo/18923642786f54c91f9ff07140ab5738d81771d0/Colour/SVG/colour-icon.svg",
+  "resolvedUrl": "https://raw.githubusercontent.com/ocaml/ocaml-logo/18923642786f54c91f9ff07140ab5738d81771d0/Colour/SVG/colour-icon.svg",
+  "sourcePage": "https://github.com/ocaml/ocaml-logo/blob/18923642786f54c91f9ff07140ab5738d81771d0/Colour/SVG/colour-icon.svg",
+  "retrievedAt": "2026-11-17T15:12:08+00:00",
+  "sha256": "a21388fa506f5b0445a3a1259bff0b97e21f24912347fba29fd2b137a5c0183b",
+  "copyright": "The OCaml logo, published by the OCaml project in ocaml/ocaml-logo.",
   "license": {
-    "name": "MIT",
+    "name": "Unlicense",
     "urls": [
-      "https://github.com/libtmux/libtmux-ocaml/blob/cb2c4469394f8c3b4a45331969730130f6f10a29/LICENSE"
-    ]
-  }
+      "https://github.com/ocaml/ocaml-logo/blob/18923642786f54c91f9ff07140ab5738d81771d0/UNLICENSE.md",
+      "https://ocaml.org/logo"
+    ],
+    "notes": "The repository dedicates the logo to the public domain under the Unlicense, and the ocaml.org brand guidelines release the logo and its SVG under the same liberal license. Used to identify OCaml in the language selector; no endorsement by the OCaml project is implied."
+  },
+  "modifications": "None.",
+  "upstreamRevision": "18923642786f54c91f9ff07140ab5738d81771d0"
 }

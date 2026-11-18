@@ -1,4 +1,4 @@
-import { below } from '../../lib/breakpoints'
+import { below, PANEL_QUERIES } from '../../lib/breakpoints'
 
 let controller: AbortController | undefined
 
@@ -72,6 +72,16 @@ export function initDocumentationNavigation() {
         if (topLayer && panel.matches(':popover-open')) panel.hidePopover()
         return
       }
+      // Phones in portrait get a bottom sheet and short landscape screens a side sheet; CSS places both (record 0071).
+      const matches = (query: string) => typeof window.matchMedia === 'function' && window.matchMedia(query).matches
+      const mode = matches(PANEL_QUERIES.side) ? 'side' : matches(PANEL_QUERIES.sheet) ? 'sheet' : 'popover'
+      picker.dataset.panelMode = mode
+      document.documentElement.toggleAttribute('data-sheet-open', mode !== 'popover')
+      if (mode !== 'popover') {
+        picker.dataset.panelSide = rect.left + rect.width / 2 > document.documentElement.clientWidth / 2 ? 'end' : 'start'
+        for (const property of ['left', 'top', 'bottom', 'maxHeight', 'maxWidth'] as const) panel.style[property] = ''
+        return
+      }
       const viewportWidth = document.documentElement.clientWidth
       panel.style.maxWidth = `${Math.max(0, viewportWidth - 16)}px`
       const width = panel.getBoundingClientRect().width
@@ -103,6 +113,7 @@ export function initDocumentationNavigation() {
     picker.addEventListener('toggle', () => {
       if (!picker.open) {
         if (topLayer && panel.matches(':popover-open')) panel.hidePopover()
+        if (!document.querySelector('[data-doc-picker][open]')) document.documentElement.removeAttribute('data-sheet-open')
         if (search?.value) { search.value = ''; filter() }
         return
       }
@@ -150,6 +161,11 @@ export function initDocumentationNavigation() {
     }, { signal })
     document.addEventListener('click', (event) => {
       if (picker.open && event.target instanceof Node && !picker.contains(event.target)) picker.open = false
+      // A tap on a sheet's backdrop lands on the panel itself, outside its box.
+      else if (picker.open && event.target === panel && picker.dataset.panelMode !== 'popover') {
+        const box = panel.getBoundingClientRect()
+        if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) picker.open = false
+      }
     }, { signal })
     document.addEventListener('focusin', (event) => {
       if (picker.open && event.target instanceof Node && !picker.contains(event.target)) picker.open = false
