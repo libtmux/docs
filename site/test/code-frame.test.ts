@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { createRenderer } from 'astro-expressive-code'
 import { select, selectAll, toHtml } from 'astro-expressive-code/hast'
@@ -473,6 +473,34 @@ describe('the long frames of the pages the design review named', () => {
     const program = frames(path).filter((frame) => frame.lines === total)
     expect(program).toHaveLength(1)
     expect(program[0]!.height).toBe('24')
+  })
+})
+
+/** Record 0026's neighbour in the typesetting audit: "Complete program" labels a whole file, and only that. */
+describe('the role labels of the attach guides', () => {
+  const frames = (path: string) => {
+    const file = fileURLToPath(new URL(`../src/content/docs/${path}`, import.meta.url))
+    const markdown = readFileSync(file, 'utf8')
+    const tree = fromMarkdown(markdown) as { children: { type: string; meta?: string | null; value: string }[] }
+    remarkPortCode.call({ parse: (text: string) => fromMarkdown(text) } as never)(tree as never, { path: file, value: markdown, data: {} } as never)
+    return tree.children.filter((node) => node.type === 'code').map((node) => parseFenceAttributes(node.meta))
+  }
+  /** Build and manifest files beside a program: whole files, but not programs. */
+  const SETUP = /^(?:CMakeLists\.txt|Gemfile|Package\.swift|package\.json|Cargo\.toml|go\.mod|[\w.-]+\.(?:csproj|fsproj)|(?:build|settings)\.gradle\.kts|gradle\.properties)$/
+  const guides = ['guides/attaching-to-tmux.md', ...readdirSync(fileURLToPath(new URL('../src/content/docs/ports', import.meta.url)))
+    .map((port) => `ports/${port}/guides/attaching-to-tmux.md`)].filter((path) => existsSync(fileURLToPath(new URL(`../src/content/docs/${path}`, import.meta.url))))
+
+  it('finds the guides it checks, so the loop below cannot pass on nothing', () => {
+    expect(guides.length).toBeGreaterThanOrEqual(15)
+  })
+
+  it.each(guides)('labels the whole program of %s Complete program and no setup file', (guide) => {
+    const titled = frames(guide).filter((fence) => fence.title !== undefined)
+    expect(titled.length, 'a program').toBeGreaterThan(0)
+    for (const fence of titled) {
+      expect(fence.role, fence.title).toBe(SETUP.test(fence.title!) ? undefined : 'program')
+    }
+    expect(titled.some((fence) => fence.role === 'program'), 'one whole program').toBe(true)
   })
 })
 

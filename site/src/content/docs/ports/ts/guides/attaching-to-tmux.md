@@ -32,7 +32,7 @@ temporary directory. Its `finally` block stops that server and removes the
 directory, including after an error. If tmux does not stop, the error names the
 directory the program kept.
 
-```typescript title="connect.ts"
+```typescript title="connect.ts" role="program"
 import { mkdtemp, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";

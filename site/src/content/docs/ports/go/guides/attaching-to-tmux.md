@@ -32,7 +32,7 @@ temporary directory. `run` stops that server and removes the directory when it
 returns, including after an error. If tmux does not stop, the error names the
 directory the program kept.
 
-```go title="main.go"
+```go title="main.go" role="program"
 package main
 
 import (

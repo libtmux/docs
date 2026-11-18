@@ -34,7 +34,7 @@ daemon. It stops the private server with
 directory after success or failure. If the server does not stop, the program
 reports the error and keeps the directory.
 
-```lua title="connect.lua"
+```lua title="connect.lua" role="program"
 local adapter = require("libtmux.runtime.luv")
 local uv = require("luv")
 

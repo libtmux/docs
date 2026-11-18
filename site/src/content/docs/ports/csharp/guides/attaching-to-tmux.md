@@ -32,7 +32,7 @@ connects a second `Server` to the socket by path and runs the same lookup. The
 `finally` block stops only the private server and removes its directory. If
 tmux cannot be stopped, the program keeps the directory and prints its location.
 
-```csharp title="Program.cs"
+```csharp title="Program.cs" role="program"
 using System;
 using System.IO;
 using System.Threading;

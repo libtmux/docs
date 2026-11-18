@@ -31,7 +31,7 @@ server with [`with_server`](../../reference/libtmux-with_server/), creates
 private server and removes its socket directory when the block returns or
 throws. A failed shutdown throws an error.
 
-```julia title="connect.jl"
+```julia title="connect.jl" role="program"
 using LibTmux
 
 function print_work(socket_path)

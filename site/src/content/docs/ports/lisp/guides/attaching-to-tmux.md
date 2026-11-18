@@ -25,7 +25,7 @@ without owning its lifetime. With the variable unset, it creates a private
 server, proves the inspection left it alive, and then removes its own fixture.
 Both paths run from the library checkout using its pinned SBCL and ASDF.
 
-```lisp title="connect.lisp"
+```lisp title="connect.lisp" role="program"
 (require :asdf)
 (require :sb-posix)
 (asdf:load-asd (truename "libtmux.asd"))

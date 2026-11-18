@@ -31,7 +31,7 @@ and connects a second `Server` to that socket by path. Leaving the `start`
 block stops the private server and removes its socket directory, including
 after an error. A server that does not stop raises an error.
 
-```ruby title="connect.rb"
+```ruby title="connect.rb" role="program"
 require "libtmux"
 
 def print_work(socket_path)
