@@ -61,9 +61,10 @@ html[data-theme-mode='dark'] .header-picker__option:is(:hover, :focus-visible) .
 a.header-picker__option[data-external-link]:not([data-external-link-icon])::after { flex: none; margin-inline-start: auto; color: var(--color-muted); }
 .header-picker__footer { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .5rem; padding: .5rem var(--picker-inset); border-radius: .4rem; background: var(--color-surface); color: var(--color-muted); font-size: 0.75rem; }
 
-/* Picker rows and triggers reach the touch target on touch screens at any width, and below the phone breakpoint (record 0071). */
+/* Picker rows and triggers reach the touch target on touch screens at any width, and below the phone breakpoint (record 0071).
+   The header's trigger keeps its drawn height so the header does not grow; global.css gives it a hit area instead. */
 @media (width < 30rem), (pointer: coarse) {
-  .doc-picker-option, .doc-picker-search input, .doc-picker > summary, .doc-picker-home { min-height: var(--touch-target); }
+  .doc-picker-option, .doc-picker-search input, .doc-picker:not(.site-header-language *) > summary, .doc-picker-home { min-height: var(--touch-target); }
   .doc-picker-home { min-width: var(--touch-target); }
 }
 

@@ -1,7 +1,7 @@
 import { spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { SOURCE_GUIDE_PORTS } from '../src/lib/port-documentation'
 import { PORT_BY_SLUG } from '../src/lib/ports'
@@ -503,12 +503,16 @@ if (process.argv[2] === process.env.FAILING_TASK) process.exit(23)
 })
 
 describe('OCaml documentation producer', () => {
-  it.each(['', 'install', 'build', 'tools/export_api.py'])('exports installed interfaces and stops on task %j failure', (failure) => {
+  // A source ref from before libtmux-ocaml moved its Python wrapper still has it under tools/.
+  const wrappers = ['scripts/export_api/export_api.py', 'tools/export_api.py']
+  it.each(wrappers.flatMap((wrapper) => ['', 'install', 'build', 'export'].map((failure) => [wrapper, failure] as const)))(
+    'exports installed interfaces through %s and stops on task %j failure', (wrapper, failure) => {
     const directory = mkdtempSync(join(tmpdir(), 'libtmux-ocaml-export-'))
     try {
       const source = join(directory, 'selected source')
       const calls = join(directory, 'calls')
-      mkdirSync(source)
+      mkdirSync(dirname(join(source, wrapper)), { recursive: true })
+      writeFileSync(join(source, wrapper), '')
       writeFileSync(join(directory, 'opam'), `#!${process.execPath}
 const fs = require('node:fs')
 const argv = process.argv.slice(2)
@@ -518,13 +522,13 @@ if (argv.includes(process.env.FAILING_TASK)) process.exit(23)
       const result = spawnSync('bash', ['-e', '-c', script('Export OCaml API from the selected source')], {
         cwd: source, encoding: 'utf8', timeout: 1000,
         env: { ...process.env, PATH: `${directory}:${process.env.PATH}`, LIBTMUX_API_EXPORT: '1',
-          EXPORT_CALLS: calls, FAILING_TASK: failure },
+          EXPORT_CALLS: calls, FAILING_TASK: failure === 'export' ? wrapper : failure },
       })
       const commands = readFileSync(calls, 'utf8').trim().split('\n').map((line) => JSON.parse(line))
       const expected = [
         ['install', '.', '--deps-only', '--with-doc', '--yes'],
         ['exec', '--', 'dune', 'build', '@install', 'tools/api_export.exe'],
-        ['exec', '--', 'python3', 'tools/export_api.py', '--output', '_build/docs/ocaml.json'],
+        ['exec', '--', 'python3', wrapper, '--output', '_build/docs/ocaml.json'],
       ]
       expect(result.status, result.stderr).toBe(failure ? 23 : 0)
       expect(commands).toEqual(expected.slice(0, failure === 'install' ? 1 : failure === 'build' ? 2 : 3)
@@ -549,6 +553,33 @@ if (argv.includes(process.env.FAILING_TASK)) process.exit(23)
     const artifact = /\bocaml: \{[^}]*nativeArtifact: '([^']+)'/.exec(model)?.[1]
     expect(artifact).toBe('_build/docs/ocaml.json')
     expect(script('Export OCaml API from the selected source')).toContain(` ${artifact}\n`)
+  })
+})
+
+describe('Raku documentation producer', () => {
+  // libtmux-raku moved its exporter from tools/ to scripts/export-docs/; a source ref from before that still has the old path.
+  it.each(['scripts/export-docs/export-docs.raku', 'tools/export-docs.raku'])('installs dependencies and runs %s from the source root', (exporter) => {
+    const directory = mkdtempSync(join(tmpdir(), 'libtmux-raku-export-'))
+    try {
+      const source = join(directory, 'selected source')
+      const calls = join(directory, 'calls')
+      mkdirSync(dirname(join(source, exporter)), { recursive: true })
+      writeFileSync(join(source, exporter), '')
+      for (const tool of ['zef', 'raku']) {
+        writeFileSync(join(directory, tool), `#!${process.execPath}
+require('node:fs').appendFileSync(process.env.EXPORT_CALLS, JSON.stringify({ tool: '${tool}', argv: process.argv.slice(2) }) + '\\n')
+`, { mode: 0o700 })
+      }
+      const result = spawnSync('bash', ['-e', '-c', script('Export the selected Raku declarations and native RakuDoc')], {
+        cwd: source, encoding: 'utf8', timeout: 1000,
+        env: { ...process.env, PATH: `${directory}:${process.env.PATH}`, EXPORT_CALLS: calls },
+      })
+      expect(result.status, result.stderr).toBe(0)
+      expect(readFileSync(calls, 'utf8').trim().split('\n').map((line) => JSON.parse(line))).toEqual([
+        { tool: 'zef', argv: ['install', '--/test', '--deps-only', '.'] },
+        { tool: 'raku', argv: ['-I.', exporter] },
+      ])
+    } finally { rmSync(directory, { recursive: true, force: true }) }
   })
 })
 

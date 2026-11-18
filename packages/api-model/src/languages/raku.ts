@@ -12,6 +12,8 @@ interface RakuArtifact extends ApiModel {
 
 const SHA = /^[a-f0-9]{40}$/
 const HASH = /^[a-f0-9]{64}$/
+/** Where libtmux-raku keeps its exporter: `scripts/export-docs/` since it moved the tools there, `tools/` before. */
+const EXPORTER_PATHS = ['scripts/export-docs/export-docs.raku', 'tools/export-docs.raku']
 const relative = (path: string) => Boolean(path) && !path.startsWith('/') && !path.includes('\\') && !path.split('/').includes('..')
 const digest = (text: string) => createHash('sha256').update(text).digest('hex')
 
@@ -32,7 +34,7 @@ export function extractRakuArtifact(input: unknown, expectedRevision?: string): 
     library.workingTree === artifact.workingTree, 'library provenance differs')
   check(producer?.name === 'RakuAST and RakuDoc export' && producer.version === 1 &&
     producer.repository === artifact.repo && typeof producer.revision === 'string' && SHA.test(producer.revision) &&
-    producer.path === 'tools/export-docs.raku' && typeof producer.sha256 === 'string' && HASH.test(producer.sha256) &&
+    typeof producer.path === 'string' && EXPORTER_PATHS.includes(producer.path) && typeof producer.sha256 === 'string' && HASH.test(producer.sha256) &&
     typeof producer.workingTree === 'boolean', 'exporter identity')
   check(!artifact.workingTree && !producer.workingTree, 'uncommitted inputs cannot be published')
   producer.compiler = artifact.compiler.replace(/^v/, '')

@@ -447,13 +447,23 @@ describe('the capability directory of Erlang, OCaml, Common Lisp, Raku, Perl and
   // directory has a correct reader and no table.
   const OWNERS: { port: string; id: string; rows: number; refs?: number }[] = [
     { port: 'erlang', id: 'tmux_server', rows: 8 },
-    // The model pinned at ffab5fe holds eight groups, but its "Changing things" list has a bullet with prose after the
-    // reference ("Server: {!Client.kill_server} stops the daemon and closes this client"), which is not references
-    // alone and ends the run at five rows. Eight again once libtmux-ocaml words that bullet as a reference alone.
-    { port: 'ocaml', id: 'Libtmux_unix.Client', rows: 5 },
+    { port: 'erlang', id: 'tmux_session', rows: 3, refs: 12 },
+    { port: 'erlang', id: 'tmux_window', rows: 3, refs: 12 },
+    { port: 'erlang', id: 'tmux_pane', rows: 7, refs: 35 },
+    { port: 'ocaml', id: 'Libtmux_unix.Client', rows: 8 },
+    { port: 'ocaml', id: 'Libtmux.Session', rows: 5, refs: 13 },
+    { port: 'ocaml', id: 'Libtmux.Window', rows: 6, refs: 15 },
+    { port: 'ocaml', id: 'Libtmux.Pane', rows: 7, refs: 21 },
+    { port: 'ocaml', id: 'Libtmux.Operations', rows: 7, refs: 49 },
     { port: 'lisp', id: 'libtmux:client', rows: 8 },
     { port: 'raku', id: 'LibTmux::Server', rows: 7, refs: 46 },
+    { port: 'raku', id: 'LibTmux::Model::SessionRef', rows: 6, refs: 16 },
+    { port: 'raku', id: 'LibTmux::Model::WindowRef', rows: 6, refs: 18 },
+    { port: 'raku', id: 'LibTmux::Model::PaneRef', rows: 11, refs: 38 },
     { port: 'perl', id: 'LibTmux::Server', rows: 10, refs: 43 },
+    { port: 'perl', id: 'LibTmux::Session', rows: 3, refs: 6 },
+    { port: 'perl', id: 'LibTmux::Window', rows: 3, refs: 8 },
+    { port: 'perl', id: 'LibTmux::Pane', rows: 4, refs: 13 },
     { port: 'clojure', id: 'libtmux.core/open!', rows: 9, refs: 62 },
   ]
 
@@ -464,6 +474,12 @@ describe('the capability directory of Erlang, OCaml, Common Lisp, Raku, Perl and
     expect(directory.rows).toHaveLength(rows)
     for (const row of directory.rows) expect(row.groups.flatMap((group) => group.refs).length, row.title).toBeGreaterThan(0)
     if (refs) expect(directory.rows.flatMap((row) => row.groups.flatMap((group) => group.refs))).toHaveLength(refs)
+  })
+
+  it('keeps the test-only tmux override out of every Perl reference example', () => {
+    const examples = API_MODELS.perl.symbols.flatMap((symbol) => symbol.doc?.examples ?? [])
+    expect(examples.length).toBeGreaterThan(0)
+    for (const example of examples) expect(example.code).not.toContain('LIBTMUX_TEST_TMUX')
   })
 
   it('fences the Raku Server\'s code and links the methods its description names', () => {

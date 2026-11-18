@@ -19,6 +19,9 @@ const targets: Readonly<Record<string, readonly string[]>> = {
   'create-window': ['Libtmux_unix.Client.create_window'],
   'move-window': ['Libtmux_unix.Client.move_window_at'],
   layout: ['Libtmux_unix.Client.select_layout'],
+  options: ['Libtmux_unix.Client.set_option', 'Libtmux_unix.Client.set_environment', 'Libtmux_unix.Client.set_hook'],
+  panes: ['Libtmux_unix.Client.swap_panes', 'Libtmux_unix.Client.move_pane', 'Libtmux_unix.Client.break_pane', 'Libtmux_unix.Client.respawn_pane'],
+  clients: ['Libtmux_unix.Client.switch_client_at', 'Libtmux_unix.Client.resize_control_client_at', 'Libtmux_unix.Client.request_detach_client_at'],
 }
 
 /** The comment lines that mark a region of a program for the port's own tooling: a reader of the example does not see them. */

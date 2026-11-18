@@ -116,29 +116,29 @@ describe('MetaCPAN POD links from the Perl reference', () => {
 
   it('falls back to the module page for a method with no section, but only where the file is the release’s own', () => {
     const headless = (sha?: string) => edit((data) => {
-      const document = data.distributions.LibTmux.documents['LibTmux::Pane']
-      document.anchors = document.anchors.filter((id: string) => id !== 'current_path')
+      const document = data.distributions.LibTmux.documents['LibTmux::Client']
+      document.anchors = document.anchors.filter((id: string) => id !== 'name')
       if (sha) document.sha256 = sha
     })
     // The file is what the release shipped, so the method exists there even though the POD has no heading for it.
-    expect(link('LibTmux::Pane::current_path', 'latest', headless())).toMatchObject({ href: `${POD}/LibTmux::Pane`, section: undefined, differs: false })
+    expect(link('LibTmux::Client::name', 'latest', headless())).toMatchObject({ href: `${POD}/LibTmux::Client`, section: undefined, differs: false })
     // The file has changed since, so a method with no heading may be one the release lacks.
-    expect(link('LibTmux::Pane::current_path', 'latest', headless('0'.repeat(64)))).toBeUndefined()
-    expect(link('LibTmux::Pane::id', 'latest', headless('0'.repeat(64)))?.href).toBe(`${POD}/LibTmux::Pane#id`)
+    expect(link('LibTmux::Client::name', 'latest', headless('0'.repeat(64)))).toBeUndefined()
+    expect(link('LibTmux::Client::id', 'latest', headless('0'.repeat(64)))?.href).toBe(`${POD}/LibTmux::Client#id`)
     // A heading the renderer repeated is ambiguous, so it names no section.
-    const repeated = edit((data) => { data.distributions.LibTmux.documents['LibTmux::Pane'].anchors.push('id-1') })
-    expect(link('LibTmux::Pane::id', 'latest', repeated)).toMatchObject({ href: `${POD}/LibTmux::Pane`, section: undefined })
+    const repeated = edit((data) => { data.distributions.LibTmux.documents['LibTmux::Client'].anchors.push('id-1') })
+    expect(link('LibTmux::Client::id', 'latest', repeated)).toMatchObject({ href: `${POD}/LibTmux::Client`, section: undefined })
   })
 
   it('names the release when the page documents other source than the release shipped', () => {
     const release = POD_DATA.distributions.LibTmux!.release
-    const changed = edit((data) => { data.distributions.LibTmux.documents['LibTmux::Pane'].sha256 = 'f'.repeat(64) })
-    const same = link('LibTmux::Pane::id')!
+    const changed = edit((data) => { data.distributions.LibTmux.documents['LibTmux::Client'].sha256 = 'f'.repeat(64) })
+    const same = link('LibTmux::Client::id')!
     expect(same).toMatchObject({ differs: false, label: 'MetaCPAN POD', release })
-    expect(same.title).toBe(`MetaCPAN POD: LibTmux::Pane, section id, in LibTmux ${release}`)
-    const other = link('LibTmux::Pane::id', 'latest', changed)!
+    expect(same.title).toBe(`MetaCPAN POD: LibTmux::Client, section id, in LibTmux ${release}`)
+    const other = link('LibTmux::Client::id', 'latest', changed)!
     expect(other).toMatchObject({ differs: true, label: `MetaCPAN POD ${release}`, href: same.href })
-    expect(other.title).toBe(`MetaCPAN POD ${release}: LibTmux::Pane, section id, in LibTmux ${release}; this page documents other source`)
+    expect(other.title).toBe(`MetaCPAN POD ${release}: LibTmux::Client, section id, in LibTmux ${release}; this page documents other source`)
     // A decimal version is shown as MetaCPAN spells it.
     expect(release).toMatch(/^\d+\.\d{3}$/)
   })
@@ -240,7 +240,7 @@ describe('the alternate documentation link on an API entry', () => {
     return [...win.document.querySelectorAll('a.api-source-anchor')].map((link) => [link.getAttribute('href'), link.querySelector('.api-leg__wl')?.textContent])
   }
   const model = API_MODELS.perl!
-  const symbol = model.symbols.find((candidate) => candidate.id === 'LibTmux::Pane::id')!
+  const symbol = model.symbols.find((candidate) => candidate.id === 'LibTmux::Client::id')!
 
   it('is the cluster the component renders, in the corner tab after the kind', () => {
     expect(cluster).toMatch(/^<div class="gp-sphinx-api-layout-right api-corner"/)

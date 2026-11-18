@@ -94,7 +94,7 @@
   ],
   "port": "raku",
   "repo": "libtmux/libtmux-raku",
-  "revision": "ae97f9f87b73db63d4ab3cabb108a195f64e4f6f",
+  "revision": "cce868d81823db54a0d161a94db4d078d09f1861",
   "schemaVersion": 1,
   "symbols": {
     "LibTmux::Attachment.inspect-client": [
@@ -724,8 +724,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:218",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:993"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1223"
         ],
         "reviewed": true,
         "scope": null,
@@ -740,8 +740,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:218",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:993"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1223"
         ],
         "reviewed": true,
         "scope": null,
@@ -756,8 +756,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:216",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:992"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1222"
         ],
         "reviewed": true,
         "scope": "server",
@@ -772,8 +772,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:216",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:991"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1221"
         ],
         "reviewed": true,
         "scope": null,
@@ -788,8 +788,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:217",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:992"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1222"
         ],
         "reviewed": true,
         "scope": "server",
@@ -805,8 +805,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:218",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:993"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1223"
         ],
         "reviewed": true,
         "scope": null,
@@ -820,8 +820,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:218",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:993"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1223"
         ],
         "reviewed": true,
         "scope": null,
@@ -835,8 +835,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:216",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:992"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1222"
         ],
         "reviewed": true,
         "scope": "server",
@@ -850,8 +850,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:216",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:991"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1221"
         ],
         "reviewed": true,
         "scope": null,
@@ -865,8 +865,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:217",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:992"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1222"
         ],
         "reviewed": true,
         "scope": "server",
@@ -884,8 +884,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:218",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:993"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1223"
         ],
         "reviewed": true,
         "scope": null,
@@ -901,8 +901,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:218",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:993"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1223"
         ],
         "reviewed": true,
         "scope": null,
@@ -918,8 +918,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:216",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:992"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1222"
         ],
         "reviewed": true,
         "scope": "server"
@@ -934,8 +934,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:216",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:991"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1221"
         ],
         "reviewed": true,
         "scope": null,
@@ -951,8 +951,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:217",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:992"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1222"
         ],
         "reviewed": true,
         "scope": "server",
@@ -965,8 +965,8 @@
         "evidence": [
           "lib/LibTmux/Control/Connection.rakumod:477",
           "lib/LibTmux/Control/Connection.rakumod:481",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:993"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1223"
         ],
         "reviewed": true,
         "scope": null
@@ -976,8 +976,8 @@
         "evidence": [
           "lib/LibTmux/Control/Connection.rakumod:477",
           "lib/LibTmux/Control/Connection.rakumod:481",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:993"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1223"
         ],
         "reviewed": true,
         "scope": null
@@ -987,8 +987,8 @@
         "evidence": [
           "lib/LibTmux/Control/Connection.rakumod:477",
           "lib/LibTmux/Control/Connection.rakumod:481",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:992"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1222"
         ],
         "reviewed": true,
         "scope": "server"
@@ -998,8 +998,8 @@
         "evidence": [
           "lib/LibTmux/Control/Connection.rakumod:477",
           "lib/LibTmux/Control/Connection.rakumod:481",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:991"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1221"
         ],
         "reviewed": true,
         "scope": null
@@ -1009,8 +1009,8 @@
         "evidence": [
           "lib/LibTmux/Control/Connection.rakumod:477",
           "lib/LibTmux/Control/Connection.rakumod:481",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:992"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1222"
         ],
         "reviewed": true,
         "scope": "server"
@@ -1021,8 +1021,8 @@
         "command": "list-buffers",
         "evidence": [
           "lib/LibTmux/Control/Connection.rakumod:481",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:993"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1223"
         ],
         "reviewed": true,
         "scope": null
@@ -1031,8 +1031,8 @@
         "command": "list-clients",
         "evidence": [
           "lib/LibTmux/Control/Connection.rakumod:481",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:993"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1223"
         ],
         "reviewed": true,
         "scope": null
@@ -1041,8 +1041,8 @@
         "command": "list-panes",
         "evidence": [
           "lib/LibTmux/Control/Connection.rakumod:481",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:992"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1222"
         ],
         "reviewed": true,
         "scope": "server"
@@ -1051,8 +1051,8 @@
         "command": "list-sessions",
         "evidence": [
           "lib/LibTmux/Control/Connection.rakumod:481",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:991"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1221"
         ],
         "reviewed": true,
         "scope": null
@@ -1061,8 +1061,8 @@
         "command": "list-windows",
         "evidence": [
           "lib/LibTmux/Control/Connection.rakumod:481",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:992"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1222"
         ],
         "reviewed": true,
         "scope": "server"
@@ -1199,9 +1199,9 @@
       {
         "command": "list-buffers",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:577",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:993"
+          "lib/LibTmux/Model.rakumod:807",
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1223"
         ],
         "reviewed": true,
         "scope": null
@@ -1209,9 +1209,9 @@
       {
         "command": "list-clients",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:577",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:993"
+          "lib/LibTmux/Model.rakumod:807",
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1223"
         ],
         "reviewed": true,
         "scope": null
@@ -1219,9 +1219,9 @@
       {
         "command": "list-panes",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:577",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:992"
+          "lib/LibTmux/Model.rakumod:807",
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1222"
         ],
         "reviewed": true,
         "scope": "server"
@@ -1229,9 +1229,9 @@
       {
         "command": "list-sessions",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:577",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:991"
+          "lib/LibTmux/Model.rakumod:807",
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1221"
         ],
         "reviewed": true,
         "scope": null
@@ -1239,9 +1239,9 @@
       {
         "command": "list-windows",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:577",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:992"
+          "lib/LibTmux/Model.rakumod:807",
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1222"
         ],
         "reviewed": true,
         "scope": "server"
@@ -1367,8 +1367,8 @@
       {
         "command": "break-pane",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:447",
-          "lib/LibTmux/Model.rakumod:417"
+          "lib/LibTmux/Model.rakumod:677",
+          "lib/LibTmux/Model.rakumod:647"
         ],
         "reviewed": true,
         "scope": null
@@ -1376,7 +1376,7 @@
       {
         "command": "list-panes",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:427"
+          "lib/LibTmux/Model.rakumod:657"
         ],
         "incidental": true,
         "reviewed": true,
@@ -1385,7 +1385,7 @@
       {
         "command": "list-windows",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:434"
+          "lib/LibTmux/Model.rakumod:664"
         ],
         "incidental": true,
         "reviewed": true,
@@ -1396,8 +1396,8 @@
       {
         "command": "capture-pane",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:271",
-          "lib/LibTmux/Model.rakumod:262"
+          "lib/LibTmux/Model.rakumod:501",
+          "lib/LibTmux/Model.rakumod:492"
         ],
         "reviewed": true,
         "scope": null
@@ -1407,7 +1407,7 @@
       {
         "command": "capture-pane",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:275"
+          "lib/LibTmux/Model.rakumod:505"
         ],
         "reviewed": true,
         "scope": null
@@ -1417,7 +1417,7 @@
       {
         "command": "clear-history",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:465"
+          "lib/LibTmux/Model.rakumod:695"
         ],
         "reviewed": true,
         "scope": null
@@ -1427,7 +1427,7 @@
       {
         "command": "clock-mode",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:485"
+          "lib/LibTmux/Model.rakumod:715"
         ],
         "reviewed": true,
         "scope": null
@@ -1437,7 +1437,7 @@
       {
         "command": "send-keys",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:482"
+          "lib/LibTmux/Model.rakumod:712"
         ],
         "reviewed": true,
         "scope": null
@@ -1447,7 +1447,7 @@
       {
         "command": "copy-mode",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:477"
+          "lib/LibTmux/Model.rakumod:707"
         ],
         "reviewed": true,
         "scope": null
@@ -1457,7 +1457,7 @@
       {
         "command": "break-pane",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:394"
+          "lib/LibTmux/Model.rakumod:624"
         ],
         "reviewed": true,
         "scope": null
@@ -1468,8 +1468,8 @@
         "command": "list-buffers",
         "evidence": [
           "lib/LibTmux/Model.rakumod:107",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:993"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1223"
         ],
         "reviewed": true,
         "scope": null
@@ -1478,8 +1478,8 @@
         "command": "list-clients",
         "evidence": [
           "lib/LibTmux/Model.rakumod:107",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:993"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1223"
         ],
         "reviewed": true,
         "scope": null
@@ -1488,8 +1488,8 @@
         "command": "list-panes",
         "evidence": [
           "lib/LibTmux/Model.rakumod:107",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:992"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1222"
         ],
         "reviewed": true,
         "scope": "server"
@@ -1498,8 +1498,8 @@
         "command": "list-sessions",
         "evidence": [
           "lib/LibTmux/Model.rakumod:107",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:991"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1221"
         ],
         "reviewed": true,
         "scope": null
@@ -1508,8 +1508,8 @@
         "command": "list-windows",
         "evidence": [
           "lib/LibTmux/Model.rakumod:107",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:992"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1222"
         ],
         "reviewed": true,
         "scope": "server"
@@ -1519,8 +1519,8 @@
       {
         "command": "join-pane",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:357",
-          "lib/LibTmux/Model.rakumod:348"
+          "lib/LibTmux/Model.rakumod:587",
+          "lib/LibTmux/Model.rakumod:578"
         ],
         "reviewed": true,
         "scope": null
@@ -1530,7 +1530,7 @@
       {
         "command": "kill-pane",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:495"
+          "lib/LibTmux/Model.rakumod:725"
         ],
         "reviewed": true,
         "scope": null
@@ -1540,8 +1540,8 @@
       {
         "command": "move-pane",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:363",
-          "lib/LibTmux/Model.rakumod:348"
+          "lib/LibTmux/Model.rakumod:593",
+          "lib/LibTmux/Model.rakumod:578"
         ],
         "reviewed": true,
         "scope": null
@@ -1551,7 +1551,7 @@
       {
         "command": "move-pane",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:369"
+          "lib/LibTmux/Model.rakumod:599"
         ],
         "reviewed": true,
         "scope": null
@@ -1561,8 +1561,8 @@
       {
         "command": "new-pane",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:312",
-          "lib/LibTmux/Model.rakumod:305"
+          "lib/LibTmux/Model.rakumod:542",
+          "lib/LibTmux/Model.rakumod:535"
         ],
         "reviewed": true,
         "scope": null
@@ -1572,7 +1572,7 @@
       {
         "command": "pipe-pane",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:490"
+          "lib/LibTmux/Model.rakumod:720"
         ],
         "reviewed": true,
         "scope": null
@@ -1582,8 +1582,8 @@
       {
         "command": "clear-history",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:472",
-          "lib/LibTmux/Model.rakumod:471"
+          "lib/LibTmux/Model.rakumod:702",
+          "lib/LibTmux/Model.rakumod:701"
         ],
         "reviewed": true,
         "scope": null
@@ -1591,7 +1591,7 @@
       {
         "command": "if-shell",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:472"
+          "lib/LibTmux/Model.rakumod:702"
         ],
         "reviewed": true,
         "scope": null
@@ -1599,8 +1599,8 @@
       {
         "command": "send-keys",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:472",
-          "lib/LibTmux/Model.rakumod:470"
+          "lib/LibTmux/Model.rakumod:702",
+          "lib/LibTmux/Model.rakumod:700"
         ],
         "reviewed": true,
         "scope": null
@@ -1610,7 +1610,7 @@
       {
         "command": "send-keys",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:467"
+          "lib/LibTmux/Model.rakumod:697"
         ],
         "reviewed": true,
         "scope": null
@@ -1620,7 +1620,7 @@
       {
         "command": "resize-pane",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:317"
+          "lib/LibTmux/Model.rakumod:547"
         ],
         "reviewed": true,
         "scope": null
@@ -1630,7 +1630,7 @@
       {
         "command": "respawn-pane",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:341"
+          "lib/LibTmux/Model.rakumod:571"
         ],
         "reviewed": true,
         "scope": null
@@ -1640,7 +1640,7 @@
       {
         "command": "select-pane",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:324"
+          "lib/LibTmux/Model.rakumod:554"
         ],
         "reviewed": true,
         "scope": null
@@ -1650,7 +1650,7 @@
       {
         "command": "send-keys",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:250"
+          "lib/LibTmux/Model.rakumod:480"
         ],
         "reviewed": true,
         "scope": null
@@ -1660,7 +1660,7 @@
       {
         "command": "send-prefix",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:254"
+          "lib/LibTmux/Model.rakumod:484"
         ],
         "reviewed": true,
         "scope": null
@@ -1670,7 +1670,7 @@
       {
         "command": "send-keys",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:245"
+          "lib/LibTmux/Model.rakumod:475"
         ],
         "reviewed": true,
         "scope": null
@@ -1680,7 +1680,7 @@
       {
         "command": "select-pane",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:332"
+          "lib/LibTmux/Model.rakumod:562"
         ],
         "reviewed": true,
         "scope": null
@@ -1690,7 +1690,7 @@
       {
         "command": "select-pane",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:328"
+          "lib/LibTmux/Model.rakumod:558"
         ],
         "reviewed": true,
         "scope": null
@@ -1700,7 +1700,7 @@
       {
         "command": "move-pane",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:382"
+          "lib/LibTmux/Model.rakumod:612"
         ],
         "reviewed": true,
         "scope": null
@@ -1710,8 +1710,8 @@
       {
         "command": "split-window",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:294",
-          "lib/LibTmux/Model.rakumod:287"
+          "lib/LibTmux/Model.rakumod:524",
+          "lib/LibTmux/Model.rakumod:517"
         ],
         "reviewed": true,
         "scope": null
@@ -1721,7 +1721,7 @@
       {
         "command": "move-pane",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:377"
+          "lib/LibTmux/Model.rakumod:607"
         ],
         "reviewed": true,
         "scope": null
@@ -1731,7 +1731,7 @@
       {
         "command": "swap-pane",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:402"
+          "lib/LibTmux/Model.rakumod:632"
         ],
         "reviewed": true,
         "scope": null
@@ -1741,7 +1741,7 @@
       {
         "command": "move-pane",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:387"
+          "lib/LibTmux/Model.rakumod:617"
         ],
         "reviewed": true,
         "scope": null
@@ -1751,7 +1751,7 @@
       {
         "command": "select-pane",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:335"
+          "lib/LibTmux/Model.rakumod:565"
         ],
         "reviewed": true,
         "scope": null
@@ -1761,7 +1761,7 @@
       {
         "command": "resize-pane",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:321"
+          "lib/LibTmux/Model.rakumod:551"
         ],
         "reviewed": true,
         "scope": null
@@ -1771,7 +1771,7 @@
       {
         "command": "select-pane",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:337"
+          "lib/LibTmux/Model.rakumod:567"
         ],
         "reviewed": true,
         "scope": null
@@ -1781,7 +1781,7 @@
       {
         "command": "detach-client",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:167"
+          "lib/LibTmux/Model.rakumod:224"
         ],
         "reviewed": true,
         "scope": null
@@ -1792,8 +1792,8 @@
         "command": "list-buffers",
         "evidence": [
           "lib/LibTmux/Model.rakumod:107",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:993"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1223"
         ],
         "reviewed": true,
         "scope": null
@@ -1802,8 +1802,8 @@
         "command": "list-clients",
         "evidence": [
           "lib/LibTmux/Model.rakumod:107",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:993"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1223"
         ],
         "reviewed": true,
         "scope": null
@@ -1812,8 +1812,8 @@
         "command": "list-panes",
         "evidence": [
           "lib/LibTmux/Model.rakumod:107",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:992"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1222"
         ],
         "reviewed": true,
         "scope": "server"
@@ -1822,8 +1822,8 @@
         "command": "list-sessions",
         "evidence": [
           "lib/LibTmux/Model.rakumod:107",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:991"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1221"
         ],
         "reviewed": true,
         "scope": null
@@ -1832,8 +1832,8 @@
         "command": "list-windows",
         "evidence": [
           "lib/LibTmux/Model.rakumod:107",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:992"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1222"
         ],
         "reviewed": true,
         "scope": "server"
@@ -1843,7 +1843,7 @@
       {
         "command": "kill-session",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:169"
+          "lib/LibTmux/Model.rakumod:226"
         ],
         "reviewed": true,
         "scope": null
@@ -1853,7 +1853,7 @@
       {
         "command": "last-window",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:161"
+          "lib/LibTmux/Model.rakumod:218"
         ],
         "reviewed": true,
         "scope": null
@@ -1863,7 +1863,7 @@
       {
         "command": "lock-session",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:165"
+          "lib/LibTmux/Model.rakumod:222"
         ],
         "reviewed": true,
         "scope": null
@@ -1873,8 +1873,8 @@
       {
         "command": "new-window",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:149",
-          "lib/LibTmux/Model.rakumod:142"
+          "lib/LibTmux/Model.rakumod:206",
+          "lib/LibTmux/Model.rakumod:199"
         ],
         "reviewed": true,
         "scope": null
@@ -1884,7 +1884,7 @@
       {
         "command": "next-window",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:154"
+          "lib/LibTmux/Model.rakumod:211"
         ],
         "reviewed": true,
         "scope": null
@@ -1894,7 +1894,7 @@
       {
         "command": "previous-window",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:158"
+          "lib/LibTmux/Model.rakumod:215"
         ],
         "reviewed": true,
         "scope": null
@@ -1904,7 +1904,7 @@
       {
         "command": "rename-session",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:132"
+          "lib/LibTmux/Model.rakumod:189"
         ],
         "reviewed": true,
         "scope": null
@@ -1914,7 +1914,7 @@
       {
         "command": "move-window",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:163"
+          "lib/LibTmux/Model.rakumod:220"
         ],
         "reviewed": true,
         "scope": null
@@ -1924,7 +1924,7 @@
       {
         "command": "move-window",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:549"
+          "lib/LibTmux/Model.rakumod:779"
         ],
         "reviewed": true,
         "scope": null
@@ -1934,7 +1934,7 @@
       {
         "command": "select-window",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:533"
+          "lib/LibTmux/Model.rakumod:763"
         ],
         "reviewed": true,
         "scope": null
@@ -1944,7 +1944,7 @@
       {
         "command": "swap-window",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:561"
+          "lib/LibTmux/Model.rakumod:791"
         ],
         "reviewed": true,
         "scope": null
@@ -1954,7 +1954,7 @@
       {
         "command": "unlink-window",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:540"
+          "lib/LibTmux/Model.rakumod:770"
         ],
         "reviewed": true,
         "scope": null
@@ -1965,8 +1965,8 @@
         "command": "list-buffers",
         "evidence": [
           "lib/LibTmux/Model.rakumod:107",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:993"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1223"
         ],
         "reviewed": true,
         "scope": null
@@ -1975,8 +1975,8 @@
         "command": "list-clients",
         "evidence": [
           "lib/LibTmux/Model.rakumod:107",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:993"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1223"
         ],
         "reviewed": true,
         "scope": null
@@ -1985,8 +1985,8 @@
         "command": "list-panes",
         "evidence": [
           "lib/LibTmux/Model.rakumod:107",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:992"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1222"
         ],
         "reviewed": true,
         "scope": "server"
@@ -1995,8 +1995,8 @@
         "command": "list-sessions",
         "evidence": [
           "lib/LibTmux/Model.rakumod:107",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:991"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1221"
         ],
         "reviewed": true,
         "scope": null
@@ -2005,8 +2005,8 @@
         "command": "list-windows",
         "evidence": [
           "lib/LibTmux/Model.rakumod:107",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:992"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1222"
         ],
         "reviewed": true,
         "scope": "server"
@@ -2016,7 +2016,7 @@
       {
         "command": "kill-window",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:239"
+          "lib/LibTmux/Model.rakumod:357"
         ],
         "reviewed": true,
         "scope": null
@@ -2026,7 +2026,7 @@
       {
         "command": "last-pane",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:206"
+          "lib/LibTmux/Model.rakumod:324"
         ],
         "reviewed": true,
         "scope": null
@@ -2036,7 +2036,7 @@
       {
         "command": "link-window",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:232"
+          "lib/LibTmux/Model.rakumod:350"
         ],
         "reviewed": true,
         "scope": null
@@ -2044,7 +2044,7 @@
       {
         "command": "list-windows",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:227"
+          "lib/LibTmux/Model.rakumod:345"
         ],
         "incidental": true,
         "reviewed": true,
@@ -2055,7 +2055,7 @@
       {
         "command": "next-layout",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:200"
+          "lib/LibTmux/Model.rakumod:318"
         ],
         "reviewed": true,
         "scope": null
@@ -2065,7 +2065,7 @@
       {
         "command": "previous-layout",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:202"
+          "lib/LibTmux/Model.rakumod:320"
         ],
         "reviewed": true,
         "scope": null
@@ -2075,7 +2075,7 @@
       {
         "command": "rename-window",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:176"
+          "lib/LibTmux/Model.rakumod:294"
         ],
         "reviewed": true,
         "scope": null
@@ -2085,7 +2085,7 @@
       {
         "command": "resize-window",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:180"
+          "lib/LibTmux/Model.rakumod:298"
         ],
         "reviewed": true,
         "scope": null
@@ -2095,7 +2095,7 @@
       {
         "command": "respawn-window",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:215"
+          "lib/LibTmux/Model.rakumod:333"
         ],
         "reviewed": true,
         "scope": null
@@ -2105,7 +2105,7 @@
       {
         "command": "select-layout",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:197"
+          "lib/LibTmux/Model.rakumod:315"
         ],
         "reviewed": true,
         "scope": null
@@ -2115,7 +2115,7 @@
       {
         "command": "rotate-window",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:209"
+          "lib/LibTmux/Model.rakumod:327"
         ],
         "reviewed": true,
         "scope": null
@@ -2125,7 +2125,7 @@
       {
         "command": "select-layout",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:190"
+          "lib/LibTmux/Model.rakumod:308"
         ],
         "reviewed": true,
         "scope": null
@@ -2135,7 +2135,7 @@
       {
         "command": "select-layout",
         "evidence": [
-          "lib/LibTmux/Model.rakumod:204"
+          "lib/LibTmux/Model.rakumod:322"
         ],
         "reviewed": true,
         "scope": null
@@ -2435,8 +2435,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:218",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:993"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1223"
         ],
         "reviewed": true,
         "scope": null,
@@ -2451,8 +2451,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:218",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:993"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1223"
         ],
         "reviewed": true,
         "scope": null,
@@ -2467,8 +2467,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:216",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:992"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1222"
         ],
         "reviewed": true,
         "scope": "server",
@@ -2483,8 +2483,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:216",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:991"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1221"
         ],
         "reviewed": true,
         "scope": null,
@@ -2499,8 +2499,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:217",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:992"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1222"
         ],
         "reviewed": true,
         "scope": "server",
@@ -2516,8 +2516,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:218",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:993"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1223"
         ],
         "reviewed": true,
         "scope": null,
@@ -2531,8 +2531,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:218",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:993"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1223"
         ],
         "reviewed": true,
         "scope": null,
@@ -2546,8 +2546,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:216",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:992"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1222"
         ],
         "reviewed": true,
         "scope": "server",
@@ -2561,8 +2561,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:216",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:991"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1221"
         ],
         "reviewed": true,
         "scope": null,
@@ -2576,8 +2576,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:217",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:992"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1222"
         ],
         "reviewed": true,
         "scope": "server",
@@ -2595,8 +2595,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:218",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:993"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1223"
         ],
         "reviewed": true,
         "scope": null,
@@ -2612,8 +2612,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:218",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:993"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1223"
         ],
         "reviewed": true,
         "scope": null,
@@ -2629,8 +2629,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:216",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:992"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1222"
         ],
         "reviewed": true,
         "scope": "server"
@@ -2645,8 +2645,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:216",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:991"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1221"
         ],
         "reviewed": true,
         "scope": null,
@@ -2662,8 +2662,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:217",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:992"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1222"
         ],
         "reviewed": true,
         "scope": "server",
@@ -2681,8 +2681,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:218",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:993"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1223"
         ],
         "reviewed": true,
         "scope": null,
@@ -2698,8 +2698,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:218",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:993"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1223"
         ],
         "reviewed": true,
         "scope": null,
@@ -2715,8 +2715,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:216",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:992"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1222"
         ],
         "reviewed": true,
         "scope": "server",
@@ -2732,8 +2732,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:216",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:991"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1221"
         ],
         "reviewed": true,
         "scope": null
@@ -2748,8 +2748,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:217",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:992"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1222"
         ],
         "reviewed": true,
         "scope": "server",
@@ -2767,8 +2767,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:218",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:993"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1223"
         ],
         "reviewed": true,
         "scope": null,
@@ -2784,8 +2784,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:218",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:993"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1223"
         ],
         "reviewed": true,
         "scope": null,
@@ -2801,8 +2801,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:216",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:992"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1222"
         ],
         "reviewed": true,
         "scope": "server",
@@ -2818,8 +2818,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:216",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:991"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1221"
         ],
         "reviewed": true,
         "scope": null,
@@ -2835,8 +2835,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:217",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:992"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1222"
         ],
         "reviewed": true,
         "scope": "server"
@@ -2853,8 +2853,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:218",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:993"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1223"
         ],
         "reviewed": true,
         "scope": null,
@@ -2870,8 +2870,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:218",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:993"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1223"
         ],
         "reviewed": true,
         "scope": null,
@@ -2887,8 +2887,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:216",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:992"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1222"
         ],
         "reviewed": true,
         "scope": "server",
@@ -2904,8 +2904,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:216",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:991"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1221"
         ],
         "reviewed": true,
         "scope": null,
@@ -2921,8 +2921,8 @@
           "lib/LibTmux/Query/Execution.rakumod:37",
           "lib/LibTmux/Query/Execution.rakumod:39",
           "lib/LibTmux/Query/Plan.rakumod:217",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:992"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1222"
         ],
         "reviewed": true,
         "scope": "server"
@@ -2958,8 +2958,8 @@
         "evidence": [
           "lib/LibTmux/Server.rakumod:375",
           "lib/LibTmux/Server.rakumod:379",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:993"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1223"
         ],
         "reviewed": true,
         "scope": null
@@ -2969,8 +2969,8 @@
         "evidence": [
           "lib/LibTmux/Server.rakumod:375",
           "lib/LibTmux/Server.rakumod:379",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:993"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1223"
         ],
         "reviewed": true,
         "scope": null
@@ -2980,8 +2980,8 @@
         "evidence": [
           "lib/LibTmux/Server.rakumod:375",
           "lib/LibTmux/Server.rakumod:379",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:992"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1222"
         ],
         "reviewed": true,
         "scope": "server"
@@ -2991,8 +2991,8 @@
         "evidence": [
           "lib/LibTmux/Server.rakumod:375",
           "lib/LibTmux/Server.rakumod:379",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:991"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1221"
         ],
         "reviewed": true,
         "scope": null
@@ -3002,8 +3002,8 @@
         "evidence": [
           "lib/LibTmux/Server.rakumod:375",
           "lib/LibTmux/Server.rakumod:379",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:992"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1222"
         ],
         "reviewed": true,
         "scope": "server"
@@ -3014,8 +3014,8 @@
         "command": "list-buffers",
         "evidence": [
           "lib/LibTmux/Server.rakumod:379",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:993"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1223"
         ],
         "reviewed": true,
         "scope": null
@@ -3024,8 +3024,8 @@
         "command": "list-clients",
         "evidence": [
           "lib/LibTmux/Server.rakumod:379",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:993"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1223"
         ],
         "reviewed": true,
         "scope": null
@@ -3034,8 +3034,8 @@
         "command": "list-panes",
         "evidence": [
           "lib/LibTmux/Server.rakumod:379",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:992"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1222"
         ],
         "reviewed": true,
         "scope": "server"
@@ -3044,8 +3044,8 @@
         "command": "list-sessions",
         "evidence": [
           "lib/LibTmux/Server.rakumod:379",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:991"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1221"
         ],
         "reviewed": true,
         "scope": null
@@ -3054,8 +3054,8 @@
         "command": "list-windows",
         "evidence": [
           "lib/LibTmux/Server.rakumod:379",
-          "lib/LibTmux/Model.rakumod:1004",
-          "lib/LibTmux/Model.rakumod:992"
+          "lib/LibTmux/Model.rakumod:1234",
+          "lib/LibTmux/Model.rakumod:1222"
         ],
         "reviewed": true,
         "scope": "server"

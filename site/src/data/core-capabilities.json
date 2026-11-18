@@ -263,7 +263,7 @@
       "ci": {
         "workflow": ".github/workflows/ocaml.yml",
         "job": "native",
-        "step": "Execute installed documentation and standalone programs",
+        "step": "Execute the standalone showcase programs",
         "command": "opam exec -- python3 test/showcase_test.py \"$TMUX_BINARY\""
       },
       "checkedBy": [
@@ -288,7 +288,7 @@
       "ci": {
         "workflow": ".github/workflows/ocaml.yml",
         "job": "native",
-        "step": "Execute installed documentation and standalone programs",
+        "step": "Execute the standalone showcase programs",
         "command": "opam exec -- python3 test/showcase_test.py \"$TMUX_BINARY\""
       },
       "checkedBy": [
@@ -313,7 +313,7 @@
       "ci": {
         "workflow": ".github/workflows/ocaml.yml",
         "job": "native",
-        "step": "Execute installed documentation and standalone programs",
+        "step": "Execute the standalone showcase programs",
         "command": "opam exec -- python3 test/showcase_test.py \"$TMUX_BINARY\""
       },
       "checkedBy": [
@@ -338,7 +338,7 @@
       "ci": {
         "workflow": ".github/workflows/ocaml.yml",
         "job": "native",
-        "step": "Execute installed documentation and standalone programs",
+        "step": "Execute the standalone showcase programs",
         "command": "opam exec -- python3 test/showcase_test.py \"$TMUX_BINARY\""
       },
       "checkedBy": [
@@ -363,7 +363,7 @@
       "ci": {
         "workflow": ".github/workflows/ocaml.yml",
         "job": "native",
-        "step": "Execute installed documentation and standalone programs",
+        "step": "Execute the standalone showcase programs",
         "command": "opam exec -- python3 test/showcase_test.py \"$TMUX_BINARY\""
       },
       "checkedBy": [
@@ -388,7 +388,7 @@
       "ci": {
         "workflow": ".github/workflows/ocaml.yml",
         "job": "native",
-        "step": "Execute installed documentation and standalone programs",
+        "step": "Execute the standalone showcase programs",
         "command": "opam exec -- python3 test/showcase_test.py \"$TMUX_BINARY\""
       },
       "checkedBy": [
@@ -413,7 +413,7 @@
       "ci": {
         "workflow": ".github/workflows/ocaml.yml",
         "job": "native",
-        "step": "Execute installed documentation and standalone programs",
+        "step": "Execute the standalone showcase programs",
         "command": "opam exec -- python3 test/showcase_test.py \"$TMUX_BINARY\""
       },
       "checkedBy": [

@@ -393,7 +393,7 @@ it.each(['workspace/guides', 'workspace/internals/guides'])('keeps %s counterpar
 it('opens as a bottom sheet on a phone in portrait and as a popover under its trigger otherwise', () => {
   const portraitPhone = (query: string) => query.includes('max-width: 29.999rem')
   let sheet = true
-  vi.spyOn(win, 'matchMedia').mockImplementation((query: string) => ({ matches: sheet && portraitPhone(query), media: query } as unknown as MediaQueryList))
+  vi.spyOn(win, 'matchMedia').mockImplementation((query: string) => ({ matches: sheet && portraitPhone(query), media: query } as unknown as ReturnType<typeof win.matchMedia>))
   initDocumentationNavigation()
   const picker = win.document.querySelector('details')!
   const panel = picker.querySelector<HTMLElement>('[data-picker-panel]')!
