@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { buildLocale } from '../src/i18n/locales'
+import { below } from '../src/lib/breakpoints'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 import { parseHtml } from './header-page'
 
@@ -96,8 +97,14 @@ describe('release notice on phones', () => {
     expect(notice.querySelector('[data-prerelease-dismiss]')).not.toBeNull()
   })
 
-  it('holds one line under bp-phone and shows the sentence only when More is open', () => {
-    expect(ruleIn('(max-width: 29.999rem)', '.prerelease-notice--collapsible .prerelease-notice__lead')).toMatch(/white-space:\s*nowrap/)
+  // The full sentence wraps to two to four rows between 30rem and 48rem, and fits on one line from bp-nav (64rem).
+  it('holds one line under bp-nav and shows the sentence only when More is open', () => {
+    const folded = (selector: string) => ruleIn(below('nav'), selector)
+    expect(folded('.prerelease-notice--collapsible .prerelease-notice__lead')).toMatch(/white-space:\s*nowrap/)
+    expect(folded('.prerelease-notice--collapsible .prerelease-notice__inner')).toMatch(/flex-wrap:\s*wrap/)
+    expect(folded('.prerelease-notice--collapsible .prerelease-notice__more')).toMatch(/display:\s*block/)
+    expect(folded('.prerelease-notice--collapsible .prerelease-notice__text > .prerelease-notice__full')).toMatch(/display:\s*none/)
+    expect(css, 'the phone query no longer holds the fold').not.toMatch(/@media \(max-width: 29\.999rem\) \{\s*\.prerelease-notice--collapsible/)
     expect(css).toMatch(/\.prerelease-notice--collapsible:has\(\.prerelease-notice__more\[open\]\) \.prerelease-notice__full\s*\{\s*display:\s*block/)
     expect(css).toMatch(/\.prerelease-notice__lead,\s*\.prerelease-notice__more\s*\{\s*display:\s*none/)
   })

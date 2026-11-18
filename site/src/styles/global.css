@@ -1249,10 +1249,12 @@ body[data-documentation-layout='reference'] {
 }
 
 /*
- * The release notice is one line under `bp-phone` (30rem): the badge, a few
- * words and "More", which opens the sentence below them. Every other width
- * shows the sentence beside the badge and has no use for the short text or the
- * disclosure. The disclosure is a <details>, so it opens without a script.
+ * The release notice is one line under `bp-nav` (64rem): the badge, a few
+ * words and "More", which opens the sentence below them. The full sentence
+ * wraps to two to four rows between 30rem and 48rem and fits on one line from
+ * 64rem, so every wider width shows it beside the badge and has no use for the
+ * short text or the disclosure. The disclosure is a <details>, so it opens
+ * without a script.
  */
 .prerelease-notice__lead,
 .prerelease-notice__more { display: none; }
@@ -1260,7 +1262,7 @@ body[data-documentation-layout='reference'] {
 .prerelease-notice__more summary::-webkit-details-marker { display: none; }
 .prerelease-notice__more-close { display: none; }
 
-@media (max-width: 29.999rem) {
+@media (max-width: 63.999rem) {
   .prerelease-notice--collapsible .prerelease-notice__inner {
     display: flex;
     flex-wrap: wrap;
