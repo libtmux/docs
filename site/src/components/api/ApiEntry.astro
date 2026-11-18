@@ -6,6 +6,7 @@ import { SITE_ROOT } from '../../lib/site-root'
 import { proseHref } from '../../lib/docs-paths'
 import { Code } from 'astro-expressive-code/components'
 import { codeLang } from '../../lib/highlight'
+import { exampleFrame } from '../../lib/example-frame'
 import Aside from '../Aside.astro'
 import ApiBadge from './ApiBadge.astro'
 import SourceButton from './SourceButton.astro'
@@ -600,21 +601,25 @@ const hasBody =
       examples.length > 0 && (
         <div class="gp-sphinx-api-examples" id={`${anchor}.examples`}>
           <h2 class="rubric api-section-heading">Examples<a class="api-heading-link" href={`#${anchor}.examples`} aria-label="Link to Examples">#</a></h2>
-          {examples.map((ex) => (
-            <>
-              {(ex.intro || ex.sourceUrl) && (
-                <p class="gp-sphinx-api-example-intro">
-                  {ex.intro && <ApiDoc text={ex.intro} index={index} context={symbol} />}
-                  {ex.sourceUrl && <a class="api-example-source" href={ex.sourceUrl}>View source</a>}
-                </p>
-              )}
-              <div class="gp-sphinx-api-example">
-                {/* Preserve source comments, including Swift's required tools-version directive. */}
-                <Code code={ex.code} lang={codeLang(ex.lang)} title="" />
-              </div>
-              {ex.outro && <div class="gp-sphinx-api-example-outro"><ApiDoc text={ex.outro} index={index} context={symbol} /></div>}
-            </>
-          ))}
+          {examples.map((ex) => {
+            // A whole file is named, and called a complete program when it is one; a fragment has no header.
+            const frame = exampleFrame(ex)
+            return (
+              <>
+                {(ex.intro || ex.sourceUrl) && (
+                  <p class="gp-sphinx-api-example-intro">
+                    {ex.intro && <ApiDoc text={ex.intro} index={index} context={symbol} />}
+                    {ex.sourceUrl && <a class="api-example-source" href={ex.sourceUrl}>View source</a>}
+                  </p>
+                )}
+                <div class="gp-sphinx-api-example">
+                  {/* Preserve source comments, including Swift's required tools-version directive. */}
+                  <Code code={ex.code} lang={codeLang(ex.lang)} title={frame.title} frame={frame.title ? 'code' : undefined} meta={frame.program ? 'role="program"' : undefined} />
+                </div>
+                {ex.outro && <div class="gp-sphinx-api-example-outro"><ApiDoc text={ex.outro} index={index} context={symbol} /></div>}
+              </>
+            )
+          })}
         </div>
       )
     }

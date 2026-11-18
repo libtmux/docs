@@ -23,6 +23,7 @@ import { formatLines, lineNumbers, parseLines, rangeFragment, requestedCap, role
  *   under it says how many it shows and offers the rest. A frame without one
  *   shows every line. Copy always copies every line, and print shows every
  *   line.
+ * - No empty header: a frame with no file name draws no caption at all.
  * - `copy="off"` removes the frame's own Copy button, for a component that draws
  *   one of its own, so a frame has one copy control.
  *
@@ -229,6 +230,11 @@ export function codeFrame() {
         if (!figure || !pre) return
         const role = codeBlock.metaOptions.getString('role')
         const ranges = parseLines(codeBlock.metaOptions.getString('lines'))
+
+        // A frame with no file name has no header: Expressive Code always writes the element and hides it with CSS, which
+        // leaves an empty caption in the markup. A terminal's bar carries its own label, so it is never empty.
+        const bare = select('figcaption.header', figure)
+        if (bare && bare.children.length === 0) figure.children.splice(figure.children.indexOf(bare), 1)
 
         // A component that draws its own Copy turns the frame's off, so the frame has one.
         if (codeBlock.metaOptions.getString('copy') === 'off') {
