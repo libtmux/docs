@@ -196,5 +196,39 @@
       "tmux_close": { "call": "LibTmux::Entity#kill", "source": "gems/libtmux-mcp/lib/libtmux/mcp/mutations.rb:37" },
       "tmux_snapshot": { "call": "LibTmux::Async::Server#snapshot", "source": "gems/libtmux-mcp/lib/libtmux/mcp/application.rb:400" }
     }
+  },
+  "csharp": {
+    "repo": "libtmux/libtmux-dotnet",
+    "revision": "8d47af7d89638ad267528ac56897cec67df597f7",
+    "tools": {
+      "capture_pane": { "call": "LibTmux.Pane.CaptureAsync", "source": "src/LibTmux.Mcp/Tools/ReadTools.Pane.cs:109" },
+      "clear_pane_scrollback": { "call": "LibTmux.Pane.ClearHistoryAsync", "source": "src/LibTmux.Mcp/Tools/CapabilityTools.cs:1347" },
+      "create_session": { "call": "LibTmux.Server.CreateSessionAsync", "source": "src/LibTmux.Mcp/Tools/WriteTools.Layout.cs:34" },
+      "create_window": { "call": "LibTmux.Session.CreateWindowAsync", "source": "src/LibTmux.Mcp/Tools/WriteTools.Layout.cs:80" },
+      "get_tmux_variables": { "call": "LibTmux.Pane.DisplayMessageAsync", "source": "src/LibTmux.Mcp/Connection/TmuxTargets.cs:424" },
+      "kill_pane": { "call": "LibTmux.Pane.KillAsync", "source": "src/LibTmux.Mcp/Tools/CapabilityTools.cs:1365" },
+      "kill_session": { "call": "LibTmux.Session.KillAsync", "source": "src/LibTmux.Mcp/Tools/CapabilityTools.cs:1401" },
+      "kill_window": { "call": "LibTmux.Window.KillAsync", "source": "src/LibTmux.Mcp/Tools/CapabilityTools.cs:1383" },
+      "list_sessions": { "call": "LibTmux.Server.GetSessionsAsync", "source": "src/LibTmux.Mcp/Tools/ReadTools.Hierarchy.cs:75" },
+      "move_window": { "call": "LibTmux.Window.MoveAsync", "source": "src/LibTmux.Mcp/Tools/CapabilityTools.cs:760" },
+      "paste_text": { "call": "LibTmux.Pane.PasteBufferAsync", "source": "src/LibTmux.Mcp/Tools/WriteTools.Input.cs:440" },
+      "rename_session": { "call": "LibTmux.Session.RenameAsync", "source": "src/LibTmux.Mcp/Tools/WriteTools.Layout.cs:280" },
+      "rename_window": { "call": "LibTmux.Window.RenameAsync", "source": "src/LibTmux.Mcp/Tools/WriteTools.Layout.cs:307" },
+      "resize_pane": { "call": "LibTmux.Pane.ResizeAsync", "source": "src/LibTmux.Mcp/Tools/WriteTools.Layout.cs:213" },
+      "resize_window": { "call": "LibTmux.Window.ResizeAsync", "source": "src/LibTmux.Mcp/Tools/CapabilityTools.cs:712" },
+      "respawn_pane": { "call": "LibTmux.Pane.RespawnAsync", "source": "src/LibTmux.Mcp/Tools/CapabilityTools.cs:1070" },
+      "select_layout": { "call": "LibTmux.Window.SelectLayoutAsync", "source": "src/LibTmux.Mcp/Tools/WriteTools.Layout.cs:252" },
+      "select_pane": { "call": "LibTmux.Pane.SelectAsync", "source": "src/LibTmux.Mcp/Tools/WriteTools.Layout.cs:160" },
+      "select_window": { "call": "LibTmux.Window.SelectAsync", "source": "src/LibTmux.Mcp/Tools/WriteTools.Layout.cs:179" },
+      "set_history_limit": { "call": "LibTmux.TmuxOptions.SetAsync", "source": "src/LibTmux.Mcp/Tools/CapabilityTools.cs:1000" },
+      "set_mouse_enabled": { "call": "LibTmux.TmuxOptions.SetAsync", "source": "src/LibTmux.Mcp/Tools/CapabilityTools.cs:929" },
+      "set_pane_title": { "call": "LibTmux.Pane.SetTitleAsync", "source": "src/LibTmux.Mcp/Tools/CapabilityTools.cs:900" },
+      "set_synchronize_panes": { "call": "LibTmux.TmuxOptions.SetAsync", "source": "src/LibTmux.Mcp/Tools/CapabilityTools.cs:1330" },
+      "show_hooks": { "call": "LibTmux.TmuxHooks.GetAllAsync", "source": "src/LibTmux.Mcp/Tools/ReadTools.Inspect.cs:172" },
+      "signal_channel": { "call": "LibTmux.Server.WaitForAsync", "source": "src/LibTmux.Mcp/Tools/CapabilityTools.cs:919" },
+      "split_window": { "call": "LibTmux.Pane.SplitAsync", "source": "src/LibTmux.Mcp/Tools/WriteTools.Layout.cs:123" },
+      "swap_pane": { "call": "LibTmux.Pane.SwapAsync", "source": "src/LibTmux.Mcp/Tools/CapabilityTools.cs:880" },
+      "wait_for_channel": { "call": "LibTmux.TmuxWaitChannel.WaitAsync", "source": "src/LibTmux.Mcp/Tools/WriteTools.Wait.cs:52" }
+    }
   }
 }
