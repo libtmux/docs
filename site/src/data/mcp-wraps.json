@@ -230,5 +230,42 @@
       "swap_pane": { "call": "LibTmux.Pane.SwapAsync", "source": "src/LibTmux.Mcp/Tools/CapabilityTools.cs:880" },
       "wait_for_channel": { "call": "LibTmux.TmuxWaitChannel.WaitAsync", "source": "src/LibTmux.Mcp/Tools/WriteTools.Wait.cs:52" }
     }
+  },
+  "cxx": {
+    "repo": "libtmux/libtmux-cxx",
+    "revision": "3f93b021cb51e8349bfb9cecc6fd4091f6e79a0f",
+    "tools": {
+      "capture_pane": { "call": "libtmux::Pane::capture", "source": "apps/mcp/src/tool_catalog.cpp:1851" },
+      "capture_since": { "call": "libtmux::Pane::capture", "source": "apps/mcp/src/tool_catalog.cpp:1873" },
+      "clear_pane_scrollback": { "call": "libtmux::Pane::clear_history", "source": "apps/mcp/src/tool_catalog.cpp:3155" },
+      "create_session": { "call": "libtmux::Server::new_session", "source": "apps/mcp/src/tool_catalog.cpp:2578" },
+      "create_window": { "call": "libtmux::Session::new_window", "source": "apps/mcp/src/tool_catalog.cpp:2613" },
+      "kill_pane": { "call": "libtmux::Pane::kill", "source": "apps/mcp/src/tool_catalog.cpp:3172" },
+      "kill_session": { "call": "libtmux::Session::kill", "source": "apps/mcp/src/tool_catalog.cpp:3207" },
+      "kill_window": { "call": "libtmux::Window::kill", "source": "apps/mcp/src/tool_catalog.cpp:3189" },
+      "list_panes": { "call": "libtmux::Server::panes", "source": "apps/mcp/src/tool_catalog.cpp:1646" },
+      "list_sessions": { "call": "libtmux::Server::sessions", "source": "apps/mcp/src/tool_catalog.cpp:1631" },
+      "list_windows": { "call": "libtmux::Session::windows", "source": "apps/mcp/src/tool_catalog.cpp:1721" },
+      "move_window": { "call": "libtmux::Window::move_to", "source": "apps/mcp/src/tool_catalog.cpp:2429" },
+      "paste_text": { "call": "libtmux::Pane::paste", "source": "apps/mcp/src/tool_catalog.cpp:3086" },
+      "rename_session": { "call": "libtmux::Session::rename", "source": "apps/mcp/src/tool_catalog.cpp:2282" },
+      "rename_window": { "call": "libtmux::Window::rename", "source": "apps/mcp/src/tool_catalog.cpp:2301" },
+      "resize_window": { "call": "libtmux::Window::resize", "source": "apps/mcp/src/tool_catalog.cpp:2377" },
+      "respawn_pane": { "call": "libtmux::Pane::respawn", "source": "apps/mcp/src/tool_catalog.cpp:2683" },
+      "select_layout": { "call": "libtmux::Window::select_layout", "source": "apps/mcp/src/tool_catalog.cpp:2354" },
+      "select_pane": { "call": "libtmux::Pane::select", "source": "apps/mcp/src/tool_catalog.cpp:2333" },
+      "select_window": { "call": "libtmux::Window::select", "source": "apps/mcp/src/tool_catalog.cpp:2317" },
+      "set_history_limit": { "call": "libtmux::Session::set_option", "source": "apps/mcp/src/tool_catalog.cpp:2535" },
+      "set_mouse_enabled": { "call": "libtmux::Server::set_global_option", "source": "apps/mcp/src/tool_catalog.cpp:2517" },
+      "set_pane_title": { "call": "libtmux::Pane::set_title", "source": "apps/mcp/src/tool_catalog.cpp:2470" },
+      "set_synchronize_panes": { "call": "libtmux::Window::set_option", "source": "apps/mcp/src/tool_catalog.cpp:3123" },
+      "show_hooks": { "call": "libtmux::Server::hooks", "source": "apps/mcp/src/tool_catalog.cpp:2147" },
+      "show_option": { "call": "libtmux::Server::options", "source": "apps/mcp/src/tool_catalog.cpp:2084" },
+      "signal_channel": { "call": "libtmux::Server::signal", "source": "apps/mcp/src/tool_catalog.cpp:2502" },
+      "split_window": { "call": "libtmux::Pane::split", "source": "apps/mcp/src/tool_catalog.cpp:2649" },
+      "swap_pane": { "call": "libtmux::Pane::swap_with", "source": "apps/mcp/src/tool_catalog.cpp:2451" },
+      "wait_for_channel": { "call": "libtmux::Server::wait_for", "source": "apps/mcp/src/tool_catalog.cpp:2488" },
+      "wait_for_text": { "call": "libtmux::Server::wait_for_text", "source": "apps/mcp/src/wait_for_text.cpp:187" }
+    }
   }
 }
