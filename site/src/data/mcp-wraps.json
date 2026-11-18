@@ -188,5 +188,13 @@
       "swap_pane": { "call": "pane.Pane.swap_with", "source": "crates/tmux-mcp/src/tools/contract.rs:834" },
       "wait_for_channel": { "call": "server.Server.wait_for_channel", "source": "crates/tmux-mcp/src/tools/observe.rs:517" }
     }
+  },
+  "ruby": {
+    "repo": "libtmux/libtmux-ruby",
+    "revision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
+    "tools": {
+      "tmux_close": { "call": "LibTmux::Entity#kill", "source": "gems/libtmux-mcp/lib/libtmux/mcp/mutations.rb:37" },
+      "tmux_snapshot": { "call": "LibTmux::Async::Server#snapshot", "source": "gems/libtmux-mcp/lib/libtmux/mcp/application.rb:400" }
+    }
   }
 }
