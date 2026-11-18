@@ -63,6 +63,12 @@ const { prev, next, groups, up } = Astro.props
   .page-end__up a { display: inline-flex; align-items: center; gap: .3rem; color: var(--color-foreground-muted); text-decoration: none; }
   .page-end__up a:hover { color: var(--color-link); text-decoration: underline; }
   .page-end__up a:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
+  /* On touch every link of the up row and the related lists is a row of the full touch-target height (record 0071). */
+  @media (pointer: coarse) {
+    .page-end__up { row-gap: 0; }
+    .page-end__group ul { gap: 0; }
+    :is(.page-end__up a, .page-end__group li a) { display: inline-flex; align-items: center; min-height: var(--touch-target); }
+  }
   /* Below 30rem of the block's own width the sequence stacks. */
   @container (max-width: 30rem) {
     .page-end__seq { grid-template-columns: minmax(0, 1fr); }

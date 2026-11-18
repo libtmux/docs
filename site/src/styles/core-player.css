@@ -521,3 +521,12 @@ html[data-js] .core-player__results > .core-result[data-off] {
 .core-player__side a {
   color: inherit;
 }
+
+/* On touch screens the copy and pin buttons keep their drawn size and take a touch-target square, the pin's row growing to
+   match (record 0071). The step dots stand one to a line down the program's margin, closer together than a touch target, so
+   they keep their size: a taller hit area would let each cover its neighbours. */
+@media (pointer: coarse) {
+  .core-result__pin { position: relative; }
+  .core-result__title { min-height: var(--touch-target); }
+  :is(.expressive-code .core-copy, .core-result__pin)::after { content: ''; position: absolute; inset: min(0px, calc((100% - var(--touch-target)) / 2)); }
+}

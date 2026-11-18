@@ -592,3 +592,10 @@
   .lm-pkg-install--surface .lm-pkg-install__note {
     margin: 0.25rem 0 0;
   }
+
+/* On touch screens the copy button keeps its drawn size and takes a touch-target square. It is positioned differently in each
+   layout, so `contain: layout` makes it the hit area's containing block without moving it (record 0071). */
+@media (pointer: coarse) {
+  .lm-pkg-install__copy { contain: layout; }
+  .lm-pkg-install__copy::after { content: ''; position: absolute; inset: min(0px, calc((100% - var(--touch-target)) / 2)); }
+}

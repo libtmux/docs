@@ -72,5 +72,6 @@ const requiresRow = requires?.tmux ? {
   .api-behavior__src { display: block; margin-top: 2px; font-size: 0.75rem; line-height: 16px; color: var(--color-foreground-muted); text-decoration: none; }
   a.api-behavior__src:hover { color: var(--color-link); text-decoration: underline; }
   a.api-behavior__src:focus-visible { outline: 2px solid var(--focus-ring-color, var(--theme-primary)); outline-offset: 2px; }
+  @media (pointer: coarse) { a.api-behavior__src { display: flex; align-items: center; margin-top: 0; min-height: var(--touch-target); } }
   @media print { .api-behavior { break-inside: avoid; } }
 </style>

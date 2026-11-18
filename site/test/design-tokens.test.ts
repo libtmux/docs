@@ -340,6 +340,39 @@ describe('pickers, touch targets, focus and labels', () => {
     expect(coarse).toContain('#mobile-toc li > a { display: flex; align-items: center; min-height: var(--touch-target); }')
   })
 
+  it('gives touch screens touch-target taps on the page content: hit areas for small controls, full rows for lists (record 0071)', () => {
+    const hit = 'content: \'\'; position: absolute; inset: calc((100% - var(--touch-target)) / 2) 0; }'
+    const square = 'content: \'\'; position: absolute; inset: min(0px, calc((100% - var(--touch-target)) / 2)); }'
+    const rules: Array<[string, string]> = [
+      ['styles/global.css', '.prerelease-notice__more summary)::after { content: \'\'; position: absolute; inset: -.25rem -.25rem calc(.25rem + 100% - var(--touch-target)); }'],
+      ['styles/global.css', '.anchor-link, .inventory-help-link, footer .icons a)::after { ' + square],
+      ['styles/global.css', ':is([data-breadcrumb-item], .crumb-collapsed > a, footer ul.flex a, [data-ci-examples] li a) { display: inline-flex; align-items: center; min-height: var(--touch-target); }'],
+      ['styles/global.css', '.site-header .scheme-switch__option::before { ' + hit],
+      ['styles/global.css', '.expressive-code .frame .copy button { width: var(--touch-target); height: var(--touch-target); }'],
+      ['styles/api.css', '.api-member-chips button::after, :is(.api-reference-eyebrow, .gp-sphinx-api-layout-right) > a.api-badge::before { ' + hit],
+      ['styles/api.css', '.api-heading-link::after { ' + square],
+      ['styles/api.css', '.api-copy-name::before { inset: min(0px, calc((1lh - var(--touch-target)) / 2)); }'],
+      ['styles/api.css', 'a.api-badge:is(.api-leg, .api-badge--mod) { overflow: visible; }'],
+      ['styles/api.css', '.api-member-search > input { min-height: var(--touch-target); }'],
+      ['styles/api.css', ':is(a.api-member-link, .api-guides-list a, .api-collection__limit a, .api-definition dd a, .tmux-usage__links a) { display: inline-flex; align-items: center; min-height: var(--touch-target); }'],
+      ['components/api/EquivalentsTable.astro', '.api-eq-chipset button::after { ' + hit],
+      ['components/docs/PageEnd.astro', ':is(.page-end__up a, .page-end__group li a) { display: inline-flex; align-items: center; min-height: var(--touch-target); }'],
+      ['components/PortLinks.astro', '.port-link::before { ' + hit],
+      ['components/widgets/install-surface.css', '.lm-install__seg button::after { ' + hit],
+      ['styles/mcp-replay.css', '.mcp-replay__mark::after { content: \'\'; position: absolute; inset: calc((100% - var(--touch-target)) / 2) -.375rem; }'],
+    ]
+    for (const [file, rule] of rules) {
+      const css = source(file)
+      const at = css.indexOf(rule)
+      expect(at, `${file}: ${rule}`).toBeGreaterThan(-1)
+      const media = css.lastIndexOf('@media', at)
+      expect(css.slice(media, css.indexOf('{', media)), `${file} is under coarse: ${rule}`).toContain('pointer: coarse')
+    }
+    // A link to another site draws its mark in `::after` (the shell's external-links.css), so its hit area must not.
+    expect(source('components/PortLinks.astro')).not.toContain('.port-link::after')
+    expect(source('styles/api.css')).not.toMatch(/a\.api-badge[^{]*::after/)
+  })
+
   it('draws a picker row\'s differences in the caution ink, as the design system does', () => {
     expect(source('styles/documentation-picker.css')).toContain('.doc-picker-option .doc-picker-differences, .doc-picker-option[href]:hover .doc-picker-differences { color: var(--aside-caution-ink); font-weight: 500; }')
   })

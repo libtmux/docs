@@ -45,6 +45,14 @@ const { source, registry, ecosystem } = portDestinations({ port, project, produc
     gap: 0.5rem;
   }
 
+  /* On touch screens a chip keeps its drawn size and takes a touch-target-tall hit area, and the rows sit far enough apart that
+     the areas do not meet (record 0071). */
+  @media (pointer: coarse) {
+    .port-links { row-gap: 1.125rem; }
+    .port-link { position: relative; }
+    .port-link::before { content: ''; position: absolute; inset: calc((100% - var(--touch-target)) / 2) 0; }
+  }
+
   .port-link {
     display: inline-flex;
     align-items: center;
