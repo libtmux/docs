@@ -2,7 +2,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 vi.mock('astro:content', () => ({ getCollection: vi.fn(async () => []), render: vi.fn(async () => ({})) }))
 import { Window, type Document, type Element, type HTMLAnchorElement } from 'happy-dom'
 import { getDocumentationSurfaces } from '../src/lib/documentation-navigation'
-import { PORTS, portHomeUrl } from '../src/lib/ports'
+import { DOC_PRODUCTS, PORTS, portHomeUrl } from '../src/lib/ports'
 import { defaultVersionFor } from '../src/lib/versions'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 
@@ -98,6 +98,29 @@ describe('the front page solution picker', () => {
     // The intro cards below the picker list the same products and no Home card.
     const cards = [...document.querySelectorAll(`.home-intro [data-home-language="${port.slug}"] .home-solutions > a`)]
     expect(cards.map((card) => card.getAttribute('href'))).toEqual(products.map((surface) => surface.href))
+  })
+
+  // Record 0026: a language without a package for a product says so, instead of the product silently dropping out.
+  it('says which products a language has no package for yet, names no other, and says nothing where every product exists', async () => {
+    const document = await frontPage()
+    let withLine = 0
+    for (const port of PORTS) {
+      const panel = document.querySelector(`.home-intro [data-home-language="${port.slug}"]`)!
+      const surfaces = await getDocumentationSurfaces(port.slug, defaultVersionFor(port.slug), 'en')
+      const lacking = (['mcp', 'workspace'] as const).filter((id) => !surfaces.some((surface) => surface.id === id)).map((id) => DOC_PRODUCTS[id].label)
+      const line = panel.querySelector('[data-home-no-package]')
+      if (!lacking.length) {
+        expect(line, `${port.name} publishes every product`).toBeNull()
+        continue
+      }
+      withLine++
+      expect(text(line), port.name).toBe(`${port.name} has no ${lacking.join(' or ')} package yet.`)
+      expect(line!.querySelector('a'), `${port.name}: a product with no package has nothing to link to`).toBeNull()
+      expect(panel.querySelectorAll('[data-home-no-package]'), `${port.name}: one line`).toHaveLength(1)
+    }
+    // Languages on both sides of the line, so the loop above can fail.
+    expect(withLine).toBeGreaterThan(0)
+    expect(withLine).toBeLessThan(PORTS.length)
   })
 
   it('draws the Home row with the icon the documentation picker uses', async () => {
