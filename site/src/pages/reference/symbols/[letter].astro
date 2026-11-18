@@ -91,9 +91,10 @@ const { letter, letters, entries, total, shared, port } = Astro.props as Props
 
 const portMeta = port ? PORT_BY_SLUG[port] : undefined
 const portName = port ? (PORT_NAME[port] ?? portMeta?.name ?? port) : undefined
-const here = (l: string) => withRoot(`/reference/symbols/${l.toLowerCase()}/`)
 const version = buildTarget(process.env).version
 const referenceRoot = portMeta ? referenceUrl(portMeta, version) : withRoot('/reference/')
+// A letter is a sibling page: in a port build it sits under that port's reference, never at the root.
+const here = (l: string) => `${referenceRoot}symbols/${l.toLowerCase()}/`
 const pageTitle = `Symbols: ${letterLabel(letter)}`
 // A port's A-Z page is a page of its core reference (record 0021): the breadcrumb names Port / Core Library / API reference
 // / page like every other trail, the column opens with the way up, and the page ends on the ladder. The cross-port page is a
