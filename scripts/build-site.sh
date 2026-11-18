@@ -446,10 +446,13 @@ build_shell() {
   if [ -n "${LIBTMUX_DOCS_NATIVE_CONTEXT:-}" ]; then
     native_context_digest="$(sha256sum "$LIBTMUX_DOCS_NATIVE_CONTEXT" | cut -d' ' -f1)"
   fi
-  key="$(printf '%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s' \
+  # The origin sets canonical URLs and the sitemap; the root sets where links
+  # resolve. Builds that differ only in these must not share an entry.
+  key="$(printf '%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s' \
     "$base_fingerprint" "$base" "$version" "$kind" "$is_default" "$default_version" \
     "${LIBTMUX_DOCS_PORT:-}" "${LIBTMUX_DOCS_PORT_DEFAULTS:-}" \
-    "${LIBTMUX_DOCS_LOCALE:-}" "${LIBTMUX_DOCS_PORT_ROOT:-}" "$native_context_digest" | sha256sum | cut -c1-40)"
+    "${LIBTMUX_DOCS_LOCALE:-}" "${LIBTMUX_DOCS_PORT_ROOT:-}" "$native_context_digest" \
+    "$site_origin" "${LIBTMUX_DOCS_ROOT:-/}" | sha256sum | cut -c1-40)"
   cached="$cache_dir/shell-$key"
   if [ "$no_cache" -eq 0 ] && [ -d "$cached" ]; then
     cp -a "$cached/." "$outdir/"
