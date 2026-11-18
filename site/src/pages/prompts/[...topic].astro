@@ -1,4 +1,5 @@
 ---
+import { Code } from 'astro-expressive-code/components'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import PageToolbar from '../../components/PageToolbar.astro'
 import AgentPrompt from '../../components/widgets/AgentPrompt.astro'
@@ -87,7 +88,7 @@ const breadcrumbs = [
             install line was composed from, and a SHA-256 of the published
             bytes, so a stored result can say which prompt produced it.
           </p>
-          <pre class="mt-4 overflow-x-auto rounded bg-surface px-3 py-2 font-mono text-xs"><code>curl https://libtmux.org/en/prompts/py/session-switcher.txt</code></pre>
+          <div class="mt-4"><Code code="$ curl https://libtmux.org/en/prompts/py/session-switcher.txt" lang="console" frame="none" /></div>
         </section>
       </main>
     </BaseLayout>
