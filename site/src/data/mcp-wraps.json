@@ -87,5 +87,19 @@
       "swap_pane": { "call": "pane.Pane.swapWith", "source": "packages/mcp/src/tools/layout.ts:248" },
       "wait_for_exit": { "call": "pane.Pane.waitForExit", "source": "packages/mcp/src/tools/wait.ts:678" }
     }
+  },
+  "julia": {
+    "repo": "libtmux/libtmux-julia",
+    "revision": "f3da513be1225d36d5854cd8db5972c01857578e",
+    "tools": {
+      "capture_pane": { "call": "LibTmux.capture_bytes", "source": "packages/LibTmuxMCP/src/tools.jl:723" },
+      "create_session": { "call": "LibTmux.new_session", "source": "packages/LibTmuxMCP/src/tools.jl:898" },
+      "kill_pane": { "call": "LibTmux.kill_pane", "source": "packages/LibTmuxMCP/src/tools.jl:880" },
+      "list_panes": { "call": "LibTmux.snapshot", "source": "packages/LibTmuxMCP/src/tools.jl:659" },
+      "paste_text": { "call": "LibTmux.paste_text", "source": "packages/LibTmuxMCP/src/tools.jl:870" },
+      "resize_pane": { "call": "LibTmux.resize_pane", "source": "packages/LibTmuxMCP/src/tools.jl:872" },
+      "send_keys": { "call": "LibTmux.send_keys", "source": "packages/LibTmuxMCP/src/tools.jl:862" },
+      "teardown_session": { "call": "LibTmux.kill_session", "source": "packages/LibTmuxMCP/src/tools.jl:972" }
+    }
   }
 }
