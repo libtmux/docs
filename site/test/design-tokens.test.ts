@@ -333,6 +333,10 @@ describe('pickers, touch targets, focus and labels', () => {
     expect(source('components/docs/SurfacePicker.astro')).not.toMatch(/\.surface-picker-footer \{[^}]*margin:[^;]*-\.75rem/)
   })
 
+  it('draws a picker row\'s differences in the caution ink, as the design system does', () => {
+    expect(source('styles/documentation-picker.css')).toContain('.doc-picker-option .doc-picker-differences, .doc-picker-option[href]:hover .doc-picker-differences { color: var(--aside-caution-ink); font-weight: 500; }')
+  })
+
   it('draws one rule above a page end that holds only the up row', () => {
     expect(source('components/docs/PageEnd.astro')).toContain('.page-end__up:first-child { padding-top: 0; border-top: 0; }')
   })
