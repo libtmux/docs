@@ -22,13 +22,13 @@ const name = tmux ? 'tmux CLI' : current?.name ?? PORT_BY_SLUG[portSlug ?? '']?.
 const shortName = tmux ? 'tmux' : PORT_BY_SLUG[portSlug ?? '']?.shortName ?? name
 const families = portFamilies(entries.map((entry) => entry.port))
 /** A row's accessible name when its label replaces the row's text; the differences stay in it. */
-const rowName = (name: string, link: PagePortLink['links'][number]) => link.label
-  ? `${name}: ${link.label}${link.differences?.length ? `. Differs: ${link.differences.join(', ')}` : ''}`
+const rowName = (name: string, link: PagePortLink['links'][number]) => link.label ?? link.api
+  ? `${name}: ${link.label ?? link.api}${link.differences?.length ? `. Differs: ${link.differences.join(', ')}` : ''}`
   : undefined
 /** Rows with a second line (an API among several, or its differences) widen the panel; a list of names keeps the shared picker width. */
 const details = entries.some((entry) => {
   const links = entry.links.filter((link) => !link.fallback)
-  return links.some((link) => (links.length > 1 && link.label) || link.differences?.length)
+  return links.some((link) => link.api || (links.length > 1 && link.label) || link.differences?.length)
 })
 ---
 <details class="doc-picker" data-page-port-switcher data-doc-picker>
@@ -83,7 +83,9 @@ const details = entries.some((entry) => {
             title={rowName(entry.name, link)}
             aria-current={entry.port === portSlug ? 'page' : undefined}>
             <img class="port-artwork" data-language-icon={entry.port} src={withRoot(`/brand/languages/${entry.port}/icon.svg`)} width="26" height="26" alt="" />
-            <span>{entry.name}{links.length > 1 && link.label && <small>{link.label}</small>}{link.differences && link.differences.length > 0 && <small class="doc-picker-differences" data-picker-differences><span class="sr-only">Differs: </span>{link.differences.join(' · ')}</small>}</span>
+            <span>{entry.name}{link.api
+              ? <small class="doc-picker-api" data-qn={link.api}><span data-qn-show aria-hidden="true">{link.api}</span></small>
+              : links.length > 1 && link.label && <small>{link.label}</small>}{link.differences && link.differences.length > 0 && <small class="doc-picker-differences" data-picker-differences><span class="sr-only">Differs: </span>{link.differences.join(' · ')}</small>}</span>
             {entry.port === portSlug && <span class="doc-picker-check" aria-hidden="true">✓</span>}
           </a>) : <div class="doc-picker-option doc-picker-option--unmatched" data-port={entry.port} data-port-name={entry.name}
             data-home-href={home?.href} data-home-label={home?.label}
@@ -139,7 +141,10 @@ const details = entries.some((entry) => {
   .port-picker-panel[data-details] { --picker-width: 32rem; }
   .port-artwork { flex: none; width: 1.625rem; height: 1.625rem; object-fit: contain; }
   .port-picker-panel .doc-picker-option small { overflow: hidden; margin-top: 0; text-overflow: ellipsis; white-space: nowrap; }
-  .port-picker-panel .doc-picker-option > span { overflow-wrap: normal; }
+  /* The text fills the row, so a matched API is measured against the room it has, not its own width. */
+  .port-picker-panel .doc-picker-option > span { flex: 1 1 auto; min-width: 0; overflow-wrap: normal; }
+  /* The matched API, cut at its separators by fitQualifiedNames when it does not fit (record 0069); CSS ellipsis until then. */
+  .port-picker-panel .doc-picker-api { font-family: var(--font-mono); font-size: .75rem; }
   .tmux-area { margin-top: .75rem; padding-top: .5rem; border-top: 1px solid var(--color-edge); }
   .tmux-destination { display: inline-flex; align-items: center; gap: .5rem; margin-left: auto; }
 </style>

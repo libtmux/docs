@@ -273,7 +273,7 @@ it('keeps single native distinctions accessible and genuine multiple choices vis
 })
 
 
-it('draws a row\'s differences as one muted line joined by " · ", and nothing under a row that has none', async () => {
+it('draws a row\'s matched API and its differences as one muted line each, and no differences line where there are none', async () => {
   await renderPicker(pagePortLinks({ pagePath: 'reference/tmux-pane-capture', portSlug: 'go', version: 'latest', defaults: {}, docs: [] }), 'go')
   const row = (port: string) => win.document.querySelector(`[data-picker-option][data-port="${port}"]`)!
   // The line's text follows a lead-in only a screen reader hears.
@@ -284,7 +284,10 @@ it('draws a row\'s differences as one muted line joined by " · ", and nothing u
   expect(line('swift')!.tagName).toBe('SMALL')
   expect(line('swift')!.firstElementChild!.className).toBe('sr-only')
   expect(line('swift')!.firstElementChild!.textContent).toBe('Differs: ')
-  expect(row('swift').querySelectorAll('small')).toHaveLength(1)
+  // The matched API comes first, its full qualified name kept for fitQualifiedNames (record 0069).
+  expect([...row('swift').querySelectorAll('small')].map((small) => small.className.split(' ')[0])).toEqual(['doc-picker-api', 'doc-picker-differences'])
+  expect(row('swift').querySelector<HTMLElement>('[data-qn]')!.dataset.qn).toBe(row('swift').querySelector('[data-qn-show]')!.textContent)
+  expect(row('swift').getAttribute('aria-label')).toContain(row('swift').querySelector<HTMLElement>('[data-qn]')!.dataset.qn!)
   // Maps with nothing recorded, the page's own row and a recorded absence carry no line.
   for (const port of ['ts', 'go', 'haskell']) expect(line(port), port).toBeNull()
 })

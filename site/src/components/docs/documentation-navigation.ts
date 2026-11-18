@@ -1,4 +1,5 @@
 import { below, PANEL_QUERIES } from '../../lib/breakpoints'
+import { fitQualifiedNames } from '../../lib/qualified-name'
 
 let controller: AbortController | undefined
 
@@ -124,6 +125,8 @@ export function initDocumentationNavigation() {
       if (search) { search.value = ''; filter() }
       if (topLayer) panel.showPopover()
       position()
+      // Matched API names fit once the panel has its width (record 0069).
+      fitQualifiedNames(panel)
       // A reopened menu must not leave its focused search above the viewport.
       panel.scrollTop = 0
       if (picker.open) (search ?? panel.querySelector<HTMLElement>('a[aria-current]') ?? visibleLinks()[0])?.focus({ preventScroll: true })
@@ -170,7 +173,7 @@ export function initDocumentationNavigation() {
     document.addEventListener('focusin', (event) => {
       if (picker.open && event.target instanceof Node && !picker.contains(event.target)) picker.open = false
     }, { signal })
-    window.addEventListener('resize', () => { if (picker.open) position() }, { signal })
+    window.addEventListener('resize', () => { if (picker.open) { position(); fitQualifiedNames(panel) } }, { signal })
     document.addEventListener('scroll', (event) => {
       if (picker.open && event.target instanceof Node && !panel.contains(event.target)) position()
     }, { capture: true, signal })
