@@ -101,5 +101,36 @@
       "send_keys": { "call": "LibTmux.send_keys", "source": "packages/LibTmuxMCP/src/tools.jl:862" },
       "teardown_session": { "call": "LibTmux.kill_session", "source": "packages/LibTmuxMCP/src/tools.jl:972" }
     }
+  },
+  "java": {
+    "repo": "libtmux/libtmux-java",
+    "revision": "a0ecbc16da00140e2520462d478a2af470878272",
+    "tools": {
+      "clear_pane_scrollback": { "call": "io.github.libtmux.Pane.Pane.clearHistory", "source": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Operations.java:422" },
+      "create_session": { "call": "io.github.libtmux.Server.Server.newSession", "source": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Operations.java:315" },
+      "create_window": { "call": "io.github.libtmux.Session.Session.newWindow", "source": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Operations.java:334" },
+      "get_server_info": { "call": "io.github.libtmux.Server.Server.snapshot", "source": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Operations.java:39" },
+      "kill_pane": { "call": "io.github.libtmux.Pane.Pane.kill", "source": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Shaping.java:79" },
+      "kill_session": { "call": "io.github.libtmux.Session.Session.kill", "source": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Shaping.java:108" },
+      "kill_window": { "call": "io.github.libtmux.Window.Window.kill", "source": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Shaping.java:85" },
+      "list_panes": { "call": "io.github.libtmux.Server.Server.panes", "source": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Listings.java:106" },
+      "list_sessions": { "call": "io.github.libtmux.Server.Server.snapshot", "source": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Listings.java:59" },
+      "move_window": { "call": "io.github.libtmux.Window.Window.moveTo", "source": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Operations.java:270" },
+      "paste_text": { "call": "io.github.libtmux.Pane.Pane.paste", "source": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Typing.java:151" },
+      "rename_session": { "call": "io.github.libtmux.Session.Session.rename", "source": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Operations.java:240" },
+      "rename_window": { "call": "io.github.libtmux.Window.Window.rename", "source": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Operations.java:244" },
+      "resize_pane": { "call": "io.github.libtmux.Pane.Pane.resizeTo", "source": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Shaping.java:59" },
+      "resize_window": { "call": "io.github.libtmux.Window.Window.resizeTo", "source": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Operations.java:261" },
+      "select_pane": { "call": "io.github.libtmux.Pane.Pane.select", "source": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Operations.java:255" },
+      "select_window": { "call": "io.github.libtmux.Window.Window.select", "source": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Operations.java:249" },
+      "set_history_limit": { "call": "io.github.libtmux.Session.Session.setHistoryLimit", "source": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Operations.java:298" },
+      "set_mouse_enabled": { "call": "io.github.libtmux.Options.Options.set", "source": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Operations.java:291" },
+      "set_pane_title": { "call": "io.github.libtmux.Pane.Pane.retitle", "source": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Operations.java:286" },
+      "show_hooks": { "call": "io.github.libtmux.Hooks.Hooks.all", "source": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Settings.java:51" },
+      "signal_channel": { "call": "io.github.libtmux.Channel.Channel.signal", "source": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Channels.java:75" },
+      "split_window": { "call": "io.github.libtmux.Pane.Pane.split", "source": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Operations.java:350" },
+      "swap_pane": { "call": "io.github.libtmux.Pane.Pane.swapWith", "source": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Operations.java:281" },
+      "wait_for_channel": { "call": "io.github.libtmux.Channel.Channel.awaitReservingCapacity", "source": "libtmux-mcp/src/main/java/io/github/libtmux/mcp/Channels.java:44" }
+    }
   }
 }
