@@ -20,7 +20,7 @@ const forms = (slug: string, env: Record<string, string> = {}) => {
 describe('NuGet installation recipes', () => {
   it.each(['csharp', 'fsharp'])('offers each applicable method for %s with its own source version', (slug) => {
     const port = PORT_BY_SLUG[slug], commands = forms(slug)
-    expect(commands.map((cmd) => cmd.label)).toEqual(['.NET CLI', 'PMC', 'PackageReference', 'CPM', 'Paket CLI', 'Script & Interactive', 'File-Based Apps', 'Cake'])
+    expect(commands.map((cmd) => cmd.label)).toEqual(['.NET CLI', 'PMC', 'PackageReference', 'CPM', 'Paket CLI', 'Script & interactive', 'File-based apps', 'Cake'])
     const version = models[slug as keyof typeof models].sources.find((source) => source.package === port.packageName)!.version
     expect(commands[2].code).toContain(`Version="${version}"`)
     expect(commands[1].code).toBe(`NuGet\\Install-Package ${port.packageName} -Version ${version}`)

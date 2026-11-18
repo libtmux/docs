@@ -166,12 +166,12 @@ function nugetInstalls(packageName: string, projectFile: '.csproj' | '.fsproj', 
       note: 'Requires Paket and a solution initialized with paket init. The interactive prompt selects the projects that should reference the package.',
     },
     {
-      label: 'Script & Interactive', target: 'F# script', lang: 'fsharp', code: `#r "nuget: ${packageName}, {version}"`,
+      label: 'Script & interactive', target: 'F# script', lang: 'fsharp', code: `#r "nuget: ${packageName}, {version}"`,
       note: 'Use in an F# .fsx script, dotnet fsi, or a Polyglot Notebook with NuGet support, on .NET 8 or later. This is not a directive for an ordinary compiled project.',
     },
     {
-      label: 'File-Based Apps', target: 'app.cs', lang: 'csharp', code: `#:package ${packageName}@{version}`,
-      note: 'C# file-based apps require the .NET 10 SDK. Place this at the top of a .cs file, before code, then run dotnet run app.cs. F# scripts use the Script & Interactive tab.',
+      label: 'File-based apps', target: 'app.cs', lang: 'csharp', code: `#:package ${packageName}@{version}`,
+      note: 'C# file-based apps require the .NET 10 SDK. Place this at the top of a .cs file, before code, then run dotnet run app.cs. F# scripts use the Script & interactive tab.',
     },
     {
       label: 'Cake', target: 'build.cake', lang: 'csharp', code: `#addin nuget:?package=${packageName}&version={version}&loaddependencies=true`,
