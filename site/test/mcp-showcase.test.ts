@@ -318,8 +318,8 @@ describe('the overview page', () => {
     // The demo follows the intro and leads the page; the installer follows the demo, on every port, as it does in a port home's panel.
     expect(page.indexOf('productIntro && <ProductIntro parts={productIntro} />'), 'the example follows the intro').toBeLessThan(example)
     expect(example, 'the example comes before install').toBeLessThan(install)
-    expect(install).toBeLessThan(page.indexOf('placeholderLocale && !introFirst && <Content />'))
-    expect(page.indexOf('placeholderLocale && !introFirst && <Content />'), 'the tool grid follows the prose').toBeLessThan(tools)
+    expect(install).toBeLessThan(page.indexOf('<SectionBody cards='))
+    expect(page.indexOf('<SectionBody cards='), 'the tool grid follows the prose').toBeLessThan(tools)
     expect(page).toContain('!placeholderLocale && mcpTools && <McpShowcase')
   })
 

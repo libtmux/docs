@@ -2,9 +2,9 @@
 import { directoryPattern, introBeforeCards } from '../../lib/section-index'
 import { getCollection, render, type CollectionEntry } from 'astro:content'
 import DocsLayout from '../../layouts/DocsLayout.astro'
-import { docsPath, proseHref, tmuxProsePath } from '../../lib/docs-paths'
+import { docsPath, tmuxProsePath } from '../../lib/docs-paths'
 import { PORT_BY_SLUG, hasPackageInstalls, productApiPath, productAvailable, referenceUrl, workspaceInstallGuidance } from '../../lib/ports'
-import DocCard from '../DocCard.astro'
+import SectionBody from './SectionBody.astro'
 import ProseText from '../ProseText.astro'
 import CoreHome from '../CoreHome.astro'
 import { coreHomeHeadings } from '../../lib/core-home'
@@ -26,7 +26,7 @@ import { DEFAULT_LOCALE, LOCALE_LABEL, localeRoot, type Locale } from '../../i18
 import { CONTRIBUTE_BRANCH, CONTRIBUTE_REPO, contributeLink, repoPath } from '../../i18n/contribute'
 import { isIndexSource, markdownPath } from '../../lib/markdown-twins'
 import { t } from '../../i18n/ui'
-import { SITE_ROOT, withRoot } from '../../lib/site-root'
+import { withRoot } from '../../lib/site-root'
 import { selectPortCards } from '../../lib/workspace-shared-slots'
 import {
   localeOf,
@@ -303,22 +303,11 @@ const productIntro = isProductOverview && port && coreHome
     </>
   )}
   {!placeholderLocale && isCoreHome && <CoreHome port={port!} version={version ?? buildTarget(process.env).version} cards={cards} />}
-  {!placeholderLocale && introFirst && <Content />}
-  {!placeholderLocale && !isCoreHome && directory === 'cards' && (
-    <div class:list={['not-prose grid gap-4 sm:grid-cols-2 lg:grid-cols-3', introFirst ? 'mt-6 mb-10' : 'mt-8 mb-10']}>
-      {cards.map((card) => <DocCard href={proseHref(card.href, SITE_ROOT, port, version)} label={card.label} body={card.body} />)}
-    </div>
-  )}
-  {/* A directory of seven or more is scanned, not chosen from: a compact list with the kind of page beside its sentence. */}
-  {!placeholderLocale && !isCoreHome && directory === 'list' && (
-    <ul class:list={['doc-dirlist not-prose', introFirst ? 'mt-6 mb-10' : 'mt-8 mb-10']}>
-      {cards.map((card) => <li>
-        <a href={proseHref(card.href, SITE_ROOT, port, version)}>{card.label}</a>
-        <span>{[pageKind, card.body].filter(Boolean).join(' · ')}</span>
-      </li>)}
-    </ul>
-  )}
-  {!placeholderLocale && !introFirst && <Content />}
+  {!placeholderLocale && (isCoreHome ? <Content /> : (
+    <SectionBody cards={cards} directory={directory} introFirst={introFirst} pageKind={pageKind} port={port} version={version}>
+      <Content />
+    </SectionBody>
+  ))}
   {!placeholderLocale && workspaceExamples && !workspaceExampleLeads && <WorkspaceShowcase showcase={workspaceExamples} />}
   {!placeholderLocale && isWorkspaceOverview && !workspaceExamples && !hasWorkspaceGuide && (
     <p class="mt-6 text-sm opacity-75" data-workspace-coming>Tested example workspace files for this port are coming.</p>
@@ -328,10 +317,3 @@ const productIntro = isProductOverview && port && coreHome
     <ProductApiIndex port={port!} product={entry.data.product} version={version ?? buildTarget(process.env).version} />}
 </DocsLayout>
 
-<style is:global>
-  /* GuideDirectory, compact: two columns from 32rem, a title and one line each, every row a link target. */
-  .doc-dirlist { margin-inline: 0; padding: 0; list-style: none; columns: 2 16rem; column-gap: 1.5rem; }
-  .doc-dirlist li { break-inside: avoid; padding: 0.375rem 0; border-bottom: 1px solid var(--color-background-border); }
-  .doc-dirlist a { font-size: 0.875rem; font-weight: 600; }
-  .doc-dirlist span { display: block; font-size: 0.8125rem; line-height: 1.25rem; color: var(--color-foreground-muted); }
-</style>
