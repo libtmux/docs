@@ -619,7 +619,7 @@ render_staged_reference() {
   return "$rc"
 }
 
-# build_reference_cached SLUG CHECKOUT VERSION OUTDIR
+# build_reference_cached SLUG CHECKOUT VERSION OUTDIR DEFAULT_VERSION
 #
 # `build_reference` around a content-addressed cache. Sphinx, Doxygen, docfx
 # and DocC account for most of an assembly's wall clock and none of them is
@@ -664,9 +664,9 @@ HTML
 }
 
 build_reference_cached() {
-  local slug="$1" checkout="$2" version="$3" outdir="$4"
+  local slug="$1" checkout="$2" version="$3" outdir="$4" default_version="$5"
   if [ "$no_cache" -eq 1 ]; then
-    build_reference "$slug" "$checkout" "$version" "$outdir"
+    build_reference "$slug" "$checkout" "$version" "$outdir" "$default_version"
     return
   fi
 
@@ -683,7 +683,9 @@ build_reference_cached() {
   fi
 
   local key cached
-  key="$(printf '%s|%s|%s|%s' "$base_fingerprint" "$slug" "$version" "$rev" |
+  # The origin, root and default version decide the URLs Sphinx declares.
+  key="$(printf '%s|%s|%s|%s|%s|%s|%s' "$base_fingerprint" "$slug" "$version" "$rev" \
+    "$site_origin" "$LIBTMUX_DOCS_PORT_ROOT" "$default_version" |
     sha256sum | cut -c1-40)"
   cached="$cache_dir/ref-$key"
 
@@ -710,7 +712,7 @@ build_reference_cached() {
   fi
 
   local result rc=0
-  result="$(build_reference "$slug" "$checkout" "$version" "$outdir")" || rc=$?
+  result="$(build_reference "$slug" "$checkout" "$version" "$outdir" "$default_version")" || rc=$?
   note_cache ref-miss
   printf '%s' "$result"
 
@@ -772,7 +774,7 @@ reference_source_dir() {
 }
 
 build_reference() {
-  local slug="$1" checkout="$2" version="$3" outdir="$4"
+  local slug="$1" checkout="$2" version="$3" outdir="$4" default_version="$5"
   local checkout_expanded
   checkout_expanded="$(reference_source_dir "$slug" "$checkout")"
   # Logs live under $out_dir, not $scratch, so they survive the trap
@@ -804,6 +806,15 @@ build_reference() {
       # Truncate first, then append: `sphinx-build` below redirects with a
       # single `>`, which silently discarded this step's own output.
       : >"$log_file"
+      # Declare libtmux.org's URLs in place of upstream's legacy host. Passed
+      # as `-D` because they override conf.py, which derives them from a
+      # `docs_url` this build must not edit.
+      local url_settings url_args=() url_setting
+      if ! url_settings="$(sphinx_url_settings "$slug" "$version" "$default_version" 2>>"$log_file")"; then
+        printf 'failed\tcomputing the Sphinx URL settings failed, see %s\n' "$log_file"
+        return
+      fi
+      while IFS= read -r url_setting; do url_args+=(-D "$url_setting"); done <<<"$url_settings"
       # The worktree is a checkout of someone else's repository, with its own
       # remotes — this repo neither creates it nor owns it. Augmenting
       # `conf.py` in place is the only way to reach Sphinx's config without a
@@ -829,7 +840,7 @@ build_reference() {
       # Doctrees are Sphinx's own incremental-build cache, not output — they
       # go in $scratch so `cp -a "$outdir/." "$port_out/api/"` below never
       # ships pickled build state into the assembled site.
-      if (cd "$checkout_expanded/docs" && uv run sphinx-build -q -b dirhtml -d "$scratch/doctrees-$slug-$version" . "$outdir") >>"$log_file" 2>&1; then
+      if (cd "$checkout_expanded/docs" && uv run sphinx-build -q -b dirhtml "${url_args[@]}" -d "$scratch/doctrees-$slug-$version" . "$outdir") >>"$log_file" 2>&1; then
         restore_conf
         printf 'built\tSphinx dirhtml (see %s)\n' "$log_file"
       else
@@ -1074,7 +1085,7 @@ while IFS='|' read -r slug name versioned renderer generator checkout ecosystem_
     native_context=""
     if [ "$skip_refs" -eq 0 ] && [ "$own_api" = "own-api" ]; then
       ref_outdir="$scratch/ref-$slug-$version"
-      result="$(build_reference_cached "$slug" "$checkout" "$version" "$ref_outdir")"
+      result="$(build_reference_cached "$slug" "$checkout" "$version" "$ref_outdir" "$default_version")"
       ref_status="${result%%$'\t'*}"
       ref_reason="${result#*$'\t'}"
       if [ "$ref_status" = built ] && [ "$renderer" = sphinx ]; then
