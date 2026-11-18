@@ -51,5 +51,41 @@
       "show_option": { "call": "libtmux.options.OptionsMixin.show_option", "source": "src/libtmux_mcp/tools/option_tools.py:97" },
       "swap_pane": { "call": "libtmux.Pane.swap", "source": "src/libtmux_mcp/tools/pane_tools/layout.py:223" }
     }
+  },
+  "ts": {
+    "repo": "libtmux/libtmux-ts",
+    "revision": "073b9d7dedad900bff6f5ec0ea47794e40225870",
+    "tools": {
+      "capture_pane": { "call": "pane.Pane.capture", "source": "packages/mcp/src/grid_capture.ts:84" },
+      "clear_pane_scrollback": { "call": "pane.Pane.clearHistory", "source": "packages/mcp/src/tools/target.ts:587" },
+      "create_session": { "call": "server.Server.newSession", "source": "packages/mcp/src/tools/lifecycle.ts:119" },
+      "create_window": { "call": "session.Session.newWindow", "source": "packages/mcp/src/tools/lifecycle.ts:169" },
+      "kill_pane": { "call": "pane.Pane.kill", "source": "packages/mcp/src/tools/lifecycle.ts:347" },
+      "kill_session": { "call": "session.Session.kill", "source": "packages/mcp/src/tools/lifecycle.ts:416" },
+      "kill_window": { "call": "window.Window.kill", "source": "packages/mcp/src/tools/lifecycle.ts:381" },
+      "list_panes": { "call": "server.Server.snapshot", "source": "packages/mcp/src/context.ts:121" },
+      "list_sessions": { "call": "server.Server.snapshot", "source": "packages/mcp/src/context.ts:121" },
+      "list_windows": { "call": "server.Server.snapshot", "source": "packages/mcp/src/context.ts:121" },
+      "move_window": { "call": "window.Window.move", "source": "packages/mcp/src/tools/layout.ts:301" },
+      "paste_text": { "call": "pane.Pane.pasteBuffer", "source": "packages/mcp/src/tools/input.ts:469" },
+      "rename_session": { "call": "session.Session.rename", "source": "packages/mcp/src/tools/lifecycle.ts:249" },
+      "rename_window": { "call": "window.Window.rename", "source": "packages/mcp/src/tools/lifecycle.ts:275" },
+      "resize_pane": { "call": "pane.Pane.resize", "source": "packages/mcp/src/tools/layout.ts:137" },
+      "resize_window": { "call": "window.Window.resize", "source": "packages/mcp/src/tools/layout.ts:340" },
+      "respawn_pane": { "call": "pane.Pane.respawn", "source": "packages/mcp/src/tools/lifecycle.ts:313" },
+      "run_program": { "call": "server.Server.run", "source": "packages/mcp/src/tools/input.ts:891" },
+      "select_layout": { "call": "window.Window.selectLayout", "source": "packages/mcp/src/tools/layout.ts:223" },
+      "select_pane": { "call": "pane.Pane.select", "source": "packages/mcp/src/tools/layout.ts:165" },
+      "select_window": { "call": "window.Window.select", "source": "packages/mcp/src/tools/layout.ts:193" },
+      "set_history_limit": { "call": "server.Server.setGlobalOption", "source": "packages/mcp/src/tools/target.ts:436" },
+      "set_mouse_enabled": { "call": "server.Server.setGlobalOption", "source": "packages/mcp/src/tools/target.ts:415" },
+      "set_pane_title": { "call": "pane.Pane.setTitle", "source": "packages/mcp/src/tools/layout.ts:367" },
+      "set_synchronize_panes": { "call": "window.Window.setOption", "source": "packages/mcp/src/tools/target.ts:460" },
+      "split_window": { "call": "pane.Pane.split", "source": "packages/mcp/src/tools/lifecycle.ts:223" },
+      "start_program": { "call": "server.Server.spawn", "source": "packages/mcp/src/tools/programs.ts:312" },
+      "stop_program": { "call": "program.Program.kill", "source": "packages/mcp/src/tools/programs.ts:227" },
+      "swap_pane": { "call": "pane.Pane.swapWith", "source": "packages/mcp/src/tools/layout.ts:248" },
+      "wait_for_exit": { "call": "pane.Pane.waitForExit", "source": "packages/mcp/src/tools/wait.ts:678" }
+    }
   }
 }
