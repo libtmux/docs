@@ -218,6 +218,10 @@
         {
           "unit": "ASDF system",
           "name": "libtmux/workspace/cli"
+        },
+        {
+          "unit": "script",
+          "name": "libtmux-workspace"
         }
       ]
     },
