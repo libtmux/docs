@@ -1,0 +1,147 @@
+name: Haskell recording proof
+
+on:
+  push:
+    branches: ['proof/haskell-recording-*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: haskell-recording-proof-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  recording:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        tmux: ['3.3a', '3.8']
+    env:
+      LIBTMUX_DOCS_CHECKOUT_HASKELL: ${{ github.workspace }}/.port-sources/haskell
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '26'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Read the displayed source pin
+        id: source
+        run: |
+          revision=$(jq -er '.haskell.sourceRevision | select(test("^[0-9a-f]{40}$"))' site/src/data/home-examples.json)
+          test "$revision" = "$(jq -r .revision site/src/data/api/haskell.json)"
+          printf 'revision=%s\n' "$revision" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: libtmux/libtmux-haskell
+          ref: ${{ steps.source.outputs.revision }}
+          path: .port-sources/haskell
+          persist-credentials: false
+      - uses: haskell-actions/setup@0f8e8c99d88aeb3fbfd523f1ef2c6f762d10d64d # v2.12.1
+        with:
+          ghc-version: '9.14.1'
+          cabal-version: '3.18.2.0'
+          enable-stack: false
+      - name: Build released tmux
+        id: tmux
+        uses: libtmux/.github/actions/build-tmux@30f81842b1e639ea4e25f93f1f2543504178e228
+        with:
+          ref: ${{ matrix.tmux }}
+          configure-args: --disable-utf8proc
+      - name: Select the released executable
+        env:
+          TMUX_EXECUTABLE: ${{ steps.tmux.outputs.binary }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/hr" proof
+          dirname "$TMUX_EXECUTABLE" >> "$GITHUB_PATH"
+      - run: cabal update
+      - name: Record the exact and marked programs
+        id: record
+        env:
+          TMPDIR: ${{ runner.temp }}/hr
+        run: node scripts/gen-core-recording.mjs --port haskell --keep 2>&1 | tee proof/record.log
+      - name: Preserve native recording evidence
+        if: always()
+        env:
+          TMPDIR: ${{ runner.temp }}/hr
+          RECORD_OUTCOME: ${{ steps.record.outcome }}
+          SOURCE_REVISION: ${{ steps.source.outputs.revision }}
+          TMUX_EXECUTABLE: ${{ steps.tmux.outputs.binary }}
+        run: |
+          node --input-type=module <<'JS'
+          import { createHash } from 'node:crypto'
+          import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+          import { execFileSync } from 'node:child_process'
+          import { dirname, join, resolve, sep } from 'node:path'
+          const hash = (bytes) => createHash('sha256').update(bytes).digest('hex')
+          const command = (file, args, cwd) => execFileSync(file, args, { cwd, encoding: 'utf8' }).trim()
+          mkdirSync('proof', { recursive: true })
+          const home = JSON.parse(readFileSync('site/src/data/home-examples.json', 'utf8')).haskell
+          const source = process.env.LIBTMUX_DOCS_CHECKOUT_HASKELL
+          const receipt = {
+            schema: 'libtmux.haskell-recording-proof/1',
+            docsRevision: command('git', ['rev-parse', 'HEAD']),
+            source: { repository: home.sourceRepository, revision: process.env.SOURCE_REVISION },
+            outcome: process.env.RECORD_OUTCOME,
+            programInputs: home.files.map(({ name, code }) => ({ name, sha256: hash(code) })),
+            recorderSha256: hash(readFileSync('scripts/gen-core-recording.mjs')),
+            recipeSha256: hash(readFileSync('scripts/lib/core-recipes/haskell.mjs')),
+            run: `https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`,
+            attempt: process.env.GITHUB_RUN_ATTEMPT,
+          }
+          if (existsSync(join(source, '.git'))) {
+            receipt.source.checkedOutRevision = command('git', ['rev-parse', 'HEAD'], source)
+            receipt.source.trackedChanges = command('git', ['status', '--porcelain', '--untracked-files=no'], source)
+          }
+          if (existsSync(process.env.TMUX_EXECUTABLE ?? '')) {
+            receipt.tmux = { version: command(process.env.TMUX_EXECUTABLE, ['-V']), sha256: hash(readFileSync(process.env.TMUX_EXECUTABLE)) }
+          }
+          if (process.env.RECORD_OUTCOME === 'success') {
+            const path = 'site/src/data/core-recordings/haskell.json'
+            copyFileSync(path, 'proof/recording.json')
+            receipt.recordingSha256 = hash(readFileSync(path))
+            const stored = JSON.parse(readFileSync(path, 'utf8'))
+            receipt.toolchain = stored.sandbox
+            receipt.recordedRevision = stored.capabilities['typed-graph'].revision ?? stored.revision
+            if (receipt.recordedRevision !== receipt.source.revision || receipt.source.checkedOutRevision !== receipt.source.revision || receipt.source.trackedChanges) throw new Error('recording source receipt differs')
+          }
+          const log = existsSync('proof/record.log') ? readFileSync('proof/record.log', 'utf8') : ''
+          const sandbox = /^gen-core-recording: kept (.+)$/m.exec(log)?.[1]
+          if (sandbox) {
+            if (!resolve(sandbox).startsWith(resolve(process.env.TMPDIR) + sep)) throw new Error('sandbox is outside selected temporary storage')
+            receipt.builds = []
+            for (const file of ['exact.trace', 'marked.trace', ...['exact', 'marked'].flatMap((dir) => [
+              `${dir}/Main.hs`, `${dir}/DocsMark.hs`, `${dir}/libtmux-mutate-graph.cabal`, `${dir}/cabal.project`, `${dir}/dist-newstyle/cache/plan.json`,
+            ])]) {
+              const input = join(sandbox, file)
+              if (!existsSync(input)) continue
+              const target = join('proof/raw', file)
+              mkdirSync(dirname(target), { recursive: true })
+              copyFileSync(input, target)
+            }
+            if (process.env.RECORD_OUTCOME === 'success') for (const name of ['exact', 'marked']) {
+              const binary = command('cabal', ['list-bin', '--offline', 'mutate-graph'], join(sandbox, name))
+              receipt.builds.push({ name, binarySha256: hash(readFileSync(binary)), planSha256: hash(readFileSync(join(sandbox, name, 'dist-newstyle/cache/plan.json'))) })
+            }
+          }
+          writeFileSync('proof/receipt.json', JSON.stringify(receipt, null, 2) + '\n')
+          JS
+      - name: Check playback and native rendering
+        run: >-
+          node site/node_modules/vitest/vitest.mjs run --root site --maxWorkers 2 --pool threads
+          test/core-recipes-new-ports.test.ts test/file-grammars.test.ts
+          test/haskell-semantics.outer.test.ts test/haskell-signature.outer.test.ts test/port-docs-runtime.test.ts
+      - name: Upload proof artifacts
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: haskell-recording-${{ matrix.tmux }}-${{ github.sha }}-${{ github.run_attempt }}
+          path: proof/
+          if-no-files-found: error
+          retention-days: 7
