@@ -645,9 +645,9 @@
   "haskell": {
     "lang": "haskell",
     "sourceRepository": "libtmux/libtmux-haskell",
-    "sourceRevision": "03c914a6298708c786cea21233eb39acf9b7c085",
-    "sourceTree": "9c38e46f3cf0b9ca54d9035f3b1f4ae8d1b13347",
-    "libraryRevision": "ad190fe73c9d09a553c3c160ecf0b6394b7621a6",
+    "sourceRevision": "a1b058b3143587b1fbb7846a6ac846bcc22e94a4",
+    "sourceTree": "12d2b1b8ce9743a0d36dec1662fb9bff7001e5a8",
+    "libraryRevision": "a1b058b3143587b1fbb7846a6ac846bcc22e94a4",
     "execution": "owned-tmux",
     "capability": "typed-graph",
     "singleView": "The run command starts and stops a private demo server.",
@@ -667,12 +667,12 @@
       {
         "name": "libtmux-mutate-graph.cabal",
         "lang": "cabal",
-        "code": "cabal-version: 3.18\nname: libtmux-mutate-graph\nversion: 0.0.0\nbuild-type: Simple\nlicense: MIT\nextra-doc-files: README.md\n\nexecutable mutate-graph\n  main-is: Main.hs\n  default-language: GHC2024\n  ghc-options: -Wall -Werror\n  build-depends:\n    base >=4.22 && <4.23,\n    filepath >=1.5.4 && <1.6,\n    libtmux-haskell ^>=0.1.0.0,\n    text >=2.1.3 && <2.2\n"
+        "code": "cabal-version: 3.18\nname: libtmux-mutate-graph\nversion: 0.0.0\nbuild-type: Simple\nlicense: MIT\nextra-doc-files: README.md\n\nexecutable mutate-graph\n  main-is: Main.hs\n  default-language: GHC2024\n  ghc-options: -Wall -Werror\n  build-depends:\n    base >=4.22 && <4.23,\n    filepath >=1.5.4 && <1.6,\n    libtmux-haskell ^>=0.0.1.0,\n    text >=2.1.3 && <2.2\n"
       },
       {
         "name": "cabal.project",
         "lang": "cabal",
-        "code": "packages: .\nindex-state: 2026-11-06T00:00:00Z\n\nsource-repository-package\n  type: git\n  location: https://github.com/libtmux/libtmux-haskell\n  tag: 00b47e6d94b181b5fd94e585be1e9ecefbf93acb\n"
+        "code": "packages: .\nindex-state: 2026-11-06T00:00:00Z\n\nsource-repository-package\n  type: git\n  location: https://github.com/libtmux/libtmux-haskell\n  tag: a1b058b3143587b1fbb7846a6ac846bcc22e94a4\n"
       }
     ],
     "prerequisites": "Linux x86_64 with glibc 2.39+ and pidfd support; tmux 3.3a or newer; GHC and Cabal satisfying the package manifest; Git, a C11 compiler and network access for the first dependency fetch. The run command owns its demo server.",

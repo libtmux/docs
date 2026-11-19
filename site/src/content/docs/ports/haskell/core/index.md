@@ -2,14 +2,14 @@
 port: haskell
 route: core
 title: "tmux client library for Haskell"
-description: "tmux client library for Haskell. Start or adopt a tmux server, create sessions, capture and query detached snapshots, rename sessions and windows, and set pane titles"
+description: "tmux client library for Haskell. Create sessions on a running server, capture and query detached snapshots, rename sessions and windows, and set pane titles"
 cards:
   - label: Getting started
     href: ../guides/getting-started/
     body: Install the source package and capture a running tmux server.
-  - label: Start and retire a daemon
-    href: ../guides/lifecycle/
-    body: Run a private server for one scope, or retire a daemon you adopted.
+  - label: Create a session
+    href: ../guides/creation/
+    body: Create a detached session and retain its target references.
   - label: Capture and traverse
     href: ../guides/capture/
     body: Follow physical panes and linked-window context in one snapshot.
@@ -27,8 +27,8 @@ cards:
     body: Check public capabilities, compatibility evidence and package boundaries.
 ---
 
-Open a `Server` by adopting a running daemon, or start a private one that
-retires with its scope. Create sessions, capture the graph and work with
-sessions, windows and panes as ordinary Haskell records. Rename sessions and
-windows or set pane titles, then capture again to see the change. Window and
-pane creation and sending input are in development.
+Open a `Server` by adopting a running daemon. Create sessions, capture the
+graph and work with sessions, windows and panes as ordinary Haskell records.
+Rename sessions and windows or set pane titles, then capture again to see the
+change. Server startup, window and pane creation, and sending input are in
+development.

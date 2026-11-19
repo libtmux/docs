@@ -323,7 +323,7 @@
   },
   "haskell": {
     "title": "tmux client library for Haskell",
-    "lead": "Start or adopt a tmux server, create sessions, capture and query detached snapshots, rename sessions and windows, and set pane titles",
+    "lead": "Create sessions on a running server, capture and query detached snapshots, rename sessions and windows, and set pane titles",
     "modules": [
       "LibTmux.Server",
       "LibTmux.Snapshot",

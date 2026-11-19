@@ -6981,24 +6981,10 @@
   },
   {
    "port": "haskell",
-   "symbol": "LibTmux.Server#t:Runtime",
-   "page": "/haskell/latest/guides/lifecycle/",
-   "title": "Start and retire a daemon",
-   "section": "guides"
-  },
-  {
-   "port": "haskell",
    "symbol": "LibTmux.Server#t:Server",
    "page": "/haskell/latest/core/",
    "title": "tmux client library for Haskell",
    "section": "core"
-  },
-  {
-   "port": "haskell",
-   "symbol": "LibTmux.Server#t:Server",
-   "page": "/haskell/latest/examples/",
-   "title": "Examples",
-   "section": "examples"
   },
   {
    "port": "haskell",
@@ -7017,13 +7003,6 @@
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#t:Server",
-   "page": "/haskell/latest/guides/lifecycle/",
-   "title": "Start and retire a daemon",
-   "section": "guides"
-  },
-  {
-   "port": "haskell",
-   "symbol": "LibTmux.Server#t:Server",
    "page": "/haskell/latest/guides/mutations/",
    "title": "Rename and set pane titles",
    "section": "guides"
@@ -7033,13 +7012,6 @@
    "symbol": "LibTmux.Server#t:TmuxException",
    "page": "/haskell/latest/guides/capture/",
    "title": "Capture and navigate",
-   "section": "guides"
-  },
-  {
-   "port": "haskell",
-   "symbol": "LibTmux.Server#v:awaitCleanup",
-   "page": "/haskell/latest/guides/lifecycle/",
-   "title": "Start and retire a daemon",
    "section": "guides"
   },
   {
@@ -7073,13 +7045,6 @@
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:capture",
-   "page": "/haskell/latest/guides/lifecycle/",
-   "title": "Start and retire a daemon",
-   "section": "guides"
-  },
-  {
-   "port": "haskell",
-   "symbol": "LibTmux.Server#v:capture",
    "page": "/haskell/latest/guides/performance/",
    "title": "Capture performance",
    "section": "guides"
@@ -7107,13 +7072,6 @@
   },
   {
    "port": "haskell",
-   "symbol": "LibTmux.Server#v:CleanupFailed",
-   "page": "/haskell/latest/guides/lifecycle/",
-   "title": "Start and retire a daemon",
-   "section": "guides"
-  },
-  {
-   "port": "haskell",
    "symbol": "LibTmux.Server#v:cleanupRecoveries",
    "page": "/haskell/latest/guides/capture/",
    "title": "Capture and navigate",
@@ -7129,22 +7087,8 @@
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:cleanupRecoveries",
-   "page": "/haskell/latest/guides/lifecycle/",
-   "title": "Start and retire a daemon",
-   "section": "guides"
-  },
-  {
-   "port": "haskell",
-   "symbol": "LibTmux.Server#v:cleanupRecoveries",
    "page": "/haskell/latest/guides/shared-runtime/",
    "title": "Shared Runtime scopes",
-   "section": "guides"
-  },
-  {
-   "port": "haskell",
-   "symbol": "LibTmux.Server#v:cleanupRecoveries",
-   "page": "/haskell/latest/guides/status/",
-   "title": "Implementation status",
    "section": "guides"
   },
   {
@@ -7191,13 +7135,6 @@
   },
   {
    "port": "haskell",
-   "symbol": "LibTmux.Server#v:defaultOwnedServerConfig",
-   "page": "/haskell/latest/guides/lifecycle/",
-   "title": "Start and retire a daemon",
-   "section": "guides"
-  },
-  {
-   "port": "haskell",
    "symbol": "LibTmux.Server#v:detachCreationRecovery",
    "page": "/haskell/latest/guides/creation/",
    "title": "Create a session",
@@ -7215,13 +7152,6 @@
    "symbol": "LibTmux.Server#v:Failed",
    "page": "/haskell/latest/guides/mutations/",
    "title": "Rename and set pane titles",
-   "section": "guides"
-  },
-  {
-   "port": "haskell",
-   "symbol": "LibTmux.Server#v:inspectCleanup",
-   "page": "/haskell/latest/guides/lifecycle/",
-   "title": "Start and retire a daemon",
    "section": "guides"
   },
   {
@@ -7247,13 +7177,6 @@
   },
   {
    "port": "haskell",
-   "symbol": "LibTmux.Server#v:InvalidConfiguration",
-   "page": "/haskell/latest/guides/lifecycle/",
-   "title": "Start and retire a daemon",
-   "section": "guides"
-  },
-  {
-   "port": "haskell",
    "symbol": "LibTmux.Server#v:InvalidMutationArgument",
    "page": "/haskell/latest/guides/creation/",
    "title": "Create a session",
@@ -7264,27 +7187,6 @@
    "symbol": "LibTmux.Server#v:InvalidTarget",
    "page": "/haskell/latest/guides/mutations/",
    "title": "Rename and set pane titles",
-   "section": "guides"
-  },
-  {
-   "port": "haskell",
-   "symbol": "LibTmux.Server#v:killServer",
-   "page": "/haskell/latest/guides/installation/",
-   "title": "Installation",
-   "section": "guides"
-  },
-  {
-   "port": "haskell",
-   "symbol": "LibTmux.Server#v:killServer",
-   "page": "/haskell/latest/guides/lifecycle/",
-   "title": "Start and retire a daemon",
-   "section": "guides"
-  },
-  {
-   "port": "haskell",
-   "symbol": "LibTmux.Server#v:killServer",
-   "page": "/haskell/latest/guides/status/",
-   "title": "Implementation status",
    "section": "guides"
   },
   {
@@ -7345,30 +7247,9 @@
   },
   {
    "port": "haskell",
-   "symbol": "LibTmux.Server#v:OperationFailed",
-   "page": "/haskell/latest/guides/lifecycle/",
-   "title": "Start and retire a daemon",
-   "section": "guides"
-  },
-  {
-   "port": "haskell",
    "symbol": "LibTmux.Server#v:OutcomeUnknown",
    "page": "/haskell/latest/guides/mutations/",
    "title": "Rename and set pane titles",
-   "section": "guides"
-  },
-  {
-   "port": "haskell",
-   "symbol": "LibTmux.Server#v:OwnedServerConfig.operationTimeout",
-   "page": "/haskell/latest/guides/lifecycle/",
-   "title": "Start and retire a daemon",
-   "section": "guides"
-  },
-  {
-   "port": "haskell",
-   "symbol": "LibTmux.Server#v:OwnedServerConfig.tmuxExecutable",
-   "page": "/haskell/latest/guides/lifecycle/",
-   "title": "Start and retire a daemon",
    "section": "guides"
   },
   {
@@ -7390,13 +7271,6 @@
    "symbol": "LibTmux.Server#v:renameWindowWith",
    "page": "/haskell/latest/guides/mutations/",
    "title": "Rename and set pane titles",
-   "section": "guides"
-  },
-  {
-   "port": "haskell",
-   "symbol": "LibTmux.Server#v:resumeCleanup",
-   "page": "/haskell/latest/guides/lifecycle/",
-   "title": "Start and retire a daemon",
    "section": "guides"
   },
   {
@@ -7423,22 +7297,8 @@
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:ServerClosed",
-   "page": "/haskell/latest/guides/lifecycle/",
-   "title": "Start and retire a daemon",
-   "section": "guides"
-  },
-  {
-   "port": "haskell",
-   "symbol": "LibTmux.Server#v:ServerClosed",
    "page": "/haskell/latest/guides/mutations/",
    "title": "Rename and set pane titles",
-   "section": "guides"
-  },
-  {
-   "port": "haskell",
-   "symbol": "LibTmux.Server#v:ServerConfig.captureTimeout",
-   "page": "/haskell/latest/guides/lifecycle/",
-   "title": "Start and retire a daemon",
    "section": "guides"
   },
   {
@@ -7465,13 +7325,6 @@
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:tryTmux",
-   "page": "/haskell/latest/guides/lifecycle/",
-   "title": "Start and retire a daemon",
-   "section": "guides"
-  },
-  {
-   "port": "haskell",
-   "symbol": "LibTmux.Server#v:tryTmux",
    "page": "/haskell/latest/guides/mutations/",
    "title": "Rename and set pane titles",
    "section": "guides"
@@ -7488,34 +7341,6 @@
    "symbol": "LibTmux.Server#v:tryTmux",
    "page": "/haskell/latest/guides/shared-runtime/",
    "title": "Shared Runtime scopes",
-   "section": "guides"
-  },
-  {
-   "port": "haskell",
-   "symbol": "LibTmux.Server#v:withOwnedServer",
-   "page": "/haskell/latest/examples/",
-   "title": "Examples",
-   "section": "examples"
-  },
-  {
-   "port": "haskell",
-   "symbol": "LibTmux.Server#v:withOwnedServer",
-   "page": "/haskell/latest/guides/installation/",
-   "title": "Installation",
-   "section": "guides"
-  },
-  {
-   "port": "haskell",
-   "symbol": "LibTmux.Server#v:withOwnedServer",
-   "page": "/haskell/latest/guides/lifecycle/",
-   "title": "Start and retire a daemon",
-   "section": "guides"
-  },
-  {
-   "port": "haskell",
-   "symbol": "LibTmux.Server#v:withOwnedServer",
-   "page": "/haskell/latest/guides/status/",
-   "title": "Implementation status",
    "section": "guides"
   },
   {
@@ -7537,20 +7362,6 @@
    "symbol": "LibTmux.Server#v:withServer",
    "page": "/haskell/latest/guides/capture/",
    "title": "Capture and navigate",
-   "section": "guides"
-  },
-  {
-   "port": "haskell",
-   "symbol": "LibTmux.Server#v:withServer",
-   "page": "/haskell/latest/guides/lifecycle/",
-   "title": "Start and retire a daemon",
-   "section": "guides"
-  },
-  {
-   "port": "haskell",
-   "symbol": "LibTmux.Server#v:withServerIn",
-   "page": "/haskell/latest/guides/lifecycle/",
-   "title": "Start and retire a daemon",
    "section": "guides"
   },
   {

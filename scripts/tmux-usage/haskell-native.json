@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
   "repository": "libtmux/libtmux-haskell",
-  "revision": "03c914a6298708c786cea21233eb39acf9b7c085",
+  "revision": "a1b058b3143587b1fbb7846a6ac846bcc22e94a4",
   "files": {
     ".tool-versions": "13c8a19b336b86a161f4d5ea74347960e884e2c0887d399fe752d84eecfd35e7",
-    "cabal.project": "61f2038cbe33c8d6075c86adcbdab9e73fed6465d46291adf5def3be417097db",
-    "cbits/process.c": "3fc2394517cfc150a275ce2af8cdb34bdaaabfda8103ad67f9b8a0ab31e114f9",
-    "cbits/process.h": "7128f83e8936425c159fa06cf7f74c76bd83b8c274c2a14eef734425ac14b51d",
+    "cabal.project": "a12fcbb12429d0702f22fb57aed20d3a00ca5a7262862d11ba48055f6507d15d",
+    "cbits/process.c": "847f16335d7f924041e02a836cac098b5e5e5725b8d9ebe1ca21b6c618872fa0",
+    "cbits/process.h": "d352f56572c30eaf36bf3eb00b9d52a6c1b232568d338701686e2e73453d3c6b",
     "internal/LibTmux/Internal/Budget.hs": "b9d5e202feac125b518f22bb200d695c11afde8c8e0f93eb7043a8076570ba91",
-    "internal/LibTmux/Internal/Capture.hs": "5469f4188035a3ab26e0b536f2544f860aa929cb7fa5d25548039b1b198f3a4e",
+    "internal/LibTmux/Internal/Capture.hs": "21de3d6173114a0a872e8f20ca50fadbfba8af4c4d2a923dd3ad5d3b3321a6b3",
     "internal/LibTmux/Internal/Command.hs": "1a64e640f2b60c01d97745ca68780898d6232cfe2667f6e0b2074d78cc69013c",
     "internal/LibTmux/Internal/Creation.hs": "3c6df9a21857807629a0202d7fc32073ab2858e28c90e58d2fb965d947793263",
     "internal/LibTmux/Internal/Entropy.hs": "5fb00be60a26390da3690095214b1f50fa8b9e3cb16ba068c113c4fa32ab998b",
@@ -16,20 +16,19 @@
     "internal/LibTmux/Internal/Frame.hs": "54f4177b34c2b2629708319dbf53e2fdea2f0108fd9d458b1ed2470e1a1863b4",
     "internal/LibTmux/Internal/Graph.hs": "ef5b6c4c55b0de0f732d3f2db83d918bf443c62deefeab3936d7ab1ed6c2d131",
     "internal/LibTmux/Internal/Mutation.hs": "e3eaeb13ae95ca490af0817f06ed9f160b631e44e81c0f5f7cbdc721d1e65697",
-    "internal/LibTmux/Internal/OwnedServer.hs": "2bdcafba3cc6c0a9147ec4bd5b41ed4efdc2626709bb344d22465ffabd462a22",
     "internal/LibTmux/Internal/Process.hs": "10e166ea61485b0033af5ad7d36dadbe7bce5810a30196bb920660e55ccebf38",
     "internal/LibTmux/Internal/Process/Native.hs": "d26fa029d759cd102b8127e3f0a5853737900fbb7ce4122cd542c2048c0bc82a",
     "internal/LibTmux/Internal/Query.hs": "ebf60049d2972df5fec0c36dfe7f363386a93f2aa621dcf659f335a87f32c905",
     "internal/LibTmux/Internal/Record.hs": "d4bfac3317a53e815c726f2ad6d156cf47c899eba541bf0543c03982e30c5e25",
-    "internal/LibTmux/Internal/Runtime.hs": "4f6f7db782f99acc48baae5de7e090d05490c04fea3b3fd5d287ed849e7479d3",
+    "internal/LibTmux/Internal/Runtime.hs": "696c1269f06d8bdfca8bafb2031d6f5a5defe93797576e4646ffe20fb1c8ced4",
     "internal/LibTmux/Internal/Scheduler.hs": "d97dd8c431a84c41ab947baac096e757cf498ebb0747b0e311fa7a73eee927b1",
-    "internal/LibTmux/Internal/Scope.hs": "de0edf3dd833827cf26f364e4199af40ea471e026c491f2fdabe4293cee0639e",
+    "internal/LibTmux/Internal/Scope.hs": "57ce9e3b7dde5ac2f893e07fbc04c3766007e7cce9000fa900e4618ddd151e3e",
     "internal/LibTmux/Internal/SocketPin.hs": "e319d7bda5c8b965c3fa4f6862d38b85f38f66ee67ea3afb10130bf364ba20a4",
     "internal/LibTmux/Internal/TmuxText.hs": "5c58645aa089c306cf68f69c4b209eba78f915320547c0d1b8bdfb003b086dd8",
     "internal/LibTmux/Internal/Topology.hs": "178adaca0425a9468b6a5d5227391168399c478d96348995a36b54f235ac9fb3",
-    "internal/LibTmux/Internal/VersionProbe.hs": "d3480985e7cbcacf868550b185660976ee6910d7608d984614d7399a09a143c9",
-    "libtmux-haskell.cabal": "3977c9c6970578025b52002b9a79255d1b79d4ec8cb9f9964d2fc8ce4f29a182",
-    "src/LibTmux.hs": "4683ddfb74f62ef19e23306d9a438bec16aef2623146198cbcbfb50c85a532ec",
+    "internal/LibTmux/Internal/VersionProbe.hs": "65dcecd5ffec5e423b03ff4d5e460a36aae63d91bc7297abbe0c0ee6bbb61fa3",
+    "libtmux-haskell.cabal": "5f8a2e67eed5de3586070e26b73017046b405d8cf4371dfc6ad60ce42eeb638b",
+    "src/LibTmux.hs": "f3c7e915fc8ec64f6b13a387e581ad2a78335ff6e232d9aa1fdcfe9f4316a3c5",
     "src/LibTmux/Creation.hs": "e3187844f7cc5c3c87d77c6299f9cbccc57753fd683a15717c962dc33aafa916",
     "src/LibTmux/Id.hs": "3456edf88bf412e8769e5c96cc5d35b7b118ea3bd3786f167c9002f9804fb3b7",
     "src/LibTmux/Query.hs": "43c7b3854e6a7183b383a54216923d31225fa7f42271459f5cdb824bf2c9835c",
@@ -41,17 +40,17 @@
     "src/LibTmux/Query/ServerInfo.hs": "9fc7ae60cee0028a5299c587a1383ef1db57d90cfd938483dcda1b04c902c105",
     "src/LibTmux/Query/Session.hs": "e11148b360cc19465cc346eda1f9141f8c64e55e3bb5c68fb653d559d78bec5b",
     "src/LibTmux/Query/Window.hs": "7d92de6a8214c059dbb35f5e5f3216c3b25afed3b9263ec1601e50bbaa1a23b1",
-    "src/LibTmux/Server.hs": "33ed270f4fb215f0469ea72ce7779b94afe56355518afd5933c3fd40bd8a902a",
+    "src/LibTmux/Server.hs": "f419a20f75eb79880009ebc94894fd0632931f899e9741d0f3ab51302afe73bd",
     "src/LibTmux/Snapshot.hs": "cddfee4e757f1dd4b35ee9f099fa796c86213ea7ff50a4727ddf198d26aaa2a1",
     "src/LibTmux/Snapshot/Fixture.hs": "b1b53369587d2ea963a97ba2b34ce963233130c4e47581292510613e7819a919",
     "src/LibTmux/Value.hs": "e199c3d0bbf08a159daa35bb4ae9a5d2ad4761117d375f292dd8b250bb459e55",
     "src/LibTmux/Version.hs": "8314ada1a5bd8c16a12d8d90df7e834ee253a39afba3699156aabe2c55e9a325"
   },
-  "claimsSha256": "b820442398bcf360537c7e9a5031c38a6707e42441e5b22007824f8f0aefa353",
+  "claimsSha256": "bde9f785f0d0239e5a3ba5c728d17738f6d63cdda9585f8be10fc6e2bf09442a",
   "classifications": [
     {
       "kind": "sends",
-      "why": "Server adoption and owned startup probe the daemon with hook-free reads, and owned startup sends start-server and set-option. Capture and queries acquire state; mutations and creation submit commands.",
+      "why": "Server adoption probes the daemon version. Capture and queries acquire state; mutations and creation submit commands.",
       "symbols": [
         "LibTmux.Query#v:fetch",
         "LibTmux.Server#v:withServer",
@@ -64,8 +63,7 @@
         "LibTmux.Server#v:renameWindowWith",
         "LibTmux.Server#v:setPaneTitle",
         "LibTmux.Server#v:setPaneTitleWith",
-        "LibTmux.Server#v:withServerIn",
-        "LibTmux.Server#v:withOwnedServer"
+        "LibTmux.Server#v:withServerIn"
       ]
     },
     {
@@ -78,7 +76,7 @@
     },
     {
       "kind": "local-recovery",
-      "why": "These operations inspect, signal, reap or relinquish existing owners. A kill signals a held process descriptor, so none of them sends or redispatches a tmux command, kill-server included.",
+      "why": "These operations inspect, signal, reap or relinquish existing owners. They do not redispatch a tmux command.",
       "symbols": [
         "LibTmux.Server#v:inspectCleanup",
         "LibTmux.Server#v:resumeCleanup",
@@ -96,8 +94,7 @@
         "LibTmux.Server#v:resumeMutationRecovery",
         "LibTmux.Server#v:awaitMutationRecovery",
         "LibTmux.Server#v:detachMutationRecovery",
-        "LibTmux.Server#v:operationStatus",
-        "LibTmux.Server#v:killServer"
+        "LibTmux.Server#v:operationStatus"
       ]
     },
     {
@@ -249,8 +246,7 @@
         "LibTmux.Value#v:paneIndexValue",
         "LibTmux.Version#v:parseVersion",
         "LibTmux.Version#v:renderVersion",
-        "LibTmux.Version#v:requireSupported",
-        "LibTmux.Server#v:defaultOwnedServerConfig"
+        "LibTmux.Version#v:requireSupported"
       ]
     },
     {
@@ -408,12 +404,9 @@
         "LibTmux.Value#v:NonPositiveDimension",
         "LibTmux.Value#v:NegativeIndex",
         "LibTmux.Version#v:MalformedVersion",
-        "LibTmux.Version#v:UnsupportedVersion",
-        "LibTmux.Server#v:OwnedServerConfig",
-        "LibTmux.Server#v:OwnedServerConfig.tmuxExecutable",
-        "LibTmux.Server#v:OwnedServerConfig.operationTimeout"
+        "LibTmux.Version#v:UnsupportedVersion"
       ]
     }
   ],
-  "modelSha256": "b48d4d0a9ec026ad8decd6d698a820f8c21de35da29d1e312b741fd7f53abab8"
+  "modelSha256": "e978e0a8f7f9a3461b0ea00f42dbe59534bd268dd0e885f102efda00282e46ac"
 }
