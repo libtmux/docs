@@ -844,13 +844,23 @@ const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
         'Outcome', 'ReadRecovery', 'Stage', 'Status'].map((name) => `LibTmux.Server#t:${name}`),
       ...['awaitCleanup', 'cleanupFailure', 'cleanupObservation', 'creationReceipt', 'detachCaptureRecovery', 'inspectCaptureRecovery',
         'inspectCleanup', 'resumeCaptureRecovery', 'resumeCleanup'].map((name) => `LibTmux.Server#v:${name}`),
+      'LibTmux.Program',
+      ...['Program', 'ProgramOptions', 'ProgramExit', 'StartFailure', 'StartPhase', 'ProgramScreen', 'ProgramResult',
+        'ProgramRecovery', 'ProgramCleanupStatus'].map((name) => `LibTmux.Program#t:${name}`),
+      ...['programOptions', 'sendProgramInput', 'readProgramScreen', 'waitProgram', 'waitProgramFor', 'terminateProgram',
+        'programRecoveries', 'programCleanupFailure', 'inspectProgramCleanup', 'resumeProgramCleanup']
+        .map((name) => `LibTmux.Program#v:${name}`),
       // `serverGeneration` reports it, and a reference is valid for one.
       'LibTmux.Snapshot#t:Generation',
     ],
     session: [
       'LibTmux.Creation',
       ...['InitialProcess', 'SessionOptions'].map((name) => `LibTmux.Creation#t:${name}`),
+      ...['killSession', 'killSessionWith'].map((name) => `LibTmux.Server#v:${name}`),
     ],
+    window: ['killWindow', 'killWindowWith'].map((name) => `LibTmux.Server#v:${name}`),
+    pane: ['LibTmux.Server#t:PaneInput',
+      ...['sendKeys', 'sendKeysWith', 'killPane', 'killPaneWith'].map((name) => `LibTmux.Server#v:${name}`)],
     snapshots: ['LibTmux.Snapshot#t:TmuxText'],
   },
   // Elixir's modules are named for what they do rather than for a tmux object.
