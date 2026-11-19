@@ -339,7 +339,6 @@ def extract_modules(pages, installed, exposed, locations, revision, source_pages
                 and (module == "LibTmux" or rich)
                 and block is interface.elements()[0]
                 and block.tag == "h1"
-                and block.text() == "Documentation"
                 and not block.elements()
             ):
                 if module != "LibTmux":
