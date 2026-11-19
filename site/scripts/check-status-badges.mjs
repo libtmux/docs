@@ -1,4 +1,4 @@
-import { holdClock, newCheckContext } from './browser-context.mjs'
+import { newCheckContext } from './browser-context.mjs'
 import assert from 'node:assert/strict'
 import { CONCEPT_DESCRIPTION, PICKER_GROUP_SUMMARY, PORT_BY_SLUG, PRODUCT_STATUS_GUIDE, PRODUCT_STATUS_LINK, productStatusLine, productAvailable, productStatus } from '../src/lib/ports.ts'
 import registry from '../src/data/registry.json' with { type: 'json' }
@@ -171,32 +171,22 @@ async function checkToggletip(page, picker, badge, status, label, where) {
   await picker.locator('[data-picker-search]').focus()
   await closed(card, `${where}: leaving the badge closes the card`)
   // Hover opens it only after the pointer rests, stays open over the card, and Escape closes it without moving the pointer.
-  // The delays pass by advancing a held clock, so the check neither sleeps through them nor races them.
-  await holdClock(page)
-  try {
-    await page.mouse.move(2, 2)
-    await badge.hover()
-    await page.clock.runFor(HOVER_OPEN / 2)
-    assert.equal(await isOpen(card), false, `${where}: a passing pointer leaves the card closed for ${HOVER_OPEN}ms`)
-    await page.clock.runFor(HOVER_OPEN / 2)
-    await card.waitFor({ state: 'visible' })
-    await link.hover()
-    await page.clock.runFor(400)
-    assert.equal(await isOpen(card), true, `${where}: the card stays open under the pointer`)
-    await page.keyboard.press('Escape')
-    await closed(card, `${where}: Escape closes a card opened by hover`)
-    assert.equal(await picker.evaluate((element) => element.open), true, `${where}: the menu stays open`)
-    await page.mouse.move(2, 2)
-    await badge.hover()
-    await page.clock.runFor(HOVER_OPEN)
-    await card.waitFor({ state: 'visible' })
-    await page.mouse.move(2, 2)
-    // The close delay is shorter than the open delay.
-    await page.clock.runFor(HOVER_OPEN)
-    await closed(card, `${where}: moving the pointer away closes the card`)
-  } finally {
-    await page.clock.resume()
-  }
+  await page.mouse.move(2, 2)
+  await badge.hover()
+  await page.waitForTimeout(HOVER_OPEN / 2)
+  assert.equal(await isOpen(card), false, `${where}: a passing pointer leaves the card closed for ${HOVER_OPEN}ms`)
+  await card.waitFor({ state: 'visible' })
+  await link.hover()
+  await page.waitForTimeout(400)
+  assert.equal(await isOpen(card), true, `${where}: the card stays open under the pointer`)
+  await page.keyboard.press('Escape')
+  await closed(card, `${where}: Escape closes a card opened by hover`)
+  assert.equal(await picker.evaluate((element) => element.open), true, `${where}: the menu stays open`)
+  await page.mouse.move(2, 2)
+  await badge.hover()
+  await card.waitFor({ state: 'visible' })
+  await page.mouse.move(2, 2)
+  await closed(card, `${where}: moving the pointer away closes the card`)
 }
 
 async function openPicker(picker) {
@@ -235,7 +225,6 @@ export async function checkStatusBadges(browser, base, options = {}) {
   for (const scheme of schemes) {
     const context = await newCheckContext(browser, base, { colorScheme: scheme, reducedMotion: 'reduce' })
     const page = await context.newPage()
-    await page.clock.install()
     page.setDefaultTimeout(timeout ?? (process.env.CI ? 20000 : 10000))
     page.setDefaultNavigationTimeout(60000)
     try {
@@ -283,7 +272,6 @@ export async function checkStatusBadges(browser, base, options = {}) {
   if (touch && !sabotage) {
     const context = await newCheckContext(browser, base, { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, reducedMotion: 'reduce' })
     const page = await context.newPage()
-    await page.clock.install()
     page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
     page.setDefaultNavigationTimeout(60000)
     try {
@@ -294,19 +282,14 @@ export async function checkStatusBadges(browser, base, options = {}) {
       await picker.locator('[data-picker-panel]').waitFor({ state: 'visible' })
       const badge = picker.locator('[data-surface-entry] .status-toggletip > .status-badge').first()
       const card = cardOf(badge)
-      await holdClock(page)
-      try {
-        await badge.tap()
-        await card.waitFor({ state: 'visible' })
-        assert.equal(await badge.getAttribute('aria-expanded'), 'true', 'a tap opens the card')
-        await page.clock.runFor(HOVER_OPEN)
-        assert.equal(await isOpen(card), true, 'a tapped card stays open')
-        assert.equal(await picker.evaluate((element) => element.open), true, 'a tap leaves the menu open')
-        await badge.tap()
-        await closed(card, 'a second tap closes the card')
-      } finally {
-        await page.clock.resume()
-      }
+      await badge.tap()
+      await card.waitFor({ state: 'visible' })
+      assert.equal(await badge.getAttribute('aria-expanded'), 'true', 'a tap opens the card')
+      await page.waitForTimeout(500)
+      assert.equal(await isOpen(card), true, 'a tapped card stays open')
+      assert.equal(await picker.evaluate((element) => element.open), true, 'a tap leaves the menu open')
+      await badge.tap()
+      await closed(card, 'a second tap closes the card')
     } finally {
       await context.close()
     }

@@ -111,12 +111,3 @@ export async function newCheckPage(browser, base, options = {}) {
     return page
   } catch (error) { proxy.close(); await page?.close().catch(() => {}); throw error }
 }
-
-/**
- * Hold the page's clock so a delay in the page passes by advancing it (`page.clock.runFor`) instead of by
- * waiting. Install the clock (`page.clock.install()`) before the page loads, so every timer the page sets is the
- * clock's own and can be cleared by it; resume it (`page.clock.resume()`) before the page relies on its own timers.
- */
-export async function holdClock(page) {
-  await page.clock.pauseAt(await page.evaluate(() => Date.now() + 100))
-}

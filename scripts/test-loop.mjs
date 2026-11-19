@@ -1,9 +1,7 @@
 #!/usr/bin/env node
 import { spawn } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
-import { availableParallelism } from 'node:os'
 import { fileURLToPath } from 'node:url'
-import { cpuBudget } from './lib/cpu-budget.mjs'
 
 const root = fileURLToPath(new URL('../', import.meta.url))
 // Reuse child-process compilation without changing per-file test isolation.
@@ -23,9 +21,6 @@ const vitest = 'site/node_modules/vitest/vitest.mjs'
 const children = new Set()
 const stoppingGroups = new Set()
 const pending = []
-// Node reads the cgroup CPU quota, so a limited job gets its own share and not the host's.
-const cpus = availableParallelism()
-const cpuSlots = cpuBudget(cpus)
 let cancelled = false
 const stop = (signal = 'SIGTERM') => {
   for (const child of children) if (child.pid) stoppingGroups.add(child.pid)
@@ -37,17 +32,16 @@ const stop = (signal = 'SIGTERM') => {
 }
 const cancel = () => {
   cancelled = true
-  cpuSlots.cancel(new Error(`${loop} cancelled or exceeded ${budget}s`))
   stop()
   setTimeout(() => stop('SIGKILL'), 500).unref()
 }
 const deadline = setTimeout(cancel, budget * 1000)
 for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, cancel)
 
-function run(command, args, cost = 1) {
+function run(command, args) {
   if (cancelled) throw new Error(`${loop} cancelled or exceeded ${budget}s`)
-  const promise = cpuSlots.run(cost, () => new Promise((resolve, reject) => {
-    const taskStarted = performance.now()
+  const taskStarted = performance.now()
+  const promise = new Promise((resolve, reject) => {
     const child = spawn(command, args, {
       cwd: root, stdio: 'inherit', detached: true,
       env: { ...process.env, LIBTMUX_DOCS_TEST_SOURCE_ONLY: '1' },
@@ -63,7 +57,7 @@ function run(command, args, cost = 1) {
       if (code === 0) resolve()
       else reject(new Error(`${command} ${args.join(' ')}: ${signal ?? code}`))
     })
-  }))
+  })
   pending.push(promise)
   return promise
 }
@@ -72,24 +66,19 @@ const pnpm = (...args) => {
   const entry = process.env.npm_execpath ?? 'pnpm'
   return /\.[cm]?js$/.test(entry) ? node(entry, ...args) : run(entry, args)
 }
-// A suite keeps one CPU busy per worker, and never more workers than the job has CPUs.
-const tests = (directory, names = []) => {
-  const workers = Math.min(directory === 'site' ? 6 : directory === 'packages/api-model' ? 4 : 2, cpus)
-  return run(process.execPath, [vitest, 'run', '--root', directory,
-    '--maxWorkers', String(workers), '--pool', 'threads', '--fsModuleCache',
-    ...((loop === 'medium' ? ['**/*.outer.test.ts', ...excluded('outer', directory)] : [])
-      .concat(['**/*.publication.test.ts', ...excluded('publication', directory)])
-      .flatMap((pattern) => ['--exclude', pattern])),
-    ...names.map((name) => `test/${name}.test.ts`)], names.length ? Math.min(workers, names.length) : workers)
-}
+const tests = (directory, names = []) => node(vitest, 'run', '--root', directory,
+  '--maxWorkers', directory === 'site' ? '6' : directory === 'packages/api-model' ? '4' : '2', '--pool', 'threads', '--fsModuleCache',
+  ...((loop === 'medium' ? ['**/*.outer.test.ts', ...excluded('outer', directory)] : [])
+    .concat(['**/*.publication.test.ts', ...excluded('publication', directory)])
+    .flatMap((pattern) => ['--exclude', pattern])),
+  ...names.map((name) => `test/${name}.test.ts`))
 
 try {
   if (loop !== 'inner') await node('scripts/stage-port-docs.mjs', '--integrated')
-  // Checks start in this order as CPUs free up: short ones first, the long site suite, type checks and browser last.
   const checks = loop === 'inner' ? [
     tests('packages/api-model', ['concepts', 'resolver', 'mentions']),
     tests('site', ['native-switchers', 'native-shell-context', 'normalize-native-shell']),
-  ] : [tests('packages/api-model'), tests('packages/theme')]
+  ] : ['packages/api-model', 'packages/theme', 'site'].map((directory) => tests(directory))
   if (loop !== 'inner') checks.push(
     pnpm('run', '--recursive', 'lint'),
     pnpm('exec', 'oxlint', 'scripts'),
@@ -112,9 +101,6 @@ try {
     node('scripts/gen-workspace-showcase.negative.mjs'),
     node('scripts/gen-product-copy.negative.mjs'),
     node('scripts/gen-example-sources.mjs', '--check'),
-  )
-  if (loop !== 'inner') checks.push(tests('site'))
-  if (loop === 'outer') checks.push(
     pnpm('run', '--recursive', 'type-check'),
     pnpm('run', 'type-check:python'),
     node('site/scripts/check-dev.mjs', '--sample'),
@@ -124,11 +110,10 @@ try {
   if (cancelled || elapsed >= budget) throw new Error(`${loop} cancelled or exceeded ${budget}s: ${elapsed.toFixed(2)}s`)
   console.log(`${loop}: PASS in ${elapsed.toFixed(2)}s (budget <${budget}s; publication audit excluded)`)
 } catch (error) {
-  console.error(cancelled ? `${loop} cancelled or exceeded ${budget}s: ${((performance.now() - started) / 1000).toFixed(2)}s` : error.message)
+  console.error(error.message)
   process.exitCode = 1
 } finally {
   clearTimeout(deadline)
-  cpuSlots.cancel(new Error(`${loop} stopped`))
   if (children.size || stoppingGroups.size) {
     stop()
     await new Promise((resolve) => setTimeout(() => {
