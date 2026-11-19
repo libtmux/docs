@@ -31,6 +31,12 @@ jobs:
           node-version: '26'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - name: Install Python fixture tooling
+        run: uv sync --locked
       - name: Read the displayed source pin
         id: source
         run: |
