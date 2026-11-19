@@ -136,14 +136,16 @@ export interface Panel {
   scope: Scope
   cooldown: Cooldown
   language: 'console' | 'json' | 'toml'
-  /** Command/config text, "$ "-prefixed for console panels. May contain
-   *  COOLDOWN_DURATION_SENTINEL or COOLDOWN_DATE_SENTINEL — see
+  /** Command/config text. A console command carries no prompt: the installer draws it.
+   *  May contain COOLDOWN_DURATION_SENTINEL or COOLDOWN_DATE_SENTINEL — see
    *  bodySegments(). */
   body: string
   /** The build or install step this cell needs first, where it needs one. */
   pipPrereq: string | null
-  /** A caveat: a cooldown a method cannot honour, a path only you know. */
+  /** A caveat that holds whatever the cooldown: a path only you know. */
   note: string | null
+  /** Why a cooldown mode changes nothing for this method, where it changes nothing; the installer says it beside the command. */
+  cooldownReason: string | null
   isDefault: boolean
 }
 
@@ -254,11 +256,7 @@ const PY_METHODS: readonly Method[] = [
 /** One-line caveat for cells whose snippet does not actually enforce cooldown. */
 function pyCooldownNote(method: Method, cooldown: Cooldown): string | undefined {
   if ((method.id === 'pipx' || method.id === 'pip') && (cooldown.id === 'days' || cooldown.id === 'bypass')) {
-    return (
-      'pip has no per-package cooldown override, so this snippet runs without cooldown enforcement. ' +
-      'Switch to the uvx tab — it applies the cooldown to transitive deps via `--exclude-newer` while ' +
-      'exempting libtmux-mcp itself via `--exclude-newer-package`.'
-    )
+    return `${method.id} has no per-package cooldown override, so this snippet runs without cooldown enforcement.`
   }
   return undefined
 }
@@ -392,7 +390,7 @@ export const SERVERS: Readonly<Record<string, ServerSpec>> = {
           // npx resolves the package before it reads the exclusion, so a
           // cooldown would hold back @libtmux/mcp itself.
           note: cooldown.id === 'days'
-            ? 'npx ignores --min-release-age-exclude, so a cooldown here would also hold back the release it runs; this runs without one. The Global install tab applies a cooldown to the server\'s dependencies.'
+            ? 'npx ignores --min-release-age-exclude, so a cooldown here would also hold back the release it runs; this runs without one.'
             : undefined,
         }
       }
@@ -528,7 +526,7 @@ export function serverSpec(port = 'py'): ServerSpec {
  * prompt. The install blocks show about 80 columns before they scroll, so a
  * wider line hides the end of a step the reader has to read before running it.
  */
-export const SHELL_MAX_WIDTH = 78
+export const SHELL_MAX_WIDTH = 80
 
 /** `text` as the page shows it by default: each cooldown slot holds the default day count in its tool's unit. */
 export function withDefaultCooldown(text: string): string {
@@ -537,33 +535,185 @@ export function withDefaultCooldown(text: string): string {
     .replaceAll(COOLDOWN_DATE_SENTINEL, defaultCooldownDate(DEFAULT_COOLDOWN_DAYS))
 }
 
-const SHELL_TOKEN = /(?:[^\s"']+|"[^"]*"|'[^']*')+/g
+/**
+ * A command's words, split at unquoted spaces only, so no break ever falls
+ * inside a quoted word. Null where the text cannot be read that way: a
+ * backslash it already carries, or a quote it leaves open.
+ */
+function shellWords(command: string): string[] | null {
+  const words: string[] = []
+  let current = ''
+  let quote = ''
+  for (const char of command) {
+    if (quote) {
+      current += char
+      if (char === quote) quote = ''
+    } else if (char === "'" || char === '"') {
+      quote = char
+      current += char
+    } else if (char === '\\') {
+      return null
+    } else if (char === ' ') {
+      if (current) words.push(current)
+      current = ''
+    } else current += char
+  }
+  if (quote) return null
+  if (current) words.push(current)
+  return words
+}
+
+/** A quoted program's statements: its text split at each `;` outside strings and brackets. */
+function statements(program: string): string[] {
+  const found: string[] = []
+  let current = ''
+  let quote = ''
+  let depth = 0
+  for (let i = 0; i < program.length; i++) {
+    const char = program[i]!
+    if (quote) {
+      current += char
+      if (char === quote && program[i - 1] !== '\\') quote = ''
+      continue
+    }
+    if (char === '"') quote = char
+    else if ('([{'.includes(char)) depth++
+    else if (')]}'.includes(char)) depth--
+    else if (char === ';' && depth === 0) {
+      if (current.trim()) found.push(current.trim())
+      current = ''
+      continue
+    }
+    current += char
+  }
+  if (current.trim()) found.push(current.trim())
+  return found
+}
+
+/** A statement wider than the line opens its shallowest bracket that holds a list, one item per line. */
+function openList(statement: string, indent: string, width: number): string {
+  if (indent.length + statement.length <= width) return statement
+  interface Open { at: number; depth: number; commas: number[]; end: number }
+  const stack: Open[] = []
+  let best: Open | undefined
+  let quote = ''
+  for (let i = 0; i < statement.length; i++) {
+    const char = statement[i]!
+    if (quote) {
+      if (char === quote && statement[i - 1] !== '\\') quote = ''
+    } else if (char === '"') quote = char
+    else if ('([{'.includes(char)) stack.push({ at: i, depth: stack.length, commas: [], end: -1 })
+    else if (')]}'.includes(char)) {
+      const open = stack.pop()
+      if (open?.commas.length && (!best || open.depth < best.depth)) best = { ...open, end: i }
+    } else if (char === ',' && stack.length) stack.at(-1)!.commas.push(i)
+  }
+  if (!best) return statement
+  const cuts = [best.at + 1, ...best.commas.map((comma) => comma + 1), best.end]
+  const items = cuts.slice(0, -1).map((cut, k) => statement.slice(cut, k === cuts.length - 2 ? cuts[k + 1] : cuts[k + 1]! - 1).trim())
+  return `${statement.slice(0, best.at + 1)}\n${items.map((item) => `${indent}  ${item}`).join(',\n')}\n${indent}${statement.slice(best.end)}`
+}
+
+/** A quoted program after -e or -c: one statement per line. */
+function quotedProgram(word: string, indent: string, width: number): string {
+  if (word[0] !== "'" || word.length + indent.length <= width) return word
+  const lines = statements(word.slice(1, -1))
+  if (lines.length < 2) return word
+  return `'\n${lines.map((line) => indent + openList(line, indent, width)).join('\n')}'`
+}
+
+/**
+ * One command's words as lines: the command's own words; each flag with its
+ * value; consecutive positional arguments together; and after `--` the
+ * program it runs, its words on one line and its own flags one level deeper.
+ */
+function commandLines(words: string[], indent: string, width: number): { text: string; deep: boolean }[] {
+  const lines: { text: string; deep: boolean }[] = []
+  let i = 0
+  let deep = false
+  const head: string[] = []
+  while (i < words.length && !words[i]!.startsWith('-') && !(head.length && /[/@]/.test(words[i]!))) head.push(words[i++]!)
+  if (head.length) lines.push({ text: head.join(' '), deep })
+  const flag = (): string => {
+    const word = words[i++]!
+    const value = words[i]
+    if (!word.includes('=') && value !== undefined && !value.startsWith('-')) {
+      i++
+      return `${word} ${/^-(?:e|c)$|^--eval$/.test(word) ? quotedProgram(value, `${indent}  `, width) : value}`
+    }
+    return word
+  }
+  while (i < words.length) {
+    const word = words[i]!
+    if (word === '--') {
+      i++
+      const program: string[] = []
+      while (i < words.length && !words[i]!.startsWith('-')) program.push(words[i++]!)
+      lines.push({ text: `--${program.length ? ` ${program.join(' ')}` : i < words.length ? ` ${flag()}` : ''}`, deep })
+      deep = true
+    } else if (word.startsWith('-')) lines.push({ text: flag(), deep })
+    else {
+      const positional: string[] = []
+      while (i < words.length && !words[i]!.startsWith('-')) positional.push(words[i++]!)
+      lines.push({ text: positional.join(' '), deep })
+    }
+  }
+  return lines
+}
 
 /**
  * One shell command broken across lines with a trailing backslash, which a
  * shell reads as the same command, so the copied text runs as the one line did.
  *
- * A line that fits, or one that already ends in a backslash, is left alone, so
- * a command written over several lines keeps its own breaks. A flag stays on the line of its value, and quoted words are never split.
- * A cooldown slot is measured at the default day count's width.
+ * A command that fits, or one already written over several lines, is left
+ * alone. Otherwise (WRITING.md, Code blocks) a flag stays on the line of its
+ * value, positional arguments come last and stay together, and a chain breaks
+ * before each `&&` or `||`. Breaks fall only at unquoted spaces. After `--`,
+ * the program it runs takes one line and its flags go one level deeper; a
+ * quoted program after `-e` or `-c` puts one statement on each line. A
+ * cooldown slot is measured at the default day count's width.
  */
 export function wrapShell(command: string, width = SHELL_MAX_WIDTH): string {
-  if (command.includes('\n')) return command.split('\n').map((line) => (line.endsWith('\\') ? line : wrapShell(line, width))).join('\n')
   const measure = (text: string) => withDefaultCooldown(text).length
-  if (measure(command) <= width) return command
-  const lines: string[][] = [[]]
-  for (const token of command.match(SHELL_TOKEN) ?? []) {
-    const line = lines.at(-1)!
-    const indent = lines.length > 1 ? 4 : 0
-    const next = measure([...line, token].join(' ')) + indent + 2
-    if (line.length && next > width) {
-      const last = line.at(-1)!
-      // Keep a flag with its value rather than ending a line on it.
-      if (line.length > 1 && /^-/.test(last) && last !== '--' && !token.startsWith('-')) lines.push([line.pop()!, token])
-      else lines.push([token])
-    } else line.push(token)
+  if (command.includes('\n') || measure(command) <= width) return command
+  const words = shellWords(command)
+  if (!words) return command
+  const segments: string[][] = [[]]
+  for (const word of words) {
+    if (word === '&&' || word === '||') segments.push([word])
+    else segments.at(-1)!.push(word)
   }
-  return lines.map((line) => line.join(' ')).join(' \\\n    ')
+  const lines: string[] = []
+  segments.forEach((segment, index) => {
+    const operator = index ? `${segment.shift()!} ` : ''
+    const lead = index ? '  ' : ''
+    const whole = operator + segment.join(' ')
+    if (measure(lead + whole) <= width) {
+      lines.push(lead + whole)
+      return
+    }
+    const indent = index ? '      ' : '    '
+    commandLines(segment, indent, width).forEach((line, k) => {
+      lines.push(k ? indent + (line.deep ? '    ' : '') + line.text : lead + operator + line.text)
+    })
+  })
+  return lines.join(' \\\n')
+}
+
+/**
+ * A path the reader replaces with their own, as the servers built from source
+ * write it: `/absolute/path/to/project/bin/libtmux-mcp`.
+ */
+const PLACEHOLDER_PATH = /\/absolute\/path\/to\/[^\s"'<&\\]*/g
+
+/**
+ * Highlighted code with each placeholder path marked as text to replace.
+ *
+ * Only a span is added around the path, so the text a reader copies is the
+ * code as written: the placeholder stays, and no one pastes a path of ours.
+ */
+export function markPlaceholders(html: string): string {
+  return html.replace(PLACEHOLDER_PATH, '<span class="lm-install__slot" title="Replace with the real path">$&</span>')
 }
 
 /** `command` and its arguments as one shell line. */
@@ -673,25 +823,32 @@ function bodyFor(client: Client, scope: Scope, server: ServerCommand): RawBody {
   return { body: wrapShell(cliBody(client, scope, server)), language: 'console', note }
 }
 
+/** What a cooldown mode changes in a command: the same server, spelled with the same arguments, prerequisite and environment. */
+const sameCommand = (a: ServerCommand, b: ServerCommand) =>
+  JSON.stringify([a.command, a.args, a.configArgs, a.env, a.prereq]) === JSON.stringify([b.command, b.args, b.configArgs, b.env, b.prereq])
+
 /** Pre-compute every legal (client, method, scope, cooldown) panel for one port. */
 export function buildPanels(spec: ServerSpec, sourceRevision?: string): Panel[] {
   const panels: Panel[] = []
   CLIENTS.forEach((client, clientIndex) => {
     spec.methods.forEach((method, methodIndex) => {
       client.scopes.forEach((scope, scopeIndex) => {
+        const plain = spec.resolve(method, COOLDOWNS[0]!, sourceRevision)
         spec.cooldowns.forEach((cooldown, cooldownIndex) => {
           const server = spec.resolve(method, cooldown, sourceRevision)
           const raw = bodyFor(client, scope, server)
-          const body = raw.language === 'console' ? `$ ${raw.body}` : raw.body
+          // A mode that leaves the command as it was says why, and what it says is not a caveat on the command.
+          const refused = cooldown.id !== 'off' && sameCommand(server, plain) && server.note !== plain.note
           panels.push({
             client,
             method,
             scope,
             cooldown,
             language: raw.language,
-            body,
+            body: raw.body,
             pipPrereq: server.prereq ?? null,
-            note: raw.note,
+            note: refused ? plain.note ?? null : raw.note,
+            cooldownReason: refused ? server.note ?? null : null,
             isDefault: clientIndex === 0 && methodIndex === 0 && scopeIndex === 0 && cooldownIndex === 0,
           })
         })
@@ -836,17 +993,29 @@ function panelActiveSelectors(spec: ServerSpec): string {
 
 // Deactivated tabs: any tab still carrying the SSR `aria-selected="true"`
 // once `<html>` has been tagged (i.e. every page load once JS has run)
-// repaints muted, regardless of which one the browser thinks is selected.
-// The matching "active" rule below wins the specificity tie on the one tab
-// that is genuinely still selected, by coming later in the stylesheet.
-const TAB_DEACTIVATE_RULE =
-  'html[data-mcp-install-client] .lm-mcp-install__tab[data-tab-kind="client"][aria-selected="true"],' +
-  'html[data-mcp-install-method] .lm-mcp-install__tab[data-tab-kind="method"][aria-selected="true"],' +
-  'html[data-mcp-install-scope] .lm-mcp-install__tab[data-tab-kind="scope"][aria-selected="true"]' +
-  '{color:var(--lm-mcp-install-fg-muted);border-color:transparent;background:transparent}'
+// repaints as unselected, regardless of which one the browser thinks is
+// selected. The matching "active" rule below wins the specificity tie on the
+// one tab that is genuinely still selected, by coming later in the stylesheet.
+//
+// The client tabs sit in the surface's header, underlined; Run with and Scope
+// sit in its bar as a segmented control. Each is painted its own way.
+const CLIENT_TAB = '.lm-mcp-install__tab[data-tab-kind="client"]'
+const SEGMENT_TABS = ['method', 'scope'].map((kind) => `.lm-mcp-install__tab[data-tab-kind="${kind}"]`)
 
-const TAB_ACTIVE_DECL =
-  '{color:var(--lm-mcp-install-accent);border-color:var(--lm-mcp-install-accent);background:transparent}'
+const TAB_DEACTIVATE_RULE =
+  `html[data-mcp-install-client] ${CLIENT_TAB}[aria-selected="true"]` +
+  '{color:var(--lm-mcp-install-fg-muted);box-shadow:inset 0 -2px transparent}' +
+  [
+    `html[data-mcp-install-method] ${SEGMENT_TABS[0]}[aria-selected="true"]`,
+    `html[data-mcp-install-scope] ${SEGMENT_TABS[1]}[aria-selected="true"]`,
+  ].join(',') +
+  '{background:transparent;color:var(--lm-mcp-install-fg-muted);box-shadow:none}'
+
+const CLIENT_TAB_ACTIVE_DECL = '{color:var(--text-color);box-shadow:inset 0 -2px var(--lm-mcp-install-accent)}'
+
+const SEGMENT_TAB_ACTIVE_DECL =
+  '{background:var(--lm-install-raised);color:var(--text-color);' +
+  'box-shadow:0 0 0 1px var(--lm-install-edge),var(--lm-install-lift)}'
 
 const SCOPE_GROUP_ACTIVE_DECL = '{display:flex}'
 
@@ -858,31 +1027,17 @@ const PANEL_DEFAULT_OVERRIDE_RULE = 'html[data-mcp-install-client] .lm-mcp-insta
 
 const PANEL_ACTIVE_DECL = '{display:block}'
 
-// The checkbox's *checked* visual only — the unchecked baseline lives in
-// mcp-install.css since it doesn't depend on `<html>` state. A native
-// checkbox's rendered glyph follows its `.checked` DOM property, which
-// only mcp-install.js can set (after DOMContentLoaded), so without this
-// the box would flip unchecked -> checked on every reload where cooldown
-// was previously enabled.
-const COOLDOWN_TOGGLE_CHECKED_RULES =
-  'html[data-mcp-install-cooldown-enabled="1"] .lm-mcp-install__cooldown-toggle' +
-  '{background:var(--lm-mcp-install-accent);border-color:var(--lm-mcp-install-accent)}' +
-  'html[data-mcp-install-cooldown-enabled="1"] .lm-mcp-install__cooldown-toggle::after' +
-  '{content:"\\2713";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;' +
-  'color:#fff;font-size:0.85em;font-weight:700;line-height:1}'
-
 function buildPrehydrateStyle(spec: ServerSpec): string {
   const clientIds = CLIENTS.map((c) => c.id)
   const methodIds = spec.methods.map((m) => m.id)
   const rules = [
     TAB_DEACTIVATE_RULE,
-    tabActiveSelectors('client', clientIds) + TAB_ACTIVE_DECL,
-    tabActiveSelectors('method', methodIds) + TAB_ACTIVE_DECL,
-    scopeTabActiveSelectors() + TAB_ACTIVE_DECL,
+    tabActiveSelectors('client', clientIds) + CLIENT_TAB_ACTIVE_DECL,
+    tabActiveSelectors('method', methodIds) + SEGMENT_TAB_ACTIVE_DECL,
+    scopeTabActiveSelectors() + SEGMENT_TAB_ACTIVE_DECL,
     scopeGroupVisibleSelectors() + SCOPE_GROUP_ACTIVE_DECL,
     PANEL_DEFAULT_OVERRIDE_RULE,
     panelActiveSelectors(spec) + PANEL_ACTIVE_DECL,
-    COOLDOWN_TOGGLE_CHECKED_RULES,
   ]
   return `<style>${rules.join('')}</style>`
 }

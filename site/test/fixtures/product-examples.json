@@ -4,7 +4,7 @@
     {
       "port": "ts",
       "language": "typescript",
-      "sourceRevision": "3fe1ca654b81b8cbf4a13b777a001a3298c87a6f",
+      "sourceRevision": "9a6b695471fbb77ac1e494b879ee9bc59adc201d",
       "sourceRepository": "libtmux/libtmux-ts",
       "files": [
         {
@@ -13,20 +13,21 @@
         },
         {
           "name": "package.json",
-          "sha256": "cb9213ba62a6270ff81c9cf124ccc9c0bfe82d8b72712393e8c09b0baf75c374"
+          "sha256": "98c480efa84c39cd7c73f50590779db49e9a4edc142244793bc632d55e3ce53d"
         }
       ],
       "toolchain": [
-        "Bun 1.4.2"
+        "Bun 1.4.2",
+        "libtmux 0.1.2",
+        "@libtmux/workspace 0.1.2"
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "page": "ports/ts/workspace/internals/examples",
       "shellRecipe": [
         "mkdir workspace-example && cd workspace-example",
-        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-ts.git && \\\n    git -C libtmux-source fetch --depth 1 origin 3fe1ca654b81b8cbf4a13b777a001a3298c87a6f && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD",
         "bun install --production",
         "bun run workspace.ts"
       ]
@@ -34,7 +35,7 @@
     {
       "port": "ts",
       "language": "typescript",
-      "sourceRevision": "3fe1ca654b81b8cbf4a13b777a001a3298c87a6f",
+      "sourceRevision": "9a6b695471fbb77ac1e494b879ee9bc59adc201d",
       "sourceRepository": "libtmux/libtmux-ts",
       "files": [
         {
@@ -43,20 +44,21 @@
         },
         {
           "name": "package.json",
-          "sha256": "0ae56500bcb2a1e16d6406476e09577d5ee284740bb4cb7eb04d53af2952e854"
+          "sha256": "3536fcd4ed60255c1d68f302d66bc56687769ba22f4d5e0576e4c43c7e3a9940"
         }
       ],
       "toolchain": [
-        "Bun 1.4.2"
+        "Bun 1.4.2",
+        "libtmux 0.1.2",
+        "@libtmux/mcp 0.1.2"
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "page": "ports/ts/mcp/examples",
       "shellRecipe": [
         "mkdir mcp-example && cd mcp-example",
-        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-ts.git && \\\n    git -C libtmux-source fetch --depth 1 origin 3fe1ca654b81b8cbf4a13b777a001a3298c87a6f && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD",
         "bun install --production",
         "bun run mcp.ts"
       ]
@@ -124,30 +126,26 @@
       "language": "sh",
       "sourceRevision": "254f8b2be7eb60cacc3ffcb3ea8e456784f582df",
       "sourceRepository": "libtmux/libtmux-swift",
-      "files": [
-        {
-          "name": "run-mcp.sh",
-          "sha256": "6a26dc211be10156871e51638b2fe855d3d2a958145824b0f14ce790825ecbe0"
-        }
-      ],
+      "files": [],
       "toolchain": [
         "Swift 6.2.4"
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "page": "ports/swift/mcp/guides",
       "shellRecipe": [
         "mkdir swift-mcp-client && cd swift-mcp-client",
         "git init libtmux-source && \\\n  git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-swift.git && \\\n  git -C libtmux-source fetch --depth=1 origin 254f8b2be7eb60cacc3ffcb3ea8e456784f582df && \\\n  git -C libtmux-source checkout --detach FETCH_HEAD && \\\n  swift build --package-path libtmux-source --product libtmux-mcp --jobs 2",
-        "sh run-mcp.sh"
+        "realpath libtmux-source/.build/debug/libtmux-mcp",
+        "LIBTMUX_TOOLSETS= LIBTMUX_TOOLS=list_sessions \\\n    libtmux-source/.build/debug/libtmux-mcp"
       ]
     },
     {
       "port": "java",
       "language": "java",
-      "sourceRevision": "5c181887918351119bfdb3a046719fa792048e59",
+      "sourceRevision": "e8a39689d8d60968ac978a1dd2a89c6112333896",
       "sourceRepository": "libtmux/libtmux-java",
       "files": [
         {
@@ -160,12 +158,13 @@
         },
         {
           "name": "build.gradle.kts",
-          "sha256": "3a4a1b65c6e47f61751532440ba4909b186813771565c6c35567c8c20d1f65b5"
+          "sha256": "24328025d384da6e584f438f39a723d31daf885edfb5fdb95b5c80751f006bd1"
         }
       ],
       "toolchain": [
         "JDK 25.0.3+9",
-        "Gradle wrapper from the 0.1.0 release"
+        "Gradle 9.7.0",
+        "libtmux-mcp 0.1.2"
       ],
       "tmux": [
         "3.3a",
@@ -173,35 +172,42 @@
       ],
       "page": "ports/java/mcp/examples",
       "shellRecipe": [
-        "mkdir java-mcp-example && cd java-mcp-example && \\\n    git init libtmux-source && \\\n    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-java.git && \\\n    git -C libtmux-source fetch --depth=1 origin 5c181887918351119bfdb3a046719fa792048e59 && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD && \\\n    mkdir -p src/main/java",
-        "./libtmux-source/gradlew --no-daemon --max-workers=2 -p . installDist",
+        "mkdir -p java-mcp-example/src/main/java && cd java-mcp-example",
+        "gradle --console=plain --no-daemon installDist",
         "./build/install/mcp-example/bin/mcp-example"
       ]
     },
     {
       "port": "java",
       "language": "sh",
-      "sourceRevision": "842228310449e879ebcaa3f910597757c9dbffd6",
+      "sourceRevision": "e8a39689d8d60968ac978a1dd2a89c6112333896",
       "sourceRepository": "libtmux/libtmux-java",
       "files": [
         {
-          "name": "run-mcp.sh",
-          "sha256": "e3b697676591e62e98769a988d0002efcfa693474feb228656589a472b0744f4"
+          "name": "settings.gradle.kts",
+          "sha256": "c41bdd6a501835ca2334368c4addd0d86da4f7faaeac4a3078920639f4a737cf"
+        },
+        {
+          "name": "build.gradle.kts",
+          "sha256": "ee2f9d76719195761685a5bde12d8d89cf42420e08a641fd119771b38fc64c16"
         }
       ],
       "toolchain": [
         "JDK 25.0.3+9",
-        "Gradle wrapper at selected source"
+        "Gradle 9.7.0",
+        "libtmux-mcp 0.1.2"
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "page": "ports/java/mcp/guides",
       "shellRecipe": [
         "mkdir java-mcp-client && cd java-mcp-client",
-        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-java.git && \\\n    git -C libtmux-source fetch --depth=1 origin 842228310449e879ebcaa3f910597757c9dbffd6 && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD && \\\n    ./libtmux-source/gradlew --no-daemon --max-workers=2 \\\n    -p libtmux-source :libtmux-mcp:installDist",
-        "sh run-mcp.sh"
+        "gradle --console=plain --no-daemon installDist",
+        "tmux -L mcp-example new-session -d -s mcp-example",
+        "LIBTMUX_TOOLSETS= LIBTMUX_TOOLS=list_sessions \\\n    build/install/libtmux-mcp/bin/libtmux-mcp \\\n    --socket-name mcp-example < /dev/null",
+        "tmux -L mcp-example kill-server"
       ]
     },
     {
@@ -240,16 +246,16 @@
     {
       "port": "rs",
       "language": "rust",
-      "sourceRevision": "d4e08b4eaab62ef4eeedab79b47973ae9a1de310",
+      "sourceRevision": "15cfa2b1845d9894c93d8025d8b83e75d756f073",
       "sourceRepository": "libtmux/libtmux-rs",
       "files": [
         {
           "name": "src/main.rs",
-          "sha256": "a35348dc9fa3b8db147aa11f253324845e6dee0730c9a65dd08314fd946d171a"
+          "sha256": "7d3bdddedb27839a51b82150dd727c4b060ddf7c283db642764062786be70527"
         },
         {
           "name": "Cargo.toml",
-          "sha256": "1255751db8fb75290d2db99649c1be104325c31be652500df07d95ad5cd16ac4"
+          "sha256": "9aed65f33895c26bbf63b3865819a7c653e3892e71ecf9da6ef280915d17fa70"
         },
         {
           "name": "workspace.yaml",
@@ -257,44 +263,48 @@
         }
       ],
       "toolchain": [
-        "Rust 1.97.1"
+        "Rust 1.97.1",
+        "libtmux 0.1.2",
+        "tmux-workspace 0.1.2"
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "page": "ports/rs/workspace/internals/examples",
       "shellRecipe": [
         "mkdir rust-workspace-example && cd rust-workspace-example && \\\n    mkdir src",
-        "git init libtmux-source && \\\n    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-rs.git && \\\n    git -C libtmux-source fetch --depth=1 origin d4e08b4eaab62ef4eeedab79b47973ae9a1de310 && \\\n    git -C libtmux-source checkout --detach FETCH_HEAD",
-        "cargo run --quiet"
+        "cargo +1.97.1 run --quiet"
       ]
     },
     {
       "port": "ruby",
       "language": "ruby",
-      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceRevision": "46474e8a2f03e39fc2b0ff73b6a841777b79c4d2",
       "sourceRepository": "libtmux/libtmux-ruby",
       "files": [
         {
+          "name": "Gemfile",
+          "sha256": "7cb353784011ec81b82ef8905cdafd668ed5f83117256953b3a4e89536bac6a1"
+        },
+        {
           "name": "run-mcp.rb",
-          "sha256": "1e04164e6c25bee064455036c82096997fefef650c3d18fedd581943944129e0"
+          "sha256": "4c149206d74da933225d3e858eb9de41fe29148f5a52b735f198b38657275392"
         }
       ],
       "toolchain": [
         "Ruby 4.0.7",
-        "Bundler with the pinned source lockfile"
+        "Bundler",
+        "libtmux-mcp 0.1.2"
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "page": "ports/ruby/mcp/guides/connect-client",
       "shellRecipe": [
         "mkdir ruby-mcp-client && cd ruby-mcp-client",
-        "git clone https://github.com/libtmux/libtmux-ruby libtmux-source",
-        "git -C libtmux-source checkout 9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
-        "BUNDLE_FROZEN=true BUNDLE_GEMFILE=./libtmux-source/Gemfile bundle install",
+        "bundle config set --local path vendor/bundle &&\n  bundle install",
         "ruby -W:no-experimental run-mcp.rb",
         "ruby -rjson -rrbconfig -e '\n  puts JSON.pretty_generate(\n    \"mcpServers\" => {\n      \"tmux-ruby\" => {\n        \"command\" => RbConfig.ruby,\n        \"args\" => [\"-W:no-experimental\", File.expand_path(\"run-mcp.rb\")]\n      }\n    }\n  )\n'"
       ]
@@ -302,48 +312,53 @@
     {
       "port": "ruby",
       "language": "ruby",
-      "sourceRevision": "9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
+      "sourceRevision": "46474e8a2f03e39fc2b0ff73b6a841777b79c4d2",
       "sourceRepository": "libtmux/libtmux-ruby",
       "files": [
         {
+          "name": "Gemfile",
+          "sha256": "7cb353784011ec81b82ef8905cdafd668ed5f83117256953b3a4e89536bac6a1"
+        },
+        {
           "name": "snapshot-sessions.rb",
-          "sha256": "2df8b331308a9541b21b7c8325578fcdecb5f520b639542e7fe9cb6856341fee"
+          "sha256": "c237d34061b11608c1c82876e4094b128ab700eba7902e193341687d5a5d1d4c"
         }
       ],
       "toolchain": [
         "Ruby 4.0.7",
-        "Bundler with the pinned source lockfile"
+        "Bundler",
+        "libtmux-mcp 0.1.2"
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ],
       "page": "ports/ruby/mcp/examples/page-session-metadata",
       "shellRecipe": [
         "mkdir ruby-mcp-pages && cd ruby-mcp-pages",
-        "git clone https://github.com/libtmux/libtmux-ruby libtmux-source",
-        "git -C libtmux-source checkout 9b1545562a112353c2c893a1d3e8c0d9b4b51f8d",
-        "BUNDLE_FROZEN=true BUNDLE_GEMFILE=./libtmux-source/Gemfile bundle install",
+        "bundle config set --local path vendor/bundle &&\n  bundle install",
         "ruby -W:no-experimental snapshot-sessions.rb"
       ]
     },
     {
       "port": "rs",
       "language": "rust",
-      "sourceRevision": "ce7610a3b46376c377292e5a640b3798c18708fe",
+      "sourceRevision": "15cfa2b1845d9894c93d8025d8b83e75d756f073",
       "sourceRepository": "libtmux/libtmux-rs",
       "files": [
         {
           "name": "Cargo.toml",
-          "sha256": "ebfa2c0baa9217baa3f61ca3b00f4d485f3a0f992c31109a9441dc4a4aff22c3"
+          "sha256": "9c9a25b141495334543eba1a9beeac67e2fa91296388262714b665b4f95a0ee7"
         },
         {
           "name": "src/main.rs",
-          "sha256": "e3c7b08830177404e9c6c87b8680398a4983840b8ac3832bb7a461f5eaf6419e"
+          "sha256": "1ae88de3454fd98fd1d056ef83a35232fed70a554be39f3d7a2f5c765ba22527"
         }
       ],
       "toolchain": [
-        "Rust 1.97.1"
+        "Rust 1.97.1",
+        "libtmux 0.1.2",
+        "tmux-mcp 0.1.2"
       ],
       "tmux": [
         "3.3a",
@@ -488,6 +503,70 @@
         "GOBIN=\"$PWD/.tools\" go install \\\n    github.com/libtmux/libtmux-go/mcp/cmd/libtmux-mcp@v0.1.0",
         "go mod tidy",
         "go run ."
+      ]
+    },
+    {
+      "port": "csharp",
+      "language": "csharp",
+      "sourceRevision": "8d47af7d89638ad267528ac56897cec67df597f7",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "files": [
+        {
+          "name": "WorkspaceExample.csproj",
+          "sha256": "ce8ce5c81b4382ee79b68f8282fbba4e4aafecfe0fe619464bfd3577549d324b"
+        },
+        {
+          "name": "Program.cs",
+          "sha256": "1baafdb59e275e24ee368546f777e6ca1e3e500e217139acb50e1a8cd97073e1"
+        }
+      ],
+      "toolchain": [
+        ".NET SDK 10.0.403",
+        "LibTmux 0.1.1",
+        "LibTmux.Workspace 0.1.1"
+      ],
+      "tmux": [
+        "3.3a",
+        "3.7c"
+      ],
+      "page": "ports/csharp/workspace/internals/examples",
+      "shellRecipe": [
+        "mkdir dotnet-workspace-example\ncd dotnet-workspace-example",
+        "dotnet run --project WorkspaceExample.csproj --configuration Release"
+      ]
+    },
+    {
+      "port": "java",
+      "page": "ports/java/workspace/internals/examples",
+      "files": [
+        {
+          "name": "src/main/java/WorkspaceExample.java",
+          "sha256": "a101b043418dc270516f1d37b3e0983bc5a1ea9c1c67d96273f1f91deda14eaa"
+        },
+        {
+          "name": "settings.gradle.kts",
+          "sha256": "3776b17444ee5a3bd3a72ec3aea9498337a5e670c679093fabfb6efc16d7f476"
+        },
+        {
+          "name": "build.gradle.kts",
+          "sha256": "cd2d2be7a82ccb5c1c9c9ea4f244f149baf03aef6e847164b7448e25857b6405"
+        }
+      ],
+      "shellRecipe": [
+        "mkdir -p java-workspace-example/src/main/java\ncd java-workspace-example",
+        "gradle --console=plain --no-daemon run"
+      ],
+      "language": "java",
+      "sourceRevision": "e8a39689d8d60968ac978a1dd2a89c6112333896",
+      "sourceRepository": "libtmux/libtmux-java",
+      "toolchain": [
+        "JDK 25.0.3+9",
+        "Gradle 9.7.0",
+        "libtmux-workspace 0.1.2"
+      ],
+      "tmux": [
+        "3.3a",
+        "3.7c"
       ]
     }
   ],

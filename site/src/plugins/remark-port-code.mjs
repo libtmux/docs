@@ -8,6 +8,7 @@ import {
   locateExcerpt,
   pageSource,
   parseFenceAttributes,
+  stripBuildMarkers,
   withoutAttributes,
 } from '../lib/example-excerpt.ts'
 import { citeMeta, excerptMeta } from '../lib/code-frame.mjs'
@@ -385,5 +386,7 @@ export function readFence(owner, meta, pagePath) {
     }
     source = sliced
   }
-  return source.replace(/\s+$/, '')
+  // A reader sees the program, not the comments the port's own tooling reads. The page's
+  // complete program and its excerpts both come through here, so their line numbers agree.
+  return stripBuildMarkers(source).replace(/\s+$/, '')
 }

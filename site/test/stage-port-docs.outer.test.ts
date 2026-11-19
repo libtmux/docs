@@ -11,7 +11,7 @@ const root = new URL('../../', import.meta.url).pathname
 const cachedRevision = 'a'.repeat(40)
 const files = ['scripts/stage-port-docs.mjs', 'scripts/lib/badges.mjs', 'scripts/lib/port-checkout.mjs', 'site/src/lib/ports.ts',
   'site/src/lib/site-root.ts', 'site/src/lib/cooldown.ts', 'site/src/lib/port-documentation.ts',
-  'site/src/lib/versions.ts']
+  'site/src/lib/versions.ts', 'site/src/lib/example-excerpt.ts']
 const stagedPorts = SOURCE_GUIDE_PORTS
 
 // Each case starts the generator in six new node processes, which a loaded host stretches past the default.

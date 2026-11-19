@@ -1,0 +1,37 @@
+---
+import StatusBadge from '../StatusBadge.astro'
+import { PACKAGE_HOSTS, servedBy } from '../../lib/port-inventory'
+import type { ProductStatus } from '../../lib/ports'
+
+/**
+ * The package facts at the start of an installer's options bar: its name,
+ * version, maturity and registry link, or "Not on a registry yet" where the
+ * registry carries nothing to link to.
+ */
+interface Props {
+  name: string
+  version?: string | null
+  status?: ProductStatus
+  /** The package's page on its registry; `name` is the registry's own, or taken from the URL's host. */
+  registry?: { name?: string; url: string }
+  unpublished?: boolean
+}
+const { name, version, status, registry, unpublished } = Astro.props as Props
+
+/** A registry's name from the host of its page, for a package that carries only the URL. */
+function registryName(url: string): string {
+  try {
+    const { hostname } = new URL(url)
+    return Object.values(PACKAGE_HOSTS).find((host) => servedBy(host, hostname))?.name ?? hostname.replace(/^www\./, '')
+  } catch {
+    return url
+  }
+}
+---
+<span class="lm-install__facts"><code>{name}</code>{' '}{unpublished || !registry
+  ? <span class="lm-install__warn">Not on a registry yet</span>
+  : <>
+    {version && <><span>{version}</span>{' '}</>}
+    {status && <><StatusBadge status={status} />{' '}</>}
+    <a href={registry.url} target="_blank" rel="noopener">{registry.name ?? registryName(registry.url)} <span aria-hidden="true">↗</span></a>
+  </>}</span>

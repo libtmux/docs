@@ -5739,19 +5739,19 @@
       "in": "lib/LibTmux/Model.rakumod",
       "evidence": [
         {
-          "at": "lib/LibTmux/Model.rakumod:825",
+          "at": "lib/LibTmux/Model.rakumod:1055",
           "has": [
             "method new(| --> Nil) {"
           ]
         },
         {
-          "at": "lib/LibTmux/Model.rakumod:826",
+          "at": "lib/LibTmux/Model.rakumod:1056",
           "has": [
             "X::LibTmux::Command.new(:kind<argument>, :outcome(NotStarted),"
           ]
         },
         {
-          "at": "lib/LibTmux/Model.rakumod:827",
+          "at": "lib/LibTmux/Model.rakumod:1057",
           "has": [
             ":message('Obtain captured views from a Snapshot')).throw"
           ]
@@ -5772,19 +5772,19 @@
       "in": "lib/LibTmux/Model.rakumod",
       "evidence": [
         {
-          "at": "lib/LibTmux/Model.rakumod:825",
+          "at": "lib/LibTmux/Model.rakumod:1055",
           "has": [
             "method new(| --> Nil) {"
           ]
         },
         {
-          "at": "lib/LibTmux/Model.rakumod:826",
+          "at": "lib/LibTmux/Model.rakumod:1056",
           "has": [
             "X::LibTmux::Command.new(:kind<argument>, :outcome(NotStarted),"
           ]
         },
         {
-          "at": "lib/LibTmux/Model.rakumod:827",
+          "at": "lib/LibTmux/Model.rakumod:1057",
           "has": [
             ":message('Obtain captured views from a Snapshot')).throw"
           ]
@@ -5805,19 +5805,19 @@
       "in": "lib/LibTmux/Model.rakumod",
       "evidence": [
         {
-          "at": "lib/LibTmux/Model.rakumod:825",
+          "at": "lib/LibTmux/Model.rakumod:1055",
           "has": [
             "method new(| --> Nil) {"
           ]
         },
         {
-          "at": "lib/LibTmux/Model.rakumod:826",
+          "at": "lib/LibTmux/Model.rakumod:1056",
           "has": [
             "X::LibTmux::Command.new(:kind<argument>, :outcome(NotStarted),"
           ]
         },
         {
-          "at": "lib/LibTmux/Model.rakumod:827",
+          "at": "lib/LibTmux/Model.rakumod:1057",
           "has": [
             ":message('Obtain captured views from a Snapshot')).throw"
           ]
@@ -5838,19 +5838,19 @@
       "in": "lib/LibTmux/Model.rakumod",
       "evidence": [
         {
-          "at": "lib/LibTmux/Model.rakumod:825",
+          "at": "lib/LibTmux/Model.rakumod:1055",
           "has": [
             "method new(| --> Nil) {"
           ]
         },
         {
-          "at": "lib/LibTmux/Model.rakumod:826",
+          "at": "lib/LibTmux/Model.rakumod:1056",
           "has": [
             "X::LibTmux::Command.new(:kind<argument>, :outcome(NotStarted),"
           ]
         },
         {
-          "at": "lib/LibTmux/Model.rakumod:827",
+          "at": "lib/LibTmux/Model.rakumod:1057",
           "has": [
             ":message('Obtain captured views from a Snapshot')).throw"
           ]
@@ -5871,19 +5871,19 @@
       "in": "lib/LibTmux/Model.rakumod",
       "evidence": [
         {
-          "at": "lib/LibTmux/Model.rakumod:825",
+          "at": "lib/LibTmux/Model.rakumod:1055",
           "has": [
             "method new(| --> Nil) {"
           ]
         },
         {
-          "at": "lib/LibTmux/Model.rakumod:826",
+          "at": "lib/LibTmux/Model.rakumod:1056",
           "has": [
             "X::LibTmux::Command.new(:kind<argument>, :outcome(NotStarted),"
           ]
         },
         {
-          "at": "lib/LibTmux/Model.rakumod:827",
+          "at": "lib/LibTmux/Model.rakumod:1057",
           "has": [
             ":message('Obtain captured views from a Snapshot')).throw"
           ]

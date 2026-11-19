@@ -327,6 +327,16 @@ fi
 if [ "${LIBTMUX_DOCS_PORT:-}" = perl ] && [ -n "${LIBTMUX_DOCS_SOURCE_SHA:-}" ]; then
   node "$script_dir/gen-tmux-usage.mjs" --ports perl
 fi
+# The model above now describes the selected revision. The source pages, the
+# source pane and the behaviour facts cite its lines, so they are rebuilt from
+# the same checkout; copies committed for an older revision would show other
+# code beside this model's line numbers.
+if [ -n "${LIBTMUX_DOCS_PORT:-}" ] && [ -n "${LIBTMUX_DOCS_SOURCE_SHA:-}" ]; then
+  node "$script_dir/gen-api-sources.mjs" --port "$LIBTMUX_DOCS_PORT" --source-bound
+  node "$script_dir/gen-api-behavior.mjs" --source-bound "$LIBTMUX_DOCS_PORT"
+elif [ "${LIBTMUX_DOCS_PORT:-}" = ruby ] || [ "${LIBTMUX_DOCS_PORT:-}" = lua ]; then
+  node "$script_dir/gen-api-sources.mjs" --port "$LIBTMUX_DOCS_PORT"
+fi
 node "$script_dir/stage-port-docs.mjs" --wrappers
 if [ -n "${LIBTMUX_DOCS_SOURCE_SHA:-}" ]; then
   if [ "$LIBTMUX_DOCS_PORT" = clojure ]; then

@@ -71,6 +71,12 @@ export const catalogKindForSegment = (segment: string | undefined) => KINDS.find
 
 export const CATALOG_TITLE = 'Options, hooks and formats'
 
+/** What a screen reader hears for a catalog table that scrolls: its group, and the kind unless the group's name already says it ("Session options", not "Session options options"). */
+export function catalogRegionLabel(group: string, kindLabel: string): string {
+  const kind = kindLabel.toLowerCase()
+  return `${group.toLowerCase().split(/\s+/).includes(kind) ? group : `${group} ${kind}`}, scrollable`
+}
+
 export function tmuxCatalog(version = 'latest'): CatalogModel {
   const model = models[version === 'latest' ? pins.latest : version]
   if (!model) throw new Error(`Unknown tmux catalog version: ${version}`)

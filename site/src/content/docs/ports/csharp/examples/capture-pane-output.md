@@ -16,7 +16,8 @@ deadline so a failed command cannot leave the program waiting forever.
 
 This complete program creates a private tmux server, captures its output, and
 cleans up. Follow the [setup and run instructions](#setup-and-run) below. You need
-tmux and a Unix environment; no existing tmux session is required.
+tmux 3.3a or newer and a Unix environment; no existing tmux session is
+required.
 
 ## Read what's on screen
 
@@ -37,9 +38,7 @@ using LibTmux;
 if (OperatingSystem.IsWindows())
     throw new PlatformNotSupportedException("Run this example on Linux or macOS");
 
-string directory = Path.Combine(
-    "/tmp/libtmux-dotnet-dev", Guid.NewGuid().ToString("N"));
-Directory.CreateDirectory(directory);
+DirectoryInfo directory = Directory.CreateTempSubdirectory("libtmux-capture-");
 try
 {
     using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
@@ -47,7 +46,7 @@ try
     await using OwnedServerScope owned = await Server.CreateOwnedAsync(
         new ServerConnectionOptions
         {
-            SocketPath = Path.Combine(directory, "tmux.sock"),
+            SocketPath = Path.Combine(directory.FullName, "tmux.sock"),
             ConfigurationFile = "/dev/null",
             ChildEnvironment = new Dictionary<string, string?>
             {
@@ -81,7 +80,7 @@ try
 }
 finally
 {
-    Directory.Delete(directory, recursive: true);
+    directory.Delete(recursive: true);
 }
 ```
 
@@ -101,8 +100,7 @@ explains why sending and waiting are separate operations.
 
 ## Setup and run
 
-Use an empty directory. The commands pin the library
-revision used to verify the program.
+Use an empty directory. The project file installs `LibTmux` 0.1.1 from NuGet.
 
 Save the program and project file using the displayed names. Use the .NET 10
 SDK. The project disables implicit imports, so every required import
@@ -119,15 +117,13 @@ appears in the program.
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
-    <ProjectReference Include="libtmux-source/src/LibTmux/LibTmux.csproj" />
+    <PackageReference Include="LibTmux" Version="0.1.1" />
   </ItemGroup>
 </Project>
 ```
 
 ```console
-$ git clone https://github.com/libtmux/libtmux-dotnet libtmux-source &&
-  git -C libtmux-source checkout 320dc64f4b8b7815842471327a5e6b84a1499bf8 &&
-  dotnet build Capture.csproj --maxcpucount:1 &&
+$ dotnet build Capture.csproj --maxcpucount:1 &&
   dotnet run --project Capture.csproj --no-build
 ```
 
@@ -135,5 +131,5 @@ $ git clone https://github.com/libtmux/libtmux-dotnet libtmux-source &&
 
 ## Where this comes from
 
-This complete program was run against the library revision pinned above.
-The displayed code is checked against the bytes from that run.
+This program uses `LibTmux` 0.1.1 from NuGet. Its [source](https://github.com/libtmux/libtmux-dotnet/tree/8d47af7d89638ad267528ac56897cec67df597f7/src/LibTmux)
+is on GitHub.

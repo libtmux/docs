@@ -559,7 +559,7 @@
         }
       ],
       "shellRecipe": [
-        "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-java.git libtmux-source\ngit -C libtmux-source checkout --detach e8a39689d8d60968ac978a1dd2a89c6112333896\n./libtmux-source/gradlew --project-dir . --console=plain --no-daemon --max-workers=2 \\\n  installDist -PexampleMain=Main\nSHELL=/bin/sh build/install/api-example/bin/api-example"
+        "# Save the files above at their displayed relative paths.\ngradle --console=plain --no-daemon installDist -PexampleMain=Main\nSHELL=/bin/sh build/install/api-example/bin/api-example"
       ],
       "expectedOutputs": [
         [
@@ -682,7 +682,7 @@
         }
       ],
       "shellRecipe": [
-        "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-java.git libtmux-source\ngit -C libtmux-source checkout --detach e8a39689d8d60968ac978a1dd2a89c6112333896\n./libtmux-source/gradlew --project-dir . --console=plain --no-daemon --max-workers=2 \\\n  installDist -PexampleMain=MainKt\nSHELL=/bin/sh build/install/api-example/bin/api-example"
+        "# Save the files above at their displayed relative paths.\ngradle --console=plain --no-daemon installDist -PexampleMain=MainKt\nSHELL=/bin/sh build/install/api-example/bin/api-example"
       ],
       "expectedOutputs": [
         [
@@ -805,7 +805,7 @@
         }
       ],
       "shellRecipe": [
-        "# Save the files above at their displayed relative paths.\ngit clone https://github.com/libtmux/libtmux-java.git libtmux-source\ngit -C libtmux-source checkout --detach e8a39689d8d60968ac978a1dd2a89c6112333896\n./libtmux-source/gradlew --project-dir . --console=plain --no-daemon --max-workers=2 \\\n  installDist -PexampleMain=Main\nSHELL=/bin/sh build/install/api-example/bin/api-example"
+        "# Save the files above at their displayed relative paths.\ngradle --console=plain --no-daemon installDist -PexampleMain=Main\nSHELL=/bin/sh build/install/api-example/bin/api-example"
       ],
       "expectedOutputs": [
         [
@@ -1470,13 +1470,13 @@
       "port": "ocaml",
       "page": "home",
       "sourceRepository": "libtmux/libtmux-ocaml",
-      "sourceRevision": "6ef4ac3c255ce503270edba7640c5bd65cdc43a1",
-      "sourceTree": "2d3cfff8570f97d0498db2a3dbeb26124b1eeeba",
+      "sourceRevision": "ffab5fecd298d9516f181576231f54926630118b",
+      "sourceTree": "c39800ed2ce841832986d8f961d34c5e7cbd37f9",
       "files": [
         {
           "name": "examples/showcase_graph.ml",
-          "sha256": "daa3c08e96c7aa366f6ac798b41a09e2f967c2fcf6c343df194c4e7fc4627a26",
-          "clipboardSha256": "3417aac5cfb59506b776d82344e4a4a2bd5749eecc684f33b255148c9d540bed"
+          "sha256": "a7611e282a5ffe84518923aff2b4a6eaed88fb1c285100bbb09afa15e76e825e",
+          "clipboardSha256": "e099e6b5ece74509dab889781eefe45731b75cd3e539bcb890f2c58f7412e2ca"
         },
         {
           "name": "dune-project",
@@ -1489,7 +1489,7 @@
           "clipboardSha256": "10e66c40d8a664c75c9f7a8a236bcaee8e90de47f742b4bdebf956a072a49590"
         }
       ],
-      "excerptSha256": "3417aac5cfb59506b776d82344e4a4a2bd5749eecc684f33b255148c9d540bed",
+      "excerptSha256": "e099e6b5ece74509dab889781eefe45731b75cd3e539bcb890f2c58f7412e2ca",
       "shellRecipe": [
         "opam exec -- dune exec examples/showcase_graph.exe"
       ],
@@ -1499,18 +1499,16 @@
         ]
       ],
       "tmuxVersions": [
-        "3.3",
         "3.3a",
-        "3.4",
-        "3.8"
+        "3.7c"
       ],
       "variants": {
         "concise": {
           "files": [
             {
               "name": "examples/showcase_graph.ml",
-              "sha256": "05b3cc89ebfd071169c0b7723154eeb02071079528c7cd50dd44f4da8f0383e6",
-              "clipboardSha256": "175a3e563c3fcb69add9bf8ab74d721b07ab2530ad4cb60a63244f84453db11b"
+              "sha256": "636d61a6dc499843fde5ec2767bc631d71d12fc3b70274084ce5daf559fd011f",
+              "clipboardSha256": "f937d2e4de3f6423891162ee7d822ac90b2eeeece4c3d1b7e8299d4d0a9e50ad"
             },
             {
               "name": "dune-project",
@@ -1523,14 +1521,14 @@
               "clipboardSha256": "10e66c40d8a664c75c9f7a8a236bcaee8e90de47f742b4bdebf956a072a49590"
             }
           ],
-          "excerptSha256": "175a3e563c3fcb69add9bf8ab74d721b07ab2530ad4cb60a63244f84453db11b"
+          "excerptSha256": "f937d2e4de3f6423891162ee7d822ac90b2eeeece4c3d1b7e8299d4d0a9e50ad"
         },
         "errors": {
           "files": [
             {
               "name": "examples/showcase_graph.ml",
-              "sha256": "05b3cc89ebfd071169c0b7723154eeb02071079528c7cd50dd44f4da8f0383e6",
-              "clipboardSha256": "175a3e563c3fcb69add9bf8ab74d721b07ab2530ad4cb60a63244f84453db11b"
+              "sha256": "636d61a6dc499843fde5ec2767bc631d71d12fc3b70274084ce5daf559fd011f",
+              "clipboardSha256": "f937d2e4de3f6423891162ee7d822ac90b2eeeece4c3d1b7e8299d4d0a9e50ad"
             },
             {
               "name": "dune-project",
@@ -1543,14 +1541,14 @@
               "clipboardSha256": "10e66c40d8a664c75c9f7a8a236bcaee8e90de47f742b4bdebf956a072a49590"
             }
           ],
-          "excerptSha256": "175a3e563c3fcb69add9bf8ab74d721b07ab2530ad4cb60a63244f84453db11b"
+          "excerptSha256": "f937d2e4de3f6423891162ee7d822ac90b2eeeece4c3d1b7e8299d4d0a9e50ad"
         },
         "cleanup": {
           "files": [
             {
               "name": "examples/showcase_graph.ml",
-              "sha256": "daa3c08e96c7aa366f6ac798b41a09e2f967c2fcf6c343df194c4e7fc4627a26",
-              "clipboardSha256": "3417aac5cfb59506b776d82344e4a4a2bd5749eecc684f33b255148c9d540bed"
+              "sha256": "a7611e282a5ffe84518923aff2b4a6eaed88fb1c285100bbb09afa15e76e825e",
+              "clipboardSha256": "e099e6b5ece74509dab889781eefe45731b75cd3e539bcb890f2c58f7412e2ca"
             },
             {
               "name": "dune-project",
@@ -1563,7 +1561,7 @@
               "clipboardSha256": "10e66c40d8a664c75c9f7a8a236bcaee8e90de47f742b4bdebf956a072a49590"
             }
           ],
-          "excerptSha256": "3417aac5cfb59506b776d82344e4a4a2bd5749eecc684f33b255148c9d540bed"
+          "excerptSha256": "e099e6b5ece74509dab889781eefe45731b75cd3e539bcb890f2c58f7412e2ca"
         }
       }
     },
@@ -1678,18 +1676,13 @@
       "port": "perl",
       "page": "home",
       "sourceRepository": "libtmux/libtmux-perl",
-      "sourceRevision": "a1cab0324b600a5df6e34b92590b5c3bd8f79c69",
-      "sourceTree": "ce5106dc71b51d688816194599e27a62db5a10e2",
+      "sourceRevision": "8a9ccf32c0a5f8c34d7445e91ab771c39399c6b7",
+      "sourceTree": "5ed1364d66b6b0d76ac2543f4614d3d1db20d005",
       "files": [
         {
           "name": "examples/quickstart.pl",
-          "sha256": "ba9f650b81972f6b11556c4babd22b19d868335d9701980069e5d37748ce3cf2",
-          "clipboardSha256": "a6e4fe17a24b02610dd71a460c9316e7349ef5c2764033e919203d0a06fa8cfd"
-        },
-        {
-          "name": "scripts/lib/LibTmuxFixture.pm",
-          "sha256": "234be617ad56c89e3a41c97c8ce84ec1b198a444e06dea9950d0da54f07f3fd6",
-          "clipboardSha256": "6caf21d81a772ac1f567e77b641e04c430906da2b896844961db2a4237ff08b8"
+          "sha256": "ae18017db5ab35dcb0cd626d9b18a8090e7c2c21a1fc20032b54d6cefe3f84c0",
+          "clipboardSha256": "68f60c2070ee801acba6bd6a329bb0d9528770d470464a7f4f614d37d6470360"
         }
       ],
       "shellRecipe": [
@@ -1705,18 +1698,9 @@
           "%1 is in window editor"
         ]
       ],
-      "excerptSha256": "a6e4fe17a24b02610dd71a460c9316e7349ef5c2764033e919203d0a06fa8cfd",
+      "excerptSha256": "68f60c2070ee801acba6bd6a329bb0d9528770d470464a7f4f614d37d6470360",
       "tmuxVersions": [
         "3.3a",
-        "3.4",
-        "3.5",
-        "3.5a",
-        "3.6",
-        "3.6a",
-        "3.6b",
-        "3.7",
-        "3.7a",
-        "3.7b",
         "3.7c",
         "3.8"
       ],
@@ -1725,46 +1709,31 @@
           "files": [
             {
               "name": "examples/quickstart.pl",
-              "sha256": "229dc9ad4a3802b98c05c8014f999ae708622380ea9c33de86d8a64ddaa976d7",
-              "clipboardSha256": "0f56b6c69c9f65059b161e876346d5c164fd2463371f00fb5cf1df23de43936e"
-            },
-            {
-              "name": "scripts/lib/LibTmuxFixture.pm",
-              "sha256": "234be617ad56c89e3a41c97c8ce84ec1b198a444e06dea9950d0da54f07f3fd6",
-              "clipboardSha256": "6caf21d81a772ac1f567e77b641e04c430906da2b896844961db2a4237ff08b8"
+              "sha256": "b7b6701e5c58295a59ea0ac62965d48594d06554bf1cc28ceb170460f1fa86b9",
+              "clipboardSha256": "90d8478ca10f0f43d0cbf64bc565aa03312a688d890741e2414ca80c95303b99"
             }
           ],
-          "excerptSha256": "0f56b6c69c9f65059b161e876346d5c164fd2463371f00fb5cf1df23de43936e"
+          "excerptSha256": "90d8478ca10f0f43d0cbf64bc565aa03312a688d890741e2414ca80c95303b99"
         },
         "errors": {
           "files": [
             {
               "name": "examples/quickstart.pl",
-              "sha256": "c87d40c67b319ab6921271be902dbfc0c4be706fe28ea08d1910e98aeae1de77",
-              "clipboardSha256": "1b06fe564ac4ab43baac37aeb5473fe3a5434c1d3bc78c4c5e9570910b463fc6"
-            },
-            {
-              "name": "scripts/lib/LibTmuxFixture.pm",
-              "sha256": "234be617ad56c89e3a41c97c8ce84ec1b198a444e06dea9950d0da54f07f3fd6",
-              "clipboardSha256": "6caf21d81a772ac1f567e77b641e04c430906da2b896844961db2a4237ff08b8"
+              "sha256": "2af1e99c8ee82c2aea0d0595440ca4f2ebb25608e71bbc37eec69171751534be",
+              "clipboardSha256": "1c5332b3a55f7ef632f4e976744d72c2f2a7bd0e62d0b21f9d06b76c211b5350"
             }
           ],
-          "excerptSha256": "1b06fe564ac4ab43baac37aeb5473fe3a5434c1d3bc78c4c5e9570910b463fc6"
+          "excerptSha256": "1c5332b3a55f7ef632f4e976744d72c2f2a7bd0e62d0b21f9d06b76c211b5350"
         },
         "cleanup": {
           "files": [
             {
               "name": "examples/quickstart.pl",
-              "sha256": "d4ba09045ef72f61fd8f3d97bf4ffa3700af0d7b397b179700e8e35895a796f9",
-              "clipboardSha256": "29d2e40a82a47781c8673f3de385a9d106e598dac819a35202c10b1b4205a7dd"
-            },
-            {
-              "name": "scripts/lib/LibTmuxFixture.pm",
-              "sha256": "234be617ad56c89e3a41c97c8ce84ec1b198a444e06dea9950d0da54f07f3fd6",
-              "clipboardSha256": "6caf21d81a772ac1f567e77b641e04c430906da2b896844961db2a4237ff08b8"
+              "sha256": "4c5d9469a5aa564a9b88fcaf8e894b94e787e539cf11f2b4e9c858b3b19fca22",
+              "clipboardSha256": "a369dbef193b15e8a2c9dfd248b0f4eed89fb706bc5e7d3cf927aed55c39ba51"
             }
           ],
-          "excerptSha256": "29d2e40a82a47781c8673f3de385a9d106e598dac819a35202c10b1b4205a7dd"
+          "excerptSha256": "a369dbef193b15e8a2c9dfd248b0f4eed89fb706bc5e7d3cf927aed55c39ba51"
         }
       }
     },

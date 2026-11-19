@@ -25,7 +25,7 @@
     if (data) {
       const context: {
         port: string; primary?: string; indexes?: Record<string, string>
-        symbols: Record<string, { port: string; href: string; label: string }[]>
+        symbols: Record<string, { port: string; href: string; label: string; differences?: string[] }[]>
       } = JSON.parse(data.textContent ?? '{}')
       const picker = document.querySelector<HTMLElement>('[data-page-port-switcher]')!
       const templates = new Map<string, HTMLElement>()
@@ -39,7 +39,7 @@
         const matches = context.symbols[hash] ?? (signature ? context.symbols[signature] : context.symbols[context.primary ?? '']) ?? []
         for (const [port, template] of templates) {
           const existing = [...picker.querySelectorAll<HTMLElement>('[data-picker-option][data-port]')].filter((option) => option.dataset.port === port)
-          let links: { href: string; label?: string }[] = matches.filter((entry, index, all) =>
+          let links: { href: string; label?: string; differences?: string[] }[] = matches.filter((entry, index, all) =>
             entry.port === port && all.findIndex((other) => other.href === entry.href) === index)
           if (context.indexes?.[port]) links = [{ href: context.indexes[port] }]
           if (port === context.port) links = [{ href: location.pathname + location.hash }]
@@ -59,12 +59,24 @@
               detail.textContent = link?.label ?? 'No matching page'
               label.append(detail)
             }
+            if (link?.differences?.length) {
+              // The same line as the server-drawn picker: muted, one row, with a lead-in only a screen reader hears.
+              const differences = document.createElement('small')
+              differences.className = 'doc-picker-differences'
+              differences.dataset.pickerDifferences = ''
+              const lead = document.createElement('span')
+              lead.className = 'sr-only'
+              lead.textContent = 'Differs: '
+              differences.append(lead, link.differences.join(' · '))
+              label.append(differences)
+            }
             option.dataset.match = `${port} ${template.dataset.portName} ${link?.label ?? ''}`
             if (link) {
               option.setAttribute('href', link.href)
               if (link.label) {
-                option.setAttribute('aria-label', `${template.dataset.portName}: ${link.label}`)
-                option.setAttribute('title', `${template.dataset.portName}: ${link.label}`)
+                const name = `${template.dataset.portName}: ${link.label}${link.differences?.length ? `. Differs: ${link.differences.join(', ')}` : ''}`
+                option.setAttribute('aria-label', name)
+                option.setAttribute('title', name)
               }
             }
             else if (template.dataset.homeHref) {

@@ -139,6 +139,24 @@ describe('staged port guide links', () => {
       expect(page).toContain(`[${name}.pl](https://github.com/libtmux/libtmux-perl/blob/${revision}/examples/${name}.pl)`)
     }
   })
+  it('hides the region markers a native guide copies from its example files', () => {
+    const pages = stagedPortGuides('perl', perlGuides)
+    const marked = ['README.md', 'docs/filtering.md', 'docs/orchestration.md', 'docs/errors.md', 'docs/async.md']
+    for (const sourcePath of marked) {
+      expect(perlGuides.guides.find((guide) => guide.path === sourcePath)!.content).toMatch(/^[ \t]*# example: (?:begin|end)\b/m)
+    }
+    for (const [file, page] of pages) expect(page, file).not.toMatch(/^[ \t]*# example: (?:begin|end)\b/m)
+    expect(pages.get('perl/examples/orchestration/index.md')).toContain('my $batch = $server->batch(')
+  })
+  it('keeps marker text that follows code or sits outside a code block', () => {
+    const guides = { source: perlGuides.source, guides: perlGuides.guides.map((guide) => guide.path === 'docs/orchestration.md'
+      ? { ...guide, content: `${guide.content}\n\nWrite \`# example: begin name\` above a region.\n\n\`\`\`perl\nsay '# example: begin kept';\n# example: begin hidden\n\`\`\`\n` }
+      : guide) }
+    const page = stagedPortGuides('perl', guides).get('perl/examples/orchestration/index.md')!
+    expect(page).toContain('Write `# example: begin name` above a region.')
+    expect(page).toContain("say '# example: begin kept';")
+    expect(page).not.toContain('# example: begin hidden')
+  })
   it('resolves native Lisp API anchors into core and workspace declaration pages', () => {
     const pages = stagedPortGuides('lisp', lispGuides)
     const operations = pages.get('lisp/guides/operations/index.md')!

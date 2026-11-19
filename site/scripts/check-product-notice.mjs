@@ -88,10 +88,8 @@ export async function checkProductNotice(browser, base, options = {}) {
       assert.equal(state.text.startsWith(sentence), true, `${where}: the bar says "${sentence}", not "${state.text}"`)
       if (badge === 'Concept example') assert.match(state.link ?? '', /\/meta\/support\/#concept-and-alpha$/, `${where}: the bar links the guide`)
       assert.equal(state.follows && state.outside, true, `${where}: the bar follows the release bar and sits outside the page body`)
-      // One banner (PageProductHome): a concept bar already says the work can change, so the release bar hides under it;
-      // an in-development bar keeps both.
-      if (badge === 'Concept example') assert.equal(state.barVisible && !state.releaseVisible, true, `${where}: only the concept bar shows on a first visit`)
-      else assert.equal(state.barVisible && state.releaseVisible, true, `${where}: both bars show on a first visit`)
+      // One banner (PageProductHome): a product bar, concept or in development, already says the work can change, so the release bar hides under it.
+      assert.equal(state.barVisible && !state.releaseVisible, true, `${where}: only the product bar shows on a first visit`)
       assert.equal(state.stored, null, `${where}: nothing is remembered before a click`)
 
       const dismiss = page.locator(`[data-product-notice-dismiss="${id}"]`)

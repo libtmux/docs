@@ -16,7 +16,8 @@ deadline so a failed command cannot leave the program waiting forever.
 
 This complete program creates a private tmux server, captures its output, and
 cleans up. Follow the [setup and run instructions](#setup-and-run) below. You need
-tmux and a Unix environment; no existing tmux session is required.
+tmux 3.3a or newer and a Unix environment; no existing tmux session is
+required.
 
 ## Read what's on screen
 
@@ -24,7 +25,7 @@ The program sends `printf` with a leading newline, then waits for the complete
 line `libtmux capture ready`. The newline keeps a late shell prompt off that
 line. Matching the whole line avoids mistaking the echoed command for its output.
 
-```rust title="main.rs"
+```rust title="src/main.rs"
 use std::error::Error;
 use std::time::Duration;
 
@@ -85,11 +86,10 @@ explains why sending and waiting are separate operations.
 
 ## Setup and run
 
-Use an empty directory. The commands pin the library
-revision used to verify the program.
+Use an empty directory. Cargo installs `libtmux` 0.1.2 from crates.io.
 
-Save the program as `src/main.rs` and this file as `Cargo.toml`. Use the
-repository's Rust 1.97.1 toolchain for this pinned revision.
+Save the program as `src/main.rs` and this file as `Cargo.toml`. Use Rust
+1.97.1 with rustup.
 
 ```toml title="Cargo.toml"
 [package]
@@ -98,20 +98,18 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-libtmux = { path = "libtmux/crates/libtmux" }
+libtmux = "=0.1.2"
 tempfile = "3.27.0"
 tokio = { version = "1.53.1", features = ["macros", "rt-multi-thread", "time"] }
 ```
 
 ```console
-$ git clone https://github.com/libtmux/libtmux-rs libtmux &&
-  git -C libtmux checkout d4e08b4eaab62ef4eeedab79b47973ae9a1de310 &&
-  cargo +1.97.1 run
+$ cargo +1.97.1 run
 ```
 
 <a id="source-inclusion"></a>
 
 ## Where this comes from
 
-This complete program was run against the library revision pinned above.
-The displayed code is checked against the bytes from that run.
+This program uses `libtmux` 0.1.2 from crates.io. Its [source](https://github.com/libtmux/libtmux-rs/tree/15cfa2b1845d9894c93d8025d8b83e75d756f073/crates/libtmux)
+is on GitHub.

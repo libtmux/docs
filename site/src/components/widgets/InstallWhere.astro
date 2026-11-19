@@ -1,0 +1,19 @@
+---
+import InstallCopy from './InstallCopy.astro'
+import { targetParts } from '../../lib/install-surface'
+
+/**
+ * Where the code goes and the one Copy that takes it, at the end of the
+ * installer's header. The code itself sits further down the surface, so Copy
+ * names it by `copyKey`.
+ */
+interface Props {
+  target: string
+  lang: string
+  copyKey: string
+  family: 'pkg' | 'mcp'
+}
+const { target, lang, copyKey, family } = Astro.props as Props
+const { dir, base } = targetParts(target)
+---
+<div class="lm-install__where"><span class="lm-install__target" title={target}>{dir && <span class="lm-install__dir">{dir}</span>}<span class="lm-install__base">{base}</span></span><InstallCopy family={family} copyKey={copyKey} label={`Copy ${lang === 'console' ? 'command' : target}`} /></div>

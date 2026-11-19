@@ -16,9 +16,9 @@ The direct [`Server`](../../reference/io-github-libtmux-scaladsl-server/) API bl
 
 ## Setup and run
 
-Use an empty directory on Linux with Git, tmux 3.3a or newer, and JDK 25. Save the project files and launcher below, then save any complete program on this page. Each program has its own imports and entry point.
+Use an empty directory on Linux with tmux 3.3a or newer, JDK 25, and Gradle 9. Save the project files below, then save any complete program on this page. Each program has its own imports and entry point.
 
-The pinned source checkout supplies the Gradle wrapper. Gradle resolves the library from Maven Central.
+Gradle resolves `libtmux-scala_3` 0.1.2 from Maven Central ([source](https://github.com/libtmux/libtmux-java/tree/e8a39689d8d60968ac978a1dd2a89c6112333896/libtmux-scala)).
 
 ```kotlin title="settings.gradle.kts"
 rootProject.name = "connect"
@@ -35,7 +35,7 @@ plugins {
 repositories { mavenCentral() }
 dependencies {
     implementation("org.scala-lang:scala3-library_3:3.9.0")
-    implementation("io.github.libtmux:libtmux-scala_3:0.1.0")
+    implementation("io.github.libtmux:libtmux-scala_3:0.1.2")
 }
 java { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }
 sourceSets.main { scala.srcDir("."); scala.include("${example}.scala") }
@@ -48,44 +48,7 @@ kotlin.daemon.jvmargs=-Xmx2g
 org.gradle.workers.max=2
 ```
 
-The launcher creates two sessions on a private socket: `work-one` with an `editor` window, and `work-two` with a `logs` window. Each pane runs `cat` so it stays alive. It stops only this server when the program finishes or fails. If shutdown fails, it reports the retained directory and exits with an error.
-
-```sh title="run.sh"
-#!/bin/sh
-set -eu
-
-binary=$(command -v tmux)
-mkdir -p /tmp/libtmux-java-dev
-directory=$(mktemp -d /tmp/libtmux-java-dev/query.XXXXXX)
-socket="$directory/tmux.sock"
-
-cleanup() {
-    status=$?
-    trap - 0 HUP INT TERM
-    if [ -S "$socket" ] && ! "$binary" -S "$socket" kill-server; then
-        printf 'Cannot stop tmux; kept %s\n' "$directory" >&2
-        exit 1
-    fi
-    rm -rf "$directory" || exit 1
-    exit "$status"
-}
-trap cleanup 0
-trap 'exit 1' HUP INT TERM
-
-unset TMUX TMUX_PANE
-export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
-"$binary" -S "$socket" -f /dev/null new-session -d -s work-one -n editor /bin/cat
-"$binary" -S "$socket" new-session -d -s work-two -n logs /bin/cat
-"$@"
-"$binary" -S "$socket" has-session -t '=work-one'
-```
-
-Fetch the Gradle wrapper from the 0.1.0 release:
-
-```console
-$ git clone https://github.com/libtmux/libtmux-java libtmux-source &&
-  git -C libtmux-source checkout 5c181887918351119bfdb3a046719fa792048e59
-```
+Each program starts its own private tmux server with two sessions: `work-one` with an `editor` window, and `work-two` with a `logs` window. Each pane runs `cat` so it stays alive. The program stops only that server when it finishes or fails, then removes the server's directory. If shutdown fails, it reports the retained directory and exits with an error.
 
 Each run starts from the same two-session fixture. Programs do not depend on another example having run first. Their assertions fail if the observed result differs.
 
@@ -94,43 +57,70 @@ Each run starts from the same two-session fixture. Programs do not depend on ano
 Read the session list and filter it locally. The connection uses a five-second timeout so an unavailable server fails visibly.
 
 ```scala title="Local.scala"
-import io.github.libtmux.{ServerConfig, ServerEndpoint}
+import io.github.libtmux.{ServerConfig, ServerEndpoint, SessionSpec}
 import io.github.libtmux.scaladsl.*
 import io.github.libtmux.scaladsl.query.*
-import java.nio.file.Path
+import java.nio.file.{Files, Path}
 import java.time.Duration
 import scala.util.Using
 import scala.jdk.CollectionConverters.*
 
 object Local {
+  def demonstrate(server: Server): Unit = {
+    val sessions = server.sessions()
+    val matching = sessions.matching(Session.name.startsWith("work-"))
+    val names = matching.map(_.name).sorted
+    assert(names == Vector("work-one", "work-two"))
+    println(names.mkString(", "))
+    // Filtering the captured vector makes no new tmux calls.
+    assert(sessions.filter(_.name.startsWith("work-")) == matching)
+    val onlyOne = Session.name.startsWith("work-") &&
+      Session.name.endsWith("one")
+    assert(sessions.matching(onlyOne).head.name == "work-one")
+    val either = Session.name.is("work-one") || Session.name.is("work-two")
+    assert(sessions.matching(either).size == 2)
+    val others = sessions.matching(!Session.name.is("work-one"))
+    assert(others.head.name == "work-two")
+  }
+
   def main(args: Array[String]): Unit = {
-    val socket = sys.env.getOrElse("LIBTMUX_SOCKET_PATH",
-      throw new IllegalArgumentException("Set LIBTMUX_SOCKET_PATH to an existing socket"))
+    val directory = Files.createTempDirectory("libtmux-example-")
+    val socket = directory.resolve("tmux.sock")
     val config = ServerConfig.builder()
-      .endpoint(ServerEndpoint.socketPath(Path.of(socket)))
+      .endpoint(ServerEndpoint.socketPath(socket))
+      .configFile(Path.of("/dev/null"))
       .defaultTimeout(Duration.ofSeconds(5))
       .build()
-    Using.resource(Server.open(config)) { server =>
-      val sessions = server.sessions()
-      val matching = sessions.matching(Session.name.startsWith("work-"))
-      val names = matching.map(_.name).sorted
-      assert(names == Vector("work-one", "work-two"))
-      println(names.mkString(", "))
-      // Filtering the captured vector makes no new tmux calls.
-      assert(sessions.filter(_.name.startsWith("work-")) == matching)
-      val onlyOne = Session.name.startsWith("work-") && Session.name.endsWith("one")
-      assert(sessions.matching(onlyOne).head.name == "work-one")
-      val either = Session.name.is("work-one") || Session.name.is("work-two")
-      assert(sessions.matching(either).size == 2)
-      assert(sessions.matching(!Session.name.is("work-one")).head.name == "work-two")
+    var stopped = false
+    try {
+      Using.resource(Server.open(config)) { server =>
+        try {
+          server.newSession(SessionSpec.builder()
+            .named("work-one").firstWindowNamed("editor")
+            .running("/bin/cat").build())
+          server.newSession(SessionSpec.builder()
+            .named("work-two").firstWindowNamed("logs")
+            .running("/bin/cat").build())
+          demonstrate(server)
+        } finally {
+          if (Files.exists(socket)) server.killServer()
+          stopped = true
+        }
+      }
+    } finally {
+      if (stopped || !Files.exists(socket)) {
+        Files.deleteIfExists(socket)
+        Files.delete(directory)
+      } else {
+        System.err.println(s"Cannot stop tmux; kept $directory")
+      }
     }
   }
 }
 ```
 
 ```console
-$ sh run.sh ./libtmux-source/gradlew --project-dir . run \
-  -Pexample=Local --console=plain --max-workers=2
+$ gradle --console=plain --no-daemon run -Pexample=Local
 ```
 
 Expected program output:
@@ -144,41 +134,67 @@ work-one, work-two
 Send `list-sessions` over a persistent control connection, verify the response, then close the control client. A subsequent ordinary read verifies the tmux server still has both sessions. Managed control needs tmux 3.7 or newer; on an older server the library refuses it with an unsupported-feature error.
 
 ```scala title="Control.scala"
-import io.github.libtmux.{ServerConfig, ServerEndpoint}
+import io.github.libtmux.{ServerConfig, ServerEndpoint, SessionSpec}
 import io.github.libtmux.scaladsl.*
 import io.github.libtmux.scaladsl.query.*
-import java.nio.file.Path
+import java.nio.file.{Files, Path}
 import java.time.Duration
 import scala.util.Using
 import scala.jdk.CollectionConverters.*
 
 object Control {
+  def demonstrate(server: Server): Unit = {
+    val session = server.sessions().find(_.name == "work-one").get
+    Using.resource(server.control(session)) { control =>
+      val reply = control.send("list-sessions", "-F", "#{session_name}")
+      require(reply.succeeded(),
+        s"tmux rejected list-sessions: ${reply.outcome()}")
+      val names = reply.lines().asScala.toVector.sorted
+      assert(names == Vector("work-one", "work-two"))
+      println(names.mkString(", "))
+    }
+    assert(server.sessions().size == 2)
+    println("control client closed; server still running")
+  }
+
   def main(args: Array[String]): Unit = {
-    val socket = sys.env.getOrElse("LIBTMUX_SOCKET_PATH",
-      throw new IllegalArgumentException("Set LIBTMUX_SOCKET_PATH to an existing socket"))
+    val directory = Files.createTempDirectory("libtmux-example-")
+    val socket = directory.resolve("tmux.sock")
     val config = ServerConfig.builder()
-      .endpoint(ServerEndpoint.socketPath(Path.of(socket)))
+      .endpoint(ServerEndpoint.socketPath(socket))
+      .configFile(Path.of("/dev/null"))
       .defaultTimeout(Duration.ofSeconds(5))
       .build()
-    Using.resource(Server.open(config)) { server =>
-      val session = server.sessions().find(_.name == "work-one").get
-      Using.resource(server.control(session)) { control =>
-        val reply = control.send("list-sessions", "-F", "#{session_name}")
-        require(reply.succeeded(), s"tmux rejected list-sessions: ${reply.outcome()}")
-        val names = reply.lines().asScala.toVector.sorted
-        assert(names == Vector("work-one", "work-two"))
-        println(names.mkString(", "))
+    var stopped = false
+    try {
+      Using.resource(Server.open(config)) { server =>
+        try {
+          server.newSession(SessionSpec.builder()
+            .named("work-one").firstWindowNamed("editor")
+            .running("/bin/cat").build())
+          server.newSession(SessionSpec.builder()
+            .named("work-two").firstWindowNamed("logs")
+            .running("/bin/cat").build())
+          demonstrate(server)
+        } finally {
+          if (Files.exists(socket)) server.killServer()
+          stopped = true
+        }
       }
-      assert(server.sessions().size == 2)
-      println("control client closed; server still running")
+    } finally {
+      if (stopped || !Files.exists(socket)) {
+        Files.deleteIfExists(socket)
+        Files.delete(directory)
+      } else {
+        System.err.println(s"Cannot stop tmux; kept $directory")
+      }
     }
   }
 }
 ```
 
 ```console
-$ sh run.sh ./libtmux-source/gradlew --project-dir . run \
-  -Pexample=Control --console=plain --max-workers=2
+$ gradle --console=plain --no-daemon run -Pexample=Control
 ```
 
 Expected program output:
@@ -192,4 +208,4 @@ control client closed; server still running
 
 An operation that times out may already have reached tmux. Read the current state before retrying a mutation such as creating a window. A cancellation signal does not roll back a completed tmux command.
 
-Here the launcher owns the private server and stops it after the program exits. An application connecting to an existing server should close its own client resources and leave that server running. See [attaching to tmux](../../guides/attaching-to-tmux/) for the connection-only example.
+Here each program owns the private server it starts and stops it before it exits. An application connecting to an existing server should close its own client resources and leave that server running. See [attaching to tmux](../../guides/attaching-to-tmux/) for the connection-only example.

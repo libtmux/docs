@@ -16,6 +16,7 @@ export { PROSE_FIELDS, RENDERED_TEXTS, STRUCTURAL_FIELDS, commandFacts, conceptN
 export { neverLinks } from './never-links.ts'
 export { looksLikeApiMention, tableMentions, proseMentions, pageMentions, LinkedOwners, type TableMention, type ProseMention, type LinkedOwner, type DanglingMention, type PageMentionsInput } from './mentions.ts'
 export { parseHunks, mapLine, type Hunk } from './source-lines.ts'
+export { citedFiles, type CitedFile } from './cited-files.ts'
 export * from './prose.ts'
 export { BUILTINS, builtinHref } from './builtins.ts'
 export { cargoFeatureHref } from './cargo-features.ts'

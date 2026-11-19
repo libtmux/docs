@@ -38,7 +38,7 @@ using LibTmux
 import LibTmux.Filters as F
 
 function main()
-    snap = with_server(; tmux=get(ENV, "LIBTMUX_TEST_TMUX", "tmux")) do server
+    snap = with_server() do server
         dev = new_session(server; name="dev", command=["/bin/cat"])
         initial = snapshot(server)
         api = only(windows(initial)).ref
@@ -110,7 +110,8 @@ Expected output:
 
 ## Source and verification
 
-The complete program comes from [examples/shared_windows.jl](https://github.com/libtmux/libtmux-julia/blob/6f62bd72cb8d99f3759ca5e2cc3591165a03c768/examples/shared_windows.jl).
+The complete program is [examples/shared_windows.jl](https://github.com/libtmux/libtmux-julia/blob/6f62bd72cb8d99f3759ca5e2cc3591165a03c768/examples/shared_windows.jl) without the `tmux`
+argument that the repository's own tests use to choose an executable.
 The verification runner executes these displayed files and setup commands
 unchanged, checks the output, and checks that the program stopped its private
 tmux server. Each example runs independently.

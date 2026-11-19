@@ -21,9 +21,6 @@ const SHELL = new Set(['console', 'sh', 'bash', 'shell'])
 /** The lines of a shell command wider than the limit. */
 const tooWide = (code: string) => code.split('\n').filter((line) => line.length > MAX_WIDTH)
 
-/** What the copy button copies from a console block: the text without its `$ ` prompts (see mcp-install.js `copyPanelCode`). */
-const copied = (shown: string) => shown.replace(/^\$ /gm, '')
-
 /** Whether a shell accepts `text` as a complete command, without running it. */
 const parses = (text: string) => spawnSync('bash', ['-n'], { input: text, encoding: 'utf8' }).status === 0
 
@@ -52,7 +49,7 @@ function commands(): Command[] {
     for (const panel of buildPanels(spec, 'a'.repeat(40))) {
       const where = `${spec.port} mcp ${panel.client.id}/${panel.method.id}/${panel.scope.id}`
       const fill = withDefaultCooldown
-      if (panel.language === 'console') found.push({ where, text: copied(fill(panel.body)) })
+      if (panel.language === 'console') found.push({ where, text: fill(panel.body) })
       if (panel.pipPrereq) found.push({ where: `${where} prerequisite`, text: fill(panel.pipPrereq) })
     }
   }
@@ -89,15 +86,63 @@ describe('shell install commands', () => {
 })
 
 describe('wrapping a one-line command', () => {
-  const source = 'git clone --branch v0.1.0-alpha.1 https://github.com/libtmux/libtmux-java && (cd libtmux-java && ./gradlew :libtmux:publishToMavenLocal :libtmux-kotlin:publishToMavenLocal)'
+  /** The same command with its continuations taken out: the words a shell reads. */
+  const words = (wrapped: string) => wrapped.replace(/ \\\n\s*/g, ' ')
 
-  it('breaks it with backslashes into lines that fit, and the lines run as the one did', () => {
+  it('puts a flag and its value on one line each, and the positional arguments last', () => {
+    const wrapped = wrapShell('npm install --min-release-age=7 --min-release-age-exclude=libtmux --registry=https://registry.npmjs.org libtmux libtmux-extras')
+    expect(wrapped).toBe([
+      'npm install \\',
+      '    --min-release-age=7 \\',
+      '    --min-release-age-exclude=libtmux \\',
+      '    --registry=https://registry.npmjs.org \\',
+      '    libtmux libtmux-extras',
+    ].join('\n'))
+  })
+
+  it('puts the program after -- on one line, with its flags one level deeper', () => {
+    const source = 'claude mcp add tmux --scope user -- uvx --exclude-newer P7D --exclude-newer-package libtmux-mcp=2099-01-01 libtmux-mcp'
+    const wrapped = wrapShell(source)
+    expect(wrapped).toBe([
+      'claude mcp add tmux \\',
+      '    --scope user \\',
+      '    -- uvx \\',
+      '        --exclude-newer P7D \\',
+      '        --exclude-newer-package libtmux-mcp=2099-01-01 \\',
+      '        libtmux-mcp',
+    ].join('\n'))
+    expect(words(wrapped)).toBe(source)
+    expect(parses(wrapped)).toBe(true)
+  })
+
+  it('breaks a chain at its operators, and the lines run as the one did', () => {
+    const source = 'git clone --branch v0.1.0-alpha.1 https://github.com/libtmux/libtmux-java && (cd libtmux-java && ./gradlew :libtmux:publishToMavenLocal :libtmux-kotlin:publishToMavenLocal)'
     const wrapped = wrapShell(source)
     expect(wrapped.split('\n').length).toBeGreaterThan(1)
     expect(tooWide(wrapped)).toEqual([])
     expect(wrapped.split('\n').slice(0, -1).every((line) => line.endsWith(' \\'))).toBe(true)
     expect(parses(wrapped)).toBe(true)
-    expect(wrapped.replaceAll(' \\\n    ', ' ')).toBe(source)
+    expect(words(wrapped)).toBe(source)
+  })
+
+  it('puts one statement of a quoted -e program on each line and opens its widest list', () => {
+    const source = "julia --startup-file=no -e 'using Pkg; Pkg.activate(\".\"); repo = \"https://github.com/libtmux/libtmux-julia.git\"; Pkg.add([Pkg.PackageSpec(url=repo, rev=\"abc\"), Pkg.PackageSpec(url=repo, rev=\"abc\", subdir=\"packages/LibTmuxMCP\")]); using LibTmuxMCP; println(LibTmuxMCP.install_cli(\"bin\"))'"
+    const wrapped = wrapShell(source)
+    expect(wrapped).toBe([
+      'julia \\',
+      '    --startup-file=no \\',
+      "    -e '",
+      '      using Pkg',
+      '      Pkg.activate(".")',
+      '      repo = "https://github.com/libtmux/libtmux-julia.git"',
+      '      Pkg.add([',
+      '        Pkg.PackageSpec(url=repo, rev="abc"),',
+      '        Pkg.PackageSpec(url=repo, rev="abc", subdir="packages/LibTmuxMCP")',
+      '      ])',
+      '      using LibTmuxMCP',
+      "      println(LibTmuxMCP.install_cli(\"bin\"))'",
+    ].join('\n'))
+    expect(parses(wrapped)).toBe(true)
   })
 
   it('leaves a command that fits, and one already broken by hand, as it is', () => {
@@ -109,8 +154,17 @@ describe('wrapping a one-line command', () => {
   it('keeps a flag with its value and never splits a quoted word', () => {
     const wrapped = wrapShell('claude mcp add tmux --scope user -- bundle exec libtmux-mcp --socket-name "a socket name" --endpoint local --timeout 30')
     for (const line of wrapped.split('\n')) expect(line).not.toMatch(/ --(?:socket-name|endpoint|timeout)(?: \\)?$/)
-    expect(wrapped).toContain('"a socket name"')
+    expect(wrapped).toContain('--socket-name "a socket name"')
     expect(parses(wrapped)).toBe(true)
+  })
+
+  it('wraps every command the pickers carry into lines that fit and read back as the same words', () => {
+    const long = all.filter((command) => !command.text.includes('\n'))
+    for (const command of long) {
+      const wrapped = wrapShell(command.text)
+      expect(tooWide(wrapped), command.where).toEqual([])
+      expect(words(wrapped), command.where).toBe(command.text)
+    }
   })
 })
 

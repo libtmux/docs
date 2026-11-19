@@ -1,0 +1,19 @@
+---
+/**
+ * The tab row of an installer's header: its tabs scroll sideways, and when
+ * they overflow a button at each end counts the tabs hidden on that side
+ * (design record 0065). `install-tabs.ts` keeps the counts and the paging;
+ * until it runs, the row is as the server drew it, buttons hidden.
+ */
+interface Props {
+  /** What the row holds, for the buttons' names: "Show 3 more clients". */
+  noun: 'clients' | 'tools'
+}
+const { noun } = Astro.props as Props
+const none = `No more ${noun} this way`
+---
+<div class="lm-install__tabrow" data-install-row data-fits>
+  <button type="button" class="lm-install__more" data-install-more="-1" data-noun={noun} aria-label={none} disabled><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg><span data-n></span></button>
+  <div class="lm-install__tabs" data-install-scroll><slot /></div>
+  <button type="button" class="lm-install__more" data-install-more="1" data-noun={noun} aria-label={none} disabled><span data-n></span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg></button>
+</div>

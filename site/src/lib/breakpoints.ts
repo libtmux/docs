@@ -14,6 +14,8 @@ export const BP = {
   nav: 64,
   /** The outline column appears. */
   outline: 80,
+  /** The root size starts to grow with the display (record 0071). */
+  large: 120,
 } as const
 
 export type Breakpoint = keyof typeof BP
@@ -26,3 +28,12 @@ export const atLeast = (name: Breakpoint) => `(min-width: ${BP[name]}rem)`
  * below the breakpoint, so no width answers both this and `atLeast`.
  */
 export const below = (name: Breakpoint) => `(max-width: ${BP[name] - 0.001}rem)`
+
+/** `bp-short`: under this height, in rem, a landscape screen is short (record 0071). */
+export const SHORT = 30
+
+/** Panels open as a bottom sheet on phones in portrait and as a side sheet on short landscape screens (record 0071). */
+export const PANEL_QUERIES = {
+  sheet: `${below('phone')}, ${below('tablet')} and (orientation: portrait)`,
+  side: `(max-height: ${SHORT - 0.001}rem) and (orientation: landscape)`,
+} as const

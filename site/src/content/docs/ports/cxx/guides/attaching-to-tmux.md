@@ -22,36 +22,95 @@ interactive attachment and detaching.
 
 ## Connect to an existing server
 
-Save the complete program as `connect.cpp`. `LIBTMUX_SOCKET_PATH` selects
-the existing server. The launcher below supplies a private socket for trying
-the example.
+Save the complete program as `connect.cpp`. When `LIBTMUX_SOCKET_PATH` names a
+socket, `find_work` connects a `Server` to it, finds `work`, prints the name and
+leaves that server running.
+
+Without the variable, the program starts a private tmux server in a new
+temporary directory and creates a detached `work` session in it. It then
+connects a second `Server` to the socket by path and runs the same lookup. The
+private server's destructor stops only the private server and removes its
+directory, also when the lookup throws. If tmux cannot be stopped, it keeps the
+directory, prints its location and makes the program exit with status 1.
 
 ```cpp title="connect.cpp"
 #include <cstdlib>
+#include <filesystem>
 #include <iostream>
+#include <optional>
 #include <stdexcept>
+#include <string>
+#include <system_error>
 
 #include <libtmux/libtmux.hpp>
 
-int main() {
-  try {
-    const char* socket = std::getenv("LIBTMUX_SOCKET_PATH");
-    if (!socket) throw std::runtime_error("Set LIBTMUX_SOCKET_PATH to an existing socket");
-    auto server = libtmux::Server::at_socket_path(socket);
-    if (!server) throw std::runtime_error(server.error().diagnostic);
-    auto sessions = server->sessions();
-    if (!sessions) throw std::runtime_error(sessions.error().diagnostic);
-    for (const auto& session : *sessions) {
-      if (session.name() == "work") {
-        std::cout << "work\n";
-        return 0;
-      }
+namespace fs = std::filesystem;
+
+void find_work(const std::string& socket) {
+  auto server = libtmux::Server::at_socket_path(socket);
+  if (!server) throw std::runtime_error(server.error().diagnostic);
+  auto sessions = server->sessions();
+  if (!sessions) throw std::runtime_error(sessions.error().diagnostic);
+  for (const auto& session : *sessions) {
+    if (session.name() == "work") {
+      std::cout << "work\n";
+      return;
     }
-    throw std::runtime_error("The work session does not exist");
+  }
+  throw std::runtime_error("The work session does not exist");
+}
+
+// Stops the private server and removes its directory when it leaves scope,
+// including while an exception unwinds. A server that will not stop keeps
+// its directory, and `status` becomes 1.
+struct PrivateServer {
+  fs::path directory;
+  std::optional<libtmux::Server> server;
+  int& status;
+
+  ~PrivateServer() {
+    if (server && server->is_alive() && !server->kill()) {
+      std::cerr << "Cannot stop tmux; kept " << directory << '\n';
+      status = 1;
+      return;
+    }
+    std::error_code error;
+    fs::remove_all(directory, error);
+    if (error) {
+      std::cerr << "Cannot remove " << directory << '\n';
+      status = 1;
+    }
+  }
+};
+
+int main() {
+  int status = 0;
+  try {
+    const char* existing = std::getenv("LIBTMUX_SOCKET_PATH");
+    if (existing && *existing) {
+      find_work(existing);
+      return 0;
+    }
+    auto pattern =
+        (fs::temp_directory_path() / "libtmux-attach-XXXXXX").string();
+    if (!mkdtemp(pattern.data())) {
+      throw std::runtime_error("Cannot create a temporary directory");
+    }
+    PrivateServer demo{pattern, std::nullopt, status};
+    const auto socket = (demo.directory / "tmux.sock").string();
+    auto server = libtmux::Server::startable_at_socket_path(
+        socket, fs::path{"/dev/null"});
+    if (!server) throw std::runtime_error(server.error().diagnostic);
+    demo.server = *server;
+    auto session =
+        server->new_session({.name = "work", .shell_command = "/bin/cat"});
+    if (!session) throw std::runtime_error(session.error().diagnostic);
+    find_work(socket);
   } catch (const std::exception& error) {
     std::cerr << error.what() << '\n';
-    return 1;
+    status = 1;
   }
+  return status;
 }
 ```
 
@@ -76,39 +135,6 @@ target_compile_features(connect PRIVATE cxx_std_23)
 target_link_libraries(connect PRIVATE libtmux::libtmux)
 ```
 
-Save the launcher as `run.sh`. It starts an isolated tmux server, runs the
-program, checks that the session still exists, then stops only that server.
-Cleanup runs after failures too. A failed shutdown keeps its socket directory
-and prints its location for inspection.
-
-```sh title="run.sh"
-#!/bin/sh
-set -eu
-
-binary=$(command -v tmux)
-directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-cxx-attach.XXXXXX")
-socket="$directory/tmux.sock"
-
-cleanup() {
-    status=$?
-    trap - 0 HUP INT TERM
-    if [ -S "$socket" ] && ! "$binary" -S "$socket" kill-server; then
-        printf 'Cannot stop tmux; kept %s\n' "$directory" >&2
-        exit 1
-    fi
-    rm -rf "$directory" || exit 1
-    exit "$status"
-}
-trap cleanup 0
-trap 'exit 1' HUP INT TERM
-
-unset TMUX TMUX_PANE
-export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
-"$binary" -S "$socket" -f /dev/null new-session -d -s work /bin/cat
-"$@"
-"$binary" -S "$socket" has-session -t '=work'
-```
-
 Fetch the verified library revision, build, and run:
 
 ```console
@@ -119,12 +145,12 @@ $ git clone https://github.com/libtmux/libtmux-cxx libtmux-source &&
     -DCMAKE_CXX_FLAGS=-stdlib=libc++ \
     -DCMAKE_EXE_LINKER_FLAGS=-stdlib=libc++ &&
   cmake --build build --target connect --parallel 2 &&
-  sh run.sh ./build/connect
+  ./build/connect
 ```
 
 The program prints `work`. To use an existing server of your own, set
-`LIBTMUX_SOCKET_PATH` to its socket and run the program without the launcher.
-That launcher is responsible for the demonstration server's lifetime.
+`LIBTMUX_SOCKET_PATH` to its socket before running the program; the program
+leaves that server running.
 
 <a id="finding-a-session-instead-of-always-creating-one"></a>
 

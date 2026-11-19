@@ -12,23 +12,23 @@
   function readPreference(key) {
     try { return localStorage.getItem(key); } catch (_) { return null; }
   }
-  function applyTheme() {
-    document.documentElement.dataset.js = '';
-    const stored = readPreference('color-scheme') || document.documentElement.getAttribute('data-color-scheme');
+  function applyTheme(root = document.documentElement) {
+    root.dataset.js = '';
+    const stored = readPreference('color-scheme') || root.getAttribute('data-color-scheme');
     const colorScheme = COLOR_SCHEMES.includes(stored) ? stored : 'system';
 
     // Apply color scheme attribute for CSS targeting
-    document.documentElement.setAttribute('data-color-scheme', colorScheme);
+    root.setAttribute('data-color-scheme', colorScheme);
 
     // A homepage hover changes the resolved colors, never the saved choice.
-    const preview = document.documentElement.getAttribute('data-home-scheme-preview');
+    const preview = root.getAttribute('data-home-scheme-preview');
     const resolved = COLOR_SCHEMES.includes(preview) ? preview : colorScheme;
     // Apply color scheme mode
     if (resolved === 'system') {
       const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      document.documentElement.setAttribute('data-theme-mode', systemPrefersDark ? 'dark' : 'light');
+      root.setAttribute('data-theme-mode', systemPrefersDark ? 'dark' : 'light');
     } else {
-      document.documentElement.setAttribute('data-theme-mode', resolved);
+      root.setAttribute('data-theme-mode', resolved);
     }
   }
   
@@ -199,7 +199,12 @@
   // Carry the current choice when storage is blocked, then resolve saved
   // preferences against the new page's attributes before its first paint.
   document.addEventListener('astro:before-swap', (event) => {
-    event.newDocument.documentElement.setAttribute('data-color-scheme', document.documentElement.getAttribute('data-color-scheme') ?? 'system')
+    const root = event.newDocument.documentElement
+    root.setAttribute('data-color-scheme', document.documentElement.getAttribute('data-color-scheme') ?? 'system')
+    // Astro replaces the live root's attributes with these, and every colour
+    // keys off data-theme-mode: a mode resolved only in astro:after-swap leaves
+    // one frame on the system palette (tokens.css), which flashes the header.
+    window.__applyTheme?.(root)
   })
   document.addEventListener('astro:after-swap', () => {
     window.__applyTheme?.()

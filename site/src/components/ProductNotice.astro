@@ -56,9 +56,11 @@ const id = `${product}-${status?.name}`
 </div>}
 
 <style is:global>
-  /* A concept note already says the work can change, so the site's release bar above it hides: one banner, not two (PageProductHome). A reader who dismissed the concept note gets the release bar back. */
+  /* A product's bar already says the work can change, as a concept example or as in development, so the site's release bar above it hides: one banner, not two (PageProductHome). A reader who dismissed the product bar gets the release bar back. */
   html:not([data-product-notice-dismissed~='mcp-concept']) .prerelease-notice[data-prerelease-notice]:has(~ .product-notice[data-product-notice='mcp-concept']),
-  html:not([data-product-notice-dismissed~='workspace-concept']) .prerelease-notice[data-prerelease-notice]:has(~ .product-notice[data-product-notice='workspace-concept']) { display: none; }
+  html:not([data-product-notice-dismissed~='mcp-in-development']) .prerelease-notice[data-prerelease-notice]:has(~ .product-notice[data-product-notice='mcp-in-development']),
+  html:not([data-product-notice-dismissed~='workspace-concept']) .prerelease-notice[data-prerelease-notice]:has(~ .product-notice[data-product-notice='workspace-concept']),
+  html:not([data-product-notice-dismissed~='workspace-in-development']) .prerelease-notice[data-prerelease-notice]:has(~ .product-notice[data-product-notice='workspace-in-development']) { display: none; }
 </style>
 
 <script>

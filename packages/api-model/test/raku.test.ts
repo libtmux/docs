@@ -60,6 +60,13 @@ describe('native Raku documentation', () => {
     expect(input.symbols[2]!.doc?.summary).toContain('rakudoc:')
   })
 
+  it.each(['tools/export-docs.raku', 'scripts/export-docs/export-docs.raku'])('accepts the exporter at %s and no other path', (path) => {
+    const input = artifact(); input.nativeProvenance.exporter.path = path
+    expect(extractRakuArtifact(input, revision).nativeProvenance?.exporter.path).toBe(path)
+    const elsewhere = artifact(); elsewhere.nativeProvenance.exporter.path = 'scripts/export-docs.raku'
+    expect(() => extractRakuArtifact(elsewhere, revision)).toThrow(/exporter identity/)
+  })
+
   it('refuses uncommitted inputs, altered sources and unresolved native links', () => {
     const dirty = artifact(); dirty.workingTree = true; dirty.nativeProvenance.library.workingTree = true
     expect(() => extractRakuArtifact(dirty, revision)).toThrow(/uncommitted/)

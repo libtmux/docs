@@ -14,7 +14,7 @@ Build a tmux layout from F# by creating a window, splitting a pane and selecting
 
 ## Setup and run
 
-Use an empty directory on Linux with Git, tmux 3.3a or newer, and .NET SDK 10.0.302. Save the project files and launcher below, then save any complete program on this page. Each program has its own imports and entry point.
+Use an empty directory on Linux with tmux 3.3a or newer and the .NET 10 SDK. The project file installs [`LibTmux.FSharp`](https://www.nuget.org/packages/LibTmux.FSharp/0.1.1) 0.1.1 from NuGet ([source](https://github.com/libtmux/libtmux-dotnet/tree/8d47af7d89638ad267528ac56897cec67df597f7/src/LibTmux.FSharp)). Save the project file below, then save any complete program on this page. Each program has its own imports and entry point.
 
 ```xml title="Query.fsproj"
 <Project Sdk="Microsoft.NET.Sdk">
@@ -25,49 +25,12 @@ Use an empty directory on Linux with Git, tmux 3.3a or newer, and .NET SDK 10.0.
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(Example).fs" />
-    <ProjectReference Include="libtmux-source/src/LibTmux.FSharp/LibTmux.FSharp.fsproj" />
+    <PackageReference Include="LibTmux.FSharp" Version="0.1.1" />
   </ItemGroup>
 </Project>
 ```
 
-The launcher creates two sessions on a private socket: `work-one` with an `editor` window, and `work-two` with a `logs` window. Each pane runs `cat` so it stays alive. It stops only this server when the program finishes or fails. If shutdown fails, it reports the retained directory and exits with an error.
-
-```sh title="run.sh"
-#!/bin/sh
-set -eu
-
-binary=$(command -v tmux)
-mkdir -p /tmp/libtmux-dotnet-dev
-directory=$(mktemp -d /tmp/libtmux-dotnet-dev/query.XXXXXX)
-socket="$directory/tmux.sock"
-
-cleanup() {
-    status=$?
-    trap - 0 HUP INT TERM
-    if [ -S "$socket" ] && ! "$binary" -S "$socket" kill-server; then
-        printf 'Cannot stop tmux; kept %s\n' "$directory" >&2
-        exit 1
-    fi
-    rm -rf "$directory" || exit 1
-    exit "$status"
-}
-trap cleanup 0
-trap 'exit 1' HUP INT TERM
-
-unset TMUX TMUX_PANE
-export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
-"$binary" -S "$socket" -f /dev/null new-session -d -s work-one -n editor /bin/cat
-"$binary" -S "$socket" new-session -d -s work-two -n logs /bin/cat
-"$@"
-"$binary" -S "$socket" has-session -t '=work-one'
-```
-
-Fetch the library revision used by these examples:
-
-```console
-$ git clone https://github.com/libtmux/libtmux-dotnet libtmux-source &&
-  git -C libtmux-source checkout 2d99ead5aba8d968e85dcac8c9a9a518452e6ba6
-```
+Each program starts a private tmux server in a new temporary directory and creates two sessions: `work-one` with an `editor` window, and `work-two` with a `logs` window. Each pane runs `cat` so it stays alive. The program connects to that socket by path, runs its example, and stops only that server when it finishes or fails. If tmux cannot be stopped, the program keeps the directory and prints its location.
 
 Each run starts from the same two-session fixture. Programs do not depend on another example having run first. Their assertions fail if the observed result differs.
 
@@ -77,19 +40,13 @@ Create `tools` in `work-one`, split its pane to the right, then choose `even-hor
 
 ```fsharp title="Layout.fs"
 open System
+open System.IO
 open System.Threading
 open System.Threading.Tasks
 open LibTmux
 open LibTmux.FSharp
 
-let run () = task {
-    let socket = Environment.GetEnvironmentVariable("LIBTMUX_SOCKET_PATH")
-    if String.IsNullOrEmpty(socket) then
-        invalidOp "Set LIBTMUX_SOCKET_PATH to an existing socket"
-    use timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5.0))
-    let token = timeout.Token
-    let! server = LibTmux.Server.ConnectAsync(
-        ServerConnectionOptions(SocketPath = socket), token)
+let example (server: LibTmux.Server) (token: CancellationToken) = task {
     let! captured = server |> Server.capture token SnapshotDepth.Sessions
     let session = captured.Sessions |> Seq.find (fun s -> s.Name = "work-one")
     let request = NewWindowRequest(Name = "tools", Command = "/bin/cat")
@@ -103,6 +60,36 @@ let run () = task {
     printfn "tools: 2 panes"
 }
 
+let run () = task {
+    let directory = Directory.CreateTempSubdirectory("libtmux-example-")
+    let mutable owned: OwnedServerScope = null
+    try
+        use timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10.0))
+        let token = timeout.Token
+        let socket = Path.Combine(directory.FullName, "tmux.sock")
+        let options =
+            ServerConnectionOptions(
+                SocketPath = socket, ConfigurationFile = "/dev/null")
+        let! scope = LibTmux.Server.CreateOwnedAsync(options, token)
+        owned <- scope
+        for name, window in [ "work-one", "editor"; "work-two", "logs" ] do
+            let request =
+                NewSessionRequest(
+                    Name = name, WindowName = window, Command = "/bin/cat")
+            let! _ = scope.Value.CreateSessionAsync(request, token)
+            ()
+        let! server = LibTmux.Server.ConnectAsync(
+            ServerConnectionOptions(SocketPath = socket), token)
+        do! example server token
+    finally
+        if not (isNull owned) then
+            try owned.DisposeAsync().AsTask().GetAwaiter().GetResult()
+            with _ ->
+                eprintfn "Cannot stop tmux; kept %s" directory.FullName
+                reraise ()
+        directory.Delete(true)
+}
+
 [<EntryPoint>]
 let main _ =
     try
@@ -114,9 +101,8 @@ let main _ =
 ```
 
 ```console
-$ dotnet build Query.fsproj --maxcpucount:1 -p:Example=Layout \
-  -p:DisableImplicitLibraryPacksFolder=true -p:RestorePackagesPath="$PWD/.packages" &&
-  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=Layout
+$ dotnet build Query.fsproj --maxcpucount:1 -p:Example=Layout &&
+  dotnet run --project Query.fsproj --no-build -p:Example=Layout
 ```
 
 Expected program output:
@@ -131,19 +117,13 @@ Look for `tools` before creating it. Two sequential calls return the same window
 
 ```fsharp title="ReuseLayout.fs"
 open System
+open System.IO
 open System.Threading
 open System.Threading.Tasks
 open LibTmux
 open LibTmux.FSharp
 
-let run () = task {
-    let socket = Environment.GetEnvironmentVariable("LIBTMUX_SOCKET_PATH")
-    if String.IsNullOrEmpty(socket) then
-        invalidOp "Set LIBTMUX_SOCKET_PATH to an existing socket"
-    use timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5.0))
-    let token = timeout.Token
-    let! server = LibTmux.Server.ConnectAsync(
-        ServerConnectionOptions(SocketPath = socket), token)
+let example (server: LibTmux.Server) (token: CancellationToken) = task {
     let ensureTools () = task {
         let! captured = server |> Server.capture token SnapshotDepth.Windows
         let session = captured.Sessions |> Seq.find (fun s -> s.Name = "work-one")
@@ -162,6 +142,36 @@ let run () = task {
     printfn "one tools window after two calls"
 }
 
+let run () = task {
+    let directory = Directory.CreateTempSubdirectory("libtmux-example-")
+    let mutable owned: OwnedServerScope = null
+    try
+        use timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10.0))
+        let token = timeout.Token
+        let socket = Path.Combine(directory.FullName, "tmux.sock")
+        let options =
+            ServerConnectionOptions(
+                SocketPath = socket, ConfigurationFile = "/dev/null")
+        let! scope = LibTmux.Server.CreateOwnedAsync(options, token)
+        owned <- scope
+        for name, window in [ "work-one", "editor"; "work-two", "logs" ] do
+            let request =
+                NewSessionRequest(
+                    Name = name, WindowName = window, Command = "/bin/cat")
+            let! _ = scope.Value.CreateSessionAsync(request, token)
+            ()
+        let! server = LibTmux.Server.ConnectAsync(
+            ServerConnectionOptions(SocketPath = socket), token)
+        do! example server token
+    finally
+        if not (isNull owned) then
+            try owned.DisposeAsync().AsTask().GetAwaiter().GetResult()
+            with _ ->
+                eprintfn "Cannot stop tmux; kept %s" directory.FullName
+                reraise ()
+        directory.Delete(true)
+}
+
 [<EntryPoint>]
 let main _ =
     try
@@ -173,9 +183,8 @@ let main _ =
 ```
 
 ```console
-$ dotnet build Query.fsproj --maxcpucount:1 -p:Example=ReuseLayout \
-  -p:DisableImplicitLibraryPacksFolder=true -p:RestorePackagesPath="$PWD/.packages" &&
-  sh run.sh dotnet run --project Query.fsproj --no-build -p:Example=ReuseLayout
+$ dotnet build Query.fsproj --maxcpucount:1 -p:Example=ReuseLayout &&
+  dotnet run --project Query.fsproj --no-build -p:Example=ReuseLayout
 ```
 
 Expected program output:

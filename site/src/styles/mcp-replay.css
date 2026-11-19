@@ -375,7 +375,7 @@ html[data-js] .mcp-replay .mcp-turn[data-turn]:not([data-turn='prompt']) {
   position: absolute;
   padding: 0.25rem 0.375rem;
   overflow: hidden;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   line-height: 1.35;
 }
 
@@ -456,7 +456,7 @@ html[data-js] .mcp-replay .mcp-turn[data-turn]:not([data-turn='prompt']) {
 
 .mcp-tile__pane {
   box-sizing: border-box;
-  font-size: 0.625rem;
+  font-size: 0.75rem;
 }
 
 .mcp-tile__pane.has-right {
@@ -482,14 +482,14 @@ html[data-js] .mcp-replay .mcp-turn[data-turn]:not([data-turn='prompt']) {
   margin: 0;
   padding: 0.25rem 0.375rem;
   list-style: none;
-  font-size: 0.625rem;
+  font-size: 0.75rem;
 }
 
 .mcp-tile__status {
   overflow: hidden;
   padding: 0 0.375rem;
   background: var(--color-surface-hover);
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   line-height: 1.6;
   white-space: nowrap;
   text-overflow: ellipsis;

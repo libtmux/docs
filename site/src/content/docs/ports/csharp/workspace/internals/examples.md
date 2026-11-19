@@ -16,19 +16,15 @@ Use a POSIX host with tmux on `PATH` and the .NET 10 SDK.
 
 ## Create the project
 
-In a new directory, fetch the source revision used by this documentation:
+Create a new directory:
 
 ```console
 $ mkdir dotnet-workspace-example
 $ cd dotnet-workspace-example
-$ git init -q libtmux-source
-$ git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-dotnet.git
-$ git -C libtmux-source fetch --depth=1 origin 320dc64f4b8b7815842471327a5e6b84a1499bf8
-$ git -C libtmux-source checkout --detach FETCH_HEAD
 ```
 
-Save the following project file. The project reference builds the workspace
-package and its core dependency from that checkout.
+Save the following project file. It installs the `LibTmux.Workspace` package and
+its `LibTmux` dependency, both 0.1.1, from NuGet.
 
 ```xml title="WorkspaceExample.csproj"
 <Project Sdk="Microsoft.NET.Sdk">
@@ -41,8 +37,8 @@ package and its core dependency from that checkout.
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
-    <ProjectReference Include="libtmux-source/src/LibTmux/LibTmux.csproj" />
-    <ProjectReference Include="libtmux-source/src/LibTmux.Workspace/LibTmux.Workspace.csproj" />
+    <PackageReference Include="LibTmux" Version="0.1.1" />
+    <PackageReference Include="LibTmux.Workspace" Version="0.1.1" />
   </ItemGroup>
 </Project>
 ```
@@ -114,4 +110,4 @@ failure can leave partial results; the owned server scope removes them here.
 <a id="where-this-comes-from"></a>
 <a id="source-inclusion"></a>
 
-[Workspace API source](https://github.com/libtmux/libtmux-dotnet/tree/320dc64f4b8b7815842471327a5e6b84a1499bf8/src/LibTmux.Workspace)
+[Workspace API source](https://github.com/libtmux/libtmux-dotnet/tree/8d47af7d89638ad267528ac56897cec67df597f7/src/LibTmux.Workspace)

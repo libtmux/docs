@@ -18,8 +18,9 @@ next operation needs one unambiguous target.
 
 ## Setup and run
 
-Use an empty directory with Git, rustup with the 1.97.1 toolchain installed,
-tmux 3.3a or newer, and a Unix environment. Each program below creates its own private server, uses `cat` to
+Use an empty directory with rustup, the 1.97.1 toolchain installed, tmux
+3.3a or newer, and a Unix environment. Cargo installs `libtmux` 0.1.2 from
+crates.io. Each program below creates its own private server, uses `cat` to
 keep its panes alive, and stops that server before exiting. No existing session,
 socket, or environment variable is required.
 
@@ -33,11 +34,8 @@ version = "0.0.0"
 edition = "2024"
 publish = false
 
-[workspace]
-exclude = ["libtmux-source"]
-
 [dependencies]
-libtmux = { path = "libtmux-source/crates/libtmux" }
+libtmux = "=0.1.2"
 tempfile = "=3.27.0"
 tokio = { version = "=1.53.1", features = ["macros", "rt", "time"] }
 
@@ -52,13 +50,6 @@ path = "cardinality.rs"
 [[bin]]
 name = "refresh"
 path = "refresh.rs"
-```
-
-Fetch the library revision used by these programs:
-
-```console
-$ git clone https://github.com/libtmux/libtmux-rs libtmux-source &&
-  git -C libtmux-source checkout e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4
 ```
 
 The `query` feature is enabled by default. If your application disables default
@@ -177,15 +168,9 @@ async fn demonstrate(server: &Server) -> Result<(), ExampleError> {
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), ExampleError> {
-    let root = std::path::Path::new("/tmp/libtmux-rs-dev");
-    std::fs::create_dir_all(root)?;
     let directory = tempfile::Builder::new()
         .prefix("api-query-")
-        .tempdir_in(root)?;
-    std::fs::write(
-        directory.path().join("owner"),
-        std::process::id().to_string(),
-    )?;
+        .tempdir()?;
     let server = Server::builder()
         .socket_path(directory.path().join("tmux.sock"))
         .config_file("/dev/null")
@@ -193,7 +178,7 @@ async fn main() -> Result<(), ExampleError> {
         .build()?;
     let outcome = tokio::time::timeout(Duration::from_secs(10), demonstrate(&server)).await;
 
-    // Stop the owned daemon before closing the client executor.
+    // Stop the tmux server this program started, then release the client.
     let killed = server.kill().await;
     let closed = server.shutdown().await;
     let cleanup_failed = killed.is_err() || closed.is_err();
@@ -204,16 +189,19 @@ async fn main() -> Result<(), ExampleError> {
         Err(error) => failures.push(format!("example deadline: {error}")),
     }
     if let Err(error) = killed {
-        failures.push(format!("daemon cleanup: {error}"));
+        failures.push(format!("could not stop tmux: {error}"));
     }
     if let Err(error) = closed {
-        failures.push(format!("executor cleanup: {error}"));
+        failures.push(format!("could not close the client: {error}"));
     }
     if cleanup_failed {
         let retained = directory.keep();
-        failures.push(format!("inspect retained directory {}", retained.display()));
+        failures.push(format!(
+            "left the temporary directory at {}",
+            retained.display()
+        ));
     } else if let Err(error) = directory.close() {
-        failures.push(format!("directory cleanup: {error}"));
+        failures.push(format!("could not remove the directory: {error}"));
     }
     if failures.is_empty() {
         Ok(())
@@ -338,15 +326,9 @@ async fn demonstrate(server: &Server) -> Result<(), ExampleError> {
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), ExampleError> {
-    let root = std::path::Path::new("/tmp/libtmux-rs-dev");
-    std::fs::create_dir_all(root)?;
     let directory = tempfile::Builder::new()
         .prefix("api-cardinality-")
-        .tempdir_in(root)?;
-    std::fs::write(
-        directory.path().join("owner"),
-        std::process::id().to_string(),
-    )?;
+        .tempdir()?;
     let server = Server::builder()
         .socket_path(directory.path().join("tmux.sock"))
         .config_file("/dev/null")
@@ -354,7 +336,7 @@ async fn main() -> Result<(), ExampleError> {
         .build()?;
     let outcome = tokio::time::timeout(Duration::from_secs(10), demonstrate(&server)).await;
 
-    // Stop the owned daemon before closing the client executor.
+    // Stop the tmux server this program started, then release the client.
     let killed = server.kill().await;
     let closed = server.shutdown().await;
     let cleanup_failed = killed.is_err() || closed.is_err();
@@ -365,16 +347,19 @@ async fn main() -> Result<(), ExampleError> {
         Err(error) => failures.push(format!("example deadline: {error}")),
     }
     if let Err(error) = killed {
-        failures.push(format!("daemon cleanup: {error}"));
+        failures.push(format!("could not stop tmux: {error}"));
     }
     if let Err(error) = closed {
-        failures.push(format!("executor cleanup: {error}"));
+        failures.push(format!("could not close the client: {error}"));
     }
     if cleanup_failed {
         let retained = directory.keep();
-        failures.push(format!("inspect retained directory {}", retained.display()));
+        failures.push(format!(
+            "left the temporary directory at {}",
+            retained.display()
+        ));
     } else if let Err(error) = directory.close() {
-        failures.push(format!("directory cleanup: {error}"));
+        failures.push(format!("could not remove the directory: {error}"));
     }
     if failures.is_empty() {
         Ok(())
@@ -489,15 +474,9 @@ async fn demonstrate(server: &Server) -> Result<(), ExampleError> {
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), ExampleError> {
-    let root = std::path::Path::new("/tmp/libtmux-rs-dev");
-    std::fs::create_dir_all(root)?;
     let directory = tempfile::Builder::new()
         .prefix("query-refresh-")
-        .tempdir_in(root)?;
-    std::fs::write(
-        directory.path().join("owner"),
-        std::process::id().to_string(),
-    )?;
+        .tempdir()?;
     let server = Server::builder()
         .socket_path(directory.path().join("tmux.sock"))
         .config_file("/dev/null")
@@ -505,7 +484,7 @@ async fn main() -> Result<(), ExampleError> {
         .build()?;
     let outcome = tokio::time::timeout(Duration::from_secs(10), demonstrate(&server)).await;
 
-    // Stop the owned daemon before closing the client executor.
+    // Stop the tmux server this program started, then release the client.
     let killed = server.kill().await;
     let closed = server.shutdown().await;
     let cleanup_failed = killed.is_err() || closed.is_err();
@@ -516,16 +495,19 @@ async fn main() -> Result<(), ExampleError> {
         Err(error) => failures.push(format!("example deadline: {error}")),
     }
     if let Err(error) = killed {
-        failures.push(format!("daemon cleanup: {error}"));
+        failures.push(format!("could not stop tmux: {error}"));
     }
     if let Err(error) = closed {
-        failures.push(format!("executor cleanup: {error}"));
+        failures.push(format!("could not close the client: {error}"));
     }
     if cleanup_failed {
         let retained = directory.keep();
-        failures.push(format!("inspect retained directory {}", retained.display()));
+        failures.push(format!(
+            "left the temporary directory at {}",
+            retained.display()
+        ));
     } else if let Err(error) = directory.close() {
-        failures.push(format!("directory cleanup: {error}"));
+        failures.push(format!("could not remove the directory: {error}"));
     }
     if failures.is_empty() {
         Ok(())
@@ -564,6 +546,6 @@ workflow needs, and [command transports](../transports/) to choose how later
 operations reach tmux. A serialized query remains a local expression; enabling
 `serde` does not make it a remote tmux query.
 
-The [query module](https://github.com/libtmux/libtmux-rs/blob/e9be0b6/crates/libtmux/src/query.rs)
-and [session refresh methods](https://github.com/libtmux/libtmux-rs/blob/e9be0b6/crates/libtmux/src/session.rs)
+The [query module](https://github.com/libtmux/libtmux-rs/blob/15cfa2b1845d9894c93d8025d8b83e75d756f073/crates/libtmux/src/query.rs)
+and [session refresh methods](https://github.com/libtmux/libtmux-rs/blob/15cfa2b1845d9894c93d8025d8b83e75d756f073/crates/libtmux/src/session.rs)
 record these contracts for the library revision used above.

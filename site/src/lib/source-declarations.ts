@@ -9,26 +9,13 @@
  * single line.
  */
 import type { ApiModel, ApiSymbol } from '@libtmux/api-model'
-import { pinnedSource, sourceFilesFor } from './api-source-pages'
+import { pinnedSource, requirePairedSources, sourceFilesFor } from './api-source-pages'
+import { languageForFile } from './code-language'
 import { nativeQualifiedName, nativeShortName } from './native-name'
 
-/** The code-fence language of a file, from its extension. */
-const LANGUAGE: Record<string, string> = {
-  go: 'go', rs: 'rust', ts: 'ts', tsx: 'tsx', mts: 'ts', cts: 'ts', js: 'js', mjs: 'js', cjs: 'js', jsx: 'jsx',
-  py: 'python', pyi: 'python', rb: 'ruby', rbs: 'ruby', lua: 'lua', java: 'java', kt: 'kotlin', kts: 'kotlin',
-  scala: 'scala', sc: 'scala', cs: 'csharp', fs: 'fsharp', fsi: 'fsharp', fsx: 'fsharp', swift: 'swift',
-  c: 'c', h: 'cpp', hpp: 'cpp', hh: 'cpp', cc: 'cpp', cpp: 'cpp', cxx: 'cpp',
-  pl: 'perl', pm: 'perl', t: 'perl', raku: 'raku', rakumod: 'raku', rakudoc: 'raku', p6: 'raku', pm6: 'raku',
-  erl: 'erlang', hrl: 'erlang', ex: 'elixir', exs: 'elixir', hs: 'haskell', ml: 'ocaml', mli: 'ocaml',
-  lisp: 'lisp', lsp: 'lisp', cl: 'lisp', asd: 'lisp', clj: 'clojure', cljc: 'clojure', cljs: 'clojure', edn: 'clojure',
-  jl: 'julia', ps1: 'powershell', psm1: 'powershell', psd1: 'powershell',
-  json: 'json', yaml: 'yaml', yml: 'yaml', toml: 'toml', xml: 'xml', cmake: 'cmake', sh: 'bash',
-}
-
+/** The code-fence language of a file, from its name. */
 export function sourceLanguage(file: string): string {
-  const name = file.split('/').at(-1) ?? file
-  const extension = name.includes('.') ? name.split('.').at(-1)!.toLowerCase() : ''
-  return LANGUAGE[extension] ?? 'text'
+  return languageForFile(file) ?? 'text'
 }
 
 type Layout = 'brace' | 'indent' | 'end' | 'paren' | 'period' | 'line'
@@ -246,7 +233,8 @@ export interface SourcePageProps {
 }
 
 /** The static routes of a port's source pages: one per pinned file and one per embedded file. */
-export function sourceRoutes(port: string, model: Pick<ApiModel, 'port' | 'symbols' | 'generatedSources'>): { params: { path: string }; props: SourcePageProps }[] {
+export function sourceRoutes(port: string, model: Pick<ApiModel, 'port' | 'repo' | 'revision' | 'symbols' | 'generatedSources'>): { params: { path: string }; props: SourcePageProps }[] {
+  requirePairedSources(port, model)
   const byFile = new Map<string, ApiSymbol[]>()
   for (const symbol of model.symbols) {
     for (const file of new Set([symbol.source?.file, ...(symbol.signatures ?? []).map((signature) => signature.source?.file)])) {
@@ -279,7 +267,7 @@ export type SourceIndexEntry = [file: string, line: number, from: number, to: nu
  * The symbols of a port that have a source page, by reference slug, so the
  * pane can show a declaration it was not opened from (a reload, a related type).
  */
-export function sourceIndex(port: string, model: Pick<ApiModel, 'port' | 'symbols' | 'generatedSources'>, routes = sourceRoutes(port, model)): Record<string, SourceIndexEntry> {
+export function sourceIndex(port: string, model: Pick<ApiModel, 'port' | 'repo' | 'revision' | 'symbols' | 'generatedSources'>, routes = sourceRoutes(port, model)): Record<string, SourceIndexEntry> {
   const declared = new Map<string, SourceDeclaration>()
   for (const { props } of routes) for (const declaration of props.declarations) declared.set(`${props.file}:${declaration.slug}:${declaration.line}`, declaration)
   const index: Record<string, SourceIndexEntry> = {}

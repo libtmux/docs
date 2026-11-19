@@ -5,7 +5,7 @@ import { experimental_AstroContainer } from 'astro/container'
 import { parameterId, qualifiedNameOf, SymbolIndex, type ApiModel, type ApiSymbol, type Signature } from '@libtmux/api-model/reference'
 import { Window } from 'happy-dom'
 import { afterEach, expect, it, vi } from 'vitest'
-import { signatureMultiline } from '../src/lib/api-sections'
+import { apiEntrySections, apiMethodHasContent, signatureMultiline } from '../src/lib/api-sections'
 
 const astroRequire = createRequire(realpathSync(new URL('../node_modules/astro/package.json', import.meta.url)))
 const windows: Window[] = []
@@ -99,4 +99,14 @@ it('renders Java record components with separate parameter and native type links
   const result = model.symbols.find((entry) => entry.qualifiedName === 'io.github.libtmux.batch.OperationResult')!
   expect([...win.document.querySelectorAll('a.api-type-link')].map((link) => [link.textContent, link.getAttribute('href')]))
     .toContainEqual(['OperationResult', path(result)])
+})
+
+it('gives a lone method that repeats its declaration no Methods heading', () => {
+  const lone = { id: 'X::Config::matched_ids', name: 'matched_ids', kind: 'method', source: { file: 'lib/X.pm', line: 10 },
+    signatures: [{ raw: 'sub matched_ids($self)', params: [], methodKind: 'function', source: { file: 'lib/X.pm', line: 10 } }] } as unknown as ApiSymbol
+  expect(apiMethodHasContent(lone, lone.signatures[0]!)).toBe(false)
+  expect(apiEntrySections(lone, 'perl').map((section) => section.label)).not.toContain('Methods')
+  const documented = { ...lone, signatures: [{ ...lone.signatures[0]!, doc: { summary: 'Return the IDs.' } }] } as unknown as ApiSymbol
+  expect(apiMethodHasContent(documented, documented.signatures[0]!)).toBe(true)
+  expect(apiEntrySections(documented, 'perl').map((section) => section.label)).toContain('Methods')
 })

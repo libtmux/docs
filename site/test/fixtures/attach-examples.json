@@ -12,17 +12,13 @@
       ],
       "page": "ports/py/guides/attaching-to-tmux",
       "shellRecipe": [
-        "sh run.sh uv run \\\n    --with 'libtmux @ git+https://github.com/tmux-python/libtmux@9fdd083a8181a827889337b63cd4e6daea661a8c' \\\n    connect.py"
+        "uv run \\\n    --with 'libtmux @ git+https://github.com/tmux-python/libtmux@9fdd083a8181a827889337b63cd4e6daea661a8c' \\\n    connect.py"
       ],
       "expectedOutput": "work",
       "files": [
         {
           "name": "connect.py",
-          "sha256": "85c37335c74572af5606ad44a165fe097ad3b2737a061a75a86a9eba6f91af52"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "947db2704b348ea51541e4cffe5ac613fb0b2d5703affe8abd0f35fc8286085e"
+          "sha256": "cf042c4fccd54ba6b380a3ec704072b1cfc06a21418608f3a3917af1830f294b"
         }
       ],
       "tmux": [
@@ -33,157 +29,150 @@
     {
       "port": "ts",
       "language": "typescript",
-      "sourceRevision": "3fe1ca654b81b8cbf4a13b777a001a3298c87a6f",
+      "sourceRevision": "9a6b695471fbb77ac1e494b879ee9bc59adc201d",
       "sourceRepository": "libtmux/libtmux-ts",
       "toolchain": [
-        "Bun 1.4.2"
+        "Bun 1.4.2",
+        "libtmux 0.1.2"
       ],
       "page": "ports/ts/guides/attaching-to-tmux",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-ts libtmux &&\n  git -C libtmux checkout 3fe1ca654b81b8cbf4a13b777a001a3298c87a6f &&\n  bun install &&\n  sh run.sh bun run connect.ts"
+        "bun install &&\n  bun run connect.ts"
       ],
       "expectedOutput": "work",
       "files": [
         {
           "name": "connect.ts",
-          "sha256": "bd4f946b8fc2a24e1aab9d366402fa1260a3a05542023f3454e0686c72ba3d9d"
+          "sha256": "150862faafa1b4d80e089cfed49efeb8644e3b5cdf35d296d86a36b0f088869e"
         },
         {
           "name": "package.json",
-          "sha256": "acb06879bf3e3e5ce85125d64a72ff5b2579e87a66085961b1f7b88eaa813020"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "124a197acc79bf28595ebf8ea43cc9b89565d2f97ca5cc5ae64257674bdad539"
+          "sha256": "26d88a6feea572fe35fd80ae3bab9f99290f491c6398ce9b761218a7442cbf5f"
         }
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ]
     },
     {
       "port": "go",
       "language": "go",
-      "sourceRevision": "bb06e26e116e941813ca40bf45e7e3a47d38f52a",
+      "sourceRevision": "7ad2bfb0f74c02d395fec1962d5bb9556e2200cd",
       "sourceRepository": "libtmux/libtmux-go",
       "toolchain": [
-        "Go 1.26.8"
+        "Go 1.26.5",
+        "github.com/libtmux/libtmux-go v0.1.3"
       ],
       "page": "ports/go/guides/attaching-to-tmux",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-go libtmux &&\n  git -C libtmux checkout bb06e26e116e941813ca40bf45e7e3a47d38f52a &&\n  GOWORK=off go mod tidy &&\n  sh run.sh env GOWORK=off go run ."
+        "go mod tidy &&\n  go run ."
       ],
       "expectedOutput": "work",
       "files": [
         {
           "name": "main.go",
-          "sha256": "c94705da738b099fc78dd646ee8c49e1405fea1da2259bdc327a4849684b51cc"
+          "sha256": "1bf3c76e2d2580013e7ef7607fa8ded1ca892da6ff621b097db44e5d6bdc51f7"
         },
         {
           "name": "go.mod",
-          "sha256": "d8975aa3076f5cf4a15169fb558fd49404644e1cb5127299536a99c7253de4e4"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "2163f09a3a6ba881afb8d0e9750910b652f39c762d31013f2dbc4b3868c3c565"
+          "sha256": "b52abafd550ce6386bc3353e9da8efd1822e8175370e0874a840b705a90f43db"
         }
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ]
     },
     {
       "port": "rs",
       "language": "rust",
-      "sourceRevision": "d4e08b4eaab62ef4eeedab79b47973ae9a1de310",
+      "sourceRevision": "15cfa2b1845d9894c93d8025d8b83e75d756f073",
       "sourceRepository": "libtmux/libtmux-rs",
       "toolchain": [
-        "Rust 1.97.1"
+        "Rust 1.97.1",
+        "libtmux 0.1.2"
       ],
       "page": "ports/rs/guides/attaching-to-tmux",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-rs libtmux &&\n  git -C libtmux checkout d4e08b4eaab62ef4eeedab79b47973ae9a1de310 &&\n  sh run.sh cargo +1.97.1 run"
+        "cargo +1.97.1 run"
       ],
       "expectedOutput": "work",
       "files": [
         {
           "name": "src/main.rs",
-          "sha256": "931e123008ee498523d89f0036ed480f4a9da0a47e0572a75f58df6034dc1ff1"
+          "sha256": "75411ee17e2173586d75a2af4f4f48b13ea75aee9b817617d590a54bd3da3e32"
         },
         {
           "name": "Cargo.toml",
-          "sha256": "b1126e5db8c76db064324255f98bc382a9d2ade716d89f19e8767baeebb170ee"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "d984d9482d78cb452286b071afad4aca2d21ee271d44920b0818fabe8e6cc511"
+          "sha256": "d7cc6b13551e91aa5e76185fd9643713a570f40aa484549c8d898c44b9d63e4b"
         }
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ]
     },
     {
       "port": "java",
       "language": "java",
-      "sourceRevision": "842228310449e879ebcaa3f910597757c9dbffd6",
+      "sourceRevision": "e8a39689d8d60968ac978a1dd2a89c6112333896",
       "sourceRepository": "libtmux/libtmux-java",
       "toolchain": [
         "JDK 25.0.3",
-        "library bytecode target Java 21"
+        "Gradle 9.7.0",
+        "libtmux 0.1.2"
       ],
       "page": "ports/java/guides/attaching-to-tmux",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-java libtmux &&\n  git -C libtmux checkout 842228310449e879ebcaa3f910597757c9dbffd6 &&\n  (cd libtmux && ./gradlew :libtmux:jar) &&\n  sh run.sh java --class-path 'libtmux/libtmux/build/libs/*' Connect.java"
+        "gradle --console=plain --no-daemon run"
       ],
       "expectedOutput": "work",
       "files": [
         {
           "name": "Connect.java",
-          "sha256": "0dd7f4fef844f89ed6b6f424f3bce74daa43beb5280f43b12ab44cc1f4bf56a3"
+          "sha256": "0defbda7819f7f602fcec7bfe739abe61b0d2c9330c9408fc5e99b27202ddf29"
         },
         {
-          "name": "run.sh",
-          "sha256": "c7c6c6c7798d10dd389beaa6a5843f145a1bf0497acae99e229468cf0add072d"
+          "name": "build.gradle.kts",
+          "sha256": "389c9468baff66b644a026e320b86b4e2ae9ac5ff758fbd0c34a4857e1d44384"
+        },
+        {
+          "name": "settings.gradle.kts",
+          "sha256": "8a9a1cef4b025e20741219b949c5a591444f9f3b850534f1cc5b2f9164b9c126"
         }
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ]
     },
     {
       "port": "csharp",
       "language": "csharp",
-      "sourceRevision": "320dc64f4b8b7815842471327a5e6b84a1499bf8",
+      "sourceRevision": "8d47af7d89638ad267528ac56897cec67df597f7",
       "sourceRepository": "libtmux/libtmux-dotnet",
       "toolchain": [
-        ".NET SDK 10.0.302"
+        ".NET SDK 10.0.403",
+        "LibTmux 0.1.1"
       ],
       "page": "ports/csharp/guides/attaching-to-tmux",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet libtmux-source &&\n  git -C libtmux-source checkout 320dc64f4b8b7815842471327a5e6b84a1499bf8 &&\n  dotnet build Connect.csproj --maxcpucount:1 &&\n  sh run.sh dotnet run --project Connect.csproj --no-build"
+        "dotnet build Connect.csproj --maxcpucount:1 &&\n  dotnet run --project Connect.csproj --no-build"
       ],
       "expectedOutput": "work",
       "files": [
         {
           "name": "Program.cs",
-          "sha256": "0936735d8c29c384b1040d37eca077690017d23eb6c21b9b6de489dde595f072"
+          "sha256": "f6c59857bbe66af4516f3c51fbfe1465fe24e1191437094533155c9d21289516"
         },
         {
           "name": "Connect.csproj",
-          "sha256": "badc813042195a1ac170ad3952437994fe7a85425b09b888f3e1e20f6fa71d15"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "bb6c3ecf7e120beacaee494336835da637c8f2a97c2881a75654eb1d494fef9e"
+          "sha256": "606ee1d6da184663df6dbd0a8cd9df1810e9a52a32b8427f3053115b23965dd2"
         }
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ]
     },
@@ -199,25 +188,21 @@
       ],
       "page": "ports/cxx/guides/attaching-to-tmux",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-cxx libtmux-source &&\n  git -C libtmux-source checkout 393d4b0ad666f18a6581f1eb281741a75a7503f0 &&\n  cmake -S . -B build -G Ninja \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ \\\n    -DCMAKE_EXE_LINKER_FLAGS=-stdlib=libc++ &&\n  cmake --build build --target connect --parallel 2 &&\n  sh run.sh ./build/connect"
+        "git clone https://github.com/libtmux/libtmux-cxx libtmux-source &&\n  git -C libtmux-source checkout 393d4b0ad666f18a6581f1eb281741a75a7503f0 &&\n  cmake -S . -B build -G Ninja \\\n    -DCMAKE_CXX_COMPILER=clang++ \\\n    -DCMAKE_CXX_FLAGS=-stdlib=libc++ \\\n    -DCMAKE_EXE_LINKER_FLAGS=-stdlib=libc++ &&\n  cmake --build build --target connect --parallel 2 &&\n  ./build/connect"
       ],
       "expectedOutput": "work",
       "files": [
         {
           "name": "connect.cpp",
-          "sha256": "e7cf8fedee0d797982c249ed194885c23c5c8f6d29e583592105dd09a191f875"
+          "sha256": "54360d06c83b14a8db4994f72ec23dadd7458e237a65da3424d54ede79f845b3"
         },
         {
           "name": "CMakeLists.txt",
           "sha256": "b21ea46308497a8fb5b6c7acda8c915a568da7f1573ae08aed67b379a217713a"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "e2d5c1be7459ab5be9f163902b6be34abfd8195c2d5ac003cb3342d178a829a4"
         }
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ]
     },
@@ -231,51 +216,49 @@
       ],
       "page": "ports/swift/guides/attaching-to-tmux",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-swift libtmux-source &&\n  git -C libtmux-source checkout 254f8b2be7eb60cacc3ffcb3ea8e456784f582df &&\n  sh run.sh swift run --jobs 2 Connect"
+        "git clone https://github.com/libtmux/libtmux-swift libtmux-source &&\n  git -C libtmux-source checkout 254f8b2be7eb60cacc3ffcb3ea8e456784f582df &&\n  swift run --jobs 2 Connect"
       ],
       "expectedOutput": "work",
       "files": [
         {
           "name": "Connect.swift",
           "path": "Sources/Connect/Connect.swift",
-          "sha256": "9821b15aa0bb09ab626164f6f6a1e900f7263fafc5ff3d6297520505c8ebdc07"
+          "sha256": "ea4c58db803bfea275a8f5716765e931b2a949c43229d6704382ff7b8a7cdf42"
         },
         {
           "name": "Package.swift",
           "sha256": "bc9db4a88cdd0236c4985176f03a46c9dfac4f2401312149876d0fc013a91440"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "71f88925278d500b86c6571b92063ecf723275e8983468f6429d9fe2f6b2fe56"
         }
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ]
     },
     {
       "port": "kotlin",
       "language": "kotlin",
-      "sourceRevision": "5c181887918351119bfdb3a046719fa792048e59",
+      "sourceRevision": "e8a39689d8d60968ac978a1dd2a89c6112333896",
       "sourceRepository": "libtmux/libtmux-java",
       "toolchain": [
         "JDK 25.0.3",
-        "Kotlin 2.4.10"
+        "Gradle 9.7.0",
+        "Kotlin 2.4.10",
+        "libtmux-kotlin 0.1.2"
       ],
       "page": "ports/kotlin/guides/attaching-to-tmux",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-java libtmux-source &&\n  git -C libtmux-source checkout 5c181887918351119bfdb3a046719fa792048e59 &&\n  sh run.sh ./libtmux-source/gradlew --project-dir . run --console=plain --max-workers=2"
+        "gradle --console=plain --no-daemon run"
       ],
       "expectedOutput": "work",
       "files": [
         {
           "name": "Connect.kt",
-          "sha256": "f908e010372c9a9391c6e20748bcdf296cce991b3822fe3f83f7016ec39a8671"
+          "sha256": "7a9617ab6f5d80b19c1f63ca29f4c469710b64f49f01f72665bf516fcf3227a4"
         },
         {
           "name": "build.gradle.kts",
-          "sha256": "6a52d9d89a28314b2f93bf6318746ce434f37e591df4de2f1017e85ab6e29a2f"
+          "sha256": "5d74607544b83fcec918efbd32767f22344623bf14c4b5486b142269e9ee9e96"
         },
         {
           "name": "settings.gradle.kts",
@@ -284,10 +267,6 @@
         {
           "name": "gradle.properties",
           "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "a6a762cba4ee9405dbd633dba800fcd0824c82587daed9bb922b2b400d282f2c"
         }
       ],
       "tmux": [
@@ -298,25 +277,27 @@
     {
       "port": "scala",
       "language": "scala",
-      "sourceRevision": "5c181887918351119bfdb3a046719fa792048e59",
+      "sourceRevision": "e8a39689d8d60968ac978a1dd2a89c6112333896",
       "sourceRepository": "libtmux/libtmux-java",
       "toolchain": [
         "JDK 25.0.3",
-        "Scala 3.9.0"
+        "Gradle 9.7.0",
+        "Scala 3.9.0",
+        "libtmux-scala_3 0.1.2"
       ],
       "page": "ports/scala/guides/attaching-to-tmux",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-java libtmux-source &&\n  git -C libtmux-source checkout 5c181887918351119bfdb3a046719fa792048e59 &&\n  sh run.sh ./libtmux-source/gradlew --project-dir . run --console=plain --max-workers=2"
+        "gradle --console=plain --no-daemon run"
       ],
       "expectedOutput": "work",
       "files": [
         {
           "name": "Connect.scala",
-          "sha256": "cbca6ab2fdb96a5b4291cdc9003a17d32a098c2b5f7cff159b03bd4ab63ca1a5"
+          "sha256": "7ca829b21257182f75562e0f3cd0ca88916d80366201b663488527a0d8d9ae2a"
         },
         {
           "name": "build.gradle.kts",
-          "sha256": "8b263bf130f131ebbabc1addd90642e0b5f7c83075adeadcd1038fcdde86cb05"
+          "sha256": "c2a6d3efa7fd7ddfb0b0733d50670be3d2e735fe9bba5b191eb43f4374f58404"
         },
         {
           "name": "settings.gradle.kts",
@@ -325,10 +306,6 @@
         {
           "name": "gradle.properties",
           "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "200098b228e8bff4cf7c60ccdb8d43c8222c95c52c20e0b69b23c1bbb6c8ea8f"
         }
       ],
       "tmux": [
@@ -339,94 +316,85 @@
     {
       "port": "fsharp",
       "language": "fsharp",
-      "sourceRevision": "661287848a6cfb407f37114b25e8249a29f99e3f",
+      "sourceRevision": "8d47af7d89638ad267528ac56897cec67df597f7",
       "sourceRepository": "libtmux/libtmux-dotnet",
       "toolchain": [
-        ".NET SDK 10.0.302"
+        ".NET SDK 10.0.403",
+        "LibTmux.FSharp 0.1.1"
       ],
       "page": "ports/fsharp/guides/attaching-to-tmux",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-dotnet libtmux-source &&\n  git -C libtmux-source checkout 661287848a6cfb407f37114b25e8249a29f99e3f &&\n  dotnet build Connect.fsproj --maxcpucount:1 \\\n    -p:DisableImplicitLibraryPacksFolder=true \\\n    -p:RestorePackagesPath=\"$PWD/.packages\" &&\n  sh run.sh dotnet run --project Connect.fsproj --no-build"
+        "dotnet build Connect.fsproj --maxcpucount:1 &&\n  dotnet run --project Connect.fsproj --no-build"
       ],
       "expectedOutput": "work",
       "files": [
         {
           "name": "Program.fs",
-          "sha256": "22a62e8423aa21ecb88aba93bf1cbf0520aa84c968ce18bb0559122b314517bc"
+          "sha256": "035b38c9db7169392a34b09bc91857f40a8e78d6ec32996d9866379e199ded2b"
         },
         {
           "name": "Connect.fsproj",
-          "sha256": "314bfb2bef111e8885728a0065943a59594721011da4ac6ef0275aebd8f14bcd"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "ecb16ad7a624faf847875e73372706fa988893af7177c46a7912ed9364de88da"
+          "sha256": "dfe3aea0a74c91c02a57cf5ad88be362c16fc62fa5f349c9d2a8d538a5482c99"
         }
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ]
     },
     {
       "port": "ruby",
       "language": "ruby",
-      "sourceRevision": "2599d45369515aaf2fd5793bfe71cdc20de641b6",
+      "sourceRevision": "46474e8a2f03e39fc2b0ff73b6a841777b79c4d2",
       "sourceRepository": "libtmux/libtmux-ruby",
       "toolchain": [
         "Ruby 4.0.7",
-        "Bundler"
+        "Bundler",
+        "libtmux 0.1.2"
       ],
       "page": "ports/ruby/guides/attaching-to-tmux",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-ruby libtmux-source &&\n  git -C libtmux-source checkout 2599d45369515aaf2fd5793bfe71cdc20de641b6 &&\n  bundle config set --local path vendor/bundle &&\n  bundle install &&\n  sh run.sh bundle exec ruby connect.rb"
+        "bundle config set --local path vendor/bundle &&\n  bundle install &&\n  bundle exec ruby connect.rb"
       ],
       "expectedOutput": "work",
       "files": [
         {
           "name": "connect.rb",
-          "sha256": "b683160fe4caefea0e65c4670519a2bfaa6c4f16f402fc86c730a42df2943f5d"
+          "sha256": "a888fdcda38e13b3401ed35810245a8525faa6aa930a36800fa0ca6d4ad48786"
         },
         {
           "name": "Gemfile",
-          "sha256": "c0139fb5c549a7f4ccf72cf4ebf921de0497dbe9ea9a2e7c5756504ed5bf2f7c"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "4d06c2acca46bb7ccf0a240924240c940ff6329bbd288376005b4a0e910dabf5"
+          "sha256": "6634416a9f2b1f3bafc69333bec5ee1a4cbd67e0ab7443e9c567f35498e20444"
         }
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ]
     },
     {
       "port": "lua",
       "language": "lua",
-      "sourceRevision": "5baa3f9b830ebdbc76fb50b5b3d7a5ad3f76d443",
+      "sourceRevision": "d68f829fe097e38dcbbf7147e276666fe615f0cf",
       "sourceRepository": "libtmux/libtmux-lua",
       "toolchain": [
         "Lua 5.5.1",
-        "luv 1.52.1-0"
+        "luv 1.52.1-0",
+        "libtmux 0.1.1-1"
       ],
       "page": "ports/lua/guides/attaching-to-tmux",
       "shellRecipe": [
-        "git clone https://github.com/libtmux/libtmux-lua libtmux-source &&\n  git -C libtmux-source checkout 5baa3f9b830ebdbc76fb50b5b3d7a5ad3f76d443 &&\n  luarocks --tree ./rocks install luv 1.52.1-0 &&\n  (cd libtmux-source &&\n    luarocks --tree ../rocks make rockspecs/libtmux-scm-1.rockspec) &&\n  eval \"$(luarocks --tree ./rocks path)\" &&\n  sh run.sh lua connect.lua"
+        "luarocks --tree .rocks install luv 1.52.1-0 &&\n  luarocks --tree .rocks install libtmux 0.1.1-1 &&\n  eval \"$(luarocks --tree .rocks path)\" &&\n  lua connect.lua"
       ],
       "expectedOutput": "work",
       "files": [
         {
           "name": "connect.lua",
-          "sha256": "4941e3f804521ec54e8692d83f6f3f22a0badb56affe4c24232ea28973fed2d6"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "18b752e8b0c36ef899af7bb5d4454469b34e5a70f6cfd7939ef5efec13c931a1"
+          "sha256": "8b17cc5fa72cbaad43d03df76baadcd819fc76a95308f080e6d22879e9a11899"
         }
       ],
       "tmux": [
-        "3.2a",
+        "3.3a",
         "3.7c"
       ]
     },
@@ -443,7 +411,7 @@
       "page": "ports/powershell/guides/attaching-to-tmux",
       "shellRecipe": [
         "pwsh -NoLogo -NoProfile -Command '\n  $ErrorActionPreference = \"Stop\"\n  Install-PSResource -Name LibTmux -Version 0.1.0 `\n    -Repository PSGallery -Scope CurrentUser -TrustRepository\n'",
-        "sh run.sh pwsh -NoLogo -NoProfile -File connect.ps1"
+        "pwsh -NoLogo -NoProfile -File connect.ps1"
       ],
       "expectedOutputs": [
         [],
@@ -454,11 +422,7 @@
       "files": [
         {
           "name": "connect.ps1",
-          "sha256": "9b7d64c848a6498380e574702fdca35fca7a66e227fd84711e7ecc38319889a9"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "69a251952304d1af76082f1e36bd59fc3ea6e5ecc64e40540cbabae3e3e4fbc8"
+          "sha256": "13e4510e887f08bf82ae740aaf41b99e16cf322ef981b98e990a91818b829593"
         }
       ]
     },
@@ -473,7 +437,7 @@
       "page": "ports/julia/guides/attaching-to-tmux",
       "shellRecipe": [
         "git init -q source\ngit -C source fetch -q --depth=1 \\\n  https://github.com/libtmux/libtmux-julia.git \\\n  6f62bd72cb8d99f3759ca5e2cc3591165a03c768\ngit -C source checkout -q --detach FETCH_HEAD",
-        "sh run.sh julia --startup-file=no --project=source connect.jl"
+        "julia --startup-file=no --project=source connect.jl"
       ],
       "expectedOutputs": [
         [],
@@ -484,11 +448,7 @@
       "files": [
         {
           "name": "connect.jl",
-          "sha256": "b22b7f00c624ef3d0f1082bad022787c822cc767091ed430a5af290c5080da8a"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "cd35444c4d85ba5411c9bebbcc89a552cf346efe414502078d9a338d5c89f44e"
+          "sha256": "792a11ba4d05669d85343caaea1e975a18bb7027997b2c5a9e7712b86a950468"
         }
       ]
     },
@@ -503,7 +463,7 @@
       ],
       "page": "ports/elixir/guides/attaching-to-tmux",
       "shellRecipe": [
-        "sh run.sh elixir connect.exs"
+        "elixir connect.exs"
       ],
       "expectedOutputs": [
         [
@@ -513,11 +473,7 @@
       "files": [
         {
           "name": "connect.exs",
-          "sha256": "3e31d5064fb69384b1a618275ae0f027f9515c52cf1de2555c87fce022990b8e"
-        },
-        {
-          "name": "run.sh",
-          "sha256": "06102da59a219f3ade2c03eb92eda1056107bce3f4e0056580d72f76324f3b82"
+          "sha256": "dde8e2bb0b70be37f0b3d423e7d6be322d6d8561709633fb99b16b47696fc8e6"
         }
       ]
     },

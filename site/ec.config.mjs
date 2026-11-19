@@ -7,6 +7,7 @@ import { tmuxShell } from './src/lib/tmux-shell.mjs'
 import { tmuxConfig } from './src/lib/tmux-config.mjs'
 import { properties } from './src/lib/properties.mjs'
 import { haskell } from './src/lib/haskell.mjs'
+import { fileGrammars } from './src/lib/grammars/index.mjs'
 import bash from 'shiki/langs/bash.mjs'
 
 /**
@@ -30,8 +31,8 @@ export default defineEcConfig({
     )
   },
   plugins: [shellPrompt(), copyReadiness(), codeFrame()],
-  shiki: { langs: [tmuxUsage, ...bash, tmuxShell, tmuxConfig, properties, ...haskell],
-    langAlias: { dune: 'lisp', sbt: 'scala', tmux: 'tmux-config', properties: properties.name } },
+  shiki: { langs: [tmuxUsage, ...bash, tmuxShell, tmuxConfig, properties, ...haskell, ...fileGrammars],
+    langAlias: { sbt: 'scala', tmux: 'tmux-config', properties: properties.name } },
   useDarkModeMediaQuery: false,
   themeCssSelector: (theme) =>
     theme.name === 'github-light'
@@ -48,6 +49,11 @@ export default defineEcConfig({
     codeLineHeight: '1.7',
     uiFontFamily: 'var(--font-ibm-plex-sans)',
     uiFontSize: '0.875rem',
-    frames: { frameBoxShadowCssValue: 'none' },
+    frames: {
+      frameBoxShadowCssValue: 'none',
+      // The frame's copy button is a control: outlined in --control-border at full strength like the installer's (record 0067).
+      inlineButtonBorder: 'var(--control-border)',
+      inlineButtonBorderOpacity: '1',
+    },
   },
 })

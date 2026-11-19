@@ -10,6 +10,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const plugin = join(root, 'site/src/plugins/remark-port-code.mjs')
 const { LANG_TO_PORT, checkoutFor, parseMeta } = await import(`file://${plugin}`)
 const { landingCacheKey } = await import(`file://${join(root, 'site/src/lib/port-landing.ts')}`)
+const { capabilityFiles } = await import(`file://${join(root, 'site/src/lib/core-capabilities.ts')}`)
 
 const CONTENT = join(root, 'site/src/content/docs')
 const outArg = process.argv.indexOf('--out')
@@ -67,11 +68,17 @@ for (const [owner, products] of Object.entries(LANDING)) {
 /*
  * The Core Library capability showcase quotes programs and tests of each port
  * and the files that check their results; all are cached at the library's revision.
+ * A file that moved is listed under each path it has had, and only the one the
+ * revision holds is cached, so `choices` holds those and `wanted` holds the rest.
  */
 const CAPABILITIES = JSON.parse(readFileSync(join(root, 'site/src/data/core-capabilities.json'), 'utf8'))
+const choices = []
 for (const [owner, capabilities] of Object.entries(CAPABILITIES)) {
   for (const entry of Object.values(capabilities)) {
-    for (const file of [entry.file, ...entry.checkedBy.map((item) => item.file)]) wanted.set(`${owner}:${file}`, { owner, file })
+    for (const files of capabilityFiles(entry)) {
+      if (files.length > 1) choices.push({ owner, files })
+      else wanted.set(`${owner}:${files[0]}`, { owner, file: files[0] })
+    }
   }
 }
 
@@ -104,17 +111,61 @@ export function cachedExample({ repository, revision, file, checkout, current })
   return current
 }
 
+/**
+ * The first of `files` the revision holds, read like `cachedExample`. A path the
+ * revision lacks is skipped, not fetched; the error names every path when none
+ * is there. Without a checkout the cache decides: the path it holds a verified
+ * copy of for this revision. `current` maps each path to its cached entry.
+ */
+export function cachedAlternative({ repository, revision, files, checkout, current }) {
+  if (!/^[a-f0-9]{40}$/.test(revision)) throw new Error(`Invalid example revision: ${revision}`)
+  const online = Boolean(checkout) && existsSync(join(checkout, '.git'))
+  const git = (...args) => execFileSync('git', ['-C', checkout, ...args], { stdio: 'ignore' })
+  const holds = (file) => {
+    if (!online) {
+      const entry = current?.[file]
+      return entry?.repository === repository && entry?.revision === revision
+    }
+    try {
+      git('cat-file', '-e', `${revision}:${file}`)
+      return true
+    } catch {
+      return false
+    }
+  }
+  // A checkout that lacks the revision would read every path as absent.
+  if (online) {
+    try {
+      git('cat-file', '-e', `${revision}^{commit}`)
+    } catch {
+      throw new Error(`${repository}: ${checkout} does not hold revision ${revision}`)
+    }
+  }
+  const file = files.find(holds)
+  if (file === undefined) throw new Error(`${repository}: none of ${files.join(', ')} ${online ? 'exists at' : 'is cached for'} ${revision}`)
+  return { file, cached: cachedExample({ repository, revision, file, checkout, current: current?.[file] }) }
+}
+
 export function run() {
   const current = existsSync(OUT) ? readFileSync(OUT, 'utf8') : ''
   const previous = JSON.parse(current || '{}')
-  const cache = {}
+  const found = {}
   const offline = new Set()
-  for (const [key, { owner, product, file }] of [...wanted].sort((a, b) => a[0].localeCompare(b[0]))) {
-    const { repository, revision } = sourceOf(owner, product, join(root, `site/src/data/api/${owner}.json`))
+  const locate = (owner, product) => {
     const checkout = checkoutFor(owner, product)
     if (!checkout || !existsSync(join(checkout, '.git'))) offline.add(product ? `${owner}/${product}` : owner)
-    cache[key] = cachedExample({ repository, revision, file, checkout, current: previous[key] })
+    return { ...sourceOf(owner, product, join(root, `site/src/data/api/${owner}.json`)), checkout }
   }
+  for (const [key, { owner, product, file }] of wanted) {
+    const { repository, revision, checkout } = locate(owner, product)
+    found[key] = cachedExample({ repository, revision, file, checkout, current: previous[key] })
+  }
+  for (const { owner, files } of choices) {
+    const { repository, revision, checkout } = locate(owner)
+    const resolved = cachedAlternative({ repository, revision, files, checkout, current: Object.fromEntries(files.map((file) => [file, previous[`${owner}:${file}`]])) })
+    found[`${owner}:${resolved.file}`] = resolved.cached
+  }
+  const cache = Object.fromEntries(Object.entries(found).sort((a, b) => a[0].localeCompare(b[0])))
   const merged = `${JSON.stringify(cache, null, 2)}\n`
   if (check && merged !== current) throw new Error(`${OUT}: stale example sources; run node scripts/gen-example-sources.mjs`)
   if (!check) writeFileSync(OUT, merged)

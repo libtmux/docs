@@ -292,7 +292,10 @@ export async function checkHeaderMenuSections(browser, base, options = {}) {
               await checkKeyboard(page, picker, where)
               await checkFilter(page, picker, where, expectTitled)
             }
-            await picker.locator(':scope > summary').click()
+            // A bottom or side sheet (record 0071) covers its trigger, so it closes with Escape or its backdrop.
+            const sheet = ['sheet', 'side'].includes(await picker.getAttribute('data-panel-mode') ?? '')
+            if (sheet) await page.keyboard.press('Escape')
+            else await picker.locator(':scope > summary').click()
             await picker.locator('[data-picker-panel]').waitFor({ state: 'hidden' })
             menus += 1
           }

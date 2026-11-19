@@ -10,11 +10,10 @@ sidebar:
 tableOfContents: true
 ---
 
-The `test-support` feature exposes `TestServer` and asynchronous wait helpers.
-`TestServer` is acceptable in examples for now. Application examples will move
-to the regular [`Server`](../../reference/server-server/) object. The complete
-capture program already uses `Server::builder` with an explicit private socket
-and performs its own shutdown.
+The `test-support` feature exposes `TestServer` and asynchronous wait helpers
+for test suites. The complete examples on this site use the regular
+[`Server`](../../reference/server-server/) object instead: `Server::builder`
+with an explicit private socket, and their own shutdown.
 
 ## Run a complete example
 
@@ -30,8 +29,8 @@ the test creates, including when startup or an assertion fails. Preserve the
 original failure and report cleanup errors so a leaked server remains visible.
 
 A connection to an existing server has a different lifetime. The
-[attach program](../attaching-to-tmux/) leaves that server running and lets its
-launcher own cleanup.
+[attach program](../attaching-to-tmux/) leaves that server running and stops
+only the demonstration server it starts itself.
 
 ## Wait for the state you assert
 

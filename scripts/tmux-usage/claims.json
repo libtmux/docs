@@ -17210,7 +17210,7 @@
           ]
         },
         {
-          "at": "unix/command_encoding.ml:307",
+          "at": "unix/command_encoding.ml:308",
           "has": [
             "( \"set-option\","
           ]
@@ -17268,7 +17268,7 @@
           ]
         },
         {
-          "at": "unix/command_encoding.ml:313",
+          "at": "unix/command_encoding.ml:314",
           "has": [
             "( \"set-option\","
           ]
@@ -17502,7 +17502,7 @@
           ]
         },
         {
-          "at": "unix/command_encoding.ml:325",
+          "at": "unix/command_encoding.ml:326",
           "has": [
             "( \"set-hook\","
           ]
@@ -17560,7 +17560,7 @@
           ]
         },
         {
-          "at": "unix/command_encoding.ml:331",
+          "at": "unix/command_encoding.ml:332",
           "has": [
             "( \"set-hook\","
           ]
@@ -18027,6 +18027,53 @@
           "at": "unix/command_encoding.ml",
           "has": [
             "| Kill_pane target -> (\"kill-pane\", [ \"-t\"; pane c target ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_unix.Client.kill_server",
+      "command": "kill-server",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the engine hands this command to the connection, which writes `kill-server` and waits for the daemon to exit.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml",
+          "has": [
+            "| Mutate Kill_server -> C.kill_server c"
+          ]
+        },
+        {
+          "at": "unix/connection.ml",
+          "has": [
+            "let command = protocol (P.Command.render \"kill-server\" []) in"
+          ],
+          "within": "kill_server"
+        },
+        {
+          "at": "unix/generated_operations.ml",
+          "has": [
+            "Client.run ?cancel connection Libtmux.Operations.kill_server"
+          ],
+          "in": "Libtmux_unix.Client.kill_server"
+        },
+        {
+          "at": "unix/libtmux_unix.ml",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "unix/libtmux_unix.ml",
+          "has": [
+            "await_owned ?cancel (Engine.submit t.engine command)))"
+          ]
+        },
+        {
+          "at": "lib/commands.ml",
+          "has": [
+            "let kill_server = Command.Mutate Kill_server"
           ]
         }
       ]
@@ -20312,7 +20359,7 @@
           ]
         },
         {
-          "at": "unix/command_encoding.ml:307",
+          "at": "unix/command_encoding.ml:308",
           "has": [
             "( \"set-option\","
           ]
@@ -20370,7 +20417,7 @@
           ]
         },
         {
-          "at": "unix/command_encoding.ml:313",
+          "at": "unix/command_encoding.ml:314",
           "has": [
             "( \"set-option\","
           ]
@@ -20604,7 +20651,7 @@
           ]
         },
         {
-          "at": "unix/command_encoding.ml:325",
+          "at": "unix/command_encoding.ml:326",
           "has": [
             "( \"set-hook\","
           ]
@@ -20662,7 +20709,7 @@
           ]
         },
         {
-          "at": "unix/command_encoding.ml:331",
+          "at": "unix/command_encoding.ml:332",
           "has": [
             "( \"set-hook\","
           ]
@@ -21129,6 +21176,53 @@
           "at": "unix/command_encoding.ml",
           "has": [
             "| Kill_pane target -> (\"kill-pane\", [ \"-t\"; pane c target ])"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "ocaml",
+      "symbol": "Libtmux_eio.Client.kill_server",
+      "command": "kill-server",
+      "scope": null,
+      "why": "The client executes the typed operation through the backend engine; the engine hands this command to the connection, which writes `kill-server` and waits for the daemon to exit.",
+      "evidence": [
+        {
+          "at": "unix/engine.ml",
+          "has": [
+            "| Mutate Kill_server -> C.kill_server c"
+          ]
+        },
+        {
+          "at": "unix/connection.ml",
+          "has": [
+            "let command = protocol (P.Command.render \"kill-server\" []) in"
+          ],
+          "within": "kill_server"
+        },
+        {
+          "at": "eio/generated_operations.ml",
+          "has": [
+            "Client.run connection Libtmux.Operations.kill_server"
+          ],
+          "in": "Libtmux_eio.Client.kill_server"
+        },
+        {
+          "at": "eio/libtmux_eio.ml",
+          "has": [
+            "include Generated_operations.Make (struct"
+          ]
+        },
+        {
+          "at": "eio/libtmux_eio.ml",
+          "has": [
+            "let run t command = Result.bind (submit t command) await"
+          ]
+        },
+        {
+          "at": "lib/commands.ml",
+          "has": [
+            "let kill_server = Command.Mutate Kill_server"
           ]
         }
       ]
@@ -33644,7 +33738,7 @@
           "in": "LibTmux::Model::PaneRef.join"
         },
         {
-          "at": "lib/LibTmux/Model.rakumod:348",
+          "at": "lib/LibTmux/Model.rakumod:578",
           "has": [
             "invalid-argument('Source and target pane must differ') if self.id eq $target.id;"
           ]
@@ -33665,7 +33759,7 @@
           "in": "LibTmux::Model::PaneRef.move"
         },
         {
-          "at": "lib/LibTmux/Model.rakumod:348",
+          "at": "lib/LibTmux/Model.rakumod:578",
           "has": [
             "invalid-argument('Source and target pane must differ') if self.id eq $target.id;"
           ]

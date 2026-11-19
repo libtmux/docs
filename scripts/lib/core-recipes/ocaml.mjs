@@ -23,9 +23,12 @@ export { withoutMarks }
  * Marks are not lines between the program's statements: a `let ... in` binding
  * takes a line of its own only as another binding, and the last call of a
  * function has nothing after it. The marked copy adds one line after the
- * program's module aliases, which opens the helper below, and the helper
- * shadows `Client` and `Workspace` with modules that call the library's
- * functions and mark when a call the program makes returns.
+ * program opens `Libtmux`, which opens the helper below, and the helper
+ * shadows `Libtmux_unix` with a module that holds `Client`, `Workspace` and
+ * `with_private_daemon` as modules and functions that call the library's own
+ * and mark when a call the program makes returns. The program's aliases of
+ * `Libtmux_unix.Client` and `Libtmux_unix.Workspace` then name the marked ones
+ * wherever they sit, including below the functions that use them.
  */
 
 /**
@@ -41,6 +44,7 @@ const WRAPPED = {
   'Workspace.submit_bootstrap': { params: '?binary ?timeout plan', pass: '?binary ?timeout plan' },
   'Workspace.await': { params: '?cancel ?compensate_on_failure operation', pass: '?cancel ?compensate_on_failure operation' },
   'Workspace.close': { params: 'operation', pass: 'operation' },
+  'Libtmux_unix.with_private_daemon': { params: '?cleanup ?binary ?config_file ?root ?session ?timeout use', pass: '?cleanup ?binary ?config_file ?root ?session ?timeout use' },
 }
 
 /** The head of the helper: JSON as text, and the mark that runs `LIBTMUX_DOCS_MARK` and stops the program if that fails. */
@@ -111,18 +115,29 @@ ${arms.join('\n')}
 `
 }
 
-/** The helper with its plan: for each module, the functions its steps mark. */
+/**
+ * The helper with its plan: for each module, the functions its steps mark. `Libtmux_unix` is shadowed last, by a module
+ * that holds the marked `Client` and `Workspace` beside its own marked functions, so that every line of the program
+ * that names `Libtmux_unix.Client` or `Libtmux_unix.Workspace` (an alias, wherever it sits) names the marked one.
+ */
 export function ocamlHelper(steps) {
-  const modules = [...new Set(steps.map((step) => step.call.split('.')[0]))]
-  const bodies = modules.map((module) => {
-    const calls = [...new Set(steps.filter((step) => step.call.startsWith(`${module}.`)).map((step) => step.call))]
-    return `module ${module} = struct
+  const modules = [...new Set(steps.map((step) => step.call.split('.')[0]))].filter((module) => module !== 'Libtmux_unix')
+  const callsOf = (module) => [...new Set(steps.filter((step) => step.call.startsWith(`${module}.`)).map((step) => step.call))]
+  const wrapped = (module, calls) => calls.map((call) => wrapper(call, steps.filter((step) => step.call === call))).join('\n')
+  const bodies = modules.map((module) => `module ${module} = struct
   include Libtmux_unix.${module}
 
-${calls.map((call) => wrapper(call, steps.filter((step) => step.call === call))).join('\n')}end
+${wrapped(module, callsOf(module))}end
+
+module Marked_${module.toLowerCase()} = ${module}
+`)
+  const library = `module Libtmux_unix = struct
+  include Libtmux_unix
+
+${modules.map((module) => `  module ${module} = Marked_${module.toLowerCase()}\n`).join('\n')}
+${wrapped('Libtmux_unix', callsOf('Libtmux_unix'))}end
 `
-  })
-  return `${HELPER_HEAD}\n${bodies.join('\n')}`
+  return `${HELPER_HEAD}\n${bodies.join('\n')}\n${library}`
 }
 
 /** A snapshot as a recording stores it: how many of each it holds. */
@@ -135,11 +150,12 @@ const WAITED = 'obj [ ("pane", json_string (Libtmux.Pane.Id.to_string value.Libt
 const RECEIPT = 'obj [ ("status", json_string (if value.Libtmux_workspace.Execution.status = Libtmux_workspace.Execution.Succeeded then "succeeded" else "failed")); ("steps", int (Iarray.length value.Libtmux_workspace.Execution.steps)) ]'
 
 /**
- * In the order the calls run, which is not the order of the lines: `with_demo` starts a daemon with a workspace plan
- * and reads it, then runs `capture_graph`, which comes first in the file. It makes a second session, links the first
- * window into it, and captures the graph; the workspace handle is closed last, which closes the control client the
- * daemon's `exit-unattached` waits for, so the daemon exits with no command of its own. The `occurrence` of a call is
- * the n-th line that holds its anchor.
+ * In the order the calls run, which is not the order of the lines: `with_demo` starts a private daemon with
+ * `with_private_daemon`, submits a workspace plan to it and reads the result, then runs `capture_graph`, which comes
+ * first in the file. It makes a second session, links the first window into it, and captures the graph. The workspace
+ * handle is closed inside the daemon's scope, and `with_private_daemon` returns last, once it has stopped the daemon
+ * by its process id and removed its directory, with no tmux command of its own. The `occurrence` of a call is the
+ * n-th line that holds its anchor.
  */
 const STEPS = [
   { id: 'submit', label: 'Workspace.submit_bootstrap', anchor: 'Workspace.submit_bootstrap', type: 'Workspace.t', call: 'Workspace.submit_bootstrap', value: '"null"' },
@@ -151,21 +167,22 @@ const STEPS = [
   { id: 'wait-linked', label: 'Client.wait_for_text', anchor: 'Client.wait_for_text ~timeout:0.5 client pane', occurrence: 1, type: 'Captured_text.t', call: 'Client.wait_for_text', value: WAITED },
   { id: 'link-window', label: 'Client.link_window', anchor: 'Client.link_window', type: 'unit', call: 'Client.link_window', value: '"null"' },
   { id: 'capture-graph', label: 'Client.capture', anchor: 'get (Client.capture client)', occurrence: 2, type: 'Snapshot.t', call: 'Client.capture', value: COUNTS },
-  { id: 'close', label: 'Workspace.close', anchor: 'Workspace.close operation', type: 'unit', call: 'Workspace.close', value: '"null"', stopsServer: true },
+  { id: 'close', label: 'Workspace.close', anchor: 'Workspace.close operation', type: 'unit', call: 'Workspace.close', value: '"null"' },
+  { id: 'retire', label: 'Libtmux_unix.with_private_daemon', anchor: 'Libtmux_unix.with_private_daemon ~binary', type: 'Snapshot.t', call: 'Libtmux_unix.with_private_daemon', value: COUNTS, stopsServer: true },
 ]
 
-/** The line the marked copy adds: it opens the helper after the program's last module alias. */
+/** The line the marked copy adds: it opens the helper right after the program opens the library, before any alias of `Libtmux_unix`. */
 const OPEN = 'open Docs_mark (* docs:mark *)'
 
-/** Add the one line that opens the helper, after the program's module aliases. */
+/** Add the one line that opens the helper, after the program opens `Libtmux`. */
 export function instrumentOcaml(source, steps) {
   for (const step of steps) {
     if (!statementLines(source, step.anchor, syntaxOf('ocaml'), step.occurrence)) throw new Error(`${step.id}: the anchor ${JSON.stringify(step.anchor)} is not on exactly one line of the program`)
     if (!(step.call in WRAPPED)) throw new Error(`${step.id}: ${step.call} is not a function the helper wraps`)
   }
   const lines = source.split('\n')
-  const at = lines.indexOf('module Execution = Libtmux_workspace.Execution')
-  if (at < 0) throw new Error('the program has no `module Execution = Libtmux_workspace.Execution` line to open the helper after')
+  const at = lines.indexOf('open Libtmux')
+  if (at < 0) throw new Error('the program has no `open Libtmux` line to open the helper after')
   lines.splice(at + 1, 0, OPEN)
   return lines.join('\n')
 }
@@ -197,15 +214,23 @@ export const RECIPES = {
       files = { 'dune-project': quickstartSource(root, 'ocaml', 'dune-project').code, 'examples/dune': quickstartSource(root, 'ocaml', 'examples/dune').code }
       return home
     },
-    /** The panes run `cat` on a file the program writes. */
+    /** Each pane runs `sh -c 'echo ...; exec cat -u'`, which `exec` turns into `cat`. */
     paneCommands: ['cat'],
     checkout: (port, env, expand) => checkoutOf(port, env, expand),
-    /** The program makes its socket directory under TMPDIR as `libtmux-ocaml-showcase-<six hex digits>`. */
-    socket: { pattern: 'libtmux-ocaml-showcase-[0-9a-f]{6}', fixed: 'libtmux-ocaml-showcase-0a1b2c' },
+    /** `with_private_daemon` makes its socket directory under TMPDIR as `libtmux-ocaml-<six hex digits>`; the buffer names and end-of-reply markers that share the prefix hold more digits. */
+    socket: { pattern: 'libtmux-ocaml-[0-9a-f]{6}(?![0-9a-f])', fixed: 'libtmux-ocaml-0a1b2c' },
+    /** The library starts its daemon as `tmux -D -S <socket> -f /dev/null` and stops it by that process id, so the shim becomes tmux for it, which a wrapper process in between would prevent. */
+    inPlace: ['/dev/null'],
     helpers: [{ file: 'examples/docs_mark.ml', source: ocamlHelper(STEPS) }],
     steps: STEPS,
-    /** The library ends each command's reply with a marker it asks tmux to print: `display-message -p libtmux-ocaml-<64 hex digits>`. */
-    fence: (command) => command[0] === 'display-message' && command[1] === '-p' && /^libtmux-ocaml-[0-9a-f]{64}$/.test(command[2] ?? ''),
+    /**
+     * What the library sends for its own bookkeeping, which a recording does not show: the marker it asks tmux to print
+     * to end each command's reply (`display-message -p libtmux-ocaml-<64 hex digits>`), and the pause it writes for each
+     * pane a closing control client observed (`refresh-client -A %<n>:pause`), which tmux runs before the exit that
+     * follows and whose reply nobody reads.
+     */
+    fence: (command) => (command[0] === 'display-message' && command[1] === '-p' && /^libtmux-ocaml-[0-9a-f]{64}$/.test(command[2] ?? ''))
+      || (command[0] === 'refresh-client' && command[1] === '-A' && /^%\d+:pause$/.test(command[2] ?? '') && command.length === 3),
     /** What the library asks tmux about itself: its version before it starts a server, and the daemon's process id and version before a command. */
     probe: ({ flags, commands }) => (commands.length === 0 && flags.includes('-V')) || (commands.length > 0 && commands.every((command) => command[0] === 'display-message' && command[1] === '-p' && command.length === 3 && (command[2].startsWith('#{q:pid}') || command[2].endsWith('probe')))),
     /** What differs on every run: the names the library gives its buffers, the control client's name (it holds a process id), and that id. */
@@ -239,7 +264,7 @@ export const RECIPES = {
         if (dir === 'marked') for (const helper of helpers) writeFileSync(join(project, helper.file), helper.source)
         execFileSync(opam, ['exec', '--', 'dune', 'build', '--root', '.', './examples/showcase_graph.exe'], { cwd: project, stdio: ['ignore', 'ignore', 'inherit'], env })
         const exports = Object.entries(opamEnv()).map(([name, value]) => `${name}=${JSON.stringify(value)}`)
-        writeFileSync(join(project, 'program'), `#!/bin/sh\n${exports.join('\n')}\nTMPDIR=${JSON.stringify(join(sandbox, 'tmp'))}\nexport ${Object.keys(opamEnv()).join(' ')} TMPDIR\nunset TMUX TMUX_PANE\n# A run stopped at a mark leaves the program's socket directory behind, and a second socket would make the sandbox ambiguous.\nrm -rf ${JSON.stringify(join(sandbox, 'tmp'))}/libtmux-ocaml-showcase-*\nexec ${JSON.stringify(opam)} exec -- dune exec --root . --no-build examples/showcase_graph.exe\n`)
+        writeFileSync(join(project, 'program'), `#!/bin/sh\n${exports.join('\n')}\nTMPDIR=${JSON.stringify(join(sandbox, 'tmp'))}\nexport ${Object.keys(opamEnv()).join(' ')} TMPDIR\nunset TMUX TMUX_PANE\n# A run stopped at a mark leaves the program's socket directory behind, and a second socket would make the sandbox ambiguous.\nrm -rf ${JSON.stringify(join(sandbox, 'tmp'))}/libtmux-ocaml-*\nexec ${JSON.stringify(opam)} exec -- dune exec --root . --no-build examples/showcase_graph.exe\n`)
         chmodSync(join(project, 'program'), 0o755)
       }
     },

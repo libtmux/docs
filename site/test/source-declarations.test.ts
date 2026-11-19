@@ -59,8 +59,13 @@ describe('declarationsIn', () => {
   })
 
   it('chooses the language from the extension', () => {
-    expect([sourceLanguage('a/b.go'), sourceLanguage('x.rakumod'), sourceLanguage('Makefile'), sourceLanguage('x.PS1')])
+    expect([sourceLanguage('a/b.go'), sourceLanguage('x.rakumod'), sourceLanguage('NOTES'), sourceLanguage('x.PS1')])
       .toEqual(['go', 'raku', 'text', 'powershell'])
+  })
+
+  it('chooses the language from the whole name when it has no extension', () => {
+    expect([sourceLanguage('Makefile'), sourceLanguage('a/Gemfile'), sourceLanguage('src/app.app.src')])
+      .toEqual(['make', 'ruby', 'erlang'])
   })
 })
 

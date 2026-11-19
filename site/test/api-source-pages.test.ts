@@ -1,7 +1,9 @@
 import { createHash } from 'node:crypto'
 import { readFileSync, readdirSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { isGeneratedSource, lineFragment, pinnedSource, sourceFilesFor, sourcePageHref } from '../src/lib/api-source-pages'
+import { API_MODELS } from '../src/lib/api-models'
+import { assertPaired, isGeneratedSource, lineFragment, pinnedSource, sourceFilesFor, sourcePageHref, type SourceData } from '../src/lib/api-source-pages'
+import { sourceRoutes } from '../src/lib/source-declarations'
 
 const dataDir = new URL('../src/data/api-sources/', import.meta.url)
 const modelsDir = new URL('../src/data/api/', import.meta.url)
@@ -64,5 +66,30 @@ describe('sourcePageHref', () => {
     expect(lineFragment([7, 7])).toBe('#L7')
     expect(lineFragment([7, 9])).toBe('#L7-L9')
     expect([lineFragment(), lineFragment(0), lineFragment(1.5)]).toEqual(['', '', ''])
+  })
+})
+
+describe('source copies and a model of another revision', () => {
+  const other = 'b'.repeat(40)
+  const at = (revision: string) => ({
+    ...API_MODELS.go!,
+    revision,
+    symbols: API_MODELS.go!.symbols.map((symbol) => ({ ...symbol, source: { ...symbol.source, revision } })),
+  })
+
+  it('are never built into source pages: the model cites lines of its own revision', () => {
+    expect(() => sourceRoutes('go', API_MODELS.go!)).not.toThrow()
+    expect(() => sourceRoutes('go', at(other))).toThrow(/are not the files the model cites at bbbbbbbbbbbb; run node scripts\/gen-api-sources\.mjs --port go/)
+  })
+
+  it('are refused one file at a time, by revision, repository and citation', () => {
+    const model = API_MODELS.go!
+    const entry = { repo: model.repo!, revision: model.revision!, sha256: '0', content: '' }
+    const data = (files: SourceData['files']): SourceData => ({ port: 'go', files })
+    const cited = 'tmux/pane_capture.go'
+    expect(() => assertPaired('go', model, data({ [cited]: entry }))).not.toThrow()
+    expect(() => assertPaired('go', model, data({ [cited]: { ...entry, revision: other } }))).toThrow(/pane_capture\.go/)
+    expect(() => assertPaired('go', model, data({ [cited]: { ...entry, repo: 'another/repo' } }))).toThrow(/pane_capture\.go/)
+    expect(() => assertPaired('go', model, data({ 'tmux/not_cited.go': entry }))).toThrow(/not_cited\.go/)
   })
 })

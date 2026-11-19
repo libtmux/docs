@@ -1,0 +1,40 @@
+---
+import { DEFAULT_COOLDOWN_DAYS } from '../../lib/install-matrix'
+
+/**
+ * The cooldown strip (design record 0064): between the options bar and the
+ * lines the cooldown adds, it says what the setting holds back, with the days
+ * in its sentence, and offers Bypass instead and Remove. A tool the setting
+ * cannot reach turns it to caution, gives the reason and offers the nearest
+ * tool that can.
+ */
+interface Props {
+  family: 'pkg' | 'mcp'
+  /** `on` holds releases back, `bypass` skips a cooldown the reader's tool already sets. */
+  mode: 'days' | 'bypass'
+  /** The tool the command runs with, named where the strip speaks of its configuration. */
+  tool: string
+  /** What stays current, as a clause: "libtmux itself stays current". */
+  exempt: string
+  /** Set where the tool cannot take this mode; the strip then states it and carries no form. */
+  reason?: string
+  /** The nearest tool that can, offered as "Use uv". */
+  alt?: { id: string | number; label: string }
+}
+const { family, mode, tool, exempt, reason, alt } = Astro.props as Props
+const tone = reason ? 'caution' : mode === 'bypass' ? 'bypass' : 'on'
+---
+<div class="lm-install__cooldown" data-tone={tone} data-cooldown-family={family}>
+  <span class="lm-install__k">Cooldown</span>
+  <span class="lm-install__cooldown-body">
+    {reason
+      ? <>{reason}{alt && <>{' '}<button type="button" class="lm-install__link" data-cooldown-action="alt" data-cooldown-alt={alt.id}>Use {alt.label}</button></>}</>
+      : mode === 'bypass'
+        ? <>Bypasses a cooldown set in your {tool} configuration, for this install only.</>
+        : <><label>Holds back dependencies newer than <input type="number" min="1" max="365" value={DEFAULT_COOLDOWN_DAYS} class="lm-install__days" data-cooldown-action="days" aria-label="Cooldown in days" /> days</label>; {exempt}.</>}
+  </span>
+  <span class="lm-install__acts">
+    <button type="button" class="lm-install__link" data-cooldown-action={mode === 'bypass' ? 'days-mode' : 'bypass'}>{mode === 'bypass' ? 'Use a cooldown' : 'Bypass instead'}</button>
+    <button type="button" class="lm-install__link" data-cooldown-action="remove">Remove</button>
+  </span>
+</div>

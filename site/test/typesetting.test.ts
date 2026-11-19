@@ -1,7 +1,10 @@
 import { readFileSync } from 'node:fs'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { directoryPattern, introBeforeCards } from '../src/lib/section-index'
+import { loadAstroTemplate, renderAstroTemplate, withoutScope } from './astro-templates'
 import { siteCss } from './site-css'
+
+vi.mock('astro:content', () => ({ getCollection: vi.fn(async () => []) }))
 
 /**
  * One type scale and measure for every page family (15-typesetting.md), the
@@ -68,6 +71,36 @@ describe('heading scale', () => {
   it('gives an API declaration inside prose the reference measure, not the prose one', () => {
     // README "Space, size and density": reference entries read at measure-reference (100ch).
     expect(rule('.prose dl.gp-sphinx-api-container')['max-width']).toBe('var(--measure-reference, 100ch)')
+  })
+})
+
+/** Pages that set their own headings rather than through `.prose` use the named steps, so none drifts from the scale. */
+describe('headings set outside prose', () => {
+  it('names the page title 32/38 and the section 24/32, both at 600', () => {
+    const [title, section] = [rule('.page-title'), rule('.section-heading')]
+    expect([title['font-size'], title['line-height'], title['font-weight']]).toEqual(['2rem', '2.375rem', '600'])
+    expect([section['font-size'], section['line-height'], section['font-weight']]).toEqual(['1.5rem', '2rem', '600'])
+  })
+
+  it('sets the cross-port MCP tool surface with those steps, not a size of its own', async () => {
+    const tools = await loadAstroTemplate('components/mcp/Tools.astro')
+    const html = withoutScope(await renderAstroTemplate(tools, { url: 'https://libtmux.org/mcp/tools/' }))
+    const classes = (tag: string) => [...html.matchAll(new RegExp(`<${tag} class="([^"]*)"`, 'g'))].map((match) => match[1]!.split(' '))
+    expect(classes('h1')).toHaveLength(1)
+    for (const heading of classes('h1')) expect(heading).toContain('page-title')
+    expect(classes('h2').length).toBeGreaterThan(0)
+    for (const heading of classes('h2')) expect(heading).toContain('section-heading')
+    expect(html).not.toMatch(/<h[12] class="[^"]*\btext-(?:xl|2xl|3xl)\b/)
+  })
+
+  // The sections of an MCP object page (Arguments, Result, Annotations, Types, Protocol data) sit in the entry's body, which a
+  // scoped rule styles; they are the page's H2s and take the section step, as `.api-section-heading` does on an API page.
+  it('sets the section headings of an MCP object page 24/32 at 600', () => {
+    const protocol = readFileSync(new URL('../src/components/mcp/ProtocolReference.astro', import.meta.url), 'utf8')
+    const body = /\.api-overview h2 \{([^}]*)\}/.exec(protocol)?.[1] ?? ''
+    expect(body).toMatch(/font-size: 1\.5rem;/)
+    expect(body).toMatch(/line-height: 2rem;/)
+    expect(body).toMatch(/font-weight: 600;/)
   })
 })
 

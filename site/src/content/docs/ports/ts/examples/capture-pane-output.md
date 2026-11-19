@@ -16,7 +16,7 @@ deadline so a failed command cannot leave the program waiting forever.
 
 This complete program creates a private tmux server, captures its output, and
 cleans up. Follow the [setup and run instructions](#setup-and-run) below. You need
-tmux and a Unix environment; no existing tmux session is required.
+tmux 3.3a or newer and a Unix environment; no existing tmux session is required.
 
 ## Read what's on screen
 
@@ -90,20 +90,18 @@ explains why sending and waiting are separate operations.
 
 ## Setup and run
 
-Use an empty directory. The commands pin the library
-revision used to verify the program.
+Use an empty directory. The `package.json` below installs `libtmux` 0.1.2
+from npm.
 
 Save the program as `capture.ts` and this file as `package.json`.
 Use Bun 1.4.2 or newer.
 
 ```json title="package.json"
-{"type":"module","dependencies":{"libtmux":"file:./libtmux/packages/libtmux"}}
+{"type":"module","private":true,"dependencies":{"libtmux":"0.1.2"}}
 ```
 
 ```console
-$ git clone https://github.com/libtmux/libtmux-ts libtmux &&
-  git -C libtmux checkout 3fe1ca654b81b8cbf4a13b777a001a3298c87a6f &&
-  bun install &&
+$ bun install &&
   bun run capture.ts
 ```
 
@@ -111,5 +109,5 @@ $ git clone https://github.com/libtmux/libtmux-ts libtmux &&
 
 ## Where this comes from
 
-This complete program was run against the library revision pinned above.
-The displayed code is checked against the bytes from that run.
+This program uses `libtmux` 0.1.2 from npm. Its [source](https://github.com/libtmux/libtmux-ts/tree/9a6b695471fbb77ac1e494b879ee9bc59adc201d)
+is on GitHub.

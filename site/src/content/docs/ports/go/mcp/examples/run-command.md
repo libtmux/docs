@@ -41,7 +41,7 @@ $ GOBIN="$PWD/.tools" go install \
 
 Save the module file:
 
-```go title="go.mod"
+```gomod title="go.mod"
 module example.com/command-runner
 
 go 1.26.0

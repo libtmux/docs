@@ -29,7 +29,7 @@ describe('Julia source installation', () => {
     try {
       const server = product === 'mcp-server'
       const template = await loadAstroTemplate(`components/widgets/${server ? 'McpInstall' : 'PackageInstall'}.astro`, {
-        real: ['components/widgets/InstallCode.astro'],
+        real: ['InstallCode', 'InstallCooldown', 'InstallCopy', 'InstallFacts', 'InstallTabRow', 'InstallWhere'].map((name) => `components/widgets/${name}.astro`),
         modules: {
           '../../lib/api-models': { API_MODELS: {} },
           'astro-expressive-code/components': { Code: () => '' },
@@ -38,7 +38,7 @@ describe('Julia source installation', () => {
       window.document.body.innerHTML = await renderAstroTemplate(template, {
         props: server ? { port: 'julia' } : { ports: ['julia'], packageId: product },
       })
-      const code = window.document.querySelector(server ? '.lm-mcp-install__code--prereq code' : '.lm-pkg-install__cmd code')?.textContent
+      const code = window.document.querySelector(server ? '.lm-install__body .lm-mcp-install__panel[data-default] .lm-mcp-install__code--strip code' : '.lm-install__body .lm-pkg-install__cmd code')?.textContent
       expect(code, 'the setup command is visible').toBeTruthy()
       expect(code).toContain(`"${revision}"`)
       expect(code).not.toContain('"master"')
@@ -189,7 +189,8 @@ function visibleCommand(document: Document, panelSelector: string): string {
   const panel = document.querySelector<HTMLElement>(panelSelector)
   expect(panel, panelSelector).toBeTruthy()
   const active = panel!.getAttribute('data-active-manager') ?? '0'
-  const block = panel!.querySelector<HTMLElement>(`.lm-pkg-install__cmd[data-manager="${active}"]`)
+  // The surface draws each choice in its header, its body and its notes; the command is in the body.
+  const block = panel!.querySelector<HTMLElement>(`.lm-install__body .lm-pkg-install__cmd[data-manager="${active}"]`)
   return block?.querySelector('code')?.textContent?.trim() ?? ''
 }
 
@@ -347,31 +348,29 @@ describeIfBuilt('package install picker', { timeout: 20_000 }, () => {
 
   /** The code of one command's cooldown variant, as the page would show it. */
   const variantCode = (document: Document, panel: string, manager: number, mode: string) =>
-    document.querySelector(`${panel} .lm-pkg-install__cmd[data-manager="${manager}"] [data-cooldown-variant="${mode}"] code`)
+    document.querySelector(`${panel} .lm-install__body .lm-pkg-install__cmd[data-manager="${manager}"] [data-cooldown-variant="${mode}"] code`)
       ?.textContent?.trim() ?? ''
 
-  /** Drive a cooldown control the way a reader's change does. */
-  function change(loaded: Loaded, el: HTMLInputElement, value?: string) {
-    if (value === undefined) el.checked = true
-    else el.value = value
-    el.dispatchEvent(new loaded.window.Event('change', { bubbles: true }) as unknown as Event)
-  }
+  /** Drive a cooldown control the way a reader does. */
+  const press = (document: Document, selector: string) => (document.querySelector(selector) as HTMLElement).click()
 
   it('turns a cooldown on in every picker at once, the MCP picker included', () => {
     const loaded = load(PORT_HOME, url)
     const { window, document } = loaded
-    change(loaded, document.querySelector<HTMLInputElement>(`${CORE} [data-pkg-cooldown="toggle"]`)!)
+    press(document, `${CORE} [data-pkg-cooldown="toggle"]`)
     expect(document.documentElement.getAttribute('data-mcp-install-cooldown-enabled')).toBe('1')
     expect(window.localStorage.getItem('libtmux-docs.mcp-install.cooldown.enabled')).toBe('1')
-    expect(document.querySelector<HTMLInputElement>(`${CLI} [data-pkg-cooldown="toggle"]`)!.checked).toBe(true)
-    expect(document.querySelector<HTMLInputElement>('.lm-mcp-install__cooldown-toggle')!.checked).toBe(true)
+    expect(document.querySelector(`${CLI} [data-pkg-cooldown="toggle"]`)!.getAttribute('aria-pressed')).toBe('true')
+    expect(document.querySelector('.lm-mcp-install [data-mcp-cooldown="toggle"]')!.getAttribute('aria-pressed')).toBe('true')
     expect(variantCode(document, CORE, 0, 'days')).toBe('$ npm install \\\n    --min-release-age=7 \\\n    --min-release-age-exclude=libtmux \\\n    libtmux')
   })
 
   it('writes the day count in each tool\'s unit', () => {
     const loaded = load(PORT_HOME, url, { 'libtmux-docs.mcp-install.cooldown.enabled': '1' })
     const { window, document } = loaded
-    change(loaded, document.querySelector<HTMLInputElement>(`${CLI} [data-pkg-cooldown="days"]`)!, '14')
+    const days = document.querySelector<HTMLInputElement>(`${CLI} [data-cooldown-action="days"]`)!
+    days.value = '14'
+    days.dispatchEvent(new window.Event('change', { bubbles: true }) as unknown as Event)
     expect(window.localStorage.getItem('libtmux-docs.mcp-install.cooldown.days')).toBe('14')
     expect(variantCode(document, CORE, 0, 'days')).toContain('--min-release-age=14 ')
     expect(variantCode(document, CORE, 1, 'days')).toContain('pnpm_config_minimum_release_age=20160 ')
@@ -382,13 +381,12 @@ describeIfBuilt('package install picker', { timeout: 20_000 }, () => {
   it('bypasses a global cooldown, and keeps the plain command where a tool cannot exempt the package', () => {
     const loaded = load(PORT_HOME, url, { 'libtmux-docs.mcp-install.cooldown.enabled': '1' })
     const { document } = loaded
-    const bypass = document.querySelector<HTMLInputElement>(`${CLI} [data-pkg-cooldown="mode"][value="bypass"]`)!
-    change(loaded, bypass)
+    press(document, `${CLI} [data-cooldown-action="bypass"]`)
     expect(document.documentElement.getAttribute('data-mcp-install-cooldown-type')).toBe('bypass')
     expect(variantCode(document, CLI, 0, 'bypass')).toBe('$ npx -y --min-release-age=0 @libtmux/workspace-cli --help')
-    // Bun: the cooldown variant is the plain command, with the reason beside it.
+    // Bun: the cooldown variant is the plain command, with the reason in the strip above it.
     expect(variantCode(document, CORE, 3, 'days')).toBe('$ bun add libtmux')
-    expect(document.querySelector(`${CORE} .lm-pkg-install__cmd[data-manager="3"] [data-cooldown-variant="days"] .lm-pkg-install__note--cooldown`)?.textContent)
+    expect(document.querySelector(`${CORE} .lm-install__body .lm-pkg-install__cmd[data-manager="3"] [data-cooldown-variant="days"] .lm-install__cooldown`)?.textContent)
       .toContain('cannot exempt libtmux')
   })
 
@@ -434,8 +432,9 @@ describeIfMcp('MCP install picker', () => {
     const cooldown = html.getAttribute('data-mcp-install-cooldown-enabled') === '1'
       ? (html.getAttribute('data-mcp-install-cooldown-type') ?? 'days')
       : 'off'
+    // A panel is drawn in the surface's header, body and notes; the command is in the body.
     const panel = (mode: string) => document.querySelector<HTMLElement>(
-      `.lm-mcp-install__panel[data-client="${client}"][data-method="${method}"]` +
+      `.lm-install__body .lm-mcp-install__panel[data-client="${client}"][data-method="${method}"]` +
         `[data-scope="${scope}"][data-cooldown="${mode}"]`,
     )
     // A port without a cooldown axis renders only its `off` panels.
@@ -450,9 +449,9 @@ describeIfMcp('MCP install picker', () => {
 
   it('offers npm\'s cooldown and bypass', () => {
     const { document } = load(TS_MCP, url)
-    expect(document.querySelectorAll('.lm-mcp-install__cooldown-control').length).toBe(1)
+    expect(document.querySelectorAll('[data-mcp-cooldown="toggle"]').length).toBe(1)
     const cell = (method: string, cooldown: string) =>
-      document.querySelector(`.lm-mcp-install__panel[data-client="claude-code"][data-method="${method}"][data-scope="local"][data-cooldown="${cooldown}"]`)?.textContent ?? ''
+      document.querySelector(`.lm-install__body .lm-mcp-install__panel[data-client="claude-code"][data-method="${method}"][data-scope="local"][data-cooldown="${cooldown}"]`)?.textContent ?? ''
     expect(cell('npx', 'bypass')).toContain('npx -y --min-release-age=0 @libtmux/mcp')
     expect(cell('global', 'days')).toContain('--min-release-age=7 \\')
     expect(cell('global', 'days')).toContain('--min-release-age-exclude=@libtmux/mcp \\')
@@ -506,8 +505,8 @@ const describeIfGoMcp = SITE_BUILT && existsSync(GO_MCP) ? describe : describe.s
 describeIfGoMcp('MCP install picker, Go', () => {
   it('renders no cooldown control for a port whose toolchain has none', () => {
     const { document } = load(GO_MCP, `https://libtmux.org/${SITE_PREFIX}go/latest/mcp/`)
-    expect(document.querySelectorAll('.lm-mcp-install__cooldown-control').length).toBe(0)
-    expect(document.querySelectorAll('.lm-mcp-install__body--settings').length).toBe(0)
+    expect(document.querySelectorAll('[data-mcp-cooldown]').length).toBe(0)
+    expect(document.querySelectorAll('[data-cooldown-family="mcp"]').length).toBe(0)
   })
 })
 
@@ -528,6 +527,6 @@ describe('MCP install picker, Python', () => {
       ...document.querySelectorAll('.lm-mcp-install__tab[data-tab-kind="method"]'),
     ].map((t) => t.getAttribute('data-tab-value'))
     expect(methods).toEqual(['uvx', 'pipx', 'pip'])
-    expect(document.querySelectorAll('.lm-mcp-install__cooldown-control').length).toBe(1)
+    expect(document.querySelectorAll('[data-mcp-cooldown="toggle"]').length).toBe(1)
   })
 })

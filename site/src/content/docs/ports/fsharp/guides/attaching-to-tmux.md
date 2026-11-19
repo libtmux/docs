@@ -22,32 +22,62 @@ interactive attachment and detaching.
 
 ## Connect to an existing server
 
-Save the complete program as `Program.fs`. `LIBTMUX_SOCKET_PATH` selects
-the existing server. The launcher below supplies a private socket for trying
-the example.
+Save the complete program as `Program.fs`. When `LIBTMUX_SOCKET_PATH` names a
+socket, `findWork` connects a `Server` to it, finds `work`, prints the name and
+leaves that server running.
+
+Without the variable, `demonstrate` starts a private tmux server in a new
+temporary directory and creates a detached `work` session in it. It then
+connects a second `Server` to the socket by path and runs the same lookup. The
+`finally` block stops only the private server and removes its directory. If
+tmux cannot be stopped, the program keeps the directory and prints its location.
 
 ```fsharp title="Program.fs"
 open System
+open System.IO
 open System.Threading
 open System.Threading.Tasks
 open LibTmux
 
-let connect () = task {
-    let socket = Environment.GetEnvironmentVariable("LIBTMUX_SOCKET_PATH")
-    if String.IsNullOrEmpty(socket) then
-        invalidOp "Set LIBTMUX_SOCKET_PATH to an existing socket"
-    use timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5.0))
+let findWork (socket: string) (token: CancellationToken) = task {
     let! server = Server.ConnectAsync(
-        ServerConnectionOptions(SocketPath = socket), timeout.Token)
-    let! exists = server.HasSessionAsync("work", cancellationToken = timeout.Token)
+        ServerConnectionOptions(SocketPath = socket), token)
+    let! exists = server.HasSessionAsync("work", cancellationToken = token)
     if not exists then invalidOp "The work session does not exist"
     printfn "work"
+}
+
+let demonstrate (token: CancellationToken) = task {
+    let directory = Directory.CreateTempSubdirectory("libtmux-attach-")
+    let mutable owned: OwnedServerScope = null
+    try
+        let socket = Path.Combine(directory.FullName, "tmux.sock")
+        let options =
+            ServerConnectionOptions(
+                SocketPath = socket, ConfigurationFile = "/dev/null")
+        let! scope = Server.CreateOwnedAsync(options, token)
+        owned <- scope
+        let request = NewSessionRequest(Name = "work", Command = "/bin/cat")
+        let! _ = scope.Value.CreateSessionAsync(request, token)
+        do! findWork socket token
+    finally
+        if not (isNull owned) then
+            try owned.DisposeAsync().AsTask().GetAwaiter().GetResult()
+            with _ ->
+                eprintfn "Cannot stop tmux; kept %s" directory.FullName
+                reraise ()
+        directory.Delete(true)
 }
 
 [<EntryPoint>]
 let main _ =
     try
-        connect().GetAwaiter().GetResult()
+        use timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10.0))
+        let existing = Environment.GetEnvironmentVariable("LIBTMUX_SOCKET_PATH")
+        let work =
+            if String.IsNullOrEmpty(existing) then demonstrate timeout.Token
+            else findWork existing timeout.Token
+        work.GetAwaiter().GetResult()
         0
     with error ->
         eprintfn "%O" error
@@ -56,9 +86,10 @@ let main _ =
 
 ## Setup and run
 
-Use an empty directory on Linux with Git and tmux 3.3a or newer installed.
+Use an empty directory on Linux with tmux 3.3a or newer installed. The project
+file installs [`LibTmux.FSharp`](https://www.nuget.org/packages/LibTmux.FSharp/0.1.1) 0.1.1 from NuGet ([source](https://github.com/libtmux/libtmux-dotnet/tree/8d47af7d89638ad267528ac56897cec67df597f7/src/LibTmux.FSharp)).
 
-This example was checked with .NET SDK 10.0.302.
+This example was checked with .NET SDK 10.0.403.
 
 Save this file beside the program using the displayed filename.
 
@@ -70,58 +101,21 @@ Save this file beside the program using the displayed filename.
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Program.fs" />
-    <ProjectReference Include="libtmux-source/src/LibTmux.FSharp/LibTmux.FSharp.fsproj" />
+    <PackageReference Include="LibTmux.FSharp" Version="0.1.1" />
   </ItemGroup>
 </Project>
 ```
 
-Save the launcher as `run.sh`. It starts an isolated tmux server, runs the
-program, checks that the session still exists, then stops only that server.
-Cleanup runs after failures too. A failed shutdown keeps its socket directory
-and prints its location for inspection.
-
-```sh title="run.sh"
-#!/bin/sh
-set -eu
-
-binary=$(command -v tmux)
-directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-fsharp-attach.XXXXXX")
-socket="$directory/tmux.sock"
-
-cleanup() {
-    status=$?
-    trap - 0 HUP INT TERM
-    if [ -S "$socket" ] && ! "$binary" -S "$socket" kill-server; then
-        printf 'Cannot stop tmux; kept %s\n' "$directory" >&2
-        exit 1
-    fi
-    rm -rf "$directory" || exit 1
-    exit "$status"
-}
-trap cleanup 0
-trap 'exit 1' HUP INT TERM
-
-unset TMUX TMUX_PANE
-export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
-"$binary" -S "$socket" -f /dev/null new-session -d -s work /bin/cat
-"$@"
-"$binary" -S "$socket" has-session -t '=work'
-```
-
-Fetch the verified library revision, build, and run:
+Build and run:
 
 ```console
-$ git clone https://github.com/libtmux/libtmux-dotnet libtmux-source &&
-  git -C libtmux-source checkout 661287848a6cfb407f37114b25e8249a29f99e3f &&
-  dotnet build Connect.fsproj --maxcpucount:1 \
-    -p:DisableImplicitLibraryPacksFolder=true \
-    -p:RestorePackagesPath="$PWD/.packages" &&
-  sh run.sh dotnet run --project Connect.fsproj --no-build
+$ dotnet build Connect.fsproj --maxcpucount:1 &&
+  dotnet run --project Connect.fsproj --no-build
 ```
 
 The program prints `work`. To use an existing server of your own, set
-`LIBTMUX_SOCKET_PATH` to its socket and run the program without the launcher.
-That launcher is responsible for the demonstration server's lifetime.
+`LIBTMUX_SOCKET_PATH` to its socket before running the program; the program
+leaves that server running.
 
 <a id="finding-a-session-instead-of-always-creating-one"></a>
 

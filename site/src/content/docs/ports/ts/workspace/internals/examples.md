@@ -17,41 +17,29 @@ without depending on an application or log file.
 
 ## Prepare the project
 
-Use Bun 1.4.2 or newer, Git, and tmux 3.3a or newer on Unix. Create an empty
+Use Bun 1.4.2 or newer and tmux 3.3a or newer on Unix. Create an empty
 consumer directory:
 
 ```console
 $ mkdir workspace-example && cd workspace-example
 ```
 
-Fetch the source revision used by this example:
-
-```console
-$ git init libtmux-source && \
-    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-ts.git && \
-    git -C libtmux-source fetch --depth 1 origin 3fe1ca654b81b8cbf4a13b777a001a3298c87a6f && \
-    git -C libtmux-source checkout --detach FETCH_HEAD
-```
-
-Create the project manifest. Both packages come from the same source tree:
+Create the project manifest. It installs `libtmux` and `@libtmux/workspace`
+0.1.2 from npm:
 
 ```json title="package.json"
 {
   "private": true,
   "type": "module",
-  "workspaces": [
-    "libtmux-source/packages/libtmux",
-    "libtmux-source/packages/workspace"
-  ],
   "dependencies": {
-    "libtmux": "workspace:*",
-    "@libtmux/workspace": "workspace:*"
+    "libtmux": "0.1.2",
+    "@libtmux/workspace": "0.1.2"
   }
 }
 ```
 
-The local workspaces keep the consumer and companion on the same core
-module from that checkout.
+`@libtmux/workspace` takes `libtmux` as a peer dependency at the same version,
+so the program and the workspace package share one core module.
 
 Install the dependencies:
 
@@ -143,5 +131,5 @@ work; the example's server cleanup removes it.
 <a id="where-this-comes-from"></a>
 <a id="source-inclusion"></a>
 
-[Example source](https://github.com/libtmux/libtmux-ts/blob/3fe1ca654b81b8cbf4a13b777a001a3298c87a6f/examples/workspace/workspace.ts);
-[Workspace builder source](https://github.com/libtmux/libtmux-ts/blob/3fe1ca654b81b8cbf4a13b777a001a3298c87a6f/packages/workspace/src/builder.ts).
+[Example source](https://github.com/libtmux/libtmux-ts/blob/9a6b695471fbb77ac1e494b879ee9bc59adc201d/examples/workspace/workspace.ts);
+[Workspace builder source](https://github.com/libtmux/libtmux-ts/blob/9a6b695471fbb77ac1e494b879ee9bc59adc201d/packages/workspace/src/builder.ts).

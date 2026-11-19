@@ -14,9 +14,9 @@ Build a tmux layout from Kotlin by creating a window, splitting a pane and selec
 
 ## Setup and run
 
-Use an empty directory on Linux with Git, tmux 3.3a or newer, and JDK 25. Save the project files and launcher below, then save any complete program on this page. Each program has its own imports and entry point.
+Use an empty directory on Linux with tmux 3.3a or newer, JDK 25, and Gradle 9. Save the project files below, then save any complete program on this page. Each program has its own imports and entry point.
 
-The pinned source checkout supplies the Gradle wrapper. Gradle resolves the library from Maven Central.
+Gradle resolves `libtmux-kotlin` 0.1.2 from Maven Central ([source](https://github.com/libtmux/libtmux-java/tree/e8a39689d8d60968ac978a1dd2a89c6112333896/libtmux-kotlin)).
 
 ```kotlin title="settings.gradle.kts"
 rootProject.name = "connect"
@@ -32,7 +32,7 @@ plugins {
 
 repositories { mavenCentral() }
 dependencies {
-    implementation("io.github.libtmux:libtmux-kotlin:0.1.0")
+    implementation("io.github.libtmux:libtmux-kotlin:0.1.2")
 }
 kotlin {
     jvmToolchain(25)
@@ -47,44 +47,7 @@ kotlin.daemon.jvmargs=-Xmx2g
 org.gradle.workers.max=2
 ```
 
-The launcher creates two sessions on a private socket: `work-one` with an `editor` window, and `work-two` with a `logs` window. Each pane runs `cat` so it stays alive. It stops only this server when the program finishes or fails. If shutdown fails, it reports the retained directory and exits with an error.
-
-```sh title="run.sh"
-#!/bin/sh
-set -eu
-
-binary=$(command -v tmux)
-mkdir -p /tmp/libtmux-java-dev
-directory=$(mktemp -d /tmp/libtmux-java-dev/query.XXXXXX)
-socket="$directory/tmux.sock"
-
-cleanup() {
-    status=$?
-    trap - 0 HUP INT TERM
-    if [ -S "$socket" ] && ! "$binary" -S "$socket" kill-server; then
-        printf 'Cannot stop tmux; kept %s\n' "$directory" >&2
-        exit 1
-    fi
-    rm -rf "$directory" || exit 1
-    exit "$status"
-}
-trap cleanup 0
-trap 'exit 1' HUP INT TERM
-
-unset TMUX TMUX_PANE
-export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
-"$binary" -S "$socket" -f /dev/null new-session -d -s work-one -n editor /bin/cat
-"$binary" -S "$socket" new-session -d -s work-two -n logs /bin/cat
-"$@"
-"$binary" -S "$socket" has-session -t '=work-one'
-```
-
-Fetch the Gradle wrapper from the 0.1.0 release:
-
-```console
-$ git clone https://github.com/libtmux/libtmux-java libtmux-source &&
-  git -C libtmux-source checkout 5c181887918351119bfdb3a046719fa792048e59
-```
+Each program starts its own private tmux server with two sessions: `work-one` with an `editor` window, and `work-two` with a `logs` window. Each pane runs `cat` so it stays alive. The program stops only that server when it finishes or fails, then removes the server's directory. If shutdown fails, it reports the retained directory and exits with an error.
 
 Each run starts from the same two-session fixture. Programs do not depend on another example having run first. Their assertions fail if the observed result differs.
 
@@ -97,36 +60,78 @@ import io.github.libtmux.ServerConfig
 import io.github.libtmux.ServerEndpoint
 import io.github.libtmux.kotlin.*
 import io.github.libtmux.kotlin.query.*
+import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+
+suspend fun demonstrate(server: Server) {
+    val session = server.sessions().single { it.name == "work-one" }
+    val window = session.newWindow(
+        io.github.libtmux.WindowSpec.builder()
+            .named("tools").running("/bin/cat").build()
+    )
+    val original = window.panes.single()
+    original.split(
+        io.github.libtmux.SplitSpec.builder()
+            .toRight().running("/bin/cat").build()
+    )
+    window.selectLayout(io.github.libtmux.Layout.EVEN_HORIZONTAL)
+    val refreshed = server.sessions().single { it.name == "work-one" }
+    val tools = refreshed.windows.single { it.name == "tools" }
+    check(tools.panes.size == 2)
+    println("tools: 2 panes")
+}
 
 fun main() = runBlocking {
-    val socket = requireNotNull(System.getenv("LIBTMUX_SOCKET_PATH")) {
-        "Set LIBTMUX_SOCKET_PATH to an existing socket"
-    }
+    val directory = Files.createTempDirectory("libtmux-example-")
+    val socket = directory.resolve("tmux.sock")
     val config = ServerConfig.builder()
-        .endpoint(ServerEndpoint.socketPath(Path.of(socket)))
+        .endpoint(ServerEndpoint.socketPath(socket))
+        .configFile(Path.of("/dev/null"))
         .defaultTimeout(Duration.ofSeconds(5))
         .build()
-    withServer(config) { server ->
-        val session = server.sessions().single { it.name == "work-one" }
-        val window = session.newWindow(io.github.libtmux.WindowSpec.builder()
-            .named("tools").running("/bin/cat").build())
-        val original = window.panes.single()
-        original.split(io.github.libtmux.SplitSpec.builder().toRight().running("/bin/cat").build())
-        window.selectLayout(io.github.libtmux.Layout.EVEN_HORIZONTAL)
-        val refreshed = server.sessions().single { it.name == "work-one" }
-        val tools = refreshed.windows.single { it.name == "tools" }
-        check(tools.panes.size == 2)
-        println("tools: 2 panes")
+    var stopped = false
+    try {
+        withServer(config) { server ->
+            try {
+                server.newSession {
+                    name = "work-one"
+                    window {
+                        name = "editor"
+                        running("/bin/cat")
+                    }
+                }
+                server.newSession {
+                    name = "work-two"
+                    window {
+                        name = "logs"
+                        running("/bin/cat")
+                    }
+                }
+                demonstrate(server)
+            } finally {
+                withContext(NonCancellable) {
+                    if (Files.exists(socket)) server.killServer()
+                    stopped = true
+                }
+            }
+        }
+    } finally {
+        if (stopped || !Files.exists(socket)) {
+            Files.deleteIfExists(socket)
+            Files.delete(directory)
+        } else {
+            System.err.println("Cannot stop tmux; kept $directory")
+        }
     }
 }
 ```
 
 ```console
-$ sh run.sh ./libtmux-source/gradlew --project-dir . run \
-  -Pexample=Layout --console=plain --max-workers=2
+$ gradle --console=plain --no-daemon run -Pexample=Layout
 ```
 
 Expected program output:
@@ -144,38 +149,78 @@ import io.github.libtmux.ServerConfig
 import io.github.libtmux.ServerEndpoint
 import io.github.libtmux.kotlin.*
 import io.github.libtmux.kotlin.query.*
+import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+
+suspend fun demonstrate(server: Server) {
+    suspend fun ensureTools(): Window {
+        val session = server.sessions().single { it.name == "work-one" }
+        val existing = session.windows.singleOrNull { it.name == "tools" }
+        if (existing != null) return existing
+        return session.newWindow(
+            io.github.libtmux.WindowSpec.builder()
+                .named("tools").running("/bin/cat").build()
+        )
+    }
+    val first = ensureTools()
+    val second = ensureTools()
+    check(first.id == second.id)
+    val session = server.sessions().single { it.name == "work-one" }
+    check(session.windows.size == 2)
+    println("one tools window after two calls")
+}
 
 fun main() = runBlocking {
-    val socket = requireNotNull(System.getenv("LIBTMUX_SOCKET_PATH")) {
-        "Set LIBTMUX_SOCKET_PATH to an existing socket"
-    }
+    val directory = Files.createTempDirectory("libtmux-example-")
+    val socket = directory.resolve("tmux.sock")
     val config = ServerConfig.builder()
-        .endpoint(ServerEndpoint.socketPath(Path.of(socket)))
+        .endpoint(ServerEndpoint.socketPath(socket))
+        .configFile(Path.of("/dev/null"))
         .defaultTimeout(Duration.ofSeconds(5))
         .build()
-    withServer(config) { server ->
-        suspend fun ensureTools(): Window {
-            val session = server.sessions().single { it.name == "work-one" }
-            val existing = session.windows.singleOrNull { it.name == "tools" }
-            if (existing != null) return existing
-            return session.newWindow(io.github.libtmux.WindowSpec.builder()
-                .named("tools").running("/bin/cat").build())
+    var stopped = false
+    try {
+        withServer(config) { server ->
+            try {
+                server.newSession {
+                    name = "work-one"
+                    window {
+                        name = "editor"
+                        running("/bin/cat")
+                    }
+                }
+                server.newSession {
+                    name = "work-two"
+                    window {
+                        name = "logs"
+                        running("/bin/cat")
+                    }
+                }
+                demonstrate(server)
+            } finally {
+                withContext(NonCancellable) {
+                    if (Files.exists(socket)) server.killServer()
+                    stopped = true
+                }
+            }
         }
-        val first = ensureTools()
-        val second = ensureTools()
-        check(first.id == second.id)
-        check(server.sessions().single { it.name == "work-one" }.windows.size == 2)
-        println("one tools window after two calls")
+    } finally {
+        if (stopped || !Files.exists(socket)) {
+            Files.deleteIfExists(socket)
+            Files.delete(directory)
+        } else {
+            System.err.println("Cannot stop tmux; kept $directory")
+        }
     }
 }
 ```
 
 ```console
-$ sh run.sh ./libtmux-source/gradlew --project-dir . run \
-  -Pexample=ReuseLayout --console=plain --max-workers=2
+$ gradle --console=plain --no-daemon run -Pexample=ReuseLayout
 ```
 
 Expected program output:

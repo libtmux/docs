@@ -1,0 +1,65 @@
+{
+  "name": "opam",
+  "scopeName": "source.opam",
+  "patterns": [
+    { "include": "#comment" },
+    { "include": "#field" },
+    { "include": "#section" },
+    { "include": "#value" }
+  ],
+  "repository": {
+    "comment": {
+      "patterns": [
+        { "match": "#.*$", "name": "comment.line.number-sign.opam" },
+        { "begin": "\\(\\*", "end": "\\*\\)", "name": "comment.block.opam", "patterns": [{ "include": "#nested-comment" }] }
+      ]
+    },
+    "nested-comment": {
+      "begin": "\\(\\*",
+      "end": "\\*\\)",
+      "patterns": [{ "include": "#nested-comment" }]
+    },
+    "field": {
+      "match": "^[ \\t]*([a-z][a-z0-9_-]*)[ \\t]*(:)",
+      "captures": {
+        "1": { "name": "support.type.property-name.opam" },
+        "2": { "name": "punctuation.separator.key-value.opam" }
+      }
+    },
+    "section": {
+      "match": "^[ \\t]*([a-z][a-z0-9_-]*)(?=[ \\t]*(?:\"[^\"]*\"[ \\t]*)?\\{)",
+      "name": "entity.name.section.opam"
+    },
+    "value": {
+      "patterns": [
+        { "include": "#comment" },
+        { "include": "#triple-string" },
+        { "include": "#string" },
+        { "match": "\\b(?:true|false)\\b", "name": "constant.language.boolean.opam" },
+        { "match": "\\b(?:with-test|with-doc|with-dev-setup|build|dev|post|pinned|installed|opam-version|jobs|name|version|ocaml:version|os|arch|os-family|os-distribution|make|prefix|bin|lib|share|doc|man|root|switch)\\b", "name": "variable.language.opam" },
+        { "match": "\\d+(?:\\.\\d+)*", "name": "constant.numeric.opam" },
+        { "match": ">=|<=|!=|=|<|>|~|\\^", "name": "keyword.operator.comparison.opam" },
+        { "match": "[&|!?]", "name": "keyword.operator.logical.opam" },
+        { "match": "[\\[\\]{}()]", "name": "punctuation.bracket.opam" }
+      ]
+    },
+    "string": {
+      "begin": "\"",
+      "end": "\"",
+      "name": "string.quoted.double.opam",
+      "patterns": [
+        { "match": "\\\\.", "name": "constant.character.escape.opam" },
+        { "match": "%\\{[^}\"]*\\}%", "name": "constant.other.placeholder.opam" }
+      ]
+    },
+    "triple-string": {
+      "begin": "\"\"\"",
+      "end": "\"\"\"",
+      "name": "string.quoted.triple.opam",
+      "patterns": [
+        { "match": "\\\\.", "name": "constant.character.escape.opam" },
+        { "match": "%\\{[^}\"]*\\}%", "name": "constant.other.placeholder.opam" }
+      ]
+    }
+  }
+}

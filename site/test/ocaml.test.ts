@@ -59,3 +59,9 @@ it('attaches the tested bootstrap program to its workspace operations', () => {
     expect(example, id).toBeDefined()
   }
 })
+
+it('shows each attached program without the comment lines that mark its region for the port', () => {
+  const programs = API_MODELS.ocaml!.symbols.flatMap((symbol) => symbol.doc?.examples ?? []).filter((example) => example.lang === 'ocaml')
+  expect(programs.length).toBeGreaterThan(0)
+  for (const example of programs) expect(example.code, example.sourceUrl).not.toMatch(/\(\*\s*docs:/)
+})

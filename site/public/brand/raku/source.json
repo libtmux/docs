@@ -147,23 +147,27 @@
     },
     {
       "file": "library/opengraph-light.png",
-      "bytes": 25134,
-      "sha256": "9ac90c0cbc233162bc71d1de93466736171dc6aac90090466100dc8b54a8fc39"
+      "bytes": 65471,
+      "sha256": "f5832b8b914b092a9bcda5e6b509439e43f9694eb724d23538350dcb83c8ecbd",
+      "revision": "a6377dd4fbfe0d5e59271ceefb21cb503646dbc0"
     },
     {
       "file": "library/opengraph-light.jpg",
-      "bytes": 46117,
-      "sha256": "e27ee0a46b91971d8dd95150b7ecffde754b1aa47c40d7e884aabdc64688ffba"
+      "bytes": 97225,
+      "sha256": "1b1fdfc4baa785a1e9e26e71939a403d7ce60cf02e3ae1bd48be2b5a55a085ad",
+      "revision": "a6377dd4fbfe0d5e59271ceefb21cb503646dbc0"
     },
     {
       "file": "library/twitter-light.png",
-      "bytes": 24965,
-      "sha256": "760d706412948ca09da22cfcdd41884ca6d5b5538cbf1bb391733f6e8e23d7f9"
+      "bytes": 65220,
+      "sha256": "f2cb0fe6d58c9f1708ff663dcf8b0e66746db44b0e33fa3705b705b0ca0579b3",
+      "revision": "a6377dd4fbfe0d5e59271ceefb21cb503646dbc0"
     },
     {
       "file": "library/social-square-light.png",
-      "bytes": 28890,
-      "sha256": "0e2c83ef136c6f516629e858357db97e3f375b77551dad9eebaab90c0fb9ec71"
+      "bytes": 75035,
+      "sha256": "a2a25b51fdbef5bbfa47467e67efe6f69bf12789ef02b1890081fe5dc1cf5ccc",
+      "revision": "a6377dd4fbfe0d5e59271ceefb21cb503646dbc0"
     },
     {
       "file": "library/site.webmanifest",
@@ -207,23 +211,27 @@
     },
     {
       "file": "library/opengraph-dark.png",
-      "bytes": 25396,
-      "sha256": "660ef6b57a1c45657fad9229d45b132c35d95346063278e1fd4969e8ff5f0a3b"
+      "bytes": 65450,
+      "sha256": "12c4510f3c67eead6cf683e9280a139999449f36d331aa24b425034ec45a7e47",
+      "revision": "a6377dd4fbfe0d5e59271ceefb21cb503646dbc0"
     },
     {
       "file": "library/opengraph-dark.jpg",
-      "bytes": 43791,
-      "sha256": "cc6971140c97e02ce7f334bc231e1124bc5afa8151023a7260cb76e161a25ff3"
+      "bytes": 89984,
+      "sha256": "3a891825aaeeed6ec7a3052ccae70ecbff279d65a97d0ba1de3ba500eecee7eb",
+      "revision": "a6377dd4fbfe0d5e59271ceefb21cb503646dbc0"
     },
     {
       "file": "library/twitter-dark.png",
-      "bytes": 25219,
-      "sha256": "85b09f4c814224590c2c8bb02037cf3e2ba90b10d46ac972aaac751770bb5b50"
+      "bytes": 65229,
+      "sha256": "b38744cfef00d7a44675f5f5dc1503b35098b7d262124fd6b931de6618a52c14",
+      "revision": "a6377dd4fbfe0d5e59271ceefb21cb503646dbc0"
     },
     {
       "file": "library/social-square-dark.png",
-      "bytes": 29151,
-      "sha256": "a9fca634a2ef64b844c7627dddfe9ad790804201ee96dbec54e156a30d9be93c"
+      "bytes": 74905,
+      "sha256": "ea40c3befbf07ef47b08741b0f7ffcf0e1ccfc4b1cd7da8c6fdbebbc1a3ff5dd",
+      "revision": "a6377dd4fbfe0d5e59271ceefb21cb503646dbc0"
     },
     {
       "file": "library/site-dark.webmanifest",

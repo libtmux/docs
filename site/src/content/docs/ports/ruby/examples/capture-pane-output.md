@@ -12,7 +12,8 @@ tableOfContents: true
 
 This complete Ruby program starts a private tmux server, sends a command,
 and captures the line it prints. It includes imports, setup, and cleanup.
-You need tmux and a Unix environment; no existing session is required.
+You need tmux 3.3a or newer and a Unix environment; no existing session is
+required.
 
 ## Read what's on screen
 
@@ -58,22 +59,21 @@ and exits unsuccessfully if an operation fails.
 ## Setup and run
 
 Use an empty directory and save the files using the displayed names. You need
-Ruby 4.0.7 and Bundler. Bundler installs the library and its runtime dependencies.
+Ruby 3.3 or newer and Bundler. Bundler installs `libtmux` 0.1.2 from RubyGems
+with its runtime dependencies.
 
 Save this dependency file beside the program.
 
 ```ruby title="Gemfile"
 source "https://rubygems.org"
 
-gem "libtmux", path: "libtmux-source/gems/libtmux"
+gem "libtmux", "0.1.2"
 ```
 
-The commands pin the library revision used to run this program.
+Install the gem into the project and run the program:
 
 ```console
-$ git clone https://github.com/libtmux/libtmux-ruby libtmux-source &&
-  git -C libtmux-source checkout 2599d45369515aaf2fd5793bfe71cdc20de641b6 &&
-  bundle config set --local path vendor/bundle &&
+$ bundle config set --local path vendor/bundle &&
   bundle install &&
   bundle exec ruby capture.rb
 ```
@@ -82,5 +82,5 @@ $ git clone https://github.com/libtmux/libtmux-ruby libtmux-source &&
 
 ## Where this comes from
 
-The displayed files were compiled or loaded with their native tools and run
-on Linux with tmux 3.2a and 3.7c. The rendering checks preserve those file bytes.
+This program uses `libtmux` 0.1.2 from RubyGems. Its [source](https://github.com/libtmux/libtmux-ruby/tree/46474e8a2f03e39fc2b0ff73b6a841777b79c4d2)
+is on GitHub.

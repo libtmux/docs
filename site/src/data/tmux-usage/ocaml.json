@@ -94,7 +94,7 @@
   ],
   "port": "ocaml",
   "repo": "libtmux/libtmux-ocaml",
-  "revision": "ca4b6c0cb8ccccfe54d93ec67067070a9d33aeb9",
+  "revision": "1611f141a1f69bbfd396b15ff12715ff260543dd",
   "schemaVersion": 1,
   "symbols": {
     "Libtmux_eio.Client.break_pane": [
@@ -103,12 +103,12 @@
         "evidence": [
           "unix/engine.ml:288",
           "eio/generated_operations.ml:103",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:317",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
           "lib/commands.ml:318",
-          "unix/command_encoding.ml:389",
-          "unix/command_encoding.ml:390"
+          "lib/commands.ml:319",
+          "unix/command_encoding.ml:390",
+          "unix/command_encoding.ml:391"
         ],
         "reviewed": true,
         "scope": null
@@ -119,8 +119,8 @@
         "command": "list-clients",
         "evidence": [
           "unix/acquisition.ml:118",
-          "eio/libtmux_eio.ml:373",
-          "eio/libtmux_eio.ml:362",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:364",
           "unix/engine.ml:294"
         ],
         "reviewed": true,
@@ -130,8 +130,8 @@
         "command": "list-panes",
         "evidence": [
           "unix/acquisition.ml:65",
-          "eio/libtmux_eio.ml:373",
-          "eio/libtmux_eio.ml:362",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:364",
           "unix/engine.ml:294"
         ],
         "reviewed": true,
@@ -141,8 +141,8 @@
         "command": "list-sessions",
         "evidence": [
           "unix/acquisition.ml:16",
-          "eio/libtmux_eio.ml:373",
-          "eio/libtmux_eio.ml:362",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:364",
           "unix/engine.ml:294"
         ],
         "reviewed": true,
@@ -152,8 +152,8 @@
         "command": "list-windows",
         "evidence": [
           "unix/acquisition.ml:30",
-          "eio/libtmux_eio.ml:373",
-          "eio/libtmux_eio.ml:362",
+          "eio/libtmux_eio.ml:375",
+          "eio/libtmux_eio.ml:364",
           "unix/engine.ml:294"
         ],
         "reviewed": true,
@@ -166,10 +166,10 @@
         "evidence": [
           "unix/environment_io.ml:103",
           "eio/generated_operations.ml:42",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:267",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
           "lib/commands.ml:268",
+          "lib/commands.ml:269",
           "unix/engine.ml:101",
           "unix/engine.ml:103"
         ],
@@ -183,10 +183,10 @@
         "evidence": [
           "unix/options_io.ml:199",
           "eio/generated_operations.ml:73",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:294",
-          "lib/commands.ml:294",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
+          "lib/commands.ml:295",
+          "lib/commands.ml:295",
           "unix/engine.ml:120",
           "unix/engine.ml:126"
         ],
@@ -200,10 +200,10 @@
         "evidence": [
           "unix/options_io.ml:199",
           "eio/generated_operations.ml:55",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:279",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
           "lib/commands.ml:280",
+          "lib/commands.ml:281",
           "unix/engine.ml:107",
           "unix/engine.ml:110"
         ],
@@ -216,8 +216,8 @@
         "command": "capture-pane",
         "evidence": [
           "unix/rendered.ml:88",
-          "eio/libtmux_eio.ml:382",
-          "eio/libtmux_eio.ml:362",
+          "eio/libtmux_eio.ml:384",
+          "eio/libtmux_eio.ml:364",
           "unix/engine.ml:311"
         ],
         "reviewed": true,
@@ -227,8 +227,8 @@
         "command": "delete-buffer",
         "evidence": [
           "unix/rendered.ml:81",
-          "eio/libtmux_eio.ml:382",
-          "eio/libtmux_eio.ml:362",
+          "eio/libtmux_eio.ml:384",
+          "eio/libtmux_eio.ml:364",
           "unix/engine.ml:311"
         ],
         "incidental": true,
@@ -240,8 +240,8 @@
         "command": "list-buffers",
         "evidence": [
           "unix/rendered.ml:100",
-          "eio/libtmux_eio.ml:382",
-          "eio/libtmux_eio.ml:362",
+          "eio/libtmux_eio.ml:384",
+          "eio/libtmux_eio.ml:364",
           "unix/engine.ml:311"
         ],
         "incidental": true,
@@ -252,8 +252,8 @@
         "command": "save-buffer",
         "evidence": [
           "unix/rendered.ml:125",
-          "eio/libtmux_eio.ml:382",
-          "eio/libtmux_eio.ml:362",
+          "eio/libtmux_eio.ml:384",
+          "eio/libtmux_eio.ml:364",
           "unix/engine.ml:311"
         ],
         "incidental": true,
@@ -264,8 +264,8 @@
         "command": "show-hooks",
         "evidence": [
           "unix/rendered.ml:27",
-          "eio/libtmux_eio.ml:382",
-          "eio/libtmux_eio.ml:362",
+          "eio/libtmux_eio.ml:384",
+          "eio/libtmux_eio.ml:364",
           "unix/engine.ml:311"
         ],
         "incidental": true,
@@ -278,13 +278,13 @@
         "command": "clear-history",
         "evidence": [
           "unix/engine.ml:283",
-          "eio/generated_operations.ml:168",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:364",
-          "lib/commands.ml:364",
-          "unix/command_encoding.ml:285",
-          "unix/command_encoding.ml:285"
+          "eio/generated_operations.ml:171",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
+          "lib/commands.ml:366",
+          "lib/commands.ml:366",
+          "unix/command_encoding.ml:286",
+          "unix/command_encoding.ml:286"
         ],
         "reviewed": true,
         "scope": null
@@ -296,12 +296,12 @@
         "evidence": [
           "unix/engine.ml:283",
           "eio/generated_operations.ml:70",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:291",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
           "lib/commands.ml:292",
-          "unix/command_encoding.ml:315",
-          "unix/command_encoding.ml:319"
+          "lib/commands.ml:293",
+          "unix/command_encoding.ml:316",
+          "unix/command_encoding.ml:320"
         ],
         "reviewed": true,
         "scope": null
@@ -313,12 +313,12 @@
         "evidence": [
           "unix/engine.ml:288",
           "eio/generated_operations.ml:90",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:307",
-          "lib/commands.ml:309",
-          "unix/command_encoding.ml:356",
-          "unix/command_encoding.ml:360"
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
+          "lib/commands.ml:308",
+          "lib/commands.ml:310",
+          "unix/command_encoding.ml:357",
+          "unix/command_encoding.ml:361"
         ],
         "reviewed": true,
         "scope": null
@@ -330,12 +330,12 @@
         "evidence": [
           "unix/engine.ml:288",
           "eio/generated_operations.ml:95",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:311",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
           "lib/commands.ml:312",
-          "unix/command_encoding.ml:372",
-          "unix/command_encoding.ml:377"
+          "lib/commands.ml:313",
+          "unix/command_encoding.ml:373",
+          "unix/command_encoding.ml:378"
         ],
         "reviewed": true,
         "scope": null
@@ -346,13 +346,13 @@
         "command": "next-layout",
         "evidence": [
           "unix/engine.ml:283",
-          "eio/generated_operations.ml:148",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:348",
-          "lib/commands.ml:349",
-          "unix/command_encoding.ml:263",
-          "unix/command_encoding.ml:265"
+          "eio/generated_operations.ml:151",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
+          "lib/commands.ml:350",
+          "lib/commands.ml:351",
+          "unix/command_encoding.ml:264",
+          "unix/command_encoding.ml:266"
         ],
         "reviewed": true,
         "scope": null,
@@ -362,13 +362,13 @@
         "command": "previous-layout",
         "evidence": [
           "unix/engine.ml:283",
-          "eio/generated_operations.ml:148",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:348",
-          "lib/commands.ml:349",
-          "unix/command_encoding.ml:263",
-          "unix/command_encoding.ml:266"
+          "eio/generated_operations.ml:151",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
+          "lib/commands.ml:350",
+          "lib/commands.ml:351",
+          "unix/command_encoding.ml:264",
+          "unix/command_encoding.ml:267"
         ],
         "reviewed": true,
         "scope": null,
@@ -381,12 +381,27 @@
         "evidence": [
           "unix/engine.ml:283",
           "eio/generated_operations.ml:113",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:322",
-          "lib/commands.ml:322",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
+          "lib/commands.ml:323",
+          "lib/commands.ml:323",
           "unix/command_encoding.ml:242",
           "unix/command_encoding.ml:242"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_eio.Client.kill_server": [
+      {
+        "command": "kill-server",
+        "evidence": [
+          "unix/engine.ml:326",
+          "unix/connection.ml:308",
+          "eio/generated_operations.ml:116",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
+          "lib/commands.ml:324"
         ],
         "reviewed": true,
         "scope": null
@@ -398,10 +413,10 @@
         "evidence": [
           "unix/engine.ml:283",
           "eio/generated_operations.ml:107",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:320",
-          "lib/commands.ml:320",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
+          "lib/commands.ml:321",
+          "lib/commands.ml:321",
           "unix/command_encoding.ml:240",
           "unix/command_encoding.ml:240"
         ],
@@ -415,10 +430,10 @@
         "evidence": [
           "unix/engine.ml:283",
           "eio/generated_operations.ml:110",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:321",
-          "lib/commands.ml:321",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
+          "lib/commands.ml:322",
+          "lib/commands.ml:322",
           "unix/command_encoding.ml:241",
           "unix/command_encoding.ml:241"
         ],
@@ -431,13 +446,13 @@
         "command": "link-window",
         "evidence": [
           "unix/engine.ml:283",
-          "eio/generated_operations.ml:123",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:330",
-          "lib/commands.ml:331",
-          "unix/command_encoding.ml:248",
-          "unix/command_encoding.ml:249"
+          "eio/generated_operations.ml:126",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
+          "lib/commands.ml:332",
+          "lib/commands.ml:333",
+          "unix/command_encoding.ml:249",
+          "unix/command_encoding.ml:250"
         ],
         "reviewed": true,
         "scope": null
@@ -448,13 +463,13 @@
         "command": "move-pane",
         "evidence": [
           "unix/engine.ml:283",
-          "eio/generated_operations.ml:151",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:351",
-          "lib/commands.ml:352",
-          "unix/command_encoding.ml:268",
-          "unix/command_encoding.ml:269"
+          "eio/generated_operations.ml:154",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
+          "lib/commands.ml:353",
+          "lib/commands.ml:354",
+          "unix/command_encoding.ml:269",
+          "unix/command_encoding.ml:270"
         ],
         "reviewed": true,
         "scope": null
@@ -465,13 +480,13 @@
         "command": "move-window",
         "evidence": [
           "unix/engine.ml:283",
-          "eio/generated_operations.ml:127",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:333",
-          "lib/commands.ml:334",
-          "unix/command_encoding.ml:250",
-          "unix/command_encoding.ml:251"
+          "eio/generated_operations.ml:130",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
+          "lib/commands.ml:335",
+          "lib/commands.ml:336",
+          "unix/command_encoding.ml:251",
+          "unix/command_encoding.ml:252"
         ],
         "reviewed": true,
         "scope": null
@@ -483,10 +498,10 @@
         "evidence": [
           "unix/options_io.ml:223",
           "eio/generated_operations.ml:76",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:296",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
           "lib/commands.ml:297",
+          "lib/commands.ml:298",
           "unix/engine.ml:127",
           "unix/engine.ml:131"
         ],
@@ -500,10 +515,10 @@
         "evidence": [
           "unix/options_io.ml:223",
           "eio/generated_operations.ml:59",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:282",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
           "lib/commands.ml:283",
+          "lib/commands.ml:284",
           "unix/engine.ml:113",
           "unix/engine.ml:116"
         ],
@@ -517,10 +532,10 @@
         "evidence": [
           "unix/engine.ml:283",
           "eio/generated_operations.ml:22",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:256",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
           "lib/commands.ml:257",
+          "lib/commands.ml:258",
           "unix/command_encoding.ml:229",
           "unix/command_encoding.ml:230"
         ],
@@ -534,12 +549,12 @@
         "evidence": [
           "unix/engine.ml:283",
           "eio/generated_operations.ml:52",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:276",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
           "lib/commands.ml:277",
-          "unix/command_encoding.ml:295",
-          "unix/command_encoding.ml:297"
+          "lib/commands.ml:278",
+          "unix/command_encoding.ml:296",
+          "unix/command_encoding.ml:298"
         ],
         "reviewed": true,
         "scope": null
@@ -551,12 +566,12 @@
         "evidence": [
           "unix/engine.ml:283",
           "eio/generated_operations.ml:84",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:302",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
           "lib/commands.ml:303",
-          "unix/command_encoding.ml:329",
-          "unix/command_encoding.ml:331"
+          "lib/commands.ml:304",
+          "unix/command_encoding.ml:330",
+          "unix/command_encoding.ml:332"
         ],
         "reviewed": true,
         "scope": null
@@ -568,10 +583,10 @@
         "evidence": [
           "unix/engine.ml:283",
           "eio/generated_operations.ml:12",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:248",
-          "lib/commands.ml:248",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
+          "lib/commands.ml:249",
+          "lib/commands.ml:249",
           "unix/engine.ml:154",
           "unix/engine.ml:157"
         ],
@@ -585,10 +600,10 @@
         "evidence": [
           "unix/engine.ml:283",
           "eio/generated_operations.ml:9",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:247",
-          "lib/commands.ml:247",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
+          "lib/commands.ml:248",
+          "lib/commands.ml:248",
           "unix/engine.ml:145",
           "unix/engine.ml:148"
         ],
@@ -602,10 +617,10 @@
         "evidence": [
           "unix/engine.ml:283",
           "eio/generated_operations.ml:19",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:253",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
           "lib/commands.ml:254",
+          "lib/commands.ml:255",
           "unix/command_encoding.ml:227",
           "unix/command_encoding.ml:228"
         ],
@@ -619,10 +634,10 @@
         "evidence": [
           "unix/engine.ml:283",
           "eio/generated_operations.ml:26",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:259",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
           "lib/commands.ml:260",
+          "lib/commands.ml:261",
           "unix/command_encoding.ml:232",
           "unix/command_encoding.ml:233"
         ],
@@ -635,13 +650,13 @@
         "command": "resize-pane",
         "evidence": [
           "unix/engine.ml:283",
-          "eio/generated_operations.ml:138",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:339",
-          "lib/commands.ml:340",
-          "unix/command_encoding.ml:257",
-          "unix/command_encoding.ml:258"
+          "eio/generated_operations.ml:141",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
+          "lib/commands.ml:341",
+          "lib/commands.ml:342",
+          "unix/command_encoding.ml:258",
+          "unix/command_encoding.ml:259"
         ],
         "reviewed": true,
         "scope": null
@@ -652,13 +667,13 @@
         "command": "resize-window",
         "evidence": [
           "unix/engine.ml:283",
-          "eio/generated_operations.ml:141",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:342",
-          "lib/commands.ml:343",
-          "unix/command_encoding.ml:259",
-          "unix/command_encoding.ml:260"
+          "eio/generated_operations.ml:144",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
+          "lib/commands.ml:344",
+          "lib/commands.ml:345",
+          "unix/command_encoding.ml:260",
+          "unix/command_encoding.ml:261"
         ],
         "reviewed": true,
         "scope": null
@@ -669,13 +684,13 @@
         "command": "respawn-pane",
         "evidence": [
           "unix/engine.ml:283",
-          "eio/generated_operations.ml:164",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:361",
-          "lib/commands.ml:362",
-          "unix/command_encoding.ml:279",
-          "unix/command_encoding.ml:281"
+          "eio/generated_operations.ml:167",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
+          "lib/commands.ml:363",
+          "lib/commands.ml:364",
+          "unix/command_encoding.ml:280",
+          "unix/command_encoding.ml:282"
         ],
         "reviewed": true,
         "scope": null
@@ -686,13 +701,13 @@
         "command": "rotate-window",
         "evidence": [
           "unix/engine.ml:283",
-          "eio/generated_operations.ml:158",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:356",
-          "lib/commands.ml:357",
-          "unix/command_encoding.ml:274",
-          "unix/command_encoding.ml:275"
+          "eio/generated_operations.ml:161",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
+          "lib/commands.ml:358",
+          "lib/commands.ml:359",
+          "unix/command_encoding.ml:275",
+          "unix/command_encoding.ml:276"
         ],
         "reviewed": true,
         "scope": null
@@ -704,12 +719,12 @@
         "evidence": [
           "unix/engine.ml:283",
           "eio/generated_operations.ml:87",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:305",
-          "lib/commands.ml:305",
-          "unix/command_encoding.ml:333",
-          "unix/command_encoding.ml:345"
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
+          "lib/commands.ml:306",
+          "lib/commands.ml:306",
+          "unix/command_encoding.ml:334",
+          "unix/command_encoding.ml:346"
         ],
         "reviewed": true,
         "scope": null
@@ -720,13 +735,13 @@
         "command": "select-layout",
         "evidence": [
           "unix/engine.ml:283",
-          "eio/generated_operations.ml:145",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:345",
-          "lib/commands.ml:346",
-          "unix/command_encoding.ml:261",
-          "unix/command_encoding.ml:262"
+          "eio/generated_operations.ml:148",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
+          "lib/commands.ml:347",
+          "lib/commands.ml:348",
+          "unix/command_encoding.ml:262",
+          "unix/command_encoding.ml:263"
         ],
         "reviewed": true,
         "scope": null
@@ -737,13 +752,13 @@
         "command": "select-pane",
         "evidence": [
           "unix/engine.ml:283",
-          "eio/generated_operations.ml:132",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:336",
-          "lib/commands.ml:336",
-          "unix/command_encoding.ml:254",
-          "unix/command_encoding.ml:254"
+          "eio/generated_operations.ml:135",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
+          "lib/commands.ml:338",
+          "lib/commands.ml:338",
+          "unix/command_encoding.ml:255",
+          "unix/command_encoding.ml:255"
         ],
         "reviewed": true,
         "scope": null
@@ -754,13 +769,13 @@
         "command": "select-window",
         "evidence": [
           "unix/engine.ml:283",
-          "eio/generated_operations.ml:116",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:324",
-          "lib/commands.ml:325",
-          "unix/command_encoding.ml:243",
-          "unix/command_encoding.ml:244"
+          "eio/generated_operations.ml:119",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
+          "lib/commands.ml:326",
+          "lib/commands.ml:327",
+          "unix/command_encoding.ml:244",
+          "unix/command_encoding.ml:245"
         ],
         "reviewed": true,
         "scope": null
@@ -772,10 +787,10 @@
         "evidence": [
           "unix/engine.ml:283",
           "eio/generated_operations.ml:33",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:263",
-          "lib/commands.ml:263",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
+          "lib/commands.ml:264",
+          "lib/commands.ml:264",
           "unix/engine.ml:165",
           "unix/engine.ml:174"
         ],
@@ -789,10 +804,10 @@
         "evidence": [
           "unix/engine.ml:283",
           "eio/generated_operations.ml:30",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:262",
-          "lib/commands.ml:262",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
+          "lib/commands.ml:263",
+          "lib/commands.ml:263",
           "unix/engine.ml:163",
           "unix/engine.ml:164"
         ],
@@ -806,12 +821,12 @@
         "evidence": [
           "unix/engine.ml:283",
           "eio/generated_operations.ml:45",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:270",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
           "lib/commands.ml:271",
-          "unix/command_encoding.ml:286",
-          "unix/command_encoding.ml:288"
+          "lib/commands.ml:272",
+          "unix/command_encoding.ml:287",
+          "unix/command_encoding.ml:289"
         ],
         "reviewed": true,
         "scope": null
@@ -823,12 +838,12 @@
         "evidence": [
           "unix/engine.ml:283",
           "eio/generated_operations.ml:80",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:299",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
           "lib/commands.ml:300",
-          "unix/command_encoding.ml:320",
-          "unix/command_encoding.ml:325"
+          "lib/commands.ml:301",
+          "unix/command_encoding.ml:321",
+          "unix/command_encoding.ml:326"
         ],
         "reviewed": true,
         "scope": null
@@ -840,12 +855,12 @@
         "evidence": [
           "unix/engine.ml:283",
           "eio/generated_operations.ml:63",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:285",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
           "lib/commands.ml:286",
-          "unix/command_encoding.ml:298",
-          "unix/command_encoding.ml:307"
+          "lib/commands.ml:287",
+          "unix/command_encoding.ml:299",
+          "unix/command_encoding.ml:308"
         ],
         "reviewed": true,
         "scope": null
@@ -856,13 +871,13 @@
         "command": "select-pane",
         "evidence": [
           "unix/engine.ml:283",
-          "eio/generated_operations.ml:135",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:337",
-          "lib/commands.ml:337",
-          "unix/command_encoding.ml:255",
-          "unix/command_encoding.ml:256"
+          "eio/generated_operations.ml:138",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
+          "lib/commands.ml:339",
+          "lib/commands.ml:339",
+          "unix/command_encoding.ml:256",
+          "unix/command_encoding.ml:257"
         ],
         "reviewed": true,
         "scope": null
@@ -874,10 +889,10 @@
         "evidence": [
           "unix/engine.ml:283",
           "eio/generated_operations.ml:39",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:265",
-          "lib/commands.ml:265",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
+          "lib/commands.ml:266",
+          "lib/commands.ml:266",
           "unix/engine.ml:175",
           "unix/engine.ml:183"
         ],
@@ -891,12 +906,12 @@
         "evidence": [
           "unix/engine.ml:288",
           "eio/generated_operations.ml:99",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:314",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
           "lib/commands.ml:315",
-          "unix/command_encoding.ml:381",
-          "unix/command_encoding.ml:384"
+          "lib/commands.ml:316",
+          "unix/command_encoding.ml:382",
+          "unix/command_encoding.ml:385"
         ],
         "reviewed": true,
         "scope": null
@@ -907,7 +922,7 @@
         "command": "display-message",
         "evidence": [
           "unix/streaming.ml:402",
-          "eio/libtmux_eio.ml:368"
+          "eio/libtmux_eio.ml:370"
         ],
         "scope": null
       },
@@ -915,7 +930,7 @@
         "command": "refresh-client",
         "evidence": [
           "unix/streaming.ml:418",
-          "eio/libtmux_eio.ml:368"
+          "eio/libtmux_eio.ml:370"
         ],
         "scope": null,
         "when": "when opening a new stream lane"
@@ -926,13 +941,13 @@
         "command": "swap-pane",
         "evidence": [
           "unix/engine.ml:283",
-          "eio/generated_operations.ml:155",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:354",
-          "lib/commands.ml:354",
-          "unix/command_encoding.ml:272",
-          "unix/command_encoding.ml:273"
+          "eio/generated_operations.ml:158",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
+          "lib/commands.ml:356",
+          "lib/commands.ml:356",
+          "unix/command_encoding.ml:273",
+          "unix/command_encoding.ml:274"
         ],
         "reviewed": true,
         "scope": null
@@ -944,10 +959,10 @@
         "evidence": [
           "unix/engine.ml:283",
           "eio/generated_operations.ml:15",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:250",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
           "lib/commands.ml:251",
+          "lib/commands.ml:252",
           "unix/command_encoding.ml:223",
           "unix/command_encoding.ml:224"
         ],
@@ -960,13 +975,13 @@
         "command": "unlink-window",
         "evidence": [
           "unix/engine.ml:283",
-          "eio/generated_operations.ml:119",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:327",
-          "lib/commands.ml:328",
-          "unix/command_encoding.ml:245",
-          "unix/command_encoding.ml:246"
+          "eio/generated_operations.ml:122",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
+          "lib/commands.ml:329",
+          "lib/commands.ml:330",
+          "unix/command_encoding.ml:246",
+          "unix/command_encoding.ml:247"
         ],
         "reviewed": true,
         "scope": null
@@ -978,12 +993,12 @@
         "evidence": [
           "unix/engine.ml:283",
           "eio/generated_operations.ml:49",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:273",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
           "lib/commands.ml:274",
-          "unix/command_encoding.ml:292",
-          "unix/command_encoding.ml:294"
+          "lib/commands.ml:275",
+          "unix/command_encoding.ml:293",
+          "unix/command_encoding.ml:295"
         ],
         "reviewed": true,
         "scope": null
@@ -995,12 +1010,12 @@
         "evidence": [
           "unix/engine.ml:283",
           "eio/generated_operations.ml:67",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:288",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
           "lib/commands.ml:289",
-          "unix/command_encoding.ml:311",
-          "unix/command_encoding.ml:313"
+          "lib/commands.ml:290",
+          "unix/command_encoding.ml:312",
+          "unix/command_encoding.ml:314"
         ],
         "reviewed": true,
         "scope": null
@@ -1012,10 +1027,10 @@
         "evidence": [
           "unix/engine.ml:315",
           "eio/generated_operations.ml:36",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:264",
-          "lib/commands.ml:264",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
+          "lib/commands.ml:265",
+          "lib/commands.ml:265",
           "unix/engine.ml:175",
           "unix/engine.ml:183"
         ],
@@ -1028,13 +1043,13 @@
         "command": "resize-pane",
         "evidence": [
           "unix/engine.ml:283",
-          "eio/generated_operations.ml:161",
-          "eio/libtmux_eio.ml:375",
-          "eio/libtmux_eio.ml:362",
-          "lib/commands.ml:359",
-          "lib/commands.ml:359",
-          "unix/command_encoding.ml:278",
-          "unix/command_encoding.ml:278"
+          "eio/generated_operations.ml:164",
+          "eio/libtmux_eio.ml:377",
+          "eio/libtmux_eio.ml:364",
+          "lib/commands.ml:361",
+          "lib/commands.ml:361",
+          "unix/command_encoding.ml:279",
+          "unix/command_encoding.ml:279"
         ],
         "reviewed": true,
         "scope": null
@@ -1048,10 +1063,10 @@
           "unix/generated_operations.ml:117",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:317",
           "lib/commands.ml:318",
-          "unix/command_encoding.ml:389",
-          "unix/command_encoding.ml:390"
+          "lib/commands.ml:319",
+          "unix/command_encoding.ml:390",
+          "unix/command_encoding.ml:391"
         ],
         "reviewed": true,
         "scope": null
@@ -1111,8 +1126,8 @@
           "unix/generated_operations.ml:49",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:267",
           "lib/commands.ml:268",
+          "lib/commands.ml:269",
           "unix/engine.ml:101",
           "unix/engine.ml:103"
         ],
@@ -1128,8 +1143,8 @@
           "unix/generated_operations.ml:85",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:294",
-          "lib/commands.ml:294",
+          "lib/commands.ml:295",
+          "lib/commands.ml:295",
           "unix/engine.ml:120",
           "unix/engine.ml:126"
         ],
@@ -1145,8 +1160,8 @@
           "unix/generated_operations.ml:65",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:279",
           "lib/commands.ml:280",
+          "lib/commands.ml:281",
           "unix/engine.ml:107",
           "unix/engine.ml:110"
         ],
@@ -1221,13 +1236,13 @@
         "command": "clear-history",
         "evidence": [
           "unix/engine.ml:283",
-          "unix/generated_operations.ml:189",
+          "unix/generated_operations.ml:192",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:364",
-          "lib/commands.ml:364",
-          "unix/command_encoding.ml:285",
-          "unix/command_encoding.ml:285"
+          "lib/commands.ml:366",
+          "lib/commands.ml:366",
+          "unix/command_encoding.ml:286",
+          "unix/command_encoding.ml:286"
         ],
         "reviewed": true,
         "scope": null
@@ -1241,10 +1256,10 @@
           "unix/generated_operations.ml:81",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:291",
           "lib/commands.ml:292",
-          "unix/command_encoding.ml:315",
-          "unix/command_encoding.ml:319"
+          "lib/commands.ml:293",
+          "unix/command_encoding.ml:316",
+          "unix/command_encoding.ml:320"
         ],
         "reviewed": true,
         "scope": null
@@ -1258,10 +1273,10 @@
           "unix/generated_operations.ml:104",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:307",
-          "lib/commands.ml:309",
-          "unix/command_encoding.ml:356",
-          "unix/command_encoding.ml:360"
+          "lib/commands.ml:308",
+          "lib/commands.ml:310",
+          "unix/command_encoding.ml:357",
+          "unix/command_encoding.ml:361"
         ],
         "reviewed": true,
         "scope": null
@@ -1275,10 +1290,10 @@
           "unix/generated_operations.ml:109",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:311",
           "lib/commands.ml:312",
-          "unix/command_encoding.ml:372",
-          "unix/command_encoding.ml:377"
+          "lib/commands.ml:313",
+          "unix/command_encoding.ml:373",
+          "unix/command_encoding.ml:378"
         ],
         "reviewed": true,
         "scope": null
@@ -1289,13 +1304,13 @@
         "command": "next-layout",
         "evidence": [
           "unix/engine.ml:283",
-          "unix/generated_operations.ml:167",
+          "unix/generated_operations.ml:170",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:348",
-          "lib/commands.ml:349",
-          "unix/command_encoding.ml:263",
-          "unix/command_encoding.ml:265"
+          "lib/commands.ml:350",
+          "lib/commands.ml:351",
+          "unix/command_encoding.ml:264",
+          "unix/command_encoding.ml:266"
         ],
         "reviewed": true,
         "scope": null,
@@ -1305,13 +1320,13 @@
         "command": "previous-layout",
         "evidence": [
           "unix/engine.ml:283",
-          "unix/generated_operations.ml:167",
+          "unix/generated_operations.ml:170",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:348",
-          "lib/commands.ml:349",
-          "unix/command_encoding.ml:263",
-          "unix/command_encoding.ml:266"
+          "lib/commands.ml:350",
+          "lib/commands.ml:351",
+          "unix/command_encoding.ml:264",
+          "unix/command_encoding.ml:267"
         ],
         "reviewed": true,
         "scope": null,
@@ -1326,10 +1341,25 @@
           "unix/generated_operations.ml:127",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:322",
-          "lib/commands.ml:322",
+          "lib/commands.ml:323",
+          "lib/commands.ml:323",
           "unix/command_encoding.ml:242",
           "unix/command_encoding.ml:242"
+        ],
+        "reviewed": true,
+        "scope": null
+      }
+    ],
+    "Libtmux_unix.Client.kill_server": [
+      {
+        "command": "kill-server",
+        "evidence": [
+          "unix/engine.ml:326",
+          "unix/connection.ml:308",
+          "unix/generated_operations.ml:130",
+          "unix/libtmux_unix.ml:111",
+          "unix/libtmux_unix.ml:101",
+          "lib/commands.ml:324"
         ],
         "reviewed": true,
         "scope": null
@@ -1343,8 +1373,8 @@
           "unix/generated_operations.ml:121",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:320",
-          "lib/commands.ml:320",
+          "lib/commands.ml:321",
+          "lib/commands.ml:321",
           "unix/command_encoding.ml:240",
           "unix/command_encoding.ml:240"
         ],
@@ -1360,8 +1390,8 @@
           "unix/generated_operations.ml:124",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:321",
-          "lib/commands.ml:321",
+          "lib/commands.ml:322",
+          "lib/commands.ml:322",
           "unix/command_encoding.ml:241",
           "unix/command_encoding.ml:241"
         ],
@@ -1374,13 +1404,13 @@
         "command": "link-window",
         "evidence": [
           "unix/engine.ml:283",
-          "unix/generated_operations.ml:138",
+          "unix/generated_operations.ml:141",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:330",
-          "lib/commands.ml:331",
-          "unix/command_encoding.ml:248",
-          "unix/command_encoding.ml:249"
+          "lib/commands.ml:332",
+          "lib/commands.ml:333",
+          "unix/command_encoding.ml:249",
+          "unix/command_encoding.ml:250"
         ],
         "reviewed": true,
         "scope": null
@@ -1391,13 +1421,13 @@
         "command": "move-pane",
         "evidence": [
           "unix/engine.ml:283",
-          "unix/generated_operations.ml:171",
+          "unix/generated_operations.ml:174",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:351",
-          "lib/commands.ml:352",
-          "unix/command_encoding.ml:268",
-          "unix/command_encoding.ml:269"
+          "lib/commands.ml:353",
+          "lib/commands.ml:354",
+          "unix/command_encoding.ml:269",
+          "unix/command_encoding.ml:270"
         ],
         "reviewed": true,
         "scope": null
@@ -1408,13 +1438,13 @@
         "command": "move-window",
         "evidence": [
           "unix/engine.ml:283",
-          "unix/generated_operations.ml:143",
+          "unix/generated_operations.ml:146",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:333",
-          "lib/commands.ml:334",
-          "unix/command_encoding.ml:250",
-          "unix/command_encoding.ml:251"
+          "lib/commands.ml:335",
+          "lib/commands.ml:336",
+          "unix/command_encoding.ml:251",
+          "unix/command_encoding.ml:252"
         ],
         "reviewed": true,
         "scope": null
@@ -1428,8 +1458,8 @@
           "unix/generated_operations.ml:88",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:296",
           "lib/commands.ml:297",
+          "lib/commands.ml:298",
           "unix/engine.ml:127",
           "unix/engine.ml:131"
         ],
@@ -1445,8 +1475,8 @@
           "unix/generated_operations.ml:69",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:282",
           "lib/commands.ml:283",
+          "lib/commands.ml:284",
           "unix/engine.ml:113",
           "unix/engine.ml:116"
         ],
@@ -1462,8 +1492,8 @@
           "unix/generated_operations.ml:29",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:256",
           "lib/commands.ml:257",
+          "lib/commands.ml:258",
           "unix/command_encoding.ml:229",
           "unix/command_encoding.ml:230"
         ],
@@ -1479,10 +1509,10 @@
           "unix/generated_operations.ml:61",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:276",
           "lib/commands.ml:277",
-          "unix/command_encoding.ml:295",
-          "unix/command_encoding.ml:297"
+          "lib/commands.ml:278",
+          "unix/command_encoding.ml:296",
+          "unix/command_encoding.ml:298"
         ],
         "reviewed": true,
         "scope": null
@@ -1496,10 +1526,10 @@
           "unix/generated_operations.ml:96",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:302",
           "lib/commands.ml:303",
-          "unix/command_encoding.ml:329",
-          "unix/command_encoding.ml:331"
+          "lib/commands.ml:304",
+          "unix/command_encoding.ml:330",
+          "unix/command_encoding.ml:332"
         ],
         "reviewed": true,
         "scope": null
@@ -1513,8 +1543,8 @@
           "unix/generated_operations.ml:17",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:248",
-          "lib/commands.ml:248",
+          "lib/commands.ml:249",
+          "lib/commands.ml:249",
           "unix/engine.ml:154",
           "unix/engine.ml:157"
         ],
@@ -1530,8 +1560,8 @@
           "unix/generated_operations.ml:13",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:247",
-          "lib/commands.ml:247",
+          "lib/commands.ml:248",
+          "lib/commands.ml:248",
           "unix/engine.ml:145",
           "unix/engine.ml:148"
         ],
@@ -1547,8 +1577,8 @@
           "unix/generated_operations.ml:25",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:253",
           "lib/commands.ml:254",
+          "lib/commands.ml:255",
           "unix/command_encoding.ml:227",
           "unix/command_encoding.ml:228"
         ],
@@ -1564,8 +1594,8 @@
           "unix/generated_operations.ml:33",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:259",
           "lib/commands.ml:260",
+          "lib/commands.ml:261",
           "unix/command_encoding.ml:232",
           "unix/command_encoding.ml:233"
         ],
@@ -1578,13 +1608,13 @@
         "command": "resize-pane",
         "evidence": [
           "unix/engine.ml:283",
-          "unix/generated_operations.ml:155",
+          "unix/generated_operations.ml:158",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:339",
-          "lib/commands.ml:340",
-          "unix/command_encoding.ml:257",
-          "unix/command_encoding.ml:258"
+          "lib/commands.ml:341",
+          "lib/commands.ml:342",
+          "unix/command_encoding.ml:258",
+          "unix/command_encoding.ml:259"
         ],
         "reviewed": true,
         "scope": null
@@ -1595,13 +1625,13 @@
         "command": "resize-window",
         "evidence": [
           "unix/engine.ml:283",
-          "unix/generated_operations.ml:159",
+          "unix/generated_operations.ml:162",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:342",
-          "lib/commands.ml:343",
-          "unix/command_encoding.ml:259",
-          "unix/command_encoding.ml:260"
+          "lib/commands.ml:344",
+          "lib/commands.ml:345",
+          "unix/command_encoding.ml:260",
+          "unix/command_encoding.ml:261"
         ],
         "reviewed": true,
         "scope": null
@@ -1612,13 +1642,13 @@
         "command": "respawn-pane",
         "evidence": [
           "unix/engine.ml:283",
-          "unix/generated_operations.ml:185",
+          "unix/generated_operations.ml:188",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:361",
-          "lib/commands.ml:362",
-          "unix/command_encoding.ml:279",
-          "unix/command_encoding.ml:281"
+          "lib/commands.ml:363",
+          "lib/commands.ml:364",
+          "unix/command_encoding.ml:280",
+          "unix/command_encoding.ml:282"
         ],
         "reviewed": true,
         "scope": null
@@ -1629,13 +1659,13 @@
         "command": "rotate-window",
         "evidence": [
           "unix/engine.ml:283",
-          "unix/generated_operations.ml:178",
+          "unix/generated_operations.ml:181",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:356",
-          "lib/commands.ml:357",
-          "unix/command_encoding.ml:274",
-          "unix/command_encoding.ml:275"
+          "lib/commands.ml:358",
+          "lib/commands.ml:359",
+          "unix/command_encoding.ml:275",
+          "unix/command_encoding.ml:276"
         ],
         "reviewed": true,
         "scope": null
@@ -1649,10 +1679,10 @@
           "unix/generated_operations.ml:100",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:305",
-          "lib/commands.ml:305",
-          "unix/command_encoding.ml:333",
-          "unix/command_encoding.ml:345"
+          "lib/commands.ml:306",
+          "lib/commands.ml:306",
+          "unix/command_encoding.ml:334",
+          "unix/command_encoding.ml:346"
         ],
         "reviewed": true,
         "scope": null
@@ -1663,13 +1693,13 @@
         "command": "select-layout",
         "evidence": [
           "unix/engine.ml:283",
-          "unix/generated_operations.ml:163",
+          "unix/generated_operations.ml:166",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:345",
-          "lib/commands.ml:346",
-          "unix/command_encoding.ml:261",
-          "unix/command_encoding.ml:262"
+          "lib/commands.ml:347",
+          "lib/commands.ml:348",
+          "unix/command_encoding.ml:262",
+          "unix/command_encoding.ml:263"
         ],
         "reviewed": true,
         "scope": null
@@ -1680,13 +1710,13 @@
         "command": "select-pane",
         "evidence": [
           "unix/engine.ml:283",
-          "unix/generated_operations.ml:148",
+          "unix/generated_operations.ml:151",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:336",
-          "lib/commands.ml:336",
-          "unix/command_encoding.ml:254",
-          "unix/command_encoding.ml:254"
+          "lib/commands.ml:338",
+          "lib/commands.ml:338",
+          "unix/command_encoding.ml:255",
+          "unix/command_encoding.ml:255"
         ],
         "reviewed": true,
         "scope": null
@@ -1697,13 +1727,13 @@
         "command": "select-window",
         "evidence": [
           "unix/engine.ml:283",
-          "unix/generated_operations.ml:130",
+          "unix/generated_operations.ml:133",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:324",
-          "lib/commands.ml:325",
-          "unix/command_encoding.ml:243",
-          "unix/command_encoding.ml:244"
+          "lib/commands.ml:326",
+          "lib/commands.ml:327",
+          "unix/command_encoding.ml:244",
+          "unix/command_encoding.ml:245"
         ],
         "reviewed": true,
         "scope": null
@@ -1717,8 +1747,8 @@
           "unix/generated_operations.ml:40",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:263",
-          "lib/commands.ml:263",
+          "lib/commands.ml:264",
+          "lib/commands.ml:264",
           "unix/engine.ml:165",
           "unix/engine.ml:174"
         ],
@@ -1734,8 +1764,8 @@
           "unix/generated_operations.ml:37",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:262",
-          "lib/commands.ml:262",
+          "lib/commands.ml:263",
+          "lib/commands.ml:263",
           "unix/engine.ml:163",
           "unix/engine.ml:164"
         ],
@@ -1751,10 +1781,10 @@
           "unix/generated_operations.ml:53",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:270",
           "lib/commands.ml:271",
-          "unix/command_encoding.ml:286",
-          "unix/command_encoding.ml:288"
+          "lib/commands.ml:272",
+          "unix/command_encoding.ml:287",
+          "unix/command_encoding.ml:289"
         ],
         "reviewed": true,
         "scope": null
@@ -1768,10 +1798,10 @@
           "unix/generated_operations.ml:92",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:299",
           "lib/commands.ml:300",
-          "unix/command_encoding.ml:320",
-          "unix/command_encoding.ml:325"
+          "lib/commands.ml:301",
+          "unix/command_encoding.ml:321",
+          "unix/command_encoding.ml:326"
         ],
         "reviewed": true,
         "scope": null
@@ -1785,10 +1815,10 @@
           "unix/generated_operations.ml:73",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:285",
           "lib/commands.ml:286",
-          "unix/command_encoding.ml:298",
-          "unix/command_encoding.ml:307"
+          "lib/commands.ml:287",
+          "unix/command_encoding.ml:299",
+          "unix/command_encoding.ml:308"
         ],
         "reviewed": true,
         "scope": null
@@ -1799,13 +1829,13 @@
         "command": "select-pane",
         "evidence": [
           "unix/engine.ml:283",
-          "unix/generated_operations.ml:151",
+          "unix/generated_operations.ml:154",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:337",
-          "lib/commands.ml:337",
-          "unix/command_encoding.ml:255",
-          "unix/command_encoding.ml:256"
+          "lib/commands.ml:339",
+          "lib/commands.ml:339",
+          "unix/command_encoding.ml:256",
+          "unix/command_encoding.ml:257"
         ],
         "reviewed": true,
         "scope": null
@@ -1819,8 +1849,8 @@
           "unix/generated_operations.ml:46",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:265",
-          "lib/commands.ml:265",
+          "lib/commands.ml:266",
+          "lib/commands.ml:266",
           "unix/engine.ml:175",
           "unix/engine.ml:183"
         ],
@@ -1836,10 +1866,10 @@
           "unix/generated_operations.ml:113",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:314",
           "lib/commands.ml:315",
-          "unix/command_encoding.ml:381",
-          "unix/command_encoding.ml:384"
+          "lib/commands.ml:316",
+          "unix/command_encoding.ml:382",
+          "unix/command_encoding.ml:385"
         ],
         "reviewed": true,
         "scope": null
@@ -1869,13 +1899,13 @@
         "command": "swap-pane",
         "evidence": [
           "unix/engine.ml:283",
-          "unix/generated_operations.ml:175",
+          "unix/generated_operations.ml:178",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:354",
-          "lib/commands.ml:354",
-          "unix/command_encoding.ml:272",
-          "unix/command_encoding.ml:273"
+          "lib/commands.ml:356",
+          "lib/commands.ml:356",
+          "unix/command_encoding.ml:273",
+          "unix/command_encoding.ml:274"
         ],
         "reviewed": true,
         "scope": null
@@ -1889,8 +1919,8 @@
           "unix/generated_operations.ml:21",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:250",
           "lib/commands.ml:251",
+          "lib/commands.ml:252",
           "unix/command_encoding.ml:223",
           "unix/command_encoding.ml:224"
         ],
@@ -1903,13 +1933,13 @@
         "command": "unlink-window",
         "evidence": [
           "unix/engine.ml:283",
-          "unix/generated_operations.ml:134",
+          "unix/generated_operations.ml:137",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:327",
-          "lib/commands.ml:328",
-          "unix/command_encoding.ml:245",
-          "unix/command_encoding.ml:246"
+          "lib/commands.ml:329",
+          "lib/commands.ml:330",
+          "unix/command_encoding.ml:246",
+          "unix/command_encoding.ml:247"
         ],
         "reviewed": true,
         "scope": null
@@ -1923,10 +1953,10 @@
           "unix/generated_operations.ml:57",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:273",
           "lib/commands.ml:274",
-          "unix/command_encoding.ml:292",
-          "unix/command_encoding.ml:294"
+          "lib/commands.ml:275",
+          "unix/command_encoding.ml:293",
+          "unix/command_encoding.ml:295"
         ],
         "reviewed": true,
         "scope": null
@@ -1940,10 +1970,10 @@
           "unix/generated_operations.ml:77",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:288",
           "lib/commands.ml:289",
-          "unix/command_encoding.ml:311",
-          "unix/command_encoding.ml:313"
+          "lib/commands.ml:290",
+          "unix/command_encoding.ml:312",
+          "unix/command_encoding.ml:314"
         ],
         "reviewed": true,
         "scope": null
@@ -1957,8 +1987,8 @@
           "unix/generated_operations.ml:43",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:264",
-          "lib/commands.ml:264",
+          "lib/commands.ml:265",
+          "lib/commands.ml:265",
           "unix/engine.ml:175",
           "unix/engine.ml:183"
         ],
@@ -1971,13 +2001,13 @@
         "command": "resize-pane",
         "evidence": [
           "unix/engine.ml:283",
-          "unix/generated_operations.ml:182",
+          "unix/generated_operations.ml:185",
           "unix/libtmux_unix.ml:111",
           "unix/libtmux_unix.ml:101",
-          "lib/commands.ml:359",
-          "lib/commands.ml:359",
-          "unix/command_encoding.ml:278",
-          "unix/command_encoding.ml:278"
+          "lib/commands.ml:361",
+          "lib/commands.ml:361",
+          "unix/command_encoding.ml:279",
+          "unix/command_encoding.ml:279"
         ],
         "reviewed": true,
         "scope": null

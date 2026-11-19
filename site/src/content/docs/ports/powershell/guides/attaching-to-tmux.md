@@ -23,23 +23,56 @@ covers interactive attachment and detaching.
 ## Connect to an existing server
 
 Save the complete program as `connect.ps1`. The environment variable
-`LIBTMUX_SOCKET_PATH` selects the existing server. The launcher below sets
-it to a private socket for trying the example.
+`LIBTMUX_SOCKET_PATH` selects the existing server, and `$showWork`
+connects to it and prints `work`. Without the variable, the program creates a
+private socket path in a new temporary directory and passes it to
+[`New-TmuxServer`](../../reference/libtmux-new-tmuxserver/) with an empty
+configuration. [`New-TmuxSession`](../../reference/libtmux-new-tmuxsession/)
+starts that server with a detached `work` session running `cat`, and
+`$showWork` reaches it through a second endpoint handle. The `finally`
+block stops the private server with
+[`Invoke-TmuxCommand`](../../reference/libtmux-invoke-tmuxcommand/) and removes
+the directory after success or failure. If the server does not stop, the
+script reports the error and keeps the directory.
 
 ```powershell title="connect.ps1"
 $ErrorActionPreference = 'Stop'
 Import-Module LibTmux -RequiredVersion 0.1.0
 
-$socket = $env:LIBTMUX_SOCKET_PATH
-if ([string]::IsNullOrEmpty($socket)) {
-    throw 'Set LIBTMUX_SOCKET_PATH to an existing socket.'
+$showWork = {
+    param([string]$Socket)
+    $server = New-TmuxServer -SocketPath $Socket | Connect-TmuxServer
+    $sessions = @($server | Get-TmuxSession -Name work)
+    if ($sessions.Count -ne 1) {
+        throw 'The work session does not exist.'
+    }
+    $sessions[0].Name
 }
-$server = New-TmuxServer -SocketPath $socket | Connect-TmuxServer
-$sessions = @($server | Get-TmuxSession -Name work)
-if ($sessions.Count -ne 1) {
-    throw 'The work session does not exist.'
+
+if ($env:LIBTMUX_SOCKET_PATH) {
+    & $showWork $env:LIBTMUX_SOCKET_PATH
+    return
 }
-$sessions[0].Name
+
+# No server was named: start one this program owns, in a new directory.
+$directory = Join-Path ([IO.Path]::GetTempPath()) `
+    ('libtmux-attach-' + [Guid]::NewGuid().ToString('N'))
+$null = New-Item -ItemType Directory -Path $directory
+$socket = Join-Path $directory tmux.sock
+$owner = New-TmuxServer -SocketPath $socket -ConfigurationFile /dev/null
+try {
+    $null = $owner | New-TmuxSession -Name work -Command 'exec /bin/cat'
+    & $showWork $socket
+} finally {
+    if (Test-Path $socket) {
+        try {
+            $null = $owner | Invoke-TmuxCommand -Arguments 'kill-server'
+        } catch {
+            throw "Cannot stop tmux; kept ${directory}: $($_.Exception.Message)"
+        }
+    }
+    Remove-Item -Recurse -Force $directory
+}
 ```
 
 [`New-TmuxServer`](../../reference/libtmux-new-tmuxserver/) constructs the
@@ -50,7 +83,7 @@ discovers the existing daemon, then
 and applies an exact, case-sensitive name selector. An unmatched selector
 emits no objects, so the program checks its result explicitly.
 
-The handle borrows the daemon. There is no daemon cleanup in this program:
+The handle in `$showWork` borrows the daemon. It runs no daemon cleanup:
 the caller owns the server and any other sessions on it.
 
 ## Setup and run
@@ -68,46 +101,15 @@ $ pwsh -NoLogo -NoProfile -Command '
 '
 ```
 
-Save the launcher as `run.sh`. It starts an isolated tmux server, runs the
-program, checks that the session still exists, then stops only that server.
-Cleanup runs after failures too. A failed shutdown keeps its socket directory
-and prints its location for inspection.
-
-```sh title="run.sh"
-#!/bin/sh
-set -eu
-
-binary=$(command -v tmux)
-directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-powershell-attach.XXXXXX")
-socket="$directory/tmux.sock"
-
-cleanup() {
-    status=$?
-    trap - 0 HUP INT TERM
-    if [ -S "$socket" ] && ! "$binary" -S "$socket" kill-server; then
-        printf 'Cannot stop tmux; kept %s\n' "$directory" >&2
-        exit 1
-    fi
-    rm -rf "$directory" || exit 1
-    exit "$status"
-}
-trap cleanup 0
-trap 'exit 1' HUP INT TERM
-
-unset TMUX TMUX_PANE
-export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
-"$binary" -S "$socket" -f /dev/null new-session -d -s work /bin/cat
-"$@"
-"$binary" -S "$socket" has-session -t '=work'
-```
+Run the program:
 
 ```console
-$ sh run.sh pwsh -NoLogo -NoProfile -File connect.ps1
+$ pwsh -NoLogo -NoProfile -File connect.ps1
 ```
 
 The program prints `work`. To use your own existing server, set
-`LIBTMUX_SOCKET_PATH` to its socket and run the program without the launcher.
-The launcher owns only the demonstration server.
+`LIBTMUX_SOCKET_PATH` to its socket before running the program; it prints
+`work` and leaves that server running.
 
 <a id="finding-a-session-instead-of-always-creating-one"></a>
 

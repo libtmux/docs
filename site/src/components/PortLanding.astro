@@ -88,9 +88,8 @@ const taskLabel = (product: 'core' | DocProduct) => product === 'core' ? `Contro
       <summary>{panel.product === 'mcp' ? 'Embed the server in a program' : 'Build the workspace from a program'}</summary>
       <Code code={panel.excerpt.code} lang={panel.excerpt.lang} title={panel.excerpt.file} frame="code" meta={excerptMeta({ ranges: panel.excerpt.ranges })} />
       <p class="landing-source">
-        Excerpt of <a href={panel.excerpt.sourceUrl}><code>{panel.excerpt.file}</code></a>,
-        which <code>{panel.excerpt.ci.command}</code> runs in the repository's CI
-        (<code>{panel.excerpt.ci.workflow}</code>).
+        Excerpt of <a href={panel.excerpt.sourceUrl}><code>{panel.excerpt.file}</code></a>.
+        This program is tested on every change.
       </p>
     </details>
     // Where there are tabs, each panel opens with its task, its maturity once and a link to the product's home.

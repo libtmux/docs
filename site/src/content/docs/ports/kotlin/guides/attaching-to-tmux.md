@@ -22,25 +22,39 @@ interactive attachment and detaching.
 
 ## Connect to an existing server
 
-Save the complete program as `Connect.kt`. `LIBTMUX_SOCKET_PATH` selects
-the existing server. The launcher below supplies a private socket for trying
-the example.
+Save the complete program as `Connect.kt`. When `LIBTMUX_SOCKET_PATH` names
+the socket of a running server, `printWork` opens a new `Server` handle on that
+socket and finds the `work` session. The program leaves that server running.
+
+Without the variable, the program starts a private server with a `work` session
+running `cat`, reads it through a separate handle in the same way, and then
+stops the server it started and removes its socket directory. If that server
+cannot be stopped, the program reports the retained directory and exits with
+an error.
 
 ```kotlin title="Connect.kt"
 import io.github.libtmux.ServerConfig
 import io.github.libtmux.ServerEndpoint
+import io.github.libtmux.kotlin.killServer
+import io.github.libtmux.kotlin.newSession
 import io.github.libtmux.kotlin.sessions
 import io.github.libtmux.kotlin.withServer
+import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
 fun main() = runBlocking {
-    val socket = requireNotNull(System.getenv("LIBTMUX_SOCKET_PATH")) {
-        "Set LIBTMUX_SOCKET_PATH to an existing socket"
-    }
+    val existing = System.getenv("LIBTMUX_SOCKET_PATH")
+    if (existing != null) printWork(Path.of(existing)) else demonstrate()
+}
+
+// A new Server handle reaches a running server through its socket path.
+suspend fun printWork(socket: Path) {
     val config = ServerConfig.builder()
-        .endpoint(ServerEndpoint.socketPath(Path.of(socket)))
+        .endpoint(ServerEndpoint.socketPath(socket))
         .defaultTimeout(Duration.ofSeconds(5))
         .build()
     withServer(config) { server ->
@@ -48,13 +62,50 @@ fun main() = runBlocking {
         println(session.name)
     }
 }
+
+// Without LIBTMUX_SOCKET_PATH, start a private server to attach to.
+suspend fun demonstrate() {
+    val directory = Files.createTempDirectory("libtmux-attach-")
+    val socket = directory.resolve("tmux.sock")
+    val config = ServerConfig.builder()
+        .endpoint(ServerEndpoint.socketPath(socket))
+        .configFile(Path.of("/dev/null"))
+        .defaultTimeout(Duration.ofSeconds(5))
+        .build()
+    var stopped = false
+    try {
+        withServer(config) { owner ->
+            try {
+                owner.newSession {
+                    name = "work"
+                    running("/bin/cat")
+                }
+                printWork(socket)
+            } finally {
+                withContext(NonCancellable) {
+                    if (Files.exists(socket)) owner.killServer()
+                    stopped = true
+                }
+            }
+        }
+    } finally {
+        if (stopped || !Files.exists(socket)) {
+            Files.deleteIfExists(socket)
+            Files.delete(directory)
+        } else {
+            System.err.println("Cannot stop tmux; kept $directory")
+        }
+    }
+}
 ```
 
 ## Setup and run
 
-Use an empty directory on Linux with Git and tmux 3.3a or newer installed.
+Use an empty directory on Linux with tmux 3.3a or newer, JDK 25 and Gradle 9.
+The build file installs `libtmux-kotlin` 0.1.2 from Maven Central
+([source](https://github.com/libtmux/libtmux-java/tree/e8a39689d8d60968ac978a1dd2a89c6112333896/libtmux-kotlin)).
 
-This example was checked with JDK 25.0.3, Kotlin 2.4.10.
+This example was checked with JDK 25.0.3, Gradle 9.7.0 and Kotlin 2.4.10.
 
 Save this file beside the program using the displayed filename.
 
@@ -66,7 +117,7 @@ plugins {
 
 repositories { mavenCentral() }
 dependencies {
-    implementation("io.github.libtmux:libtmux-kotlin:0.1.0")
+    implementation("io.github.libtmux:libtmux-kotlin:0.1.2")
 }
 kotlin {
     jvmToolchain(25)
@@ -89,50 +140,14 @@ kotlin.daemon.jvmargs=-Xmx2g
 org.gradle.workers.max=2
 ```
 
-Save the launcher as `run.sh`. It starts an isolated tmux server, runs the
-program, checks that the session still exists, then stops only that server.
-Cleanup runs after failures too. A failed shutdown keeps its socket directory
-and prints its location for inspection.
-
-```sh title="run.sh"
-#!/bin/sh
-set -eu
-
-binary=$(command -v tmux)
-directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-kotlin-attach.XXXXXX")
-socket="$directory/tmux.sock"
-
-cleanup() {
-    status=$?
-    trap - 0 HUP INT TERM
-    if [ -S "$socket" ] && ! "$binary" -S "$socket" kill-server; then
-        printf 'Cannot stop tmux; kept %s\n' "$directory" >&2
-        exit 1
-    fi
-    rm -rf "$directory" || exit 1
-    exit "$status"
-}
-trap cleanup 0
-trap 'exit 1' HUP INT TERM
-
-unset TMUX TMUX_PANE
-export LIBTMUX_SOCKET_PATH="$socket" TMUX_BIN="$binary"
-"$binary" -S "$socket" -f /dev/null new-session -d -s work /bin/cat
-"$@"
-"$binary" -S "$socket" has-session -t '=work'
-```
-
-Fetch the Gradle wrapper from the 0.1.0 release, build, and run:
+Build and run the program:
 
 ```console
-$ git clone https://github.com/libtmux/libtmux-java libtmux-source &&
-  git -C libtmux-source checkout 5c181887918351119bfdb3a046719fa792048e59 &&
-  sh run.sh ./libtmux-source/gradlew --project-dir . run --console=plain --max-workers=2
+$ gradle --console=plain --no-daemon run
 ```
 
-The program prints `work`. To use an existing server of your own, set
-`LIBTMUX_SOCKET_PATH` to its socket and run the program without the launcher.
-That launcher is responsible for the demonstration server's lifetime.
+The program prints `work`. To attach to a server of your own, set
+`LIBTMUX_SOCKET_PATH` to its socket path before running the same command.
 
 <a id="finding-a-session-instead-of-always-creating-one"></a>
 

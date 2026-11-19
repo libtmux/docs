@@ -68,14 +68,16 @@ function paintManagers(managerScope: string, count: number): string {
   if (count < 2) return ''
   return Array.from({ length: count }, (_, i) => i)
     .map((i) => {
-      const scope = `html[data-pkg-manager-${managerScope}="${i}"] .lm-pkg-install__panel[data-manager-scope="${managerScope}"]:has(> .lm-pkg-install__cmd[data-manager="${i}"])`
+      // The command blocks sit below the tabs inside the installer's surface, so the guard looks for
+      // one anywhere in the panel: a saved index this panel has no block for matches nothing.
+      const scope = `html[data-pkg-manager-${managerScope}="${i}"] .lm-pkg-install__panel[data-manager-scope="${managerScope}"]:has(.lm-pkg-install__cmd[data-manager="${i}"])`
       return (
         `${scope} .lm-pkg-install__cmd{display:none}` +
         `${scope} .lm-pkg-install__cmd[data-manager="${i}"]{display:block}` +
         `${scope} .lm-pkg-install__manager[aria-selected="true"]` +
-        `{color:var(--lm-pkg-install-fg-muted);border-color:transparent}` +
+        `{color:var(--color-foreground-muted);box-shadow:inset 0 -2px transparent}` +
         `${scope} .lm-pkg-install__manager[data-manager-value="${i}"]` +
-        `{color:var(--lm-pkg-install-accent);border-color:var(--lm-pkg-install-accent)}`
+        `{color:var(--text-color);box-shadow:inset 0 -2px var(--lm-pkg-install-accent)}`
       )
     })
     .join('')

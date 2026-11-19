@@ -105,16 +105,34 @@ export const OTHER_FLOORS = [
     why: 'a tmux behaviour of the history-limit option from tmux 3.7, not a library minimum',
   },
   {
+    path: 'site/src/content/docs/ports/kotlin/examples.md',
+    version: '3.7',
+    near: /managed control connection/,
+    why: 'the Flow program opens a managed control connection; libtmux-kotlin 0.1.2 refuses managed control below tmux 3.7',
+  },
+  {
     path: 'site/src/content/docs/ports/kotlin/concepts/transports.md',
     version: '3.7',
     near: /Managed control/,
-    why: 'the managed control program; libtmux 0.1.0 refuses managed control below tmux 3.7 (ControlAcquisition.supports)',
+    why: 'the managed control program; libtmux 0.1.2 refuses managed control below tmux 3.7 (UnsupportedFeatureException: managed control acquisition requires tmux 3.7 or newer)',
   },
   {
     path: 'site/src/content/docs/ports/scala/concepts/transports.md',
     version: '3.7',
     near: /Managed control/,
-    why: 'the managed control program; libtmux 0.1.0 refuses managed control below tmux 3.7 (ControlAcquisition.supports)',
+    why: 'the managed control program; libtmux 0.1.2 refuses managed control below tmux 3.7 (UnsupportedFeatureException: managed control acquisition requires tmux 3.7 or newer)',
+  },
+  {
+    path: 'site/src/content/docs/ports/rs/guides/control-mode.md',
+    version: '3.7',
+    near: /Control mode needs tmux 3\.7/,
+    why: 'the control-mode program; libtmux 0.1.2 refuses managed control acquisition below tmux 3.7',
+  },
+  {
+    path: 'site/src/content/docs/ports/fsharp/concepts/transports.md',
+    version: '3.7',
+    near: /control connection program/,
+    why: 'the control connection program; LibTmux 0.1.1 throws TmuxVersionTooLowException for a library-managed control client below tmux 3.7',
   },
 ]
 

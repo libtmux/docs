@@ -15,7 +15,7 @@ const INDEXES = [
   { path: 'lisp/examples/index.md', repo: 'libtmux-lisp', revision: lispModel.revision, programs: 7 + 4 },
   { path: 'clojure/examples.md', repo: 'libtmux-java', revision: clojureModel.revision, programs: 13 },
   { path: 'haskell/examples/index.md', repo: 'libtmux-haskell', revision: haskellModel.revision, programs: 8 },
-  { path: 'ocaml/examples/index.md', repo: 'libtmux-ocaml', revision: ocamlModel.revision, programs: 22 },
+  { path: 'ocaml/examples/index.md', repo: 'libtmux-ocaml', revision: ocamlModel.revision, programs: 26 },
 ]
 
 it.each(INDEXES)('lists $programs source files of $repo at the model revision', ({ path, repo, revision, programs }) => {

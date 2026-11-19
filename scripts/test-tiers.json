@@ -108,6 +108,7 @@
         "site/test/related-labels.test.ts",
         "site/test/row-anchors.test.ts",
         "site/test/rust-layout.test.ts",
+        "site/test/search-pagefind.test.ts",
         "site/test/sidebar-demo.test.ts",
         "site/test/surface-picker-external.test.ts",
         "site/test/swift-layout.test.ts",

@@ -55,8 +55,9 @@ would return [`Err`](https://doc.rust-lang.org/std/result/enum.Result.html#varia
 
 ## Setup and run
 
-Use an empty directory with Git, rustup with the 1.97.1 toolchain installed,
-tmux 3.3a or newer, and a Unix environment. The program creates a private socket under `/tmp/libtmux-rs-dev`,
+Use an empty directory with rustup, the 1.97.1 toolchain installed, tmux
+3.3a or newer, and a Unix environment. Cargo installs `libtmux` 0.1.2 from
+crates.io. The program creates a private socket in a temporary directory,
 starts `cat` in its panes, and stops only the server it created. No existing
 session, socket, or environment variable is required.
 
@@ -69,24 +70,14 @@ version = "0.0.0"
 edition = "2024"
 publish = false
 
-[workspace]
-exclude = ["libtmux-source"]
-
 [dependencies]
-libtmux = { path = "libtmux-source/crates/libtmux", default-features = false }
+libtmux = { version = "=0.1.2", default-features = false }
 tempfile = "=3.27.0"
 tokio = { version = "=1.53.1", features = ["macros", "rt", "time"] }
 
 [[bin]]
 name = "subprocess"
 path = "subprocess.rs"
-```
-
-Fetch the library revision used by the example:
-
-```console
-$ git clone https://github.com/libtmux/libtmux-rs libtmux-source &&
-  git -C libtmux-source checkout e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4
 ```
 
 This dependency disables all default features to show that subprocess calls
@@ -126,15 +117,9 @@ async fn demonstrate(server: &Server) -> Result<(), ExampleError> {
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), ExampleError> {
-    let root = std::path::Path::new("/tmp/libtmux-rs-dev");
-    std::fs::create_dir_all(root)?;
     let directory = tempfile::Builder::new()
         .prefix("docs-subprocess-")
-        .tempdir_in(root)?;
-    std::fs::write(
-        directory.path().join("owner"),
-        std::process::id().to_string(),
-    )?;
+        .tempdir()?;
     let server = Server::builder()
         .socket_path(directory.path().join("tmux.sock"))
         .config_file("/dev/null")
@@ -142,7 +127,7 @@ async fn main() -> Result<(), ExampleError> {
         .build()?;
     let outcome = tokio::time::timeout(Duration::from_secs(10), demonstrate(&server)).await;
 
-    // Stop the owned daemon before closing the client executor.
+    // Stop the tmux server this program started, then release the client.
     let killed = server.kill().await;
     let closed = server.shutdown().await;
     let cleanup_failed = killed.is_err() || closed.is_err();
@@ -153,16 +138,19 @@ async fn main() -> Result<(), ExampleError> {
         Err(error) => failures.push(format!("example deadline: {error}")),
     }
     if let Err(error) = killed {
-        failures.push(format!("daemon cleanup: {error}"));
+        failures.push(format!("could not stop tmux: {error}"));
     }
     if let Err(error) = closed {
-        failures.push(format!("executor cleanup: {error}"));
+        failures.push(format!("could not close the client: {error}"));
     }
     if cleanup_failed {
         let retained = directory.keep();
-        failures.push(format!("inspect retained directory {}", retained.display()));
+        failures.push(format!(
+            "left the temporary directory at {}",
+            retained.display()
+        ));
     } else if let Err(error) = directory.close() {
-        failures.push(format!("directory cleanup: {error}"));
+        failures.push(format!("could not remove the directory: {error}"));
     }
     if failures.is_empty() {
         Ok(())
@@ -235,17 +223,16 @@ returned report of which steps completed.
 executor and its connections; it does not kill the daemon. Use
 [`Server::kill`](../../reference/server-server-kill/) only when your application
 owns that daemon. The example bounds each command to five seconds and its work
-to ten seconds, then attempts both daemon and executor cleanup. A cleanup
-failure reports and retains the private directory for inspection.
+to ten seconds, then stops the tmux server and releases the client. A cleanup
+failure reports the private directory and leaves it in place.
 
 <a id="choosing-a-lane"></a>
 
 ## Read the implementation contract
 
-These examples use the public APIs at
-[`libtmux@0.1.0-alpha.15`](https://github.com/libtmux/libtmux-rs/tree/e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4).
-The pinned [Server contract](https://github.com/libtmux/libtmux-rs/blob/e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4/crates/libtmux/src/server.rs)
+These examples use the public APIs of `libtmux` 0.1.2 ([source](https://github.com/libtmux/libtmux-rs/tree/15cfa2b1845d9894c93d8025d8b83e75d756f073)).
+The [Server contract](https://github.com/libtmux/libtmux-rs/blob/15cfa2b1845d9894c93d8025d8b83e75d756f073/crates/libtmux/src/server.rs)
 describes command outcomes, shutdown, and routing. The guides above explain
 plans and persistent connections as separate application workflows.
 
-[plan-feature]: https://github.com/libtmux/libtmux-rs/blob/e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4/crates/libtmux/Cargo.toml#L115
+[plan-feature]: https://github.com/libtmux/libtmux-rs/blob/15cfa2b1845d9894c93d8025d8b83e75d756f073/crates/libtmux/Cargo.toml#L148

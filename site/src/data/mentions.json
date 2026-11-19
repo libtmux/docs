@@ -2984,6 +2984,13 @@
   },
   {
    "port": "elixir",
+   "symbol": "LibTmux.Server",
+   "page": "/elixir/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "elixir",
    "symbol": "LibTmux.Server.new/1",
    "page": "/elixir/latest/concepts/observations/",
    "title": "Captured tmux state",
@@ -2992,6 +2999,13 @@
   {
    "port": "elixir",
    "symbol": "LibTmux.Server.new/1",
+   "page": "/elixir/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "elixir",
+   "symbol": "LibTmux.Server.run/3",
    "page": "/elixir/latest/guides/attaching-to-tmux/",
    "title": "Attaching to tmux",
    "section": "guides"
@@ -3827,6 +3841,13 @@
    "symbol": "tmux_pane:swap/3",
    "page": "/erlang/latest/guides/panes/",
    "title": "Isolate and rejoin a running pane",
+   "section": "guides"
+  },
+  {
+   "port": "erlang",
+   "symbol": "tmux_pane:wait_exit/2",
+   "page": "/erlang/latest/guides/operations/",
+   "title": "Owned operations",
    "section": "guides"
   },
   {
@@ -7891,10 +7912,10 @@
   },
   {
    "port": "java",
-   "symbol": "io.github.libtmux.mcp.Main.Main.main",
-   "page": "/kotlin/latest/examples/",
-   "title": "Examples",
-   "section": "examples"
+   "symbol": "io.github.libtmux.mcp.Main.Main",
+   "page": "/java/latest/mcp/guides/",
+   "title": "Connect a Java MCP client",
+   "section": "ports"
   },
   {
    "port": "java",
@@ -8850,6 +8871,13 @@
   },
   {
    "port": "julia",
+   "symbol": "LibTmux.new_session",
+   "page": "/julia/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "julia",
    "symbol": "LibTmux.NoMatchError",
    "page": "/julia/latest/concepts/queries/",
    "title": "Captured queries",
@@ -9054,6 +9082,34 @@
   {
    "port": "julia",
    "symbol": "LibTmux.Server.tmux",
+   "page": "/julia/latest/examples/cancel-control-wait/",
+   "title": "Cancel a control wait",
+   "section": "examples"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.Server.tmux",
+   "page": "/julia/latest/examples/observe-output/",
+   "title": "Observe pane output",
+   "section": "examples"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.Server.tmux",
+   "page": "/julia/latest/examples/owned-capture/",
+   "title": "Capture a pane",
+   "section": "examples"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.Server.tmux",
+   "page": "/julia/latest/examples/shared-windows/",
+   "title": "Query shared windows",
+   "section": "examples"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.Server.tmux",
    "page": "/julia/latest/guides/installation/",
    "title": "Installation",
    "section": "guides"
@@ -9155,6 +9211,13 @@
    "page": "/julia/latest/examples/owned-capture/",
    "title": "Capture a pane",
    "section": "examples"
+  },
+  {
+   "port": "julia",
+   "symbol": "LibTmux.with_server",
+   "page": "/julia/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
   },
   {
    "port": "julia",
@@ -12435,6 +12498,13 @@
   {
    "port": "lua",
    "symbol": "libtmux.Server:command",
+   "page": "/lua/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Server:command",
    "page": "/lua/latest/guides/commands/",
    "title": "Execute tmux commands",
    "section": "guides"
@@ -12486,6 +12556,13 @@
    "symbol": "libtmux.Server:handle",
    "page": "/lua/latest/guides/snapshots/",
    "title": "Capture server state",
+   "section": "guides"
+  },
+  {
+   "port": "lua",
+   "symbol": "libtmux.Server:new_session",
+   "page": "/lua/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
    "section": "guides"
   },
   {
@@ -12763,6 +12840,13 @@
   },
   {
    "port": "ocaml",
+   "symbol": "Libtmux_eio.with_private_daemon",
+   "page": "/ocaml/latest/guides/recovery/",
+   "title": "Recover an operation after cancelling its waiter",
+   "section": "guides"
+  },
+  {
+   "port": "ocaml",
    "symbol": "Libtmux_eio.Workspace",
    "page": "/ocaml/latest/guides/packages/",
    "title": "Choose the packages your application needs",
@@ -12816,6 +12900,13 @@
    "page": "/ocaml/latest/guides/query-interchange/",
    "title": "Share a scalar pane query",
    "section": "guides"
+  },
+  {
+   "port": "ocaml",
+   "symbol": "Libtmux_json.Workspace",
+   "page": "/ocaml/latest/workspace/source-guide/",
+   "title": "Workspace guide",
+   "section": "workspace"
   },
   {
    "port": "ocaml",
@@ -14094,6 +14185,13 @@
   {
    "port": "powershell",
    "symbol": "LibTmux\\Invoke-TmuxCommand",
+   "page": "/powershell/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\Invoke-TmuxCommand",
    "page": "/powershell/latest/guides/capture/",
    "title": "Capture, refresh and raw commands",
    "section": "guides"
@@ -14265,6 +14363,13 @@
    "page": "/powershell/latest/examples/create-layout/",
    "title": "Create windows and panes",
    "section": "examples"
+  },
+  {
+   "port": "powershell",
+   "symbol": "LibTmux\\New-TmuxSession",
+   "page": "/powershell/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
   },
   {
    "port": "powershell",
@@ -16956,13 +17061,6 @@
   },
   {
    "port": "rs",
-   "symbol": "test.TestServer",
-   "page": "/rs/latest/workspace/internals/examples/",
-   "title": "Rust workspace builder examples",
-   "section": "ports"
-  },
-  {
-   "port": "rs",
    "symbol": "test.TestServer.server",
    "page": "/rs/latest/workspace/cli/shell/",
    "title": "Evaluate in a workspace",
@@ -17783,6 +17881,13 @@
   {
    "port": "ruby",
    "symbol": "LibTmux::Server.start",
+   "page": "/ruby/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Server.start",
    "page": "/ruby/latest/guides/core/",
    "title": "Server bindings",
    "section": "guides"
@@ -17820,6 +17925,13 @@
    "symbol": "LibTmux::Server#list_windows",
    "page": "/ruby/latest/guides/core/",
    "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Server#new_session",
+   "page": "/ruby/latest/guides/attaching-to-tmux/",
+   "title": "Attaching to tmux",
    "section": "guides"
   },
   {
@@ -20451,16 +20563,9 @@
   },
   {
    "port": "csharp",
-   "text": "ConnectAndBuild",
+   "text": "Attach.csproj",
    "page": "/csharp/latest/examples/attach-and-send-keys/",
-   "line": 37,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "java",
-   "text": "WatchPaneOutput",
-   "page": "/kotlin/latest/examples/",
-   "line": 15,
+   "line": 94,
    "why": "not defined in the stated port"
   },
   {

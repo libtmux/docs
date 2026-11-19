@@ -18,8 +18,7 @@ The steps below build the program one call at a time. Each block is a range of
 lines from [the complete program](#the-complete-program), which includes setup,
 error handling, and cleanup. Each step names the tmux command behind the call;
 the [native version of this example](/tmux/examples/attach-and-send-keys/) builds
-the same sequence in shell. [Source and verification](#where-this-comes-from)
-identifies the file and its checks.
+the same sequence in shell. [Source](#where-this-comes-from) names the file.
 
 ## Steps
 
@@ -167,21 +166,5 @@ practice](/guides/querying-and-filtering/) covers absent and ambiguous matches.
 
 ## Where this comes from
 
-**Source:** `examples/pane-io/main.go`
-
-**In this page:** the complete program is read whole from the file, and each
-step quotes a range of its lines
-
-**Checked by:** `TestPaneIO` runs the file's `run` function against a real tmux
-server on a socket the test harness owns and compares what it prints with the
-output recorded beside it. Two more tests in
-`examples/pane-io/example_test.go` run it with a slow shell and with a shell
-that never answers. The `docs:pane-wait` and `docs:pane-io` regions inside the
-file are mirrored into `examples/pane-io/README.md` by `go generate ./tmux`,
-and CI fails if the two drift
-
-### Source inclusion
-
-A `file="..."` fence reads the named source during the site build. A fence that
-also names `from` and `to` lines quotes only that range, and the build fails if
-either line stops resolving.
+The program is `examples/pane-io/main.go` in the libtmux-go repository. The
+page shows it whole and quotes a range of its lines in each step.

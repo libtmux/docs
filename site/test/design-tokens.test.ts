@@ -190,6 +190,25 @@ describe('contrast of the shared chrome', () => {
     }
   })
 
+  // The port picker's label and differences are 11px muted text: on the panel, and on the row under the pointer.
+  it('keeps the port picker\'s muted lines at 4.5:1 on the panel and on a hovered row, in every palette and in the base tokens', () => {
+    const share = Number(/\.doc-picker-option\[href\]:hover small \{ color: color-mix\(in srgb, var\(--color-muted\) (\d+)%, var\(--text-color\)\)/.exec(read('documentation-picker.css'))?.[1]) / 100
+    expect(share).toBeGreaterThan(0)
+    const tokens = read('gp-sphinx-tokens.css')
+    // The page ground and text colour the base tokens sit on are `--background-color` and `--text-color` in global.css.
+    const base: Record<(typeof modes)[number], Record<string, string>> = { light: { ...rule(tokens, ':root'), ground: '#ffffff', text: '#000000' }, dark: { ...rule(tokens, "[data-theme-mode='dark']"), ground: '#131416', text: '#cfd0d0' } }
+    const sets = [
+      ...Object.entries(palettes).flatMap(([slug, palette]) => modes.map((mode) => [`${slug} ${mode}`, palette[mode].muted, palette[mode].hover, palette[mode].background, palette[mode].text] as const)),
+      ...modes.map((mode) => [`base ${mode}`, base[mode]['--color-foreground-muted']!, base[mode]['--color-api-background-hover']!, base[mode]['ground']!, base[mode]['text']!] as const),
+    ]
+    for (const [name, muted, hover, panel, text] of sets) {
+      expect(ratio(hex(muted), hex(panel)), `${name} on the panel`).toBeGreaterThanOrEqual(4.5)
+      expect(ratio(tint(hex(muted), share, hex(text)), hex(hover)), `${name} on a hovered row`).toBeGreaterThanOrEqual(4.5)
+    }
+    // Control: the muted colour alone misses on a hovered row in the base tokens, which is why the line mixes toward the text colour.
+    for (const mode of modes) expect(ratio(hex(base[mode]['--color-foreground-muted']!), hex(base[mode]['--color-api-background-hover']!)), `base ${mode}`).toBeLessThan(4.5)
+  })
+
   it('fails the pairs this slice replaced, so the checks above can fail', () => {
     const light = palettes.go.light
     const oldInputBorder = oklch('oklch(0.8 0 0)')
@@ -226,6 +245,7 @@ describe('control outlines', () => {
     ['components/widgets/mcp-install.css', '.lm-mcp-install__copy'],
     ['components/widgets/package-install.css', '.lm-pkg-install__copy'],
     ['components/widgets/AgentPrompt.astro', '.lm-agent-prompt__copy'],
+    ['styles/core-player.css', '.expressive-code .core-copy'],
     ['styles/global.css', '.scheme-switch'],
     ['styles/global.css', '.scheme-cycle'],
   ]
@@ -243,6 +263,28 @@ describe('control outlines', () => {
   it('fails a control that keeps the decorative hairline, so the check can fail', () => {
     const hairline = '.field { border: 1px solid var(--color-edge); }'
     expect(declarations(hairline, '.field')).not.toMatch(/var\(--control-border\)/)
+  })
+
+  /** The installer's Copy is a clipboard in a 30px outlined square with the control radius (record 0067), not a text button. */
+  const isIconSquare = (body: string) =>
+    /width:\s*1\.875rem/.test(body) && /height:\s*1\.875rem/.test(body) && /border-radius:\s*0\.375rem/.test(body) &&
+    /border:\s*1px solid var\(--control-border\)/.test(body) && !/font-size/.test(body) && !/padding:\s*0\.3rem/.test(body)
+
+  it.each([
+    ['components/widgets/mcp-install.css', '.lm-mcp-install__copy'],
+    ['components/widgets/package-install.css', '.lm-pkg-install__copy'],
+  ])('%s %s is a clipboard in a 30px outlined square, with no word', (file, selector) => {
+    expect(isIconSquare(declarations(source(file), selector))).toBe(true)
+  })
+
+  // An outline drawn through `opacity` is not the outline that was measured: the button's own opacity dims it as well.
+  it('draws the code player copy button at full opacity, so its outline keeps the measured 3:1', () => {
+    expect(declarations(source('styles/core-player.css'), '.expressive-code .core-copy')).not.toMatch(/opacity:/)
+  })
+
+  it('has a control: the outlined text button the square replaced is not one', () => {
+    const textButton = '.copy { border: 1px solid var(--control-border); border-radius: 0.25rem; font-size: 0.75em; padding: 0.3rem 0.5rem; }'
+    expect(isIconSquare(declarations(textButton, '.copy'))).toBe(false)
   })
 })
 
@@ -291,12 +333,25 @@ describe('pickers, touch targets, focus and labels', () => {
     expect(source('components/docs/SurfacePicker.astro')).not.toMatch(/\.surface-picker-footer \{[^}]*margin:[^;]*-\.75rem/)
   })
 
-  it('sets the port picker at 32rem with 20px marks and one-line details', () => {
+  it('draws one rule above a page end that holds only the up row', () => {
+    expect(source('components/docs/PageEnd.astro')).toContain('.page-end__up:first-child { padding-top: 0; border-top: 0; }')
+  })
+
+  it('keeps the member row head span first so its kind mark keeps its gap', () => {
+    const list = source('components/api/ApiMemberList.astro')
+    expect(list.indexOf('<span><ApiBadge label={kindOf(m)}')).toBeGreaterThan(-1)
+    expect(list.indexOf('<span><ApiBadge label={kindOf(m)}')).toBeLessThan(list.indexOf('anchorsFor?.(m)'))
+    expect(source('styles/kind-marks.css')).toContain('.api-member-list li > span:first-child) > .api-nav__kind:first-child')
+  })
+
+  it('draws port picker rows with 26px language icons in a panel as wide as its rows', () => {
     const switcher = source('components/PagePortSwitcher.astro')
-    expect(switcher).toContain('.port-picker-panel { --picker-width: 32rem; }')
-    expect(switcher).toMatch(/\.port-artwork \{[^}]*width: 1\.25rem; height: 1\.25rem;/)
+    expect(switcher).toContain('.port-picker-panel[data-details] { --picker-width: 32rem; }')
+    expect(switcher).not.toContain('.port-picker-panel { --picker-width: 32rem; }')
+    expect(switcher).toMatch(/\.port-artwork \{[^}]*width: 1\.625rem; height: 1\.625rem;/)
+    expect(switcher).toContain('src={withRoot(`/brand/languages/${entry.port}/icon.svg`)} width="26" height="26"')
+    expect(switcher).not.toContain("branding(entry.port).asset('logo.svg')")
     expect(switcher).toContain('white-space: nowrap')
-    expect(switcher).not.toMatch(/width="26"|size=\{26\}/)
   })
 
   it('lifts rows to the touch target below the phone breakpoint', () => {

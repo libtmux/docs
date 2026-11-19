@@ -80,7 +80,7 @@
       "files": [
         {
           "name": "owned_capture.jl",
-          "sha256": "9b55c3a7bf6eb9bb333e45107fc0661a1b36137a18cb321bc89d55d75c6f984c"
+          "sha256": "9e57d63b2c6be6f9d210a5182ad7ec91c5e7f7234caf397aa8adcc855981381a"
         }
       ],
       "shellRecipe": [
@@ -103,7 +103,7 @@
       "files": [
         {
           "name": "shared_windows.jl",
-          "sha256": "f71d114b9b6bd5e84695d0d0580287b9a1bb96a38037d1aa0928b5a355a223e2"
+          "sha256": "0f043605e654e3d01073b83549f663645fdd057c6e5beae47933425cb7cf8e66"
         }
       ],
       "shellRecipe": [
@@ -126,7 +126,7 @@
       "files": [
         {
           "name": "control_cancel.jl",
-          "sha256": "cbe5f859c0ce89a437cbbabbb18ba9bcd23142baf6ba84d6a3c506f240622e74"
+          "sha256": "7121a3465d290d657c8d449b49abc8f9dececf75252cf8475426fc66c8bff8ad"
         }
       ],
       "shellRecipe": [
@@ -149,7 +149,7 @@
       "files": [
         {
           "name": "output_stream.jl",
-          "sha256": "7f94a7178e428d5e30aa38f2636b7f70ddda666e725f3c6891fc12d25518906a"
+          "sha256": "211cfb43b23e22812ecff9acf7c726e79e6504ad614aff35563243319dbb7f45"
         }
       ],
       "shellRecipe": [
@@ -159,7 +159,124 @@
       "expectedOutputs": [
         [],
         [
-          "observed terminal echo: \u03bb"
+          "observed terminal echo: λ"
+        ]
+      ]
+    },
+    {
+      "port": "rs",
+      "page": "ports/rs/examples/attach-and-send-keys",
+      "language": "rust",
+      "sourceRepository": "libtmux/libtmux-rs",
+      "sourceRevision": "15cfa2b1845d9894c93d8025d8b83e75d756f073",
+      "files": [
+        {
+          "name": "src/main.rs",
+          "sha256": "4bcdfe8219e3c74cc89bf499fab4607098fbd2a2f408bb465c2d48944bf02ce8"
+        },
+        {
+          "name": "Cargo.toml",
+          "sha256": "17119957f1442dd361e5a333f792b49410fe8c2f9a360b507f822acc051cc848"
+        }
+      ],
+      "shellRecipe": [
+        "cargo +1.97.1 run"
+      ],
+      "expectedOutputs": [
+        [
+          "split it: 2 panes",
+          "the pane printed it",
+          "| hello from tmux"
+        ]
+      ]
+    },
+    {
+      "port": "csharp",
+      "page": "ports/csharp/examples/attach-and-send-keys",
+      "language": "csharp",
+      "sourceRepository": "libtmux/libtmux-dotnet",
+      "sourceRevision": "8d47af7d89638ad267528ac56897cec67df597f7",
+      "files": [
+        {
+          "name": "Program.cs",
+          "sha256": "67d58c899e75b7ebebe70f3cb9542d7a6d8b4282b9488b97bc42be4392656848"
+        },
+        {
+          "name": "Attach.csproj",
+          "sha256": "606ee1d6da184663df6dbd0a8cd9df1810e9a52a32b8427f3053115b23965dd2"
+        }
+      ],
+      "shellRecipe": [
+        "dotnet build Attach.csproj --maxcpucount:1 &&\n  dotnet run --project Attach.csproj --no-build"
+      ],
+      "expectedOutputs": [
+        [
+          "the pane printed it",
+          "| hello from tmux"
+        ]
+      ]
+    },
+    {
+      "port": "java",
+      "page": "ports/java/examples/attach-and-send-keys",
+      "language": "java",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "e8a39689d8d60968ac978a1dd2a89c6112333896",
+      "files": [
+        {
+          "name": "AttachAndSendKeys.java",
+          "sha256": "fa92975054f704ea879982f06e8000f298c3af988a5887820877b6633d32066e"
+        },
+        {
+          "name": "settings.gradle.kts",
+          "sha256": "06140f6acac35d3b36accf88ca6d6337356a403128ba7fe36eb44b43c9a703a4"
+        },
+        {
+          "name": "build.gradle.kts",
+          "sha256": "547bdbe57add0837a0a1c9fb482260966969e2da3060ba2c46ad7ebce058cbd3"
+        }
+      ],
+      "shellRecipe": [
+        "gradle --console=plain --no-daemon run"
+      ],
+      "expectedOutputs": [
+        [
+          "the pane printed it",
+          "| hello from tmux"
+        ]
+      ]
+    },
+    {
+      "port": "kotlin",
+      "page": "ports/kotlin/examples",
+      "language": "kotlin",
+      "sourceRepository": "libtmux/libtmux-java",
+      "sourceRevision": "e8a39689d8d60968ac978a1dd2a89c6112333896",
+      "files": [
+        {
+          "name": "WatchWithFlow.kt",
+          "sha256": "62dba5597eb6bfa2c378bb406a6479e16ecf0db7f40f595e25de9bdb98e63f57"
+        },
+        {
+          "name": "settings.gradle.kts",
+          "sha256": "67b9ddf02fbf04f40c1f4e3e2e1649c9212fe9db5f32b6989e389b6b348209ed"
+        },
+        {
+          "name": "build.gradle.kts",
+          "sha256": "5e431f05fc6239664cc6bffaddb07e187822b9d36205c8020221c05354ad50e6"
+        },
+        {
+          "name": "gradle.properties",
+          "sha256": "aa2f75584718e340a2dab7af0d04d010cd8d0b83fc6b16f96a141cd3244821c1"
+        }
+      ],
+      "shellRecipe": [
+        "gradle --console=plain --no-daemon run"
+      ],
+      "expectedOutputs": [
+        [
+          "echoed=true",
+          "cancelled=true"
         ]
       ]
     }

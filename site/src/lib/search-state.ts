@@ -20,6 +20,9 @@ export interface SearchState {
   kind?: string
 }
 
+/** The `port` filter value of a page that belongs to no port, such as a tmux manual page. */
+export const ROOT_PORT = 'All languages'
+
 /** The `section` value that holds a port's API reference pages. */
 export const REFERENCE_SECTION = 'reference'
 
@@ -58,15 +61,16 @@ const anyOf = (values: string[]): FilterValue => (values.length > 1 ? { any: val
  * The Pagefind filters a state asks for.
  *
  * `ports` are the Port facet's checkboxes, which only apply under "All
- * languages"; a port scope searches the current port alone. The API scope is
- * the port scope narrowed to reference pages, so its Section facet is fixed.
+ * languages". "<Port> docs and API" searches the port and the root pages, the
+ * tmux manual and catalog every port builds on; "<Port> API only" is the port
+ * narrowed to reference pages, so its Section facet is fixed.
  */
 export function filtersFor(state: SearchState, portName: string | undefined, ports: readonly string[] = []): PagefindFilters | undefined {
   const filters: PagefindFilters = {}
   if (state.scope === 'all') {
     if (ports.length) filters.port = anyOf([...ports])
   } else if (portName) {
-    filters.port = [portName]
+    filters.port = state.scope === 'reference' ? [portName] : { any: [portName, ROOT_PORT] }
   }
   const section = state.scope === 'reference' ? REFERENCE_SECTION : state.section
   if (section) filters.section = [section]

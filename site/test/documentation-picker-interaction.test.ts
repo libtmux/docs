@@ -71,6 +71,14 @@ it('keeps the glossary term on ordinary and modified picker activation', () => {
   expect(link.getAttribute('href')).toBe('https://libtmux.org/en/julia/latest/mcp/reference/glossary/#attribute')
 })
 
+/** Run the native page's script against the picker in the document, with the page's equivalents as its context. */
+function runNativePageScript(context: unknown) {
+  win.document.body.insertAdjacentHTML('beforeend', `<script type="application/json" data-native-page-ports>${JSON.stringify(context)}</script>`)
+  const source = readFileSync(new URL('../src/components/docs/NativeSphinxScript.astro', import.meta.url), 'utf8').match(/<script>([\s\S]*?)<\/script>/)![1]
+  Object.assign(win, { layoutBeforeAppearance: (work: () => void) => work() })
+  win.eval(ts.transpileModule(source.replace(/^  import .*$/gm, ''), { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText)
+}
+
 it('retains separate native-page home exits when fragment equivalents change', () => {
   const stale = win.document.querySelector('[data-picker-option][data-port="rs"]')!
   stale.setAttribute('title', 'Old destination')
@@ -78,10 +86,7 @@ it('retains separate native-page home exits when fragment equivalents change', (
   const context = { port: 'cxx', primary: 'native-one', symbols: {
     'native-one': [], 'native-two': [{ port: 'rs', href: '/en/rs/latest/reference/server/', label: 'Server' }],
   } }
-  win.document.body.insertAdjacentHTML('beforeend', `<script type="application/json" data-native-page-ports>${JSON.stringify(context)}</script>`)
-  const source = readFileSync(new URL('../src/components/docs/NativeSphinxScript.astro', import.meta.url), 'utf8').match(/<script>([\s\S]*?)<\/script>/)![1]
-  Object.assign(win, { layoutBeforeAppearance: (work: () => void) => work() })
-  win.eval(ts.transpileModule(source.replace(/^  import .*$/gm, ''), { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText)
+  runNativePageScript(context)
   const option = () => win.document.querySelector('[data-picker-option][data-port="rs"]')!
   expect(option().tagName).toBe('DIV')
   expect(option().hasAttribute('title')).toBe(false)
@@ -268,6 +273,55 @@ it('keeps single native distinctions accessible and genuine multiple choices vis
 })
 
 
+it('draws a row\'s differences as one muted line joined by " · ", and nothing under a row that has none', async () => {
+  await renderPicker(pagePortLinks({ pagePath: 'reference/tmux-pane-capture', portSlug: 'go', version: 'latest', defaults: {}, docs: [] }), 'go')
+  const row = (port: string) => win.document.querySelector(`[data-picker-option][data-port="${port}"]`)!
+  // The line's text follows a lead-in only a screen reader hears.
+  const line = (port: string) => row(port).querySelector('[data-picker-differences]')
+  expect(line('swift')!.lastChild!.textContent).toBe('async · on Server')
+  expect(line('clojure')!.lastChild!.textContent).toBe('free function · 2 overloads')
+  expect(line('rs')!.lastChild!.textContent).toBe('async')
+  expect(line('swift')!.tagName).toBe('SMALL')
+  expect(line('swift')!.firstElementChild!.className).toBe('sr-only')
+  expect(line('swift')!.firstElementChild!.textContent).toBe('Differs: ')
+  expect(row('swift').querySelectorAll('small')).toHaveLength(1)
+  // Maps with nothing recorded, the page's own row and a recorded absence carry no line.
+  for (const port of ['ts', 'go', 'haskell']) expect(line(port), port).toBeNull()
+})
+
+it('puts a labelled row\'s differences in its accessible name, which replaces the row\'s text', async () => {
+  await renderPicker([{ port: 'swift', name: 'Swift', links: [
+    { href: '/en/swift/latest/reference/a/', label: 'capture (method)', differences: ['async', 'on Server'] },
+    { href: '/en/swift/latest/reference/b/', label: 'captureAll (method)' },
+  ] }], 'go')
+  const [first, second] = [...win.document.querySelectorAll('[data-picker-option][data-port="swift"]')]
+  expect([...first!.querySelectorAll('small')].map((small) => small.textContent)).toEqual(['capture (method)', 'Differs: async · on Server'])
+  expect(first!.getAttribute('aria-label')).toBe('Swift: capture (method). Differs: async, on Server')
+  expect(first!.getAttribute('title')).toBe('Swift: capture (method). Differs: async, on Server')
+  expect(second!.getAttribute('aria-label')).toBe('Swift: captureAll (method)')
+  expect(second!.querySelector('[data-picker-differences]')).toBeNull()
+})
+
+it('lists a native page\'s differences under its row, and drops them when the fragment names a declaration with none', () => {
+  runNativePageScript({ port: 'cxx', primary: 'native-one', symbols: {
+    'native-one': [{ port: 'rs', href: '/en/rs/latest/reference/server/', label: 'Server', differences: ['async', 'on Server'] }],
+    'native-two': [{ port: 'rs', href: '/en/rs/latest/reference/other/', label: 'Other' }],
+  } })
+  const option = () => win.document.querySelector('[data-picker-option][data-port="rs"]')!
+  const line = () => option().querySelector('[data-picker-differences]')
+  expect(option().tagName).toBe('A')
+  expect(line()!.tagName).toBe('SMALL')
+  expect(line()!.lastChild!.textContent).toBe('async · on Server')
+  expect(line()!.firstElementChild!.textContent).toBe('Differs: ')
+  expect(option().querySelectorAll('small')).toHaveLength(1)
+  expect(option().getAttribute('aria-label')).toBe('Rust: Server. Differs: async, on Server')
+  win.location.hash = '#native-two'
+  win.dispatchEvent(new win.Event('hashchange'))
+  expect(option().getAttribute('href')).toBe('/en/rs/latest/reference/other/')
+  expect(line()).toBeNull()
+})
+
+
 it.each([
   ['ts', 'builder.applyWorkspace'],
   ['powershell', 'LibTmux.Workspace\\Invoke-TmuxWorkspace'],
@@ -334,4 +388,27 @@ it.each(['workspace/guides', 'workspace/internals/guides'])('keeps %s counterpar
     expect(row.querySelector('[data-picker-home]')?.getAttribute('aria-label'))
       .toBe(`Go to ${port.name}${workspace ? ' Workspace Manager' : ''} home`)
   }
+})
+
+it('opens as a bottom sheet on a phone in portrait and as a popover under its trigger otherwise', () => {
+  const portraitPhone = (query: string) => query.includes('max-width: 29.999rem')
+  let sheet = true
+  vi.spyOn(win, 'matchMedia').mockImplementation((query: string) => ({ matches: sheet && portraitPhone(query), media: query } as unknown as ReturnType<typeof win.matchMedia>))
+  initDocumentationNavigation()
+  const picker = win.document.querySelector('details')!
+  const panel = picker.querySelector<HTMLElement>('[data-picker-panel]')!
+  picker.open = true
+  picker.dispatchEvent(new win.Event('toggle'))
+  expect(picker.dataset.panelMode).toBe('sheet')
+  expect(win.document.documentElement.hasAttribute('data-sheet-open')).toBe(true)
+  expect(panel.style.top).toBe('')
+  picker.open = false
+  picker.dispatchEvent(new win.Event('toggle'))
+  expect(win.document.documentElement.hasAttribute('data-sheet-open')).toBe(false)
+  sheet = false
+  picker.open = true
+  picker.dispatchEvent(new win.Event('toggle'))
+  expect(picker.dataset.panelMode).toBe('popover')
+  expect(win.document.documentElement.hasAttribute('data-sheet-open')).toBe(false)
+  expect(panel.style.top).not.toBe('')
 })

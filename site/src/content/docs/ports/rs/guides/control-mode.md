@@ -19,12 +19,13 @@ server handle keeps its subprocess route.
 This program creates its own session, sends a line through a routed pane,
 checks captured output, and observes the attached client. It drains events
 while waiting for command results, closes the connection, verifies that tmux
-is still alive, and finally stops its owned daemon.
+is still alive, and finally stops the tmux server it started.
 
 ## Setup and run
 
-Use an empty directory with Git, rustup with the 1.97.1 toolchain installed,
-tmux 3.3a or newer, and a Unix environment. The program creates a private socket under `/tmp/libtmux-rs-dev`,
+Use an empty directory with rustup, the 1.97.1 toolchain installed, tmux
+3.7 or newer, and a Unix environment. Control mode needs tmux 3.7; older
+releases refuse it. Cargo installs `libtmux` 0.1.2 from crates.io. The program creates a private socket in a temporary directory,
 starts `cat` in its panes, and stops only the server it created. No existing
 session, socket, or environment variable is required.
 
@@ -37,24 +38,14 @@ version = "0.0.0"
 edition = "2024"
 publish = false
 
-[workspace]
-exclude = ["libtmux-source"]
-
 [dependencies]
-libtmux = { path = "libtmux-source/crates/libtmux", default-features = false, features = ["control-mode"] }
+libtmux = { version = "=0.1.2", default-features = false, features = ["control-mode"] }
 tempfile = "=3.27.0"
 tokio = { version = "=1.53.1", features = ["macros", "rt", "time"] }
 
 [[bin]]
 name = "control"
 path = "control.rs"
-```
-
-Fetch the library revision used by the example:
-
-```console
-$ git clone https://github.com/libtmux/libtmux-rs libtmux-source &&
-  git -C libtmux-source checkout e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4
 ```
 
 Only the `control-mode` feature is enabled. It does not require [plan][plan-feature],
@@ -160,15 +151,9 @@ async fn demonstrate(server: &Server) -> Result<(), ExampleError> {
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), ExampleError> {
-    let root = std::path::Path::new("/tmp/libtmux-rs-dev");
-    std::fs::create_dir_all(root)?;
     let directory = tempfile::Builder::new()
         .prefix("docs-control-")
-        .tempdir_in(root)?;
-    std::fs::write(
-        directory.path().join("owner"),
-        std::process::id().to_string(),
-    )?;
+        .tempdir()?;
     let server = Server::builder()
         .socket_path(directory.path().join("tmux.sock"))
         .config_file("/dev/null")
@@ -176,7 +161,7 @@ async fn main() -> Result<(), ExampleError> {
         .build()?;
     let outcome = tokio::time::timeout(Duration::from_secs(20), demonstrate(&server)).await;
 
-    // Stop the owned daemon before closing the client executor.
+    // Stop the tmux server this program started, then release the client.
     let killed = server.kill().await;
     let closed = server.shutdown().await;
     let cleanup_failed = killed.is_err() || closed.is_err();
@@ -187,16 +172,19 @@ async fn main() -> Result<(), ExampleError> {
         Err(error) => failures.push(format!("example deadline: {error}")),
     }
     if let Err(error) = killed {
-        failures.push(format!("daemon cleanup: {error}"));
+        failures.push(format!("could not stop tmux: {error}"));
     }
     if let Err(error) = closed {
-        failures.push(format!("executor cleanup: {error}"));
+        failures.push(format!("could not close the client: {error}"));
     }
     if cleanup_failed {
         let retained = directory.keep();
-        failures.push(format!("inspect retained directory {}", retained.display()));
+        failures.push(format!(
+            "left the temporary directory at {}",
+            retained.display()
+        ));
     } else if let Err(error) = directory.close() {
-        failures.push(format!("directory cleanup: {error}"));
+        failures.push(format!("could not remove the directory: {error}"));
     }
     if failures.is_empty() {
         Ok(())
@@ -280,15 +268,15 @@ undelivered terminal error. It succeeds while other sender handles still
 exist. The program records both an operation error and any shutdown error,
 then verifies the client detached without killing the daemon.
 
-The outer cleanup kills this program's private server and shuts down the
-executor. An application connected to someone else's server should close its
-clients and leave that daemon running. A failed cleanup here reports and
-retains the socket directory for inspection.
+The outer cleanup kills this program's private server and releases the
+client. An application connected to someone else's server should close its
+clients and leave that server running. A failed cleanup here reports the
+socket directory and leaves it in place.
 
 See [Command transports](../../concepts/transports/) for the default process
 route and [Batching commands](../batching-commands/) for recorded plans.
-The pinned [control connection contract](https://github.com/libtmux/libtmux-rs/blob/e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4/crates/libtmux/src/control.rs)
-and [typed routing contract](https://github.com/libtmux/libtmux-rs/blob/e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4/crates/libtmux/src/server.rs)
-describe the source revision used by the program.
+The [control connection contract](https://github.com/libtmux/libtmux-rs/blob/15cfa2b1845d9894c93d8025d8b83e75d756f073/crates/libtmux/src/control.rs)
+and [typed routing contract](https://github.com/libtmux/libtmux-rs/blob/15cfa2b1845d9894c93d8025d8b83e75d756f073/crates/libtmux/src/server.rs)
+describe the `libtmux` 0.1.2 source used by the program.
 
-[plan-feature]: https://github.com/libtmux/libtmux-rs/blob/e9be0b6f6d22cd2eb79b0ec08964f82e717e5fe4/crates/libtmux/Cargo.toml#L115
+[plan-feature]: https://github.com/libtmux/libtmux-rs/blob/15cfa2b1845d9894c93d8025d8b83e75d756f073/crates/libtmux/Cargo.toml#L148

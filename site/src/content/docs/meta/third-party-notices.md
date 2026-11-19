@@ -36,9 +36,10 @@ URL, retrieval time, file hash, copyright information and usage terms.
 These marks identify their respective languages and do not imply endorsement
 of libtmux.
 
-The SVG files are copied unchanged except for Scala and Rust. Scala's empty
-surrounding canvas is cropped; its paths, gradients and colors are preserved,
-and the original SVG is retained beside the cropped copy. Rust's supplied SVG
+The SVG files are copied unchanged except for Scala, Common Lisp and Rust.
+Scala's and Common Lisp's empty surrounding canvases are cropped; their paths,
+gradients and colors are preserved, and each original SVG is retained beside
+the cropped copy. Rust's supplied SVG
 turns its mark white when the device is in dark mode. A browser does not
 reliably apply that rule to this site's color setting when the file is shown
 as an image. The rule is removed, its paths are unchanged, and the page
@@ -59,6 +60,9 @@ lightens the mark on a dark theme instead.
 | Scala | Copyright EPFL. [Historical permission](https://groups.google.com/g/scala-user/c/bCC-R0FQn1w) covers noncommercial Scala promotion; the [general artwork-license question](https://github.com/scala/scala-lang/issues/1040) remains unresolved. | [Scala provenance](/brand/languages/scala/provenance.json) |
 | C# | Copyright the .NET authors. [Brand-use permission](https://github.com/dotnet/brand/issues/10#issuecomment-669465301) allows the unmodified logo to represent .NET. The repository's CC0 statement covers illustrations; no blanket CC0 claim is made for the logo. | [.NET provenance](/brand/languages/csharp/provenance.json) |
 | F# | The F# Software Foundation. Its [logo terms](https://foundation.fsharp.org/logo) require unchanged shape, colors and proportions, without implying Foundation representation. | [F# provenance](/brand/languages/fsharp/provenance.json) |
+| OCaml | The OCaml logo from [ocaml/ocaml-logo](https://github.com/ocaml/ocaml-logo), released under the [Unlicense](https://github.com/ocaml/ocaml-logo/blob/18923642786f54c91f9ff07140ab5738d81771d0/UNLICENSE.md); see the [OCaml brand guidelines](https://ocaml.org/logo). | [OCaml provenance](/brand/languages/ocaml/provenance.json) |
+| Common Lisp | The Lisp alien by Conrad Barski, from his [Public Domain Lisp Logo Set](https://www.lisperati.com/logo.html): anyone may use it freely for any purpose. Common Lisp has no official logo. | [Common Lisp provenance](/brand/languages/lisp/provenance.json) |
+| Raku | The Camelia image is copyright 2009 by Larry Wall, used under the [Artistic License 2.0](/brand/languages/raku/LICENSE.txt). Camelia is a trademark of Larry Wall ([terms](https://github.com/Raku/mu/blob/955caf36c4387c2f39cff15552f7f69bca47f6d4/misc/camelia.txt)). | [Raku provenance](/brand/languages/raku/provenance.json) |
 
 ## Terminal artwork
 

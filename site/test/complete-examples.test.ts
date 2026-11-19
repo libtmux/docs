@@ -220,7 +220,7 @@ describe('verified complete programs', () => {
     const { content, frontmatter } = parsePage(example.page)
     expect(frontmatter.supportedPorts).toEqual([])
     const blocks = fences(content)
-    expect(blocks.every((block) => ['sh', 'text', 'console'].includes(block.language))).toBe(true)
+    expect(blocks.every((block) => ['sh', 'text', 'console', 'tmux'].includes(block.language))).toBe(true)
     for (const file of example.files) {
       const matching = blocks.filter((block) => block.title === file.name)
       expect(matching).toHaveLength(1)

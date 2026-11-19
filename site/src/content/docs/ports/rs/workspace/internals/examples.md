@@ -17,28 +17,19 @@ The `/bin/cat` commands keep panes open without another application or log file.
 
 ## Prepare the project
 
-Use Rust 1.97.1, Git, and tmux 3.3a or newer. These commands use a Unix shell.
-Create an empty project and fetch the source revision used by this example:
+Use Rust 1.97.1 and tmux 3.3a or newer. These commands use a Unix shell.
+Cargo installs `libtmux` and `tmux-workspace` 0.1.2 from crates.io
+([source](https://github.com/libtmux/libtmux-rs/tree/15cfa2b1845d9894c93d8025d8b83e75d756f073)).
+Create an empty project:
 
 ```console
 $ mkdir rust-workspace-example && cd rust-workspace-example && \
     mkdir src
 ```
 
-```console
-$ git init libtmux-source && \
-    git -C libtmux-source remote add origin https://github.com/libtmux/libtmux-rs.git && \
-    git -C libtmux-source fetch --depth=1 origin d4e08b4eaab62ef4eeedab79b47973ae9a1de310 && \
-    git -C libtmux-source checkout --detach FETCH_HEAD
-```
-
-Create the project manifest. Both library crates use that source tree. The
-`test-support` feature provides the public `TestServer` helper, which creates
-and owns the isolated server used by this example.
-
-`TestServer` is temporary example scaffolding. In an application, use a
-[`Server`](../../../reference/server-server/) connected to the tmux server you manage.
-Future versions of this example will use that regular server object directly.
+Create the project manifest. The program starts a private
+[`Server`](../../../reference/server-server/) on a socket in a temporary
+directory; in an application, connect to the tmux server you manage instead.
 
 ```toml title="Cargo.toml"
 [package]
@@ -47,8 +38,9 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-libtmux = { path = "libtmux-source/crates/libtmux", features = ["test-support"] }
-tmux-workspace = { path = "libtmux-source/crates/tmux-workspace", default-features = false }
+libtmux = "=0.1.2"
+tmux-workspace = { version = "=0.1.2", default-features = false }
+tempfile = "3.27.0"
 tokio = { version = "=1.53.1", features = ["macros", "rt-multi-thread", "time"] }
 ```
 
@@ -74,7 +66,7 @@ checks server shutdown even when an earlier operation fails.
 use std::error::Error;
 use std::time::Duration;
 
-use libtmux::test::TestServer;
+use libtmux::Server;
 use tmux_workspace::{Workspace, WorkspaceBuilder, freeze};
 use tokio::time::timeout;
 
@@ -82,9 +74,13 @@ use tokio::time::timeout;
 async fn main() -> Result<(), Box<dyn Error>> {
     let source = std::fs::read_to_string("workspace.yaml")?;
     let workspace = Workspace::from_yaml(&source)?;
-    let guard = TestServer::new().await?;
+    let directory = tempfile::tempdir()?;
+    let server = Server::builder()
+        .socket_path(directory.path().join("tmux.sock"))
+        .config_file("/dev/null")
+        .build()?;
     let result = timeout(Duration::from_secs(15), async {
-        let session = WorkspaceBuilder::new(guard.server())
+        let session = WorkspaceBuilder::new(&server)
             .build(&workspace)
             .await?;
         let windows = session.windows().await?;
@@ -105,7 +101,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
     .map_err(|error| -> Box<dyn Error> { error.into() })
     .and_then(|result| result);
 
-    let cleanup = guard.shutdown().await;
+    // Stop the tmux server this program started, then release the client.
+    let killed = server.kill().await;
+    let closed = server.shutdown().await;
+    let cleanup = killed.and(closed);
     match (result, cleanup) {
         (Ok(()), Ok(())) => Ok(()),
         (Err(error), Ok(())) => Err(error),
@@ -131,7 +130,7 @@ that the captured workspace recreates each application.
 Run the program from the project directory:
 
 ```console
-$ cargo run --quiet
+$ cargo +1.97.1 run --quiet
 ```
 
 Expected output:
@@ -150,5 +149,5 @@ choose its own shutdown point.
 <a id="where-this-comes-from"></a>
 <a id="source-inclusion"></a>
 
-[Builder source](https://github.com/libtmux/libtmux-rs/blob/d4e08b4eaab62ef4eeedab79b47973ae9a1de310/crates/tmux-workspace/src/lib.rs);
-[capture source](https://github.com/libtmux/libtmux-rs/blob/d4e08b4eaab62ef4eeedab79b47973ae9a1de310/crates/tmux-workspace/src/freeze.rs).
+[Builder source](https://github.com/libtmux/libtmux-rs/blob/15cfa2b1845d9894c93d8025d8b83e75d756f073/crates/tmux-workspace/src/lib.rs);
+[capture source](https://github.com/libtmux/libtmux-rs/blob/15cfa2b1845d9894c93d8025d8b83e75d756f073/crates/tmux-workspace/src/freeze.rs).

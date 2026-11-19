@@ -36,8 +36,8 @@ html[data-theme-mode='dark'] .api-nav { --api-nav-guide: color-mix(in srgb, var(
 .api-nav__owner-option { display: flex; align-items: center; gap: 0.5rem; padding: 0.45rem; border-radius: 0.2rem; cursor: pointer; }
 .api-nav__owner-option:is(:hover, .is-active) { background: var(--color-surface-hover); }
 .api-nav__owner-name { flex: 1; min-width: 0; overflow-wrap: anywhere; }
-.api-nav__owner-name small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--color-muted); font-size: 0.65rem; }
-.api-nav__owner-option > .api-kind-word { flex: none; font-size: 0.6875rem; color: var(--color-muted); }
+.api-nav__owner-name small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--color-muted); font-size: 0.75rem; }
+.api-nav__owner-option > .api-kind-word { flex: none; font-size: 0.75rem; color: var(--color-muted); }
 .api-nav__presentation a { display: block; margin-top: 0.5rem; font-size: 0.75rem; }
 .api-nav__presentation a[hidden] { display: none; }
 .api-nav__more { position: relative; flex: none; }
@@ -68,7 +68,7 @@ html[data-theme-mode='dark'] .api-nav { --api-nav-guide: color-mix(in srgb, var(
   padding-inline-start: calc(0.5rem + max(0, var(--level, 1) - 2) * var(--api-nav-indent));
 }
 .api-nav[data-presentation] :is(button, input, select, summary, a):focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
-.api-nav__section { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; padding: 0.75rem 0.5rem 0.35rem; color: var(--color-muted); font-size: 0.6875rem; }
+.api-nav__section { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; padding: 0.75rem 0.5rem 0.35rem; color: var(--color-muted); font-size: 0.75rem; }
 .api-nav__section > :first-child { font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
 .api-nav__section > :last-child { white-space: nowrap; }
 /* A Sphinx toctree caption names the rows below it and has no count. */
@@ -114,7 +114,7 @@ html[data-theme-mode='dark'] .api-nav { --api-nav-guide: color-mix(in srgb, var(
   border-radius: 0.2rem;
   padding-inline: 0.2rem;
   color: var(--color-muted);
-  font: 0.6875rem/1.25 var(--font-mono, monospace);
+  font: 0.75rem/1.25 var(--font-mono, monospace);
   pointer-events: none;
 }
 .api-nav__search-field:focus-within > kbd { display: none; }
@@ -335,7 +335,7 @@ a:has(> .api-link-kind) { text-decoration-line: none; }
   border-radius: 9999px;
   background: var(--color-surface);
   color: var(--color-muted);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-variant-numeric: tabular-nums;
   line-height: 1rem;
   text-align: center;
