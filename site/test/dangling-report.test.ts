@@ -162,15 +162,24 @@ describe('the build\'s dangling report', () => {
     const own = join(directory, 'haskell-guides.jsonl')
     vi.stubEnv('LIBTMUX_DOCS_DANGLING_REPORT', own)
     vi.stubEnv('LIBTMUX_DOCS_PORT', '')
+    const rendered: string[] = []
     for (const [file, source] of stagedPortGuides('haskell', haskellGuides)) {
-      await (await processor).render(source.replace(/^---\n[\s\S]*?\n---\n/, ''), {
+      const page = await (await processor).render(source.replace(/^---\n[\s\S]*?\n---\n/, ''), {
         fileURL: new URL(`../src/content/docs/_staged/${file}`, import.meta.url),
         frontmatter: { port: 'haskell' },
       })
+      rendered.push(page.code)
     }
     expect(names(own)).toEqual([])
-    await (await processor).render('Call `LibTmux.Version.missing`.', { frontmatter: { port: 'haskell' } })
-    expect(names(own)).toEqual(['LibTmux.Version.missing'])
+    for (const destination of [
+      'https://hackage-content.haskell.org/package/base-4.22.0.0/docs/Prelude.html#t:Show',
+      'https://hackage-content.haskell.org/package/base-4.22.0.0/docs/Prelude.html#v:Nothing',
+      'https://hackage-content.haskell.org/package/bytestring-0.12.2.0/docs/Data-ByteString.html#t:ByteString',
+      'https://hackage-content.haskell.org/package/base-4.22.0.0/docs/Control-Exception-Context.html#t:ExceptionContext',
+      'https://hackage-content.haskell.org/package/base-4.22.0.0/docs/Data-List-NonEmpty.html',
+    ]) expect(rendered.join('\n')).toContain(`href="${destination}"`)
+    await (await processor).render('Call `LibTmux.Version.missing` and `LibTmux.Server.missingWith`.', { frontmatter: { port: 'haskell' } })
+    expect(names(own)).toEqual(['LibTmux.Version.missing', 'LibTmux.Server.missingWith'])
   })
 
   it('links the names the Perl, Clojure, Erlang and Lisp guides write in their own spellings, and still leaves an OCaml runtime twin plain', async () => {

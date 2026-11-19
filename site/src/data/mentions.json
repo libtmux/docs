@@ -21017,62 +21017,6 @@
    "why": "not defined in the stated port"
   },
   {
-   "port": "haskell",
-   "text": "With",
-   "page": "/haskell/latest/guides/creation/",
-   "line": 210,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "haskell",
-   "text": "With",
-   "page": "/haskell/latest/guides/creation/",
-   "line": 220,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "haskell",
-   "text": "Data.List.NonEmpty",
-   "page": "/haskell/latest/guides/mutations/",
-   "line": 129,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "haskell",
-   "text": "Nothing",
-   "page": "/haskell/latest/guides/mutations/",
-   "line": 179,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "haskell",
-   "text": "Show",
-   "page": "/haskell/latest/guides/programs/",
-   "line": 163,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "haskell",
-   "text": "Nothing",
-   "page": "/haskell/latest/guides/programs/",
-   "line": 180,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "haskell",
-   "text": "ByteString",
-   "page": "/haskell/latest/guides/programs/",
-   "line": 197,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "haskell",
-   "text": "ExceptionContext",
-   "page": "/haskell/latest/guides/programs/",
-   "line": 212,
-   "why": "not defined in the stated port"
-  },
-  {
    "port": "kotlin",
    "text": "@kotlin.Metadata",
    "page": "/kotlin/latest/guides/coroutines/",
