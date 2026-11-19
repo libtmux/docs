@@ -420,8 +420,10 @@ describe('the showcase section', () => {
 
   describe('with the agent\'s reply in the recording', () => {
     const reply = 'pytest printed "2 passed" and the log ends with "checks finished". I removed the checks session.'
+    // Without `text`, the recording is shown as one made before replies were stored, whatever the file holds.
     const withReply = async (port: string, text?: string) => {
-      const transcript = { ...(await transcriptFor(port))!, ...(text ? { reply: text } : {}) }
+      const { reply: _stored, ...recorded } = (await transcriptFor(port))!
+      const transcript = text ? { ...recorded, reply: text } : recorded
       return section(port, buildShowcase(port, 'latest', onDisk(port), transcript))
     }
 
