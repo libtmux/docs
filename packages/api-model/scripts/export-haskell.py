@@ -66,6 +66,11 @@ PROGRAM_ORIGINS = [
     *(module for module in CREATION_ORIGINS if module not in CREATION_MODULES),
     "LibTmux.Internal.Program",
 ]
+PANE_MODULES = sorted([*PROGRAM_MODULES, "LibTmux.Pane"])
+PANE_ORIGINS = [
+    *PANE_MODULES,
+    *(module for module in PROGRAM_ORIGINS if module not in PROGRAM_MODULES),
+]
 
 
 def _source_file(module):
@@ -256,14 +261,16 @@ def extract_modules(pages, installed, exposed, locations, revision, source_pages
             msg = f"Configured public module is absent or hidden: {module}"
             raise ValueError(msg)
     observations = "LibTmux" in exposed
-    programs = exposed == PROGRAM_MODULES
+    pane_text = exposed == PANE_MODULES
+    programs = pane_text or exposed == PROGRAM_MODULES
     creations = programs or exposed == CREATION_MODULES
-    rich = exposed in [QUERY_MODULES, CREATION_MODULES, PROGRAM_MODULES]
+    rich = exposed in [QUERY_MODULES, CREATION_MODULES, PROGRAM_MODULES, PANE_MODULES]
     if observations and exposed not in [
         OBSERVATION_MODULES,
         QUERY_MODULES,
         CREATION_MODULES,
         PROGRAM_MODULES,
+        PANE_MODULES,
     ]:
         msg = "Unqualified observation module profile"
         raise ValueError(msg)
@@ -275,7 +282,9 @@ def extract_modules(pages, installed, exposed, locations, revision, source_pages
         msg = "Unqualified mutation module profile"
         raise ValueError(msg)
     source_modules = (
-        PROGRAM_ORIGINS
+        PANE_ORIGINS
+        if pane_text
+        else PROGRAM_ORIGINS
         if programs
         else CREATION_ORIGINS
         if creations
@@ -364,8 +373,10 @@ def extract_modules(pages, installed, exposed, locations, revision, source_pages
                 continue
             identity = _native_id(module, header)
             if identity.split("#", 1)[1].startswith("t:"):
-                if not re.match(
-                    r"^(?:data|newtype)\s+(?!(?:family|instance)\b)", _compact(header.text())
+                declaration = _compact(header.text())
+                synonym = pane_text and re.fullmatch(r"type [A-Z][\w']* = [A-Z][\w']*", declaration)
+                if not synonym and not re.match(
+                    r"^(?:data|newtype)\s+(?!(?:family|instance)\b)", declaration
                 ):
                     msg = f"Unsupported native type shape: {identity}"
                     raise ValueError(msg)
@@ -1006,22 +1017,31 @@ def build_native(checkout, revision, native_output=None):
             QUERY_MODULES,
             CREATION_MODULES,
             PROGRAM_MODULES,
+            PANE_MODULES,
         ]:
             msg = "Unqualified configured public module profile"
             raise ValueError(msg)
         mutations = "LibTmux.Internal.Mutation" in field("hidden-modules").split()
-        programs = modules == PROGRAM_MODULES
+        pane_text = modules == PANE_MODULES
+        programs = pane_text or modules == PROGRAM_MODULES
         creations = programs or modules == CREATION_MODULES
         if creations and not mutations:
             msg = "Unqualified configured creation recovery interface"
             raise ValueError(msg)
-        if mutations and modules not in [QUERY_MODULES, CREATION_MODULES, PROGRAM_MODULES]:
+        if mutations and modules not in [
+            QUERY_MODULES,
+            CREATION_MODULES,
+            PROGRAM_MODULES,
+            PANE_MODULES,
+        ]:
             msg = "Unqualified configured mutation module profile"
             raise ValueError(msg)
-        queries = modules in [QUERY_MODULES, CREATION_MODULES, PROGRAM_MODULES]
+        queries = modules in [QUERY_MODULES, CREATION_MODULES, PROGRAM_MODULES, PANE_MODULES]
         observations = queries or modules == OBSERVATION_MODULES
         source_modules = (
-            PROGRAM_ORIGINS
+            PANE_ORIGINS
+            if pane_text
+            else PROGRAM_ORIGINS
             if programs
             else CREATION_ORIGINS
             if creations
@@ -1092,7 +1112,9 @@ def build_native(checkout, revision, native_output=None):
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes(data)
         return {
-            "schema": "libtmux.haskell-api/6"
+            "schema": "libtmux.haskell-api/7"
+            if pane_text
+            else "libtmux.haskell-api/6"
             if programs
             else "libtmux.haskell-api/5"
             if creations
@@ -1105,7 +1127,9 @@ def build_native(checkout, revision, native_output=None):
             else "libtmux.haskell-api/1",
             **(
                 {
-                    "profile": "programs/1"
+                    "profile": "pane-text/1"
+                    if pane_text
+                    else "programs/1"
                     if programs
                     else "creations/1"
                     if creations
@@ -1136,7 +1160,9 @@ def build_native(checkout, revision, native_output=None):
                 ],
                 "exporter": {
                     "name": "Haddock public interface export",
-                    "version": 6
+                    "version": 7
+                    if pane_text
+                    else 6
                     if programs
                     else 5
                     if creations
