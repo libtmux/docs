@@ -17,7 +17,8 @@ import { resolveCheckout } from '../port-checkout.mjs'
  * - `command(dir)` is the argv that runs one built copy, and `normalizeOutput`,
  *   when given, reads what it printed the way the port's own test does;
  * - `inPlace`, when given, lists the flags that end an invocation the shim runs as tmux itself, untraced (a
- *   foreground daemon the library owns by process id);
+ *   foreground daemon the library owns by process id); `inPlaceFirst` does the same for an invocation that
+ *   begins with one of the flags it lists;
  * - `setup({ dir, env })`, when given, does what the page's setup commands do
  *   before the program runs (start the server it connects to). It runs without
  *   the tmux shim, so no step is credited with it, and tmux is read after it
