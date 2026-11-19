@@ -39,14 +39,14 @@ export const TIERS: readonly Tier[] = [
 
 /** The tier a tool belongs to, or nothing for a server that declares no toolsets. */
 /** A run of a closing reply: plain words, `inline code`, or output the session printed, which the reply quotes in double quotes. */
-export type ReplyRun = { kind: 'text' | 'code' | 'quote'; text: string }
+export type ReplyRun = { kind: 'text' | 'code' | 'output'; text: string }
 
-/** The agent's closing reply as paragraphs of runs. It is people's words, so only paragraphs and inline code are read (record 0074); the quotes mark printed output. */
+/** The agent's closing reply as paragraphs of runs. It is people's words, so only paragraphs and inline code are read (record 0074). The generator refuses a quote the session never printed, so each quoted run is terminal output. */
 export function replyParagraphs(reply: string): ReplyRun[][] {
   return reply.split(/\n\s*\n/).map((paragraph) => paragraph.trim()).filter(Boolean).map((paragraph) =>
     paragraph.split(/(`[^`]+`|"[^"]+")/).filter(Boolean).map((part): ReplyRun => {
       if (part.length > 2 && part.startsWith('`') && part.endsWith('`')) return { kind: 'code', text: part.slice(1, -1) }
-      if (part.length > 2 && part.startsWith('"') && part.endsWith('"')) return { kind: 'quote', text: part.slice(1, -1) }
+      if (part.length > 2 && part.startsWith('"') && part.endsWith('"')) return { kind: 'output', text: part.slice(1, -1) }
       return { kind: 'text', text: part }
     }))
 }

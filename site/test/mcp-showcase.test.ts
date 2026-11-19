@@ -413,7 +413,7 @@ describe('the showcase section', () => {
     const items = [...document.querySelectorAll('article.mcp-turn')]
     for (const item of items) expect(item.querySelectorAll('details.mcp-result pre')).toHaveLength(1)
     expect(JSON.parse(items[0]!.querySelector('details.mcp-result pre')!.textContent!).paneId, 'the id later calls use comes from this result').toBe('%0')
-    expect([...document.querySelectorAll('.mcp-turn--answer q')].map((q) => q.textContent)).toEqual([expect.stringMatching(/^2 passed/), expect.stringMatching(/checks finished$/)])
+    expect([...document.querySelectorAll('.mcp-turn--answer samp')].map((output) => output.textContent)).toEqual([expect.stringMatching(/^2 passed/), expect.stringMatching(/checks finished$/)])
     expect(document.querySelector('.mcp-provenance'), 'how the recording was made is for the commit that refreshed it').toBeNull()
     expect(document.body.textContent).not.toMatch(/recorded against|private tmux|illustrative|is shown as|generation differs/i)
   })
@@ -433,7 +433,8 @@ describe('the showcase section', () => {
       expect(closing).toHaveLength(1)
       expect(closing[0]!.querySelector('.mcp-turn__who')!.textContent).toBe('Agent')
       expect([...closing[0]!.querySelectorAll('p')].map((paragraph) => paragraph.textContent).join(' ').replace(/\s+/g, ' ').trim()).toBe(reply.replaceAll('"', ''))
-      expect([...closing[0]!.querySelectorAll('q')].map((quoted) => quoted.textContent)).toEqual(['2 passed', 'checks finished'])
+      expect([...closing[0]!.querySelectorAll('samp')].map((output) => output.textContent)).toEqual(['2 passed', 'checks finished'])
+      expect(closing[0]!.querySelector('q'), 'printed output is <samp>, not a quotation').toBeNull()
       expect(closing[0]!.getAttribute('data-turn')).toBe(String(EXAMPLES[port]!.steps.length))
       expect(closing[0]!.previousElementSibling, 'the last call comes before it').toBe([...document.querySelectorAll('article.mcp-turn')].at(-1))
     })
@@ -443,7 +444,7 @@ describe('the showcase section', () => {
       expect(recorded.querySelectorAll('.mcp-turn--answer')).toHaveLength(1)
       expect(recorded.querySelector('.mcp-turn--answer')!.textContent).not.toContain('it printed')
       // Control: Go's recording without a reply still closes on the answer derived from its panes, and Julia's, which has none to derive, does not close.
-      expect([...(await withReply('go')).querySelectorAll('.mcp-turn--answer q')].map((quoted) => quoted.textContent)).toEqual([expect.stringMatching(/^2 passed/), expect.stringMatching(/checks finished$/)])
+      expect([...(await withReply('go')).querySelectorAll('.mcp-turn--answer samp')].map((output) => output.textContent)).toEqual([expect.stringMatching(/^2 passed/), expect.stringMatching(/checks finished$/)])
       expect((await withReply('julia')).querySelector('.mcp-turn--answer')).toBeNull()
     })
   })
@@ -844,9 +845,9 @@ describe('a recording made at an earlier revision', () => {
 })
 
 describe('the agent\'s closing reply', () => {
-  it('reads paragraphs, inline code and the output it quotes, and nothing else (record 0074)', () => {
+  it('reads paragraphs, inline code and the printed output it quotes, and nothing else (record 0074)', () => {
     expect(replyParagraphs('pytest printed "2 passed" in `checks.log`.\n\nI removed the *checks* session.')).toEqual([
-      [{ kind: 'text', text: 'pytest printed ' }, { kind: 'quote', text: '2 passed' }, { kind: 'text', text: ' in ' }, { kind: 'code', text: 'checks.log' }, { kind: 'text', text: '.' }],
+      [{ kind: 'text', text: 'pytest printed ' }, { kind: 'output', text: '2 passed' }, { kind: 'text', text: ' in ' }, { kind: 'code', text: 'checks.log' }, { kind: 'text', text: '.' }],
       [{ kind: 'text', text: 'I removed the *checks* session.' }],
     ])
   })

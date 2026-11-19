@@ -101,12 +101,12 @@ const note = (frame: Frame) => {
         )
       })}
       {recording && (reply || answers.length > 0) && (
-        // The agent's closing reply is its words, not a step: no tool, result or pin, and no mark on the rail (record 0074).
+        // The agent's closing reply is its words, not a step: no tool, result or pin, and no mark on the rail. Output it quotes is <samp> (record 0074).
         <div class="mcp-turn mcp-turn--answer" data-turn={total} data-off>
           <span class="mcp-turn__who">Agent</span>
           {reply
-            ? replyParagraphs(reply).map((runs) => <p>{runs.map((run) => (run.kind === 'code' ? <code>{run.text}</code> : run.kind === 'quote' ? <q>{run.text}</q> : run.text))}</p>)
-            : <p>{answers.map((answer, index) => <>{index > 0 && '; '}{answer.pane ? `in ${answer.pane} it` : 'It'} printed <q>{answer.line}</q></>)}.</p>}
+            ? replyParagraphs(reply).map((runs) => <p>{runs.map((run) => (run.kind === 'code' ? <code>{run.text}</code> : run.kind === 'output' ? <samp>{run.text}</samp> : run.text))}</p>)
+            : <p>{answers.map((answer, index) => <>{index > 0 && '; '}{answer.pane ? `in ${answer.pane} it` : 'It'} printed <samp>{answer.line}</samp></>)}.</p>}
         </div>
       )}
     </div>

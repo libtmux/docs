@@ -201,7 +201,7 @@ describe('the landing page markup', () => {
     expect(calls).toEqual(EXAMPLES.rs!.steps.map((step) => ({ tool: step.tool, arguments: step.arguments })))
     expect(panel.querySelector('.mcp-call .mcp-tier')).not.toBeNull()
     expect([...panel.querySelectorAll('article.mcp-turn')].every((item) => item.querySelector('details.mcp-result pre'))).toBe(true)
-    expect(panel.querySelector('.mcp-turn--answer q')!.textContent).toMatch(/2 passed/)
+    expect(panel.querySelector('.mcp-turn--answer samp')!.textContent).toMatch(/2 passed/)
     const hrefs = [...panel.querySelectorAll('.landing-links a')].map((link) => link.getAttribute('href'))
     expect(hrefs).toContain('/rs/latest/mcp/#tools-by-tier')
     expect(hrefs).toContain(showcase.toolsHref)

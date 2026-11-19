@@ -480,7 +480,7 @@ describe('the replay component', () => {
       expect(rule(css, '.mcp-turn--user p'), 'the prompt is not bold').not.toMatch(/font-weight: [6-9]00/)
       // Record 0074: the closing reply is people's words, at the prompt's size and weight, with inline code in mono.
       expect(rule(css, '.mcp-turn--answer p')).toMatch(/font-size: 0\.9375rem;[^}]*font-weight: 400;/)
-      expect(rule(css, '.mcp-turn--answer code')).toMatch(/font-family: var\(--mcp-mono\);/)
+      expect(rule(css, '.mcp-turn--answer :is(code, samp)')).toMatch(/font-family: var\(--mcp-mono\);/)
       expect(rule(css, '.mcp-call'), 'tool names and arguments stay mono').toMatch(/font-family: var\(--mcp-mono\);/)
     })
 
@@ -914,7 +914,9 @@ describe('the replay component', () => {
     expect(reply.classList.contains('mcp-turn--answer')).toBe(true)
     expect(reply.querySelector('.mcp-turn__who')!.textContent).toBe('Agent')
     expect(reply.querySelector('[data-pin], .mcp-call, .mcp-tier, details.mcp-result'), 'no tool, tier, arguments, result or pin').toBeNull()
-    expect(reply.querySelector('p q')!.textContent).toBe('2 passed')
+    // Quoted output is verified terminal output: <samp> in mono, with no quotation marks (record 0074).
+    expect(reply.querySelector('p samp')!.textContent).toBe('2 passed')
+    expect(reply.textContent, 'no quotation marks around it').not.toContain('"2 passed"')
     const { win, document } = await mount('ts', { run: true, reduced: true })
     expect(document.querySelectorAll('[data-mark]'), 'one mark per call and the start, none for the reply').toHaveLength(CALLS.ts + 1)
     expect(document.querySelector('[data-count]')!.textContent).toBe(`${CALLS.ts}/${CALLS.ts}`)

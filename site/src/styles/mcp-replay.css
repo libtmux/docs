@@ -257,7 +257,7 @@ html[data-js] .mcp-replay .mcp-turn[data-turn]:not([data-turn='prompt']) {
   line-height: 1.55;
 }
 
-/* Record 0074: the agent's closing reply is people's words, like the prompt: the sans face at its size and body weight in the full text colour, with inline code in mono. */
+/* Record 0074: the agent's closing reply is people's words, like the prompt: the sans face at its size and body weight in the full text colour, with inline code and the output it quotes in mono. */
 .mcp-turn--answer p {
   margin: 0;
   font-size: 0.9375rem;
@@ -269,7 +269,7 @@ html[data-js] .mcp-replay .mcp-turn[data-turn]:not([data-turn='prompt']) {
   margin-top: 0.5rem;
 }
 
-.mcp-turn--answer code {
+.mcp-turn--answer :is(code, samp) {
   font-family: var(--mcp-mono);
   font-size: 0.875em;
 }
