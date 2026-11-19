@@ -40,7 +40,7 @@ interface HaskellArtifact {
     }
   }
   modules: { name: string; groups: { title: string; members: string[] }[];
-    reexports?: { module: string; href: string }[] }[]
+    reexports?: { module: string; href: string; members?: string[] }[] }[]
   symbols: NativeSymbol[]
 }
 
@@ -61,6 +61,9 @@ const MUTATION_ORIGINS = [...QUERY_ORIGINS, 'LibTmux.Internal.Mutation']
 const CREATION_MODULES = [...QUERY_MODULES, 'LibTmux.Creation'].toSorted()
 const CREATION_ORIGINS = [...CREATION_MODULES,
   ...MUTATION_ORIGINS.filter((module) => !QUERY_MODULES.includes(module)), 'LibTmux.Internal.Creation']
+const PROGRAM_MODULES = [...CREATION_MODULES, 'LibTmux.Capabilities', 'LibTmux.Program'].toSorted()
+const PROGRAM_ORIGINS = [...PROGRAM_MODULES,
+  ...CREATION_ORIGINS.filter((module) => !CREATION_MODULES.includes(module)), 'LibTmux.Internal.Program']
 const VERSION = /^(?:0|[1-9]\d*)(?:\.(?:0|[1-9]\d*))+$/
 
 /** The shell reads fewer than three bold-led rows as prose, so a smaller export list gets no directory. */
@@ -135,7 +138,8 @@ function validateSignature(signature: Signature, symbol: NativeSymbol, byId: Map
 export function extractHaskellArtifact(input: unknown, expectedRevision?: string): ApiModel {
   check(input && typeof input === 'object', 'missing document')
   const artifact = structuredClone(input) as HaskellArtifact
-  const creations = artifact.schema === 'libtmux.haskell-api/5' && artifact.profile === 'creations/1'
+  const programs = artifact.schema === 'libtmux.haskell-api/6' && artifact.profile === 'programs/1'
+  const creations = programs || (artifact.schema === 'libtmux.haskell-api/5' && artifact.profile === 'creations/1')
   const mutations = creations || (artifact.schema === 'libtmux.haskell-api/4' && artifact.profile === 'mutations/1')
   const queries = mutations || (artifact.schema === 'libtmux.haskell-api/3' && artifact.profile === 'queries/1')
   const observations = queries || (artifact.schema === 'libtmux.haskell-api/2' && artifact.profile === 'observations/1')
@@ -148,7 +152,7 @@ export function extractHaskellArtifact(input: unknown, expectedRevision?: string
   check(artifact.package?.name === 'libtmux-haskell' && VERSION.test(artifact.package.version) &&
     Array.isArray(artifact.package.exposedModules) && artifact.package.exposedModules.length, 'invalid Cabal package identity')
   const modules = artifact.package.exposedModules
-  const qualified = creations ? CREATION_MODULES : queries ? QUERY_MODULES : observations ? OBSERVATION_MODULES : QUALIFIED_MODULES
+  const qualified = programs ? PROGRAM_MODULES : creations ? CREATION_MODULES : queries ? QUERY_MODULES : observations ? OBSERVATION_MODULES : QUALIFIED_MODULES
   check(modules.length === qualified.length && modules.every((module, index) => module === qualified[index]),
     'unqualified exposed module profile')
   check(Array.isArray(artifact.modules) && artifact.modules.length === modules.length &&
@@ -162,18 +166,21 @@ export function extractHaskellArtifact(input: unknown, expectedRevision?: string
       check(Array.isArray(module.reexports) && (module.name === 'LibTmux' ? module.reexports.length > 0 : !module.reexports.length) &&
         module.reexports.every((item) => item && modules.includes(item.module) && item.module !== module.name &&
           !seen.has(item.module) && seen.add(item.module) &&
-          item.href === `${item.module.replaceAll('.', '-')}.html`), `invalid module reexports for ${module.name}`)
+          item.href === `${item.module.replaceAll('.', '-')}.html` &&
+          (item.members === undefined || (programs && item.module === 'LibTmux.Program' &&
+            Array.isArray(item.members) && item.members.length > 0 && new Set(item.members).size === item.members.length))),
+      `invalid module reexports for ${module.name}`)
     }
   }
   const exporter = artifact.nativeProvenance?.exporter
-  check(exporter?.name === 'Haddock public interface export' && exporter.version === (creations ? 5 : mutations ? 4 : queries ? 3 : observations ? 2 : 1) && exporter.repository === 'libtmux/docs' &&
+  check(exporter?.name === 'Haddock public interface export' && exporter.version === (programs ? 6 : creations ? 5 : mutations ? 4 : queries ? 3 : observations ? 2 : 1) && exporter.repository === 'libtmux/docs' &&
     typeof exporter.revision === 'string' && COMMIT.test(exporter.revision) &&
     exporter.path === 'packages/api-model/scripts/export-haskell.py' && HASH.test(exporter.sha256), 'missing committed producer identity')
   check(exporter.build?.compiler === `ghc-${artifact.compiler}` && exporter.build.cabal === '3.18.2.0' &&
     exporter.build.unit === `${artifact.package.name}-${artifact.package.version}-inplace` &&
     typeof exporter.build.platform === 'string' && /^[\w]+-[\w]+$/.test(exporter.build.platform) &&
     ['stdout', 'stderr'].includes(exporter.interfaceStream), 'invalid configured native build')
-  const origins = creations ? CREATION_ORIGINS : mutations ? MUTATION_ORIGINS : queries ? QUERY_ORIGINS : observations ? OBSERVATION_ORIGINS : modules
+  const origins = programs ? PROGRAM_ORIGINS : creations ? CREATION_ORIGINS : mutations ? MUTATION_ORIGINS : queries ? QUERY_ORIGINS : observations ? OBSERVATION_ORIGINS : modules
   const sourceFile = (module: string) => `${module.startsWith('LibTmux.Internal.') ? 'internal' : 'src'}/${module.replaceAll('.', '/')}.hs`
   const sourceFiles = origins.map(sourceFile)
   hashedInputs(artifact.nativeProvenance.files, ['.tool-versions', 'cabal.project', 'libtmux-haskell.cabal', ...sourceFiles], 'source inputs')
@@ -224,6 +231,19 @@ export function extractHaskellArtifact(input: unknown, expectedRevision?: string
     byId.set(symbol.id, symbol)
   }
   check(modules.every((module) => byId.get(module)?.kind === 'module'), 'missing public module declaration')
+  for (const module of artifact.modules) {
+    for (const reexport of module.reexports ?? []) {
+      for (const id of reexport.members ?? []) {
+        const target = byId.get(id)
+        check(target?.namespace === reexport.module && target.nativeLocation?.anchor,
+          `invalid partial reexport ${id} in ${module.name}`)
+        const href = `${module.name.replaceAll('.', '-')}.html#${target.nativeLocation.anchor}`
+        const targets = destinations.get(href) ?? []
+        if (!targets.includes(id)) targets.push(id)
+        destinations.set(href, targets)
+      }
+    }
+  }
   const constructorOwners = new Set(artifact.symbols.filter((symbol) => symbol.kind === 'function' &&
     symbol.signatures[0]?.methodKind === 'constructor').map((symbol) => symbol.parent))
   for (const symbol of artifact.symbols) {
@@ -272,7 +292,7 @@ export function extractHaskellArtifact(input: unknown, expectedRevision?: string
       if (reexports.length) {
         for (const item of reexports) refer(item.module)
         doc = { summary: doc?.summary ?? '', body: [doc?.body, '## Reexports',
-          reexports.map((item) => `- :obj:\`${item.module} <${item.module}>\``).join('\n')].filter(Boolean).join('\n\n') }
+          reexports.map((item) => `- :obj:\`${item.module} <${item.module}>\`${item.members ? ' (selected exports)' : ''}`).join('\n')].filter(Boolean).join('\n\n') }
       }
     }
     if (native.kind === 'module') {
