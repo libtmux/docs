@@ -863,7 +863,8 @@ const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
       ...['WindowSlot', 'WindowPlacement', 'WindowCollision', 'WindowOptions', 'CreatedWindow']
         .map((name) => `LibTmux.Creation#t:${name}`),
       ...['createWindow', 'createWindowWith', 'killWindow', 'killWindowWith', 'linkWindow', 'linkWindowWith',
-        'unlinkWindow', 'unlinkWindowWith', 'selectWindowLink', 'selectWindowLinkWith'].map((name) => `LibTmux.Server#v:${name}`),
+        'unlinkWindow', 'unlinkWindowWith', 'selectWindowLink', 'selectWindowLinkWith', 'resizeWindow', 'resizeWindowWith']
+        .map((name) => `LibTmux.Server#v:${name}`),
     ],
     pane: ['LibTmux.Pane', 'LibTmux.Server#t:PaneInput', 'LibTmux.Server#t:PaneText',
       ...['SplitDirection', 'SplitSize', 'SplitOptions', 'CreatedPane'].map((name) => `LibTmux.Creation#t:${name}`),
@@ -872,8 +873,9 @@ const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
       'LibTmux.Pane#v:defaultPaneCapture',
       ...['PaneWaitOptions', 'PaneWaitResult', 'PaneMatch'].map((name) => `LibTmux.Server#t:${name}`),
       ...['splitPane', 'splitPaneWith', 'sendKeys', 'sendKeysWith', 'killPane', 'killPaneWith', 'capturePane', 'paneText',
-        'selectExactPane', 'selectExactPaneWith', 'defaultPaneWait', 'waitForText']
+        'selectExactPane', 'selectExactPaneWith', 'defaultPaneWait', 'waitForText', 'resizePane', 'resizePaneWith']
         .map((name) => `LibTmux.Server#v:${name}`)],
+    options: ['LibTmux.Options'],
     snapshots: ['LibTmux.Snapshot#t:TmuxText'],
   },
   // Elixir's modules are named for what they do rather than for a tmux object.
