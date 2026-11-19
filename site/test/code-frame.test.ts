@@ -453,7 +453,7 @@ describe('the long frames of the pages the design review named', () => {
     const markdown = readFileSync(file, 'utf8')
     const tree = fromMarkdown(markdown) as { children: { type: string; meta?: string | null; value: string }[] }
     remarkPortCode.call({ parse: (text: string) => fromMarkdown(text) } as never)(tree as never, { path: file, value: markdown, data: {} } as never)
-    return tree.children.filter((node) => node.type === 'code').map((node) => ({ ...parseFenceAttributes(node.meta), lines: node.value.split('\n').length }))
+    return tree.children.filter((node) => node.type === 'code').map((node) => ({ attributes: parseFenceAttributes(node.meta), total: node.value.split('\n').length }))
   }
 
   it.each([
@@ -461,18 +461,18 @@ describe('the long frames of the pages the design review named', () => {
     ['ports/rs/guides/control-mode.md', 'control.rs', 138],
     ['ports/go/mcp/examples/run-command.md', 'main.go', 145],
   ])('caps the program of %s at 24 lines', (path, title, total) => {
-    const program = frames(path).find((frame) => frame.title === title)!
-    expect(program.lines).toBe(total)
-    expect(program.height).toBe('24')
+    const program = frames(path).find((frame) => frame.attributes.title === title)!
+    expect(program.total).toBe(total)
+    expect(program.attributes.height).toBe('24')
   })
 
   it.each([
     ['ports/go/examples/attach-and-send-keys.md', 98],
     ['ports/go/examples/capture-pane-output.md', 80],
   ])('keeps the cap on the long program of %s, which the removed default capped', (path, total) => {
-    const program = frames(path).filter((frame) => frame.lines === total)
+    const program = frames(path).filter((frame) => frame.total === total)
     expect(program).toHaveLength(1)
-    expect(program[0]!.height).toBe('24')
+    expect(program[0]!.attributes.height).toBe('24')
   })
 })
 
