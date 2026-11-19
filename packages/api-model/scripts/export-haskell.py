@@ -71,6 +71,12 @@ PANE_ORIGINS = [
     *PANE_MODULES,
     *(module for module in PROGRAM_ORIGINS if module not in PROGRAM_MODULES),
 ]
+ENVIRONMENT_MODULES = sorted([*PANE_MODULES, "LibTmux.Environment"])
+ENVIRONMENT_ORIGINS = [
+    *ENVIRONMENT_MODULES,
+    *(module for module in PANE_ORIGINS if module not in PANE_MODULES),
+    "LibTmux.Internal.Command",
+]
 
 
 def _source_file(module):
@@ -261,16 +267,24 @@ def extract_modules(pages, installed, exposed, locations, revision, source_pages
             msg = f"Configured public module is absent or hidden: {module}"
             raise ValueError(msg)
     observations = "LibTmux" in exposed
-    pane_text = exposed == PANE_MODULES
+    environments = exposed == ENVIRONMENT_MODULES
+    pane_text = environments or exposed == PANE_MODULES
     programs = pane_text or exposed == PROGRAM_MODULES
     creations = programs or exposed == CREATION_MODULES
-    rich = exposed in [QUERY_MODULES, CREATION_MODULES, PROGRAM_MODULES, PANE_MODULES]
+    rich = exposed in [
+        QUERY_MODULES,
+        CREATION_MODULES,
+        PROGRAM_MODULES,
+        PANE_MODULES,
+        ENVIRONMENT_MODULES,
+    ]
     if observations and exposed not in [
         OBSERVATION_MODULES,
         QUERY_MODULES,
         CREATION_MODULES,
         PROGRAM_MODULES,
         PANE_MODULES,
+        ENVIRONMENT_MODULES,
     ]:
         msg = "Unqualified observation module profile"
         raise ValueError(msg)
@@ -282,7 +296,9 @@ def extract_modules(pages, installed, exposed, locations, revision, source_pages
         msg = "Unqualified mutation module profile"
         raise ValueError(msg)
     source_modules = (
-        PANE_ORIGINS
+        ENVIRONMENT_ORIGINS
+        if environments
+        else PANE_ORIGINS
         if pane_text
         else PROGRAM_ORIGINS
         if programs
@@ -1018,11 +1034,13 @@ def build_native(checkout, revision, native_output=None):
             CREATION_MODULES,
             PROGRAM_MODULES,
             PANE_MODULES,
+            ENVIRONMENT_MODULES,
         ]:
             msg = "Unqualified configured public module profile"
             raise ValueError(msg)
         mutations = "LibTmux.Internal.Mutation" in field("hidden-modules").split()
-        pane_text = modules == PANE_MODULES
+        environments = modules == ENVIRONMENT_MODULES
+        pane_text = environments or modules == PANE_MODULES
         programs = pane_text or modules == PROGRAM_MODULES
         creations = programs or modules == CREATION_MODULES
         if creations and not mutations:
@@ -1033,13 +1051,22 @@ def build_native(checkout, revision, native_output=None):
             CREATION_MODULES,
             PROGRAM_MODULES,
             PANE_MODULES,
+            ENVIRONMENT_MODULES,
         ]:
             msg = "Unqualified configured mutation module profile"
             raise ValueError(msg)
-        queries = modules in [QUERY_MODULES, CREATION_MODULES, PROGRAM_MODULES, PANE_MODULES]
+        queries = modules in [
+            QUERY_MODULES,
+            CREATION_MODULES,
+            PROGRAM_MODULES,
+            PANE_MODULES,
+            ENVIRONMENT_MODULES,
+        ]
         observations = queries or modules == OBSERVATION_MODULES
         source_modules = (
-            PANE_ORIGINS
+            ENVIRONMENT_ORIGINS
+            if environments
+            else PANE_ORIGINS
             if pane_text
             else PROGRAM_ORIGINS
             if programs
@@ -1112,7 +1139,9 @@ def build_native(checkout, revision, native_output=None):
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes(data)
         return {
-            "schema": "libtmux.haskell-api/7"
+            "schema": "libtmux.haskell-api/8"
+            if environments
+            else "libtmux.haskell-api/7"
             if pane_text
             else "libtmux.haskell-api/6"
             if programs
@@ -1127,7 +1156,9 @@ def build_native(checkout, revision, native_output=None):
             else "libtmux.haskell-api/1",
             **(
                 {
-                    "profile": "pane-text/1"
+                    "profile": "environment/1"
+                    if environments
+                    else "pane-text/1"
                     if pane_text
                     else "programs/1"
                     if programs
@@ -1160,7 +1191,9 @@ def build_native(checkout, revision, native_output=None):
                 ],
                 "exporter": {
                     "name": "Haddock public interface export",
-                    "version": 7
+                    "version": 8
+                    if environments
+                    else 7
                     if pane_text
                     else 6
                     if programs
