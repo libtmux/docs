@@ -443,7 +443,7 @@ export const INVENTORY: Readonly<Record<string, readonly InventoryEntry[]>> = {
   ],
   haskell: [
     haskellSource({ id: 'libtmux-haskell', kind: 'library', product: 'core', unit: 'Cabal package', label: 'libtmux-haskell', path: 'src',
-      aliases: ['LibTmux', 'LibTmux.Server', 'LibTmux.Creation', 'LibTmux.Snapshot', 'LibTmux.Query', 'LibTmux.Snapshot.Fixture', 'LibTmux.Id', 'LibTmux.Value', 'LibTmux.Version'], note: 'Available from source; not published on Hackage.',
+      aliases: ['LibTmux', 'LibTmux.Server', 'LibTmux.Creation', 'LibTmux.Program', 'LibTmux.Capabilities', 'LibTmux.Pane', 'LibTmux.Environment', 'LibTmux.Snapshot', 'LibTmux.Query', 'LibTmux.Snapshot.Fixture', 'LibTmux.Id', 'LibTmux.Value', 'LibTmux.Version'], note: 'Available from source; not published on Hackage.',
       unavailable: [{ kind: 'package', host: 'Hackage', url: 'https://hackage.haskell.org/package/libtmux-haskell', reason: 'not published' }] }),
     haskell({ id: 'repository', kind: 'source', product: 'core', label: 'libtmux-haskell', coordinate: 'libtmux/libtmux-haskell' }),
     haskell({ id: 'libtmux-haskell-workspace', kind: 'companion', product: 'workspace', label: 'libtmux-haskell-workspace', status: 'planned',

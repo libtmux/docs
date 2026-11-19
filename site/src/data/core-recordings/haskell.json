@@ -20,7 +20,7 @@
         "file": "Main.hs",
         "sha256": "dfd6f9876b43fbbc2471c2f2b2f11ec5a7ee366a7343fafb9e9fa8b0d21b6165"
       },
-      "revision": "a1b058b3143587b1fbb7846a6ac846bcc22e94a4",
+      "revision": "ac127a605d6861d912d89efb9199d470bbfbb987",
       "stepMap": "hand-written",
       "printed": [
         "session: demo -> workspace",

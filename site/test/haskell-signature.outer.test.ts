@@ -8,7 +8,7 @@ import { apiSignatureLayouts, signatureSpans } from '../src/lib/code-layout'
 import { parseApiProse } from '@libtmux/api-model/reference'
 import { symbolMarkdownWithLayout } from '../src/lib/symbol-markdown'
 import { displayedSignature, renderSignatures } from './signature-fragment'
-import native from '../../packages/api-model/test/fixtures/haskell-creations-native/artifact.json'
+import native from '../../packages/api-model/test/fixtures/haskell-environment-native/artifact.json'
 
 const model = JSON.parse(readFileSync(new URL('../src/data/api/haskell.json', import.meta.url), 'utf8')) as ApiModel
 const index = new SymbolIndex(model.symbols, (symbol) => `/en/haskell/latest/reference/${symbol.slug}/`, 'haskell')
@@ -56,8 +56,8 @@ describe('native Haddock signatures', () => {
       (count, signature) => count + signature.nativeSpans.filter((span) => 'href' in span && span.href).length, 0), 0))
   })
 
-  it('renders each real production header with native links and its own declaration anchor', async () => {
-    for (const symbol of declarations) {
+  it.each([...Map.groupBy(declarations, (symbol) => symbol.namespace)])('renders each %s production header with native links and its own declaration anchor', async (_module, headers) => {
+    for (const symbol of headers) {
       const nameHref = index.resolve(symbol.id)!.href
       const rendered = await renderSignatures(symbol, 'haskell', index, nameHref)
       try {

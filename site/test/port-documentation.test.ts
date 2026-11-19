@@ -11,6 +11,7 @@ describe('port documentation domains', () => {
       ['docs/capture.md', 'guides/capture'],
       ['docs/query.md', 'guides/query'],
       ['docs/creation.md', 'guides/creation'],
+      ['docs/programs.md', 'guides/programs'],
       ['docs/mutations.md', 'guides/mutations'],
       ['docs/shared-runtime.md', 'guides/shared-runtime'],
       ['docs/fixtures.md', 'guides/offline-fixtures'],

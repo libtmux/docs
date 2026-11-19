@@ -1176,6 +1176,11 @@
       "heading": "4.2.1 Algebraic Datatype Declarations"
     },
     {
+      "label": "Haskell type synonym declarations",
+      "url": "https://www.haskell.org/onlinereport/haskell2010/haskellch4.html#x10-730004.2.2",
+      "heading": "4.2.2 Type Synonym Declarations"
+    },
+    {
       "label": "Haskell function bindings",
       "url": "https://www.haskell.org/onlinereport/haskell2010/haskellch4.html#x10-830004.4.3",
       "heading": "4.4.3 Function and Pattern Bindings"
