@@ -323,12 +323,14 @@
   },
   "haskell": {
     "title": "tmux client library for Haskell",
-    "lead": "Create and query tmux targets, send input, transfer buffers, resize geometry and configure scoped options and hooks.",
+    "lead": "Create and query tmux targets, transfer buffers, configure scoped settings and observe bounded control events.",
     "modules": [
       "LibTmux.Server",
       "LibTmux.Creation",
       "LibTmux.Pane",
       "LibTmux.Program",
+      "LibTmux.Control",
+      "LibTmux.Recovery",
       "LibTmux.Capabilities",
       "LibTmux.Environment",
       "LibTmux.Options",

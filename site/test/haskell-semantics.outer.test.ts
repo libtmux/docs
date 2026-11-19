@@ -12,7 +12,7 @@ import { nativeQualifiedName, nativeShortName } from '../src/lib/native-name'
 import { writtenForm } from '../src/lib/symbol-form'
 import { symbolMarkdownWithLayout } from '../src/lib/symbol-markdown'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
-import native from '../../packages/api-model/test/fixtures/haskell-options-native/artifact.json'
+import native from '../../packages/api-model/test/fixtures/haskell-control-native/artifact.json'
 
 vi.mock('astro:content', () => ({ getCollection: async () => [] }))
 

@@ -467,8 +467,8 @@ export function portParts(args: {
 
   const setup = [
     ...(observationApi ? [
-      'Haskell creates and queries tmux targets, sends pane input, transfers buffers,',
-      'resizes geometry and configures scoped options and hooks. It runs owned',
+      'Haskell creates and queries tmux targets, transfers buffers, configures scoped',
+      'settings and observes bounded control events. It runs owned',
       'terminal applications on a borrowed daemon. Documentation',
     ] : [
       'libtmux drives a real tmux server from code. It gives you objects for the',

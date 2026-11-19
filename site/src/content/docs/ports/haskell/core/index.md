@@ -2,7 +2,7 @@
 port: haskell
 route: core
 title: "tmux client library for Haskell"
-description: "tmux client library for Haskell. Create and query tmux targets, send input, transfer buffers, resize geometry and configure scoped options and hooks."
+description: "tmux client library for Haskell. Create and query tmux targets, transfer buffers, configure scoped settings and observe bounded control events."
 cards:
   - label: Getting started
     href: ../guides/getting-started/
@@ -13,6 +13,9 @@ cards:
   - label: Run terminal applications
     href: ../guides/programs/
     body: Send literal input, observe rendered output and clean up owned application resources.
+  - label: Observe control notifications
+    href: ../guides/control/
+    body: Read bounded events through STM and retire the attached observer with its scope.
   - label: Capture and traverse
     href: ../guides/capture/
     body: Follow physical panes and linked-window context in one snapshot.
@@ -50,3 +53,12 @@ Use `withProgram` or `runProgram` for an owned terminal application on that
 borrowed daemon. Program operations require tmux 3.8, Linux 6.9 process-group
 pidfds and compatible Bash. The [program guide](../guides/programs/) explains
 the host checks, rendered output bounds and cleanup ownership.
+
+Open `withControl` for an attached observer on an exact session. Its client is
+excluded from sizing and session environment updates. tmux still counts the
+attachment and can run attach hooks. The scope exposes bounded observations;
+it has no Haskell command writer. The [control guide](../guides/control/)
+shows a real window rename and the queue's terminal outcomes.
+
+Import `LibTmux.Recovery` to inspect and resume retained operation owners after
+incomplete cleanup. Keep exception context when handling those failures.
