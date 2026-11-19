@@ -323,17 +323,34 @@ export interface ReferenceNavigation {
   hrefs: Record<string, string>
 }
 
-/** Reject dependency navigation when its reviewed package or source changes. */
+const warnedDeclarations = new Set<string>()
+
+/**
+ * Reject dependency navigation when the package or source this repository ships differs from the reviewed pin.
+ *
+ * The consumer's model records only the declaration's digest, so a changed digest cannot fail the build: the pinned
+ * navigation still applies, and the port cannot update this repository's pin from its own docs job. It warns once.
+ */
 export function validateNavigationDependency(consumer: ApiModel, dependency: ApiModel, selection: ApiDependencyNavigation): void {
-  const declaration = consumer.nativeProvenance?.files.find((file) => file.path === selection.declaration.path)
+  const { path, sha256 } = selection.declaration
+  const declaration = consumer.nativeProvenance?.files.find((file) => file.path === path)
   const source = dependency.sources?.find((entry) => entry.product === 'core' && entry.package === selection.package)
-  if (declaration?.sha256 !== selection.declaration.sha256) {
-    throw new Error(`${consumer.port} navigation: review the changed ${selection.declaration.path} dependency declaration`)
+  if (!declaration) throw new Error(`${consumer.port} navigation: ${path} is missing from the native provenance`)
+  if (!/^[a-f0-9]{64}$/.test(declaration.sha256)) {
+    throw new Error(`${consumer.port} navigation: ${path} has a malformed sha256 ${JSON.stringify(declaration.sha256)}`)
   }
   if (dependency.port !== selection.port || source?.version !== selection.version ||
     dependency.revision !== selection.revision || (source?.extractedRevision ?? source?.revision) !== selection.revision) {
     throw new Error(`${consumer.port} navigation requires ${selection.package} ${selection.version} from ${selection.revision}`)
   }
+  if (declaration.sha256 === sha256 || warnedDeclarations.has(`${consumer.port}:${declaration.sha256}`)) return
+  warnedDeclarations.add(`${consumer.port}:${declaration.sha256}`)
+  const message = `${consumer.port} navigation: ${path} changed to sha256 ${declaration.sha256}; ` +
+    `the reviewed ${selection.package} ${selection.version} navigation from ${selection.revision} still applies. ` +
+    `After reviewing the declaration, record the new sha256, and the ${selection.label} release's version and revision ` +
+    `if the ${selection.package} pin moved, in the ${consumer.port} apiDependencyNavigation entry of ports.ts.`
+  if (process.env.GITHUB_ACTIONS === 'true') console.log(`::warning title=Changed ${consumer.port} dependency declaration::${message}`)
+  else console.warn(`warning: ${message}`)
 }
 
 /** Compose navigation without adding dependency declarations to a port's API model. */

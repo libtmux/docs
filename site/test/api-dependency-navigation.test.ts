@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { firstEntry, navTree, referenceNavigation, referenceTree, validateNavigationDependency } from '../src/lib/api-tree'
 import { apiTreeHref, searchApi } from '../src/lib/api-search'
 import { API_MODELS, API_NAV, referenceHref } from '../src/lib/api-models'
@@ -84,7 +84,7 @@ describe('PowerShell returned objects in the reference tree', () => {
     }
   })
 
-  it('accepts only the reviewed package version, source revision and consumer dependency declaration', () => {
+  it('accepts only the reviewed package version and source revision', () => {
     expect(() => validateNavigationDependency(API_MODELS.powershell, API_MODELS.csharp, selection)).not.toThrow()
     const changedVersion = structuredClone(API_MODELS.csharp)
     changedVersion.sources!.find((source) => source.product === 'core')!.version = '0.0.0-alpha.21'
@@ -94,9 +94,43 @@ describe('PowerShell returned objects in the reference tree', () => {
     const changedPackageSource = structuredClone(API_MODELS.csharp)
     changedPackageSource.sources!.find((source) => source.product === 'core')!.extractedRevision = '0'.repeat(40)
     expect(() => validateNavigationDependency(API_MODELS.powershell, changedPackageSource, selection)).toThrow('requires LibTmux')
-    const changedDeclaration = structuredClone(API_MODELS.powershell)
-    changedDeclaration.nativeProvenance!.files.find((file) => file.path === selection.declaration.path)!.sha256 = '0'.repeat(64)
-    expect(() => validateNavigationDependency(changedDeclaration, API_MODELS.csharp, selection)).toThrow('changed Directory.Packages.props')
+  })
+
+  it('warns once when the consumer dependency declaration changes and rejects a missing or malformed one', () => {
+    const consumer = structuredClone(API_MODELS.powershell)
+    const declaration = consumer.nativeProvenance!.files.find((file) => file.path === selection.declaration.path)!
+    const files = consumer.nativeProvenance!.files
+    const validate = () => validateNavigationDependency(consumer, API_MODELS.csharp, selection)
+    vi.stubEnv('GITHUB_ACTIONS', '')
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {})
+    try {
+      declaration.sha256 = 'a'.repeat(64)
+      expect(validate).not.toThrow()
+      expect(validate).not.toThrow()
+      expect(warn).toHaveBeenCalledTimes(1)
+      expect(warn.mock.calls[0]![0]).toContain(`changed to sha256 ${'a'.repeat(64)}`)
+      expect(warn.mock.calls[0]![0]).toContain(`LibTmux ${selection.version} navigation from ${selection.revision}`)
+
+      vi.stubEnv('GITHUB_ACTIONS', 'true')
+      declaration.sha256 = 'b'.repeat(64)
+      expect(validate).not.toThrow()
+      expect(log.mock.calls[0]![0]).toMatch(/^::warning title=Changed powershell dependency declaration::.*b{64}/)
+      expect(warn).toHaveBeenCalledTimes(1)
+
+      declaration.sha256 = selection.declaration.sha256
+      expect(validate).not.toThrow()
+      expect(log).toHaveBeenCalledTimes(1)
+
+      declaration.sha256 = 'not-a-digest'
+      expect(validate).toThrow('Directory.Packages.props has a malformed sha256 "not-a-digest"')
+      files.splice(files.indexOf(declaration), 1)
+      expect(validate).toThrow('Directory.Packages.props is missing from the native provenance')
+    } finally {
+      vi.unstubAllEnvs()
+      warn.mockRestore()
+      log.mockRestore()
+    }
   })
 
   it('leaves ports without dependency navigation on their existing catalogs', () => {

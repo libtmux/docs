@@ -197,6 +197,11 @@ const taskLabel = (product: 'core' | DocProduct) => product === 'core' ? `Contro
     font-size: .875rem; color: var(--color-muted); cursor: pointer;
   }
   .landing-products label:hover { color: inherit; }
+  @media (pointer: coarse) {
+    .landing-products label { min-height: var(--touch-target); }
+    .landing-links { row-gap: 0; }
+    :is(.landing-task > a, .landing-links a) { display: inline-flex; align-items: center; min-height: var(--touch-target); }
+  }
   .landing-products label:has(:checked) {
     border-color: var(--color-edge); background: var(--color-surface-hover); color: inherit; font-weight: 600;
   }

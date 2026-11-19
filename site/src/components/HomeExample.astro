@@ -166,6 +166,12 @@ const headingRow = heading || Astro.slots.has('hint')
   /* The labels' padding makes the bar's height (one 13px line and 5px above and below, plus the border: 1.5rem), so the whole row is the target and the checkbox and text centre on one line. */
   .home-example-toolbar label { display: inline-flex; align-items: center; gap: .375rem; padding-block: .3125rem; line-height: 1; white-space: nowrap; cursor: pointer; }
   .home-example-toolbar input { margin: 0; }
+  /* On touch the whole label is a touch-target tall row, and the code above it gives up the same height (record 0071). */
+  @media (pointer: coarse) {
+    .home-example-toolbar label { min-height: var(--touch-target); }
+    .home-example-run > summary { padding-block: max(0px, calc((var(--touch-target) - 1lh) / 2)); }
+    .home-example:not([data-player]) .home-example-code:has(> .home-example-toolbar) { --home-toolbar-row: calc(var(--touch-target) + 3px); }
+  }
   .home-example-options input { accent-color: var(--color-link); }
   .home-example-view { display: none; }
   .home-example[data-single-view] [data-home-view="full"] { display: block; }

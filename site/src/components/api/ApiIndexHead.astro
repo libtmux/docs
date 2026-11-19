@@ -47,5 +47,5 @@ const azHref = model ? `${base.replace(/\/?$/, '/')}symbols/${firstIndexLetter(m
   .api-index-view a:focus-visible { outline: 2px solid var(--focus-ring-color, var(--theme-primary)); outline-offset: 2px; }
   .api-index-also { font-size: 0.8125rem; color: var(--color-foreground-muted); }
   .api-index-also code { font-size: 0.75rem; }
-  @media (max-width: 30rem) { .api-index-view a { min-block-size: var(--touch-target, 2.75rem); } }
+  @media (max-width: 30rem), (pointer: coarse) { .api-index-view a { min-block-size: var(--touch-target, 2.75rem); } }
 </style>

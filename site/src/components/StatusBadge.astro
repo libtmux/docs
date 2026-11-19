@@ -47,6 +47,10 @@ const { status, product, id, class: className } = Astro.props
   button.status-badge { cursor: pointer; }
   button.status-badge:hover { background: var(--color-surface-hover); }
   button.status-badge:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
+  @media (pointer: coarse) {
+    button.status-badge { position: relative; }
+    button.status-badge::after { content: ''; position: absolute; inset: min(0px, calc((100% - var(--touch-target)) / 2)); }
+  }
   .status-toggletip { display: inline-block; }
   /* The card follows the API reference preview: a name, one description line and a link, in the same frame. */
   .status-toggletip__card {
