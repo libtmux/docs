@@ -2,7 +2,7 @@
 port: haskell
 route: core
 title: "tmux client library for Haskell"
-description: "tmux client library for Haskell. Create sessions, windows and panes. Send input, observe pane text and query detached snapshots."
+description: "tmux client library for Haskell. Create and query tmux targets, send input, transfer buffers, resize geometry and configure scoped options and hooks."
 cards:
   - label: Getting started
     href: ../guides/getting-started/
@@ -22,6 +22,15 @@ cards:
   - label: Change targets and observe pane text
     href: ../guides/mutations/
     body: Rename, select and remove targets, send input, capture text and wait for a match.
+  - label: Transfer and paste buffers
+    href: ../guides/buffers/
+    body: Round-trip binary bytes and choose a paste newline policy for an exact pane.
+  - label: Resize panes and windows
+    href: ../guides/resizing/
+    body: Request absolute geometry, then capture actual cells and native layout effects.
+  - label: Configure options and hooks
+    href: ../guides/options/
+    body: Select a store, read scalar values and register indexed built-in hooks.
   - label: API reference
     href: ../reference/
     body: Public modules, types, constructors and functions from Haddock.
@@ -33,7 +42,9 @@ cards:
 Adopt a running daemon with `withServer`. Create sessions, windows and panes
 through explicit references, then query detached snapshots. Select window
 links, apply layouts, change named environment entries and observe pane text.
-Capture again to see changes to the object graph.
+Load and paste named binary buffers. Resize physical targets and configure
+scalar options and indexed built-in hooks in explicit stores. Capture again
+to see changes to the object graph.
 
 Use `withProgram` or `runProgram` for an owned terminal application on that
 borrowed daemon. Program operations require tmux 3.8, Linux 6.9 process-group

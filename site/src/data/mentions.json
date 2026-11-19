@@ -7051,6 +7051,83 @@
   },
   {
    "port": "haskell",
+   "symbol": "LibTmux.Options",
+   "page": "/haskell/latest/guides/status/",
+   "title": "Implementation status",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Options#v:EffectiveOption",
+   "page": "/haskell/latest/guides/options/",
+   "title": "Read and change options and hooks",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Options#v:GlobalSessionOptions",
+   "page": "/haskell/latest/guides/options/",
+   "title": "Read and change options and hooks",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Options#v:GlobalWindowOptions",
+   "page": "/haskell/latest/guides/options/",
+   "title": "Read and change options and hooks",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Options#v:knownHooks",
+   "page": "/haskell/latest/guides/options/",
+   "title": "Read and change options and hooks",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Options#v:knownOptions",
+   "page": "/haskell/latest/guides/options/",
+   "title": "Read and change options and hooks",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Options#v:LocalOption",
+   "page": "/haskell/latest/guides/options/",
+   "title": "Read and change options and hooks",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Options#v:lookupHook",
+   "page": "/haskell/latest/guides/options/",
+   "title": "Read and change options and hooks",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Options#v:lookupOption",
+   "page": "/haskell/latest/guides/options/",
+   "title": "Read and change options and hooks",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Options#v:ServerOptions",
+   "page": "/haskell/latest/guides/options/",
+   "title": "Read and change options and hooks",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Options#v:StringValue",
+   "page": "/haskell/latest/guides/options/",
+   "title": "Read and change options and hooks",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
    "symbol": "LibTmux.Pane#v:AnsiStyled",
    "page": "/haskell/latest/guides/mutations/",
    "title": "Change targets and observe pane text",
@@ -7065,9 +7142,23 @@
   },
   {
    "port": "haskell",
+   "symbol": "LibTmux.Pane#v:LineFeedsToCarriageReturns",
+   "page": "/haskell/latest/guides/buffers/",
+   "title": "Transfer and paste buffers",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
    "symbol": "LibTmux.Pane#v:PaneCaptureOptions.rendering",
    "page": "/haskell/latest/guides/mutations/",
    "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Pane#v:PreserveLineFeeds",
+   "page": "/haskell/latest/guides/buffers/",
+   "title": "Transfer and paste buffers",
    "section": "guides"
   },
   {
@@ -7388,6 +7479,13 @@
   {
    "port": "haskell",
    "symbol": "LibTmux.Server",
+   "page": "/haskell/latest/guides/resizing/",
+   "title": "Resize panes and windows",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server",
    "page": "/haskell/latest/guides/status/",
    "title": "Implementation status",
    "section": "guides"
@@ -7411,6 +7509,13 @@
    "symbol": "LibTmux.Server#t:MutationOptions",
    "page": "/haskell/latest/guides/mutations/",
    "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#t:MutationRecovery",
+   "page": "/haskell/latest/guides/resizing/",
+   "title": "Resize panes and windows",
    "section": "guides"
   },
   {
@@ -7464,6 +7569,13 @@
   },
   {
    "port": "haskell",
+   "symbol": "LibTmux.Server#v:BufferTooLarge",
+   "page": "/haskell/latest/guides/buffers/",
+   "title": "Transfer and paste buffers",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
    "symbol": "LibTmux.Server#v:capture",
    "page": "/haskell/latest/guides/capture/",
    "title": "Capture and navigate",
@@ -7488,6 +7600,13 @@
    "symbol": "LibTmux.Server#v:capture",
    "page": "/haskell/latest/guides/query/",
    "title": "Typed queries",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:capture",
+   "page": "/haskell/latest/guides/resizing/",
+   "title": "Resize panes and windows",
    "section": "guides"
   },
   {
@@ -7590,6 +7709,13 @@
   },
   {
    "port": "haskell",
+   "symbol": "LibTmux.Server#v:defaultMutationOptions",
+   "page": "/haskell/latest/guides/resizing/",
+   "title": "Resize panes and windows",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
    "symbol": "LibTmux.Server#v:defaultPaneWait",
    "page": "/haskell/latest/guides/mutations/",
    "title": "Change targets and observe pane text",
@@ -7674,6 +7800,20 @@
   },
   {
    "port": "haskell",
+   "symbol": "LibTmux.Server#v:InvalidMutationArgument",
+   "page": "/haskell/latest/guides/resizing/",
+   "title": "Resize panes and windows",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:InvalidSetting",
+   "page": "/haskell/latest/guides/options/",
+   "title": "Read and change options and hooks",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
    "symbol": "LibTmux.Server#v:InvalidTarget",
    "page": "/haskell/latest/guides/creation/",
    "title": "Create sessions, windows and panes",
@@ -7716,6 +7856,20 @@
   },
   {
    "port": "haskell",
+   "symbol": "LibTmux.Server#v:loadBuffer",
+   "page": "/haskell/latest/guides/buffers/",
+   "title": "Transfer and paste buffers",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:loadBuffer",
+   "page": "/haskell/latest/guides/status/",
+   "title": "Implementation status",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
    "symbol": "LibTmux.Server#v:markEnvironmentRemoved",
    "page": "/haskell/latest/guides/mutations/",
    "title": "Change targets and observe pane text",
@@ -7740,6 +7894,13 @@
    "symbol": "LibTmux.Server#v:MutationAppliedWithErrors",
    "page": "/haskell/latest/guides/mutations/",
    "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:MutationAppliedWithErrors",
+   "page": "/haskell/latest/guides/resizing/",
+   "title": "Resize panes and windows",
    "section": "guides"
   },
   {
@@ -7775,6 +7936,13 @@
    "symbol": "LibTmux.Server#v:MutationRejected",
    "page": "/haskell/latest/guides/mutations/",
    "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:MutationRejected",
+   "page": "/haskell/latest/guides/resizing/",
+   "title": "Resize panes and windows",
    "section": "guides"
   },
   {
@@ -7842,6 +8010,62 @@
   },
   {
    "port": "haskell",
+   "symbol": "LibTmux.Server#v:pasteBuffer",
+   "page": "/haskell/latest/guides/buffers/",
+   "title": "Transfer and paste buffers",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:pasteBuffer",
+   "page": "/haskell/latest/guides/status/",
+   "title": "Implementation status",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:readBuffer",
+   "page": "/haskell/latest/guides/buffers/",
+   "title": "Transfer and paste buffers",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:readBuffer",
+   "page": "/haskell/latest/guides/status/",
+   "title": "Implementation status",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:readHook",
+   "page": "/haskell/latest/guides/options/",
+   "title": "Read and change options and hooks",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:readHook",
+   "page": "/haskell/latest/guides/status/",
+   "title": "Implementation status",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:readOption",
+   "page": "/haskell/latest/guides/options/",
+   "title": "Read and change options and hooks",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:readOption",
+   "page": "/haskell/latest/guides/status/",
+   "title": "Implementation status",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
    "symbol": "LibTmux.Server#v:renameSession",
    "page": "/haskell/latest/guides/mutations/",
    "title": "Change targets and observe pane text",
@@ -7859,6 +8083,48 @@
    "symbol": "LibTmux.Server#v:renameWindowWith",
    "page": "/haskell/latest/guides/mutations/",
    "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:resizePane",
+   "page": "/haskell/latest/guides/resizing/",
+   "title": "Resize panes and windows",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:resizePane",
+   "page": "/haskell/latest/guides/status/",
+   "title": "Implementation status",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:resizePaneWith",
+   "page": "/haskell/latest/guides/resizing/",
+   "title": "Resize panes and windows",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:resizeWindow",
+   "page": "/haskell/latest/guides/resizing/",
+   "title": "Resize panes and windows",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:resizeWindow",
+   "page": "/haskell/latest/guides/status/",
+   "title": "Implementation status",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:resizeWindowWith",
+   "page": "/haskell/latest/guides/resizing/",
+   "title": "Resize panes and windows",
    "section": "guides"
   },
   {
@@ -7941,6 +8207,13 @@
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:serverCapabilities",
+   "page": "/haskell/latest/guides/options/",
+   "title": "Read and change options and hooks",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:serverCapabilities",
    "page": "/haskell/latest/guides/programs/",
    "title": "Run terminal applications",
    "section": "guides"
@@ -7968,9 +8241,44 @@
   },
   {
    "port": "haskell",
+   "symbol": "LibTmux.Server#v:setHook",
+   "page": "/haskell/latest/guides/options/",
+   "title": "Read and change options and hooks",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:setHook",
+   "page": "/haskell/latest/guides/status/",
+   "title": "Implementation status",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:setOption",
+   "page": "/haskell/latest/guides/options/",
+   "title": "Read and change options and hooks",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:setOption",
+   "page": "/haskell/latest/guides/status/",
+   "title": "Implementation status",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
    "symbol": "LibTmux.Server#v:setPaneTitle",
    "page": "/haskell/latest/guides/mutations/",
    "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:SettingReadHookFailed",
+   "page": "/haskell/latest/guides/options/",
+   "title": "Read and change options and hooks",
    "section": "guides"
   },
   {
@@ -8041,6 +8349,20 @@
    "symbol": "LibTmux.Server#v:unsetEnvironment",
    "page": "/haskell/latest/guides/status/",
    "title": "Implementation status",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:unsetHook",
+   "page": "/haskell/latest/guides/options/",
+   "title": "Read and change options and hooks",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:unsetOption",
+   "page": "/haskell/latest/guides/options/",
+   "title": "Read and change options and hooks",
    "section": "guides"
   },
   {
@@ -8185,6 +8507,13 @@
   },
   {
    "port": "haskell",
+   "symbol": "LibTmux.Snapshot#t:PaneRef",
+   "page": "/haskell/latest/guides/resizing/",
+   "title": "Resize panes and windows",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
    "symbol": "LibTmux.Snapshot#t:Snapshot",
    "page": "/haskell/latest/guides/capture/",
    "title": "Capture and navigate",
@@ -8216,6 +8545,13 @@
    "symbol": "LibTmux.Snapshot#t:TmuxText",
    "page": "/haskell/latest/guides/mutations/",
    "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Snapshot#t:WindowRef",
+   "page": "/haskell/latest/guides/resizing/",
+   "title": "Resize panes and windows",
    "section": "guides"
   },
   {
@@ -8255,7 +8591,28 @@
   },
   {
    "port": "haskell",
+   "symbol": "LibTmux.Value#t:Dimension",
+   "page": "/haskell/latest/guides/resizing/",
+   "title": "Resize panes and windows",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
    "symbol": "LibTmux.Value#t:PaneIndex",
+   "page": "/haskell/latest/guides/typed-values/",
+   "title": "Typed values",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Value#t:Resize",
+   "page": "/haskell/latest/guides/resizing/",
+   "title": "Resize panes and windows",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Value#t:Resize",
    "page": "/haskell/latest/guides/typed-values/",
    "title": "Typed values",
    "section": "guides"
@@ -8272,6 +8629,13 @@
    "symbol": "LibTmux.Value#t:WindowIndex",
    "page": "/haskell/latest/guides/typed-values/",
    "title": "Typed values",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Value#v:mkDimension",
+   "page": "/haskell/latest/guides/resizing/",
+   "title": "Resize panes and windows",
    "section": "guides"
   },
   {

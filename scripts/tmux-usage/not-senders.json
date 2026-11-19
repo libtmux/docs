@@ -6096,7 +6096,7 @@
           ]
         },
         {
-          "at": "internal/LibTmux/Internal/Command.hs:132",
+          "at": "internal/LibTmux/Internal/Command.hs:167",
           "has": [
             "([\"new-window\"] <> [\"-d\" | not options.selectWindow]"
           ]
@@ -6122,7 +6122,7 @@
           ]
         },
         {
-          "at": "internal/LibTmux/Internal/Command.hs:152",
+          "at": "internal/LibTmux/Internal/Command.hs:187",
           "has": [
             "([\"split-window\"] <> [\"-d\" | not options.selectPane]"
           ]
@@ -6170,13 +6170,13 @@
       "in": "src/LibTmux/Server.hs",
       "evidence": [
         {
-          "at": "src/LibTmux/Server.hs:475",
+          "at": "src/LibTmux/Server.hs:663",
           "has": [
             "mutate options server generation (Command.SelectWindowLink session index)"
           ]
         },
         {
-          "at": "internal/LibTmux/Internal/Command.hs:501",
+          "at": "internal/LibTmux/Internal/Command.hs:536",
           "has": [
             "pure [\"select-window\", \"-t\", slot]"
           ]
@@ -6196,7 +6196,7 @@
       "in": "src/LibTmux/Server.hs",
       "evidence": [
         {
-          "at": "src/LibTmux/Server.hs:605",
+          "at": "src/LibTmux/Server.hs:871",
           "has": [
             ", waitCapture :: !PaneCaptureOptions"
           ]
@@ -6216,21 +6216,67 @@
       "in": "src/LibTmux/Server.hs",
       "evidence": [
         {
-          "at": "src/LibTmux/Server.hs:644",
+          "at": "src/LibTmux/Server.hs:910",
           "has": [
             "C.waitForPaneText runtime handle executable duration ident settings (decodePaneText settings) needle baseline"
           ]
         },
         {
-          "at": "internal/LibTmux/Internal/Capture.hs:132",
+          "at": "internal/LibTmux/Internal/Capture.hs:133",
           "has": [
             "threadDelay (min 100000 left)"
           ]
         },
         {
-          "at": "internal/LibTmux/Internal/Capture.hs:95",
+          "at": "internal/LibTmux/Internal/Capture.hs:96",
           "has": [
             "R.readPaneCaptureWith P.defaultHooks left runtime client executable pane options"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "haskell",
+      "names": [
+        "RawBufferPasteFlag"
+      ],
+      "commands": [
+        "paste-buffer"
+      ],
+      "kind": "values",
+      "why": "This capability constructor selects metadata about the raw paste flag; it performs no IO.",
+      "in": "src/LibTmux/Capabilities.hs",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Capabilities.hs:67",
+          "has": [
+            "RawBufferPasteFlag -> entry \"paste-buffer-no-vis\""
+          ]
+        }
+      ]
+    },
+    {
+      "port": "haskell",
+      "names": [
+        "readBuffer"
+      ],
+      "commands": [
+        "show-buffer"
+      ],
+      "kind": "other-command",
+      "why": "Binary reads use save-buffer into a private FIFO to preserve arbitrary bytes and trailing newlines.",
+      "in": "src/LibTmux/Server.hs",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.hs:782",
+          "has": [
+            "await (R.mutateWith P.defaultHooks left runtime handle executable (Command.SaveBuffer name pipe))"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:565",
+          "has": [
+            "SaveBuffer name file -> bufferTransfer \"save-buffer\" name file"
           ]
         }
       ]

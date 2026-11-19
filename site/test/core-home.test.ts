@@ -100,7 +100,7 @@ describe('Core Library home page', () => {
       })
       const rows = [...window.document.querySelectorAll('[data-core-home-modules] tbody a')]
       expect(rows.map((row) => row.textContent)).toEqual(['LibTmux.Server', 'LibTmux.Creation', 'LibTmux.Pane',
-        'LibTmux.Program', 'LibTmux.Capabilities', 'LibTmux.Environment', 'LibTmux.Snapshot', 'LibTmux.Query', 'LibTmux.Snapshot.Fixture'])
+        'LibTmux.Program', 'LibTmux.Capabilities', 'LibTmux.Environment', 'LibTmux.Options', 'LibTmux.Snapshot', 'LibTmux.Query', 'LibTmux.Snapshot.Fixture'])
       const markdown = coreHomeMarkdown('haskell', 'latest', 'https://libtmux.org')
       for (const row of rows) expect(markdown).toContain(`https://libtmux.org${row.getAttribute('href')}`)
       expect(window.document.querySelector('[data-core-home-objects]')).toBeNull()

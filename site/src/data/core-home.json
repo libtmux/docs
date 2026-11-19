@@ -323,7 +323,7 @@
   },
   "haskell": {
     "title": "tmux client library for Haskell",
-    "lead": "Create sessions, windows and panes. Send input, observe pane text and query detached snapshots.",
+    "lead": "Create and query tmux targets, send input, transfer buffers, resize geometry and configure scoped options and hooks.",
     "modules": [
       "LibTmux.Server",
       "LibTmux.Creation",
@@ -331,6 +331,7 @@
       "LibTmux.Program",
       "LibTmux.Capabilities",
       "LibTmux.Environment",
+      "LibTmux.Options",
       "LibTmux.Snapshot",
       "LibTmux.Query",
       "LibTmux.Snapshot.Fixture"

@@ -467,9 +467,9 @@ export function portParts(args: {
 
   const setup = [
     ...(observationApi ? [
-      'The Haskell package creates sessions, windows and panes on a running',
-      'daemon, queries detached graphs, sends input and observes pane text.',
-      'It also runs owned terminal applications on a borrowed daemon. Documentation',
+      'Haskell creates and queries tmux targets, sends pane input, transfers buffers,',
+      'resizes geometry and configures scoped options and hooks. It runs owned',
+      'terminal applications on a borrowed daemon. Documentation',
     ] : [
       'libtmux drives a real tmux server from code. It gives you objects for the',
       'server, its sessions, windows and panes. Documentation for every language',
