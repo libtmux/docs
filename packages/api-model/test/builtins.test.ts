@@ -92,11 +92,16 @@ describe('C++ standard references', () => {
 })
 
 describe('standard types in product signatures', () => {
-  it('links the Haskell Natural bound used in the query guide', () => {
+  it('links the Haskell query bound and unit action type', () => {
     const index = new SymbolIndex([], () => '#', 'haskell')
     expect(index.resolve('Natural')).toMatchObject({
       href: 'https://hackage-content.haskell.org/package/base-4.22.0.0/docs/Numeric-Natural.html#t:Natural', external: true,
     })
+    expect(index.resolve('IO ()')).toMatchObject({
+      href: 'https://hackage-content.haskell.org/package/base-4.22.0.0/docs/System-IO.html#t:IO', external: true,
+    })
+    expect(builtinHref('haskell', 'IO ()')).toBe(builtinHref('haskell', 'IO'))
+    expect(index.resolve('Missing ()')).toBeUndefined()
     expect(builtinHref('ts', 'Natural')).toBeUndefined()
   })
 

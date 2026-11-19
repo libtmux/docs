@@ -565,6 +565,7 @@ export function builtinHref(port: string, name: string): string | undefined {
   if (Object.hasOwn(types, name)) return types[name]
   const nativeName = port === 'kotlin'
     ? name.replace(/^kotlin\.(?:collections\.)?/, '')
-    : port === 'scala' ? name.replace(/^scala\.(?:Predef\.|collection\.(?:immutable\.)?|util\.)?/, '') : name
+    : port === 'scala' ? name.replace(/^scala\.(?:Predef\.|collection\.(?:immutable\.)?|util\.)?/, '')
+      : port === 'haskell' ? name.replace(/\s+\(\)$/, '').trimEnd() : name
   return Object.hasOwn(types, nativeName) ? types[nativeName] : undefined
 }
