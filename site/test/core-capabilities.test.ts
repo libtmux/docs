@@ -393,7 +393,7 @@ jobs:
 })
 
 describe('the showcase component', () => {
-  it('shows the real-tmux Haskell query with one complete view and public API links', async () => {
+  it('shows the Haskell private daemon quickstart with one complete view and public API links', async () => {
     const { Window } = await import('happy-dom')
     const { createComponent, renderTemplate } = await import('astro/runtime/server/index.js')
     const { loadAstroTemplate, renderAstroTemplate } = await import('./astro-templates')
@@ -415,9 +415,10 @@ describe('the showcase component', () => {
       expect(window.document.querySelectorAll('[data-home-view]')).toHaveLength(1)
       expect(window.document.querySelector('input, [data-with-cleanup], [data-without-cleanup]')).toBeNull()
       expect(window.document.querySelector('[data-core-apis]')).not.toBeNull()
-      expect(window.document.body.textContent).toContain('private demo server')
-      expect(window.document.body.textContent).toContain('withServer')
-      expect(window.document.body.textContent).toContain('runQuery')
+      expect(view.textContent).toContain('Tmux.withOwnedServer Tmux.defaultOwnedServerConfig')
+      expect(view.textContent).toContain('Tmux.createSession')
+      expect([...window.document.querySelectorAll('[data-home-command]')].map((command) => command.textContent?.trim()))
+        .toEqual(['cabal update', 'cabal run --verbose=0 mutate-graph'])
     } finally { await window.happyDOM.abort() }
   })
   it('leads with the quickstart, then each program once, and shows a port with only the quickstart that one panel, with no list', async () => {
