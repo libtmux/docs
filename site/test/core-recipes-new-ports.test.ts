@@ -595,7 +595,7 @@ describe('the Haskell recording of the landing page program', () => {
   it('shows no token or process id that differs on every run', () => {
     expect(JSON.stringify(capability.steps)).not.toMatch(/\bg?[0-9a-f]{64}\b/)
     expect(step('capture-before').commands.filter((command) => command.role === 'probe').map((command) => command.tmux)).toEqual([
-      'run-shell -C 0000:#{version}:0000', 'run-shell -C 0000:#{pid}:0000',
+      'run-shell -C 0000:#{version}:0000',
     ])
     expect(step('capture-before').commands.find((command) => command.role === 'command')!.stdout).toContain('server.pid:12345:')
   })
