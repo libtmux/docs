@@ -81,7 +81,7 @@ describe('Core Library home data', () => {
 })
 
 describe('Core Library home page', () => {
-  it('links the Haskell capture, snapshot, query and fixture modules', async () => {
+  it('links the shipped Haskell creation, application, observation and fixture modules', async () => {
     const { Window } = await import('happy-dom')
     const { createComponent, renderTemplate } = await import('astro/runtime/server/index.js')
     const { loadAstroTemplate, renderAstroTemplate } = await import('./astro-templates')
@@ -99,7 +99,8 @@ describe('Core Library home page', () => {
         props: { port: 'haskell', version: 'latest', cards: [] },
       })
       const rows = [...window.document.querySelectorAll('[data-core-home-modules] tbody a')]
-      expect(rows.map((row) => row.textContent)).toEqual(['LibTmux.Server', 'LibTmux.Snapshot', 'LibTmux.Query', 'LibTmux.Snapshot.Fixture'])
+      expect(rows.map((row) => row.textContent)).toEqual(['LibTmux.Server', 'LibTmux.Creation', 'LibTmux.Pane',
+        'LibTmux.Program', 'LibTmux.Capabilities', 'LibTmux.Environment', 'LibTmux.Snapshot', 'LibTmux.Query', 'LibTmux.Snapshot.Fixture'])
       const markdown = coreHomeMarkdown('haskell', 'latest', 'https://libtmux.org')
       for (const row of rows) expect(markdown).toContain(`https://libtmux.org${row.getAttribute('href')}`)
       expect(window.document.querySelector('[data-core-home-objects]')).toBeNull()

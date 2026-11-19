@@ -94,11 +94,26 @@ describe('Haskell API sidebar', () => {
     ])
   })
 
-  it('keeps every Server export in the Server bucket except the operational error', () => {
-    const server = navTree('haskell').find((bucket) => bucket.id === 'server')!
-    const listed = new Set(server.entries.map((entry) => entry.id))
-    const exported = API_MODELS.haskell.symbols.filter((symbol) => symbol.parent === 'LibTmux.Server')
-    for (const symbol of exported) expect(listed.has(symbol.id), symbol.id).toBe(symbol.name !== 'TmuxException')
+  it('keeps handle ownership in Server and groups scoped operations by object', () => {
+    const model = API_MODELS.haskell
+    const nav = API_NAV.haskell
+    const exported = model.symbols.filter((symbol) => symbol.parent === 'LibTmux.Server')
+    for (const symbol of exported) expect(bucketForSymbol(model, nav, symbol), symbol.id).toBeDefined()
+    for (const [bucket, names] of [
+      ['server', ['v:withServer', 'v:withRuntime', 'v:capture', 't:CreationRecovery']],
+      ['capabilities', ['v:serverCapabilities']],
+      ['session', ['v:createSession', 'v:createSessionWith', 'v:killSession']],
+      ['window', ['v:createWindow', 'v:linkWindow', 'v:selectWindowLink']],
+      ['pane', ['v:splitPane', 'v:sendKeys', 'v:capturePane', 'v:waitForText', 't:PaneWaitOptions']],
+      ['environment', ['v:getEnvironment', 'v:setEnvironment', 'v:unsetEnvironment']],
+      ['layout', ['t:NamedLayout']],
+      ['errors', ['t:TmuxException']],
+    ] as const) for (const name of names) {
+      const id = `LibTmux.Server#${name}`
+      const symbol = model.symbols.find((entry) => entry.id === id)
+      expect(symbol, id).toBeDefined()
+      expect(bucketForSymbol(model, nav, symbol), id).toBe(bucket)
+    }
   })
 })
 

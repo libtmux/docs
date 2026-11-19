@@ -2,7 +2,7 @@
 port: haskell
 route: core
 title: "tmux client library for Haskell"
-description: "Create sessions, windows and panes. Send input, observe pane text and query detached snapshots."
+description: "tmux client library for Haskell. Create sessions, windows and panes. Send input, observe pane text and query detached snapshots."
 cards:
   - label: Getting started
     href: ../guides/getting-started/

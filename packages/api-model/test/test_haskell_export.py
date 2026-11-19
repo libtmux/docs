@@ -63,6 +63,20 @@ def creation_inputs():
     return inputs
 
 
+@pytest.mark.parametrize("module", ["LibTmux", "LibTmux.Creation"])
+def test_interface_heading_text_does_not_classify_exports(creation_inputs, module):
+    """Read the native heading structure without reserving its English label."""
+    expected = EXPORT.extract_modules(*creation_inputs)
+    before = '<div id="interface"><h1>Documentation</h1>'
+    after = '<div id="interface"><h1>Public interface</h1>'
+    assert creation_inputs[0][module].count(before) == 1
+    creation_inputs[0][module] = creation_inputs[0][module].replace(before, after, 1)
+    if module != "LibTmux":
+        native_module = next(item for item in expected["modules"] if item["name"] == module)
+        native_module["groups"][0]["title"] = "Public interface"
+    assert EXPORT.extract_modules(*creation_inputs) == expected
+
+
 def test_created_fields_keep_compiler_types_without_exporting_the_constructor(creation_inputs):
     """Keep checked field types and origins while hiding private constructors."""
     result = EXPORT.extract_modules(*creation_inputs)
