@@ -21,7 +21,7 @@
  */
 import { Code } from 'astro-expressive-code/components'
 import type { Frame } from '../../lib/mcp-replay'
-import { tierFor, type WorkedExample } from '../../lib/mcp-showcase'
+import { replyParagraphs, tierFor, type WorkedExample } from '../../lib/mcp-showcase'
 import ReplayControls from '../replay/ReplayControls.astro'
 import TmuxScreen from '../replay/TmuxScreen.astro'
 import '../../styles/mcp-showcase.css'
@@ -43,8 +43,6 @@ const args = (value: Record<string, unknown>) => JSON.stringify(value)
 const shown = (value: unknown) => (typeof value === 'string' ? value : JSON.stringify(value, null, 2))
 const answers = recording?.answers ?? []
 const reply = recording?.reply
-// The output a reply quotes sits in double quotes, which the page draws as <q>.
-const replyParts = (text: string) => text.split(/"([^"]+)"/).map((part, index) => ({ part, quoted: index % 2 === 1 }))
 
 /** What each frame's note says, for a recording that has no tmux state of its own: it can say only what the call read. */
 const note = (frame: Frame) => {
@@ -103,12 +101,12 @@ const note = (frame: Frame) => {
         )
       })}
       {recording && (reply || answers.length > 0) && (
+        // The agent's closing reply is its words, not a step: no tool, result or pin, and no mark on the rail (record 0074).
         <div class="mcp-turn mcp-turn--answer" data-turn={total} data-off>
-          <button type="button" class="mcp-turn__pin" data-pin aria-pressed="false" tabindex="-1" hidden aria-label="Pin the final tmux state"><svg class="mcp-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 2.5h6v11L8 11l-3 2.5z" /></svg></button>
-          <p class="mcp-turn__say"><span class="mcp-turn__who">Agent</span>
-            {reply
-              ? replyParts(reply).map(({ part, quoted }) => (quoted ? <q>{part}</q> : part))
-              : <>{answers.map((answer, index) => <>{index > 0 && '; '}{answer.pane ? `in ${answer.pane} it` : 'It'} printed <q>{answer.line}</q></>)}.</>}</p>
+          <span class="mcp-turn__who">Agent</span>
+          {reply
+            ? replyParagraphs(reply).map((runs) => <p>{runs.map((run) => (run.kind === 'code' ? <code>{run.text}</code> : run.kind === 'quote' ? <q>{run.text}</q> : run.text))}</p>)
+            : <p>{answers.map((answer, index) => <>{index > 0 && '; '}{answer.pane ? `in ${answer.pane} it` : 'It'} printed <q>{answer.line}</q></>)}.</p>}
         </div>
       )}
     </div>
@@ -125,7 +123,8 @@ const note = (frame: Frame) => {
     const body = root.querySelector<HTMLElement>('[data-body]')!
     const chat = root.querySelector<HTMLElement>('[data-chat]')!
     const turns = [...root.querySelectorAll<HTMLElement>('[data-turn]')].filter((turn) => turn.dataset.turn !== 'prompt')
-    const pins = turns.map((turn) => turn.querySelector<HTMLButtonElement>('[data-pin]')!)
+    // Only calls have a pin; the closing reply is not a step.
+    const pins = turns.map((turn) => turn.querySelector<HTMLButtonElement>('[data-pin]'))
     const frames = [...root.querySelectorAll<HTMLElement>('[data-frame]')]
     const hint = root.querySelector<HTMLElement>('[data-hint]')
     // A touch screen fires mouseenter on a tap and never mouseleave, so only a pointer that can hover previews.
@@ -149,11 +148,12 @@ const note = (frame: Frame) => {
           turn.toggleAttribute('data-off', index === total ? step < total : index >= step)
           if (index < total && index + 1 === shown) turn.setAttribute('aria-current', 'step')
           else turn.removeAttribute('aria-current')
-          turn.classList.toggle('is-pinned', pinned !== null && Math.min(index + 1, total) === pinned)
+          turn.classList.toggle('is-pinned', pinned !== null && index < total && index + 1 === pinned)
         })
-        const visible = turns.map((turn, position) => (turn.hasAttribute('data-off') ? -1 : position)).filter((position) => position >= 0)
+        const visible = turns.map((turn, position) => (turn.hasAttribute('data-off') || !pins[position] ? -1 : position)).filter((position) => position >= 0)
         const active = visible.includes(rover) ? rover : visible.at(-1) ?? -1
         pins.forEach((pin, position) => {
+          if (!pin) return
           pin.setAttribute('aria-pressed', String(pinned !== null && Math.min(Number(turns[position]!.dataset.turn) + 1, total) === pinned))
           pin.tabIndex = position === active ? 0 : -1
         })
@@ -167,10 +167,11 @@ const note = (frame: Frame) => {
     // The results fold away as the replay plays them; a replay that starts finished keeps them open, as a page with no script has them.
     if (!player.reduced) root.querySelectorAll<HTMLDetailsElement>('details.mcp-result').forEach((details) => { details.open = false })
 
-    pins.forEach((pin) => { pin.hidden = false })
+    pins.forEach((pin) => { if (pin) pin.hidden = false })
     turns.forEach((turn, position) => {
       const frame = Math.min(Number(turn.dataset.turn) + 1, total)
-      const pin = pins[position]!
+      const pin = pins[position]
+      if (!pin) return
       if (canHover) {
         turn.addEventListener('mouseenter', () => player.hover(frame))
         turn.addEventListener('mouseleave', () => player.hover(null))
@@ -181,7 +182,7 @@ const note = (frame: Frame) => {
       pin.addEventListener('keydown', (event) => {
         if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return
         if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return
-        const visible = turns.map((candidate, index) => (candidate.hasAttribute('data-off') ? -1 : index)).filter((index) => index >= 0)
+        const visible = turns.map((candidate, index) => (candidate.hasAttribute('data-off') || !pins[index] ? -1 : index)).filter((index) => index >= 0)
         const next = visible[visible.indexOf(position) + (event.key === 'ArrowDown' ? 1 : -1)]
         if (next === undefined) return
         event.preventDefault()

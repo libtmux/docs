@@ -38,6 +38,19 @@ export const TIERS: readonly Tier[] = [
 ]
 
 /** The tier a tool belongs to, or nothing for a server that declares no toolsets. */
+/** A run of a closing reply: plain words, `inline code`, or output the session printed, which the reply quotes in double quotes. */
+export type ReplyRun = { kind: 'text' | 'code' | 'quote'; text: string }
+
+/** The agent's closing reply as paragraphs of runs. It is people's words, so only paragraphs and inline code are read (record 0074); the quotes mark printed output. */
+export function replyParagraphs(reply: string): ReplyRun[][] {
+  return reply.split(/\n\s*\n/).map((paragraph) => paragraph.trim()).filter(Boolean).map((paragraph) =>
+    paragraph.split(/(`[^`]+`|"[^"]+")/).filter(Boolean).map((part): ReplyRun => {
+      if (part.length > 2 && part.startsWith('`') && part.endsWith('`')) return { kind: 'code', text: part.slice(1, -1) }
+      if (part.length > 2 && part.startsWith('"') && part.endsWith('"')) return { kind: 'quote', text: part.slice(1, -1) }
+      return { kind: 'text', text: part }
+    }))
+}
+
 export const tierFor = (tool: { tier?: TierId }): Tier | undefined => TIERS.find((entry) => entry.id === tool.tier)
 
 /** One tool as `tools/list` advertises it. */

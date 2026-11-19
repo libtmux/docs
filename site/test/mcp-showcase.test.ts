@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { contractOf, contractsOf, sameContract, sameContracts, type ToolContract } from '../src/lib/mcp-contract'
 import { MCP_REFERENCE, mcpReferenceRoutes } from '../src/lib/mcp-reference'
 import {
-  abbreviate, buildShowcase, CAPABILITY_KEY, transcriptFor, EXAMPLES, mcpShowcase, protocolSnapshot, recordingHolds, showcaseHeadings, TIERS, toolHeadings, toolPurposes, toolTier,
+  abbreviate, buildShowcase, CAPABILITY_KEY, replyParagraphs, transcriptFor, EXAMPLES, mcpShowcase, protocolSnapshot, recordingHolds, showcaseHeadings, TIERS, toolHeadings, toolPurposes, toolTier,
   type McpShowcase, type ProtocolSnapshot, type ProtocolTool, type Transcript,
 } from '../src/lib/mcp-showcase'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
@@ -431,7 +431,8 @@ describe('the showcase section', () => {
       const document = await withReply(port, reply)
       const closing = document.querySelectorAll('.mcp-turn--answer')
       expect(closing).toHaveLength(1)
-      expect(closing[0]!.querySelector('.mcp-turn__say')!.textContent!.replace(/\s+/g, ' ').replace(/^ ?Agent/, '').trim()).toBe(reply.replaceAll('"', ''))
+      expect(closing[0]!.querySelector('.mcp-turn__who')!.textContent).toBe('Agent')
+      expect([...closing[0]!.querySelectorAll('p')].map((paragraph) => paragraph.textContent).join(' ').replace(/\s+/g, ' ').trim()).toBe(reply.replaceAll('"', ''))
       expect([...closing[0]!.querySelectorAll('q')].map((quoted) => quoted.textContent)).toEqual(['2 passed', 'checks finished'])
       expect(closing[0]!.getAttribute('data-turn')).toBe(String(EXAMPLES[port]!.steps.length))
       expect(closing[0]!.previousElementSibling, 'the last call comes before it').toBe([...document.querySelectorAll('article.mcp-turn')].at(-1))
@@ -839,5 +840,14 @@ describe('a recording made at an earlier revision', () => {
         expect(listsThem, `${port} results name no tool`).toEqual([])
       }
     })
+  })
+})
+
+describe('the agent\'s closing reply', () => {
+  it('reads paragraphs, inline code and the output it quotes, and nothing else (record 0074)', () => {
+    expect(replyParagraphs('pytest printed "2 passed" in `checks.log`.\n\nI removed the *checks* session.')).toEqual([
+      [{ kind: 'text', text: 'pytest printed ' }, { kind: 'quote', text: '2 passed' }, { kind: 'text', text: ' in ' }, { kind: 'code', text: 'checks.log' }, { kind: 'text', text: '.' }],
+      [{ kind: 'text', text: 'I removed the *checks* session.' }],
+    ])
   })
 })
