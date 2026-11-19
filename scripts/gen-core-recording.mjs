@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { execFileSync, spawnSync } from 'node:child_process'
 import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
-import { homedir, hostname, userInfo } from 'node:os'
+import { homedir, hostname, tmpdir, userInfo } from 'node:os'
 import { delimiter, dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PORTS } from '../site/src/lib/ports.ts'
@@ -78,7 +78,7 @@ const realTmux = searchPath('tmux')
 if (!realTmux) throw new Error('tmux is not on PATH')
 
 // The sandbox is short because a unix socket path is: tmux refuses a long one.
-const sandbox = mkdtempSync('/tmp/libtmux-docs-')
+const sandbox = mkdtempSync(join(tmpdir(), 'libtmux-docs-'))
 const sandboxReal = realpathSync(sandbox)
 const stopServers = () => stopSandboxServers(sandboxReal)
 // A server that has been killed leaves its socket file, and a second socket would make the sandbox ambiguous (`readTmuxState`).
