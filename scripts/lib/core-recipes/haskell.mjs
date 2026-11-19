@@ -1,7 +1,8 @@
 import { execFileSync } from 'node:child_process'
-import { chmodSync, mkdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { syntaxOf } from '../../../site/src/lib/core-statement.ts'
+import { chmodSync, existsSync, mkdirSync, realpathSync, writeFileSync } from 'node:fs'
+import { delimiter, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { statementLines, syntaxOf } from '../../../site/src/lib/core-statement.ts'
 import { checkoutOf, fastShim, instrumentLines, quickstartSource, withoutMarks } from './common.mjs'
 
 export { withoutMarks }
@@ -27,7 +28,7 @@ export { withoutMarks }
  */
 const HASKELL_HELPER = `{-# LANGUAGE OverloadedRecordDot #-}
 
-module DocsMark (mark, unit, text, count, counts, session, window, pane) where
+module DocsMark (mark, unit, text, counts, created, scope, session, window, pane) where
 
 import Data.Char (ord)
 import Data.List (intercalate)
@@ -84,23 +85,24 @@ counts snapshot = object
   , ("panes", count (length (Tmux.panes snapshot)))
   ]
 
-session :: Tmux.Session -> String
-session value = object
-  [ ("id", text (Text.unpack (Tmux.renderSessionId (Tmux.sessionId value.ref))))
-  , ("name", text (Text.unpack value.name))
+created :: Tmux.CreatedSession -> String
+created value = object
+  [ ("session", text (Text.unpack (Tmux.renderSessionId (Tmux.sessionId value.session))))
+  , ("window", text (Text.unpack (Tmux.renderWindowId (Tmux.windowId value.window))))
+  , ("pane", text (Text.unpack (Tmux.renderPaneId (Tmux.paneId value.pane))))
   ]
+
+scope :: Tmux.Snapshot -> Tmux.Snapshot -> String
+scope before after = object [("before", counts before), ("after", counts after)]
+
+session :: Tmux.Session -> String
+session value = object [("name", text (Text.unpack value.name))]
 
 window :: Tmux.Window -> String
-window value = object
-  [ ("id", text (Text.unpack (Tmux.renderWindowId (Tmux.windowId value.ref))))
-  , ("name", text (label value.name))
-  ]
+window value = object [("name", text (label value.name))]
 
 pane :: Tmux.Pane -> String
-pane value = object
-  [ ("id", text (Text.unpack (Tmux.renderPaneId (Tmux.paneId value.ref))))
-  , ("title", text (Text.unpack value.title))
-  ]
+pane value = object [("title", text (Text.unpack value.title))]
 `
 
 /** The line the marked copy adds to the imports. */
@@ -111,35 +113,48 @@ const IMPORT = 'import DocsMark qualified as Mark -- docs:mark'
  * on the later line of a statement gives that statement's `indent`, so that its mark is not read as part of it.
  */
 const STEPS = [
+  { id: 'create-session', label: 'createSession', anchor: 'created <- Tmux.createSession server Creation.defaultSessionOptions', completes: 'Creation.process = Creation.ShellCommand', offset: 1, indent: 6, type: 'CreatedSession', value: 'Mark.created created' },
   { id: 'capture-before', label: 'capture', anchor: 'before <- Tmux.capture server', type: 'Snapshot', value: 'Mark.counts before' },
-  { id: 'session', label: 'exactlyOne', anchor: 'Q.exactlyOne (Tmux.sessions before)', indent: 6, type: 'Session', value: 'Mark.session session' },
-  { id: 'matches', label: 'runQuery', anchor: 'Q.runQuery before selected', type: '[Pane]', value: 'Mark.count (length matches)' },
-  { id: 'pane', label: 'exactlyOne', anchor: 'Q.exactlyOne matches', type: 'Pane', value: 'Mark.pane pane' },
-  { id: 'window', label: 'lookupWindow', anchor: 'Tmux.lookupWindow before pane.window', type: 'Window', value: 'Mark.window window' },
-  { id: 'rename-session', label: 'renameSession', anchor: 'Tmux.renameSession server session.ref "workspace"', type: '()', value: 'Mark.unit' },
-  { id: 'rename-window', label: 'renameWindow', anchor: 'Tmux.renameWindow server window.ref "api #{pid};"', type: '()', value: 'Mark.unit' },
-  { id: 'set-pane-title', label: 'setPaneTitle', anchor: 'Tmux.setPaneTitle server pane.ref "editor-ready"', type: '()', value: 'Mark.unit' },
+  { id: 'rename-session', label: 'renameSession', anchor: 'Tmux.renameSession server created.session "workspace"', type: '()', value: 'Mark.unit' },
+  { id: 'rename-window', label: 'renameWindow', anchor: 'Tmux.renameWindow server created.window "api #{pid};"', type: '()', value: 'Mark.unit' },
+  { id: 'set-pane-title', label: 'setPaneTitle', anchor: 'Tmux.setPaneTitle server created.pane "editor-ready"', type: '()', value: 'Mark.unit' },
   { id: 'capture-after', label: 'capture', anchor: 'after <- Tmux.capture server', type: 'Snapshot', value: 'Mark.counts after' },
-  { id: 'changed-session', label: 'lookupSession', anchor: 'Tmux.lookupSession after session.ref', indent: 8, type: 'Session', value: 'Mark.session changedSession' },
-  { id: 'changed-window', label: 'lookupWindow', anchor: 'Tmux.lookupWindow after window.ref', indent: 8, type: 'Window', value: 'Mark.window changedWindow' },
-  { id: 'changed-pane', label: 'lookupPane', anchor: 'Tmux.lookupPane after pane.ref', type: 'Pane', value: 'Mark.pane changedPane' },
-  { id: 'old-window', label: 'lookupWindow', anchor: 'Tmux.lookupWindow before window.ref', type: 'Window', value: 'Mark.window oldWindow' },
-  { id: 'old-name', label: 'labelText', anchor: 'Tmux.labelText oldWindow.name', type: 'Text', value: 'Mark.text (Text.unpack oldName)' },
-  { id: 'new-name', label: 'labelText', anchor: 'Tmux.labelText changedWindow.name', indent: 8, type: 'Text', value: 'Mark.text (Text.unpack newName)' },
+  { id: 'retire-server', label: 'withOwnedServer', anchor: 'Tmux.withOwnedServer Tmux.defaultOwnedServerConfig', completes: 'pure (created, before, after)', indent: 2, stopsServer: true, type: '(CreatedSession, Snapshot, Snapshot)', value: 'Mark.scope before after' },
+  { id: 'previous-session', label: 'lookupSession', anchor: 'Tmux.lookupSession before created.session', indent: 2, type: 'Session', value: 'Mark.session previous' },
+  { id: 'current-session', label: 'lookupSession', anchor: 'Tmux.lookupSession after created.session', indent: 2, type: 'Session', value: 'Mark.session current' },
+  { id: 'window', label: 'lookupWindow', anchor: 'Tmux.lookupWindow after created.window', type: 'Window', value: 'Mark.window window' },
+  { id: 'pane', label: 'lookupPane', anchor: 'Tmux.lookupPane after created.pane', type: 'Pane', value: 'Mark.pane pane' },
+  { id: 'window-label', label: 'labelText', anchor: 'Tmux.labelText window.name', type: 'Text', value: 'Mark.text (Text.unpack label)' },
 ]
 
 /** Add a mark after each step's statement, and the import of the helper after the program's last import. */
 export function instrumentHaskell(source, steps) {
-  const marked = instrumentLines(source, steps, (step) => `Mark.mark ${JSON.stringify(step.id)} (${step.value}) -- docs:mark`, syntaxOf('haskell'))
+  const syntax = syntaxOf('haskell')
+  const positioned = steps.map((step) => {
+    if (!step.completes) return step
+    const end = statementLines(source, step.completes, syntax)?.[1]
+    if (!end) throw new Error(`${step.id}: no unique end of statement`)
+    return { ...step, after: end + (step.offset ?? 0) }
+  })
+  const marked = instrumentLines(source, positioned, (step) => `Mark.mark ${JSON.stringify(step.id)} (${step.value}) -- docs:mark`, syntax)
   const lines = marked.split('\n')
-  const at = lines.indexOf('import System.OsPath.Posix qualified as Path')
-  if (at < 0) throw new Error('the program has no `import System.OsPath.Posix qualified as Path` line to put the helper import after')
+  const at = lines.findLastIndex((line) => line.startsWith('import '))
+  if (at < 0) throw new Error('the program has no imports to place the marker helper after')
   lines.splice(at + 1, 0, IMPORT)
   return lines.join('\n')
 }
 
-/** Fixed nonces and daemon identities keep repeat recordings comparable. */
-const scrub = (text) => text.replace(/\bg[0-9a-f]{64}\b/g, 'g0000').replace(/\b([0-9a-f]{64}):(#\{(?:version|pid)\}):\1\b/g, '0000:$2:0000').replace(/(server\.pid:)\d+/g, (_, name) => `${name}12345`).replace(/(server\.startedAt:)\d+/g, (_, name) => `${name}1700000000`)
+const probeFormat = /^([0-9a-f]{64}):#\{(?:version|pid)\}:\1$/
+
+/** Fix the wire tokens and process fields that change on each recording. */
+const scrub = (text) => text
+  .replace(/\bg[0-9a-f]{64}\b/g, 'g0000')
+  .replace(/\b([0-9a-f]{64}):(#\{(?:version|pid)\}):\1\b/g, '0000:$2:0000')
+  .replace(/\b([0-9a-f]{64}):(#\{pid\} #\{session_id\} #\{window_id\} #\{pane_id\} #\{window_index\}):\1\b/g, '0000:$2:0000')
+  .replace(/\b([0-9a-f]{64}):\d+ (\$\d+ @\d+ %\d+ \d+):\1\b/g, '0000:12345 $2:0000')
+  .replace(/(server\.pid:)\d+/g, (_, name) => `${name}12345`)
+  .replace(/(server\.startedAt:)\d+/g, (_, name) => `${name}1700000000`)
+  .replace(/libtmux-haskell-(?:[a-zA-Z0-9]|\\147){6}(?=\/s\b)/g, 'libtmux-haskell-demo')
 
 /** Where cabal keeps its packages and store: the environment's own, as a reader's cabal finds it. The sandbox's home is not the reader's, so the launcher names it. */
 const cabalDir = () => process.env.CABAL_DIR ?? join(process.env.HOME ?? '', '.cabal')
@@ -147,8 +162,21 @@ const cabalDir = () => process.env.CABAL_DIR ?? join(process.env.HOME ?? '', '.c
 /** The other files the page shows beside the program. */
 let files
 
-/** The socket the page's setup commands start a server on, in a directory under the sandbox's `tmp`, where the recorder reads tmux. */
-const socketOf = (dir) => join(dir, '..', 'tmp', 'libtmux-haskell-demo.AbC123', 's')
+const launches = new Map()
+const quote = (value) => `'${value.replaceAll("'", "'\\''")}'`
+
+/** Bubblewrap gives the library's private /tmp a socket directory the recorder can see. */
+function sandboxCommand({ sandbox, project, executable, runtime, realTmux }) {
+  const root = realpathSync(fileURLToPath(new URL('../../../', import.meta.url)))
+  const sources = ['/usr', '/etc', '/run', '/bin', '/lib', '/lib64', root, process.execPath, runtime, realTmux]
+  const mounts = [...new Set(sources)].filter(existsSync).flatMap((path) => ['--ro-bind', path, path])
+  return [
+    'bwrap', '--unshare-user', '--die-with-parent', '--proc', '/proc', '--dev', '/dev',
+    ...mounts, '--bind', join(sandbox, 'tmp'), '/tmp', '--bind', sandbox, sandbox,
+    '--chdir', project, '--setenv', 'PATH', [project, join(sandbox, 'bin'), process.env.PATH].join(delimiter),
+    executable,
+  ]
+}
 
 export const RECIPES = {
   'typed-graph': {
@@ -160,8 +188,8 @@ export const RECIPES = {
       files = { 'libtmux-mutate-graph.cabal': quickstartSource(root, 'haskell', 'libtmux-mutate-graph.cabal').code, 'cabal.project': quickstartSource(root, 'haskell', 'cabal.project').code }
       return home
     },
-    /** The pane of the page's setup command runs `cat`. */
     paneCommands: ['cat'],
+    socket: { pattern: 'libtmux-haskell-demo', fixed: 'libtmux-haskell-demo' },
     checkout: (port, env, expand) => checkoutOf(port, env, expand),
     helpers: [{ file: 'DocsMark.hs', source: HASKELL_HELPER }],
     steps: STEPS,
@@ -169,7 +197,9 @@ export const RECIPES = {
     probe: ({ flags, commands }) => {
       if (commands.length === 0) return flags.includes('-V')
       const [command] = commands
-      return commands.length === 1 && command.length === 3 && command[0] === 'run-shell' && command[1] === '-C' && /^([0-9a-f]{64}):#\{(?:version|pid)\}:\1$/.test(command[2])
+      if (commands.length !== 1 || !probeFormat.test(command.at(-1))) return false
+      return (command.length === 3 && command[0] === 'run-shell' && command[1] === '-C')
+        || (command.length === 4 && command[0] === 'display-message' && command[1] === '-p' && command[2] === '-F')
     },
     /** What differs on every run in what a capture sends and reads back: the token that frames its reply, and the daemon's process id and start time. */
     redact: scrub,
@@ -181,16 +211,7 @@ export const RECIPES = {
      */
     sanitizePaths: (sandbox) => [[sandbox.replaceAll('g', '\\147'), '/tmp']],
     instrument: instrumentHaskell,
-    /** The page's own setup commands: a server with the `demo` session, started before the program runs. */
-    setup({ dir, env }) {
-      const socket = socketOf(dir)
-      rmSync(dirname(dirname(socket)), { recursive: true, force: true })
-      mkdirSync(dirname(socket), { recursive: true })
-      const tmux = (...args) => execFileSync(env.LIBTMUX_DOCS_REAL_TMUX, ['-S', socket, ...args], { cwd: dir, env: { ...env, TMUX: '', TMUX_PANE: '' }, stdio: 'ignore' })
-      tmux('-f', '/dev/null', 'new-session', '-d', '-s', 'demo', '-n', 'editor', '-x', '120', '-y', '40', '/bin/cat', '-')
-      tmux('-N', 'link-window', '-s', 'demo:0', '-t', 'demo:4')
-    },
-    command: (dir) => ['/bin/sh', join(dir, 'program')],
+    command: (dir) => launches.get(dir),
     toolchain: () => ({ ghc: execFileSync('ghc', ['--numeric-version'], { encoding: 'utf8' }).trim(), cabal: execFileSync('cabal', ['--numeric-version'], { encoding: 'utf8' }).trim() }),
     /**
      * Write the displayed project and the marked one, which also holds the helper (listed in its package and given
@@ -198,8 +219,9 @@ export const RECIPES = {
      * by its repository and revision; the build names the checkout instead, at the same revision.
      */
     build({ sandbox, checkout, code, marked, helpers }) {
+      execFileSync('bwrap', ['--version'], { stdio: 'ignore' })
       mkdirSync(join(sandbox, 'tmp'), { recursive: true })
-      fastShim(sandbox)
+      const runtime = fastShim(sandbox)
       const shim = join(sandbox, 'bin/tmux')
       const realTmux = execFileSync('sh', ['-c', 'command -v tmux'], { encoding: 'utf8' }).trim()
       const env = { ...process.env, CABAL_DIR: cabalDir() }
@@ -218,12 +240,12 @@ export const RECIPES = {
         if (project_ === files['cabal.project']) throw new Error('the displayed cabal.project does not name the library repository')
         writeFileSync(join(project, 'cabal.project'), project_)
         execFileSync('cabal', ['build', '--verbose=0', 'mutate-graph'], { cwd: project, stdio: ['ignore', 'ignore', 'inherit'], env })
-        // The library starts tmux with `LANG` alone in its environment, so the shim cannot read where to log from it:
-        // a `tmux` in the project carries that environment and is what the program is given, where the page gives it `command -v tmux`.
-        writeFileSync(join(project, 'tmux'), `#!/bin/sh\nexport LIBTMUX_DOCS_TRACE=${JSON.stringify(join(sandbox, `${dir}.trace`))} LIBTMUX_DOCS_REAL_TMUX=${JSON.stringify(realTmux)} LIBTMUX_DOCS_SANDBOX=${JSON.stringify(realpathSync(sandbox))} LIBTMUX_DOCS_PANE_COMMANDS=${JSON.stringify(this.paneCommands.join(','))} LIBTMUX_DOCS_PORT=haskell\nexec /bin/sh ${JSON.stringify(shim)} "$@"\n`)
+        const executable = execFileSync('cabal', ['list-bin', '--offline', 'mutate-graph'], { cwd: project, encoding: 'utf8', env }).trim()
+        // Keep the foreground launch on its original PID. The other commands
+        // enter the trace shim with the recorder environment restored.
+        writeFileSync(join(project, 'tmux'), `#!/bin/sh\nif [ "$1" = -D ]; then exec ${quote(realTmux)} "$@"; fi\nexport LIBTMUX_DOCS_TRACE=${quote(join(sandbox, `${dir}.trace`))} LIBTMUX_DOCS_REAL_TMUX=${quote(realTmux)} LIBTMUX_DOCS_SANDBOX=${quote(realpathSync(sandbox))} LIBTMUX_DOCS_PANE_COMMANDS=${quote(this.paneCommands.join(','))} LIBTMUX_DOCS_PORT=haskell\nexec /bin/sh ${quote(shim)} "$@"\n`)
         chmodSync(join(project, 'tmux'), 0o755)
-        writeFileSync(join(project, 'program'), `#!/bin/sh\nCABAL_DIR=${JSON.stringify(cabalDir())}\nexport CABAL_DIR\nunset TMUX TMUX_PANE\nexec cabal run --offline --verbose=0 mutate-graph -- ${JSON.stringify(socketOf(project))} ${JSON.stringify(join(project, 'tmux'))}\n`)
-        chmodSync(join(project, 'program'), 0o755)
+        launches.set(project, sandboxCommand({ sandbox, project, executable, runtime, realTmux }))
       }
     },
   },
