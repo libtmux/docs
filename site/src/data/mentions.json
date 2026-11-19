@@ -6729,9 +6729,30 @@
   },
   {
    "port": "haskell",
+   "symbol": "LibTmux.Capabilities#v:capabilityRegistry",
+   "page": "/haskell/latest/guides/programs/",
+   "title": "Run terminal applications",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Capabilities#v:requireCapability",
+   "page": "/haskell/latest/guides/programs/",
+   "title": "Run terminal applications",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Capabilities#v:supports",
+   "page": "/haskell/latest/guides/programs/",
+   "title": "Run terminal applications",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
    "symbol": "LibTmux.Creation",
    "page": "/haskell/latest/guides/creation/",
-   "title": "Create a session",
+   "title": "Create sessions, windows and panes",
    "section": "guides"
   },
   {
@@ -6743,44 +6764,254 @@
   },
   {
    "port": "haskell",
+   "symbol": "LibTmux.Creation#t:CreatedEntities",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Creation#t:CreatedPane",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
    "symbol": "LibTmux.Creation#t:CreatedSession",
    "page": "/haskell/latest/guides/creation/",
-   "title": "Create a session",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Creation#t:CreatedWindow",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Creation#t:InitialProcess",
    "page": "/haskell/latest/guides/creation/",
-   "title": "Create a session",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Creation#t:SplitOptions",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Creation#t:WindowOptions",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Creation#t:WindowPlacement",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Creation#t:WindowSlot",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Creation#t:WindowSlot",
+   "page": "/haskell/latest/guides/status/",
+   "title": "Implementation status",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Creation#v:After",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Creation#v:DefaultProcess",
    "page": "/haskell/latest/guides/creation/",
-   "title": "Create a session",
+   "title": "Create sessions, windows and panes",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Creation#v:defaultSessionOptions",
    "page": "/haskell/latest/guides/creation/",
-   "title": "Create a session",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Creation#v:defaultSplitOptions",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Creation#v:defaultWindowOptions",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Creation#v:DirectCommand",
    "page": "/haskell/latest/guides/creation/",
-   "title": "Create a session",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Creation#v:LeftRight",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Creation#v:RefuseOccupied",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Creation#v:ReplaceOccupied",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Creation#v:ShellCommand",
    "page": "/haskell/latest/guides/creation/",
-   "title": "Create a session",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Creation#v:SplitCells",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Creation#v:SplitOptions.before",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Creation#v:SplitOptions.fullWindow",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Creation#v:SplitOptions.selectPane",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Creation#v:SplitOptions.splitEnvironment",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Creation#v:SplitOptions.splitProcess",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Creation#v:SplitOptions.zoom",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Creation#v:SplitPercent",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Creation#v:TopBottom",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Creation#v:WindowOptions.windowDirectory",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Creation#v:WindowOptions.windowEnvironment",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Creation#v:WindowOptions.windowLabel",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Creation#v:WindowOptions.windowProcess",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Environment#v:GlobalEnvironment",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Environment#v:Hidden",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Environment#v:Visible",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Change targets and observe pane text",
    "section": "guides"
   },
   {
@@ -6816,6 +7047,202 @@
    "symbol": "LibTmux.Id#t:WindowId",
    "page": "/haskell/latest/guides/typed-values/",
    "title": "Typed values",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Pane#v:AnsiStyled",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Pane#v:defaultPaneCapture",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Pane#v:PaneCaptureOptions.rendering",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Pane#v:RowsBetween",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Program",
+   "page": "/haskell/latest/guides/programs/",
+   "title": "Run terminal applications",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Program",
+   "page": "/haskell/latest/guides/status/",
+   "title": "Implementation status",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Program#t:Program",
+   "page": "/haskell/latest/guides/programs/",
+   "title": "Run terminal applications",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Program#t:ProgramOptions",
+   "page": "/haskell/latest/guides/programs/",
+   "title": "Run terminal applications",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Program#t:ProgramRecovery",
+   "page": "/haskell/latest/guides/programs/",
+   "title": "Run terminal applications",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Program#t:ProgramResult",
+   "page": "/haskell/latest/guides/programs/",
+   "title": "Run terminal applications",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Program#v:inspectProgramCleanup",
+   "page": "/haskell/latest/guides/programs/",
+   "title": "Run terminal applications",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Program#v:programCleanupFailure",
+   "page": "/haskell/latest/guides/programs/",
+   "title": "Run terminal applications",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Program#v:ProgramOptions.bootstrapShell",
+   "page": "/haskell/latest/guides/programs/",
+   "title": "Run terminal applications",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Program#v:ProgramOptions.columns",
+   "page": "/haskell/latest/guides/programs/",
+   "title": "Run terminal applications",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Program#v:ProgramOptions.commandTimeout",
+   "page": "/haskell/latest/guides/programs/",
+   "title": "Run terminal applications",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Program#v:ProgramOptions.executionTimeout",
+   "page": "/haskell/latest/guides/programs/",
+   "title": "Run terminal applications",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Program#v:ProgramOptions.historyLines",
+   "page": "/haskell/latest/guides/programs/",
+   "title": "Run terminal applications",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Program#v:ProgramOptions.outputLimit",
+   "page": "/haskell/latest/guides/programs/",
+   "title": "Run terminal applications",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Program#v:programRecoveries",
+   "page": "/haskell/latest/guides/programs/",
+   "title": "Run terminal applications",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Program#v:ProgramScreen.historyTruncated",
+   "page": "/haskell/latest/guides/programs/",
+   "title": "Run terminal applications",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Program#v:ProgramScreen.omittedBytes",
+   "page": "/haskell/latest/guides/programs/",
+   "title": "Run terminal applications",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Program#v:ProgramStartFailed",
+   "page": "/haskell/latest/guides/programs/",
+   "title": "Run terminal applications",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Program#v:readProgramScreen",
+   "page": "/haskell/latest/guides/programs/",
+   "title": "Run terminal applications",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Program#v:resumeProgramCleanup",
+   "page": "/haskell/latest/guides/programs/",
+   "title": "Run terminal applications",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Program#v:sendProgramInput",
+   "page": "/haskell/latest/guides/programs/",
+   "title": "Run terminal applications",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Program#v:terminateProgram",
+   "page": "/haskell/latest/guides/programs/",
+   "title": "Run terminal applications",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Program#v:waitProgram",
+   "page": "/haskell/latest/guides/programs/",
+   "title": "Run terminal applications",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Program#v:waitProgramFor",
+   "page": "/haskell/latest/guides/programs/",
+   "title": "Run terminal applications",
    "section": "guides"
   },
   {
@@ -6947,6 +7374,13 @@
   {
    "port": "haskell",
    "symbol": "LibTmux.Server",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server",
    "page": "/haskell/latest/guides/installation/",
    "title": "Installation",
    "section": "guides"
@@ -6969,22 +7403,22 @@
    "port": "haskell",
    "symbol": "LibTmux.Server#t:MutationOptions",
    "page": "/haskell/latest/guides/creation/",
-   "title": "Create a session",
+   "title": "Create sessions, windows and panes",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#t:MutationOptions",
    "page": "/haskell/latest/guides/mutations/",
-   "title": "Rename and set pane titles",
+   "title": "Change targets and observe pane text",
    "section": "guides"
   },
   {
    "port": "haskell",
-   "symbol": "LibTmux.Server#t:Server",
-   "page": "/haskell/latest/core/",
-   "title": "tmux client library for Haskell",
-   "section": "core"
+   "symbol": "LibTmux.Server#t:PaneInput",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Change targets and observe pane text",
+   "section": "guides"
   },
   {
    "port": "haskell",
@@ -6997,14 +7431,14 @@
    "port": "haskell",
    "symbol": "LibTmux.Server#t:Server",
    "page": "/haskell/latest/guides/creation/",
-   "title": "Create a session",
+   "title": "Create sessions, windows and panes",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#t:Server",
    "page": "/haskell/latest/guides/mutations/",
-   "title": "Rename and set pane titles",
+   "title": "Change targets and observe pane text",
    "section": "guides"
   },
   {
@@ -7018,14 +7452,14 @@
    "port": "haskell",
    "symbol": "LibTmux.Server#v:awaitCreationRecovery",
    "page": "/haskell/latest/guides/creation/",
-   "title": "Create a session",
+   "title": "Create sessions, windows and panes",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:awaitMutationRecovery",
    "page": "/haskell/latest/guides/mutations/",
-   "title": "Rename and set pane titles",
+   "title": "Change targets and observe pane text",
    "section": "guides"
   },
   {
@@ -7039,7 +7473,7 @@
    "port": "haskell",
    "symbol": "LibTmux.Server#v:capture",
    "page": "/haskell/latest/guides/creation/",
-   "title": "Create a session",
+   "title": "Create sessions, windows and panes",
    "section": "guides"
   },
   {
@@ -7054,6 +7488,20 @@
    "symbol": "LibTmux.Server#v:capture",
    "page": "/haskell/latest/guides/query/",
    "title": "Typed queries",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:capturePane",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:capturePane",
+   "page": "/haskell/latest/guides/status/",
+   "title": "Implementation status",
    "section": "guides"
   },
   {
@@ -7081,7 +7529,7 @@
    "port": "haskell",
    "symbol": "LibTmux.Server#v:cleanupRecoveries",
    "page": "/haskell/latest/guides/creation/",
-   "title": "Create a session",
+   "title": "Create sessions, windows and panes",
    "section": "guides"
   },
   {
@@ -7095,196 +7543,350 @@
    "port": "haskell",
    "symbol": "LibTmux.Server#v:createSession",
    "page": "/haskell/latest/guides/creation/",
-   "title": "Create a session",
+   "title": "Create sessions, windows and panes",
    "section": "guides"
   },
   {
    "port": "haskell",
-   "symbol": "LibTmux.Server#v:createSessionWith",
+   "symbol": "LibTmux.Server#v:createWindow",
    "page": "/haskell/latest/guides/creation/",
-   "title": "Create a session",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:createWindow",
+   "page": "/haskell/latest/guides/status/",
+   "title": "Implementation status",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:creationGeneration",
    "page": "/haskell/latest/guides/creation/",
-   "title": "Create a session",
+   "title": "Create sessions, windows and panes",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:creationOperation",
    "page": "/haskell/latest/guides/creation/",
-   "title": "Create a session",
+   "title": "Create sessions, windows and panes",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:creationReceipt",
    "page": "/haskell/latest/guides/creation/",
-   "title": "Create a session",
+   "title": "Create sessions, windows and panes",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:creationRecoveries",
    "page": "/haskell/latest/guides/creation/",
-   "title": "Create a session",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:defaultPaneWait",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Change targets and observe pane text",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:detachCreationRecovery",
    "page": "/haskell/latest/guides/creation/",
-   "title": "Create a session",
+   "title": "Create sessions, windows and panes",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:detachMutationRecovery",
    "page": "/haskell/latest/guides/mutations/",
-   "title": "Rename and set pane titles",
+   "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:EnvironmentReadRejected",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Change targets and observe pane text",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:Failed",
    "page": "/haskell/latest/guides/mutations/",
-   "title": "Rename and set pane titles",
+   "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:getEnvironment",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:getEnvironment",
+   "page": "/haskell/latest/guides/status/",
+   "title": "Implementation status",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:inspectCreationRecovery",
    "page": "/haskell/latest/guides/creation/",
-   "title": "Create a session",
+   "title": "Create sessions, windows and panes",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:inspectMutationRecovery",
    "page": "/haskell/latest/guides/mutations/",
-   "title": "Rename and set pane titles",
+   "title": "Change targets and observe pane text",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:InvalidConfiguration",
    "page": "/haskell/latest/guides/creation/",
-   "title": "Create a session",
+   "title": "Create sessions, windows and panes",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:InvalidMutationArgument",
    "page": "/haskell/latest/guides/creation/",
-   "title": "Create a session",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:InvalidMutationArgument",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:InvalidTarget",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:InvalidTarget",
    "page": "/haskell/latest/guides/mutations/",
-   "title": "Rename and set pane titles",
+   "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:killPane",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:killSession",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:killWindow",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:linkWindow",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:markEnvironmentRemoved",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:markEnvironmentRemoved",
+   "page": "/haskell/latest/guides/status/",
+   "title": "Implementation status",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:MutationAppliedWithErrors",
    "page": "/haskell/latest/guides/creation/",
-   "title": "Create a session",
+   "title": "Create sessions, windows and panes",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:MutationAppliedWithErrors",
    "page": "/haskell/latest/guides/mutations/",
-   "title": "Rename and set pane titles",
+   "title": "Change targets and observe pane text",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:mutationGeneration",
    "page": "/haskell/latest/guides/mutations/",
-   "title": "Rename and set pane titles",
+   "title": "Change targets and observe pane text",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:mutationOperation",
    "page": "/haskell/latest/guides/mutations/",
-   "title": "Rename and set pane titles",
+   "title": "Change targets and observe pane text",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:mutationRecoveries",
    "page": "/haskell/latest/guides/mutations/",
-   "title": "Rename and set pane titles",
+   "title": "Change targets and observe pane text",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:MutationRejected",
    "page": "/haskell/latest/guides/creation/",
-   "title": "Create a session",
+   "title": "Create sessions, windows and panes",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:MutationRejected",
    "page": "/haskell/latest/guides/mutations/",
-   "title": "Rename and set pane titles",
+   "title": "Change targets and observe pane text",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:MutationTimedOut",
    "page": "/haskell/latest/guides/mutations/",
-   "title": "Rename and set pane titles",
+   "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:NamedKeys",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Change targets and observe pane text",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:OutcomeUnknown",
    "page": "/haskell/latest/guides/mutations/",
-   "title": "Rename and set pane titles",
+   "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:PaneCaptureHookFailed",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:paneText",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:PaneTextExited",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:PaneTextMatched",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:PaneTextTimedOut",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:PaneTextTooLarge",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Change targets and observe pane text",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:renameSession",
    "page": "/haskell/latest/guides/mutations/",
-   "title": "Rename and set pane titles",
+   "title": "Change targets and observe pane text",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:renameWindow",
    "page": "/haskell/latest/guides/mutations/",
-   "title": "Rename and set pane titles",
+   "title": "Change targets and observe pane text",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:renameWindowWith",
    "page": "/haskell/latest/guides/mutations/",
-   "title": "Rename and set pane titles",
+   "title": "Change targets and observe pane text",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:resumeCreationRecovery",
    "page": "/haskell/latest/guides/creation/",
-   "title": "Create a session",
+   "title": "Create sessions, windows and panes",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:resumeMutationRecovery",
    "page": "/haskell/latest/guides/mutations/",
-   "title": "Rename and set pane titles",
+   "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:runProgram",
+   "page": "/haskell/latest/core/",
+   "title": "tmux client library for Haskell",
+   "section": "core"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:runProgram",
+   "page": "/haskell/latest/guides/programs/",
+   "title": "Run terminal applications",
    "section": "guides"
   },
   {
@@ -7296,16 +7898,93 @@
   },
   {
    "port": "haskell",
+   "symbol": "LibTmux.Server#v:selectExactPane",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:selectLayout",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:selectWindowLink",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:sendKeys",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:sendKeys",
+   "page": "/haskell/latest/guides/status/",
+   "title": "Implementation status",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:sendKeysWith",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:serverCapabilities",
+   "page": "/haskell/latest/guides/programs/",
+   "title": "Run terminal applications",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
    "symbol": "LibTmux.Server#v:ServerClosed",
    "page": "/haskell/latest/guides/mutations/",
-   "title": "Rename and set pane titles",
+   "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:setEnvironment",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:setEnvironment",
+   "page": "/haskell/latest/guides/status/",
+   "title": "Implementation status",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:setPaneTitle",
    "page": "/haskell/latest/guides/mutations/",
-   "title": "Rename and set pane titles",
+   "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:splitPane",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:splitPane",
+   "page": "/haskell/latest/guides/status/",
+   "title": "Implementation status",
    "section": "guides"
   },
   {
@@ -7319,14 +7998,14 @@
    "port": "haskell",
    "symbol": "LibTmux.Server#v:tryTmux",
    "page": "/haskell/latest/guides/creation/",
-   "title": "Create a session",
+   "title": "Create sessions, windows and panes",
    "section": "guides"
   },
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:tryTmux",
    "page": "/haskell/latest/guides/mutations/",
-   "title": "Rename and set pane titles",
+   "title": "Change targets and observe pane text",
    "section": "guides"
   },
   {
@@ -7345,6 +8024,55 @@
   },
   {
    "port": "haskell",
+   "symbol": "LibTmux.Server#v:unlinkWindow",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:unsetEnvironment",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:unsetEnvironment",
+   "page": "/haskell/latest/guides/status/",
+   "title": "Implementation status",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:waitForText",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:waitForText",
+   "page": "/haskell/latest/guides/status/",
+   "title": "Implementation status",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:withProgram",
+   "page": "/haskell/latest/core/",
+   "title": "tmux client library for Haskell",
+   "section": "core"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:withProgram",
+   "page": "/haskell/latest/guides/programs/",
+   "title": "Run terminal applications",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
    "symbol": "LibTmux.Server#v:withRuntime",
    "page": "/haskell/latest/guides/shared-runtime/",
    "title": "Shared Runtime scopes",
@@ -7356,6 +8084,13 @@
    "page": "/haskell/latest/guides/status/",
    "title": "Implementation status",
    "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:withServer",
+   "page": "/haskell/latest/core/",
+   "title": "tmux client library for Haskell",
+   "section": "core"
   },
   {
    "port": "haskell",
@@ -7382,7 +8117,7 @@
    "port": "haskell",
    "symbol": "LibTmux.Snapshot",
    "page": "/haskell/latest/guides/creation/",
-   "title": "Create a session",
+   "title": "Create sessions, windows and panes",
    "section": "guides"
   },
   {
@@ -7436,6 +8171,20 @@
   },
   {
    "port": "haskell",
+   "symbol": "LibTmux.Snapshot#t:PaneRef",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Snapshot#t:PaneRef",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
    "symbol": "LibTmux.Snapshot#t:Snapshot",
    "page": "/haskell/latest/guides/capture/",
    "title": "Capture and navigate",
@@ -7466,7 +8215,7 @@
    "port": "haskell",
    "symbol": "LibTmux.Snapshot#t:TmuxText",
    "page": "/haskell/latest/guides/mutations/",
-   "title": "Rename and set pane titles",
+   "title": "Change targets and observe pane text",
    "section": "guides"
   },
   {
@@ -7487,7 +8236,7 @@
    "port": "haskell",
    "symbol": "LibTmux.Snapshot#v:labelFromBytes",
    "page": "/haskell/latest/guides/mutations/",
-   "title": "Rename and set pane titles",
+   "title": "Change targets and observe pane text",
    "section": "guides"
   },
   {
@@ -20265,6 +21014,62 @@
    "text": "LibTmux.Query.Json",
    "page": "/fsharp/latest/guides/supported-query-fields/",
    "line": 17,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "haskell",
+   "text": "With",
+   "page": "/haskell/latest/guides/creation/",
+   "line": 210,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "haskell",
+   "text": "With",
+   "page": "/haskell/latest/guides/creation/",
+   "line": 220,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "haskell",
+   "text": "Data.List.NonEmpty",
+   "page": "/haskell/latest/guides/mutations/",
+   "line": 129,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "haskell",
+   "text": "Nothing",
+   "page": "/haskell/latest/guides/mutations/",
+   "line": 179,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "haskell",
+   "text": "Show",
+   "page": "/haskell/latest/guides/programs/",
+   "line": 163,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "haskell",
+   "text": "Nothing",
+   "page": "/haskell/latest/guides/programs/",
+   "line": 180,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "haskell",
+   "text": "ByteString",
+   "page": "/haskell/latest/guides/programs/",
+   "line": 197,
+   "why": "not defined in the stated port"
+  },
+  {
+   "port": "haskell",
+   "text": "ExceptionContext",
+   "page": "/haskell/latest/guides/programs/",
+   "line": 212,
    "why": "not defined in the stated port"
   },
   {

@@ -271,7 +271,8 @@ describe('staged port guide links', () => {
     const setup = files.get(`${port}/${cards[0].href.slice(3)}index.md`)!
     expect(cards[0].label).toBe(JSON.parse(/^title: (.+)$/m.exec(setup)![1]))
     if (port === 'haskell') expect(cards.map((card: { label: string }) => card.label)).toEqual([
-      'Getting started', 'Installation', 'Capture and navigate', 'Typed queries', 'Create a session', 'Rename and set pane titles', 'Shared Runtime scopes',
+      'Getting started', 'Installation', 'Capture and navigate', 'Typed queries', 'Create sessions, windows and panes',
+      'Run terminal applications', 'Change targets and observe pane text', 'Shared Runtime scopes',
       'Offline fixtures',
       'Typed values', 'Capture performance', 'API documentation', 'Implementation status',
     ])

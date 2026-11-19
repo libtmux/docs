@@ -12,7 +12,7 @@ import { nativeQualifiedName, nativeShortName } from '../src/lib/native-name'
 import { writtenForm } from '../src/lib/symbol-form'
 import { symbolMarkdownWithLayout } from '../src/lib/symbol-markdown'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
-import native from '../../packages/api-model/test/fixtures/haskell-creations-native/artifact.json'
+import native from '../../packages/api-model/test/fixtures/haskell-environment-native/artifact.json'
 
 vi.mock('astro:content', () => ({ getCollection: async () => [] }))
 
@@ -27,7 +27,7 @@ describe('Haskell reference semantics', () => {
   it('preserves distinct kinds in previews and the searchable tree without changing source identities', () => {
     const kinds = model.symbols.map((symbol) => symbolPreview(model, symbol, 'latest').kind)
     const nativeKinds = native.symbols.map((symbol) => symbol.kind === 'module' ? 'module'
-      : symbol.kind === 'typealias' ? 'data-type' : symbol.kind === 'property' ? 'record-field'
+      : symbol.kind === 'typealias' ? (symbol.signatures[0]?.raw.startsWith('type ') ? 'typealias' : 'data-type') : symbol.kind === 'property' ? 'record-field'
         : symbol.signatures.some((signature) => 'methodKind' in signature && signature.methodKind === 'constructor')
           ? 'data-constructor' : 'function')
     expect(Object.fromEntries([...Map.groupBy(kinds, (kind) => kind)].map(([kind, values]) => [kind, values.length])))
