@@ -267,7 +267,7 @@ export function extractHaskellArtifact(input: unknown, expectedRevision?: string
     }
     if (symbol.kind === 'typealias') {
       const head = symbol.signatures[0].raw
-      const alias = paneText && new RegExp(`^type ${symbol.name} = ([A-Z][\\w']*)$`).exec(head)
+      const alias = paneText && typeof head === 'string' && new RegExp(`^type ${symbol.name} = ([A-Z][\\w']*)$`).exec(head)
       const qualifiedHead = alias || (typeof head === 'string' && (queries
         ? new RegExp(`^data ${symbol.name}(?: [a-z][\\w']*)*$`).test(head)
         : head === `data ${symbol.name}`))
