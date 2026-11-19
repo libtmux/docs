@@ -150,11 +150,18 @@ jobs:
           }
           writeFileSync('proof/receipt.json', JSON.stringify(receipt, null, 2) + '\n')
           JS
+      - name: Check native Haskell adapters
+        run: >-
+          node packages/api-model/node_modules/vitest/vitest.mjs run --root packages/api-model
+          --maxWorkers 2 --pool threads haskell nav-config
+      - name: Check API package types
+        run: pnpm --filter @libtmux/api-model type-check
       - name: Check playback and native rendering
         run: >-
           node site/node_modules/vitest/vitest.mjs run --root site --maxWorkers 2 --pool threads
           test/core-recipes-new-ports.test.ts test/file-grammars.test.ts
           test/haskell-semantics.outer.test.ts test/haskell-signature.outer.test.ts test/port-docs-runtime.test.ts
+          test/port-documentation.test.ts test/stage-port-docs.test.ts test/port-examples-index.test.ts test/prompts.test.ts
       - name: Upload proof artifacts
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
