@@ -10,6 +10,7 @@ import { RECIPES as HASKELL, withoutMarks as withoutHaskellMarks } from '../../s
 import { RECIPES as CLOJURE, clojureHelper, withoutMarks as withoutClojureMarks } from '../../scripts/lib/core-recipes/clojure.mjs'
 import { RECIPES as RAKU, withoutMarks as withoutRakuMarks } from '../../scripts/lib/core-recipes/raku.mjs'
 import { describeInvocation } from '../../scripts/lib/core-trace.mjs'
+import { hostLeaks, sanitize } from '../../scripts/lib/mcp-transcript-checks.mjs'
 import * as corePlayer from '../src/lib/core-player'
 import { playableCapability, tmuxChanges, viewSteps } from '../src/lib/core-player'
 import { recordingProblems, sha256, type CoreRecording } from '../src/lib/core-recording'
@@ -509,6 +510,17 @@ describe('Haskell recipe', () => {
   const recipe = HASKELL['typed-graph']
   const code = home.haskell.files.find((file) => file.name === 'Main.hs')!.code
   const marked = recipe.instrument(code, recipe.steps)
+
+  it('rewrites the known sandbox when native record fields escape g', () => {
+    const sandbox = '/tmp/proof-Pguoos'
+    const nonce = `g${'a'.repeat(64)}`
+    const stdout = `${nonce}:F:pane.currentPath:/tmp/proof-P\\147uoos/marked:${nonce}\n`
+    const paths: [string, string][] = [[sandbox, '/tmp'], ...(recipe.sanitizePaths?.(sandbox) ?? [])]
+    const clean = sanitize(recipe.reply(stdout), { paths })
+    expect(clean).toBe('g0000:F:pane.currentPath:/tmp/marked:g0000\n')
+    expect(hostLeaks({ stdout: clean }, { sandbox })).toEqual([])
+    expect(sanitize(recipe.reply('unrelated \\147'), { paths })).toBe('unrelated \\147')
+  })
 
   it('recognises the hook-free version and daemon-identity probes without treating ordinary shell commands as probes', () => {
     const nonce = 'a'.repeat(64)
