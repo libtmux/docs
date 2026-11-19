@@ -20,7 +20,7 @@
         "file": "Main.hs",
         "sha256": "dfd6f9876b43fbbc2471c2f2b2f11ec5a7ee366a7343fafb9e9fa8b0d21b6165"
       },
-      "revision": "03c914a6298708c786cea21233eb39acf9b7c085",
+      "revision": "a1b058b3143587b1fbb7846a6ac846bcc22e94a4",
       "stepMap": "hand-written",
       "printed": [
         "session: demo -> workspace",
@@ -89,19 +89,11 @@
               "stderr": ""
             },
             {
-              "role": "probe",
-              "tmux": "run-shell -C 0000:#{pid}:0000",
-              "mutates": false,
-              "exit": 1,
-              "stdout": "",
-              "stderr": ""
-            },
-            {
               "role": "command",
               "tmux": "display-message -p -F 'g0000:O:1\ng0000:I\ng0000:F:server.pid:#{s/\\\\/\\\\\\\\/;s/g/\\\\147/:pid}:g0000\ng0000:F:server.startedAt:#{s/\\\\/\\\\\\\\/;s/g/\\\\147/:start_time}:g0000\ng0000:F:server.version:#{s/\\\\/\\\\\\\\/;s/g/\\\\147/:version}:g0000\ng0000:F:server.socketPath:#{s/\\\\/\\\\\\\\/;s/g/\\\\147/:socket_path}:g0000\ng0000:E\n#{S:g0000:S\ng0000:F:session.id:#{s/\\\\/\\\\\\\\/;s/g/\\\\147/:session_id}:g0000\ng0000:F:session.name:#{s/\\…",
               "mutates": false,
               "exit": 0,
-              "stdout": "g0000:O:1\ng0000:I\ng0000:F:server.pid:12345:g0000\ng0000:F:server.startedAt:1700000000:g0000\ng0000:F:server.version:3.8:g0000\ng0000:F:server.socketPath:/tmp/tmp/libtmux-haskell-demo.AbC123/s:g0000\ng0000:E\ng0000:S\ng0000:F:session.id:$0:g0000\ng0000:F:session.name:demo:g0000\ng0000:F:session.attached:0:g0000\ng0000:E\ng0000:W\ng0000:F:window.id:@0:g0000\ng0000:F:window.name:editor:g0000\n…",
+              "stdout": "g0000:O:1\ng0000:I\ng0000:F:server.pid:12345:g0000\ng0000:F:server.startedAt:1700000000:g0000\ng0000:F:server.version:3.8:g0000\ng0000:F:server.socketPath:/tmp/tmp/libtmux-haskell-demo.AbC123/s:g0000\ng0000:E\ng0000:S\ng0000:F:session.id:$0:g0000\ng0000:F:session.name:demo:g0000\ng0000:F:session.attached:0:g0000\ng0000:E\ng0000:W\ng0000:F:window.id:@0:g0000\ng0000:F:win…",
               "stderr": "",
               "shortened": true
             }
@@ -537,7 +529,7 @@
               "tmux": "display-message -p -F 'g0000:O:1\ng0000:I\ng0000:F:server.pid:#{s/\\\\/\\\\\\\\/;s/g/\\\\147/:pid}:g0000\ng0000:F:server.startedAt:#{s/\\\\/\\\\\\\\/;s/g/\\\\147/:start_time}:g0000\ng0000:F:server.version:#{s/\\\\/\\\\\\\\/;s/g/\\\\147/:version}:g0000\ng0000:F:server.socketPath:#{s/\\\\/\\\\\\\\/;s/g/\\\\147/:socket_path}:g0000\ng0000:E\n#{S:g0000:S\ng0000:F:session.id:#{s/\\\\/\\\\\\\\/;s/g/\\\\147/:session_id}:g0000\ng0000:F:session.name:#{s/\\…",
               "mutates": false,
               "exit": 0,
-              "stdout": "g0000:O:1\ng0000:I\ng0000:F:server.pid:12345:g0000\ng0000:F:server.startedAt:1700000000:g0000\ng0000:F:server.version:3.8:g0000\ng0000:F:server.socketPath:/tmp/tmp/libtmux-haskell-demo.AbC123/s:g0000\ng0000:E\ng0000:S\ng0000:F:session.id:$0:g0000\ng0000:F:session.name:workspace:g0000\ng0000:F:session.attached:0:g0000\ng0000:E\ng0000:W\ng0000:F:window.id:@0:g0000\ng0000:F:window.name:api #{pi…",
+              "stdout": "g0000:O:1\ng0000:I\ng0000:F:server.pid:12345:g0000\ng0000:F:server.startedAt:1700000000:g0000\ng0000:F:server.version:3.8:g0000\ng0000:F:server.socketPath:/tmp/tmp/libtmux-haskell-demo.AbC123/s:g0000\ng0000:E\ng0000:S\ng0000:F:session.id:$0:g0000\ng0000:F:session.name:workspace:g0000\ng0000:F:session.attached:0:g0000\ng0000:E\ng0000:W\ng0000:F:window.id:@0:g0000\ng0000:…",
               "stderr": "",
               "shortened": true
             }
