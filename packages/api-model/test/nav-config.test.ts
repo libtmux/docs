@@ -166,9 +166,14 @@ describe('Haskell reference navigation', () => {
     expect(exported.length).toBeGreaterThan(40)
     const targetBuckets = {
       session: ['createSession', 'createSessionWith', 'killSession', 'killSessionWith'],
-      window: ['createWindow', 'createWindowWith', 'killWindow', 'killWindowWith'],
+      window: ['createWindow', 'createWindowWith', 'killWindow', 'killWindowWith', 'linkWindow', 'linkWindowWith',
+        'unlinkWindow', 'unlinkWindowWith', 'selectWindowLink', 'selectWindowLinkWith'],
       pane: ['PaneInput', 'PaneText', 'splitPane', 'splitPaneWith', 'sendKeys', 'sendKeysWith',
-        'killPane', 'killPaneWith', 'capturePane', 'paneText'],
+        'killPane', 'killPaneWith', 'capturePane', 'paneText', 'selectExactPane', 'selectExactPaneWith',
+        'PaneWaitOptions', 'PaneWaitResult', 'PaneMatch', 'defaultPaneWait', 'waitForText'],
+      layout: ['NamedLayout', 'selectLayout', 'selectLayoutWith'],
+      environment: ['getEnvironment', 'setEnvironment', 'setEnvironmentWith', 'markEnvironmentRemoved',
+        'markEnvironmentRemovedWith', 'unsetEnvironment', 'unsetEnvironmentWith'],
       capabilities: ['serverCapabilities'], errors: ['TmuxException'],
     }
     for (const entry of exported) {
