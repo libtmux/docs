@@ -614,7 +614,7 @@ const hasBody =
                 )}
                 <div class="gp-sphinx-api-example">
                   {/* Preserve source comments, including Swift's required tools-version directive. */}
-                  <Code code={ex.code} lang={codeLang(ex.lang)} title={frame.title} frame={frame.title ? 'code' : undefined} meta={frame.program ? 'role="program"' : undefined} />
+                  <Code code={ex.code} lang={codeLang(ex.lang)} title={frame.title ?? ''} frame={frame.title ? 'code' : undefined} meta={frame.program ? 'role="program"' : undefined} />
                 </div>
                 {ex.outro && <div class="gp-sphinx-api-example-outro"><ApiDoc text={ex.outro} index={index} context={symbol} /></div>}
               </>

@@ -48,10 +48,11 @@ describe('the frame of an API example', () => {
     for (const example of examples.filter((candidate) => !candidate.sourceUrl)) expect(exampleFrame(example)).toEqual({ program: false })
   })
 
-  it('draws it from the page: each example takes its frame from the helper, and none is given an empty title', () => {
+  it('draws it from the page: each example takes its frame from the helper, and an untitled one keeps an explicit empty title', () => {
     const entry = source('components/api/ApiEntry.astro')
     expect(entry).toContain('exampleFrame(ex)')
-    expect(entry).not.toMatch(/<Code[^>]*title=""/)
+    // Without a title Expressive Code may take a leading comment as the file name and drop it from the code.
+    expect(entry).toMatch(/<Code[^>]*title=\{frame\.title \?\? ''\}/)
   })
 })
 
@@ -60,6 +61,18 @@ describe('a frame with no file name', () => {
   beforeAll(async () => {
     const renderer = await createRenderer(ecConfig)
     render = async (code, language, meta) => (await renderer.ec.render({ code, language, meta })).renderedGroupAst
+  })
+
+  it('keeps a leading comment of an untitled example in the code it copies', async () => {
+    const code = '// swift-tools-version: 6.2\nimport PackageDescription'
+    const copied = async (meta: string) => {
+      const button = select('[data-code]', await render(code, 'swift', meta) as never) as { properties?: Record<string, unknown> } | undefined
+      return String(button?.properties?.dataCode ?? '').replaceAll('\x7f', '\n')
+    }
+    expect(await copied('title=""')).toContain('// swift-tools-version: 6.2')
+    // The control: with no title at all, the comment is read as a file name and leaves the copied code.
+    expect(await copied('')).not.toContain('// swift-tools-version: 6.2')
+    expect(select('figcaption.header', await render(code, 'swift', 'title=""') as never)).toBeUndefined()
   })
 
   it('draws no empty header, and a frame with one still draws it', async () => {
