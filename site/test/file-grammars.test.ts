@@ -39,7 +39,7 @@ interface Fixture {
 }
 
 const FIXTURES: Fixture[] = [
-  { language: 'cabal', code: fileOf('haskell', 'libtmux-mutate-graph.cabal'), tokens: ['build-depends', 'libtmux-haskell', '^>=', '0.1.0.0', '&&', '-Wall'] },
+  { language: 'cabal', code: fileOf('haskell', 'libtmux-mutate-graph.cabal'), tokens: ['build-depends', 'libtmux-haskell', '^>=', '0.0.1.0', '&&', '-Wall'] },
   { language: 'cabal', code: fileOf('haskell', 'cabal.project'), tokens: ['source-repository-package', 'location', 'https://github.com/libtmux/libtmux-haskell', '2026-11-06T00:00:00Z'] },
   { language: 'gomod', code: fileOf('go', 'go.mod'), tokens: ['module', 'go', 'require', 'v0.1.2', 'github.com/libtmux/libtmux-go'] },
   { language: 'gemfile-lock', code: fileOf('ruby', 'Gemfile.lock'), tokens: ['GEM', 'remote', 'libtmux', '~>', '0.1.2', 'sha256', 'ruby'] },
