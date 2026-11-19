@@ -177,7 +177,8 @@ describe('Haskell reference navigation', () => {
       'options-functions': ['readOption', 'setOption', 'setOptionWith', 'unsetOption', 'unsetOptionWith'],
       hooks: ['readHook', 'setHook', 'setHookWith', 'unsetHook', 'unsetHookWith'],
       buffers: ['loadBuffer', 'loadBufferWith', 'readBuffer', 'pasteBuffer', 'pasteBufferWith'],
-      capabilities: ['serverCapabilities'], errors: ['TmuxException'],
+      control: ['withControl'], capabilities: ['serverCapabilities'],
+      errors: ['TmuxException', 'ConfigurationProblem', 'ObservationProblem', 'TimeoutKind', 'ArgumentError'],
     }
     for (const entry of exported) {
       const task = Object.entries(targetBuckets).find(([, names]) => names.includes(entry.name))?.[0] ?? 'server'

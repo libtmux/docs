@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import artifact from './fixtures/haskell-control-native/artifact.json'
 import { extractHaskellArtifact } from '../src/languages/haskell'
+import { navSidecar } from '../src/nav-sidecar'
 
 describe('the native Haskell control profile', () => {
   it('preserves STM event reads and an opaque attached-client owner', () => {
@@ -16,6 +17,10 @@ describe('the native Haskell control profile', () => {
     expect(model.symbols.some((entry) => entry.id === 'LibTmux.Control#v:Control')).toBe(false)
     expect(symbol('LibTmux.Server#v:withControl').signatures[0]!.raw)
       .toBe('withControl :: Server -> SessionRef -> ControlOptions -> (Control -> IO a) -> IO a')
+    const nav = navSidecar('haskell', model)!
+    expect(nav.unplaced.map((entry) => entry.id)).toEqual(['LibTmux', 'LibTmux.Id', 'LibTmux.Value'])
+    expect(nav.placement['LibTmux.Recovery']).toBe('server')
+    expect(nav.placement['LibTmux.Server#v:withControl']).toBe('control')
   })
 
   it('keeps Recovery Program imports as references to canonical Program declarations', () => {

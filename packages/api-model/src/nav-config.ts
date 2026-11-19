@@ -845,6 +845,15 @@ const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
       ...['awaitCleanup', 'cleanupFailure', 'cleanupObservation', 'creationReceipt', 'detachCaptureRecovery', 'inspectCaptureRecovery',
         'inspectCleanup', 'resumeCaptureRecovery', 'resumeCleanup'].map((name) => `LibTmux.Server#v:${name}`),
       'LibTmux.Program',
+      'LibTmux.Recovery',
+      ...['CleanupRecovery', 'CleanupStatus', 'CaptureRecovery', 'ReadRecovery', 'CreationRecovery', 'MutationRecovery',
+        'Operation', 'Status', 'Stage', 'Outcome'].map((name) => `LibTmux.Recovery#t:${name}`),
+      ...['cleanupRecoveries', 'cleanupFailure', 'cleanupObservation', 'inspectCleanup', 'resumeCleanup', 'awaitCleanup',
+        'detachUnresolved', 'captureRecoveries', 'recoveryOperation', 'recoveryGeneration', 'inspectCaptureRecovery',
+        'resumeCaptureRecovery', 'detachCaptureRecovery', 'creationRecoveries', 'creationOperation', 'creationGeneration',
+        'creationReceipt', 'inspectCreationRecovery', 'resumeCreationRecovery', 'awaitCreationRecovery', 'detachCreationRecovery',
+        'mutationRecoveries', 'mutationOperation', 'mutationGeneration', 'inspectMutationRecovery', 'resumeMutationRecovery',
+        'awaitMutationRecovery', 'detachMutationRecovery', 'operationStatus'].map((name) => `LibTmux.Recovery#v:${name}`),
       'LibTmux.Creation#t:CreatedEntities',
       ...['Program', 'ProgramOptions', 'ProgramExit', 'StartFailure', 'StartPhase', 'ProgramScreen', 'ProgramResult',
         'ProgramRecovery', 'ProgramCleanupStatus'].map((name) => `LibTmux.Program#t:${name}`),
@@ -876,6 +885,7 @@ const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
         'selectExactPane', 'selectExactPaneWith', 'defaultPaneWait', 'waitForText', 'resizePane', 'resizePaneWith']
         .map((name) => `LibTmux.Server#v:${name}`)],
     options: ['LibTmux.Options', ...['setOptionWith', 'unsetOptionWith'].map((name) => `LibTmux.Server#v:${name}`)],
+    errors: ['ConfigurationProblem', 'ObservationProblem', 'TimeoutKind', 'ArgumentError'].map((name) => `LibTmux.Server#t:${name}`),
     snapshots: ['LibTmux.Snapshot#t:TmuxText'],
   },
   // Elixir's modules are named for what they do rather than for a tmux object.

@@ -100,7 +100,8 @@ describe('Haskell API sidebar', () => {
     const exported = model.symbols.filter((symbol) => symbol.parent === 'LibTmux.Server')
     for (const symbol of exported) expect(bucketForSymbol(model, nav, symbol), symbol.id).toBeDefined()
     for (const [bucket, names] of [
-      ['server', ['v:withServer', 'v:withRuntime', 'v:capture', 't:CreationRecovery']],
+      ['server', ['v:withServer', 'v:withRuntime', 'v:capture']],
+      ['control', ['v:withControl']],
       ['capabilities', ['v:serverCapabilities']],
       ['session', ['v:createSession', 'v:createSessionWith', 'v:killSession']],
       ['window', ['v:createWindow', 'v:linkWindow', 'v:selectWindowLink', 'v:resizeWindow']],
@@ -117,6 +118,9 @@ describe('Haskell API sidebar', () => {
       expect(symbol, id).toBeDefined()
       expect(bucketForSymbol(model, nav, symbol), id).toBe(bucket)
     }
+    const recovery = model.symbols.find((entry) => entry.id === 'LibTmux.Recovery#t:CreationRecovery')!
+    expect(recovery).toBeDefined()
+    expect(bucketForSymbol(model, nav, recovery)).toBe('server')
   })
 })
 

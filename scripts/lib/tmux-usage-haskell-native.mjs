@@ -29,7 +29,7 @@ export function qualifyNativeHaskell({ model, symbols, inventory, readSource, pr
   const moved = model.revision !== profile.revision
   if ((moved && shown.includes(profile.revision)) || digest(moved ? shown.replaceAll(model.revision, profile.revision) : shown) !== profile.modelSha256) fail('public model or native build metadata differs from the profile')
   if (digest(JSON.stringify(claims)) !== profile.claimsSha256) fail('reviewed claims differ from the profile')
-  const kinds = new Set(['sends', 'caller-io', 'pure', 'local-recovery', 'value'])
+  const kinds = new Set(['sends', 'caller-io', 'pure', 'local-recovery', 'local-observation', 'value'])
   const classified = new Map()
   for (const group of profile.classifications ?? []) {
     if (!kinds.has(group.kind) || !group.why?.trim() || !Array.isArray(group.symbols) || !group.symbols.length) fail('invalid public classification')
