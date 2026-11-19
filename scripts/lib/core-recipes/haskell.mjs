@@ -174,6 +174,12 @@ export const RECIPES = {
     /** What differs on every run in what a capture sends and reads back: the token that frames its reply, and the daemon's process id and start time. */
     redact: scrub,
     reply: scrub,
+    /**
+     * Native record fields encode g as an octal escape. Rewrite only the known sandbox prefix.
+     * @param {string} sandbox
+     * @returns {[string, string][]}
+     */
+    sanitizePaths: (sandbox) => [[sandbox.replaceAll('g', '\\147'), '/tmp']],
     instrument: instrumentHaskell,
     /** The page's own setup commands: a server with the `demo` session, started before the program runs. */
     setup({ dir, env }) {

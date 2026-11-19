@@ -254,7 +254,7 @@ try {
   // A program that names its socket with a random token (`quickstart-<guid>`) says how to find it and what to call it.
   const named = recipe.socket ? new RegExp(recipe.socket.pattern).exec(JSON.stringify(pinned.steps))?.[0] : undefined
   const marks = {
-    paths: [[join(sandboxReal, 'bin/tmux'), FIXED.tmux], [sandboxReal, '/tmp'], [`tmux-${process.getuid()}`, `tmux-${FIXED.uid}`], ...(pid ? [[`libtmux-quickstart-${pid}`, `libtmux-quickstart-${FIXED.pid}`]] : []), ...(named ? [[named, recipe.socket.fixed]] : [])],
+    paths: [[join(sandboxReal, 'bin/tmux'), FIXED.tmux], [sandboxReal, '/tmp'], [`tmux-${process.getuid()}`, `tmux-${FIXED.uid}`], ...(pid ? [[`libtmux-quickstart-${pid}`, `libtmux-quickstart-${FIXED.pid}`]] : []), ...(named ? [[named, recipe.socket.fixed]] : []), ...(recipe.sanitizePaths?.(sandboxReal) ?? [])],
     names: [hostname(), userInfo().username],
   }
   // The recording names one revision; a program recorded at another says its own.
