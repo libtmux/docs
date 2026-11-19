@@ -100,7 +100,8 @@ describe('Haskell API sidebar', () => {
     const exported = model.symbols.filter((symbol) => symbol.parent === 'LibTmux.Server')
     for (const symbol of exported) expect(bucketForSymbol(model, nav, symbol), symbol.id).toBeDefined()
     for (const [bucket, names] of [
-      ['server', ['v:withServer', 'v:withRuntime', 'v:capture', 'v:serverCapabilities', 't:CreationRecovery']],
+      ['server', ['v:withServer', 'v:withRuntime', 'v:capture', 't:CreationRecovery']],
+      ['capabilities', ['v:serverCapabilities']],
       ['session', ['v:createSession', 'v:createSessionWith', 'v:killSession']],
       ['window', ['v:createWindow', 'v:linkWindow', 'v:selectWindowLink']],
       ['pane', ['v:splitPane', 'v:sendKeys', 'v:capturePane', 'v:waitForText', 't:PaneWaitOptions']],

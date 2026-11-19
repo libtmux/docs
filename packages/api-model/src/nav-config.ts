@@ -840,7 +840,6 @@ const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
   // module's cleanup and recovery family by the words in each name.
   haskell: {
     server: [
-      'LibTmux.Server#v:serverCapabilities',
       ...['CaptureRecovery', 'CleanupRecovery', 'CleanupStatus', 'CreationRecovery', 'MutationOptions', 'MutationRecovery', 'Operation',
         'Outcome', 'ReadRecovery', 'Stage', 'Status'].map((name) => `LibTmux.Server#t:${name}`),
       ...['awaitCleanup', 'cleanupFailure', 'cleanupObservation', 'creationReceipt', 'detachCaptureRecovery', 'inspectCaptureRecovery',
