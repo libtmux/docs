@@ -57,15 +57,25 @@ jobs:
       - name: Select the released executable
         env:
           TMUX_EXECUTABLE: ${{ steps.tmux.outputs.binary }}
+          TMUX_VERSION: ${{ matrix.tmux }}
         run: |
           mkdir -p "$RUNNER_TEMP/hr" proof
+          test "$("$TMUX_EXECUTABLE" -V)" = "tmux $TMUX_VERSION"
           dirname "$TMUX_EXECUTABLE" >> "$GITHUB_PATH"
       - run: cabal update
       - name: Record the exact and marked programs
         id: record
         env:
           TMPDIR: ${{ runner.temp }}/hr
-        run: node scripts/gen-core-recording.mjs --port haskell --keep 2>&1 | tee proof/record.log
+          TMUX_EXECUTABLE: ${{ steps.tmux.outputs.binary }}
+          TMUX_VERSION: ${{ matrix.tmux }}
+        shell: bash
+        run: |
+          set -o pipefail
+          resolved_tmux=$(command -v tmux)
+          test "$("$resolved_tmux" -V)" = "tmux $TMUX_VERSION"
+          test "$(sha256sum < "$resolved_tmux")" = "$(sha256sum < "$TMUX_EXECUTABLE")"
+          node scripts/gen-core-recording.mjs --port haskell --keep 2>&1 | tee proof/record.log
       - name: Preserve native recording evidence
         if: always()
         env:
@@ -73,12 +83,13 @@ jobs:
           RECORD_OUTCOME: ${{ steps.record.outcome }}
           SOURCE_REVISION: ${{ steps.source.outputs.revision }}
           TMUX_EXECUTABLE: ${{ steps.tmux.outputs.binary }}
+          TMUX_VERSION: ${{ matrix.tmux }}
         run: |
           node --input-type=module <<'JS'
           import { createHash } from 'node:crypto'
           import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
           import { execFileSync } from 'node:child_process'
-          import { dirname, join, resolve, sep } from 'node:path'
+          import { delimiter, dirname, join, resolve, sep } from 'node:path'
           const hash = (bytes) => createHash('sha256').update(bytes).digest('hex')
           const command = (file, args, cwd) => execFileSync(file, args, { cwd, encoding: 'utf8' }).trim()
           mkdirSync('proof', { recursive: true })
@@ -101,6 +112,12 @@ jobs:
           }
           if (existsSync(process.env.TMUX_EXECUTABLE ?? '')) {
             receipt.tmux = { version: command(process.env.TMUX_EXECUTABLE, ['-V']), sha256: hash(readFileSync(process.env.TMUX_EXECUTABLE)) }
+            const resolved = process.env.PATH.split(delimiter).map((dir) => join(dir, 'tmux')).find((file) => existsSync(file))
+            if (!resolved) throw new Error('recorder cannot resolve tmux')
+            receipt.tmux.resolvedSha256 = hash(readFileSync(resolved))
+            receipt.tmux.resolvedVersion = command(resolved, ['-V'])
+            receipt.tmux.expectedVersion = `tmux ${process.env.TMUX_VERSION}`
+            if (receipt.tmux.resolvedSha256 !== receipt.tmux.sha256 || receipt.tmux.resolvedVersion !== receipt.tmux.expectedVersion || receipt.tmux.version !== receipt.tmux.expectedVersion) throw new Error('recorder tmux differs from the pinned release')
           }
           if (process.env.RECORD_OUTCOME === 'success') {
             const path = 'site/src/data/core-recordings/haskell.json'
@@ -108,6 +125,7 @@ jobs:
             receipt.recordingSha256 = hash(readFileSync(path))
             const stored = JSON.parse(readFileSync(path, 'utf8'))
             receipt.toolchain = stored.sandbox
+            if (stored.sandbox.tmux !== receipt.tmux.expectedVersion) throw new Error('recorded executable release differs')
             receipt.recordedRevision = stored.capabilities['typed-graph'].revision ?? stored.revision
             if (receipt.recordedRevision !== receipt.source.revision || receipt.source.checkedOutRevision !== receipt.source.revision || receipt.source.trackedChanges) throw new Error('recording source receipt differs')
           }
