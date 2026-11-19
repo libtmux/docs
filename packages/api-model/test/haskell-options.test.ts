@@ -23,6 +23,8 @@ describe('the native Haskell options profile', () => {
     expect(nav.diagnostics).toMatchObject({ unmatched: [], ambiguous: [], staleUnsettled: [] })
     expect(nav.placement['LibTmux.Options']).toBe('options')
     expect(nav.placement['LibTmux.Server#v:readOption']).toBe('options-functions')
+    expect(nav.placement['LibTmux.Server#v:setOptionWith']).toBe('options-functions')
+    expect(nav.placement['LibTmux.Server#v:unsetOptionWith']).toBe('options-functions')
     expect(nav.placement['LibTmux.Server#v:setHook']).toBe('hooks')
     expect(nav.placement['LibTmux.Server#v:pasteBuffer']).toBe('buffers')
     expect(nav.placement['LibTmux.Server#v:resizePane']).toBe('pane')

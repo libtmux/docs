@@ -167,13 +167,16 @@ describe('Haskell reference navigation', () => {
     const targetBuckets = {
       session: ['createSession', 'createSessionWith', 'killSession', 'killSessionWith'],
       window: ['createWindow', 'createWindowWith', 'killWindow', 'killWindowWith', 'linkWindow', 'linkWindowWith',
-        'unlinkWindow', 'unlinkWindowWith', 'selectWindowLink', 'selectWindowLinkWith'],
+        'unlinkWindow', 'unlinkWindowWith', 'selectWindowLink', 'selectWindowLinkWith', 'resizeWindow', 'resizeWindowWith'],
       pane: ['PaneInput', 'PaneText', 'splitPane', 'splitPaneWith', 'sendKeys', 'sendKeysWith',
         'killPane', 'killPaneWith', 'capturePane', 'paneText', 'selectExactPane', 'selectExactPaneWith',
-        'PaneWaitOptions', 'PaneWaitResult', 'PaneMatch', 'defaultPaneWait', 'waitForText'],
+        'PaneWaitOptions', 'PaneWaitResult', 'PaneMatch', 'defaultPaneWait', 'waitForText', 'resizePane', 'resizePaneWith'],
       layout: ['NamedLayout', 'selectLayout', 'selectLayoutWith'],
       environment: ['getEnvironment', 'setEnvironment', 'setEnvironmentWith', 'markEnvironmentRemoved',
         'markEnvironmentRemovedWith', 'unsetEnvironment', 'unsetEnvironmentWith'],
+      'options-functions': ['readOption', 'setOption', 'setOptionWith', 'unsetOption', 'unsetOptionWith'],
+      hooks: ['readHook', 'setHook', 'setHookWith', 'unsetHook', 'unsetHookWith'],
+      buffers: ['loadBuffer', 'loadBufferWith', 'readBuffer', 'pasteBuffer', 'pasteBufferWith'],
       capabilities: ['serverCapabilities'], errors: ['TmuxException'],
     }
     for (const entry of exported) {

@@ -875,7 +875,7 @@ const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
       ...['splitPane', 'splitPaneWith', 'sendKeys', 'sendKeysWith', 'killPane', 'killPaneWith', 'capturePane', 'paneText',
         'selectExactPane', 'selectExactPaneWith', 'defaultPaneWait', 'waitForText', 'resizePane', 'resizePaneWith']
         .map((name) => `LibTmux.Server#v:${name}`)],
-    options: ['LibTmux.Options'],
+    options: ['LibTmux.Options', ...['setOptionWith', 'unsetOptionWith'].map((name) => `LibTmux.Server#v:${name}`)],
     snapshots: ['LibTmux.Snapshot#t:TmuxText'],
   },
   // Elixir's modules are named for what they do rather than for a tmux object.
@@ -995,7 +995,9 @@ const LANGUAGE_SHORTCUTS: Record<string, Record<string, string[]>> = {
 /** Exact editorial placements exclude rules in unrelated bucket trees. */
 function languageBucket(bucket: Bucket, port: string, root = bucket.id): Bucket {
   const placements = LANGUAGE_PLACEMENTS[port] ?? {}
-  const ids = bucket.id === root ? placements[root] : undefined
+  const ids = bucket.id === root ? placements[root]
+    : port === 'haskell' && bucket.id === 'options-functions'
+      ? placements.options?.filter((id) => id.startsWith('LibTmux.Server#v:')) : undefined
   const elsewhere = Object.entries(placements)
     .flatMap(([id, symbols]) => id === root ? [] : symbols)
   const match: Match = elsewhere.length
