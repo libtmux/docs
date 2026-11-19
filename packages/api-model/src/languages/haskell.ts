@@ -70,6 +70,9 @@ const PANE_ORIGINS = [...PANE_MODULES,
 const ENVIRONMENT_MODULES = [...PANE_MODULES, 'LibTmux.Environment'].toSorted()
 const ENVIRONMENT_ORIGINS = [...ENVIRONMENT_MODULES,
   ...PANE_ORIGINS.filter((module) => !PANE_MODULES.includes(module)), 'LibTmux.Internal.Command']
+const OPTIONS_MODULES = [...ENVIRONMENT_MODULES, 'LibTmux.Options'].toSorted()
+const OPTIONS_ORIGINS = [...OPTIONS_MODULES,
+  ...ENVIRONMENT_ORIGINS.filter((module) => !ENVIRONMENT_MODULES.includes(module)), 'LibTmux.Internal.OptionTable']
 const VERSION = /^(?:0|[1-9]\d*)(?:\.(?:0|[1-9]\d*))+$/
 
 /** The shell reads fewer than three bold-led rows as prose, so a smaller export list gets no directory. */
@@ -144,7 +147,8 @@ function validateSignature(signature: Signature, symbol: NativeSymbol, byId: Map
 export function extractHaskellArtifact(input: unknown, expectedRevision?: string): ApiModel {
   check(input && typeof input === 'object', 'missing document')
   const artifact = structuredClone(input) as HaskellArtifact
-  const environments = artifact.schema === 'libtmux.haskell-api/8' && artifact.profile === 'environment/1'
+  const options = artifact.schema === 'libtmux.haskell-api/9' && artifact.profile === 'options/1'
+  const environments = options || (artifact.schema === 'libtmux.haskell-api/8' && artifact.profile === 'environment/1')
   const paneText = environments || (artifact.schema === 'libtmux.haskell-api/7' && artifact.profile === 'pane-text/1')
   const programs = paneText || (artifact.schema === 'libtmux.haskell-api/6' && artifact.profile === 'programs/1')
   const creations = programs || (artifact.schema === 'libtmux.haskell-api/5' && artifact.profile === 'creations/1')
@@ -160,7 +164,7 @@ export function extractHaskellArtifact(input: unknown, expectedRevision?: string
   check(artifact.package?.name === 'libtmux-haskell' && VERSION.test(artifact.package.version) &&
     Array.isArray(artifact.package.exposedModules) && artifact.package.exposedModules.length, 'invalid Cabal package identity')
   const modules = artifact.package.exposedModules
-  const qualified = environments ? ENVIRONMENT_MODULES : paneText ? PANE_MODULES : programs ? PROGRAM_MODULES : creations ? CREATION_MODULES : queries ? QUERY_MODULES : observations ? OBSERVATION_MODULES : QUALIFIED_MODULES
+  const qualified = options ? OPTIONS_MODULES : environments ? ENVIRONMENT_MODULES : paneText ? PANE_MODULES : programs ? PROGRAM_MODULES : creations ? CREATION_MODULES : queries ? QUERY_MODULES : observations ? OBSERVATION_MODULES : QUALIFIED_MODULES
   check(modules.length === qualified.length && modules.every((module, index) => module === qualified[index]),
     'unqualified exposed module profile')
   check(Array.isArray(artifact.modules) && artifact.modules.length === modules.length &&
@@ -181,14 +185,14 @@ export function extractHaskellArtifact(input: unknown, expectedRevision?: string
     }
   }
   const exporter = artifact.nativeProvenance?.exporter
-  check(exporter?.name === 'Haddock public interface export' && exporter.version === (environments ? 8 : paneText ? 7 : programs ? 6 : creations ? 5 : mutations ? 4 : queries ? 3 : observations ? 2 : 1) && exporter.repository === 'libtmux/docs' &&
+  check(exporter?.name === 'Haddock public interface export' && exporter.version === (options ? 9 : environments ? 8 : paneText ? 7 : programs ? 6 : creations ? 5 : mutations ? 4 : queries ? 3 : observations ? 2 : 1) && exporter.repository === 'libtmux/docs' &&
     typeof exporter.revision === 'string' && COMMIT.test(exporter.revision) &&
     exporter.path === 'packages/api-model/scripts/export-haskell.py' && HASH.test(exporter.sha256), 'missing committed producer identity')
   check(exporter.build?.compiler === `ghc-${artifact.compiler}` && exporter.build.cabal === '3.18.2.0' &&
     exporter.build.unit === `${artifact.package.name}-${artifact.package.version}-inplace` &&
     typeof exporter.build.platform === 'string' && /^[\w]+-[\w]+$/.test(exporter.build.platform) &&
     ['stdout', 'stderr'].includes(exporter.interfaceStream), 'invalid configured native build')
-  const origins = environments ? ENVIRONMENT_ORIGINS : paneText ? PANE_ORIGINS : programs ? PROGRAM_ORIGINS : creations ? CREATION_ORIGINS : mutations ? MUTATION_ORIGINS : queries ? QUERY_ORIGINS : observations ? OBSERVATION_ORIGINS : modules
+  const origins = options ? OPTIONS_ORIGINS : environments ? ENVIRONMENT_ORIGINS : paneText ? PANE_ORIGINS : programs ? PROGRAM_ORIGINS : creations ? CREATION_ORIGINS : mutations ? MUTATION_ORIGINS : queries ? QUERY_ORIGINS : observations ? OBSERVATION_ORIGINS : modules
   const sourceFile = (module: string) => `${module.startsWith('LibTmux.Internal.') ? 'internal' : 'src'}/${module.replaceAll('.', '/')}.hs`
   const sourceFiles = origins.map(sourceFile)
   hashedInputs(artifact.nativeProvenance.files, ['.tool-versions', 'cabal.project', 'libtmux-haskell.cabal', ...sourceFiles], 'source inputs')
