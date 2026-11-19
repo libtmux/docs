@@ -110,15 +110,13 @@ describe('the APIs a showcase example uses', () => {
 
 describe('the Core player\'s links', () => {
   // Calls a recorded program makes that link nowhere here: the language's own (System.cmd, Seq.find), the
-  // program's helper (lua's tmux), PowerShell's Snapshot.Panes, whose recipe names a type the cmdlet does not
-  // return (it returns LibTmux.Server), and calls newer than the API model committed in site/src/data/api. A
+  // program's helper (lua's tmux), and calls newer than the API model committed in site/src/data/api. A
   // port's own build regenerates its model at the port's head (build-site.sh), where those calls resolve.
   const UNLINKED: Record<string, string[]> = {
     elixir: ['System.cmd', 'Session.active_window', 'Ref.from_observation', 'Window.rename!', 'Pane.split!', 'Session.new_window!', 'Pane.send_text!', 'Pane.send_keys!', 'Pane.capture!', 'Window.panes'],
     fsharp: ['Window.rename', 'Window.activePane', 'Session.newWindow', 'Pane.select', 'Window.select', 'Seq.find'],
     julia: ['wait_for_text'],
     lua: ['tmux', 'Pane:wait_for_text'],
-    powershell: ['Snapshot.Panes'],
   }
   const ports = ['csharp', 'cxx', 'elixir', 'fsharp', 'go', 'java', 'julia', 'kotlin', 'lua', 'powershell', 'py', 'rs', 'ruby', 'scala', 'swift', 'ts']
 

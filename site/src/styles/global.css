@@ -252,12 +252,35 @@ html {
    (type, columns, panels, marks) keeps its proportions (record 0071). rem here is the reader's default size. */
 html { font-size: clamp(1rem, 1rem + (100vw - 120rem) / 480, 1.25rem); }
 
-/* On touch screens the header's chips, scheme button, wordmark and language trigger keep their drawn size and take a
-   touch-target-tall hit area, so the bar does not grow (record 0071). */
+/* On touch screens the header's chips, scheme button, wordmark and language trigger, and the sidebar head's up link
+   and title, keep their drawn size and take a touch-target-tall hit area, so the bar and the head do not grow
+   (record 0071). The outline drawer's links are a list, so they take the full row height instead. */
 @media (pointer: coarse) {
-  .site-header :is(.topnav-chip, .scheme-cycle, .site-header__mark), .site-header-language .doc-picker > summary { position: relative; }
+  .site-header :is(.topnav-chip, .scheme-cycle, .site-header__mark), .site-header-language .doc-picker > summary,
+  .sidebar-head__up, .sidebar-head__title { position: relative; }
   .site-header :is(.topnav-chip, .scheme-cycle, .site-header__mark)::before,
-  .site-header-language .doc-picker > summary::before { content: ''; position: absolute; inset: calc((100% - var(--touch-target)) / 2) -.25rem; }
+  .site-header-language .doc-picker > summary::before,
+  :is(.sidebar-head__up, .sidebar-head__title)::before { content: ''; position: absolute; inset: calc((100% - var(--touch-target)) / 2) -.25rem; }
+  #mobile-toc li > a { display: flex; align-items: center; min-height: var(--touch-target); }
+}
+
+/* The page's own controls follow the same rule (record 0071). A button, chip, summary or icon link keeps its drawn size and
+   takes a touch-target-tall hit area; the list-like rows (breadcrumbs, the footer's links) take the full row height. The
+   release notice's close button and its More summary are `position: static` in one layout and `absolute` in another, so
+   `contain: layout` makes them the hit area's containing block without moving them. The context bar sits directly above
+   the notice, so their hit area reaches only .25rem up and takes the rest below. The code frame's copy button is a drawn
+   square, so it grows to the touch target and its icon keeps its size. */
+@media (pointer: coarse) {
+  :is(.page-control, .toolbar-button, .context-settings-toggle, .context-settings-back, .api-nav-toggle, .anchor-link, .inventory-help-link, footer .icons a) { position: relative; }
+  :is(.prerelease-notice__dismiss, .prerelease-notice__more summary) { contain: layout; }
+  :is(.page-control, .toolbar-button, .context-settings-toggle, .context-settings-back, .api-nav-toggle, .anchor-link, .inventory-help-link, footer .icons a)::after { content: ''; position: absolute; inset: min(0px, calc((100% - var(--touch-target)) / 2)); }
+  :is(.prerelease-notice__dismiss, .prerelease-notice__more summary)::after { content: ''; position: absolute; inset: -.25rem -.25rem calc(.25rem + 100% - var(--touch-target)); }
+  :is([data-breadcrumb-item], .crumb-collapsed > a, footer ul.flex a, [data-ci-examples] li a) { display: inline-flex; align-items: center; min-height: var(--touch-target); }
+  .section-search input { min-height: var(--touch-target); }
+  .site-header .scheme-switch__option { position: relative; }
+  .site-header .scheme-switch__option::before { content: ''; position: absolute; inset: calc((100% - var(--touch-target)) / 2) 0; }
+  .expressive-code .frame .copy button { width: var(--touch-target); height: var(--touch-target); }
+  .expressive-code .frame .copy button::after { margin: calc((var(--touch-target) - 1.55rem) / 2); }
 }
 
 /* Header controls are already visible above the reserved reading area. Do not

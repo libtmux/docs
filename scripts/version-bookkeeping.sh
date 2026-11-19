@@ -5,12 +5,13 @@
 # Version bookkeeping for scripts/build-site.sh.
 #
 # Sourced rather than run: it writes the manifest this build was trimmed to and
-# defines the four questions the build asks of it. A file rather than a stretch
+# defines the questions the build asks of it. A file rather than a stretch
 # of build-site.sh because site/test/versions.test.ts drives these functions,
 # and it used to reconstruct them by splitting the script between two comment
 # banners — a split that renaming either banner would have quietly emptied.
 #
-# Expects scratch, script_dir, site_dir, locale and versions_arg to be set.
+# Expects scratch, script_dir, site_dir, locale and versions_arg to be set, and
+# site_origin for sphinx_url_settings.
 
 manifest="$scratch/versions.json"
 node "$script_dir/gen-versions.mjs" --out "$manifest"
@@ -79,6 +80,28 @@ port_lists_version() {
     const m = JSON.parse(fs.readFileSync(process.env.LIBTMUX_DOCS_MANIFEST, "utf8"))
     const entries = m.ports[process.env.LIBTMUX_DOCS_PORT] ?? []
     process.exit(entries.some((e) => e.slug === process.env.LIBTMUX_DOCS_VERSION_SLUG) ? 0 : 1)
+  '
+}
+
+# The URLs a port's own Sphinx tree declares for itself, one `name=value`
+# Sphinx setting per line: sphinx_url_settings PORT VERSION DEFAULT.
+#
+# Upstream's conf.py derives these from `docs_url`, its legacy host, and sets
+# no canonical link, so an unmodified build names a host this site is replacing.
+# `html_baseurl` (canonical link) and `ogp_canonical_url` (`og:url`) go to the
+# default version, as `canonicalUrl` sends an Astro page. `site_url` (sitemap,
+# llms.txt) and `ogp_site_url` (images) stay under the tree they describe.
+sphinx_url_settings() {
+  LIBTMUX_DOCS_ROOTED_ORIGIN="${site_origin%/}$LIBTMUX_DOCS_PORT_ROOT" \
+    LIBTMUX_DOCS_SPHINX_TREE="$1|$2|$3" LIBTMUX_DOCS_SITE_DIR="$site_dir" node --input-type=module -e '
+    const { canonicalUrl } = await import(`file://${process.env.LIBTMUX_DOCS_SITE_DIR}/src/lib/versions.ts`)
+    const [port, version, defaultVersion] = process.env.LIBTMUX_DOCS_SPHINX_TREE.split("|")
+    const origin = process.env.LIBTMUX_DOCS_ROOTED_ORIGIN
+    const canonical = canonicalUrl(origin, port, version, defaultVersion, "api")
+    const own = canonicalUrl(origin, port, version, version, "api")
+    process.stdout.write(
+      [`html_baseurl=${canonical}`, `ogp_canonical_url=${canonical}`, `site_url=${own}`, `ogp_site_url=${own}`].join("\n") + "\n",
+    )
   '
 }
 

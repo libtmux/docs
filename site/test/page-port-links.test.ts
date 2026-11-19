@@ -91,7 +91,7 @@ describe('reference page exits for the four tmux objects', () => {
     const exitsOf = (pagePath: string) => pagePortLinks({ ...options, portSlug: 'haskell', pagePath })
       .filter((entry) => entry.port !== 'haskell')
     const type = exitsOf('reference/libtmux-server-t-server')
-    expect(type.find((entry) => entry.port === 'swift')?.links).toEqual([{ href: '/pr-42/en/swift/latest/reference/server/' }])
+    expect(type.find((entry) => entry.port === 'swift')?.links).toEqual([{ href: '/pr-42/en/swift/latest/reference/server/', api: 'Server' }])
     expect(type).toEqual(exitsOf('reference/libtmux-server'))
   })
 })

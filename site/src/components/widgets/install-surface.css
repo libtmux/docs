@@ -542,3 +542,12 @@ html[data-mcp-install-cooldown-enabled='1'][data-mcp-install-cooldown-type='bypa
   margin: 0.25rem 0 0;
   font-size: 0.8125rem;
 }
+
+/* On touch screens the install bar's segmented buttons and facts links keep their drawn size and take a touch-target-tall hit
+   area; the segments sit 2px apart, so it reaches no further sideways than the segment (record 0071). */
+@media (pointer: coarse) {
+  .lm-install__seg button, .lm-install__facts a { position: relative; }
+  /* A link to another site draws its mark in `::after` (the shell's external-links.css), so the facts link takes `::before`. */
+  .lm-install__seg button::after { content: ''; position: absolute; inset: calc((100% - var(--touch-target)) / 2) 0; }
+  .lm-install__facts a::before { content: ''; position: absolute; inset: calc((100% - var(--touch-target)) / 2) 0; }
+}

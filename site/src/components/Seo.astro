@@ -2,7 +2,7 @@
 import type { Graph } from 'schema-dts'
 import { branding, documentationTitle, jsonLd, PYTHON_DESCRIPTION, PYTHON_SAME_AS, TMUX_DESCRIPTION, TMUX_WEBSITE, tmuxDocumentationTitle } from '../lib/branding'
 import { DOC_PRODUCTS, PORT_BY_SLUG, type DocProduct } from '../lib/ports'
-import { canonicalUrl, robotsFor, type VersionEntry } from '../lib/versions'
+import { canonicalUrl, defaultVersionFor, robotsFor, type VersionEntry } from '../lib/versions'
 import { IS_ROOT_BUILD, SITE_ROOT } from '../lib/site-root'
 import { localeRoot } from '../i18n/locales'
 
@@ -108,6 +108,10 @@ const canonical = canonicalOverride
   ? canonicalUrl(rootedOrigin, portSlug, version, defaultVersion, pagePath, existsInDefault)
   : `${rootedOrigin}/${pagePath.replace(/^\/+/, '').replace(/\/+$/, '')}${pagePath.replace(/^\/+/, '') ? '/' : ''}`
 
+// The Python project's home, which the structured data names as its site.
+const pythonDefault = defaultVersionFor('py')
+const pythonUrl = canonicalUrl(rootedOrigin, 'py', pythonDefault, pythonDefault, '')
+
 /**
  * The URL of this page in one locale, built from the unprefixed source path
  * rather than from `canonical` — which already carries the current locale's
@@ -165,7 +169,7 @@ const graph: Graph = {
       '@id': `${origin}/#${tmux ? 'tmux' : 'libtmux'}`,
       name: tmux ? 'tmux' : 'libtmux',
       description: tmux ? TMUX_DESCRIPTION : PYTHON_DESCRIPTION,
-      url: tmux ? TMUX_WEBSITE : 'https://libtmux.git-pull.com/',
+      url: tmux ? TMUX_WEBSITE : pythonUrl,
       codeRepository: tmux ? 'https://github.com/tmux/tmux' : 'https://github.com/tmux-python/libtmux',
       programmingLanguage: tmux ? 'C' : 'Python',
       sameAs: tmux ? [TMUX_WEBSITE, 'https://github.com/tmux/tmux'] : PYTHON_SAME_AS,

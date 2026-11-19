@@ -1,4 +1,4 @@
-import { symbolsForProduct, type ApiSymbol } from '@libtmux/api-model/reference'
+import { qualifiedNameOf, symbolsForProduct, type ApiSymbol } from '@libtmux/api-model/reference'
 import { headingTitle } from './branding'
 import { API_MODELS, pageSlug, referenceHref } from './api-models'
 import { equivalentsFor } from './api-equivalents'
@@ -32,6 +32,8 @@ export interface PagePortLink {
   links: {
     href: string
     label?: string
+    /** The matched API's qualified name on an API page (`io.github.libtmux.kotlin.Pane.capture`); the picker cuts it at its separators to fit (design record 0069). */
+    api?: string
     /** What differs from the page's own declaration, as the equivalents table lists it; the picker joins it into one muted line. */
     differences?: string[]
     preserveFragment?: boolean
@@ -123,7 +125,7 @@ export function pagePortLinks({
         links = [{ href, preserveFragment: true, fragmentIds }]
       }
     } else if (symbol) {
-      const targets = new Map<string, { label: string; note?: string; differences: string[] }>()
+      const targets = new Map<string, { label: string; api?: string; note?: string; differences: string[] }>()
       for (const alternative of alternatives) {
         const match = alternative.rows.find((row) => row.port === port.slug && row.status === 'mapped')
         // Resolve against the target port's version, which this caller knows.
@@ -132,12 +134,14 @@ export function pagePortLinks({
         const href = targetSymbol ? productApiHref(API_MODELS[port.slug], targetSymbol, targetVersion) : match?.href
         if (href && !targets.has(href)) targets.set(href, {
           label: targetSymbol ? `${targetSymbol.name} (${match?.kind ?? targetSymbol.kind})` : alternative.label,
+          api: targetSymbol ? qualifiedNameOf(targetSymbol) : undefined,
           note: match?.note,
           differences: match?.chips ?? [],
         })
       }
       links = [...targets].map(([href, target]) => ({ href,
         ...(targets.size > 1 || target.note ? { label: target.label } : {}),
+        ...(target.api ? { api: target.api } : {}),
         ...(target.differences.length ? { differences: target.differences } : {}),
       }))
       if (port.slug === symbolPort) {

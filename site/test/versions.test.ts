@@ -192,6 +192,38 @@ describe('assembly version selection', () => {
       rmSync(directory, { recursive: true, force: true })
     }
   })
+
+  // The settings reach Sphinx as `-D`, so what is checked is the one string
+  // that crosses the boundary: no legacy host, and the canonical agrees with
+  // `canonicalUrl` for an Astro page.
+  it.each([
+    ['latest', 'latest', 'latest', 'latest'],
+    ['v0.62.0', 'latest', 'latest', 'v0.62.0'],
+  ])('declares libtmux.org URLs for the Sphinx tree of %s with default %s', (version, defaultVersion, canonical, own) => {
+    const directory = mkdtempSync(join(tmpdir(), 'libtmux-sphinx-urls-'))
+    try {
+      writeFileSync(join(directory, 'gen-versions.mjs'),
+        "import { writeFileSync } from 'node:fs'; writeFileSync(process.argv[3], process.env.TEST_VERSION_MANIFEST);\n")
+      const output = execFileSync('bash', ['-euc', `. ${bookkeeping}\nsphinx_url_settings py ${version} ${defaultVersion}`], {
+        encoding: 'utf8',
+        env: {
+          ...process.env, scratch: directory, script_dir: directory,
+          repo_root: new URL('../../', import.meta.url).pathname,
+          site_dir: new URL('../', import.meta.url).pathname,
+          locale: 'en', versions_arg: 'latest', site_origin: 'https://libtmux.org',
+          TEST_VERSION_MANIFEST: JSON.stringify({ schema: 1, ports: { py: [] }, defaultVersion: { py: 'latest' } }),
+        },
+      })
+      expect(output.trim().split('\n')).toEqual([
+        `html_baseurl=https://libtmux.org/en/py/${canonical}/api/`,
+        `ogp_canonical_url=https://libtmux.org/en/py/${canonical}/api/`,
+        `site_url=https://libtmux.org/en/py/${own}/api/`,
+        `ogp_site_url=https://libtmux.org/en/py/${own}/api/`,
+      ])
+    } finally {
+      rmSync(directory, { recursive: true, force: true })
+    }
+  })
 })
 
 /**

@@ -31,7 +31,7 @@ const script = (...names: string[]) => names
   .join('\n').replace(/^export /gm, '')
 // The picker imports the home page's hover binding and the status badges' hover delay.
 const CLIENT = script('lib/home-hover-preview.ts', 'lib/status-toggletip.ts', 'lib/workspace-picker.ts')
-const MENU = script('lib/breakpoints.ts', 'components/docs/documentation-navigation.ts')
+const MENU = script('lib/breakpoints.ts', 'lib/qualified-name.ts', 'components/docs/documentation-navigation.ts')
 const REROLL = /<style is:global>([\s\S]*?)<\/style>/.exec(read('components/RerollButton.astro'))![1]!
 /** The evidence's own rules: the page template compiles its scoped stylesheet away, so the landing page below adds it by hand. */
 const EVIDENCE = /<style>([\s\S]*?)<\/style>/.exec(read('components/workspace/WorkspaceEvidence.astro'))![1]!

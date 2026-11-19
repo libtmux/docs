@@ -1552,6 +1552,29 @@ html[data-js] .api-member-tools { display: flex; }
 .api-member-chips button[aria-pressed='true'] > span { color: inherit; opacity: 0.8; }
 .api-member-chips button:disabled { background: none; color: var(--color-muted); cursor: default; }
 @media (pointer: coarse) { .api-member-chips button { min-height: 2.25rem; padding-inline: 0.75rem; } }
+/*
+ * On touch screens the page's controls keep their drawn size and take a touch-target-tall hit area through a pseudo-element
+ * (record 0071), the way the header's chips do (`global.css`). The filter chips are drawn 2.25rem tall, so they gain .25rem
+ * above and below and sit .5rem apart: a wrapped row never takes the next row's taps. A badge that is a link is a tab of
+ * the declaration card, so its hit area is no wider than the tab; it uses `::before`, because the shell draws an external
+ * link's mark in `::after`. The kind and modifier tabs clip their contents with `overflow: hidden`, which would clip the hit
+ * area too, so they let it out and the kind mark rounds its own corners instead. The member and guide lists are rows, so a
+ * link takes the full row height.
+ */
+@media (pointer: coarse) {
+  .api-member-chips { row-gap: 0.5rem; }
+  :is(.api-member-chips button, :is(.api-reference-eyebrow, .gp-sphinx-api-layout-right) > a.api-badge, .api-heading-link) { position: relative; }
+  .api-member-chips button::after, :is(.api-reference-eyebrow, .gp-sphinx-api-layout-right) > a.api-badge::before { content: ''; position: absolute; inset: calc((100% - var(--touch-target)) / 2) 0; }
+  .api-heading-link::after { content: ''; position: absolute; inset: min(0px, calc((100% - var(--touch-target)) / 2)); }
+  .api-copy-name::before { inset: min(0px, calc((1lh - var(--touch-target)) / 2)); }
+  :is(.api-reference-eyebrow, .gp-sphinx-api-layout-right) > a.api-badge:is(.api-leg, .api-badge--mod) { overflow: visible; }
+  :is(.api-reference-eyebrow, .gp-sphinx-api-layout-right) > a.api-badge.api-leg > .api-leg__m { border-start-start-radius: inherit; border-end-start-radius: inherit; }
+  .api-member-search > input { min-height: var(--touch-target); }
+  :is(.api-source-details > summary, .api-module__name, .api-index-summary) { padding-block: max(0px, calc((var(--touch-target) - 1lh) / 2)); }
+  :is(a.api-member-link, .api-guides-list a, .api-collection__limit a, .api-definition dd a, .tmux-usage__links a) { display: inline-flex; align-items: center; min-height: var(--touch-target); }
+  .tmux-usage__links { row-gap: 0; }
+  .api-index-card__heading { min-height: calc(var(--touch-target) - .75rem); }
+}
 /* A filtered list keeps one divider between its visible rows, wherever the hidden ones were. */
 .api-member-budget .api-member-list li { border-bottom: 0; }
 .api-member-budget .api-member-list li:not([hidden]) ~ li:not([hidden]) { border-top: 1px solid var(--color-background-border, #e2e8f0); }
