@@ -41,7 +41,6 @@ const { recording } = example
 const total = example.steps.length
 const args = (value: Record<string, unknown>) => JSON.stringify(value)
 const shown = (value: unknown) => (typeof value === 'string' ? value : JSON.stringify(value, null, 2))
-const answers = recording?.answers ?? []
 const reply = recording?.reply
 
 /** What each frame's note says, for a recording that has no tmux state of its own: it can say only what the call read. */
@@ -100,13 +99,11 @@ const note = (frame: Frame) => {
           </article>
         )
       })}
-      {recording && (reply || answers.length > 0) && (
-        // The agent's closing reply is its words, not a step: no tool, result or pin, and no mark on the rail. Output it quotes is <samp> (record 0074).
+      {recording && reply && (
+        // The agent's closing reply is its words, not a step: no tool, result or pin, and no mark on the rail. Output it quotes is <samp>. A recording without a reply has no closing turn: nothing is built from the panes (record 0074).
         <div class="mcp-turn mcp-turn--answer" data-turn={total} data-off>
           <span class="mcp-turn__who">Agent</span>
-          {reply
-            ? replyParagraphs(reply).map((runs) => <p>{runs.map((run) => (run.kind === 'code' ? <code>{run.text}</code> : run.kind === 'output' ? <samp>{run.text}</samp> : run.text))}</p>)
-            : <p>{answers.map((answer, index) => <>{index > 0 && '; '}{answer.pane ? `in ${answer.pane} it` : 'It'} printed <samp>{answer.line}</samp></>)}.</p>}
+          {replyParagraphs(reply).map((runs) => <p>{runs.map((run) => (run.kind === 'code' ? <code>{run.text}</code> : run.kind === 'output' ? <samp>{run.text}</samp> : run.text))}</p>)}
         </div>
       )}
     </div>

@@ -408,7 +408,7 @@ describe('the showcase section', () => {
     }
   })
 
-  it('shows a recorded result under each call, and the agent\'s answer quoting the pane output last', async () => {
+  it('shows a recorded result under each call, and the agent\'s recorded reply last', async () => {
     const document = await section('ts')
     const items = [...document.querySelectorAll('article.mcp-turn')]
     for (const item of items) expect(item.querySelectorAll('details.mcp-result pre')).toHaveLength(1)
@@ -439,13 +439,14 @@ describe('the showcase section', () => {
       expect(closing[0]!.previousElementSibling, 'the last call comes before it').toBe([...document.querySelectorAll('article.mcp-turn')].at(-1))
     })
 
-    it('shows the recorded reply in place of the answer derived from the panes, and no closing turn where a recording has neither', async () => {
-      const recorded = await withReply('go', reply)
-      expect(recorded.querySelectorAll('.mcp-turn--answer')).toHaveLength(1)
-      expect(recorded.querySelector('.mcp-turn--answer')!.textContent).not.toContain('it printed')
-      // Control: Go's recording without a reply still closes on the answer derived from its panes, and Julia's, which has none to derive, does not close.
-      expect([...(await withReply('go')).querySelectorAll('.mcp-turn--answer samp')].map((output) => output.textContent)).toEqual([expect.stringMatching(/^2 passed/), expect.stringMatching(/checks finished$/)])
-      expect((await withReply('julia')).querySelector('.mcp-turn--answer')).toBeNull()
+    it('draws no closing turn for a recording without a reply: nothing is built from the panes (record 0074)', async () => {
+      expect((await withReply('go', reply)).querySelectorAll('.mcp-turn--answer'), 'the control: a stored reply closes the chat').toHaveLength(1)
+      for (const port of ['go', 'julia']) {
+        const document = await withReply(port)
+        expect(document.querySelector('.mcp-turn--answer'), `${port} without a reply`).toBeNull()
+        expect(document.body.textContent, `${port}: no words put in the agent's mouth`).not.toMatch(/printed/)
+        expect([...document.querySelectorAll('article.mcp-turn')].at(-1), 'the last call ends the chat').toBe(document.querySelector('[data-chat]')!.lastElementChild)
+      }
     })
   })
 
@@ -561,9 +562,9 @@ describe('recorded results', () => {
 
   it.each(RECORDED)('records %s printing the test runner\'s result and the log in their panes', async (port) => {
     const { example } = await showcase(port)
-    const lines = example!.recording!.answers.map((answer) => answer.line)
-    expect(lines[0]).toMatch(/2 passed/)
-    expect(lines.at(-1)).toMatch(/checks finished/)
+    const results = JSON.stringify(example!.steps.map((step) => step.result))
+    expect(results).toMatch(/2 passed/)
+    expect(results).toMatch(/checks finished/)
     expect(example!.steps.every((step) => step.result !== undefined)).toBe(true)
   })
 

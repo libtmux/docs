@@ -3,7 +3,7 @@ import { createComponent, renderTemplate } from 'astro/runtime/server/index.js'
 import { Window } from 'happy-dom'
 import { ModuleKind, ScriptTarget, transpileModule } from 'typescript'
 import { afterEach, describe, expect, it } from 'vitest'
-import { lastOutputLine, replayFrames, windowLabel, type Frame, type ReplayStep } from '../src/lib/mcp-replay'
+import { replayFrames, windowLabel, type Frame, type ReplayStep } from '../src/lib/mcp-replay'
 import { buildShowcase, EXAMPLES, mcpShowcase, transcriptFor, type Transcript } from '../src/lib/mcp-showcase'
 import { recordingStateProblems, type TmuxState } from '../src/lib/mcp-tmux-state'
 import { parseLayout } from '../src/lib/tmux-layout-string'
@@ -165,7 +165,7 @@ describe('the tmux state each recorded call leaves, drawn from the results of a 
     expect(frames[7]!.sessions).toEqual([])
   })
 
-  it('follows Python: ids from create_session, the split pane, the layout from list_windows, output with the prompt dropped from the answer', async () => {
+  it('follows Python: ids from create_session, the split pane, the layout from list_windows, and the output in the panes', async () => {
     const frames = replayFrames(await steps('py'))
     expect(frames.map((frame) => frame.sessions.length)).toEqual([0, 1, 1, 1, 1, 1, 0])
     expect(frames[1]!.sessions[0]).toMatchObject({ id: '$0', name: 'checks', windows: [{ panes: [{ id: '%0' }] }] })
@@ -177,7 +177,6 @@ describe('the tmux state each recorded call leaves, drawn from the results of a 
     expect(parseLayout(read.layout!)!.panes.map((pane) => pane.id)).toEqual(['%0', '%1'])
     expect(frames[5]!.sessions[0]!.windows[0]!.panes[1]!.output).toMatch(/checks finished/)
     expect(frames[6]!.sessions).toEqual([])
-    expect(lastOutputLine('..\n2 passed in 0.00s\n$ ')).toBe('2 passed in 0.00s')
   })
 
   it('draws nothing for Ruby from its results alone: they carry no pane geometry and name no session', async () => {
@@ -254,10 +253,6 @@ describe('the tmux state each recorded call leaves, drawn from the results of a 
     expect(window(6).layout, 'a layout name has no geometry').toBeUndefined()
   })
 
-  it('quotes the last line of output that has text, for the agent\'s answer', () => {
-    expect(lastOutputLine('..   [100%]\n2 passed in 0.00s\n\n')).toBe('2 passed in 0.00s')
-    expect(lastOutputLine(undefined)).toBeUndefined()
-  })
 })
 
 describe('the frames of a recording that stored its tmux server\'s state', () => {

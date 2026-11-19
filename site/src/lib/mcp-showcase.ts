@@ -2,7 +2,7 @@ import { mcpObjects } from './mcp-catalog'
 import { PORT_BY_SLUG, portPageUrl } from './ports'
 import { EXAMPLES, STALE_TARGET, type ExampleStep } from './mcp-examples.ts'
 import { contractOf, sameContract, statesOutputs, type ToolContract } from './mcp-contract.ts'
-import { replayFrames, runAnswers, type Frame } from './mcp-replay'
+import { replayFrames, type Frame } from './mcp-replay'
 import { hasState, recordingStateProblems, type TmuxState } from './mcp-tmux-state.ts'
 
 export { EXAMPLES }
@@ -187,9 +187,7 @@ export interface Recording {
    * refuses the token itself, with the error code `refusedAs`.
    */
   generation?: { token: string; listedBy: string; refusedAs: string }
-  /** What each command run left in its pane, as the last line with text, with the pane it ran in. */
-  answers: { pane?: string; line: string }[]
-  /** The agent's closing message as the recording stores it, with the output it quotes in double quotes. A recording made before the field existed has none, and the page shows `answers` instead. */
+  /** The agent's closing message as the recording stores it, with the output it quotes in double quotes. A recording made before the field existed has none, and the replay has no closing turn. */
   reply?: string
 }
 
@@ -359,7 +357,7 @@ export function buildShowcase(port: string, version: string, snapshot: ProtocolS
         tool: tools.get(step.tool)!, arguments: step.arguments, caption: step.caption,
         ...(recorded ? { result: shown[index] } : {}),
       })),
-      ...(recorded ? { recording: { repo: recorded.repo, revision: recorded.revision, tmux: recorded.sandbox.tmux, runner: recorded.sandbox.pytest, frames: replayFrames(recorded.steps, recorded.tmuxBefore), tmuxState: hasState(recorded), shortened: shown.some((value, index) => JSON.stringify(value) !== JSON.stringify(full[index])), ...(recorded.revision === snapshot.revision ? {} : { documentedRevision: snapshot.revision }), outputsChecked: statesOutputs(recorded.contracts), ...(recorded.sandbox.rewritten?.projectDirectory ? { projectDirectory: recorded.sandbox.rewritten.projectDirectory } : {}), ...(recorded.sandbox.rewritten?.generation ? { generation: { token: recorded.sandbox.rewritten.generation, listedBy: recorded.sandbox.rewritten.generationListedBy!, refusedAs: recorded.sandbox.rewritten.generationRefusedAs! } } : {}), answers: runAnswers(recorded.steps), ...(recorded.reply ? { reply: recorded.reply } : {}) } } : {}),
+      ...(recorded ? { recording: { repo: recorded.repo, revision: recorded.revision, tmux: recorded.sandbox.tmux, runner: recorded.sandbox.pytest, frames: replayFrames(recorded.steps, recorded.tmuxBefore), tmuxState: hasState(recorded), shortened: shown.some((value, index) => JSON.stringify(value) !== JSON.stringify(full[index])), ...(recorded.revision === snapshot.revision ? {} : { documentedRevision: snapshot.revision }), outputsChecked: statesOutputs(recorded.contracts), ...(recorded.sandbox.rewritten?.projectDirectory ? { projectDirectory: recorded.sandbox.rewritten.projectDirectory } : {}), ...(recorded.sandbox.rewritten?.generation ? { generation: { token: recorded.sandbox.rewritten.generation, listedBy: recorded.sandbox.rewritten.generationListedBy!, refusedAs: recorded.sandbox.rewritten.generationRefusedAs! } } : {}), ...(recorded.reply ? { reply: recorded.reply } : {}) } } : {}),
     }
     : undefined
   return {
