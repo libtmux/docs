@@ -20,6 +20,8 @@
 .doc-picker-option small { display: block; margin-top: .15rem; font-size: 0.75rem; color: var(--color-muted); }
 /* What differs from the page's own declaration: one muted line, cut with an ellipsis rather than wrapped (record 0030). */
 .doc-picker-option .doc-picker-differences { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Differences read in the caution ink at 500, as the design system draws them, and keep it on hover. */
+.doc-picker-option .doc-picker-differences, .doc-picker-option[href]:hover .doc-picker-differences { color: var(--aside-caution-ink); font-weight: 500; }
 /* A hovered row is darker than the panel, so a muted line mixes toward the text colour there to stay at 4.5:1 (`design-tokens.test.ts` measures it). */
 .doc-picker-option[href]:hover small { color: color-mix(in srgb, var(--color-muted) 60%, var(--text-color)); }
 .doc-picker-option > svg { color: var(--color-muted); }

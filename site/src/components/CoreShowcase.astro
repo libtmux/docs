@@ -177,6 +177,12 @@ const apis = new Map(shown.map((item) => [item.id, apisUsed(port, CORE_APIS[port
   .core-showcase__picker > summary::-webkit-details-marker { display: none; }
   .core-showcase__option { display: block; padding: .45rem .75rem; border-radius: .35rem; font-size: .875rem; color: inherit; text-decoration: none; }
   .core-showcase__option:hover { background: var(--color-surface-hover); }
+  /* On touch each option, the picker and every link below the panel is a touch-target tall row (record 0071). */
+  @media (pointer: coarse) {
+    .core-showcase__picker > summary { min-height: var(--touch-target); }
+    .core-showcase__option { display: flex; align-items: center; min-height: var(--touch-target); }
+    :is(.core-showcase__links, .core-showcase__apilist) a { display: inline-flex; align-items: center; min-height: var(--touch-target); }
+  }
   .core-showcase__option[aria-current='true'] { font-weight: 600; background: var(--color-surface-hover); }
   /* A tab takes the width of its label in semibold, so the current tab's weight change moves nothing beside it. */
   .core-showcase__label { display: inline-flex; flex-direction: column; }
