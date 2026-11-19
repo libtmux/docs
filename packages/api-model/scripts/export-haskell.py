@@ -85,6 +85,14 @@ OPTIONS_ORIGINS = [
 ]
 
 
+CONTROL_MODULES = sorted([*OPTIONS_MODULES, "LibTmux.Control", "LibTmux.Recovery"])
+CONTROL_ORIGINS = [
+    *CONTROL_MODULES,
+    *(module for module in OPTIONS_ORIGINS if module not in OPTIONS_MODULES),
+    "LibTmux.Internal.Control",
+]
+
+
 def _source_file(module):
     prefix = "internal/" if module.startswith("LibTmux.Internal.") else "src/"
     return prefix + module.replace(".", "/") + ".hs"
@@ -273,7 +281,8 @@ def extract_modules(pages, installed, exposed, locations, revision, source_pages
             msg = f"Configured public module is absent or hidden: {module}"
             raise ValueError(msg)
     observations = "LibTmux" in exposed
-    options = exposed == OPTIONS_MODULES
+    controls = exposed == CONTROL_MODULES
+    options = controls or exposed == OPTIONS_MODULES
     environments = options or exposed == ENVIRONMENT_MODULES
     pane_text = environments or exposed == PANE_MODULES
     programs = pane_text or exposed == PROGRAM_MODULES
@@ -285,6 +294,7 @@ def extract_modules(pages, installed, exposed, locations, revision, source_pages
         PANE_MODULES,
         ENVIRONMENT_MODULES,
         OPTIONS_MODULES,
+        CONTROL_MODULES,
     ]
     if observations and exposed not in [
         OBSERVATION_MODULES,
@@ -294,6 +304,7 @@ def extract_modules(pages, installed, exposed, locations, revision, source_pages
         PANE_MODULES,
         ENVIRONMENT_MODULES,
         OPTIONS_MODULES,
+        CONTROL_MODULES,
     ]:
         msg = "Unqualified observation module profile"
         raise ValueError(msg)
@@ -305,7 +316,9 @@ def extract_modules(pages, installed, exposed, locations, revision, source_pages
         msg = "Unqualified mutation module profile"
         raise ValueError(msg)
     source_modules = (
-        OPTIONS_ORIGINS
+        CONTROL_ORIGINS
+        if controls
+        else OPTIONS_ORIGINS
         if options
         else ENVIRONMENT_ORIGINS
         if environments
@@ -471,19 +484,21 @@ def extract_modules(pages, installed, exposed, locations, revision, source_pages
                 raise ValueError(msg)
             origin = matches[0]
         entry_origins[identity] = origin
-    # A partial Program reexport repeats declarations in the umbrella module.
+    # Partial Program reexports repeat declarations under their public import modules.
     # Preserve its selected members while retaining one canonical public row.
     partial_aliases = {}
     if programs:
         for entry in entries:
             module, identity, kind, parent, header, _ = entry
-            if module != "LibTmux":
-                continue
             origin = entry_origins[identity]
             compiled = (
                 f"${installed['package_info']}-inplace${origin}$" + _definition(header).text()
             )
             preferred = installed["link_env"].get(compiled)
+            if module != "LibTmux" and not (
+                controls and module == "LibTmux.Recovery" and preferred == "LibTmux.Program"
+            ):
+                continue
             candidates = [
                 candidate
                 for candidate in entries
@@ -502,16 +517,28 @@ def extract_modules(pages, installed, exposed, locations, revision, source_pages
                 msg = f"Unqualified partial module reexport: {module}: {identity}"
                 raise ValueError(msg)
             partial_aliases[identity] = candidates[0][1]
-        members = list(dict.fromkeys(partial_aliases.values()))
-        if members:
-            reexports["LibTmux"].append(
-                {"module": "LibTmux.Program", "href": "LibTmux-Program.html", "members": members}
+        for owner in ["LibTmux", *(["LibTmux.Recovery"] if controls else [])]:
+            members = list(
+                dict.fromkeys(
+                    partial_aliases[identity]
+                    for module, identity, *_ in entries
+                    if module == owner and identity in partial_aliases
+                )
             )
-            order = [
-                "LibTmux.Program" if item in partial_aliases else item
-                for item in export_order["LibTmux"]
-            ]
-            reexports["LibTmux"].sort(key=lambda item: order.index(item["module"]))
+            if members:
+                reexports[owner].append(
+                    {
+                        "module": "LibTmux.Program",
+                        "href": "LibTmux-Program.html",
+                        "members": members,
+                    }
+                )
+                if owner == "LibTmux":
+                    order = [
+                        "LibTmux.Program" if item in partial_aliases else item
+                        for item in export_order[owner]
+                    ]
+                    reexports[owner].sort(key=lambda item: order.index(item["module"]))
     for module in exposed:
         observed = Counter(
             (
@@ -537,7 +564,7 @@ def extract_modules(pages, installed, exposed, locations, revision, source_pages
                 if installed["link_env"].get(name) != module:
                     if (
                         programs
-                        and module == "LibTmux"
+                        and (module == "LibTmux" or (controls and module == "LibTmux.Recovery"))
                         and installed["link_env"].get(name) == "LibTmux.Program"
                         and any(
                             name
@@ -576,6 +603,12 @@ def extract_modules(pages, installed, exposed, locations, revision, source_pages
 
     if partial_aliases:
         entries = [entry for entry in entries if entry[1] not in partial_aliases]
+        for module in exposed:
+            for group in groups[module]:
+                group["members"] = [
+                    identity for identity in group["members"] if identity not in partial_aliases
+                ]
+            groups[module] = [group for group in groups[module] if group["members"]]
         native_targets = {
             key: list(dict.fromkeys(partial_aliases.get(identity, identity) for identity in values))
             for key, values in native_targets.items()
@@ -1046,11 +1079,13 @@ def build_native(checkout, revision, native_output=None):
             PANE_MODULES,
             ENVIRONMENT_MODULES,
             OPTIONS_MODULES,
+            CONTROL_MODULES,
         ]:
             msg = "Unqualified configured public module profile"
             raise ValueError(msg)
         mutations = "LibTmux.Internal.Mutation" in field("hidden-modules").split()
-        options = modules == OPTIONS_MODULES
+        controls = modules == CONTROL_MODULES
+        options = controls or modules == OPTIONS_MODULES
         environments = options or modules == ENVIRONMENT_MODULES
         pane_text = environments or modules == PANE_MODULES
         programs = pane_text or modules == PROGRAM_MODULES
@@ -1065,6 +1100,7 @@ def build_native(checkout, revision, native_output=None):
             PANE_MODULES,
             ENVIRONMENT_MODULES,
             OPTIONS_MODULES,
+            CONTROL_MODULES,
         ]:
             msg = "Unqualified configured mutation module profile"
             raise ValueError(msg)
@@ -1075,10 +1111,13 @@ def build_native(checkout, revision, native_output=None):
             PANE_MODULES,
             ENVIRONMENT_MODULES,
             OPTIONS_MODULES,
+            CONTROL_MODULES,
         ]
         observations = queries or modules == OBSERVATION_MODULES
         source_modules = (
-            OPTIONS_ORIGINS
+            CONTROL_ORIGINS
+            if controls
+            else OPTIONS_ORIGINS
             if options
             else ENVIRONMENT_ORIGINS
             if environments
@@ -1155,7 +1194,9 @@ def build_native(checkout, revision, native_output=None):
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes(data)
         return {
-            "schema": "libtmux.haskell-api/9"
+            "schema": "libtmux.haskell-api/10"
+            if controls
+            else "libtmux.haskell-api/9"
             if options
             else "libtmux.haskell-api/8"
             if environments
@@ -1174,7 +1215,9 @@ def build_native(checkout, revision, native_output=None):
             else "libtmux.haskell-api/1",
             **(
                 {
-                    "profile": "options/1"
+                    "profile": "control/1"
+                    if controls
+                    else "options/1"
                     if options
                     else "environment/1"
                     if environments
@@ -1211,7 +1254,9 @@ def build_native(checkout, revision, native_output=None):
                 ],
                 "exporter": {
                     "name": "Haddock public interface export",
-                    "version": 9
+                    "version": 10
+                    if controls
+                    else 9
                     if options
                     else 8
                     if environments
