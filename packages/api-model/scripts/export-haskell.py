@@ -60,6 +60,23 @@ CREATION_ORIGINS = [
     *(module for module in MUTATION_ORIGINS if module not in QUERY_MODULES),
     "LibTmux.Internal.Creation",
 ]
+PROGRAM_MODULES = sorted([*CREATION_MODULES, "LibTmux.Capabilities", "LibTmux.Program"])
+PROGRAM_ORIGINS = [
+    *PROGRAM_MODULES,
+    *(module for module in CREATION_ORIGINS if module not in CREATION_MODULES),
+    "LibTmux.Internal.Program",
+]
+PANE_MODULES = sorted([*PROGRAM_MODULES, "LibTmux.Pane"])
+PANE_ORIGINS = [
+    *PANE_MODULES,
+    *(module for module in PROGRAM_ORIGINS if module not in PROGRAM_MODULES),
+]
+ENVIRONMENT_MODULES = sorted([*PANE_MODULES, "LibTmux.Environment"])
+ENVIRONMENT_ORIGINS = [
+    *ENVIRONMENT_MODULES,
+    *(module for module in PANE_ORIGINS if module not in PANE_MODULES),
+    "LibTmux.Internal.Command",
+]
 
 
 def _source_file(module):
@@ -250,9 +267,25 @@ def extract_modules(pages, installed, exposed, locations, revision, source_pages
             msg = f"Configured public module is absent or hidden: {module}"
             raise ValueError(msg)
     observations = "LibTmux" in exposed
-    creations = exposed == CREATION_MODULES
-    rich = exposed in [QUERY_MODULES, CREATION_MODULES]
-    if observations and exposed not in [OBSERVATION_MODULES, QUERY_MODULES, CREATION_MODULES]:
+    environments = exposed == ENVIRONMENT_MODULES
+    pane_text = environments or exposed == PANE_MODULES
+    programs = pane_text or exposed == PROGRAM_MODULES
+    creations = programs or exposed == CREATION_MODULES
+    rich = exposed in [
+        QUERY_MODULES,
+        CREATION_MODULES,
+        PROGRAM_MODULES,
+        PANE_MODULES,
+        ENVIRONMENT_MODULES,
+    ]
+    if observations and exposed not in [
+        OBSERVATION_MODULES,
+        QUERY_MODULES,
+        CREATION_MODULES,
+        PROGRAM_MODULES,
+        PANE_MODULES,
+        ENVIRONMENT_MODULES,
+    ]:
         msg = "Unqualified observation module profile"
         raise ValueError(msg)
     mutations = "LibTmux.Internal.Mutation" in interfaces
@@ -263,7 +296,13 @@ def extract_modules(pages, installed, exposed, locations, revision, source_pages
         msg = "Unqualified mutation module profile"
         raise ValueError(msg)
     source_modules = (
-        CREATION_ORIGINS
+        ENVIRONMENT_ORIGINS
+        if environments
+        else PANE_ORIGINS
+        if pane_text
+        else PROGRAM_ORIGINS
+        if programs
+        else CREATION_ORIGINS
         if creations
         else MUTATION_ORIGINS
         if mutations
@@ -285,6 +324,7 @@ def extract_modules(pages, installed, exposed, locations, revision, source_pages
     entries = []
     groups = {module: [] for module in exposed}
     reexports = {module: [] for module in exposed}
+    export_order = {module: [] for module in exposed}
     source_documents = {}
     qualified_definitions = set()
     for module, document in documents.items():
@@ -345,11 +385,14 @@ def extract_modules(pages, installed, exposed, locations, revision, source_pages
                     msg = f"Unsupported or repeated native module reexport: {module}"
                     raise ValueError(msg)
                 reexports[module].append({"module": target, "href": links[0].attrs["href"]})
+                export_order[module].append(target)
                 continue
             identity = _native_id(module, header)
             if identity.split("#", 1)[1].startswith("t:"):
-                if not re.match(
-                    r"^(?:data|newtype)\s+(?!(?:family|instance)\b)", _compact(header.text())
+                declaration = _compact(header.text())
+                synonym = pane_text and re.fullmatch(r"type [A-Z][\w']* = [A-Z][\w']*", declaration)
+                if not synonym and not re.match(
+                    r"^(?:data|newtype)\s+(?!(?:family|instance)\b)", declaration
                 ):
                     msg = f"Unsupported native type shape: {identity}"
                     raise ValueError(msg)
@@ -360,6 +403,7 @@ def extract_modules(pages, installed, exposed, locations, revision, source_pages
                     raise ValueError(msg)
                 kind = "function"
             entries.append((module, identity, kind, module, header, block))
+            export_order[module].append(identity)
             if group:
                 group["members"].append(identity)
             for constructors in [node for node in block.elements() if node.has("constructors")]:
@@ -417,6 +461,47 @@ def extract_modules(pages, installed, exposed, locations, revision, source_pages
                 raise ValueError(msg)
             origin = matches[0]
         entry_origins[identity] = origin
+    # A partial Program reexport repeats declarations in the umbrella module.
+    # Preserve its selected members while retaining one canonical public row.
+    partial_aliases = {}
+    if programs:
+        for entry in entries:
+            module, identity, kind, parent, header, _ = entry
+            if module != "LibTmux":
+                continue
+            origin = entry_origins[identity]
+            compiled = (
+                f"${installed['package_info']}-inplace${origin}$" + _definition(header).text()
+            )
+            preferred = installed["link_env"].get(compiled)
+            candidates = [
+                candidate
+                for candidate in entries
+                if candidate[0] == preferred
+                and candidate[2] == kind
+                and entry_origins[candidate[1]] == origin
+                and _definition(candidate[4]).attrs["id"] == _definition(header).attrs["id"]
+                and (candidate[3].split("#t:", 1)[-1] if "#t:" in candidate[3] else None)
+                == (parent.split("#t:", 1)[-1] if "#t:" in parent else None)
+            ]
+            if (
+                preferred != "LibTmux.Program"
+                or len(candidates) != 1
+                or _compact(candidates[0][4].text()) != _compact(header.text())
+            ):
+                msg = f"Unqualified partial module reexport: {module}: {identity}"
+                raise ValueError(msg)
+            partial_aliases[identity] = candidates[0][1]
+        members = list(dict.fromkeys(partial_aliases.values()))
+        if members:
+            reexports["LibTmux"].append(
+                {"module": "LibTmux.Program", "href": "LibTmux-Program.html", "members": members}
+            )
+            order = [
+                "LibTmux.Program" if item in partial_aliases else item
+                for item in export_order["LibTmux"]
+            ]
+            reexports["LibTmux"].sort(key=lambda item: order.index(item["module"]))
     for module in exposed:
         observed = Counter(
             (
@@ -440,6 +525,19 @@ def extract_modules(pages, installed, exposed, locations, revision, source_pages
         if observations:
             for name in interfaces[module]["visible_exports"]:
                 if installed["link_env"].get(name) != module:
+                    if (
+                        programs
+                        and module == "LibTmux"
+                        and installed["link_env"].get(name) == "LibTmux.Program"
+                        and any(
+                            name
+                            == f"${installed['package_info']}-inplace${entry_origins[identity]}$"
+                            + _definition(header).text()
+                            for owner, identity, _, _, header, _ in entries
+                            if owner == module and identity in partial_aliases
+                        )
+                    ):
+                        continue
                     owners = {
                         owner
                         for owner, identity, kind, _, header, _ in entries
@@ -460,10 +558,18 @@ def extract_modules(pages, installed, exposed, locations, revision, source_pages
                         raise ValueError(msg)
             expanded = Counter(interfaces[module]["visible_exports"])
             for item in reexports[module]:
-                expanded.update(interfaces[item["module"]]["exports"])
+                if "members" not in item:
+                    expanded.update(interfaces[item["module"]]["exports"])
             if expanded != Counter(interfaces[module]["exports"]):
                 msg = f"Native module reexports disagree with compiled exports: {module}"
                 raise ValueError(msg)
+
+    if partial_aliases:
+        entries = [entry for entry in entries if entry[1] not in partial_aliases]
+        native_targets = {
+            key: list(dict.fromkeys(partial_aliases.get(identity, identity) for identity in values))
+            for key, values in native_targets.items()
+        }
 
     def link(href, module):
         parsed = urlsplit(href)
@@ -921,21 +1027,50 @@ def build_native(checkout, revision, native_output=None):
         ):
             msg = "Unsupported configured public module or re-export shape"
             raise ValueError(msg)
-        if modules not in [SCALAR_MODULES, OBSERVATION_MODULES, QUERY_MODULES, CREATION_MODULES]:
+        if modules not in [
+            SCALAR_MODULES,
+            OBSERVATION_MODULES,
+            QUERY_MODULES,
+            CREATION_MODULES,
+            PROGRAM_MODULES,
+            PANE_MODULES,
+            ENVIRONMENT_MODULES,
+        ]:
             msg = "Unqualified configured public module profile"
             raise ValueError(msg)
         mutations = "LibTmux.Internal.Mutation" in field("hidden-modules").split()
-        creations = modules == CREATION_MODULES
+        environments = modules == ENVIRONMENT_MODULES
+        pane_text = environments or modules == PANE_MODULES
+        programs = pane_text or modules == PROGRAM_MODULES
+        creations = programs or modules == CREATION_MODULES
         if creations and not mutations:
             msg = "Unqualified configured creation recovery interface"
             raise ValueError(msg)
-        if mutations and modules not in [QUERY_MODULES, CREATION_MODULES]:
+        if mutations and modules not in [
+            QUERY_MODULES,
+            CREATION_MODULES,
+            PROGRAM_MODULES,
+            PANE_MODULES,
+            ENVIRONMENT_MODULES,
+        ]:
             msg = "Unqualified configured mutation module profile"
             raise ValueError(msg)
-        queries = modules in [QUERY_MODULES, CREATION_MODULES]
+        queries = modules in [
+            QUERY_MODULES,
+            CREATION_MODULES,
+            PROGRAM_MODULES,
+            PANE_MODULES,
+            ENVIRONMENT_MODULES,
+        ]
         observations = queries or modules == OBSERVATION_MODULES
         source_modules = (
-            CREATION_ORIGINS
+            ENVIRONMENT_ORIGINS
+            if environments
+            else PANE_ORIGINS
+            if pane_text
+            else PROGRAM_ORIGINS
+            if programs
+            else CREATION_ORIGINS
             if creations
             else MUTATION_ORIGINS
             if mutations
@@ -1004,7 +1139,13 @@ def build_native(checkout, revision, native_output=None):
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes(data)
         return {
-            "schema": "libtmux.haskell-api/5"
+            "schema": "libtmux.haskell-api/8"
+            if environments
+            else "libtmux.haskell-api/7"
+            if pane_text
+            else "libtmux.haskell-api/6"
+            if programs
+            else "libtmux.haskell-api/5"
             if creations
             else "libtmux.haskell-api/4"
             if mutations
@@ -1015,7 +1156,13 @@ def build_native(checkout, revision, native_output=None):
             else "libtmux.haskell-api/1",
             **(
                 {
-                    "profile": "creations/1"
+                    "profile": "environment/1"
+                    if environments
+                    else "pane-text/1"
+                    if pane_text
+                    else "programs/1"
+                    if programs
+                    else "creations/1"
                     if creations
                     else "mutations/1"
                     if mutations
@@ -1044,7 +1191,13 @@ def build_native(checkout, revision, native_output=None):
                 ],
                 "exporter": {
                     "name": "Haddock public interface export",
-                    "version": 5
+                    "version": 8
+                    if environments
+                    else 7
+                    if pane_text
+                    else 6
+                    if programs
+                    else 5
                     if creations
                     else 4
                     if mutations

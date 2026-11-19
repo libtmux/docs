@@ -165,7 +165,7 @@ In the new worktree, on `docs-site`:
 
 Haskell's [Haddock exporter](../packages/api-model/scripts/export-haskell.py)
 builds a selected committed source archive. Its
-[adapter](../packages/api-model/src/languages/haskell.ts) accepts five qualified
+[adapter](../packages/api-model/src/languages/haskell.ts) accepts eight qualified
 profiles with the port's pinned GHC/Haddock toolchain:
 
 - Scalar v1 covers `LibTmux.Id`, `LibTmux.Value` and `LibTmux.Version`.
@@ -182,6 +182,15 @@ profiles with the port's pinned GHC/Haddock toolchain:
   recovery. Its [native fixture](../packages/api-model/test/fixtures/haskell-creations-native/README.md)
   checks constructor-hidden record fields against GHC's source annotations.
   Their authored field types must match the compiled record owner and type.
+- Program v6 adds `LibTmux.Program` and `LibTmux.Capabilities`. Its
+  [native fixture](../packages/api-model/test/fixtures/haskell-programs-native/README.md)
+  checks partial umbrella reexports against compiled owners and signatures.
+- Pane text v7 adds `LibTmux.Pane` and native creation receipt synonyms. Its
+  [native fixture](../packages/api-model/test/fixtures/haskell-pane-native/README.md)
+  preserves aliases to the constructor-hidden `CreatedEntities` record.
+- Environment v8 adds `LibTmux.Environment`, pane text waits and window-link
+  operations. Its [native fixture](../packages/api-model/test/fixtures/haskell-environment-native/README.md)
+  retains the private defining source of public named layouts.
 
 All profiles retain native signatures, opaque data heads, constructors, record labels,
 instance heads and authored export groups. Observation field identities include
@@ -189,6 +198,10 @@ their record owner; displayed Haskell names and field types remain native.
 Source links use the actual defining files, including private files behind a
 public reexport, without creating private reference pages. Native source text
 and line markers are checked against the committed source.
+Use unprepared Haddock source pages for export. Prepared documentation can
+redirect ambiguous identifiers through a generated index. Hosted replays record
+the immutable input downloads, source revision and committed producer; they
+do not claim local compilation.
 
 The stored model retains export groups and ordered module-reexport relations,
 so sidebar regeneration needs no checkout or native toolchain. The sidebar uses

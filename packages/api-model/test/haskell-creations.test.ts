@@ -6,6 +6,13 @@ import { navSidecar } from '../src/nav-sidecar'
 import { SymbolIndex, tokenizeDoc } from '../src/reference'
 
 describe('the native Haskell creation profile', () => {
+  it('refuses partial reexport metadata before its qualified native profile', () => {
+    const changed = structuredClone(artifact)
+    const root = changed.modules.find((module) => module.name === 'LibTmux')!
+    Object.assign(root.reexports![0]!, { members: ['LibTmux.Server#v:withServer'] })
+    expect(() => extractHaskellArtifact(changed)).toThrow(/module reexports/)
+  })
+
   it('retains typed fields on the constructor-hidden creation receipt', () => {
     const model = extractHaskellArtifact(artifact, artifact.revision)
     const symbol = (id: string) => model.symbols.find((entry) => entry.id === id)!
