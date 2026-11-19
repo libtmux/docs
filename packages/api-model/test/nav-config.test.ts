@@ -161,11 +161,19 @@ describe('Haskell reference navigation', () => {
     })
   })
 
-  it('keeps everything LibTmux.Server exports with the handle except its operational error', () => {
+  it('keeps ownership with Server and target operations with their objects', () => {
     const exported = model.symbols.filter((entry) => entry.parent === 'LibTmux.Server')
     expect(exported.length).toBeGreaterThan(40)
+    const targetBuckets = {
+      session: ['createSession', 'createSessionWith', 'killSession', 'killSessionWith'],
+      window: ['createWindow', 'createWindowWith', 'killWindow', 'killWindowWith'],
+      pane: ['PaneInput', 'PaneText', 'splitPane', 'splitPaneWith', 'sendKeys', 'sendKeysWith',
+        'killPane', 'killPaneWith', 'capturePane', 'paneText'],
+      capabilities: ['serverCapabilities'], errors: ['TmuxException'],
+    }
     for (const entry of exported) {
-      expect(nav.placement[entry.id], entry.id).toBe(entry.name === 'TmuxException' ? 'errors' : 'server')
+      const task = Object.entries(targetBuckets).find(([, names]) => names.includes(entry.name))?.[0] ?? 'server'
+      expect(nav.placement[entry.id], entry.id).toBe(task)
     }
   })
 
