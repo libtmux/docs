@@ -93,6 +93,18 @@ CONTROL_ORIGINS = [
 ]
 
 
+FIELDS_MODULES = sorted(
+    [
+        *(module for module in CONTROL_MODULES if not module.startswith("LibTmux.Query.")),
+        "LibTmux.Query.Fields",
+    ]
+)
+FIELDS_ORIGINS = [
+    *FIELDS_MODULES,
+    *(module for module in CONTROL_ORIGINS if module not in CONTROL_MODULES),
+]
+
+
 def _source_file(module):
     prefix = "internal/" if module.startswith("LibTmux.Internal.") else "src/"
     return prefix + module.replace(".", "/") + ".hs"
@@ -281,7 +293,8 @@ def extract_modules(pages, installed, exposed, locations, revision, source_pages
             msg = f"Configured public module is absent or hidden: {module}"
             raise ValueError(msg)
     observations = "LibTmux" in exposed
-    controls = exposed == CONTROL_MODULES
+    fields = exposed == FIELDS_MODULES
+    controls = fields or exposed == CONTROL_MODULES
     options = controls or exposed == OPTIONS_MODULES
     environments = options or exposed == ENVIRONMENT_MODULES
     pane_text = environments or exposed == PANE_MODULES
@@ -295,6 +308,7 @@ def extract_modules(pages, installed, exposed, locations, revision, source_pages
         ENVIRONMENT_MODULES,
         OPTIONS_MODULES,
         CONTROL_MODULES,
+        FIELDS_MODULES,
     ]
     if observations and exposed not in [
         OBSERVATION_MODULES,
@@ -305,6 +319,7 @@ def extract_modules(pages, installed, exposed, locations, revision, source_pages
         ENVIRONMENT_MODULES,
         OPTIONS_MODULES,
         CONTROL_MODULES,
+        FIELDS_MODULES,
     ]:
         msg = "Unqualified observation module profile"
         raise ValueError(msg)
@@ -316,7 +331,9 @@ def extract_modules(pages, installed, exposed, locations, revision, source_pages
         msg = "Unqualified mutation module profile"
         raise ValueError(msg)
     source_modules = (
-        CONTROL_ORIGINS
+        FIELDS_ORIGINS
+        if fields
+        else CONTROL_ORIGINS
         if controls
         else OPTIONS_ORIGINS
         if options
@@ -1080,11 +1097,13 @@ def build_native(checkout, revision, native_output=None):
             ENVIRONMENT_MODULES,
             OPTIONS_MODULES,
             CONTROL_MODULES,
+            FIELDS_MODULES,
         ]:
             msg = "Unqualified configured public module profile"
             raise ValueError(msg)
         mutations = "LibTmux.Internal.Mutation" in field("hidden-modules").split()
-        controls = modules == CONTROL_MODULES
+        fields = modules == FIELDS_MODULES
+        controls = fields or modules == CONTROL_MODULES
         options = controls or modules == OPTIONS_MODULES
         environments = options or modules == ENVIRONMENT_MODULES
         pane_text = environments or modules == PANE_MODULES
@@ -1101,6 +1120,7 @@ def build_native(checkout, revision, native_output=None):
             ENVIRONMENT_MODULES,
             OPTIONS_MODULES,
             CONTROL_MODULES,
+            FIELDS_MODULES,
         ]:
             msg = "Unqualified configured mutation module profile"
             raise ValueError(msg)
@@ -1112,10 +1132,13 @@ def build_native(checkout, revision, native_output=None):
             ENVIRONMENT_MODULES,
             OPTIONS_MODULES,
             CONTROL_MODULES,
+            FIELDS_MODULES,
         ]
         observations = queries or modules == OBSERVATION_MODULES
         source_modules = (
-            CONTROL_ORIGINS
+            FIELDS_ORIGINS
+            if fields
+            else CONTROL_ORIGINS
             if controls
             else OPTIONS_ORIGINS
             if options
@@ -1194,7 +1217,9 @@ def build_native(checkout, revision, native_output=None):
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes(data)
         return {
-            "schema": "libtmux.haskell-api/10"
+            "schema": "libtmux.haskell-api/11"
+            if fields
+            else "libtmux.haskell-api/10"
             if controls
             else "libtmux.haskell-api/9"
             if options
@@ -1215,7 +1240,9 @@ def build_native(checkout, revision, native_output=None):
             else "libtmux.haskell-api/1",
             **(
                 {
-                    "profile": "control/1"
+                    "profile": "fields/1"
+                    if fields
+                    else "control/1"
                     if controls
                     else "options/1"
                     if options
@@ -1254,7 +1281,9 @@ def build_native(checkout, revision, native_output=None):
                 ],
                 "exporter": {
                     "name": "Haddock public interface export",
-                    "version": 10
+                    "version": 11
+                    if fields
+                    else 10
                     if controls
                     else 9
                     if options
