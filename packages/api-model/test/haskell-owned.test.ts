@@ -4,7 +4,7 @@ import { extractHaskellArtifact } from '../src/languages/haskell'
 
 describe('the native Haskell private daemon interface', () => {
   it('preserves scoped startup, explicit retirement and configuration declarations', () => {
-    const model = extractHaskellArtifact(artifact, '85d264852db2c4c600a906c15adad6d6684262ae')
+    const model = extractHaskellArtifact(artifact, 'd43a4302fac4c6be30131fe0ca0d7cf563b50ab1')
     const declaration = (name: string) => model.symbols.find((entry) => entry.id === `LibTmux.Server#${name}`)!
     expect(declaration('v:withOwnedServer').signatures[0]!.raw)
       .toBe('withOwnedServer :: OwnedServerConfig -> (Server -> IO a) -> IO a')

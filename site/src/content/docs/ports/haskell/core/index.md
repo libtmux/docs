@@ -2,11 +2,11 @@
 port: haskell
 route: core
 title: "tmux client library for Haskell"
-description: "tmux client library for Haskell. Create and query tmux targets, transfer buffers, configure scoped settings and observe bounded control events."
+description: "tmux client library for Haskell. Own tmux daemon scopes, query snapshots, change targets, configure scoped settings and observe bounded control events."
 cards:
   - label: Getting started
     href: ../guides/getting-started/
-    body: Install the source package and capture a running tmux server.
+    body: Install the source package, start a private daemon and capture its graph.
   - label: Create sessions, windows and panes
     href: ../guides/creation/
     body: Retain created identities and choose exact window-link and pane context.
@@ -16,6 +16,9 @@ cards:
   - label: Observe control notifications
     href: ../guides/control/
     body: Read bounded events through STM and retire the attached observer with its scope.
+  - label: Connect an MCP adapter
+    href: ../guides/agents/
+    body: Inspect the application's socket or run pane commands through libtmux-mcp.
   - label: Capture and traverse
     href: ../guides/capture/
     body: Follow physical panes and linked-window context in one snapshot.
@@ -42,15 +45,19 @@ cards:
     body: Check public capabilities, compatibility evidence and package boundaries.
 ---
 
-Adopt a running daemon with `withServer`. Create sessions, windows and panes
-through explicit references, then query detached snapshots. Select window
-links, apply layouts, change named environment entries and observe pane text.
-Load and paste named binary buffers. Resize physical targets and configure
-scalar options and indexed built-in hooks in explicit stores. Capture again
-to see changes to the object graph.
+Start and retire a private daemon with `withOwnedServer`, or borrow an
+existing endpoint with `withServer`. Use `killServer` for explicit retirement
+of the admitted daemon generation. The [capture guide](../guides/capture/)
+explains ownership, host requirements and detached values.
 
-Use `withProgram` or `runProgram` for an owned terminal application on that
-borrowed daemon. Program operations require tmux 3.8, Linux 6.9 process-group
+Create sessions, windows and panes through explicit references, then query
+snapshots. Select window links, apply layouts, change named environment
+entries and observe pane text. Load and paste binary buffers, resize targets
+and configure options and hooks in explicit stores. Capture again to see
+changes to the graph.
+
+Use `withProgram` or `runProgram` for an owned terminal application within a
+Server scope. Program operations require tmux 3.8, Linux 6.9 process-group
 pidfds and compatible Bash. The [program guide](../guides/programs/) explains
 the host checks, rendered output bounds and cleanup ownership.
 
@@ -62,3 +69,7 @@ shows a real window rename and the queue's terminal outcomes.
 
 Import `LibTmux.Recovery` to inspect and resume retained operation owners after
 incomplete cleanup. Keep exception context when handling those failures.
+
+Connect the external `libtmux-mcp` adapter to the application's socket for
+agent inspection and pane commands. The [agents guide](../guides/agents/)
+keeps the Haskell scope responsible for daemon retirement.

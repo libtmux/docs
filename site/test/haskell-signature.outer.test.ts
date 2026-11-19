@@ -8,7 +8,7 @@ import { apiSignatureLayouts, signatureSpans } from '../src/lib/code-layout'
 import { parseApiProse } from '@libtmux/api-model/reference'
 import { symbolMarkdownWithLayout } from '../src/lib/symbol-markdown'
 import { displayedSignature, renderSignatures } from './signature-fragment'
-import native from '../../packages/api-model/test/fixtures/haskell-control-native/artifact.json'
+import native from '../../packages/api-model/test/fixtures/haskell-owned-native/artifact.json'
 
 const model = JSON.parse(readFileSync(new URL('../src/data/api/haskell.json', import.meta.url), 'utf8')) as ApiModel
 const index = new SymbolIndex(model.symbols, (symbol) => `/en/haskell/latest/reference/${symbol.slug}/`, 'haskell')

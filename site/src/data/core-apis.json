@@ -224,16 +224,19 @@
   },
   "haskell": {
     "typed-graph": [
-      "LibTmux.Server#v:serverConfig",
-      "LibTmux.Server#v:tryTmux",
-      "LibTmux.Server#v:withServer",
+      "LibTmux.Server#v:withOwnedServer",
+      "LibTmux.Server#v:defaultOwnedServerConfig",
+      "LibTmux.Server#v:createSession",
+      "LibTmux.Creation#v:defaultSessionOptions",
+      "LibTmux.Creation#v:ShellCommand",
       "LibTmux.Server#v:capture",
-      "LibTmux.Query#v:runQuery",
-      "LibTmux.Query#v:exactlyOne",
-      "LibTmux.Snapshot#v:lookupWindow",
       "LibTmux.Server#v:renameSession",
       "LibTmux.Server#v:renameWindow",
-      "LibTmux.Server#v:setPaneTitle"
+      "LibTmux.Server#v:setPaneTitle",
+      "LibTmux.Snapshot#v:lookupSession",
+      "LibTmux.Snapshot#v:lookupWindow",
+      "LibTmux.Snapshot#v:lookupPane",
+      "LibTmux.Snapshot#v:labelText"
     ]
   }
 }

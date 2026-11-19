@@ -7402,8 +7402,85 @@
   {
    "port": "haskell",
    "symbol": "LibTmux.Query",
+   "page": "/haskell/latest/guides/api-documentation/",
+   "title": "API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Query",
    "page": "/haskell/latest/guides/status/",
    "title": "Implementation status",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Query.Fields",
+   "page": "/haskell/latest/guides/api-documentation/",
+   "title": "API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Query.Fields#v:clientAttachment",
+   "page": "/haskell/latest/guides/api-documentation/",
+   "title": "API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Query.Fields#v:clientAttachmentPane",
+   "page": "/haskell/latest/guides/api-documentation/",
+   "title": "API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Query.Fields#v:clientHeight",
+   "page": "/haskell/latest/guides/api-documentation/",
+   "title": "API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Query.Fields#v:linkFlags",
+   "page": "/haskell/latest/guides/api-documentation/",
+   "title": "API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Query.Fields#v:occurrencePane",
+   "page": "/haskell/latest/guides/api-documentation/",
+   "title": "API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Query.Fields#v:paneActive",
+   "page": "/haskell/latest/guides/api-documentation/",
+   "title": "API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Query.Fields#v:serverInfoVersion",
+   "page": "/haskell/latest/guides/api-documentation/",
+   "title": "API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Query.Fields#v:sessionWindowLinks",
+   "page": "/haskell/latest/guides/api-documentation/",
+   "title": "API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Query.Fields#v:windowZoomed",
+   "page": "/haskell/latest/guides/api-documentation/",
+   "title": "API documentation",
    "section": "guides"
   },
   {
@@ -7759,8 +7836,22 @@
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#t:Server",
+   "page": "/haskell/latest/guides/agents/",
+   "title": "Connect an MCP adapter",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#t:Server",
    "page": "/haskell/latest/guides/api-documentation/",
    "title": "API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#t:Server",
+   "page": "/haskell/latest/guides/capture/",
+   "title": "Capture and navigate",
    "section": "guides"
   },
   {
@@ -7789,6 +7880,13 @@
    "symbol": "LibTmux.Server#v:BufferTooLarge",
    "page": "/haskell/latest/guides/buffers/",
    "title": "Transfer and paste buffers",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:capture",
+   "page": "/haskell/latest/guides/agents/",
+   "title": "Connect an MCP adapter",
    "section": "guides"
   },
   {
@@ -7852,6 +7950,13 @@
    "symbol": "LibTmux.Server#v:createSession",
    "page": "/haskell/latest/guides/creation/",
    "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:createSession",
+   "page": "/haskell/latest/guides/mutations/",
+   "title": "Change targets and observe pane text",
    "section": "guides"
   },
   {
@@ -7982,6 +8087,34 @@
   },
   {
    "port": "haskell",
+   "symbol": "LibTmux.Server#v:killServer",
+   "page": "/haskell/latest/core/",
+   "title": "tmux client library for Haskell",
+   "section": "core"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:killServer",
+   "page": "/haskell/latest/guides/capture/",
+   "title": "Capture and navigate",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:killServer",
+   "page": "/haskell/latest/guides/creation/",
+   "title": "Create sessions, windows and panes",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:killServer",
+   "page": "/haskell/latest/guides/status/",
+   "title": "Implementation status",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
    "symbol": "LibTmux.Server#v:killSession",
    "page": "/haskell/latest/guides/creation/",
    "title": "Create sessions, windows and panes",
@@ -8090,6 +8223,13 @@
    "symbol": "LibTmux.Server#v:OperationFailed",
    "page": "/haskell/latest/guides/mutations/",
    "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:OwnedServerConfig.tmuxExecutable",
+   "page": "/haskell/latest/guides/capture/",
+   "title": "Capture and navigate",
    "section": "guides"
   },
   {
@@ -8319,6 +8459,13 @@
   {
    "port": "haskell",
    "symbol": "LibTmux.Server#v:serverCapabilities",
+   "page": "/haskell/latest/guides/agents/",
+   "title": "Connect an MCP adapter",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:serverCapabilities",
    "page": "/haskell/latest/guides/capabilities/",
    "title": "Check daemon capabilities",
    "section": "guides"
@@ -8342,6 +8489,13 @@
    "symbol": "LibTmux.Server#v:ServerClosed",
    "page": "/haskell/latest/guides/mutations/",
    "title": "Change targets and observe pane text",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:serverConfig",
+   "page": "/haskell/latest/guides/agents/",
+   "title": "Connect an MCP adapter",
    "section": "guides"
   },
   {
@@ -8521,6 +8675,55 @@
   },
   {
    "port": "haskell",
+   "symbol": "LibTmux.Server#v:withControl",
+   "page": "/haskell/latest/guides/status/",
+   "title": "Implementation status",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:withOwnedServer",
+   "page": "/haskell/latest/core/",
+   "title": "tmux client library for Haskell",
+   "section": "core"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:withOwnedServer",
+   "page": "/haskell/latest/examples/",
+   "title": "Examples",
+   "section": "examples"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:withOwnedServer",
+   "page": "/haskell/latest/guides/agents/",
+   "title": "Connect an MCP adapter",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:withOwnedServer",
+   "page": "/haskell/latest/guides/installation/",
+   "title": "Installation",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:withOwnedServer",
+   "page": "/haskell/latest/guides/performance/",
+   "title": "Capture performance",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:withOwnedServer",
+   "page": "/haskell/latest/guides/status/",
+   "title": "Implementation status",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
    "symbol": "LibTmux.Server#v:withProgram",
    "page": "/haskell/latest/core/",
    "title": "tmux client library for Haskell",
@@ -8553,6 +8756,13 @@
    "page": "/haskell/latest/core/",
    "title": "tmux client library for Haskell",
    "section": "core"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Server#v:withServer",
+   "page": "/haskell/latest/guides/capabilities/",
+   "title": "Check daemon capabilities",
+   "section": "guides"
   },
   {
    "port": "haskell",
@@ -8633,6 +8843,27 @@
   },
   {
    "port": "haskell",
+   "symbol": "LibTmux.Snapshot#t:Client",
+   "page": "/haskell/latest/guides/capture/",
+   "title": "Capture and navigate",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Snapshot#t:Pane",
+   "page": "/haskell/latest/guides/capture/",
+   "title": "Capture and navigate",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Snapshot#t:PaneRef",
+   "page": "/haskell/latest/guides/agents/",
+   "title": "Connect an MCP adapter",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
    "symbol": "LibTmux.Snapshot#t:PaneRef",
    "page": "/haskell/latest/guides/creation/",
    "title": "Create sessions, windows and panes",
@@ -8650,6 +8881,20 @@
    "symbol": "LibTmux.Snapshot#t:PaneRef",
    "page": "/haskell/latest/guides/resizing/",
    "title": "Resize panes and windows",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Snapshot#t:Session",
+   "page": "/haskell/latest/guides/capture/",
+   "title": "Capture and navigate",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Snapshot#t:SessionRef",
+   "page": "/haskell/latest/guides/agents/",
+   "title": "Connect an MCP adapter",
    "section": "guides"
   },
   {
@@ -8689,6 +8934,20 @@
   },
   {
    "port": "haskell",
+   "symbol": "LibTmux.Snapshot#t:Window",
+   "page": "/haskell/latest/guides/capture/",
+   "title": "Capture and navigate",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Snapshot#t:WindowLink",
+   "page": "/haskell/latest/guides/capture/",
+   "title": "Capture and navigate",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
    "symbol": "LibTmux.Snapshot#t:WindowRef",
    "page": "/haskell/latest/guides/resizing/",
    "title": "Resize panes and windows",
@@ -8717,6 +8976,13 @@
   },
   {
    "port": "haskell",
+   "symbol": "LibTmux.Snapshot#v:labelText",
+   "page": "/haskell/latest/guides/capture/",
+   "title": "Capture and navigate",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
    "symbol": "LibTmux.Snapshot#v:lookupPaneId",
    "page": "/haskell/latest/guides/capture/",
    "title": "Capture and navigate",
@@ -8724,9 +8990,30 @@
   },
   {
    "port": "haskell",
+   "symbol": "LibTmux.Snapshot#v:Pane.cursorX",
+   "page": "/haskell/latest/guides/capture/",
+   "title": "Capture and navigate",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Snapshot#v:PaneOccurrence.link",
+   "page": "/haskell/latest/guides/api-documentation/",
+   "title": "API documentation",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
    "symbol": "LibTmux.Value",
    "page": "/haskell/latest/guides/status/",
    "title": "Implementation status",
+   "section": "guides"
+  },
+  {
+   "port": "haskell",
+   "symbol": "LibTmux.Value#t:Dimension",
+   "page": "/haskell/latest/guides/capture/",
+   "title": "Capture and navigate",
    "section": "guides"
   },
   {

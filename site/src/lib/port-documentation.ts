@@ -99,9 +99,9 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
   },
   haskell: {
     domains: [
-      libraryDomain('Create and query tmux targets, configure scoped settings and observe bounded control events.'),
+      libraryDomain('Own tmux daemon scopes, query snapshots, change targets and observe bounded control events.'),
     ],
-    sections: { guides: 'Install the source package, query and change tmux targets, observe control events and run terminal applications.' },
+    sections: { guides: 'Install the source package, own daemon scopes, query and change tmux targets, observe control events and connect an MCP adapter.' },
     sourceGuides: [
       guide('docs/README.md', 'guides/getting-started', 'core', { title: 'Getting started', sidebar: { group: 'Guides', order: 1 } }),
       guide('docs/installation.md', 'guides/installation', 'core', { title: 'Installation', sidebar: { group: 'Guides', order: 2 } }),
@@ -110,6 +110,7 @@ const PORT_DOCUMENTATION: Readonly<Record<string, PortDocumentation>> = {
       guide('docs/creation.md', 'guides/creation', 'core', { title: 'Create sessions, windows and panes', sidebar: { group: 'Guides', order: 5 } }),
       guide('docs/programs.md', 'guides/programs', 'core', { title: 'Run terminal applications', sidebar: { group: 'Guides', order: 6 } }),
       guide('docs/control.md', 'guides/control', 'core', { title: 'Observe control notifications', sidebar: { group: 'Guides', order: 7 } }),
+      guide('docs/agents.md', 'guides/agents', 'core', { title: 'Connect an MCP adapter', description: 'Inspect a running Haskell application through the external libtmux-mcp adapter.', aliases: [], sidebar: { group: 'Guides', order: 7.5 } }),
       guide('docs/mutations.md', 'guides/mutations', 'core', { title: 'Change targets and observe pane text', sidebar: { group: 'Guides', order: 8 } }),
       guide('docs/buffers.md', 'guides/buffers', 'core', { title: 'Transfer and paste buffers', sidebar: { group: 'Guides', order: 9 } }),
       guide('docs/resizing.md', 'guides/resizing', 'core', { title: 'Resize panes and windows', sidebar: { group: 'Guides', order: 10 } }),

@@ -5436,46 +5436,6 @@
       ]
     },
     {
-      "port": "haskell",
-      "names": [
-        "windowLinks"
-      ],
-      "commands": [
-        "link-window"
-      ],
-      "kind": "values",
-      "why": "A typed relationship token reads captured memberships; it never links a window.",
-      "in": "src/LibTmux/Query/Session.hs",
-      "evidence": [
-        {
-          "at": "src/LibTmux/Query/Session.hs:30",
-          "has": [
-            "windowLinks = Q.SessionLinks"
-          ]
-        }
-      ]
-    },
-    {
-      "port": "haskell",
-      "names": [
-        "windowLinks"
-      ],
-      "commands": [
-        "link-window"
-      ],
-      "kind": "values",
-      "why": "A typed relationship token reads captured memberships; it never links a window.",
-      "in": "src/LibTmux/Query/Window.hs",
-      "evidence": [
-        {
-          "at": "src/LibTmux/Query/Window.hs:39",
-          "has": [
-            "windowLinks = Q.WindowLinks"
-          ]
-        }
-      ]
-    },
-    {
       "port": "raku",
       "owner": "ClientTarget",
       "names": [
@@ -6170,7 +6130,7 @@
       "in": "src/LibTmux/Server.hs",
       "evidence": [
         {
-          "at": "src/LibTmux/Server.hs:665",
+          "at": "src/LibTmux/Server.hs:748",
           "has": [
             "mutate options server generation (Command.SelectWindowLink session index)"
           ]
@@ -6196,7 +6156,7 @@
       "in": "src/LibTmux/Server.hs",
       "evidence": [
         {
-          "at": "src/LibTmux/Server.hs:873",
+          "at": "src/LibTmux/Server.hs:956",
           "has": [
             ", waitCapture :: !PaneCaptureOptions"
           ]
@@ -6216,7 +6176,7 @@
       "in": "src/LibTmux/Server.hs",
       "evidence": [
         {
-          "at": "src/LibTmux/Server.hs:912",
+          "at": "src/LibTmux/Server.hs:995",
           "has": [
             "C.waitForPaneText runtime handle executable duration ident settings (decodePaneText settings) needle baseline"
           ]
@@ -6268,7 +6228,7 @@
       "in": "src/LibTmux/Server.hs",
       "evidence": [
         {
-          "at": "src/LibTmux/Server.hs:784",
+          "at": "src/LibTmux/Server.hs:867",
           "has": [
             "await (R.mutateWith P.defaultHooks left runtime handle executable (Command.SaveBuffer name pipe))"
           ]
@@ -6277,6 +6237,86 @@
           "at": "internal/LibTmux/Internal/Command.hs:560",
           "has": [
             "SaveBuffer name file -> bufferTransfer \"save-buffer\" name file"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "haskell",
+      "names": [
+        "killServer"
+      ],
+      "commands": [
+        "kill-server"
+      ],
+      "kind": "other-command",
+      "why": "The admitted daemon generation is retired through its held pidfd; this operation never sends kill-server.",
+      "in": "src/LibTmux/Server.hs",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.hs:301",
+          "has": [
+            "catchNoPropagate retire"
+          ],
+          "in": "LibTmux.Server#v:killServer"
+        },
+        {
+          "at": "internal/LibTmux/Internal/OwnedServer.hs:740",
+          "has": [
+            "True -> True <$ (requestFate owner Terminate >> daemonPhases owner)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/OwnedServer.hs:535",
+          "has": [
+            "(how, refused) <- terminate owner.probe pidfd"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/OwnedServer.hs:578",
+          "has": [
+            "send signalNumber = probe.signal pidfd signalNumber"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "haskell",
+      "names": [
+        "sessionWindowLinks",
+        "windowLinks",
+        "linkWindowId",
+        "linkWindow"
+      ],
+      "commands": [
+        "link-window"
+      ],
+      "kind": "values",
+      "why": "These field and relationship tokens read captured values and memberships; they never create a window link.",
+      "in": "src/LibTmux/Query/Fields.hs",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Query/Fields.hs:69",
+          "has": [
+            "sessionWindowLinks = Q.SessionLinks"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Query/Fields.hs:106",
+          "has": [
+            "windowLinks = Q.WindowLinks"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Query/Fields.hs:174",
+          "has": [
+            "linkWindowId = F.LinkWindow"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Query/Fields.hs:194",
+          "has": [
+            "linkWindow = Q.LinkWindow"
           ]
         }
       ]

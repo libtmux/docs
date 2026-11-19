@@ -155,7 +155,7 @@ describe('Haskell reference navigation', () => {
 
   it('keeps the other modules where the other ports file ids, queries, versions, errors and fixtures', () => {
     expect(nav.placement).toMatchObject({
-      'LibTmux.Query': 'queries', 'LibTmux.Query.Session': 'queries', 'LibTmux.Snapshot': 'snapshots',
+      'LibTmux.Query': 'queries', 'LibTmux.Query.Fields': 'queries-fields', 'LibTmux.Snapshot': 'snapshots',
       'LibTmux.Version': 'version', 'LibTmux.Snapshot.Fixture': 'testing',
       'LibTmux.Id#t:IdError': 'errors', 'LibTmux.Server#t:TmuxException': 'errors',
     })

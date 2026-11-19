@@ -13,6 +13,7 @@ describe('port documentation domains', () => {
       ['docs/creation.md', 'guides/creation'],
       ['docs/programs.md', 'guides/programs'],
       ['docs/control.md', 'guides/control'],
+      ['docs/agents.md', 'guides/agents'],
       ['docs/mutations.md', 'guides/mutations'],
       ['docs/buffers.md', 'guides/buffers'],
       ['docs/resizing.md', 'guides/resizing'],
