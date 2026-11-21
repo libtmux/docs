@@ -4,16 +4,43 @@ import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Window } from 'happy-dom'
+import { headingLinkHtml } from '../site/src/lib/heading-link.ts'
 import { PORT_BY_SLUG } from '../site/src/lib/ports.ts'
 
 export const nativeHash = (value) => createHash('sha256').update(value).digest('hex')
 
-/** Native article bytes are opaque to the owned shell. */
+const decodeAttribute = (value) => value.replace(/&(amp|lt|gt|quot|#39|#x27);/g, (_, entity) =>
+  ({ amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'", '#x27': "'" })[entity])
+
+/**
+ * Draw Sphinx's permalink (`a.headerlink`, a pilcrow) as the heading link every other page draws (design record 0006), so the
+ * shared handler copies the section's URL and says "Copied". The anchor's tag is found with quote tracking, because an id such as
+ * C++'s `std::hash<libtmux::Pane>` puts an unescaped `>` in an attribute value. It is the one change the shell makes to an
+ * article's bytes, and applying it again changes nothing.
+ */
+export function adaptHeadingLinks(article) {
+  return article.replace(/<a\b((?:[^>"']|"[^"]*"|'[^']*')*)>[\s\S]*?<\/a>/gi, (anchor, attributes) => {
+    const classes = /\bclass\s*=\s*(?:"([^"]*)"|'([^']*)')/i.exec(attributes)
+    if (!(classes?.[1] ?? classes?.[2] ?? '').split(/\s+/).includes('headerlink')) return anchor
+    const href = /\bhref\s*=\s*(?:"([^"]*)"|'([^']*)')/i.exec(attributes)
+    if (!href) return anchor
+    const title = /\btitle\s*=\s*(?:"([^"]*)"|'([^']*)')/i.exec(attributes)
+    return headingLinkHtml(decodeAttribute(href[1] ?? href[2]), decodeAttribute(title?.[1] ?? title?.[2] ?? '') || 'Link to this section')
+  })
+}
+
+/** Native article bytes are opaque to the owned shell, except for how Sphinx's permalinks are drawn (`adaptHeadingLinks`). */
 export function nativeArticle(html) {
   const articles = [...html.matchAll(/<article\b[^>]*>([\s\S]*?)<\/article>/gi)]
   if (articles.length !== 1) throw new Error(`Native page must contain one article; found ${articles.length}`)
   return articles[0][1]
 }
+
+/**
+ * The digest the context records for an article: its bytes with the permalinks drawn as the shell draws them, so a page has one
+ * digest before and after the shell adapts it.
+ */
+export const nativeArticleHash = (article) => nativeHash(adaptHeadingLinks(article))
 
 function artifactFiles(directory, path = '') {
   return readdirSync(join(directory, path), { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))
@@ -171,7 +198,7 @@ export async function collectNativeContext(directory, { prefix, sphinxPort, vers
         file, path, url: `${base}${path}`, sourcePath: `${port.slug}/${version}/api/${path}`,
         title: window.document.querySelector('article h1')?.textContent?.replace(/¶$/, '').trim() ?? path,
         source, markdownHref, markdownSha256,
-        htmlSha256: hashes[file], articleSha256: nativeHash(nativeArticle(html)),
+        htmlSha256: hashes[file], articleSha256: nativeArticleHash(nativeArticle(html)),
         hasTableOfContents: [...window.document.querySelectorAll('.toc-tree a[href^="#"]')].some((link) => {
           let id
           try { id = decodeURIComponent(link.getAttribute('href').slice(1)) } catch { return false }

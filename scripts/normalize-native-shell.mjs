@@ -4,7 +4,7 @@ import { dirname, join, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PORT_BY_SLUG } from '../site/src/lib/ports.ts'
 import { nativeSection } from '../site/src/lib/search-state.ts'
-import { nativeArticle, nativeHash } from './native-shell-context.mjs'
+import { adaptHeadingLinks, nativeArticle, nativeArticleHash, nativeHash } from './native-shell-context.mjs'
 
 const escapeAttribute = (text) => text.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;')
 const spaNavigationHash = '02509e118ca80bc577ad947e5aa6017aa3358d0e79b5213fbae77ed6a9a0c3c9'
@@ -107,13 +107,14 @@ function stripNativeTheme(html, file) {
 function adaptNativePage(html, page, context, chrome, file, assetDigests) {
   if (!/<\/head>/i.test(html)) throw new Error(`Native page has no closing head: ${file}`)
   if (!/<body\b[^>]*>/i.test(html) || !/<\/body>/i.test(html)) throw new Error(`Native page has no body: ${file}`)
-  const article = nativeArticle(html)
-  if (nativeHash(article) !== page.articleSha256) throw new Error(`Native article changed after context collection: ${page.file}`)
+  const original = nativeArticle(html)
+  if (nativeArticleHash(original) !== page.articleSha256) throw new Error(`Native article changed after context collection: ${page.file}`)
+  const article = adaptHeadingLinks(original)
   const contextHash = nativeHash(JSON.stringify(context))
   const alreadyNormalized = html.includes(`data-native-shell="${contextHash}"`)
   if (!alreadyNormalized && nativeHash(html) !== page.htmlSha256) throw new Error(`Native page changed after context collection: ${page.file}`)
   const opening = /<article\b[^>]*>/i.exec(html)
-  const afterArticle = opening.index + opening[0].length + article.length
+  const afterArticle = opening.index + opening[0].length + original.length
   // Transform only the shell; parsing and serializing the article would rewrite its HTML.
   const transform = (outer) => {
     let result = outer

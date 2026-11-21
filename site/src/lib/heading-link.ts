@@ -24,6 +24,17 @@ export function headingLinkContent() {
   }]
 }
 
+const escapeAttribute = (value: string) => value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+
+/**
+ * The link as markup, for a page whose HTML another tool wrote: the element `HeadingLink.astro` draws. The native Sphinx pages
+ * take it in place of Sphinx's own permalink (`scripts/native-shell-context.mjs`).
+ */
+export function headingLinkHtml(href: string, label: string): string {
+  const paths = HEADING_LINK_PATHS.map((d) => `<path d="${d}"/>`).join('')
+  return `<a class="heading-link" href="${escapeAttribute(href)}" aria-label="${escapeAttribute(label)}" data-pagefind-ignore="all"><svg class="heading-link__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true" focusable="false">${paths}</svg></a>`
+}
+
 /** The options `rehype-autolink-headings` takes to append the link to every Markdown heading. */
 export const HEADING_LINK_AUTOLINK = {
   behavior: 'append' as const,

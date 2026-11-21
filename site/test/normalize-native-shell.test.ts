@@ -9,6 +9,9 @@ import { nativeArticle, nativeHash } from '../../scripts/native-shell-context.mj
 import { recordBuild, verifyBuild } from '../../scripts/publication-provenance.mjs'
 import { installAnchorNavigation } from '../public/_shell/anchors.js'
 import { renderedTargets } from '../src/lib/inventory-targets'
+import { headingLinkHtml } from '../src/lib/heading-link'
+import { experimental_AstroContainer } from 'astro/container'
+import { loadAstroTemplate, withoutScope } from './astro-templates'
 import { normalizedNativePages } from './native-fixture'
 
 /** Compose the pinned native widget and actual shell arrival callbacks. */
@@ -362,6 +365,36 @@ describe('native shell URL normalization', () => {
     }
     // A second pass finds the marker in place and writes nothing.
     expect(again).toBe(0)
+  })
+
+  it('draws Sphinx permalinks as the shared heading link and leaves the rest of the article alone', async () => {
+    const reference = '<a class="reference internal" href="#pane">pane</a>'
+    const nearMiss = '<a class="headerlinks" href="#x">near miss</a>'
+    const article = '<section id="pane"><h1>Pane<a class="headerlink" href="#pane" title="Link to this heading">&para;</a></h1>'
+      + '<dl class="py class"><dt class="sig" id="libtmux.Pane"><span class="sig-name">Pane</span><a class="headerlink gp-sphinx-api-link" href="#libtmux.Pane" title="Link to this definition">&para;</a></dt></dl>'
+      + '<dt id="std::hash<libtmux::Pane>"><a title=\'Q &amp; A\' class=\'headerlink\' href=\'#std::hash<libtmux::Pane>\'>#</a></dt>'
+      + `<p>${reference} ${nearMiss}</p></section>`
+    const { html, changed, again } = await normalizedNativePages(['api/pane/'], () => article)
+    const adapted = nativeArticle(html['api/pane/']!)
+    expect(changed).toBeGreaterThan(0)
+    expect(adapted).not.toMatch(/class=["'][^"']*\bheaderlink\b/)
+    expect(adapted).toContain('<h1>Pane' + headingLinkHtml('#pane', 'Link to this heading') + '</h1>')
+    expect(adapted).toContain(headingLinkHtml('#libtmux.Pane', 'Link to this definition') + '</dt>')
+    // Quote tracking finds the tag past a `>` inside an attribute, and the label is read, decoded and escaped again.
+    expect(adapted).toContain(headingLinkHtml('#std::hash<libtmux::Pane>', 'Q & A') + '</dt>')
+    expect(adapted.match(/class="heading-link"/g)).toHaveLength(3)
+    expect(adapted).toContain(`<p>${reference} ${nearMiss}</p></section>`)
+    // The page's second pass finds nothing left to change.
+    expect(again).toBe(0)
+
+    // The same element the Astro component draws on every other page.
+    const template = await loadAstroTemplate('components/HeadingLink.astro', {})
+    const container = await experimental_AstroContainer.create()
+    const drawn = withoutScope(await container.renderToString(template as Parameters<typeof container.renderToString>[0], { props: { href: '#pane', label: 'Link to this heading' } }))
+    const win = new Window()
+    const link = (markup: string) => { win.document.body.innerHTML = markup; return win.document.body.firstElementChild!.outerHTML }
+    expect(link(headingLinkHtml('#pane', 'Link to this heading'))).toBe(link(drawn))
+    await win.happyDOM.abort()
   })
 
   it('normalizes nested HTML/CSS for previews without changing other URLs', async () => {
