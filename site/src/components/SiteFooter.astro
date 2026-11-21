@@ -34,7 +34,7 @@ const { locale, port, version, pagePath, source, markdownHref, llmsRoot, githubU
 const inventories = inventoryLinks(port, version, pagePath)
 ---
 
-<footer class:list={[!flush && !compact && 'mt-16', 'border-t border-edge']}>
+<footer class:list={[!flush && !compact && 'mt-16', 'border-t border-edge']} data-site-footer>
   <div class:list={['mx-auto max-w-7xl px-4', compact ? 'py-2' : 'py-8', 'text-sm']}>
     {!compact && <>
       <p class="mb-4">

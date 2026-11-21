@@ -6,6 +6,7 @@
 // - The shared focus ring (base rule in global.css)
 // - ARIA attributes for screen reader support
 // - Below the phone breakpoint a 12px inset, and it appears only after two screens of scrolling
+// - It stops above the footer: the part of the footer on screen lifts it, so it never covers the footer's links
 ---
 
 <button
@@ -41,13 +42,14 @@
 </button>
 
 <style>
-  /* The corner and the lift above the footer and the audio player bar (4rem each) come from named properties. */
+  /* The corner comes from named properties. A transform lifts the button above the footer's visible part (--back-to-top-footer,
+     set by the script below) and above the audio player bar (4rem), whichever is taller, so the lift moves no layout. */
   #back-to-top {
     right: var(--back-to-top-inset);
-    bottom: calc(var(--back-to-top-inset) + var(--back-to-top-lift, 0rem));
+    bottom: var(--back-to-top-inset);
+    transform: translateY(calc(-1 * max(var(--back-to-top-player-lift, 0rem), var(--back-to-top-footer, 0px))));
   }
-  #back-to-top[data-lift='one'] { --back-to-top-lift: 4rem; }
-  #back-to-top[data-lift='both'] { --back-to-top-lift: 6rem; }
+  #back-to-top[data-lift='player'] { --back-to-top-player-lift: 4rem; }
 </style>
 
 <script>
@@ -64,13 +66,23 @@
     const button = document.getElementById('back-to-top')
     if (!button) return
 
+    const footer = document.querySelector<HTMLElement>('[data-site-footer]')
     let isVisible = false
-    let isAtBottom = false
     let isPlayerVisible = false
+    let footerShown = -1
 
-    // The player bar is h-16 (4rem), and so is the lift above the footer; the stylesheet adds each to the inset.
-    const updateBottomPosition = () => {
-      button.dataset.lift = isAtBottom && isPlayerVisible ? 'both' : isAtBottom || isPlayerVisible ? 'one' : ''
+    // The player bar is h-16 (4rem); the stylesheet lifts the button over it.
+    const updatePlayerLift = () => {
+      button.dataset.lift = isPlayerVisible ? 'player' : ''
+    }
+
+    // The footer scrolls up under the button's corner. The part of it on screen is how far the button must rise to stop above its top edge.
+    const updateFooterClearance = () => {
+      if (!footer) return
+      const shown = Math.max(0, Math.round(document.documentElement.clientHeight - footer.getBoundingClientRect().top))
+      if (shown === footerShown) return
+      footerShown = shown
+      button.style.setProperty('--back-to-top-footer', `${shown}px`)
     }
 
     // On a phone the button waits for two screens of scrolling, so it does not sit over the first screens' controls.
@@ -92,20 +104,13 @@
         }
       }
 
-      // Check if at bottom of page (within 100px)
-      const scrollHeight = document.documentElement.scrollHeight
-      const scrollTop = window.pageYOffset
-      const clientHeight = document.documentElement.clientHeight
-      const newIsAtBottom = scrollHeight - scrollTop - clientHeight < 100
+      updateFooterClearance()
 
       // Check if audio player bar is visible
       const newIsPlayerVisible = document.body.classList.contains('player-visible')
-
-      // Update position if state changed
-      if (newIsAtBottom !== isAtBottom || newIsPlayerVisible !== isPlayerVisible) {
-        isAtBottom = newIsAtBottom
+      if (newIsPlayerVisible !== isPlayerVisible) {
         isPlayerVisible = newIsPlayerVisible
-        updateBottomPosition()
+        updatePlayerLift()
       }
     }
 
@@ -116,7 +121,12 @@
 
     // Add listeners; the controller cleans up the previous generation
     window.addEventListener('scroll', toggleVisibility, { signal, passive: true })
+    window.addEventListener('resize', toggleVisibility, { signal, passive: true })
     phone.addEventListener('change', toggleVisibility, { signal })
+    // Content above the footer can change height without a scroll, which moves the footer's top edge.
+    const resizes = new ResizeObserver(toggleVisibility)
+    resizes.observe(document.body)
+    signal.addEventListener('abort', () => resizes.disconnect())
     button.addEventListener('click', handleClick, { signal })
 
     // Check initial state
