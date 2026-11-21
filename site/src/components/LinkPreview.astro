@@ -47,7 +47,7 @@ const { id = 'reference-link-preview', preview, class: className } = Astro.props
   .reference-link-preview [hidden] { display: none; }
   .reference-link-preview code { font-family: var(--font-mono, ui-monospace, monospace); }
   /* The card scrolls and its strips run to its edge, which clips a ring drawn outside them. */
-  .reference-link-preview :focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: -2px; }
+  .reference-link-preview :focus-visible { outline: 2px solid var(--focus-ring-color, var(--color-link)); outline-offset: -2px; }
 
   /* Header: the legend chip, then the qualified name. */
   .reference-link-preview__heading {
