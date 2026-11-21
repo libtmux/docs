@@ -561,6 +561,32 @@ describe('labels in sans', () => {
   })
 })
 
+/** "Back to top" covered about 30% of "Copy the prompt" at 476px (adoption plan step 51): below the phone breakpoint it sits 12px in and waits for two screens. */
+describe('the Back to top button', () => {
+  const source = (path: string) => readFileSync(new URL(`../src/${path}`, import.meta.url), 'utf8')
+  const button = source('components/BackToTop.astro')
+
+  it('takes its corner from the inset property, 2rem and 0.75rem below the phone breakpoint, and its size from the size property', () => {
+    const global = source('styles/global.css')
+    expect(global).toMatch(/:root \{\s*--back-to-top-size: 2\.875rem;\s*--back-to-top-inset: 2rem;\s*\}/)
+    expect(global).toMatch(/@media \(max-width: 29\.999rem\) \{\s*:root \{\s*--back-to-top-inset: 0\.75rem;/)
+    expect(button).toMatch(/right: var\(--back-to-top-inset\);/)
+    expect(button, 'no fixed 2rem inset left in the classes').not.toMatch(/\b(?:bottom|right)-8\b/)
+  })
+
+  it('appears after two screens of scrolling on a phone, and after 300px elsewhere', () => {
+    expect(button).toContain("import { below } from '../lib/breakpoints'")
+    expect(button).toMatch(/matchMedia\(below\('phone'\)\)/)
+    expect(button).toMatch(/pageYOffset > \(phone\.matches \? 2 \* window\.innerHeight : 300\)/)
+  })
+
+  it('leaves the home page\'s last block room for it: its size plus its inset below the phone breakpoint', () => {
+    const home = source('pages/index.astro')
+    expect(home).toContain('class="home-last mt-16"')
+    expect(home).toMatch(/@media \(max-width: 29\.999rem\) \{\s*\.home-last \{ padding-bottom: calc\(var\(--back-to-top-size\) \+ var\(--back-to-top-inset\)\); \}/)
+  })
+})
+
 describe('shared chrome reads tokens, not greys', () => {
   const source = (path: string) => readFileSync(new URL(`../src/${path}`, import.meta.url), 'utf8')
 

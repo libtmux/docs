@@ -1077,6 +1077,19 @@ body {
   --site-gutter: 1rem;
 }
 
+/* The Back to top button: its size (a 20px icon in 12px padding and a 1px border) and its inset from the viewport corner, which
+   closes up below the phone breakpoint, where 2rem covered about a third of "Copy the prompt" at 476px. */
+:root {
+  --back-to-top-size: 2.875rem;
+  --back-to-top-inset: 2rem;
+}
+
+@media (max-width: 29.999rem) {
+  :root {
+    --back-to-top-inset: 0.75rem;
+  }
+}
+
 body[data-documentation-layout='prose'] {
   --site-frame-width: 108rem;
 }

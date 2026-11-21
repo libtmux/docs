@@ -194,7 +194,7 @@ const homeEntries = PORTS.map((port) => ({
     <HomeIntro solutions={homeSolutions} />
 
     <!-- Agent prompt -->
-    <section class="mt-16">
+    <section class="home-last mt-16">
       <h2 class="text-xl font-semibold">Start with an agent</h2>
       <p class="mt-2 max-w-2xl text-sm opacity-80">
         Copy this into any coding agent. It installs libtmux in the repository
@@ -221,4 +221,8 @@ const homeEntries = PORTS.map((port) => ({
 
 <style>
   .home-agent-prompt { container-type: inline-size; }
+  /* The last block ends clear of the Back to top button, which sits over the bottom corner below the phone breakpoint. */
+  @media (max-width: 29.999rem) {
+    .home-last { padding-bottom: calc(var(--back-to-top-size) + var(--back-to-top-inset)); }
+  }
 </style>
