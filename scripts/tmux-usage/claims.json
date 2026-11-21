@@ -29844,11 +29844,17 @@
           ]
         },
         {
-          "at": "src/LibTmux/Server.hs:310",
+          "at": "src/LibTmux/Server.hs:317",
           "has": [
-            "(started, finished, decoded) <- C.captureSnapshot runtime handle executable duration"
+            "= operational (captureFor server duration)"
           ],
           "in": "LibTmux.Server#v:capture"
+        },
+        {
+          "at": "src/LibTmux/Server.hs:323",
+          "has": [
+            "(started, finished, decoded) <- C.captureSnapshot runtime handle executable duration"
+          ]
         },
         {
           "at": "internal/LibTmux/Internal/Record.hs:108",
@@ -29943,11 +29949,17 @@
           ]
         },
         {
-          "at": "src/LibTmux/Server.hs:310",
+          "at": "src/LibTmux/Server.hs:317",
           "has": [
-            "(started, finished, decoded) <- C.captureSnapshot runtime handle executable duration"
+            "= operational (captureFor server duration)"
           ],
           "in": "LibTmux.Server#v:capture"
+        },
+        {
+          "at": "src/LibTmux/Server.hs:323",
+          "has": [
+            "(started, finished, decoded) <- C.captureSnapshot runtime handle executable duration"
+          ]
         },
         {
           "at": "internal/LibTmux/Internal/Record.hs:110",
@@ -30042,11 +30054,17 @@
           ]
         },
         {
-          "at": "src/LibTmux/Server.hs:310",
+          "at": "src/LibTmux/Server.hs:317",
           "has": [
-            "(started, finished, decoded) <- C.captureSnapshot runtime handle executable duration"
+            "= operational (captureFor server duration)"
           ],
           "in": "LibTmux.Server#v:capture"
+        },
+        {
+          "at": "src/LibTmux/Server.hs:323",
+          "has": [
+            "(started, finished, decoded) <- C.captureSnapshot runtime handle executable duration"
+          ]
         },
         {
           "at": "internal/LibTmux/Internal/Record.hs:118",
@@ -43711,11 +43729,17 @@
       "scope": null,
       "evidence": [
         {
-          "at": "src/LibTmux/Server.hs:339",
+          "at": "src/LibTmux/Server.hs:344",
           "has": [
-            "Control.withControlClient (R.serverPool handle) spec duration session options action"
+            "= withControlFor server duration"
           ],
           "in": "LibTmux.Server#v:withControl"
+        },
+        {
+          "at": "src/LibTmux/Server.hs:355",
+          "has": [
+            "Control.withControlClient (R.serverPool handle) spec duration session options action"
+          ]
         },
         {
           "at": "src/LibTmux/Server.hs:337",
@@ -44866,6 +44890,1150 @@
       "conditional": true,
       "when": "when an older daemon needs the legacy probe",
       "incidental": true
+    },
+    {
+      "port": "haskell",
+      "symbol": "LibTmux.Server#v:movePane",
+      "command": "if-shell",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.hs:794",
+          "has": [
+            "movePane = movePaneWith defaultMutationOptions"
+          ],
+          "in": "LibTmux.Server#v:movePane"
+        },
+        {
+          "at": "src/LibTmux/Server.hs:801",
+          "has": [
+            "= transferPane Command.Move"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Server.hs:821",
+          "has": [
+            "(Command.TransferPane operation from to placement)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Relocation.hs:58",
+          "has": [
+            "R.relocateWith hooks left runtime server executable command journal"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:651",
+          "has": [
+            "startNative (Relocate command journal) hooks duration runtime client executable ScalarRead"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:892",
+          "has": [
+            "arguments <- Command.compileRelocation nonce command"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:958",
+          "has": [
+            "created <- try @SomeException (P.submitInputRegistered register resourceClass hooks pool spec input)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:457",
+          "has": [
+            "guarded target predicate action = [\"if-shell\", \"-F\", \"-t\", target, predicate, renderArguments action]"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "haskell",
+      "symbol": "LibTmux.Server#v:movePane",
+      "command": "move-pane",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.hs:794",
+          "has": [
+            "movePane = movePaneWith defaultMutationOptions"
+          ],
+          "in": "LibTmux.Server#v:movePane"
+        },
+        {
+          "at": "src/LibTmux/Server.hs:801",
+          "has": [
+            "= transferPane Command.Move"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Server.hs:821",
+          "has": [
+            "(Command.TransferPane operation from to placement)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Relocation.hs:58",
+          "has": [
+            "R.relocateWith hooks left runtime server executable command journal"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:651",
+          "has": [
+            "startNative (Relocate command journal) hooks duration runtime client executable ScalarRead"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:892",
+          "has": [
+            "arguments <- Command.compileRelocation nonce command"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:958",
+          "has": [
+            "created <- try @SomeException (P.submitInputRegistered register resourceClass hooks pool spec input)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:436",
+          "has": [
+            "pure (from, guarded destination (exact to) arguments)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:431",
+          "has": [
+            "let verb = case operation of Move -> \"move-pane\"; Join -> \"join-pane\""
+          ]
+        }
+      ],
+      "conditional": true,
+      "when": "when both pane occurrences match"
+    },
+    {
+      "port": "haskell",
+      "symbol": "LibTmux.Server#v:movePaneWith",
+      "command": "if-shell",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.hs:801",
+          "has": [
+            "= transferPane Command.Move"
+          ],
+          "in": "LibTmux.Server#v:movePaneWith"
+        },
+        {
+          "at": "src/LibTmux/Server.hs:821",
+          "has": [
+            "(Command.TransferPane operation from to placement)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Relocation.hs:58",
+          "has": [
+            "R.relocateWith hooks left runtime server executable command journal"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:651",
+          "has": [
+            "startNative (Relocate command journal) hooks duration runtime client executable ScalarRead"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:892",
+          "has": [
+            "arguments <- Command.compileRelocation nonce command"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:958",
+          "has": [
+            "created <- try @SomeException (P.submitInputRegistered register resourceClass hooks pool spec input)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:457",
+          "has": [
+            "guarded target predicate action = [\"if-shell\", \"-F\", \"-t\", target, predicate, renderArguments action]"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "haskell",
+      "symbol": "LibTmux.Server#v:movePaneWith",
+      "command": "move-pane",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.hs:801",
+          "has": [
+            "= transferPane Command.Move"
+          ],
+          "in": "LibTmux.Server#v:movePaneWith"
+        },
+        {
+          "at": "src/LibTmux/Server.hs:821",
+          "has": [
+            "(Command.TransferPane operation from to placement)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Relocation.hs:58",
+          "has": [
+            "R.relocateWith hooks left runtime server executable command journal"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:651",
+          "has": [
+            "startNative (Relocate command journal) hooks duration runtime client executable ScalarRead"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:892",
+          "has": [
+            "arguments <- Command.compileRelocation nonce command"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:958",
+          "has": [
+            "created <- try @SomeException (P.submitInputRegistered register resourceClass hooks pool spec input)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:436",
+          "has": [
+            "pure (from, guarded destination (exact to) arguments)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:431",
+          "has": [
+            "let verb = case operation of Move -> \"move-pane\"; Join -> \"join-pane\""
+          ]
+        }
+      ],
+      "conditional": true,
+      "when": "when both pane occurrences match"
+    },
+    {
+      "port": "haskell",
+      "symbol": "LibTmux.Server#v:joinPane",
+      "command": "if-shell",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.hs:806",
+          "has": [
+            "joinPane = joinPaneWith defaultMutationOptions"
+          ],
+          "in": "LibTmux.Server#v:joinPane"
+        },
+        {
+          "at": "src/LibTmux/Server.hs:811",
+          "has": [
+            "= transferPane Command.Join"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Server.hs:821",
+          "has": [
+            "(Command.TransferPane operation from to placement)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Relocation.hs:58",
+          "has": [
+            "R.relocateWith hooks left runtime server executable command journal"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:651",
+          "has": [
+            "startNative (Relocate command journal) hooks duration runtime client executable ScalarRead"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:892",
+          "has": [
+            "arguments <- Command.compileRelocation nonce command"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:958",
+          "has": [
+            "created <- try @SomeException (P.submitInputRegistered register resourceClass hooks pool spec input)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:457",
+          "has": [
+            "guarded target predicate action = [\"if-shell\", \"-F\", \"-t\", target, predicate, renderArguments action]"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "haskell",
+      "symbol": "LibTmux.Server#v:joinPane",
+      "command": "join-pane",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.hs:806",
+          "has": [
+            "joinPane = joinPaneWith defaultMutationOptions"
+          ],
+          "in": "LibTmux.Server#v:joinPane"
+        },
+        {
+          "at": "src/LibTmux/Server.hs:811",
+          "has": [
+            "= transferPane Command.Join"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Server.hs:821",
+          "has": [
+            "(Command.TransferPane operation from to placement)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Relocation.hs:58",
+          "has": [
+            "R.relocateWith hooks left runtime server executable command journal"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:651",
+          "has": [
+            "startNative (Relocate command journal) hooks duration runtime client executable ScalarRead"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:892",
+          "has": [
+            "arguments <- Command.compileRelocation nonce command"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:958",
+          "has": [
+            "created <- try @SomeException (P.submitInputRegistered register resourceClass hooks pool spec input)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:436",
+          "has": [
+            "pure (from, guarded destination (exact to) arguments)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:431",
+          "has": [
+            "let verb = case operation of Move -> \"move-pane\"; Join -> \"join-pane\""
+          ]
+        }
+      ],
+      "conditional": true,
+      "when": "when both pane occurrences match"
+    },
+    {
+      "port": "haskell",
+      "symbol": "LibTmux.Server#v:joinPaneWith",
+      "command": "if-shell",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.hs:811",
+          "has": [
+            "= transferPane Command.Join"
+          ],
+          "in": "LibTmux.Server#v:joinPaneWith"
+        },
+        {
+          "at": "src/LibTmux/Server.hs:821",
+          "has": [
+            "(Command.TransferPane operation from to placement)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Relocation.hs:58",
+          "has": [
+            "R.relocateWith hooks left runtime server executable command journal"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:651",
+          "has": [
+            "startNative (Relocate command journal) hooks duration runtime client executable ScalarRead"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:892",
+          "has": [
+            "arguments <- Command.compileRelocation nonce command"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:958",
+          "has": [
+            "created <- try @SomeException (P.submitInputRegistered register resourceClass hooks pool spec input)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:457",
+          "has": [
+            "guarded target predicate action = [\"if-shell\", \"-F\", \"-t\", target, predicate, renderArguments action]"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "haskell",
+      "symbol": "LibTmux.Server#v:joinPaneWith",
+      "command": "join-pane",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.hs:811",
+          "has": [
+            "= transferPane Command.Join"
+          ],
+          "in": "LibTmux.Server#v:joinPaneWith"
+        },
+        {
+          "at": "src/LibTmux/Server.hs:821",
+          "has": [
+            "(Command.TransferPane operation from to placement)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Relocation.hs:58",
+          "has": [
+            "R.relocateWith hooks left runtime server executable command journal"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:651",
+          "has": [
+            "startNative (Relocate command journal) hooks duration runtime client executable ScalarRead"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:892",
+          "has": [
+            "arguments <- Command.compileRelocation nonce command"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:958",
+          "has": [
+            "created <- try @SomeException (P.submitInputRegistered register resourceClass hooks pool spec input)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:436",
+          "has": [
+            "pure (from, guarded destination (exact to) arguments)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:431",
+          "has": [
+            "let verb = case operation of Move -> \"move-pane\"; Join -> \"join-pane\""
+          ]
+        }
+      ],
+      "conditional": true,
+      "when": "when both pane occurrences match"
+    },
+    {
+      "port": "haskell",
+      "symbol": "LibTmux.Server#v:breakPane",
+      "command": "if-shell",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.hs:829",
+          "has": [
+            "breakPane = breakPaneWith defaultMutationOptions"
+          ],
+          "in": "LibTmux.Server#v:breakPane"
+        },
+        {
+          "at": "src/LibTmux/Server.hs:836",
+          "has": [
+            "breakPaneWith options server@(Server runtime handle executable _ available _) source"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Server.hs:843",
+          "has": [
+            "(Command.BreakPane from session index brokenDefaultName)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Relocation.hs:58",
+          "has": [
+            "R.relocateWith hooks left runtime server executable command journal"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:651",
+          "has": [
+            "startNative (Relocate command journal) hooks duration runtime client executable ScalarRead"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:892",
+          "has": [
+            "arguments <- Command.compileRelocation nonce command"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:958",
+          "has": [
+            "created <- try @SomeException (P.submitInputRegistered register resourceClass hooks pool spec input)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:457",
+          "has": [
+            "guarded target predicate action = [\"if-shell\", \"-F\", \"-t\", target, predicate, renderArguments action]"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "haskell",
+      "symbol": "LibTmux.Server#v:breakPane",
+      "command": "break-pane",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.hs:829",
+          "has": [
+            "breakPane = breakPaneWith defaultMutationOptions"
+          ],
+          "in": "LibTmux.Server#v:breakPane"
+        },
+        {
+          "at": "src/LibTmux/Server.hs:836",
+          "has": [
+            "breakPaneWith options server@(Server runtime handle executable _ available _) source"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Server.hs:843",
+          "has": [
+            "(Command.BreakPane from session index brokenDefaultName)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Relocation.hs:58",
+          "has": [
+            "R.relocateWith hooks left runtime server executable command journal"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:651",
+          "has": [
+            "startNative (Relocate command journal) hooks duration runtime client executable ScalarRead"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:892",
+          "has": [
+            "arguments <- Command.compileRelocation nonce command"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:958",
+          "has": [
+            "created <- try @SomeException (P.submitInputRegistered register resourceClass hooks pool spec input)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:450",
+          "has": [
+            "pure (from, guarded (creationSessionTarget session <> \":\") (both exactSession vacant) action)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:442",
+          "has": [
+            "let arguments = [\"break-pane\", \"-d\", \"-s\", sourceTarget, \"-t\", destination,"
+          ]
+        }
+      ],
+      "conditional": true,
+      "when": "when the source matches and destination is vacant"
+    },
+    {
+      "port": "haskell",
+      "symbol": "LibTmux.Server#v:breakPaneWith",
+      "command": "if-shell",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.hs:836",
+          "has": [
+            "breakPaneWith options server@(Server runtime handle executable _ available _) source"
+          ],
+          "in": "LibTmux.Server#v:breakPaneWith"
+        },
+        {
+          "at": "src/LibTmux/Server.hs:843",
+          "has": [
+            "(Command.BreakPane from session index brokenDefaultName)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Relocation.hs:58",
+          "has": [
+            "R.relocateWith hooks left runtime server executable command journal"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:651",
+          "has": [
+            "startNative (Relocate command journal) hooks duration runtime client executable ScalarRead"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:892",
+          "has": [
+            "arguments <- Command.compileRelocation nonce command"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:958",
+          "has": [
+            "created <- try @SomeException (P.submitInputRegistered register resourceClass hooks pool spec input)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:457",
+          "has": [
+            "guarded target predicate action = [\"if-shell\", \"-F\", \"-t\", target, predicate, renderArguments action]"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "haskell",
+      "symbol": "LibTmux.Server#v:breakPaneWith",
+      "command": "break-pane",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.hs:836",
+          "has": [
+            "breakPaneWith options server@(Server runtime handle executable _ available _) source"
+          ],
+          "in": "LibTmux.Server#v:breakPaneWith"
+        },
+        {
+          "at": "src/LibTmux/Server.hs:843",
+          "has": [
+            "(Command.BreakPane from session index brokenDefaultName)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Relocation.hs:58",
+          "has": [
+            "R.relocateWith hooks left runtime server executable command journal"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:651",
+          "has": [
+            "startNative (Relocate command journal) hooks duration runtime client executable ScalarRead"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:892",
+          "has": [
+            "arguments <- Command.compileRelocation nonce command"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:958",
+          "has": [
+            "created <- try @SomeException (P.submitInputRegistered register resourceClass hooks pool spec input)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:450",
+          "has": [
+            "pure (from, guarded (creationSessionTarget session <> \":\") (both exactSession vacant) action)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:442",
+          "has": [
+            "let arguments = [\"break-pane\", \"-d\", \"-s\", sourceTarget, \"-t\", destination,"
+          ]
+        }
+      ],
+      "conditional": true,
+      "when": "when the source matches and destination is vacant"
+    },
+    {
+      "port": "haskell",
+      "symbol": "LibTmux.Server#v:waitForPaneState",
+      "command": "display-message",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.hs:1152",
+          "has": [
+            "catchNoPropagate (Right <$> captureFor server left)"
+          ],
+          "in": "LibTmux.Server#v:waitForPaneState"
+        },
+        {
+          "at": "cbits/process.c:133",
+          "has": [
+            "rc = calls.spawn(&pidfd, file, &actions, &attributes, argv, env);"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process/Native.hs:34",
+          "has": [
+            "foreign import ccall safe \"libtmux_process_spawn\" cSpawn"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process/Native.hs:151",
+          "has": [
+            "launch value = launchWith (if value.discardOutput then cSpawnDiscard else cSpawn) value"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:107",
+          "has": [
+            "defaultHooks = Hooks"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:107",
+          "has": [
+            "N.launch N.waitChild"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:248",
+          "has": [
+            "native <- prepared.startPrepared"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:931",
+          "has": [
+            "created <- try @SomeException (P.submitInputRegistered register resourceClass hooks pool spec input)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:809",
+          "has": [
+            "spec = base {N.args = [executable, \"-u\", \"-N\", \"-S\", pinPath (serverPin client)] <> arguments}"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:865",
+          "has": [
+            "compileNative nonce (Observe command) = Right (ObservationResult command, commandArguments nonce command, P.BytesInput \"\")"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:744",
+          "has": [
+            "ReadSnapshot generation -> Record.snapshotCommands generation nonce"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:719",
+          "has": [
+            "startRead (ReadSnapshot (pinGeneration (serverPin client)))"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Capture.hs:194",
+          "has": [
+            "owned runtime receipt (R.readSnapshotWith hooks left runtime client executable)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Capture.hs:187",
+          "has": [
+            "captureSnapshot = captureSnapshotWith P.defaultHooks"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Server.hs:323",
+          "has": [
+            "(started, finished, decoded) <- C.captureSnapshot runtime handle executable duration"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Record.hs:108",
+          "has": [
+            "[ \"display-message\", \"-p\", \"-F\", marker"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "haskell",
+      "symbol": "LibTmux.Server#v:waitForPaneState",
+      "command": "if-shell",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.hs:1152",
+          "has": [
+            "catchNoPropagate (Right <$> captureFor server left)"
+          ],
+          "in": "LibTmux.Server#v:waitForPaneState"
+        },
+        {
+          "at": "cbits/process.c:133",
+          "has": [
+            "rc = calls.spawn(&pidfd, file, &actions, &attributes, argv, env);"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process/Native.hs:34",
+          "has": [
+            "foreign import ccall safe \"libtmux_process_spawn\" cSpawn"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process/Native.hs:151",
+          "has": [
+            "launch value = launchWith (if value.discardOutput then cSpawnDiscard else cSpawn) value"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:107",
+          "has": [
+            "defaultHooks = Hooks"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:107",
+          "has": [
+            "N.launch N.waitChild"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:248",
+          "has": [
+            "native <- prepared.startPrepared"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:931",
+          "has": [
+            "created <- try @SomeException (P.submitInputRegistered register resourceClass hooks pool spec input)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:809",
+          "has": [
+            "spec = base {N.args = [executable, \"-u\", \"-N\", \"-S\", pinPath (serverPin client)] <> arguments}"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:865",
+          "has": [
+            "compileNative nonce (Observe command) = Right (ObservationResult command, commandArguments nonce command, P.BytesInput \"\")"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:744",
+          "has": [
+            "ReadSnapshot generation -> Record.snapshotCommands generation nonce"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:719",
+          "has": [
+            "startRead (ReadSnapshot (pinGeneration (serverPin client)))"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Capture.hs:194",
+          "has": [
+            "owned runtime receipt (R.readSnapshotWith hooks left runtime client executable)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Capture.hs:187",
+          "has": [
+            "captureSnapshot = captureSnapshotWith P.defaultHooks"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Server.hs:323",
+          "has": [
+            "(started, finished, decoded) <- C.captureSnapshot runtime handle executable duration"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Record.hs:110",
+          "has": [
+            ", \";\", \"if-shell\", \"-F\", \"#{S:1}\", listing"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "haskell",
+      "symbol": "LibTmux.Server#v:waitForPaneState",
+      "command": "list-clients",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.hs:1152",
+          "has": [
+            "catchNoPropagate (Right <$> captureFor server left)"
+          ],
+          "in": "LibTmux.Server#v:waitForPaneState"
+        },
+        {
+          "at": "cbits/process.c:133",
+          "has": [
+            "rc = calls.spawn(&pidfd, file, &actions, &attributes, argv, env);"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process/Native.hs:34",
+          "has": [
+            "foreign import ccall safe \"libtmux_process_spawn\" cSpawn"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process/Native.hs:151",
+          "has": [
+            "launch value = launchWith (if value.discardOutput then cSpawnDiscard else cSpawn) value"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:107",
+          "has": [
+            "defaultHooks = Hooks"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:107",
+          "has": [
+            "N.launch N.waitChild"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:248",
+          "has": [
+            "native <- prepared.startPrepared"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:931",
+          "has": [
+            "created <- try @SomeException (P.submitInputRegistered register resourceClass hooks pool spec input)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:809",
+          "has": [
+            "spec = base {N.args = [executable, \"-u\", \"-N\", \"-S\", pinPath (serverPin client)] <> arguments}"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:865",
+          "has": [
+            "compileNative nonce (Observe command) = Right (ObservationResult command, commandArguments nonce command, P.BytesInput \"\")"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:744",
+          "has": [
+            "ReadSnapshot generation -> Record.snapshotCommands generation nonce"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:719",
+          "has": [
+            "startRead (ReadSnapshot (pinGeneration (serverPin client)))"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Capture.hs:194",
+          "has": [
+            "owned runtime receipt (R.readSnapshotWith hooks left runtime client executable)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Capture.hs:187",
+          "has": [
+            "captureSnapshot = captureSnapshotWith P.defaultHooks"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Server.hs:323",
+          "has": [
+            "(started, finished, decoded) <- C.captureSnapshot runtime handle executable duration"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Record.hs:118",
+          "has": [
+            "listing = \"list-clients -F"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Record.hs:110",
+          "has": [
+            ", \";\", \"if-shell\", \"-F\", \"#{S:1}\", listing"
+          ]
+        }
+      ],
+      "conditional": true,
+      "when": "when the server has sessions"
+    },
+    {
+      "port": "haskell",
+      "symbol": "LibTmux.Server#v:waitForPaneState",
+      "command": "attach-session",
+      "scope": null,
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.hs:1198",
+          "has": [
+            "catchNoPropagate (withControlFor server left session observerOptions"
+          ],
+          "in": "LibTmux.Server#v:waitForPaneState"
+        },
+        {
+          "at": "src/LibTmux/Server.hs:355",
+          "has": [
+            "Control.withControlClient (R.serverPool handle) spec duration session options action"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Server.hs:337",
+          "has": [
+            "\"-C\", \"attach-session\", \"-E\", \"-f\", flags, \"-t\", session]"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Control.hs:161",
+          "has": [
+            "ticket <- operational (P.submitStreaming hooks pool spec allowance receive)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:186",
+          "has": [
+            "submitProcess (const (pure ())) B.Ordinary hooks pool spec KeepInputOpen (StreamedOutput allowance receive)"
+          ]
+        },
+        {
+          "at": "cbits/process.c:133",
+          "has": [
+            "rc = calls.spawn(&pidfd, file, &actions, &attributes, argv, env);"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process/Native.hs:34",
+          "has": [
+            "foreign import ccall safe \"libtmux_process_spawn\" cSpawn"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process/Native.hs:115",
+          "has": [
+            "spec file args = Spec file args [\"LANG=C.UTF-8\"] \"/\" False"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process/Native.hs:151",
+          "has": [
+            "launch value = launchWith (if value.discardOutput then cSpawnDiscard else cSpawn) value"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:107",
+          "has": [
+            "N.launch N.waitChild"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:248",
+          "has": [
+            "native <- prepared.startPrepared"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:245",
+          "has": [
+            "Nothing -> pure (Prepared (ticket.hooks.launchNative spec)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process.hs:246",
+          "has": [
+            "Just backend -> backend.prepareBackend ticket.allocation spec"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/OwnedServer.hs:230",
+          "has": [
+            "runtime <- R.newRuntimeUsing budget P.normalFork (Just (Guardian.backend domain)) True"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Runtime.hs:271",
+          "has": [
+            "mapM_ (P.bindBackend pool) runtime.backend"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process/Guardian.hs:224",
+          "has": [
+            "pointer <- cPrepare file argv environment cwd"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Process/Guardian.hs:235",
+          "has": [
+            "send domain 10 key pointer (-1)"
+          ]
+        },
+        {
+          "at": "cbits/guardian.c:318",
+          "has": [
+            "if (h.op == SPAWN) h_spawn(c, h, c->packet.bytes + sizeof h"
+          ]
+        },
+        {
+          "at": "cbits/guardian.c:292",
+          "has": [
+            "rc = R3(SYS_execve, file, argv, env);"
+          ]
+        }
+      ],
+      "conditional": true,
+      "when": "when the initial pane state does not match"
     },
     {
       "port": "raku",

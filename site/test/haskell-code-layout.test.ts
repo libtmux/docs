@@ -49,6 +49,21 @@ describe('native Haskell type continuation layout', () => {
     expect(layout.text.replace(/\s+/g, ' ')).toBe(symbol.signatures[0].raw)
   })
 
+  it('continues strict constructor fields while keeping linked types and tuple arguments intact', async () => {
+    const spans = [
+      { text: 'BreakAccepted', declaration: true }, { text: ' !' },
+      { text: 'PaneRef', href: 'LibTmux-Snapshot.html#t:PaneRef', target: 'LibTmux.Snapshot#t:PaneRef' },
+      { text: ' !WindowSlot !(Maybe (WindowSlot, WindowRef))' },
+    ]
+    const symbol: ApiSymbol = { id: 'fixture', name: 'BreakAccepted', kind: 'function', modifiers: [], source: { file: 'fixture.hs' },
+      signatures: [{ raw: spans.map((span) => span.text).join(''), params: [], methodKind: 'constructor', nativeSpans: spans }] }
+    const layout = (await apiSignatureLayouts(symbol, 'haskell')).get(symbol.signatures[0])!
+    expect(layout.failures).toEqual([])
+    expect(layout.text).toBe('BreakAccepted\n  !PaneRef\n  !WindowSlot\n  !(Maybe (WindowSlot, WindowRef))')
+    expect(layout.nativeSpans).toContainEqual(spans[2])
+    expect(layout.text.replace(/\s+/g, ' ')).toBe(symbol.signatures[0].raw)
+  })
+
   it('keeps a constructor literal exact when it contains a type-separator spelling', async () => {
     const tail = ' !(Proxy "this constructor literal contains :: and must remain byte for byte")'
     const symbol: ApiSymbol = { id: 'fixture', name: 'Literal', kind: 'function', modifiers: [], source: { file: 'fixture.hs' },

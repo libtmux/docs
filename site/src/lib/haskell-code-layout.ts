@@ -16,10 +16,12 @@ export async function haskellSignatureLayout(symbol: ApiSymbol, signature: Signa
     failures = await codeWidthFailures(text, 'api')
   }
   if (failures.length) {
+    const positional = signature.methodKind === 'constructor' && signature.raw.startsWith(`${symbol.name} `)
+      && !signature.raw.startsWith(`${symbol.name} :: `)
     let depth = 0
     let quote: '"' | "'" | undefined
     let escaped = false
-    spans = spans.map((span) => {
+    const continuedSpans = spans.map((span) => {
       let continued = ''
       const punctuation = !span.href && !span.target && !span.declaration
       for (let i = 0; i < span.text.length; i++) {
@@ -37,14 +39,22 @@ export async function haskellSignatureLayout(symbol: ApiSymbol, signature: Signa
           continued += '\n  -> '
           i += 3
           continue
+        } else if (positional && punctuation && depth === 0 && character === ' ') {
+          continued += '\n  '
+          continue
         } else if ('([{'.includes(character)) depth++
         else if (')]}'.includes(character)) depth--
         continued += character
       }
       return { ...span, text: continued }
     })
-    text = spans.map((span) => span.text).join('')
-    failures = await codeWidthFailures(text, 'api')
+    const continuedText = continuedSpans.map((span) => span.text).join('')
+    const continuedFailures = await codeWidthFailures(continuedText, 'api')
+    if (!positional || !continuedFailures.length) {
+      spans = continuedSpans
+      text = continuedText
+      failures = continuedFailures
+    }
   }
   return { text, nativeSpans: spans, limit: CODE_COLUMNS.api, failures }
 }

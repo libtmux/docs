@@ -146,6 +146,9 @@ describe('Haskell reference navigation', () => {
       'LibTmux.Snapshot#t:Session': 'session', 'LibTmux.Id#t:SessionId': 'session',
       'LibTmux.Snapshot#t:Window': 'window', 'LibTmux.Snapshot#t:WindowLink': 'window',
       'LibTmux.Snapshot#t:Pane': 'pane', 'LibTmux.Snapshot#t:PaneRef': 'pane',
+      'LibTmux.Creation#t:PaneMoveOptions': 'pane', 'LibTmux.Creation#t:PaneRelocationReceipt': 'pane',
+      'LibTmux.Snapshot#v:lookupPaneOccurrence': 'pane',
+      'LibTmux.Recovery#t:RelocationRecovery': 'server', 'LibTmux.Recovery#v:relocationReceipt': 'server',
       'LibTmux.Snapshot#t:Client': 'client',
     })
     expect(nav.buckets.slice(0, 4).map((bucket) => bucket.target?.id)).toEqual([
@@ -170,7 +173,9 @@ describe('Haskell reference navigation', () => {
         'unlinkWindow', 'unlinkWindowWith', 'selectWindowLink', 'selectWindowLinkWith', 'resizeWindow', 'resizeWindowWith'],
       pane: ['PaneInput', 'PaneText', 'splitPane', 'splitPaneWith', 'sendKeys', 'sendKeysWith',
         'killPane', 'killPaneWith', 'capturePane', 'paneText', 'selectExactPane', 'selectExactPaneWith',
-        'PaneWaitOptions', 'PaneWaitResult', 'PaneMatch', 'defaultPaneWait', 'waitForText', 'resizePane', 'resizePaneWith'],
+        'PaneWaitOptions', 'PaneWaitResult', 'PaneMatch', 'defaultPaneWait', 'waitForText', 'resizePane', 'resizePaneWith',
+        'PaneState', 'PaneStateWaitOptions', 'PaneStateWaitResult', 'defaultPaneStateWait', 'waitForPaneState',
+        'movePane', 'movePaneWith', 'joinPane', 'joinPaneWith', 'breakPane', 'breakPaneWith'],
       layout: ['NamedLayout', 'selectLayout', 'selectLayoutWith'],
       environment: ['getEnvironment', 'setEnvironment', 'setEnvironmentWith', 'markEnvironmentRemoved',
         'markEnvironmentRemovedWith', 'unsetEnvironment', 'unsetEnvironmentWith'],
