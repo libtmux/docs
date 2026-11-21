@@ -9,6 +9,8 @@ import { RECIPES as OCAML, ocamlHelper, withoutMarks as withoutOcamlMarks } from
 import { RECIPES as HASKELL, withoutMarks as withoutHaskellMarks } from '../../scripts/lib/core-recipes/haskell.mjs'
 import { RECIPES as CLOJURE, clojureHelper, withoutMarks as withoutClojureMarks } from '../../scripts/lib/core-recipes/clojure.mjs'
 import { RECIPES as RAKU, withoutMarks as withoutRakuMarks } from '../../scripts/lib/core-recipes/raku.mjs'
+import { describeInvocation } from '../../scripts/lib/core-trace.mjs'
+import { hostLeaks, sanitize } from '../../scripts/lib/mcp-transcript-checks.mjs'
 import * as corePlayer from '../src/lib/core-player'
 import { playableCapability, tmuxChanges, viewSteps } from '../src/lib/core-player'
 import { recordingProblems, sha256, type CoreRecording } from '../src/lib/core-recording'
@@ -33,7 +35,7 @@ function expectPlayable(port: NewPort) {
   const entry = home[port]
   const stored = recording(port)
   expect(recordingProblems(stored, { programs: { 'typed-graph': shown(port) } })).toEqual([])
-  expect(stored.revision).toBe(entry.sourceRevision)
+  expect(capabilityOf(port).revision ?? stored.revision).toBe(entry.sourceRevision)
   expect(stored.repo).toBe(entry.sourceRepository)
   expect(capabilityOf(port).program.sha256).toBe(sha256(shown(port)))
   expect(capabilityOf(port).printed.join('\n') + '\n').toBe(entry.expectedOutput)
@@ -151,20 +153,22 @@ describe('the Common Lisp recording of the landing page program', () => {
   })
 })
 
-describe('the player of a program that connects to a server its setup started', () => {
-  it('says the server is running before the first call, and plans every call in every view', async () => {
+describe('the player with an already-running tmux server', () => {
+  it('says the server is running before the first call and plans every view', async () => {
     const played = (await playableCapability('haskell', 'typed-graph', shown('haskell')))!
+    const created = played.capability.steps.find((step) => step.id === 'create-session')!
+    const capability = { ...played.capability, tmuxBefore: created.tmux }
     const template = await loadAstroTemplate('components/core/CorePlayer.astro', {
       real: ['components/HomeExample.astro', 'components/replay/TmuxScreen.astro', 'components/replay/ReplayControls.astro'],
       modules: { 'astro-expressive-code/components': { Code } },
     })
     const window = new Window({ url: 'https://libtmux.org/haskell/latest/' })
-    window.document.body.innerHTML = await renderAstroTemplate(template, { props: { port: 'haskell', language: 'Haskell', example: QUICKSTARTS.haskell!.complete!, recording: played.recording, capability: played.capability } })
+    window.document.body.innerHTML = await renderAstroTemplate(template, { props: { port: 'haskell', language: 'Haskell', example: QUICKSTARTS.haskell!.complete!, recording: played.recording, capability } })
     const document = window.document as unknown as Document
     expect(document.querySelector('[data-frame="0"] .mcp-frame__note')!.textContent).toBe('tmux before the first call: the server the setup commands started is running.')
     const plan = JSON.parse(document.querySelector('[data-core-plan]')!.getAttribute('data-core-plan')!) as Record<string, unknown[]>
     expect(Object.keys(plan)).toEqual([...HOME_VIEWS])
-    for (const view of HOME_VIEWS) expect(plan[view], view).toHaveLength(played.capability.steps.length)
+    for (const view of HOME_VIEWS) expect(plan[view], view).toHaveLength(capability.steps.length)
   })
 })
 
@@ -514,27 +518,57 @@ describe('Haskell recipe', () => {
   const code = home.haskell.files.find((file) => file.name === 'Main.hs')!.code
   const marked = recipe.instrument(code, recipe.steps)
 
+  it('rewrites the known sandbox when native record fields escape g', () => {
+    const sandbox = '/tmp/proof-Pguoos'
+    const nonce = `g${'a'.repeat(64)}`
+    const stdout = `${nonce}:F:pane.currentPath:/tmp/proof-P\\147uoos/marked:${nonce}\n`
+    const paths: [string, string][] = [[sandbox, '/tmp'], ...(recipe.sanitizePaths?.(sandbox) ?? [])]
+    const clean = sanitize(recipe.reply(stdout), { paths })
+    expect(clean).toBe('g0000:F:pane.currentPath:/tmp/marked:g0000\n')
+    expect(hostLeaks({ stdout: clean }, { sandbox })).toEqual([])
+    expect(sanitize(recipe.reply('unrelated \\147'), { paths })).toBe('unrelated \\147')
+  })
+
+  it('recognises the hook-free version and daemon-identity probes without treating ordinary shell commands as probes', () => {
+    const nonce = 'a'.repeat(64)
+    const command = ['run-shell', '-C', `${nonce}:#{version}:${nonce}`]
+    const describe = (argv: string[]) => describeInvocation({ argv, exit: 1, stdout: '', stderr: '' }, recipe)
+    for (const format of ['version', 'pid']) {
+      const probe = describe(['run-shell', '-C', `${nonce}:#{${format}}:${nonce}`])
+      expect(probe.role).toBe('probe')
+      expect(probe.tmux).not.toContain(nonce)
+    }
+    expect(describe(['display-message', '-p', '-F', `${nonce}:#{pid}:${nonce}`]).role).toBe('probe')
+    expect(describe(['-V']).role).toBe('probe')
+    for (const ordinary of [
+      ['run-shell', 'echo hello'],
+      ['run-shell', '-C', `${nonce}:#{version}:${'b'.repeat(64)}`],
+      [...command, ';', 'display-message', 'hello'],
+    ]) expect(describe(ordinary).role).toBe('command')
+  })
+
   it('adds only marker lines to the displayed program: the helper import after its imports, and a mark after each call', () => {
     expect(withoutHaskellMarks(marked)).toBe(code)
     const lines = marked.split('\n')
     const added = lines.filter((line: string) => line.endsWith('docs:mark'))
     expect(added.filter((line: string) => line.trim().startsWith('Mark.mark ')).map((line: string) => /Mark\.mark "([^"]+)"/.exec(line)?.[1])).toEqual(recipe.steps.map((step: { id: string }) => step.id))
-    expect(lines[lines.indexOf('import System.OsPath.Posix qualified as Path') + 1]).toBe('import DocsMark qualified as Mark -- docs:mark')
+    expect(lines[lines.indexOf('import LibTmux.Creation qualified as Creation') + 1]).toBe('import DocsMark qualified as Mark -- docs:mark')
   })
 
   it('gives a mark the indent of its statement when the call is on a later line of it', () => {
     const lines = marked.split('\n')
-    const mark = lines.findIndex((line: string) => line.includes('Mark.mark "session"'))
-    expect(lines[mark - 1]).toBe('        (Q.exactlyOne (Tmux.sessions before))')
-    expect(lines[mark]).toMatch(/^ {6}Mark\.mark /)
-    const fresh = lines.findIndex((line: string) => line.includes('Mark.mark "changed-session"'))
-    expect(lines[fresh]).toMatch(/^ {8}Mark\.mark /)
+    const lookup = lines.findIndex((line: string) => line.includes('Mark.mark "previous-session"'))
+    expect(lines[lookup - 1]).toBe('    (Tmux.lookupSession before created.session)')
+    expect(lines[lookup]).toMatch(/^ {2}Mark\.mark /)
+    const cleaned = lines.findIndex((line: string) => line.includes('Mark.mark "retire-server"'))
+    expect(lines[cleaned - 1]).toBe('      pure (created, before, after)')
+    expect(lines[cleaned]).toMatch(/^ {2}Mark\.mark /)
   })
 
   it('finds every call on exactly one line of the displayed program, `--` and `{-` read as Haskell reads them', () => {
     for (const view of views('haskell')) for (const step of recipe.steps) expect(statementLines(view, step.anchor, syntaxOf('haskell'), occurrenceOf(step)), step.id).toBeDefined()
     expect(() => recipe.instrument(code, [{ id: 'x', anchor: 'Tmux.nope', value: 'Mark.unit' }])).toThrow(/not on exactly one line/)
-    expect(() => recipe.instrument(code.replace('import System.OsPath.Posix qualified as Path', ''), recipe.steps)).toThrow(/OsPath/)
+    expect(() => recipe.instrument(code.replace(/^import .*\n/gm, ''), recipe.steps)).toThrow(/has no imports/)
   })
 
   it('compiles a helper beside the marked program only, which stops the program when a mark fails', () => {
@@ -557,34 +591,43 @@ describe('the Haskell recording of the landing page program', () => {
     expect(capability.steps.map((each) => [each.id, each.label, each.anchor, each.type])).toEqual(HASKELL['typed-graph'].steps.map((each: { id: string; label: string; anchor: string; type: string }) => [each.id, each.label, each.anchor, each.type]))
   })
 
-  it('starts from the server the page\'s setup commands start, whose window is linked twice, and no step is credited with either', () => {
-    expect(capability.tmuxBefore.sessions.map((session) => session.name)).toEqual(['demo'])
-    expect(capability.tmuxBefore.windows.map((window) => `${window.index}:${window.id}`)).toEqual(['0:@0', '4:@0'])
-    expect(capability.steps.flatMap((each) => each.commands).some((command) => /^(new-session|link-window)/.test(command.tmux))).toBe(false)
+  it('starts from an empty state, creates a session and retires the daemon before detached lookups', () => {
+    const empty = { sessions: [], windows: [], panes: [] }
+    expect(capability.tmuxBefore).toEqual(empty)
+    expect(step('create-session').tmux.sessions.map((session) => session.name)).toEqual(['demo'])
+    expect(sent('create-session')).toEqual(['new-session'])
+    expect(step('retire-server')).toMatchObject({ stopsServer: true, commands: [], tmux: empty })
+    expect(step('previous-session').tmux).toEqual(empty)
   })
 
   it('records what each call returned and the commands that changed tmux', () => {
     expect(step('capture-before').returned).toEqual({ sessions: 1, windows: 1, panes: 1 })
-    expect(step('session').returned).toEqual({ id: '$0', name: 'demo' })
-    expect(step('changed-session').returned).toEqual({ id: '$0', name: 'workspace' })
-    expect(step('changed-window').returned).toEqual({ id: '@0', name: 'api #{pid};' })
-    expect(step('changed-pane').returned).toMatchObject({ id: '%0', title: 'editor-ready' })
-    expect(step('new-name').returned).toBe('api #{pid};')
+    expect(step('create-session').returned).toEqual({ session: '$0', window: '@0', pane: '%0' })
+    expect(step('previous-session').returned).toEqual({ name: 'demo' })
+    expect(step('current-session').returned).toEqual({ name: 'workspace' })
+    expect(step('window').returned).toEqual({ name: 'api #{pid};' })
+    expect(step('pane').returned).toEqual({ title: 'editor-ready' })
+    expect(step('window-label').returned).toBe('api #{pid};')
     expect(sent('rename-session')).toEqual(['rename-session'])
     expect(sent('rename-window')).toEqual(['rename-window'])
     expect(sent('set-pane-title'), 'a pane title is set with select-pane -T').toEqual(['select-pane'])
     expect(sent('capture-before'), 'a capture is one display-message').toEqual(['display-message'])
     expect(sent('window'), 'a lookup in a snapshot sends nothing').toEqual([])
-    expect(step('rename-session').tmux.windows.map((window) => window.name), 'both links show the window\'s name').toEqual(['editor', 'editor'])
-    expect(step('rename-window').tmux.windows.map((window) => window.name)).toEqual(['api #{pid};', 'api #{pid};'])
+    expect(step('rename-session').tmux.windows.map((window) => window.name)).toEqual(['editor'])
+    expect(step('rename-window').tmux.windows.map((window) => window.name)).toEqual(['api #{pid};'])
   })
 
   it('shows no token or process id that differs on every run', () => {
-    expect(JSON.stringify(capability)).not.toMatch(/\bg[0-9a-f]{64}\b/)
-    expect(step('capture-before').commands[0]!.stdout).toContain('server.pid:12345:')
+    expect(JSON.stringify(capability.steps)).not.toMatch(/\bg?[0-9a-f]{64}\b/)
+    expect(step('create-session').commands.filter((command) => command.role === 'probe').map((command) => command.tmux)).toEqual([
+      'display-message -p -F 0000:#{pid}:0000',
+      'run-shell -C 0000:#{version}:0000',
+    ])
+    expect(step('create-session').commands.find((command) => command.role === 'command')!.stdout).toContain('0000:12345 $0 @0 %0 0:0000')
+    expect(step('capture-before').commands.find((command) => command.role === 'command')!.stdout).toContain('server.pid:12345:')
   })
 
-  it('draws the window linked twice as two labels, each with a view of its own, the second one current', async () => {
+  it('renders the created window during the scope and clears it on retirement', async () => {
     const played = (await playableCapability('haskell', 'typed-graph', shown('haskell')))!
     const template = await loadAstroTemplate('components/core/CorePlayer.astro', {
       real: ['components/HomeExample.astro', 'components/replay/TmuxScreen.astro', 'components/replay/ReplayControls.astro'],
@@ -593,12 +636,12 @@ describe('the Haskell recording of the landing page program', () => {
     const window = new Window({ url: 'https://libtmux.org/haskell/latest/' })
     window.document.body.innerHTML = await renderAstroTemplate(template, { props: { port: 'haskell', language: 'Haskell', example: QUICKSTARTS.haskell!.complete!, recording: played.recording, capability: played.capability } })
     const document = window.document as unknown as Document
-    const frame = document.querySelector('[data-frame="0"]')!
-    expect(frame.querySelector('.mcp-frame__note')!.textContent).toBe('tmux before the first call: the server the setup commands started is running.')
-    expect([...frame.querySelectorAll('.mcp-tmux__window')].map((label) => label.textContent)).toEqual(['0:editor', '4:editor*'])
-    const keys = [...frame.querySelectorAll<HTMLElement>('[data-view]')].map((view) => view.dataset.view)
-    expect(keys, 'each link has a view of its own').toEqual(['$0/@0:0', '$0/@0:4'])
-    expect([...frame.querySelectorAll<HTMLElement>('[data-view]')].filter((view) => !view.hidden).map((view) => view.dataset.view)).toEqual(['$0/@0:4'])
+    const before = document.querySelector('[data-frame="0"]')!
+    const created = document.querySelector('[data-frame="1"]')!
+    const retired = document.querySelector(`[data-frame="${capability.steps.indexOf(step('retire-server')) + 1}"]`)!
+    expect(before.querySelector('.mcp-frame__note')!.textContent).toBe('tmux before the first call: no server is running.')
+    expect([...created.querySelectorAll('.mcp-tmux__window')].map((label) => label.textContent)).toEqual(['0:editor*'])
+    expect(retired.querySelectorAll('.mcp-tmux__window')).toHaveLength(0)
   })
 
   it('plays every call in every view of the program, each on the line its anchor names', () => {

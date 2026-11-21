@@ -4,10 +4,12 @@ import { join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { createMarkdownProcessor } from '@astrojs/markdown-remark'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { stagedPortGuides } from '../../scripts/stage-port-docs.mjs'
 import { danglingReport } from '../src/integrations/dangling-report'
 import { danglingReportPath } from '../src/lib/dangling-report-path'
 import { rehypeApiLinks } from '../src/plugins/rehype-api-links'
 import haskellModel from '../src/data/api/haskell.json'
+import haskellGuides from '../src/data/port-guides/haskell.json'
 
 /**
  * The build's ceiling counts every line of one file, and any process that renders prose through the linker can write to
@@ -154,6 +156,30 @@ describe('the build\'s dangling report', () => {
       ...['cabal.project', 'libtmux-haskell.cabal', 'src/LibTmux/Id.hs'].map((path) =>
         `https://github.com/libtmux/libtmux-haskell/blob/${haskellModel.revision}/${path}`),
     ]) expect(code).toContain(`href="${destination}"`)
+  })
+
+  it('renders the staged Haskell guides without unresolved API names', async () => {
+    const own = join(directory, 'haskell-guides.jsonl')
+    vi.stubEnv('LIBTMUX_DOCS_DANGLING_REPORT', own)
+    vi.stubEnv('LIBTMUX_DOCS_PORT', '')
+    const rendered: string[] = []
+    for (const [file, source] of stagedPortGuides('haskell', haskellGuides)) {
+      const page = await (await processor).render(source.replace(/^---\n[\s\S]*?\n---\n/, ''), {
+        fileURL: new URL(`../src/content/docs/_staged/${file}`, import.meta.url),
+        frontmatter: { port: 'haskell' },
+      })
+      rendered.push(page.code)
+    }
+    expect(names(own)).toEqual([])
+    for (const destination of [
+      'https://hackage-content.haskell.org/package/base-4.22.0.0/docs/Prelude.html#t:Show',
+      'https://hackage-content.haskell.org/package/base-4.22.0.0/docs/Prelude.html#v:Nothing',
+      'https://hackage-content.haskell.org/package/bytestring-0.12.2.0/docs/Data-ByteString.html#t:ByteString',
+      'https://hackage-content.haskell.org/package/base-4.22.0.0/docs/Control-Exception-Context.html#t:ExceptionContext',
+      'https://hackage-content.haskell.org/package/base-4.22.0.0/docs/Data-List-NonEmpty.html',
+    ]) expect(rendered.join('\n')).toContain(`href="${destination}"`)
+    await (await processor).render('Call `LibTmux.Version.missing` and `LibTmux.Server.missingWith`.', { frontmatter: { port: 'haskell' } })
+    expect(names(own)).toEqual(['LibTmux.Version.missing', 'LibTmux.Server.missingWith'])
   })
 
   it('links the names the Perl, Clojure, Erlang and Lisp guides write in their own spellings, and still leaves an OCaml runtime twin plain', async () => {

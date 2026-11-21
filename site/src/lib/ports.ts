@@ -816,16 +816,16 @@ const CORE_PORTS: readonly Port[] = [
     installs: [{
       label: 'Cabal', target: 'cabal.project', lang: 'cabal', filename: 'cabal.project',
       code: 'packages: .\n\nsource-repository-package\n  type: git\n  location: https://github.com/libtmux/libtmux-haskell\n  tag: {revision}',
-      note: 'Save as cabal.project and add libtmux-haskell ^>=0.1.0.0 to your component\'s build-depends. Requires Linux x86_64 with glibc 2.39+ and pidfd support. Choose GHC and Cabal versions that satisfy the package manifest. The core package is available from source; it is not published on Hackage.',
+      note: 'Save as cabal.project and add libtmux-haskell ^>=0.0.1.0 to your component\'s build-depends. Requires Linux x86_64 with glibc 2.39+ and pidfd support. Private daemon scopes also need Linux 6.5 peer pidfds and readable /proc process data. Owned programs require tmux 3.8, Linux 6.9 process-group pidfds and compatible Bash. Choose GHC and Cabal versions that satisfy the package manifest. The core package is available from source; it is not published on Hackage.',
     }],
-    initProject: { lang: 'console', code: 'cabal init --non-interactive --exe --language=GHC2024 --dependency="base >=4.22 && <4.23, libtmux-haskell ^>=0.1.0.0"' },
+    initProject: { lang: 'console', code: 'cabal init --non-interactive --exe --language=GHC2024 --dependency="base >=4.22 && <4.23, libtmux-haskell ^>=0.0.1.0"' },
     installForms: {
       // Hackage does not carry libtmux-haskell, so every form installs from Git.
       release: HASKELL_GIT_INSTALL,
       prerelease: HASKELL_GIT_INSTALL,
       git: HASKELL_GIT_INSTALL,
     },
-    installNote: 'The source provides scoped Server handles, detached snapshots, typed queries, checked renames and pane titles, and validated offline fixtures. Creation, events and workspace tooling remain in development; MCP is excluded.',
+    installNote: 'Start a private daemon or borrow an existing one, capture snapshots, query and change targets, transfer buffers and observe bounded control notifications. The agents guide connects the external libtmux-mcp adapter to the application socket.',
   },
   {
     slug: 'lisp',

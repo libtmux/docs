@@ -1,10 +1,11 @@
 import { readFileSync } from 'node:fs'
 import { expect, it } from 'vitest'
 import clojureModel from '../src/data/api/clojure.json'
-import haskellModel from '../src/data/api/haskell.json'
+import haskellPaths from '../src/data/api/haskell.paths.json'
 import erlangModel from '../src/data/api/erlang.json'
 import lispModel from '../src/data/api/lisp.json'
 import ocamlModel from '../src/data/api/ocaml.json'
+import homeProof from './fixtures/home-examples.json'
 
 const page = (path: string) => readFileSync(new URL(`../src/content/docs/ports/${path}`, import.meta.url), 'utf8')
 
@@ -14,7 +15,6 @@ const INDEXES = [
   { path: 'erlang/examples/index.md', repo: 'libtmux-erlang', revision: erlangModel.revision, programs: 18 },
   { path: 'lisp/examples/index.md', repo: 'libtmux-lisp', revision: lispModel.revision, programs: 7 + 4 },
   { path: 'clojure/examples.md', repo: 'libtmux-java', revision: clojureModel.revision, programs: 13 },
-  { path: 'haskell/examples/index.md', repo: 'libtmux-haskell', revision: haskellModel.revision, programs: 6 },
   { path: 'ocaml/examples/index.md', repo: 'libtmux-ocaml', revision: ocamlModel.revision, programs: 26 },
 ]
 
@@ -22,4 +22,24 @@ it.each(INDEXES)('lists $programs source files of $repo at the model revision', 
   const links = [...page(path).matchAll(new RegExp(`https://github\\.com/libtmux/${repo}/blob/([0-9a-f]{40})/\\S+?\\)`, 'g'))]
   expect(links).toHaveLength(programs)
   for (const [, sha] of links) expect(sha).toBe(revision)
+})
+
+// Guide-only model updates do not change the recorded program's source pin.
+it('links the Haskell task examples at their recorded source revision', () => {
+  const fixture = homeProof.examples.find((example) => example.port === 'haskell')!
+  const links = [...page('haskell/examples/index.md').matchAll(/https:\/\/github\.com\/libtmux\/libtmux-haskell\/blob\/([0-9a-f]{40})\/([^\s)]+)/g)]
+  const paths = links.map(([, , path]) => path!)
+  expect(paths).toEqual(expect.arrayContaining([
+    'examples/typed-values/Main.hs', 'examples/offline-graph/Main.hs',
+    'examples/capture-graph/Main.hs', 'examples/query-graph/Main.hs',
+    'examples/shared-runtime/Main.hs', 'examples/mutate-graph/Main.hs',
+    'examples/create-session/Main.hs', 'examples/managed-program/Main.hs',
+    'examples/configure-session/Main.hs', 'examples/watch-window/Main.hs',
+  ]))
+  expect(new Set(paths).size).toBe(paths.length)
+  for (const [, revision, path] of links) {
+    expect(revision).toBe(fixture.sourceRevision)
+    expect(path).toMatch(/^examples\/[^/]+\/Main\.hs$/)
+    expect(haskellPaths.paths).toContain(path)
+  }
 })

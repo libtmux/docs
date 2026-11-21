@@ -840,13 +840,52 @@ const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
   // module's cleanup and recovery family by the words in each name.
   haskell: {
     server: [
-      ...['CaptureRecovery', 'CleanupRecovery', 'CleanupStatus', 'MutationOptions', 'MutationRecovery', 'Operation',
+      ...['CaptureRecovery', 'CleanupRecovery', 'CleanupStatus', 'CreationRecovery', 'MutationOptions', 'MutationRecovery', 'Operation',
         'Outcome', 'ReadRecovery', 'Stage', 'Status'].map((name) => `LibTmux.Server#t:${name}`),
-      ...['awaitCleanup', 'cleanupFailure', 'cleanupObservation', 'detachCaptureRecovery', 'inspectCaptureRecovery',
+      ...['awaitCleanup', 'cleanupFailure', 'cleanupObservation', 'creationReceipt', 'detachCaptureRecovery', 'inspectCaptureRecovery',
         'inspectCleanup', 'resumeCaptureRecovery', 'resumeCleanup'].map((name) => `LibTmux.Server#v:${name}`),
+      'LibTmux.Program',
+      'LibTmux.Recovery',
+      ...['CleanupRecovery', 'CleanupStatus', 'CaptureRecovery', 'ReadRecovery', 'CreationRecovery', 'MutationRecovery',
+        'Operation', 'Status', 'Stage', 'Outcome'].map((name) => `LibTmux.Recovery#t:${name}`),
+      ...['cleanupRecoveries', 'cleanupFailure', 'cleanupObservation', 'inspectCleanup', 'resumeCleanup', 'awaitCleanup',
+        'detachUnresolved', 'captureRecoveries', 'recoveryOperation', 'recoveryGeneration', 'inspectCaptureRecovery',
+        'resumeCaptureRecovery', 'detachCaptureRecovery', 'creationRecoveries', 'creationOperation', 'creationGeneration',
+        'creationReceipt', 'inspectCreationRecovery', 'resumeCreationRecovery', 'awaitCreationRecovery', 'detachCreationRecovery',
+        'mutationRecoveries', 'mutationOperation', 'mutationGeneration', 'inspectMutationRecovery', 'resumeMutationRecovery',
+        'awaitMutationRecovery', 'detachMutationRecovery', 'operationStatus'].map((name) => `LibTmux.Recovery#v:${name}`),
+      'LibTmux.Creation#t:CreatedEntities',
+      ...['Program', 'ProgramOptions', 'ProgramExit', 'StartFailure', 'StartPhase', 'ProgramScreen', 'ProgramResult',
+        'ProgramRecovery', 'ProgramCleanupStatus'].map((name) => `LibTmux.Program#t:${name}`),
+      ...['programOptions', 'sendProgramInput', 'readProgramScreen', 'waitProgram', 'waitProgramFor', 'terminateProgram',
+        'programRecoveries', 'programCleanupFailure', 'inspectProgramCleanup', 'resumeProgramCleanup']
+        .map((name) => `LibTmux.Program#v:${name}`),
       // `serverGeneration` reports it, and a reference is valid for one.
       'LibTmux.Snapshot#t:Generation',
     ],
+    session: [
+      'LibTmux.Creation',
+      ...['InitialProcess', 'SessionOptions'].map((name) => `LibTmux.Creation#t:${name}`),
+      ...['createSession', 'createSessionWith', 'killSession', 'killSessionWith'].map((name) => `LibTmux.Server#v:${name}`),
+    ],
+    window: [
+      ...['WindowSlot', 'WindowPlacement', 'WindowCollision', 'WindowOptions', 'CreatedWindow']
+        .map((name) => `LibTmux.Creation#t:${name}`),
+      ...['createWindow', 'createWindowWith', 'killWindow', 'killWindowWith', 'linkWindow', 'linkWindowWith',
+        'unlinkWindow', 'unlinkWindowWith', 'selectWindowLink', 'selectWindowLinkWith', 'resizeWindow', 'resizeWindowWith']
+        .map((name) => `LibTmux.Server#v:${name}`),
+    ],
+    pane: ['LibTmux.Pane', 'LibTmux.Server#t:PaneInput', 'LibTmux.Server#t:PaneText',
+      ...['SplitDirection', 'SplitSize', 'SplitOptions', 'CreatedPane'].map((name) => `LibTmux.Creation#t:${name}`),
+      'LibTmux.Creation#v:defaultSplitOptions',
+      ...['PaneCaptureOptions', 'PaneRows', 'PaneRendering'].map((name) => `LibTmux.Pane#t:${name}`),
+      'LibTmux.Pane#v:defaultPaneCapture',
+      ...['PaneWaitOptions', 'PaneWaitResult', 'PaneMatch'].map((name) => `LibTmux.Server#t:${name}`),
+      ...['splitPane', 'splitPaneWith', 'sendKeys', 'sendKeysWith', 'killPane', 'killPaneWith', 'capturePane', 'paneText',
+        'selectExactPane', 'selectExactPaneWith', 'defaultPaneWait', 'waitForText', 'resizePane', 'resizePaneWith']
+        .map((name) => `LibTmux.Server#v:${name}`)],
+    options: ['LibTmux.Options', ...['setOptionWith', 'unsetOptionWith'].map((name) => `LibTmux.Server#v:${name}`)],
+    errors: ['ConfigurationProblem', 'ObservationProblem', 'TimeoutKind', 'ArgumentError'].map((name) => `LibTmux.Server#t:${name}`),
     snapshots: ['LibTmux.Snapshot#t:TmuxText'],
   },
   // Elixir's modules are named for what they do rather than for a tmux object.
@@ -921,7 +960,8 @@ const LANGUAGE_ORDER: Record<string, Record<string, string[]>> = {
   // Server opens on its module, whose page holds the handle's operations.
   haskell: {
     server: ['LibTmux.Server', 'LibTmux.Server#t:Server', 'LibTmux.Server#t:ServerConfig', 'LibTmux.Server#v:serverConfig',
-      'LibTmux.Server#v:withServer', 'LibTmux.Server#v:capture', 'LibTmux.Server#v:serverGeneration'],
+      'LibTmux.Server#v:withServer', 'LibTmux.Server#t:OwnedServerConfig', 'LibTmux.Server#v:defaultOwnedServerConfig',
+      'LibTmux.Server#v:withOwnedServer', 'LibTmux.Server#v:killServer', 'LibTmux.Server#v:capture', 'LibTmux.Server#v:serverGeneration'],
     session: ['LibTmux.Snapshot#t:Session', 'LibTmux.Snapshot#t:SessionRef', 'LibTmux.Id#t:SessionId'],
     window: ['LibTmux.Snapshot#t:Window', 'LibTmux.Snapshot#t:WindowLink', 'LibTmux.Snapshot#t:WindowRef', 'LibTmux.Id#t:WindowId'],
     pane: ['LibTmux.Snapshot#t:Pane', 'LibTmux.Snapshot#t:PaneOccurrence', 'LibTmux.Snapshot#t:PaneRef', 'LibTmux.Id#t:PaneId'],
@@ -965,7 +1005,9 @@ const LANGUAGE_SHORTCUTS: Record<string, Record<string, string[]>> = {
 /** Exact editorial placements exclude rules in unrelated bucket trees. */
 function languageBucket(bucket: Bucket, port: string, root = bucket.id): Bucket {
   const placements = LANGUAGE_PLACEMENTS[port] ?? {}
-  const ids = bucket.id === root ? placements[root] : undefined
+  const ids = bucket.id === root ? placements[root]
+    : port === 'haskell' && bucket.id === 'options-functions'
+      ? placements.options?.filter((id) => id.startsWith('LibTmux.Server#v:')) : undefined
   const elsewhere = Object.entries(placements)
     .flatMap(([id, symbols]) => id === root ? [] : symbols)
   const match: Match = elsewhere.length

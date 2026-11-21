@@ -61,7 +61,7 @@ export interface CoreStep {
 export interface CoreCapability {
   /** The program that was run, and the hash of the bytes the page displays for it. */
   program: { file: string; sha256: string }
-  /** The revision of the library this program was built against, when it is not the recording's. */
+  /** The program's source revision when it differs from the recording's default. */
   revision?: string
   /** `hand-written` when a person mapped the calls of the program to anchors and returned values. */
   stepMap: 'hand-written' | 'generated'
@@ -76,7 +76,7 @@ export interface CoreRecording {
   generated: string
   port: string
   repo: string
-  /** The revision of the library the program was built against. */
+  /** Default source revision for programs whose capabilities do not override it. */
   revision: string
   sandbox: { tmux: string; go?: string; shell: string; rewritten: Record<string, string> }
   capabilities: Record<string, CoreCapability>

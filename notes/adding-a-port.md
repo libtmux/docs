@@ -165,7 +165,7 @@ In the new worktree, on `docs-site`:
 
 Haskell's [Haddock exporter](../packages/api-model/scripts/export-haskell.py)
 builds a selected committed source archive. Its
-[adapter](../packages/api-model/src/languages/haskell.ts) accepts four qualified
+[adapter](../packages/api-model/src/languages/haskell.ts) accepts eleven qualified
 profiles with the port's pinned GHC/Haddock toolchain:
 
 - Scalar v1 covers `LibTmux.Id`, `LibTmux.Value` and `LibTmux.Version`.
@@ -178,6 +178,28 @@ profiles with the port's pinned GHC/Haddock toolchain:
 - Mutation v4 retains the query modules and adds checked rename, pane-title and
   recovery declarations. Its [native fixture](../packages/api-model/test/fixtures/haskell-mutations-native/README.md)
   qualifies the private defining source of the opaque recovery receipt.
+- Creation v5 adds `LibTmux.Creation`, returned target references and correlated
+  recovery. Its [native fixture](../packages/api-model/test/fixtures/haskell-creations-native/README.md)
+  checks constructor-hidden record fields against GHC's source annotations.
+  Their authored field types must match the compiled record owner and type.
+- Program v6 adds `LibTmux.Program` and `LibTmux.Capabilities`. Its
+  [native fixture](../packages/api-model/test/fixtures/haskell-programs-native/README.md)
+  checks partial umbrella reexports against compiled owners and signatures.
+- Pane text v7 adds `LibTmux.Pane` and native creation receipt synonyms. Its
+  [native fixture](../packages/api-model/test/fixtures/haskell-pane-native/README.md)
+  preserves aliases to the constructor-hidden `CreatedEntities` record.
+- Environment v8 adds `LibTmux.Environment`, pane text waits and window-link
+  operations. Its [native fixture](../packages/api-model/test/fixtures/haskell-environment-native/README.md)
+  retains the private defining source of public named layouts.
+- Options v9 adds `LibTmux.Options`, catalogue definitions and scoped settings.
+  [Native fixture](../packages/api-model/test/fixtures/haskell-options-native/README.md)
+- Control v10 adds `LibTmux.Control` and `LibTmux.Recovery`. The fixture checks
+  STM event reads, stream outcomes and canonical recovery exports.
+  [Native fixture](../packages/api-model/test/fixtures/haskell-control-native/README.md)
+- Fields v11 consolidates query fields in `LibTmux.Query.Fields`. The current
+  fixture also covers private startup and explicit daemon retirement.
+  [Consolidated fields](../packages/api-model/test/fixtures/haskell-fields-native/README.md) ·
+  [Private daemon fixture](../packages/api-model/test/fixtures/haskell-owned-native/README.md)
 
 All profiles retain native signatures, opaque data heads, constructors, record labels,
 instance heads and authored export groups. Observation field identities include
@@ -185,6 +207,10 @@ their record owner; displayed Haskell names and field types remain native.
 Source links use the actual defining files, including private files behind a
 public reexport, without creating private reference pages. Native source text
 and line markers are checked against the committed source.
+Use unprepared Haddock source pages for export. Prepared documentation can
+redirect ambiguous identifiers through a generated index. Hosted replays record
+the immutable input downloads, source revision and committed producer; they
+do not claim local compilation.
 
 The stored model retains export groups and ordered module-reexport relations,
 so sidebar regeneration needs no checkout or native toolchain. The sidebar uses
@@ -260,13 +286,16 @@ full-model digest. The digest also reads key order, so write `haskell.json`
 with `gen-api-model.mjs` from the exporter's artifact; a hand-patched copy
 with the same data digests differently.
 
-Capture selects `ReadSnapshot`, whose fixed queue reaches the native spawner.
-It sends `display-message` and `if-shell`; `list-clients` runs when sessions
-exist. Graph enumeration uses tmux format loops. The older private scalar and
-graph readers are not public capture paths. Recovery inspects or retires
-existing owners without redispatch. Caller-supplied `IO` in `withServer` and
-`tryTmux` is classified separately, and pure snapshot navigation has no send.
-The scalar-only API retains the ordinary reader and has no command entries.
+Capture selects `ReadSnapshot`, whose queue sends `display-message` and
+`if-shell`; `list-clients` runs when sessions exist. Graph enumeration uses
+tmux format loops. Server adoption probes the version with a hook-free
+`run-shell -C` read. Session creation sends
+`new-session`; renames and pane titles use `rename-session`, `rename-window`
+and `select-pane`. Recovery inspects or retires existing owners without
+redispatch. `withRuntime` and `tryTmux` run caller-supplied `IO`; pure snapshot
+navigation sends no command. The older private scalar and graph readers are not
+public capture paths. The scalar-only API retains the ordinary reader and has
+no command entries.
 
 ### Erlang compiler artifact
 

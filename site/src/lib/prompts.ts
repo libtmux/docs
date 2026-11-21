@@ -467,8 +467,9 @@ export function portParts(args: {
 
   const setup = [
     ...(observationApi ? [
-      'The Haskell package captures detached tmux graphs, queries their entities,',
-      'renames sessions and windows, and sets pane titles. Documentation',
+      'Haskell creates and queries tmux targets, transfers buffers, configures scoped',
+      'settings and observes bounded control events. It runs owned',
+      'terminal applications on a borrowed daemon. Documentation',
     ] : [
       'libtmux drives a real tmux server from code. It gives you objects for the',
       'server, its sessions, windows and panes. Documentation for every language',
@@ -550,7 +551,7 @@ export function portParts(args: {
     setup, notes, unavailable,
     ...(observationApi ? {
       opening: 'Set up libtmux in this repository and verify its capture, query and mutation API.',
-      unavailableTask: 'Haskell provides capture, detached graph traversal, typed queries, renameSession, renameWindow and setPaneTitle. Creation, session selection, input, event streaming and workspace APIs are not public. Report this boundary and stop; do not invent operations or use internal modules.',
+      unavailableTask: 'Haskell provides createSession on an existing daemon, window and pane creation, input, pane capture and bounded text waits, window links, environment entries and typed queries. Program output is bounded rendered text. Server startup, byte output streaming, event streaming and workspace APIs are not public. Report this boundary and stop; do not invent operations or use internal modules.',
     } : {}),
   }
 }

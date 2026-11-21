@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { documentationAreas, documentationCards, documentationNavigation, sourceGuideFor, sourceGuidesFor, stagedSectionsFor } from '../src/lib/port-documentation'
 
 describe('port documentation domains', () => {
-  it('maps the public Haskell observation, query and fixture guides to their reader paths', () => {
+  it('maps the public Haskell capture, query, creation and fixture guides to their reader paths', () => {
     expect(documentationAreas('haskell').map(({ id, kind }) => ({ id, kind }))).toEqual([{ id: 'core', kind: 'core' }])
     expect(stagedSectionsFor('haskell')).toEqual(['guides'])
     expect(sourceGuidesFor('haskell').map(({ sourcePath, route }) => [sourcePath, route])).toEqual([
@@ -10,7 +10,15 @@ describe('port documentation domains', () => {
       ['docs/installation.md', 'guides/installation'],
       ['docs/capture.md', 'guides/capture'],
       ['docs/query.md', 'guides/query'],
+      ['docs/creation.md', 'guides/creation'],
+      ['docs/programs.md', 'guides/programs'],
+      ['docs/control.md', 'guides/control'],
+      ['docs/agents.md', 'guides/agents'],
       ['docs/mutations.md', 'guides/mutations'],
+      ['docs/buffers.md', 'guides/buffers'],
+      ['docs/resizing.md', 'guides/resizing'],
+      ['docs/options.md', 'guides/options'],
+      ['docs/capabilities.md', 'guides/capabilities'],
       ['docs/shared-runtime.md', 'guides/shared-runtime'],
       ['docs/fixtures.md', 'guides/offline-fixtures'],
       ['docs/values.md', 'guides/typed-values'],

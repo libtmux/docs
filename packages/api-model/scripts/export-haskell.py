@@ -54,6 +54,55 @@ QUERY_ORIGINS = QUERY_MODULES + [
     for name in ["Capture", "Field", "Graph", "Query", "Runtime", "Scheduler", "Scope", "TmuxText"]
 ]
 MUTATION_ORIGINS = [*QUERY_ORIGINS, "LibTmux.Internal.Mutation"]
+CREATION_MODULES = sorted([*QUERY_MODULES, "LibTmux.Creation"])
+CREATION_ORIGINS = [
+    *CREATION_MODULES,
+    *(module for module in MUTATION_ORIGINS if module not in QUERY_MODULES),
+    "LibTmux.Internal.Creation",
+]
+PROGRAM_MODULES = sorted([*CREATION_MODULES, "LibTmux.Capabilities", "LibTmux.Program"])
+PROGRAM_ORIGINS = [
+    *PROGRAM_MODULES,
+    *(module for module in CREATION_ORIGINS if module not in CREATION_MODULES),
+    "LibTmux.Internal.Program",
+]
+PANE_MODULES = sorted([*PROGRAM_MODULES, "LibTmux.Pane"])
+PANE_ORIGINS = [
+    *PANE_MODULES,
+    *(module for module in PROGRAM_ORIGINS if module not in PROGRAM_MODULES),
+]
+ENVIRONMENT_MODULES = sorted([*PANE_MODULES, "LibTmux.Environment"])
+ENVIRONMENT_ORIGINS = [
+    *ENVIRONMENT_MODULES,
+    *(module for module in PANE_ORIGINS if module not in PANE_MODULES),
+    "LibTmux.Internal.Command",
+]
+OPTIONS_MODULES = sorted([*ENVIRONMENT_MODULES, "LibTmux.Options"])
+OPTIONS_ORIGINS = [
+    *OPTIONS_MODULES,
+    *(module for module in ENVIRONMENT_ORIGINS if module not in ENVIRONMENT_MODULES),
+    "LibTmux.Internal.OptionTable",
+]
+
+
+CONTROL_MODULES = sorted([*OPTIONS_MODULES, "LibTmux.Control", "LibTmux.Recovery"])
+CONTROL_ORIGINS = [
+    *CONTROL_MODULES,
+    *(module for module in OPTIONS_ORIGINS if module not in OPTIONS_MODULES),
+    "LibTmux.Internal.Control",
+]
+
+
+FIELDS_MODULES = sorted(
+    [
+        *(module for module in CONTROL_MODULES if not module.startswith("LibTmux.Query.")),
+        "LibTmux.Query.Fields",
+    ]
+)
+FIELDS_ORIGINS = [
+    *FIELDS_MODULES,
+    *(module for module in CONTROL_ORIGINS if module not in CONTROL_MODULES),
+]
 
 
 def _source_file(module):
@@ -154,7 +203,86 @@ def _native_id(module, node, namespace=None):
     return f"{module}#{anchor}"
 
 
-def extract_modules(pages, installed, exposed, locations, revision):
+def _opaque_fields(block, owner, source_pages, source_documents, locations, qualified_definitions):
+    """Bind authored field anchors to GHC's record-owner/type annotations."""
+    docs = [node for node in block.elements() if node.has("doc")]
+    terms = [node for doc in docs for node in doc.walk() if node.tag == "dt"]
+    if not terms:
+        return []
+    href = _one(
+        [node.attrs["href"] for node in block.elements()[0].walk() if node.has("link")],
+        "opaque record source link",
+    )
+    match = re.fullmatch(r"src/([A-Z][\w.]*)\.html#[^#]+", href)
+    if match is None or match[1] not in source_pages:
+        msg = "Missing opaque field source page"
+        raise ValueError(msg)
+    origin = match[1]
+    if origin not in source_documents:
+        source_documents[origin] = _Document(source_pages[origin]).root
+
+    def clone(node, parent):
+        if isinstance(node, str):
+            return node
+        result = _Node(node.tag, node.attrs.items(), parent)
+        result.children = [clone(child, result) for child in node.children]
+        return result
+
+    fields = []
+    for term in terms:
+        elements = term.elements()
+        if (
+            len(elements) != 3
+            or elements[0].tag != "a"
+            or elements[1].tag != "code"
+            or not re.fullmatch(r"v:[A-Za-z_][\w']*", elements[0].attrs.get("id", ""))
+        ):
+            msg = "Unqualified opaque field documentation"
+            raise ValueError(msg)
+        name = elements[0].attrs["id"][2:]
+        if elements[0].text() or elements[1].text() != name:
+            msg = "Opaque field anchor and label disagree"
+            raise ValueError(msg)
+        anchors = [node for node in source_documents[origin].walk() if node.attrs.get("id") == name]
+        lines = locations[origin].get(name, [])
+        if len(anchors) != len(lines):
+            msg = "Opaque field source anchors disagree"
+            raise ValueError(msg)
+        annotations = [
+            (_compact(annotation.text()), line)
+            for anchor, line in zip(anchors, lines, strict=True)
+            for annotation in anchor.walk()
+            if annotation.has("annottext")
+            and _compact(annotation.text()).startswith(owner + " -> ")
+        ]
+        annotation, line = _one(annotations, "opaque field annotation")
+        value = annotation.removeprefix(owner + " -> ")
+        if _compact(term.text()) != f"{name} :: {value}":
+            msg = "Opaque field documentation differs from its native type annotation"
+            raise ValueError(msg)
+        index = term.parent.elements().index(term)
+        siblings = term.parent.elements()
+        if index + 1 >= len(siblings) or siblings[index + 1].tag != "dd":
+            msg = "Opaque field has no native documentation body"
+            raise ValueError(msg)
+        row = _Node("div")
+        header = _Node("dfn", [("class", "src")], row)
+        binder = _Node("a", [("class", "def"), ("id", "v:" + name)], header)
+        binder.children = [name]
+        header.children = [binder] + [
+            clone(child, header) for child in term.children[term.children.index(elements[1]) + 1 :]
+        ]
+        source = _Node("a", [("class", "link"), ("href", f"src/{origin}.html#line-{line}")], header)
+        header.children.append(source)
+        doc = _Node("div", [("class", "doc")], row)
+        doc.children = [clone(child, doc) for child in siblings[index + 1].children]
+        row.children = [header, doc]
+        fields.append((name, header, row))
+        qualified_definitions.update(map(id, [term.parent, term, siblings[index + 1]]))
+    return fields
+
+
+def extract_modules(pages, installed, exposed, locations, revision, source_pages=None):
     """Read public declarations; never infer an interface from implementation text."""
     interfaces = {item["module"].rsplit("$", 1)[-1]: item for item in installed["inst_ifaces"]}
     if len(set(exposed)) != len(exposed) or set(pages) != set(exposed):
@@ -165,15 +293,59 @@ def extract_modules(pages, installed, exposed, locations, revision):
             msg = f"Configured public module is absent or hidden: {module}"
             raise ValueError(msg)
     observations = "LibTmux" in exposed
-    if observations and exposed not in [OBSERVATION_MODULES, QUERY_MODULES]:
+    fields = exposed == FIELDS_MODULES
+    controls = fields or exposed == CONTROL_MODULES
+    options = controls or exposed == OPTIONS_MODULES
+    environments = options or exposed == ENVIRONMENT_MODULES
+    pane_text = environments or exposed == PANE_MODULES
+    programs = pane_text or exposed == PROGRAM_MODULES
+    creations = programs or exposed == CREATION_MODULES
+    rich = exposed in [
+        QUERY_MODULES,
+        CREATION_MODULES,
+        PROGRAM_MODULES,
+        PANE_MODULES,
+        ENVIRONMENT_MODULES,
+        OPTIONS_MODULES,
+        CONTROL_MODULES,
+        FIELDS_MODULES,
+    ]
+    if observations and exposed not in [
+        OBSERVATION_MODULES,
+        QUERY_MODULES,
+        CREATION_MODULES,
+        PROGRAM_MODULES,
+        PANE_MODULES,
+        ENVIRONMENT_MODULES,
+        OPTIONS_MODULES,
+        CONTROL_MODULES,
+        FIELDS_MODULES,
+    ]:
         msg = "Unqualified observation module profile"
         raise ValueError(msg)
     mutations = "LibTmux.Internal.Mutation" in interfaces
-    if mutations and exposed != QUERY_MODULES:
+    if creations and not mutations:
+        msg = "Unqualified creation recovery interface"
+        raise ValueError(msg)
+    if mutations and not rich:
         msg = "Unqualified mutation module profile"
         raise ValueError(msg)
     source_modules = (
-        MUTATION_ORIGINS
+        FIELDS_ORIGINS
+        if fields
+        else CONTROL_ORIGINS
+        if controls
+        else OPTIONS_ORIGINS
+        if options
+        else ENVIRONMENT_ORIGINS
+        if environments
+        else PANE_ORIGINS
+        if pane_text
+        else PROGRAM_ORIGINS
+        if programs
+        else CREATION_ORIGINS
+        if creations
+        else MUTATION_ORIGINS
         if mutations
         else QUERY_ORIGINS
         if exposed == QUERY_MODULES
@@ -184,12 +356,18 @@ def extract_modules(pages, installed, exposed, locations, revision):
     if set(locations) != set(source_modules):
         msg = "Native source inputs differ from the qualified source profile"
         raise ValueError(msg)
+    if creations and (source_pages is None or set(source_pages) != set(source_modules)):
+        msg = "Native field source pages differ from the qualified source profile"
+        raise ValueError(msg)
 
     documents = {module: _Document(pages[module]).root for module in exposed}
     page_modules = {module.replace(".", "-") + ".html": module for module in exposed}
     entries = []
     groups = {module: [] for module in exposed}
     reexports = {module: [] for module in exposed}
+    export_order = {module: [] for module in exposed}
+    source_documents = {}
+    qualified_definitions = set()
     for module, document in documents.items():
         interface = _one(
             [node for node in document.walk() if node.attrs.get("id") == "interface"],
@@ -199,10 +377,9 @@ def extract_modules(pages, installed, exposed, locations, revision):
         for block in interface.elements():
             if (
                 observations
-                and (module == "LibTmux" or exposed == QUERY_MODULES)
+                and (module == "LibTmux" or rich)
                 and block is interface.elements()[0]
                 and block.tag == "h1"
-                and block.text() == "Documentation"
                 and not block.elements()
             ):
                 if module != "LibTmux":
@@ -248,11 +425,14 @@ def extract_modules(pages, installed, exposed, locations, revision):
                     msg = f"Unsupported or repeated native module reexport: {module}"
                     raise ValueError(msg)
                 reexports[module].append({"module": target, "href": links[0].attrs["href"]})
+                export_order[module].append(target)
                 continue
             identity = _native_id(module, header)
             if identity.split("#", 1)[1].startswith("t:"):
-                if not re.match(
-                    r"^(?:data|newtype)\s+(?!(?:family|instance)\b)", _compact(header.text())
+                declaration = _compact(header.text())
+                synonym = pane_text and re.fullmatch(r"type [A-Z][\w']* = [A-Z][\w']*", declaration)
+                if not synonym and not re.match(
+                    r"^(?:data|newtype)\s+(?!(?:family|instance)\b)", declaration
                 ):
                     msg = f"Unsupported native type shape: {identity}"
                     raise ValueError(msg)
@@ -263,6 +443,7 @@ def extract_modules(pages, installed, exposed, locations, revision):
                     raise ValueError(msg)
                 kind = "function"
             entries.append((module, identity, kind, module, header, block))
+            export_order[module].append(identity)
             if group:
                 group["members"].append(identity)
             for constructors in [node for node in block.elements() if node.has("constructors")]:
@@ -283,6 +464,23 @@ def extract_modules(pages, installed, exposed, locations, revision):
                         else native_id
                     )
                     entries.append((module, field_id, "property", identity, field, field.parent))
+            # Haddock indexes exported labels but omits their declarations when
+            # the record constructor is hidden. Check the source annotations.
+            if (
+                creations
+                and kind == "typealias"
+                and not any(node.has("constructors") for node in block.elements())
+            ):
+                for name, field, row in _opaque_fields(
+                    block,
+                    _definition(header).text(),
+                    source_pages,
+                    source_documents,
+                    locations,
+                    qualified_definitions,
+                ):
+                    field_id = f"{module}#v:{_definition(header).text()}.{name}"
+                    entries.append((module, field_id, "property", identity, field, row))
 
     identities = [identity for _, identity, *_ in entries]
     if len(identities) != len(set(identities)):
@@ -303,6 +501,61 @@ def extract_modules(pages, installed, exposed, locations, revision):
                 raise ValueError(msg)
             origin = matches[0]
         entry_origins[identity] = origin
+    # Partial Program reexports repeat declarations under their public import modules.
+    # Preserve its selected members while retaining one canonical public row.
+    partial_aliases = {}
+    if programs:
+        for entry in entries:
+            module, identity, kind, parent, header, _ = entry
+            origin = entry_origins[identity]
+            compiled = (
+                f"${installed['package_info']}-inplace${origin}$" + _definition(header).text()
+            )
+            preferred = installed["link_env"].get(compiled)
+            if module != "LibTmux" and not (
+                controls and module == "LibTmux.Recovery" and preferred == "LibTmux.Program"
+            ):
+                continue
+            candidates = [
+                candidate
+                for candidate in entries
+                if candidate[0] == preferred
+                and candidate[2] == kind
+                and entry_origins[candidate[1]] == origin
+                and _definition(candidate[4]).attrs["id"] == _definition(header).attrs["id"]
+                and (candidate[3].split("#t:", 1)[-1] if "#t:" in candidate[3] else None)
+                == (parent.split("#t:", 1)[-1] if "#t:" in parent else None)
+            ]
+            if (
+                preferred != "LibTmux.Program"
+                or len(candidates) != 1
+                or _compact(candidates[0][4].text()) != _compact(header.text())
+            ):
+                msg = f"Unqualified partial module reexport: {module}: {identity}"
+                raise ValueError(msg)
+            partial_aliases[identity] = candidates[0][1]
+        for owner in ["LibTmux", *(["LibTmux.Recovery"] if controls else [])]:
+            members = list(
+                dict.fromkeys(
+                    partial_aliases[identity]
+                    for module, identity, *_ in entries
+                    if module == owner and identity in partial_aliases
+                )
+            )
+            if members:
+                reexports[owner].append(
+                    {
+                        "module": "LibTmux.Program",
+                        "href": "LibTmux-Program.html",
+                        "members": members,
+                    }
+                )
+                if owner == "LibTmux":
+                    order = [
+                        "LibTmux.Program" if item in partial_aliases else item
+                        for item in export_order[owner]
+                    ]
+                    reexports[owner].sort(key=lambda item: order.index(item["module"]))
     for module in exposed:
         observed = Counter(
             (
@@ -326,14 +579,57 @@ def extract_modules(pages, installed, exposed, locations, revision):
         if observations:
             for name in interfaces[module]["visible_exports"]:
                 if installed["link_env"].get(name) != module:
-                    msg = f"Compiled public owner differs: {module}: {name}"
-                    raise ValueError(msg)
+                    if (
+                        programs
+                        and (module == "LibTmux" or (controls and module == "LibTmux.Recovery"))
+                        and installed["link_env"].get(name) == "LibTmux.Program"
+                        and any(
+                            name
+                            == f"${installed['package_info']}-inplace${entry_origins[identity]}$"
+                            + _definition(header).text()
+                            for owner, identity, _, _, header, _ in entries
+                            if owner == module and identity in partial_aliases
+                        )
+                    ):
+                        continue
+                    owners = {
+                        owner
+                        for owner, identity, kind, _, header, _ in entries
+                        if kind == "property"
+                        and name
+                        == (
+                            f"${installed['package_info']}-inplace${entry_origins[identity]}$"
+                            + _definition(header).text()
+                        )
+                    }
+                    # The interface names omit the record owner for shared labels.
+                    if (
+                        not creations
+                        or module not in owners
+                        or installed["link_env"].get(name) not in owners
+                    ):
+                        msg = f"Compiled public owner differs: {module}: {name}"
+                        raise ValueError(msg)
             expanded = Counter(interfaces[module]["visible_exports"])
             for item in reexports[module]:
-                expanded.update(interfaces[item["module"]]["exports"])
+                if "members" not in item:
+                    expanded.update(interfaces[item["module"]]["exports"])
             if expanded != Counter(interfaces[module]["exports"]):
                 msg = f"Native module reexports disagree with compiled exports: {module}"
                 raise ValueError(msg)
+
+    if partial_aliases:
+        entries = [entry for entry in entries if entry[1] not in partial_aliases]
+        for module in exposed:
+            for group in groups[module]:
+                group["members"] = [
+                    identity for identity in group["members"] if identity not in partial_aliases
+                ]
+            groups[module] = [group for group in groups[module] if group["members"]]
+        native_targets = {
+            key: list(dict.fromkeys(partial_aliases.get(identity, identity) for identity in values))
+            for key, values in native_targets.items()
+        }
 
     def link(href, module):
         parsed = urlsplit(href)
@@ -380,6 +676,12 @@ def extract_modules(pages, installed, exposed, locations, revision):
             return "\n" + content + "\n"
         if node.tag == "li":
             return "- " + content.strip() + "\n"
+        if node.tag == "dl" and id(node) in qualified_definitions:
+            return "\n" + content + "\n"
+        if node.tag == "dt" and id(node) in qualified_definitions:
+            return "- " + content.strip()
+        if node.tag == "dd" and id(node) in qualified_definitions:
+            return ": " + content.strip() + "\n"
         if node.tag in {"h1", "h2", "h3", "h4"}:
             return "\n\n### " + content + "\n\n"
         if node.tag not in {"a", "span"}:
@@ -461,7 +763,7 @@ def extract_modules(pages, installed, exposed, locations, revision):
         anchor = unquote(urlsplit(href).fragment) if href else name
         if observations:
             matches = locations[module].get(anchor, [])
-            if href and (not matches or (len(set(matches)) != 1 and exposed != QUERY_MODULES)):
+            if href and (not matches or (len(set(matches)) != 1 and not rich)):
                 msg = f"Missing or ambiguous explicit native source anchor: {module}: {anchor}"
                 raise ValueError(msg)
         elif anchor.startswith("line-"):
@@ -785,17 +1087,70 @@ def build_native(checkout, revision, native_output=None):
         ):
             msg = "Unsupported configured public module or re-export shape"
             raise ValueError(msg)
-        if modules not in [SCALAR_MODULES, OBSERVATION_MODULES, QUERY_MODULES]:
+        if modules not in [
+            SCALAR_MODULES,
+            OBSERVATION_MODULES,
+            QUERY_MODULES,
+            CREATION_MODULES,
+            PROGRAM_MODULES,
+            PANE_MODULES,
+            ENVIRONMENT_MODULES,
+            OPTIONS_MODULES,
+            CONTROL_MODULES,
+            FIELDS_MODULES,
+        ]:
             msg = "Unqualified configured public module profile"
             raise ValueError(msg)
         mutations = "LibTmux.Internal.Mutation" in field("hidden-modules").split()
-        if mutations and modules != QUERY_MODULES:
+        fields = modules == FIELDS_MODULES
+        controls = fields or modules == CONTROL_MODULES
+        options = controls or modules == OPTIONS_MODULES
+        environments = options or modules == ENVIRONMENT_MODULES
+        pane_text = environments or modules == PANE_MODULES
+        programs = pane_text or modules == PROGRAM_MODULES
+        creations = programs or modules == CREATION_MODULES
+        if creations and not mutations:
+            msg = "Unqualified configured creation recovery interface"
+            raise ValueError(msg)
+        if mutations and modules not in [
+            QUERY_MODULES,
+            CREATION_MODULES,
+            PROGRAM_MODULES,
+            PANE_MODULES,
+            ENVIRONMENT_MODULES,
+            OPTIONS_MODULES,
+            CONTROL_MODULES,
+            FIELDS_MODULES,
+        ]:
             msg = "Unqualified configured mutation module profile"
             raise ValueError(msg)
-        queries = modules == QUERY_MODULES
+        queries = modules in [
+            QUERY_MODULES,
+            CREATION_MODULES,
+            PROGRAM_MODULES,
+            PANE_MODULES,
+            ENVIRONMENT_MODULES,
+            OPTIONS_MODULES,
+            CONTROL_MODULES,
+            FIELDS_MODULES,
+        ]
         observations = queries or modules == OBSERVATION_MODULES
         source_modules = (
-            MUTATION_ORIGINS
+            FIELDS_ORIGINS
+            if fields
+            else CONTROL_ORIGINS
+            if controls
+            else OPTIONS_ORIGINS
+            if options
+            else ENVIRONMENT_ORIGINS
+            if environments
+            else PANE_ORIGINS
+            if pane_text
+            else PROGRAM_ORIGINS
+            if programs
+            else CREATION_ORIGINS
+            if creations
+            else MUTATION_ORIGINS
             if mutations
             else QUERY_ORIGINS
             if queries
@@ -839,7 +1194,9 @@ def build_native(checkout, revision, native_output=None):
             module: _checked_source_page(text, (source_root / _source_file(module)).read_bytes())
             for module, text in source_pages.items()
         }
-        result = extract_modules(rendered, installed, modules, locations, revision)
+        result = extract_modules(
+            rendered, installed, modules, locations, revision, source_pages if creations else None
+        )
         files = [".tool-versions", "cabal.project", "libtmux-haskell.cabal"]
         files.extend(_source_file(module) for module in source_modules)
         native_files = {
@@ -860,7 +1217,21 @@ def build_native(checkout, revision, native_output=None):
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes(data)
         return {
-            "schema": "libtmux.haskell-api/4"
+            "schema": "libtmux.haskell-api/11"
+            if fields
+            else "libtmux.haskell-api/10"
+            if controls
+            else "libtmux.haskell-api/9"
+            if options
+            else "libtmux.haskell-api/8"
+            if environments
+            else "libtmux.haskell-api/7"
+            if pane_text
+            else "libtmux.haskell-api/6"
+            if programs
+            else "libtmux.haskell-api/5"
+            if creations
+            else "libtmux.haskell-api/4"
             if mutations
             else "libtmux.haskell-api/3"
             if queries
@@ -869,7 +1240,21 @@ def build_native(checkout, revision, native_output=None):
             else "libtmux.haskell-api/1",
             **(
                 {
-                    "profile": "mutations/1"
+                    "profile": "fields/1"
+                    if fields
+                    else "control/1"
+                    if controls
+                    else "options/1"
+                    if options
+                    else "environment/1"
+                    if environments
+                    else "pane-text/1"
+                    if pane_text
+                    else "programs/1"
+                    if programs
+                    else "creations/1"
+                    if creations
+                    else "mutations/1"
                     if mutations
                     else "queries/1"
                     if queries
@@ -896,7 +1281,27 @@ def build_native(checkout, revision, native_output=None):
                 ],
                 "exporter": {
                     "name": "Haddock public interface export",
-                    "version": 4 if mutations else 3 if queries else 2 if observations else 1,
+                    "version": 11
+                    if fields
+                    else 10
+                    if controls
+                    else 9
+                    if options
+                    else 8
+                    if environments
+                    else 7
+                    if pane_text
+                    else 6
+                    if programs
+                    else 5
+                    if creations
+                    else 4
+                    if mutations
+                    else 3
+                    if queries
+                    else 2
+                    if observations
+                    else 1,
                     "build": {
                         "compiler": plan["compiler-id"],
                         "cabal": plan["cabal-version"],

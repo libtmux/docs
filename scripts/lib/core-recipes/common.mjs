@@ -57,6 +57,7 @@ export function fastShim(sandbox) {
   const script = join(sandbox, 'bin/tmux')
   const runtime = execFileSync('sh', ['-c', 'command -v bun || command -v node'], { encoding: 'utf8' }).trim()
   writeFileSync(script, readFileSync(script, 'utf8').replace(/^NODE=.*$/m, `NODE=${JSON.stringify(runtime)}`))
+  return runtime
 }
 
 /** Where a port's checkout lives: its environment variable, or the port's own worktree. */

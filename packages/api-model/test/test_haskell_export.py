@@ -11,6 +11,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location("haskell_export", ROOT / "scripts/export-haskell.py")
 EXPORT = importlib.util.module_from_spec(SPEC)
@@ -50,6 +52,96 @@ def _profile_inputs(fixture_name="haskell-observations-native"):
         json.loads((fixture / "source-anchors.json").read_text()),
         meta["revision"],
     ]
+
+
+@pytest.fixture
+def creation_inputs():
+    """Load fresh compiler evidence for each creation export check."""
+    inputs = _profile_inputs("haskell-creations-native")
+    fixture = ROOT / "test/fixtures/haskell-creations-native/src"
+    inputs.append({path.stem: path.read_text() for path in fixture.glob("*.html")})
+    return inputs
+
+
+@pytest.mark.parametrize("module", ["LibTmux", "LibTmux.Creation"])
+def test_interface_heading_text_does_not_classify_exports(creation_inputs, module):
+    """Read the native heading structure without reserving its English label."""
+    expected = EXPORT.extract_modules(*creation_inputs)
+    before = '<div id="interface"><h1>Documentation</h1>'
+    after = '<div id="interface"><h1>Public interface</h1>'
+    assert creation_inputs[0][module].count(before) == 1
+    creation_inputs[0][module] = creation_inputs[0][module].replace(before, after, 1)
+    if module != "LibTmux":
+        native_module = next(item for item in expected["modules"] if item["name"] == module)
+        native_module["groups"][0]["title"] = "Public interface"
+    assert EXPORT.extract_modules(*creation_inputs) == expected
+
+
+def test_created_fields_keep_compiler_types_without_exporting_the_constructor(creation_inputs):
+    """Keep checked field types and origins while hiding private constructors."""
+    result = EXPORT.extract_modules(*creation_inputs)
+    symbols = {item["id"]: item for item in result["symbols"]}
+    created = "LibTmux.Creation#t:CreatedSession"
+    assert symbols[created]["modifiers"] == ["opaque"]
+    assert "LibTmux.Creation#v:CreatedSession" not in symbols
+    for name, value in [
+        ("session", "SessionRef"),
+        ("window", "WindowRef"),
+        ("pane", "PaneRef"),
+        ("windowIndex", "WindowIndex"),
+        ("serverPid", "Integer"),
+    ]:
+        field = symbols[f"LibTmux.Creation#v:CreatedSession.{name}"]
+        assert field["parent"] == created
+        assert field["signatures"][0]["raw"] == f"{name} :: {value}"
+        assert field["definingModule"] == "LibTmux.Internal.Graph"
+        assert field["source"]["file"] == "internal/LibTmux/Internal/Graph.hs"
+        assert isinstance(field["source"]["line"], int)
+    recovery = symbols["LibTmux.Server#t:CreationRecovery"]
+    assert recovery["modifiers"] == ["opaque"]
+    assert recovery["source"]["file"] == "internal/LibTmux/Internal/Creation.hs"
+    assert "IO CreatedSession" in symbols["LibTmux.Server#v:createSession"]["signatures"][0]["raw"]
+    assert not any("Internal" in item["id"] for item in result["symbols"])
+
+
+@pytest.mark.parametrize(
+    ("change", "message"),
+    [
+        ("missing", "Native field source pages differ from the qualified source profile"),
+        ("type", "Opaque field documentation differs from its native type annotation"),
+        ("owner", "Expected one opaque field annotation, found 0"),
+    ],
+    ids=["missing", "type", "owner"],
+)
+def test_read_only_fields_require_matching_native_type_evidence(creation_inputs, change, message):
+    """Reject missing or contradictory native field evidence."""
+    source = creation_inputs[5]
+    if change == "missing":
+        del source["LibTmux.Internal.Graph"]
+    else:
+        old = "CreatedSession -&gt; PaneRef\n"
+        assert source["LibTmux.Internal.Graph"].count(old) == 1
+        new = (
+            "CreatedSession -&gt; WindowRef\n"
+            if change == "type"
+            else "PaneOccurrence -&gt; PaneRef\n"
+        )
+        source["LibTmux.Internal.Graph"] = source["LibTmux.Internal.Graph"].replace(old, new)
+    with pytest.raises(ValueError, match=rf"^{re.escape(message)}$"):
+        EXPORT.extract_modules(*creation_inputs)
+
+
+def test_shared_labels_reject_an_owner_without_that_public_field(creation_inputs):
+    """Accept each public owner and reject an unrelated export module."""
+    package = creation_inputs[1]["package_info"]
+    key = f"${package}-inplace$LibTmux.Internal.Graph$session"
+    assert creation_inputs[1]["link_env"][key] in ["LibTmux.Snapshot", "LibTmux.Creation"]
+    for owner in ["LibTmux.Snapshot", "LibTmux.Creation"]:
+        creation_inputs[1]["link_env"][key] = owner
+        EXPORT.extract_modules(*creation_inputs)
+    creation_inputs[1]["link_env"][key] = "LibTmux.Value"
+    with pytest.raises(ValueError, match="Compiled public owner differs"):
+        EXPORT.extract_modules(*creation_inputs)
 
 
 class _MutationExportTest(unittest.TestCase):

@@ -5422,7 +5422,7 @@
       "in": "src/LibTmux/Snapshot",
       "evidence": [
         {
-          "at": "src/LibTmux/Snapshot.hs:95",
+          "at": "src/LibTmux/Snapshot.hs:96",
           "has": [
             "windowLinks = G.graphLinks"
           ]
@@ -5431,46 +5431,6 @@
           "at": "src/LibTmux/Snapshot/Fixture.hs:68",
           "has": [
             "windowLinks :: ![WindowLink]"
-          ]
-        }
-      ]
-    },
-    {
-      "port": "haskell",
-      "names": [
-        "windowLinks"
-      ],
-      "commands": [
-        "link-window"
-      ],
-      "kind": "values",
-      "why": "A typed relationship token reads captured memberships; it never links a window.",
-      "in": "src/LibTmux/Query/Session.hs",
-      "evidence": [
-        {
-          "at": "src/LibTmux/Query/Session.hs:30",
-          "has": [
-            "windowLinks = Q.SessionLinks"
-          ]
-        }
-      ]
-    },
-    {
-      "port": "haskell",
-      "names": [
-        "windowLinks"
-      ],
-      "commands": [
-        "link-window"
-      ],
-      "kind": "values",
-      "why": "A typed relationship token reads captured memberships; it never links a window.",
-      "in": "src/LibTmux/Query/Window.hs",
-      "evidence": [
-        {
-          "at": "src/LibTmux/Query/Window.hs:39",
-          "has": [
-            "windowLinks = Q.WindowLinks"
           ]
         }
       ]
@@ -6053,6 +6013,310 @@
           "at": "lib/LibTmux/Server.rakumod:665",
           "has": [
             "{ LEAVE $creator.close; created($creator, $observation, $command, :$cancel, :$deadline) }"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "haskell",
+      "names": [
+        "NextFree"
+      ],
+      "commands": [
+        "next-window"
+      ],
+      "kind": "values",
+      "why": "NextFree chooses a free creation index; it does not select an existing window.",
+      "in": "src/LibTmux/Creation.hs",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Creation.hs:71",
+          "has": [
+            "= NextFree !SessionRef"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "haskell",
+      "names": [
+        "selectWindow"
+      ],
+      "commands": [
+        "select-window"
+      ],
+      "kind": "values",
+      "why": "This inert WindowOptions field controls selection during new-window; reading it performs no IO.",
+      "in": "src/LibTmux/Creation.hs",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Creation.hs:91",
+          "has": [
+            ", selectWindow :: !Bool"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:168",
+          "has": [
+            "([\"new-window\"] <> [\"-d\" | not options.selectWindow]"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "haskell",
+      "names": [
+        "selectPane"
+      ],
+      "commands": [
+        "select-pane"
+      ],
+      "kind": "values",
+      "why": "This inert SplitOptions field controls selection during split-window; reading it performs no IO.",
+      "in": "src/LibTmux/Creation.hs",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Creation.hs:120",
+          "has": [
+            ", selectPane :: !Bool"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:188",
+          "has": [
+            "([\"split-window\"] <> [\"-d\" | not options.selectPane]"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "haskell",
+      "names": [
+        "PaneCaptureOptions",
+        "defaultPaneCapture"
+      ],
+      "commands": [
+        "capture-pane"
+      ],
+      "kind": "values",
+      "why": "These construct a row, rendering and byte-limit policy; capturePane performs the acquisition.",
+      "in": "src/LibTmux/Pane.hs",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Pane.hs:22",
+          "has": [
+            "data PaneCaptureOptions = PaneCaptureOptions"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Pane.hs:31",
+          "has": [
+            "defaultPaneCapture = PaneCaptureOptions VisibleRows PlainText 65536"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "haskell",
+      "names": [
+        "selectWindowLink",
+        "selectWindowLinkWith"
+      ],
+      "commands": [
+        "link-window"
+      ],
+      "kind": "other-command",
+      "why": "Selecting an existing exact link sends select-window; it does not create a link.",
+      "in": "src/LibTmux/Server.hs",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.hs:748",
+          "has": [
+            "mutate options server generation (Command.SelectWindowLink session index)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:531",
+          "has": [
+            "pure [\"select-window\", \"-t\", slot]"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "haskell",
+      "names": [
+        "waitCapture"
+      ],
+      "commands": [
+        "capture-pane"
+      ],
+      "kind": "values",
+      "why": "This PaneWaitOptions field holds an inert capture policy; waitForText executes it.",
+      "in": "src/LibTmux/Server.hs",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.hs:956",
+          "has": [
+            ", waitCapture :: !PaneCaptureOptions"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "haskell",
+      "names": [
+        "waitForText"
+      ],
+      "commands": [
+        "wait-for"
+      ],
+      "kind": "other-command",
+      "why": "The general pane text wait polls capture-pane and liveness within one deadline; it does not send wait-for.",
+      "in": "src/LibTmux/Server.hs",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.hs:995",
+          "has": [
+            "C.waitForPaneText runtime handle executable duration ident settings (decodePaneText settings) needle baseline"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Capture.hs:139",
+          "has": [
+            "threadDelay (min 100000 left)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Capture.hs:102",
+          "has": [
+            "R.readPaneCaptureWith P.defaultHooks left runtime client executable pane options"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "haskell",
+      "names": [
+        "RawBufferPasteFlag"
+      ],
+      "commands": [
+        "paste-buffer"
+      ],
+      "kind": "values",
+      "why": "This capability constructor selects metadata about the raw paste flag; it performs no IO.",
+      "in": "src/LibTmux/Capabilities.hs",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Capabilities.hs:72",
+          "has": [
+            "RawBufferPasteFlag -> entry \"paste-buffer-no-vis\""
+          ]
+        }
+      ]
+    },
+    {
+      "port": "haskell",
+      "names": [
+        "readBuffer"
+      ],
+      "commands": [
+        "show-buffer"
+      ],
+      "kind": "other-command",
+      "why": "Binary reads use save-buffer into a private FIFO to preserve arbitrary bytes and trailing newlines.",
+      "in": "src/LibTmux/Server.hs",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.hs:867",
+          "has": [
+            "await (R.mutateWith P.defaultHooks left runtime handle executable (Command.SaveBuffer name pipe))"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:560",
+          "has": [
+            "SaveBuffer name file -> bufferTransfer \"save-buffer\" name file"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "haskell",
+      "names": [
+        "killServer"
+      ],
+      "commands": [
+        "kill-server"
+      ],
+      "kind": "other-command",
+      "why": "The admitted daemon generation is retired through its held pidfd; this operation never sends kill-server.",
+      "in": "src/LibTmux/Server.hs",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.hs:301",
+          "has": [
+            "catchNoPropagate retire"
+          ],
+          "in": "LibTmux.Server#v:killServer"
+        },
+        {
+          "at": "internal/LibTmux/Internal/OwnedServer.hs:740",
+          "has": [
+            "True -> True <$ (requestFate owner Terminate >> daemonPhases owner)"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/OwnedServer.hs:535",
+          "has": [
+            "(how, refused) <- terminate owner.probe pidfd"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/OwnedServer.hs:578",
+          "has": [
+            "send signalNumber = probe.signal pidfd signalNumber"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "haskell",
+      "names": [
+        "sessionWindowLinks",
+        "windowLinks",
+        "linkWindowId",
+        "linkWindow"
+      ],
+      "commands": [
+        "link-window"
+      ],
+      "kind": "values",
+      "why": "These field and relationship tokens read captured values and memberships; they never create a window link.",
+      "in": "src/LibTmux/Query/Fields.hs",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Query/Fields.hs:69",
+          "has": [
+            "sessionWindowLinks = Q.SessionLinks"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Query/Fields.hs:106",
+          "has": [
+            "windowLinks = Q.WindowLinks"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Query/Fields.hs:174",
+          "has": [
+            "linkWindowId = F.LinkWindow"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Query/Fields.hs:194",
+          "has": [
+            "linkWindow = Q.LinkWindow"
           ]
         }
       ]

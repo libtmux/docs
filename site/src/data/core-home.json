@@ -323,11 +323,20 @@
   },
   "haskell": {
     "title": "tmux client library for Haskell",
-    "lead": "Capture tmux state, query detached snapshots, rename sessions and windows, and set pane titles",
+    "lead": "Own tmux daemon scopes, query snapshots, change targets, configure scoped settings and observe bounded control events.",
     "modules": [
       "LibTmux.Server",
+      "LibTmux.Creation",
+      "LibTmux.Pane",
+      "LibTmux.Program",
+      "LibTmux.Control",
+      "LibTmux.Recovery",
+      "LibTmux.Capabilities",
+      "LibTmux.Environment",
+      "LibTmux.Options",
       "LibTmux.Snapshot",
       "LibTmux.Query",
+      "LibTmux.Query.Fields",
       "LibTmux.Snapshot.Fixture"
     ],
     "capabilities": {}

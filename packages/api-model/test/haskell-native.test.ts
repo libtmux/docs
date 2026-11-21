@@ -5,10 +5,10 @@ import { expect, it } from 'vitest'
 // The complete native fixture audit runs in a separate Python process.
 it('preserves native Haskell declarations and source/exporter provenance', { timeout: 15_000 }, () => {
   const root = fileURLToPath(new URL('../../../', import.meta.url))
-  const result = spawnSync('python3', ['-m', 'unittest', 'packages/api-model/test/test_haskell_export.py'], {
+  const result = spawnSync('uv', ['run', '--locked', '--offline', 'python', '-B', '-m', 'pytest', '-q', '-p', 'no:cacheprovider', 'packages/api-model/test/test_haskell_export.py'], {
     cwd: root, encoding: 'utf8', timeout: 10_000,
   })
   expect(result.error).toBeUndefined()
-  expect(result.status, result.stderr).toBe(0)
-  expect(result.stderr).toMatch(/Ran [1-9]\d* tests?/)
+  expect(result.status, result.stdout + result.stderr).toBe(0)
+  expect(result.stdout).toMatch(/[1-9]\d* passed/)
 })

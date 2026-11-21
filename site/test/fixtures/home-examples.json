@@ -1569,105 +1569,102 @@
       "port": "haskell",
       "page": "home",
       "sourceRepository": "libtmux/libtmux-haskell",
-      "sourceRevision": "00b47e6d94b181b5fd94e585be1e9ecefbf93acb",
-      "sourceTree": "5dcd6665d30d498fc3aaee81b93067dd22eadde7",
-      "libraryRevision": "00b47e6d94b181b5fd94e585be1e9ecefbf93acb",
+      "sourceRevision": "bf2d94753a8309b75d6f9853e5719572d57d209d",
+      "sourceTree": "ad8dcdeb38c54bc91fe1986d2472a3dc615ebc2f",
+      "libraryRevision": "bf2d94753a8309b75d6f9853e5719572d57d209d",
       "execution": "owned-tmux",
       "files": [
         {
           "name": "Main.hs",
-          "sha256": "85920272f0a6a65685c3a25b5950d39321fb685bbf9e7143730b77bac2003048",
-          "clipboardSha256": "ee14854094d5129c5554be0925659dd95086cf9fc7db49ab16ea6ab6daacea71"
+          "sha256": "da3e3b9e4e52252ffe5a6d4950724f993b83ab4623e8b9a5a76dfe835eb363e8",
+          "clipboardSha256": "c4e40f0bfea85f060a03cd60404f130666cfde58afbbec5f06e0555284c68d54"
         },
         {
           "name": "libtmux-mutate-graph.cabal",
-          "sha256": "9f2c318dde461b3be9d3708838f54f3834d2630732747f1b96f5794bfafe744e",
-          "clipboardSha256": "d960649972b0bfce82408b3b76449048306aed91d66bf4be2504c24a85d45c0b"
+          "sha256": "0cef34014b380889e6fe228ecf9bd8104628039334b999b483e92b192e3c4034",
+          "clipboardSha256": "8b21989423312ff0e0af51848e605f6d9f1bfcfb68fbc21be8f83205f744f602"
         },
         {
           "name": "cabal.project",
-          "sha256": "a48392102312ec4c850a8780daf3a599adf9e06d6fa77f0ab2737397cbbb1d94",
-          "clipboardSha256": "9f521a56b6c6f9588951834c118218eaad1fee5d79956a0a9e3dcfc68c3c71ce"
+          "sha256": "b327b572e13eec36044939b5d64d8533c03c97588460ceec64b9c0f5198500e9",
+          "clipboardSha256": "0cd8ec57016463486f0ad87eeed933fff2399287730dfa29d6a0af169d0791e3"
         }
       ],
       "shellRecipe": [
         "cabal update",
-        "(\nLIBTMUX_DEMO_DIR=$(mktemp -d -t libtmux-haskell-demo.XXXXXX) && \\\ntrap 'tmux -N -S \"$LIBTMUX_DEMO_DIR/s\" kill-server; rm -r -- \"$LIBTMUX_DEMO_DIR\"' EXIT && \\\nenv -u TMUX -u TMUX_PANE tmux \\\n    -S \"$LIBTMUX_DEMO_DIR/s\" \\\n    -f /dev/null \\\n    new-session \\\n    -d \\\n    -s demo \\\n    -n editor \\\n    -x 120 \\\n    -y 40 \\\n    /bin/cat - && \\\nenv -u TMUX -u TMUX_PANE tmux \\\n    -N \\\n    -S \"$LIBTMUX_DEMO_DIR/s\" \\\n    link-window \\\n    -s demo:0 \\\n    -t demo:4 && \\\ncabal run --verbose=0 mutate-graph -- \\\n    \"$LIBTMUX_DEMO_DIR/s\" \\\n    \"$(command -v tmux)\"\n)"
+        "cabal run --verbose=0 mutate-graph"
       ],
       "expectedOutputs": [
         [],
         [
-          "session: demo -> workspace",
-          "window: editor -> api #{pid};",
-          "pane title: editor-ready",
-          "physical window links: 2",
-          "same target identities: True",
-          "old snapshot values: demo, editor"
+          "Session: demo -> workspace",
+          "Window: api #{pid};",
+          "Pane title: editor-ready"
         ]
       ],
-      "excerptSha256": "ee14854094d5129c5554be0925659dd95086cf9fc7db49ab16ea6ab6daacea71",
+      "excerptSha256": "c4e40f0bfea85f060a03cd60404f130666cfde58afbbec5f06e0555284c68d54",
       "variants": {
         "concise": {
           "files": [
             {
               "name": "Main.hs",
-              "sha256": "85920272f0a6a65685c3a25b5950d39321fb685bbf9e7143730b77bac2003048",
-              "clipboardSha256": "ee14854094d5129c5554be0925659dd95086cf9fc7db49ab16ea6ab6daacea71"
+              "sha256": "da3e3b9e4e52252ffe5a6d4950724f993b83ab4623e8b9a5a76dfe835eb363e8",
+              "clipboardSha256": "c4e40f0bfea85f060a03cd60404f130666cfde58afbbec5f06e0555284c68d54"
             },
             {
               "name": "libtmux-mutate-graph.cabal",
-              "sha256": "9f2c318dde461b3be9d3708838f54f3834d2630732747f1b96f5794bfafe744e",
-              "clipboardSha256": "d960649972b0bfce82408b3b76449048306aed91d66bf4be2504c24a85d45c0b"
+              "sha256": "0cef34014b380889e6fe228ecf9bd8104628039334b999b483e92b192e3c4034",
+              "clipboardSha256": "8b21989423312ff0e0af51848e605f6d9f1bfcfb68fbc21be8f83205f744f602"
             },
             {
               "name": "cabal.project",
-              "sha256": "a48392102312ec4c850a8780daf3a599adf9e06d6fa77f0ab2737397cbbb1d94",
-              "clipboardSha256": "9f521a56b6c6f9588951834c118218eaad1fee5d79956a0a9e3dcfc68c3c71ce"
+              "sha256": "b327b572e13eec36044939b5d64d8533c03c97588460ceec64b9c0f5198500e9",
+              "clipboardSha256": "0cd8ec57016463486f0ad87eeed933fff2399287730dfa29d6a0af169d0791e3"
             }
           ],
-          "excerptSha256": "ee14854094d5129c5554be0925659dd95086cf9fc7db49ab16ea6ab6daacea71",
+          "excerptSha256": "c4e40f0bfea85f060a03cd60404f130666cfde58afbbec5f06e0555284c68d54",
           "execution": "owned-tmux"
         },
         "errors": {
           "files": [
             {
               "name": "Main.hs",
-              "sha256": "85920272f0a6a65685c3a25b5950d39321fb685bbf9e7143730b77bac2003048",
-              "clipboardSha256": "ee14854094d5129c5554be0925659dd95086cf9fc7db49ab16ea6ab6daacea71"
+              "sha256": "da3e3b9e4e52252ffe5a6d4950724f993b83ab4623e8b9a5a76dfe835eb363e8",
+              "clipboardSha256": "c4e40f0bfea85f060a03cd60404f130666cfde58afbbec5f06e0555284c68d54"
             },
             {
               "name": "libtmux-mutate-graph.cabal",
-              "sha256": "9f2c318dde461b3be9d3708838f54f3834d2630732747f1b96f5794bfafe744e",
-              "clipboardSha256": "d960649972b0bfce82408b3b76449048306aed91d66bf4be2504c24a85d45c0b"
+              "sha256": "0cef34014b380889e6fe228ecf9bd8104628039334b999b483e92b192e3c4034",
+              "clipboardSha256": "8b21989423312ff0e0af51848e605f6d9f1bfcfb68fbc21be8f83205f744f602"
             },
             {
               "name": "cabal.project",
-              "sha256": "a48392102312ec4c850a8780daf3a599adf9e06d6fa77f0ab2737397cbbb1d94",
-              "clipboardSha256": "9f521a56b6c6f9588951834c118218eaad1fee5d79956a0a9e3dcfc68c3c71ce"
+              "sha256": "b327b572e13eec36044939b5d64d8533c03c97588460ceec64b9c0f5198500e9",
+              "clipboardSha256": "0cd8ec57016463486f0ad87eeed933fff2399287730dfa29d6a0af169d0791e3"
             }
           ],
-          "excerptSha256": "ee14854094d5129c5554be0925659dd95086cf9fc7db49ab16ea6ab6daacea71",
+          "excerptSha256": "c4e40f0bfea85f060a03cd60404f130666cfde58afbbec5f06e0555284c68d54",
           "execution": "owned-tmux"
         },
         "cleanup": {
           "files": [
             {
               "name": "Main.hs",
-              "sha256": "85920272f0a6a65685c3a25b5950d39321fb685bbf9e7143730b77bac2003048",
-              "clipboardSha256": "ee14854094d5129c5554be0925659dd95086cf9fc7db49ab16ea6ab6daacea71"
+              "sha256": "da3e3b9e4e52252ffe5a6d4950724f993b83ab4623e8b9a5a76dfe835eb363e8",
+              "clipboardSha256": "c4e40f0bfea85f060a03cd60404f130666cfde58afbbec5f06e0555284c68d54"
             },
             {
               "name": "libtmux-mutate-graph.cabal",
-              "sha256": "9f2c318dde461b3be9d3708838f54f3834d2630732747f1b96f5794bfafe744e",
-              "clipboardSha256": "d960649972b0bfce82408b3b76449048306aed91d66bf4be2504c24a85d45c0b"
+              "sha256": "0cef34014b380889e6fe228ecf9bd8104628039334b999b483e92b192e3c4034",
+              "clipboardSha256": "8b21989423312ff0e0af51848e605f6d9f1bfcfb68fbc21be8f83205f744f602"
             },
             {
               "name": "cabal.project",
-              "sha256": "a48392102312ec4c850a8780daf3a599adf9e06d6fa77f0ab2737397cbbb1d94",
-              "clipboardSha256": "9f521a56b6c6f9588951834c118218eaad1fee5d79956a0a9e3dcfc68c3c71ce"
+              "sha256": "b327b572e13eec36044939b5d64d8533c03c97588460ceec64b9c0f5198500e9",
+              "clipboardSha256": "0cd8ec57016463486f0ad87eeed933fff2399287730dfa29d6a0af169d0791e3"
             }
           ],
-          "excerptSha256": "ee14854094d5129c5554be0925659dd95086cf9fc7db49ab16ea6ab6daacea71",
+          "excerptSha256": "c4e40f0bfea85f060a03cd60404f130666cfde58afbbec5f06e0555284c68d54",
           "execution": "owned-tmux"
         }
       }

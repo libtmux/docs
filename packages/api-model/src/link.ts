@@ -864,6 +864,7 @@ export class SymbolIndex {
     const nullary = this.lang !== 'swift' && this.lang !== 'py' && clean.endsWith('()')
     // Swift ids keep their argument labels, so `isRunning()` names `Server.isRunning()`.
     if (this.lang !== 'swift') clean = clean.replace(/\(\)$/, '')
+    if (this.lang === 'haskell') clean = clean.trimEnd()
     // Elixir names a type `t:name/0` and a function `name/2`; the prefix and arity select, they do not spell.
     if (this.lang === 'elixir') clean = clean.replace(/^[tc]:(?=[A-Za-z_])/, '').replace(/\/\d+$/, '')
     let opaqueContext = false

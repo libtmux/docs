@@ -155,17 +155,34 @@ describe('Haskell reference navigation', () => {
 
   it('keeps the other modules where the other ports file ids, queries, versions, errors and fixtures', () => {
     expect(nav.placement).toMatchObject({
-      'LibTmux.Query': 'queries', 'LibTmux.Query.Session': 'queries', 'LibTmux.Snapshot': 'snapshots',
+      'LibTmux.Query': 'queries', 'LibTmux.Query.Fields': 'queries-fields', 'LibTmux.Snapshot': 'snapshots',
       'LibTmux.Version': 'version', 'LibTmux.Snapshot.Fixture': 'testing',
       'LibTmux.Id#t:IdError': 'errors', 'LibTmux.Server#t:TmuxException': 'errors',
     })
   })
 
-  it('keeps everything LibTmux.Server exports with the handle except its operational error', () => {
+  it('keeps ownership with Server and target operations with their objects', () => {
     const exported = model.symbols.filter((entry) => entry.parent === 'LibTmux.Server')
     expect(exported.length).toBeGreaterThan(40)
+    const targetBuckets = {
+      session: ['createSession', 'createSessionWith', 'killSession', 'killSessionWith'],
+      window: ['createWindow', 'createWindowWith', 'killWindow', 'killWindowWith', 'linkWindow', 'linkWindowWith',
+        'unlinkWindow', 'unlinkWindowWith', 'selectWindowLink', 'selectWindowLinkWith', 'resizeWindow', 'resizeWindowWith'],
+      pane: ['PaneInput', 'PaneText', 'splitPane', 'splitPaneWith', 'sendKeys', 'sendKeysWith',
+        'killPane', 'killPaneWith', 'capturePane', 'paneText', 'selectExactPane', 'selectExactPaneWith',
+        'PaneWaitOptions', 'PaneWaitResult', 'PaneMatch', 'defaultPaneWait', 'waitForText', 'resizePane', 'resizePaneWith'],
+      layout: ['NamedLayout', 'selectLayout', 'selectLayoutWith'],
+      environment: ['getEnvironment', 'setEnvironment', 'setEnvironmentWith', 'markEnvironmentRemoved',
+        'markEnvironmentRemovedWith', 'unsetEnvironment', 'unsetEnvironmentWith'],
+      'options-functions': ['readOption', 'setOption', 'setOptionWith', 'unsetOption', 'unsetOptionWith'],
+      hooks: ['readHook', 'setHook', 'setHookWith', 'unsetHook', 'unsetHookWith'],
+      buffers: ['loadBuffer', 'loadBufferWith', 'readBuffer', 'pasteBuffer', 'pasteBufferWith'],
+      control: ['withControl'], capabilities: ['serverCapabilities'],
+      errors: ['TmuxException', 'ConfigurationProblem', 'ObservationProblem', 'TimeoutKind', 'ArgumentError'],
+    }
     for (const entry of exported) {
-      expect(nav.placement[entry.id], entry.id).toBe(entry.name === 'TmuxException' ? 'errors' : 'server')
+      const task = Object.entries(targetBuckets).find(([, names]) => names.includes(entry.name))?.[0] ?? 'server'
+      expect(nav.placement[entry.id], entry.id).toBe(task)
     }
   })
 

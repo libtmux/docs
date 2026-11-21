@@ -3969,7 +3969,7 @@ for (const [id, binding] of Object.entries(LISP_CONCEPTS)) {
 const HASKELL_CONCEPTS: Record<string, { symbol: string; note: string; variants: string[] }> = {
   server: {
     symbol: 'LibTmux.Server', variants: ['LibTmux.Server#t:Server'],
-    note: '`LibTmux.Server` owns the `Server` handle. `withServer` adopts an existing socket for the length of a callback and releases its own resources afterwards without sending `kill-server`. Operations such as `capture` and `renameSession` are functions of this module that take the handle.',
+    note: '`LibTmux.Server` owns the `Server` handle. `withOwnedServer` starts and retires a private daemon; `withServer` borrows an existing endpoint and releases its own resources afterwards. `killServer` retires the admitted daemon generation explicitly. Operations such as `capture` and `renameSession` are functions of this module that take the handle.',
   },
   session: {
     symbol: 'LibTmux.Snapshot#t:Session', variants: ['LibTmux.Snapshot#t:SessionRef'],

@@ -170,14 +170,14 @@
     },
     "haskell": {
       "repo": "libtmux/libtmux-haskell",
-      "revision": "663e212622a02aa74a9bdc8ff71e2b45fcb1d4d5",
+      "revision": "bf2d94753a8309b75d6f9853e5719572d57d209d",
       "distributions": [
         {
           "name": "libtmux-haskell",
-          "version": "0.1.0.0",
+          "version": "0.0.1.0",
           "manifest": "libtmux-haskell.cabal",
           "repo": "libtmux/libtmux-haskell",
-          "revision": "663e212622a02aa74a9bdc8ff71e2b45fcb1d4d5"
+          "revision": "bf2d94753a8309b75d6f9853e5719572d57d209d"
         }
       ],
       "units": []

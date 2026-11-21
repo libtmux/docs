@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { LISP_REFERENCE_FILES, artifactFromRevision, leadSentence, lispReferenceRoutes, expandDocumenter, linkSnapshotDepths, rewriteLinks, stagedPortGuides, stagedRoutesFor } from '../../scripts/stage-port-docs.mjs'
 import { PORTS } from '../src/lib/ports'
-import { SOURCE_GUIDE_PORTS, sourceGuidesFor } from '../src/lib/port-documentation'
+import { SOURCE_GUIDE_PORTS, sourceGuidesFor, stagedSectionDescription } from '../src/lib/port-documentation'
 import scalaGuides from '../src/data/port-guides/scala.json'
 import fsharpGuides from '../src/data/port-guides/fsharp.json'
 import csharpModel from '../src/data/api/csharp.json'
@@ -81,8 +81,9 @@ describe('staged port guide links', () => {
     }))
     const files = stagedPortGuides('haskell', { source: { repository: 'libtmux/libtmux-haskell', revision }, guides })
     const index = files.get('haskell/guides/index.md')!
-    expect(index).toContain('capture and navigate a server')
+    expect(index).toContain(stagedSectionDescription('haskell', 'guides'))
     expect(index).toContain('capture/')
+    expect(index).toContain('creation/')
     expect(index).toContain('offline-fixtures/')
     expect(files.size).toBe(guides.length + 1)
     for (const [path, content] of files) {
@@ -270,7 +271,11 @@ describe('staged port guide links', () => {
     const setup = files.get(`${port}/${cards[0].href.slice(3)}index.md`)!
     expect(cards[0].label).toBe(JSON.parse(/^title: (.+)$/m.exec(setup)![1]))
     if (port === 'haskell') expect(cards.map((card: { label: string }) => card.label)).toEqual([
-      'Getting started', 'Installation', 'Capture and navigate', 'Typed queries', 'Rename and set pane titles', 'Shared Runtime scopes', 'Offline fixtures',
+      'Getting started', 'Installation', 'Capture and navigate', 'Typed queries', 'Create sessions, windows and panes',
+      'Run terminal applications', 'Observe control notifications', 'Connect an MCP adapter', 'Change targets and observe pane text',
+      'Transfer and paste buffers', 'Resize panes and windows', 'Read and change options and hooks',
+      'Check daemon capabilities', 'Shared Runtime scopes',
+      'Offline fixtures',
       'Typed values', 'Capture performance', 'API documentation', 'Implementation status',
     ])
     else if (port === 'clojure') expect(cards[1].label).toBe('Captures, effects and streams')

@@ -261,6 +261,8 @@ const NOT_API: { why: string; test: RegExp }[] = [
 /** Why this span is not an API reference, or undefined if it might be. */
 export function notApiReason(text: string, port?: string): string | undefined {
   const t = text.trim()
+  if (port === 'haskell' && /^(?:next-X\.Y|X\.Y(?:[a-z]|-rcN?)?)$/.test(t)) return 'tmux release pattern'
+  if (port === 'haskell' && t === 'With') return 'deadline variant suffix'
   for (const { why, test } of NOT_API) {
     if (port === 'lisp' && why === 'configuration key' && /^libtmux(?:\.[\w-]+)*:[\w-]+$/.test(t)) continue
     if (test.test(t)) return why

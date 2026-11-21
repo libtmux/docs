@@ -174,6 +174,11 @@ export const BUILTINS: Record<string, Record<string, string>> = {
     Either: 'https://hackage-content.haskell.org/package/base-4.22.0.0/docs/Data-Either.html#t:Either',
     Integer: 'https://hackage-content.haskell.org/package/base-4.22.0.0/docs/Prelude.html#t:Integer',
     Natural: 'https://hackage-content.haskell.org/package/base-4.22.0.0/docs/Numeric-Natural.html#t:Natural',
+    Show: 'https://hackage-content.haskell.org/package/base-4.22.0.0/docs/Prelude.html#t:Show',
+    Nothing: 'https://hackage-content.haskell.org/package/base-4.22.0.0/docs/Prelude.html#v:Nothing',
+    ByteString: 'https://hackage-content.haskell.org/package/bytestring-0.12.2.0/docs/Data-ByteString.html#t:ByteString',
+    ExceptionContext: 'https://hackage-content.haskell.org/package/base-4.22.0.0/docs/Control-Exception-Context.html#t:ExceptionContext',
+    'Data.List.NonEmpty': 'https://hackage-content.haskell.org/package/base-4.22.0.0/docs/Data-List-NonEmpty.html',
   },
   elixir: {
     ...Object.fromEntries(ELIXIR_BASIC_TYPES.map((name) => [name, elixirDocs('typespecs.html#basic-types')])),
@@ -560,6 +565,7 @@ export function builtinHref(port: string, name: string): string | undefined {
   if (Object.hasOwn(types, name)) return types[name]
   const nativeName = port === 'kotlin'
     ? name.replace(/^kotlin\.(?:collections\.)?/, '')
-    : port === 'scala' ? name.replace(/^scala\.(?:Predef\.|collection\.(?:immutable\.)?|util\.)?/, '') : name
+    : port === 'scala' ? name.replace(/^scala\.(?:Predef\.|collection\.(?:immutable\.)?|util\.)?/, '')
+      : port === 'haskell' ? name.replace(/\s+\(\)$/, '').trimEnd() : name
   return Object.hasOwn(types, nativeName) ? types[nativeName] : undefined
 }
