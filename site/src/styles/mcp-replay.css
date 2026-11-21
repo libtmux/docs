@@ -169,8 +169,8 @@ html:not([data-js]) .mcp-replay .mcp-frame:not(:last-child) {
   color: var(--text-color);
 }
 
-/* The pin button's room is there from the first paint, so binding the script does not rewrap a call. */
-html[data-js] .mcp-replay .mcp-turn[data-turn]:not([data-turn='prompt']) {
+/* The pin button's room is there from the first paint, so binding the script does not rewrap a call. The closing reply has no pin. */
+html[data-js] .mcp-replay .mcp-turn[data-turn]:not([data-turn='prompt'], .mcp-turn--answer) {
   padding-inline-end: 2.25rem;
 }
 
@@ -181,7 +181,7 @@ html[data-js] .mcp-replay .mcp-turn[data-turn]:not([data-turn='prompt']) {
  * edge of a current row.
  */
 @media (hover: hover) {
-  .mcp-replay[data-live] .mcp-turn[data-turn]:not([data-turn='prompt']):not([aria-current='step']):hover {
+  .mcp-replay[data-live] .mcp-turn[data-turn]:not([data-turn='prompt'], .mcp-turn--answer):not([aria-current='step']):hover {
     background: var(--color-surface-hover);
   }
 }
