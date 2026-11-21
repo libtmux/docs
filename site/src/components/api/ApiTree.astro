@@ -244,8 +244,8 @@ if (!mark(nodes)) {
     <nav class="api-nav__nav" aria-label={treeLabel} data-pagefind-ignore="all">
       <p class="api-nav__search-status" role="status" data-api-search-status></p>
       <button type="button" class="api-nav__retry" data-api-search-retry hidden>Try again</button>
-      <ul class="api-nav__results" data-api-search-results hidden></ul>
-      <ul class="api-nav__tree" role="tree" aria-label={treeLabel}>
+      <ul class="api-nav__results" data-api-search-results tabindex="-1" hidden></ul>
+      <ul class="api-nav__tree" role="tree" aria-label={treeLabel} tabindex="-1">
         <ApiTreeItems nodes={nodes} />
       </ul>
     </nav>
