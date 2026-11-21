@@ -13,7 +13,9 @@ import { PORT_BY_SLUG, portPageUrl } from '../../lib/ports'
 import { MCP_REFERENCE, MCP_SECTIONS, mcpObjects, mcpObjectAt, mcpSectionGroups, mcpWraps, plainSummary, renderToolDescription, toolSummary, type McpSection } from '../../lib/mcp-reference'
 import { schemaDefinitions, type McpSchema } from '../../lib/mcp-schema'
 import { TIERS, mcpToolFacts, type TierId } from '../../lib/mcp-showcase'
-import { referenceHref } from '../../lib/api-models'
+import { API_MODELS, referenceHref } from '../../lib/api-models'
+import { nativeKind } from '../../lib/api-labels'
+import { mentionBadge, mentionBadgeHtml } from '../../lib/mention-badge'
 import { pagePortsFor } from '../../lib/page-ports-for'
 import { getDocumentationSurfaces } from '../../lib/documentation-navigation'
 import { buildLocale } from '../../i18n/resolve'
@@ -114,6 +116,9 @@ const capability = stated && Object.keys(stated).length > 0 ? stated : undefined
 const objectTier = object?.tool ? tierOf(object.name) : undefined
 const wraps = object?.tool ? mcpWraps(port, object.name) : undefined
 const wrapsHref = wraps ? referenceHref(port, wraps.call, version) : undefined
+// A linked API name leads with its kind's mark, as every mention does (record 0025).
+const wrapped = wraps ? API_MODELS[port]?.symbols.find((symbol) => (symbol.publicId ?? symbol.id) === wraps.call) : undefined
+const wrapsBadge = wrapped ? mentionBadge(nativeKind(wrapped, port), wrapped.command?.kind ?? wrapped.kind) : undefined
 ---
 <DocsLayout title={object ? title : `${info.name} MCP ${title}`} description={object ? plainSummary(object.description, port) : introductions[section]}
   inventoryId={`protocol:${object?.id ?? section}`}
@@ -144,7 +149,7 @@ const wrapsHref = wraps ? referenceHref(port, wraps.call, version) : undefined
               <span class="mcp-method-description">{object.kind === 'tool' ? <>Send <code>{object.name}</code> as the tool name, with the arguments below.</>
                 : object.kind === 'prompt' ? <>Send <code>{object.name}</code> as the prompt name, with the arguments below.</>
                 : <>Send the resource URI shown above.</>}</span></dd>
-              {wraps && <><dt>Wraps</dt><dd>{wrapsHref ? <a href={wrapsHref}><code>{wraps.call}</code></a> : <code>{wraps.call}</code>}<span class="mcp-method-description">The library call this tool makes: <a href={`https://github.com/${wraps.repo}/blob/${wraps.revision}/${wraps.source.replace(/:(\d+)$/, '#L$1')}`}><code>{wraps.source}</code></a>.</span></dd></>}
+              {wraps && <><dt>Wraps</dt><dd>{wrapsHref ? <a class="api-mention" href={wrapsHref}>{wrapsBadge && <Fragment set:html={mentionBadgeHtml(wrapsBadge)} />}<span class="api-symbol-link__name"><code>{wraps.call}</code></span></a> : <code>{wraps.call}</code>}<span class="mcp-method-description">The library call this tool makes: <a href={`https://github.com/${wraps.repo}/blob/${wraps.revision}/${wraps.source.replace(/:(\d+)$/, '#L$1')}`}><code>{wraps.source}</code></a>.</span></dd></>}
               {object.item?.mimeType && <><dt>MIME type</dt><dd><code>{object.item.mimeType}</code></dd></>}
               {object.tool?.enabledByDefault !== undefined && <><dt>Tool selection</dt><dd>{object.tool.enabledByDefault ? 'Enabled by default.' : <>Opt in with <code>{object.tool.enableOption ?? '--enable-tool'} {object.name}</code>.</>}</dd></>}
             </dl>
