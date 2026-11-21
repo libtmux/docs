@@ -163,6 +163,28 @@ describe('contrast of the shared chrome', () => {
     }
   })
 
+  // The 12px selected label sits on a 16% wash of the text colour over the header ground (adoption plan step 50).
+  it('keeps the selected scheme label at 4.5:1 on its wash in every palette and both themes, in the text colour, not the link colour', () => {
+    const switchCss = read('global.css')
+    const selected = switchCss.slice(switchCss.indexOf(".scheme-switch__option:has(input:checked)"), switchCss.indexOf("/* The attribute is the authority"))
+    expect(selected).toMatch(/color:\s*var\(--topnav-text-color\)/)
+    expect(selected).toMatch(/color-mix\(in oklab, var\(--topnav-background\), var\(--topnav-text-color\) 16%\)/)
+    const brand = read('brand.css')
+    // Light is `html[data-brand="x"]`; dark is the same with `[data-theme-mode="dark"]`.
+    const blocks = [...brand.matchAll(/^html\[data-brand="([^"]+)"\](\[data-theme-mode="dark"\])?[^{]*\{([^}]*)\}/gm)]
+    const value = (body: string, name: string) => new RegExp(`--${name}:\\s*(#[0-9a-fA-F]{6})`).exec(body)?.[1]
+    let checked = 0
+    for (const [, slug, dark, body] of blocks) {
+      const [ground, text, link] = ['topnav-background', 'topnav-text-color', 'topnav-link-color'].map((name) => hex(value(body!, name)!))
+      const wash = tint(text!, 0.16, ground!)
+      expect(ratio(text!, wash), `${slug} ${dark ? 'dark' : 'light'} text`).toBeGreaterThanOrEqual(4.5)
+      checked++
+      // The control: the link colour this replaced is below 4.5:1 in some palette's wash, or this loop could not fail.
+      if (ratio(link!, wash) < 4.5) expect(ratio(text!, wash), `${slug} text beats link`).toBeGreaterThan(ratio(link!, wash))
+    }
+    expect(checked, 'a light and a dark block for each palette').toBe(Object.keys(palettes).length * 2)
+  })
+
   // Record 0079. The tint is the link colour over the code background, under the syntax inks: GitHub light and dark, which tokens.css states.
   it('keeps every syntax ink at 4.5:1 on the Core player\'s current and hover tints, in every palette and both themes', () => {
     const css = read('core-player.css')

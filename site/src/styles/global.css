@@ -1318,6 +1318,8 @@ html[data-color-scheme='system'] .scheme-switch__option[data-scheme='system'],
 html[data-color-scheme='light'] .scheme-switch__option[data-scheme='light'],
 html[data-color-scheme='dark'] .scheme-switch__option[data-scheme='dark'] {
   background: color-mix(in oklab, var(--topnav-background), var(--topnav-text-color) 16%);
+  /* The selected label takes the full text colour: the link colour at 12px measured 4.38:1 on this wash. */
+  color: var(--topnav-text-color);
   font-weight: 600;
 }
 
