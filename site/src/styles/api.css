@@ -71,7 +71,7 @@ dt.gp-sphinx-api-header { position: relative; }
 dt.gp-sphinx-api-header > .section-anchor-alias { inset-block-start: 0; inset-inline-start: 0; }
 /* `.py` keeps this above the vendored rule that clears a member's header, and a target keeps the surface: arriving draws no box (record 0049). */
 dl.py.gp-sphinx-api-container > dt.gp-sphinx-api-header {
-  background: color-mix(in srgb, var(--background-color), var(--text-color) 6%);
+  background: color-mix(in srgb, var(--background-color), var(--text-color) var(--signature-ground-share, 6%));
 }
 /* An entry without a body needs only the card's outer border. */
 dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {

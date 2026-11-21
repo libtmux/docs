@@ -70,6 +70,9 @@
 
   /* The current row of every navigation list: its text is --theme-primary on this tint, semibold, with no start-edge bar. */
   --current-row-bg: color-mix(in oklab, var(--theme-primary), transparent 90%);
+
+  /* How much of the text colour the signature header's ground takes over the page ground (record 0080). Dark takes less, so the approved --color-api-name red reaches 4.5:1 on it. */
+  --signature-ground-share: 6%;
 }
 
 html[data-theme-mode="dark"] {
@@ -110,6 +113,7 @@ html[data-theme-mode="dark"] {
   --lm-reroll-from: #818cf8;
   --lm-reroll-to: #c084fc;
   --current-row-bg: color-mix(in oklab, var(--theme-primary), transparent 85%);
+  --signature-ground-share: 3%;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -151,6 +155,7 @@ html[data-theme-mode="dark"] {
     --lm-reroll-from: #818cf8;
     --lm-reroll-to: #c084fc;
     --current-row-bg: color-mix(in oklab, var(--theme-primary), transparent 85%);
+    --signature-ground-share: 3%;
   }
 }
 

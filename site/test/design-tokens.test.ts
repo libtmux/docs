@@ -623,3 +623,23 @@ describe('muted text on API pages: a colour, never opacity', () => {
       expect(source(file)).not.toMatch(/\bopacity-(?:60|80)\b/)
     })
 })
+
+describe('the dark signature header (record 0080)', () => {
+  // The page ground and text of the default dark palette, and the approved dark name red.
+  const ground = hex(/--background-color:\s*(#[0-9a-f]{6})/i.exec(read('brand.css').slice(read('brand.css').indexOf('dark')))![1]!)
+  const text = hex('#e7edf3')
+  const name = hex(/--color-api-name:\s*(#[0-9a-f]{6})/i.exec(read('vendor/gp-sphinx-api.css').slice(read('vendor/gp-sphinx-api.css').indexOf('--color-api-name: #ee5151') - 10))![1]!)
+  const header = (share: number) => tint(text, share, ground)
+
+  it('reads its share of the text colour from a token that dark sets to 3%', () => {
+    const tokens = read('tokens.css')
+    expect(tokens).toMatch(/:root \{[^}]*--signature-ground-share: 6%;/)
+    expect(tokens.match(/--signature-ground-share: 3%;/g)).toHaveLength(2)
+    expect(read('api.css')).toContain('var(--text-color) var(--signature-ground-share, 6%)')
+  })
+
+  it('keeps the approved name red at 4.5:1 on the 3% ground, which the 6% ground does not', () => {
+    expect(ratio(name, header(0.03))).toBeGreaterThanOrEqual(4.5)
+    expect(ratio(name, header(0.06))).toBeLessThan(4.5)
+  })
+})
