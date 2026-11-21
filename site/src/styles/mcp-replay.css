@@ -269,9 +269,15 @@ html[data-js] .mcp-replay .mcp-turn[data-turn]:not([data-turn='prompt'], .mcp-tu
   margin-top: 0.5rem;
 }
 
-.mcp-turn--answer :is(code, samp) {
+/* The site's inline-code chip, as the prose rule in global.css draws it (this sheet is `not-prose`): body weight at 0.875em, in the text colour. The extra class outranks `.mcp-replay code` below, which strips the chip from the call's own code. */
+.mcp-replay .mcp-turn--answer :is(code, samp) {
+  padding: 0.125rem 0.1875rem;
+  border-radius: 0.25rem;
+  background: var(--color-inline-code-background);
   font-family: var(--mcp-mono);
   font-size: 0.875em;
+  font-weight: 400;
+  overflow-wrap: anywhere;
 }
 
 .mcp-call {
