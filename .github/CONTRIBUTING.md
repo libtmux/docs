@@ -211,8 +211,11 @@ Client pages at 1440 pixels, where a name wraps onto several lines, and requires
 each chip to hold its name and clear the next. It reads the chips of the usage
 table on the `list-panes` manual page the same way, and requires a chip with a
 qualifier to keep the width its name needs, with the qualifier beside it or
-under it. Each check ends with a negative control that breaks what it holds and
-requires the gate to notice, by the problem it names:
+under it. An icon mark, the `<>` of the Source button, has no descender for a
+letter mark's raised baseline to allow for, so the gate requires its centre
+within half a pixel of its segment's centre. Each check ends with a negative
+control that breaks what it holds and requires the gate to notice, by the
+problem it names:
 
 ```console
 $ node site/scripts/check-dev.mjs --badge-centring

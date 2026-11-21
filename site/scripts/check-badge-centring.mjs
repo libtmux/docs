@@ -19,6 +19,8 @@ import { chromium } from 'playwright'
  * which snaps text to device pixels as a hi-dpi screen does; the emulated factor
  * snaps to CSS pixels and is not evidence), light and dark.
  *
+ * An icon mark (the Source button's `<>`) has no descender space, so it is centred in its segment, within half a pixel.
+ *
  * `p` and `$` are not measured: their ink hangs below the baseline.
  */
 /** The version the dev build mounts a port's prose pages at: its default, as check-dev sets it. */
@@ -198,7 +200,7 @@ export function judge(label, result, kind, { skipBaseline = false } = {}) {
 
 const GROUPS = [
   { kind: 'mark', selector: `.api-nav__kind:not(:is(${LINKED.split(', ').map((s) => `${s} a > ${LINK_MARK}`).join(', ')}))`, name: 'mark' },
-  // A legend chip's letter glyph and word; an action chip whose mark is an icon (the source button) has no glyph to centre. A chip in a
+  // A legend chip's letter glyph and word; an action chip whose mark is an icon (the source button) has no glyph to centre, and `iconMarkProblems` reads it. A chip in a
   // declaration's corner tab is measured from its boxes instead (checkPage): its floor is open onto the declaration (record 0047).
   { kind: 'leg', selector: '.api-leg:has(> .api-leg__m > .api-leg__g):not(.api-corner > *)', name: 'legend chip' },
   { kind: 'row', selector: ROW_MARKS, name: 'card, list and linked-name mark' },
@@ -402,6 +404,23 @@ export function apiTreeGutterProblems(page) {
   })
 }
 
+/**
+ * An icon mark is centred in its segment. A letter mark rests on bottom padding sized for the descender space under its
+ * baseline, so its ink lands centred; an icon has no descender, and the same padding lifts it. The icon is read from its box,
+ * which holds the ink symmetrically, because a corner tab's open floor leaves no painted edge to measure from.
+ */
+export function iconMarkProblems(page) {
+  return page.evaluate(() => {
+    const found = [...document.querySelectorAll('.api-leg__m')].filter((segment) => segment.offsetParent && segment.querySelector(':scope > svg')).map((segment) => {
+      const box = segment.getBoundingClientRect()
+      const icon = segment.querySelector(':scope > svg').getBoundingClientRect()
+      return { text: segment.closest('.api-leg').textContent.trim().replace(/\s+/g, ' ').slice(0, 16), offset: (icon.top + icon.bottom) / 2 - (box.top + box.bottom) / 2 }
+    })
+    const problems = found.filter(({ offset }) => Math.abs(offset) > 0.5).map(({ text, offset }) => `icon mark "${text}": the icon is ${Math.abs(offset).toFixed(2)}px ${offset < 0 ? 'above' : 'below'} its segment's centre`)
+    return { marks: found.length, problems }
+  })
+}
+
 async function checkPage(page, base, entry, scheme, results) {
   await page.goto(`${base}${entry.path}`, { waitUntil: 'load' })
   await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
@@ -434,6 +453,9 @@ async function checkPage(page, base, entry, scheme, results) {
   for (const { text, offset } of corner) {
     if (Math.abs(offset) > 0.75) results.failures.push(`${entry.label} (${scheme}) corner chip "${text}": the word's cap box is ${offset.toFixed(2)}px off the tab's centre`)
   }
+  const icons = await iconMarkProblems(page)
+  results.counts['icon mark'] = (results.counts['icon mark'] ?? 0) + icons.marks
+  results.failures.push(...icons.problems.map((problem) => `${entry.label} (${scheme}) ${problem}`))
   const protocol = await protocolSidebarProblems(page)
   results.counts['protocol sidebar group'] = (results.counts['protocol sidebar group'] ?? 0) + protocol.groups
   results.counts['protocol sidebar row'] = (results.counts['protocol sidebar row'] ?? 0) + protocol.rows
@@ -489,6 +511,18 @@ async function negativeControl(page, base, results) {
   results.modControl = judge('control', measure(await sample(page, await chip.elementHandle(), 'mod'), 'mod'), 'mod').length
   await shifted.evaluate((node) => node.remove())
   assert(results.modControl > 0, 'The modifier check did not notice a word shifted off its chip\'s centre')
+
+  // An icon mark: the bottom-aligned padding of a letter mark, put back on the Source button's icon (the rule it had before it
+  // centred), lifts the icon off its segment's centre and must fail.
+  await page.goto(`${base}${PAGES[2].path}`, { waitUntil: 'load' })
+  await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
+  const icon = await iconMarkProblems(page)
+  assert(icon.marks > 0 && icon.problems.length === 0, `The icon mark is not centred before the control (${icon.marks} marks): ${icon.problems.join('; ')}`)
+  const raised = await page.addStyleTag({ content: '.api-leg__m:has(> svg) { align-items: flex-end !important; padding-bottom: var(--leg-pb) !important; }' })
+  const iconLifted = (await iconMarkProblems(page)).problems
+  await raised.evaluate((node) => node.remove())
+  results.iconControl = iconLifted.length
+  assert(iconLifted.some((problem) => /px above its segment's centre/.test(problem)), 'The icon check did not notice an icon lifted by a letter mark\'s bottom padding')
 
   // The protocol sidebar: a mark put back on a row, and a row that leaves the shared edge, must each fail (record 0060).
   await page.goto(`${base}${PAGES[8].path}`, { waitUntil: 'load' })
@@ -570,7 +604,7 @@ async function negativeControl(page, base, results) {
 }
 
 export async function checkBadgeCentring(browser, base, { sample: bounded = false } = {}) {
-  const results = { measured: 0, failures: [], counts: {}, control: 0, headingControl: 0, rowControl: 0, sidebarMarked: 0, sidebarOffEdge: 0, gutterControl: 0, modControl: 0, linkedControl: 0 }
+  const results = { measured: 0, failures: [], counts: {}, control: 0, headingControl: 0, rowControl: 0, sidebarMarked: 0, sidebarOffEdge: 0, gutterControl: 0, modControl: 0, linkedControl: 0, iconControl: 0 }
   // The bounded sample keeps one page for each thing the gate holds: an MCP and a guide page, the API type page (tree gutter, rail, rows) and an MCP tool (sidebar rule).
   const pages = bounded ? [PAGES[0], PAGES[1], PAGES[6], PAGES[8]] : PAGES
   const hi = await chromium.launch({ args: ['--force-device-scale-factor=2', '--window-size=1440,1000'] })
@@ -593,8 +627,9 @@ export async function checkBadgeCentring(browser, base, { sample: bounded = fals
   assert(results.measured > 20, `Only ${results.measured} badge samples were measurable`)
   assert((results.counts['protocol sidebar group'] ?? 0) > 0, 'No protocol sidebar group was measured')
   assert((results.counts['API tree mark'] ?? 0) > 0, 'No API tree mark was measured, so the gutter was not checked')
+  assert((results.counts['icon mark'] ?? 0) > 0, 'No icon mark was measured, so the Source button was not checked')
   assert.deepEqual(results.failures, [], `Badge centring:\n${results.failures.join('\n')}`)
-  console.log(`Badge centring: ${results.measured} samples at 1x and a real 2x, light and dark (${Object.entries(results.counts).map(([k, v]) => `${v} ${k}`).join(', ')}); negative controls caught ${results.control} of ${results.controlTested} shifted marks, ${results.headingControl} heading problem and ${results.rowControl} row problems, ${results.sidebarMarked} marked sidebar row and ${results.sidebarOffEdge} row off the edge, ${results.gutterControl} broken indent, ${results.modControl} shifted modifier word and ${results.linkedControl} drifted linked-name mark PASS`)
+  console.log(`Badge centring: ${results.measured} samples at 1x and a real 2x, light and dark (${Object.entries(results.counts).map(([k, v]) => `${v} ${k}`).join(', ')}); negative controls caught ${results.control} of ${results.controlTested} shifted marks, ${results.headingControl} heading problem and ${results.rowControl} row problems, ${results.sidebarMarked} marked sidebar row and ${results.sidebarOffEdge} row off the edge, ${results.gutterControl} broken indent, ${results.modControl} shifted modifier word, ${results.linkedControl} drifted linked-name mark and ${results.iconControl} lifted icon mark PASS`)
 }
 
 /**
