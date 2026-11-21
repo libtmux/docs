@@ -37,7 +37,6 @@ export const TIERS: readonly Tier[] = [
   { id: 'teardown', label: 'Teardown', summary: 'Delete tmux objects or retained scrollback. Not reversible.', tooltip: 'Teardown: deletes tmux objects or scrollback' },
 ]
 
-/** The tier a tool belongs to, or nothing for a server that declares no toolsets. */
 /** A run of a closing reply: plain words, `inline code`, or output the session printed, which the reply quotes in double quotes. */
 export type ReplyRun = { kind: 'text' | 'code' | 'output'; text: string }
 
@@ -51,6 +50,7 @@ export function replyParagraphs(reply: string): ReplyRun[][] {
     }))
 }
 
+/** The tier a tool belongs to, or nothing for a server that declares no toolsets. */
 export const tierFor = (tool: { tier?: TierId }): Tier | undefined => TIERS.find((entry) => entry.id === tool.tier)
 
 /** One tool as `tools/list` advertises it. */
