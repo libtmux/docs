@@ -118,7 +118,7 @@ describe('forced colours', () => {
   })
 })
 
-/** What print owes a reader: no chrome, every line, every section and every address. */
+/** What print owes a reader: no chrome, every line, every section and every address, headings with their content, and a player's whole run (record 0078). */
 function printViolations(a11y: string, chrome: string[]): string[] {
   const print = parseRules(a11y).filter((rule) => inMedia(rule, 'print'))
   const found: string[] = []
@@ -134,6 +134,13 @@ function printViolations(a11y: string, chrome: string[]): string[] {
   if (!/attr\(href\)/.test(external?.declarations.content ?? '')) found.push('an external link prints no address')
   // The shell's own glyph is a masked box with a width: it has to give way to text.
   else if (important(external?.declarations.mask) !== 'none' || important(external?.declarations['inline-size']) !== 'auto') found.push('an external link keeps its glyph over the address')
+  const headings = print.find((rule) => rule.selectors.includes('h2'))
+  if (headings?.declarations['break-after'] !== 'avoid') found.push('a heading can end a page')
+  // Code and signatures hold their types as links; a frame has no room for an address inside it.
+  const inCode = print.find((rule) => rule.selectors.some((selector) => selector.includes('.api-native-signature') && selector.endsWith('::after')))
+  if (important(inCode?.declarations.content) !== 'none') found.push('a link in a signature prints its address')
+  // A player prints its program; the tmux and result beside it show whichever step the reader left it on.
+  if (!hidden.has('.core-player__side')) found.push('a player prints only the step it was left on')
   return found
 }
 
@@ -154,6 +161,13 @@ describe('print', () => {
     ['components/HomeExample.astro', '.home-example-options'],
     ['components/docs/PageEnd.astro', '.page-end'],
     ['components/BackToTop.astro', '#back-to-top'],
+    ['components/api/columns/ApiColumnsBar.astro', '.api-columns__bar'],
+    ['components/api/columns/ApiColumnsBar.astro', '.api-columns__config'],
+    ['components/HeadingLink.astro', '.heading-link'],
+    ['components/api/ApiQualifiedName.astro', '.api-copy-name'],
+    ['components/core/CorePlayer.astro', '.core-player__side'],
+    ['components/CoreShowcase.astro', '.core-showcase__picker'],
+    ['components/SiteFooter.astro', 'body > footer'],
   ]
   const chrome = CHROME.map(([, selector]) => selector)
 
@@ -175,6 +189,10 @@ describe('print', () => {
     expect(printViolations(a11y.replace('content-visibility: visible', 'content-visibility: hidden'), chrome)).toEqual(['a collapsed section stays collapsed'])
     expect(printViolations(a11y.replace("attr(href)", "''"), chrome)).toEqual(['an external link prints no address'])
     expect(printViolations(a11y.replace('mask: none !important', 'mask: url(glyph.svg)'), chrome)).toEqual(['an external link keeps its glyph over the address'])
+    expect(printViolations(a11y.replace(/\.heading-link,\s*\n/, ''), chrome)).toEqual(['.heading-link is not hidden'])
+    expect(printViolations(a11y.replace('break-after: avoid;', 'break-after: auto;'), chrome)).toEqual(['a heading can end a page'])
+    expect(printViolations(a11y.replace('content: none !important;\n    display: none !important;', 'content: attr(href);'), chrome)).toEqual(['a link in a signature prints its address'])
+    expect(printViolations(a11y.replace(/\.core-player__side \{\s*display: none !important;/, '.core-player__side {\n    display: block;'), chrome)).toEqual(['.core-player__side is not hidden', 'a player prints only the step it was left on'])
   })
 
   it('prints every line of a capped code frame: the frame\'s own print rule lifts its cap', () => {
