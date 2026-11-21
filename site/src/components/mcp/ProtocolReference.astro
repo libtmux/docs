@@ -226,7 +226,7 @@ const wrapsBadge = wrapped ? mentionBadge(nativeKind(wrapped, port), wrapped.com
           <h2 class="api-index-summary border-b border-edge pb-1 font-mono">{group.label}<span class="mcp-count ml-2 text-xs font-sans text-muted" data-count="all">{group.objects.length} {group.objects.length === 1 ? (section === 'resources' ? 'object' : section.slice(0, -1)) : section === 'resources' ? 'objects' : section}</span>{tiered && section === 'tools' && TIERS.map((tier) => {
             const n = group.objects.filter((entry) => tierOf(entry.name)?.id === tier.id).length
             return n > 0 && <span class="mcp-count ml-2 text-xs font-sans text-muted" data-count={tier.id}>{n} {n === 1 ? 'tool' : 'tools'}</span>
-          })}<HeadingLink href={`#${group.id}`} label={`Permalink to ${group.label}`} /></h2>
+          })}<HeadingLink href={`#${group.id}`} label={`Link to ${group.label}`} /></h2>
           <div class="mt-3 grid gap-3 sm:grid-cols-2">{group.objects.map((entry) => {
             const tier = section === 'tools' ? tierOf(entry.name) : undefined
             return <div class:list={['api-index-card scroll-mt-24 rounded border border-edge p-3 hover:bg-surface-hover', section === 'tools' && 'mcp-tool-card', tier && 'mcp-tool-card--tier']} id={entry.id} data-tier={tier?.id}>
