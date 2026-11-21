@@ -6320,6 +6320,78 @@
           ]
         }
       ]
+    },
+    {
+      "port": "haskell",
+      "names": [
+        "PaneMoveOptions",
+        "defaultPaneMoveOptions",
+        "moveDirection",
+        "moveSize",
+        "moveBefore",
+        "moveFullWindow",
+        "selectMovedPane"
+      ],
+      "commands": [
+        "move-pane",
+        "move-window",
+        "select-pane"
+      ],
+      "kind": "values",
+      "why": "These construct or read pane placement options. Move and join consume them as native arguments.",
+      "in": "src/LibTmux/Creation.hs",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Creation.hs:128",
+          "has": [
+            "data PaneMoveOptions = PaneMoveOptions"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Creation.hs:138",
+          "has": [
+            "defaultPaneMoveOptions = PaneMoveOptions TopBottom DefaultSplitSize False False False"
+          ]
+        },
+        {
+          "at": "internal/LibTmux/Internal/Command.hs:435",
+          "has": [
+            "<> [\"-b\" | options.moveBefore] <> [\"-f\" | options.moveFullWindow] <> size"
+          ]
+        }
+      ]
+    },
+    {
+      "port": "haskell",
+      "names": [
+        "waitForPaneState"
+      ],
+      "commands": [
+        "wait-for"
+      ],
+      "kind": "other-command",
+      "why": "The waiter observes a control stream and confirms pane state through fresh snapshots.",
+      "in": "src/LibTmux/Server.hs",
+      "evidence": [
+        {
+          "at": "src/LibTmux/Server.hs:1152",
+          "has": [
+            "catchNoPropagate (Right <$> captureFor server left)"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Server.hs:1190",
+          "has": [
+            "timeout interval (atomically (Control.awaitControlWake stream))"
+          ]
+        },
+        {
+          "at": "src/LibTmux/Server.hs:1198",
+          "has": [
+            "catchNoPropagate (withControlFor server left session observerOptions"
+          ]
+        }
+      ]
     }
   ]
 }
