@@ -418,7 +418,7 @@ describe('native Sphinx declarations', () => {
   })
 
   it('hides what scrolls beneath the pinned row and stays under the 40 of the site header', () => {
-    const rule = shellCss().match(/dt\.gp-sphinx-api-header:not\(:target\) \{\s*background-color: color-mix\(in srgb, var\(--background-color\), var\(--text-color\) (\d+)%\);/)
+    const rule = shellCss().match(/dt\.gp-sphinx-api-header:not\(:target\) \{\s*background-color: color-mix\(in srgb, var\(--background-color\), var\(--text-color\) var\(--signature-ground-share, (\d+)%\)\);/)
     expect(rule, 'the pinned row mixes two opaque page colours').not.toBeNull()
     expect(Number(rule![1])).toBeGreaterThan(0)
     expect(Number(rule![1])).toBeLessThan(100)

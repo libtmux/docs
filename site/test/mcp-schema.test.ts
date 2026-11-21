@@ -139,7 +139,13 @@ describe('MCP structured schemas', () => {
     }
     const imports = { '../../lib/mcp-schema': new URL('../src/lib/mcp-schema.ts', import.meta.url).href }
     const type = await compile('McpSchemaType', imports)
-    const fields = await compile('McpSchema', { ...imports, './McpSchemaType.astro': type,
+    // The shared heading link lives beside the components, not in `mcp/`.
+    const heading = await transform(readFileSync(new URL('../src/components/HeadingLink.astro', import.meta.url), 'utf8'), {
+      filename: 'HeadingLink.astro', internalURL: 'astro/compiler-runtime', resultScopedSlot: true, resolvePath: (specifier: string) => specifier,
+    })
+    const link = `data:text/javascript;base64,${Buffer.from(heading.code.replaceAll('"astro/compiler-runtime"', JSON.stringify(pathToFileURL(astroRequire.resolve('astro/compiler-runtime')).href))
+      .replaceAll('"../lib/heading-link"', JSON.stringify(new URL('../src/lib/heading-link.ts', import.meta.url).href))).toString('base64')}`
+    const fields = await compile('McpSchema', { ...imports, './McpSchemaType.astro': type, '../HeadingLink.astro': link,
       // These fixtures have no description prose; keep the rendering check independent of the full catalog.
       '../../lib/mcp-reference': 'data:text/javascript,export const renderToolDescription = async () => ""',
     })
