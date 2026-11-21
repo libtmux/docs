@@ -458,7 +458,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
   {model && sidebarInventory && <ApiColumnsBar port={port} portName={label} base={refBase} glossary={glossary} />}
   <!-- Flush: the tree's column runs from the header to the footer against the
        viewport's edge, as Learn's does, and only the text column is padded. -->
-  <main class:list={["api-reference-layout grid", owner && 'api-reference-layout--symbol', glossary && 'api-reference-layout--glossary']}>
+  <main id="content" tabindex="-1" class:list={["api-reference-layout grid", owner && 'api-reference-layout--symbol', glossary && 'api-reference-layout--glossary']}>
     {model && sidebarInventory && (
       <ApiTree
         presentation="outline"

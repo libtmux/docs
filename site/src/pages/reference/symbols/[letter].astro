@@ -137,7 +137,7 @@ const title = port ? `${portName} API index` : 'Symbol index'
     </button>
   </DocumentationContext>}
   {column ? (
-    <main class="api-reference-layout grid">
+    <main id="content" tabindex="-1" class="api-reference-layout grid">
       <ApiTree
         presentation="outline"
         inventory={column.inventory}

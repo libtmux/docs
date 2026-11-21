@@ -44,6 +44,9 @@ const port = portSlug ? PORT_BY_SLUG[portSlug] : undefined
 const links = port ? portHeaderLinks(port) : undefined
 ---
 
+{/* The first tab stop on every page (record 0077). It is hidden until focused and leads to `main#content`; the script below covers a native page, whose article is not a `main`. */}
+<a class="skip-link" href="#content">Skip to content</a>
+
 <header
   class="site-header sticky top-0 z-40 border-b border-edge"
   style="background: var(--topnav-background); backdrop-filter: blur(var(--topnav-backdrop-blur, 8px));"
@@ -137,6 +140,10 @@ const links = port ? portHeaderLinks(port) : undefined
 </header>
 
 <script>
+  import { installSkipLink } from '../lib/skip-link'
+
+  installSkipLink()
+
   /** The key is Command on Apple keyboards and Control elsewhere; the server renders the latter. */
   function nameSearchKey() {
     const platform = (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData?.platform ?? navigator.platform ?? ''
