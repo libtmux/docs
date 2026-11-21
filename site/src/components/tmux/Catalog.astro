@@ -207,7 +207,7 @@ const typeChips = kind ? catalogTypeCounts(tmuxCatalogEntries(version, kind)) : 
           const names = shared.length >= 3 ? shared : []
           const rows = names.length ? all.filter((row) => !names.includes(row)) : all
           return <section class="catalog-group mt-8" id={bucket.id} data-catalog-group>
-            <h2 class="api-index-summary border-b border-edge pb-1 font-mono">{bucket.label}<span class="ml-2 text-xs font-sans opacity-60">{bucket.entries.length}</span></h2>
+            <h2 class="api-index-summary border-b border-edge pb-1 font-mono">{bucket.label}<span class="ml-2 text-xs font-sans text-muted">{bucket.entries.length}</span></h2>
             {names.length > 0 && <>
               <p class="catalog-note mt-3">Every command that has an after hook shares one description: tmux runs the hook after the command finishes.</p>
               <ul class="catalog-names">{names.map((row) => <li data-catalog-row data-name={row.name.toLowerCase()} data-type="">

@@ -528,7 +528,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
             </p>
             <p class="mt-4">
               <a href={withRoot('/reference/symbols/a/')}>Symbol index (A–Z)</a>
-              <span class="ml-2 text-sm opacity-60">
+              <span class="ml-2 text-sm text-muted">
                 every name in every port, for when you know the name and not
                 the library
               </span>
@@ -540,7 +540,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                   href={PORT_BY_SLUG[port] ? referenceUrl(PORT_BY_SLUG[port], defaultVersionFor(port)) : withRoot('/reference/')}
                 >
                   <span class="text-lg font-semibold">{PORT_NAME[port] ?? port}</span>
-                  <span class="ml-2 text-sm opacity-60">{coreCount(m)} symbols</span>
+                  <span class="ml-2 text-sm text-muted">{coreCount(m)} symbols</span>
                   <p class="mt-1 text-sm opacity-75">
                     {m.symbols.filter((s) => s.doc?.summary).length} documented,
                     {' '}{topLevelTypesOf(m).length} types
@@ -590,7 +590,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                   class="api-index-summary scroll-mt-24 border-b border-edge pb-1 font-mono text-sm font-semibold tracking-tight"
                 >
                   {mod.name || 'Types'}
-                  <span class="ml-2 font-sans text-xs font-normal opacity-60">
+                  <span class="ml-2 font-sans text-xs font-normal text-muted">
                     {[
                       mod.types.length > 0 && `${mod.types.length} ${mod.types.length === 1 ? 'type' : 'types'}`,
                       mod.free.length > 0 &&
@@ -625,10 +625,10 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                         {context && <span class="api-index-card__context">
                           <ApiBadge label={context.label} variant="mod" value={context.kind} preview={false} />
                         </span>}
-                        {count > 0 && <span class="text-xs opacity-60">{count} {count === 1 ? 'member' : 'members'}</span>}
+                        {count > 0 && <span class="text-xs text-muted">{count} {count === 1 ? 'member' : 'members'}</span>}
                       </div>
                       {o.doc?.summary && (
-                        <p class="mt-1 text-sm opacity-80">
+                        <p class="mt-1 text-sm text-muted">
                           <ApiDoc text={o.doc.summary} index={index} context={o} citations={false} />
                         </p>
                       )}
@@ -642,7 +642,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
               <section class="mt-12">
                 <h2 class="border-b border-edge pb-1 font-mono text-sm font-semibold tracking-tight">
                   By module
-                  <span class="ml-2 font-sans text-xs font-normal opacity-60">
+                  <span class="ml-2 font-sans text-xs font-normal text-muted">
                     {moduleGroups.length} modules
                   </span>
                 </h2>
@@ -667,7 +667,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                       <details id={m.name || undefined} class="api-module scroll-mt-24">
                         <summary class="api-module__name font-mono text-sm">
                           {m.name || 'Types'}
-                          <span class="ml-2 font-sans text-xs opacity-60">
+                          <span class="ml-2 font-sans text-xs text-muted">
                             {m.types.length + m.free.length}
                           </span>
                         </summary>

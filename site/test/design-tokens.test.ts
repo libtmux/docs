@@ -607,3 +607,19 @@ describe('shared chrome reads tokens, not greys', () => {
     expect(source('components/RerollButton.astro')).toContain('linear-gradient(to right, var(--lm-reroll-from), var(--lm-reroll-to))')
   })
 })
+
+describe('muted text on API pages: a colour, never opacity', () => {
+  const source = (path: string) => readFileSync(new URL(`../src/${path}`, import.meta.url), 'utf8')
+
+  it('draws definition labels, signature separators and Default labels in the muted text colour', () => {
+    const api = read('api.css')
+    expect(api).toMatch(/\.api-definition dt \{[^}]*color: var\(--color-foreground-muted\);/)
+    expect(api).not.toMatch(/\.api-definition dt \{[^}]*opacity/)
+    expect(api).toMatch(/\.api-punct, \.api-type-label \{ color: var\(--color-foreground-muted\); \}/)
+  })
+
+  it.each(['components/api/ApiReference.astro', 'components/mcp/ProtocolReference.astro', 'components/tmux/Catalog.astro'])(
+    '%s dims no member or type count, and no card summary, with opacity', (file) => {
+      expect(source(file)).not.toMatch(/\bopacity-(?:60|80)\b/)
+    })
+})

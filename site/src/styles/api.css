@@ -81,7 +81,7 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:only-child {
 .api-signature-name-link { color: inherit; text-decoration: none; }
 .api-signature-name-link:hover { text-decoration: underline; }
 .api-name { font-weight: 600; }
-.api-punct, .api-type-label { opacity: 0.65; }
+.api-punct, .api-type-label { color: var(--color-foreground-muted); }
 .api-param-name { color: var(--api-ink-param); }
 .api-default { opacity: 0.75; }
 
@@ -365,7 +365,7 @@ a.api-member-link[data-link-preview]:not(:hover, :focus-visible) { text-decorati
 
 .api-definition dt {
   margin: 0;
-  opacity: 0.6;
+  color: var(--color-foreground-muted);
 }
 
 .api-definition dd {
