@@ -7,7 +7,7 @@ import type { ReplayOptions, ReplayPlayer, ReplayState } from '../src/lib/replay
 /**
  * The shared replay player (`lib/replay-player.ts`) on a hand-built bar: which
  * step it opens on, the rest state it opens in (record 0081), when it plays by
- * itself, and what stops it. The Core API
+ * itself, what stops it, and the Hide preview buttons it adds. The Core API
  * player and the MCP replay are tested on their own markup in
  * `core-player.test.ts` and `mcp-replay.test.ts`.
  */
@@ -15,7 +15,7 @@ const source = transpileModule(readFileSync(new URL('../src/lib/replay-player.ts
 
 const TOTAL = 4
 const MARKS = Array.from({ length: TOTAL + 1 }, (_, index) => `<button type="button" data-mark="${index}"></button>`).join('')
-const MARKUP = `<section id="root" data-interval="5"><div data-body tabindex="0"><div id="content"><p id="words">Some words to select.</p></div></div>
+const MARKUP = `<section id="root" data-interval="5"><div data-body tabindex="0"><div id="content"><p id="words">Some words to select.</p></div><div id="column" data-column></div></div><div id="head"></div>
   <div data-controls hidden><button type="button" data-action="play"></button><button type="button" data-action="back"></button><button type="button" data-action="forward"></button>
   <div data-fill></div>${MARKS}<span data-count></span><button type="button" data-action="fullscreen"></button></div></section>`
 
@@ -38,7 +38,7 @@ describe('the replay player', () => {
       ? class { constructor(callback: (entries: { isIntersecting: boolean }[]) => void) { reveal = () => callback([{ isIntersecting: true }]) } observe() {} disconnect() {} }
       : undefined
     const drawn: ReplayState[] = []
-    win.eval(`var exports = {}; (function (exports) {\n${source}\n})(exports); window.__bindReplay = exports.bindReplay`)
+    win.eval(`var exports = {}; (function (exports) {\n${source}\n})(exports); window.__bindReplay = exports.bindReplay; window.__bindPreview = exports.bindPreview`)
     const root = document.getElementById('root')!
     const content = document.getElementById('content')!
     const player = (win as unknown as { __bindReplay: (root: HTMLElement, options: ReplayOptions) => ReplayPlayer | undefined }).__bindReplay(root, {
@@ -313,6 +313,60 @@ describe('the replay player', () => {
       player.togglePin(3)
       player.go(2)
       expect(player.state()).toMatchObject({ step: 2, shown: 2, pinned: null, playing: false })
+    })
+  })
+
+  describe('hide preview', () => {
+    const KEY = 'libtmux-docs.core-player-preview'
+    type Bound = (root: HTMLElement, options: { key: string; column: HTMLElement; head: HTMLElement; places: { parent: HTMLElement; before?: Element | null }[]; showClass: string }) => void
+
+    /** The Hide and Show buttons drawn into the hand-built column, head row and host, with the page's storage as given. */
+    function preview({ stored, broken = false }: { stored?: string; broken?: boolean } = {}) {
+      const { win, document, root } = bind()
+      if (broken) Object.defineProperty(win, 'localStorage', { configurable: true, get() { throw new Error('storage is blocked') } })
+      else if (stored) win.localStorage.setItem(KEY, stored)
+      const column = document.getElementById('column')!
+      const host = document.getElementById('content')!
+      ;(win as unknown as { __bindPreview: Bound }).__bindPreview(root, { key: KEY, column, head: document.getElementById('head')!, places: [{ parent: host, before: host.firstElementChild }], showClass: 'show' })
+      const hide = document.querySelector<HTMLButtonElement>('#head button')!
+      const show = host.querySelector<HTMLButtonElement>('button.show')!
+      const press = (button: HTMLElement) => button.dispatchEvent(new win.MouseEvent('click', { bubbles: true }) as unknown as Event)
+      return { win, document, root, column, hide, show, press, hidden: () => root.hasAttribute('data-preview-hidden'), saved: () => (broken ? null : win.localStorage.getItem(KEY)) }
+    }
+
+    it('draws a named Hide preview button in the head row and a Show preview button in the host, each controlling the column', () => {
+      const { column, hide, show } = preview()
+      expect([hide.getAttribute('aria-label'), show.getAttribute('aria-label')]).toEqual(['Hide preview', 'Show preview'])
+      expect([hide.type, show.type]).toEqual(['button', 'button'])
+      expect(column.id, 'the column is named so aria-controls has a target').not.toBe('')
+      expect([hide.getAttribute('aria-controls'), show.getAttribute('aria-controls')]).toEqual([column.id, column.id])
+      expect([hide.getAttribute('aria-expanded'), show.getAttribute('aria-expanded')]).toEqual(['true', 'true'])
+    })
+
+    it('hides and shows the preview, remembers each choice in storage, and moves focus to the other button', () => {
+      const { document, hide, show, press, hidden, saved } = preview()
+      expect([hidden(), saved()]).toEqual([false, null])
+      press(hide)
+      expect([hidden(), saved()]).toEqual([true, 'hidden'])
+      expect([hide.getAttribute('aria-expanded'), show.getAttribute('aria-expanded')]).toEqual(['false', 'false'])
+      expect(document.activeElement).toBe(show)
+      press(show)
+      expect([hidden(), saved()], 'absent means shown').toEqual([false, null])
+      expect(document.activeElement).toBe(hide)
+    })
+
+    it('opens hidden for a reader who hid it before, and shown otherwise', () => {
+      expect(preview({ stored: 'hidden' }).hidden()).toBe(true)
+      expect(preview({ stored: 'anything else' }).hidden()).toBe(false)
+    })
+
+    it('works when storage throws: the buttons are drawn, the choice holds for the page, and nothing throws', () => {
+      const { hide, show, press, hidden } = preview({ broken: true })
+      expect(hidden()).toBe(false)
+      expect(() => press(hide)).not.toThrow()
+      expect(hidden()).toBe(true)
+      expect(() => press(show)).not.toThrow()
+      expect(hidden()).toBe(false)
     })
   })
 })

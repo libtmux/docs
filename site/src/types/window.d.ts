@@ -21,6 +21,8 @@ declare global {
      */
     __applyPrereleaseNotice?: () => void
     __applyProductNotices?: () => void
+    /** Restore whether the players' previews were hidden before a swapped page paints. */
+    __applyPlayerPreviews?: () => void
     /** Restore the native source disclosure before its contents can paint. */
     __initApiSourceDetails?: (root: Document) => void
   }

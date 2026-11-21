@@ -19,7 +19,8 @@
  * keys move between steps. The first stepping action leaves rest. Nothing plays
  * until the reader presses play, unless the instance sets `autoplay`: a
  * stepping replay is the default, and an autoplay one starts from rest and stops
- * on the reader's first interaction.
+ * on the reader's first interaction. Hide preview folds the tmux column away
+ * and the chat takes its width at the same height.
  */
 import { Code } from 'astro-expressive-code/components'
 import type { Frame } from '../../lib/mcp-replay'
@@ -66,6 +67,7 @@ const note = (frame: Frame) => {
   <div class="mcp-replay__body" tabindex={recording ? 0 : undefined} role={recording ? 'group' : undefined} aria-label={recording ? 'The chat and the tmux it leaves' : undefined} aria-keyshortcuts={recording ? 'ArrowLeft ArrowRight Home End' : undefined} data-body>
     {recording && (
       <div class="mcp-replay__tmux" data-tmux role="group" aria-label="tmux state after the call shown">
+        <div class="mcp-replay__sidehead" data-sidehead></div>
         {recording.frames.map((frame) => {
           return (
             <div class="mcp-frame" data-frame={frame.done} data-off={frame.done === opening ? undefined : ''}>
@@ -117,7 +119,9 @@ const note = (frame: Frame) => {
 {!recording && <p class="not-prose mcp-replay-note">Requests only: no recorded results for {portName} yet.</p>}
 
 <script>
-  import { bindReplay, linkedStep } from '../../lib/replay-player'
+  import { bindPreview, bindReplay, linkedStep } from '../../lib/replay-player'
+
+  const PREVIEW_KEY = 'libtmux-docs.replay-preview'
 
   function bindReplayChat(root: HTMLElement, linked: number | undefined) {
     const total = Number(root.dataset.steps)
@@ -169,6 +173,8 @@ const note = (frame: Frame) => {
       ownsKey: (target) => target.hasAttribute('data-pin'),
     })
     if (!player) return
+    // Hide preview folds the tmux column away; Show preview sits at the chat's top end, first on the stage that holds both.
+    bindPreview(root, { key: PREVIEW_KEY, column: root.querySelector<HTMLElement>('[data-tmux]')!, head: root.querySelector<HTMLElement>('[data-sidehead]')!, places: [{ parent: body, before: body.firstElementChild }], showClass: 'mcp-replay__show' })
     // The results fold away as the replay plays them; a replay that starts finished keeps them open, as a page with no script has them.
     if (!player.reduced) root.querySelectorAll<HTMLDetailsElement>('details.mcp-result').forEach((details) => { details.open = false })
 

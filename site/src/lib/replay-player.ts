@@ -13,7 +13,8 @@
  *
  * A player opens at rest (record 0081): it shows step 1 because nothing is
  * chosen yet, and the host highlights nothing. The reader's first stepping
- * action leaves rest.
+ * action leaves rest. `bindPreview` adds the Hide preview and Show preview
+ * buttons, which both hosts share.
  */
 
 const REDUCED = '(prefers-reduced-motion: reduce)'
@@ -332,6 +333,75 @@ export function linkedStep(selector: string, doc: Document = document): number |
   if (doc.querySelectorAll(selector).length !== 1) return undefined
   const value = new URLSearchParams(doc.location.search).get('step')
   return value !== null && /^\d+$/.test(value) ? Number(value) : undefined
+}
+
+/** What the page remembers when storage throws (blocked, a private window, a full quota): the choice then holds until the page is left. */
+const session = new Map<string, boolean>()
+function hiddenBefore(key: string): boolean {
+  try { return localStorage.getItem(key) === 'hidden' } catch { return session.get(key) ?? false }
+}
+function remember(key: string, hidden: boolean) {
+  session.set(key, hidden)
+  try {
+    if (hidden) localStorage.setItem(key, 'hidden')
+    else localStorage.removeItem(key)
+  } catch { /* The choice still holds for this page. */ }
+}
+
+const ICON = (paths: string) => `<svg class="mcp-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`
+// A window with its right pane: shaded while the preview shows, empty while it is hidden.
+const PANE_SHOWN = '<rect x="1.75" y="2.75" width="12.5" height="10.5" rx="1.5"/><path d="M10 2.75v10.5"/><path d="M10 3.5h2.75a.75.75 0 0 1 .75.75v7.5a.75.75 0 0 1-.75.75H10z" fill="currentColor" stroke="none" opacity=".4"/>'
+const PANE_HIDDEN = '<rect x="1.75" y="2.75" width="12.5" height="10.5" rx="1.5"/><path d="M10 2.75v10.5"/>'
+let previews = 0
+
+export interface PreviewOptions {
+  /** Where the choice is kept: `libtmux-docs.core-player-preview` or `libtmux-docs.replay-preview`. `hidden` is stored; absent means shown. */
+  key: string
+  /** The column that folds away: the tmux and the result, or the tmux. It gets an id when it has none. */
+  column: HTMLElement
+  /** The row at the column's top end that holds Hide preview. The markup draws it empty, so adding the button moves nothing. */
+  head: HTMLElement
+  /** Where Show preview goes: before the code's copy button, or at the chat's top end. A button is added to each, ahead of `before` (or last), so the tab order follows the visual one. */
+  places: { parent: HTMLElement; before?: Element | null }[]
+  /** The class a Show preview button takes from the host's own stylesheet. */
+  showClass: string
+}
+
+/**
+ * Hide preview (record 0081): the column folds away and the code or chat takes the full width at the same height. Both
+ * buttons are drawn here, never in the markup, so a page without script has no dead button. The player root says
+ * `data-preview-hidden` while the column is hidden. A stored choice is also on `<html>` before the first paint
+ * (`ThemeScript.astro`), so a returning reader's page is drawn that way and nothing moves when this binds.
+ */
+export function bindPreview(root: HTMLElement, { key, column, head, places, showClass }: PreviewOptions) {
+  const doc = root.ownerDocument
+  if (!column.id) column.id = `replay-preview-${++previews}`
+  const draw = (label: string, paths: string, className: string) => {
+    const button = doc.createElement('button')
+    button.type = 'button'
+    button.className = className
+    button.title = label
+    button.setAttribute('aria-label', label)
+    button.setAttribute('aria-controls', column.id)
+    button.innerHTML = ICON(paths)
+    return button
+  }
+  const hide = draw('Hide preview', PANE_SHOWN, 'mcp-replay__button')
+  head.append(hide)
+  const shows = places.map(({ parent, before }) => { const button = draw('Show preview', PANE_HIDDEN, showClass); parent.insertBefore(button, before ?? null); return button })
+  const apply = (hidden: boolean) => {
+    root.toggleAttribute('data-preview-hidden', hidden)
+    for (const button of [hide, ...shows]) button.setAttribute('aria-expanded', String(!hidden))
+  }
+  // Focus follows the press: the pressed button is gone, and the other is the way back.
+  const choose = (hidden: boolean) => {
+    apply(hidden)
+    remember(key, hidden)
+    ;(hidden ? shows.find((show) => show.checkVisibility?.() ?? true) ?? shows[0] : hide)?.focus()
+  }
+  hide.addEventListener('click', () => choose(true))
+  for (const show of shows) show.addEventListener('click', () => choose(false))
+  apply(hiddenBefore(key))
 }
 
 /**

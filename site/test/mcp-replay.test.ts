@@ -955,6 +955,46 @@ describe('the replay component', () => {
     expect(linked.document.querySelectorAll('.mcp-turn[aria-current="step"]'), 'and is not at rest').toHaveLength(1)
   })
 
+  it('adds Hide preview to the tmux column and Show preview to the stage from script only, remembers the choice, and survives storage that throws', async () => {
+    const quiet = await mount('ts')
+    expect(quiet.document.querySelectorAll('.mcp-replay__sidehead button, .mcp-replay__show'), 'no dead button without script').toHaveLength(0)
+    expect(quiet.document.querySelector('[data-tmux] > .mcp-replay__sidehead:first-child'), 'the head row is drawn empty, so the script moves nothing').not.toBeNull()
+    const { win, document, root } = await mount('ts', { run: true, reduced: false, interval: 100000 })
+    const column = document.querySelector<HTMLElement>('[data-tmux]')!
+    const hide = column.querySelector<HTMLButtonElement>('.mcp-replay__sidehead button')!
+    const show = document.querySelector<HTMLButtonElement>('[data-body] > .mcp-replay__show')!
+    expect(show.parentElement!.firstElementChild, 'first on the stage, so the tab order follows the screen').toBe(show)
+    expect([hide.getAttribute('aria-label'), hide.getAttribute('aria-expanded'), hide.getAttribute('aria-controls')]).toEqual(['Hide preview', 'true', column.id])
+    expect([show.getAttribute('aria-label'), show.getAttribute('aria-expanded'), show.getAttribute('aria-controls')]).toEqual(['Show preview', 'true', column.id])
+    click(win, hide)
+    expect([root.hasAttribute('data-preview-hidden'), win.localStorage.getItem('libtmux-docs.replay-preview')]).toEqual([true, 'hidden'])
+    click(win, action(document, 'forward'))
+    expect(turnsShown(document), 'stepping still works with the preview hidden').toBe(2)
+    click(win, show)
+    expect([root.hasAttribute('data-preview-hidden'), win.localStorage.getItem('libtmux-docs.replay-preview')]).toEqual([false, null])
+    // Storage that throws leaves the buttons working.
+    const broken = new Window({ url: 'https://libtmux.org/en/rs/latest/' })
+    windows.push(broken)
+    Object.defineProperty(broken, 'localStorage', { configurable: true, get() { throw new Error('storage is blocked') } })
+    broken.document.body.innerHTML = await markup('ts')
+    const target = broken as unknown as { matchMedia: (query: string) => { matches: boolean }; IntersectionObserver?: unknown }
+    target.matchMedia = (query: string) => ({ matches: !/reduced-motion/.test(query) })
+    target.IntersectionObserver = undefined
+    expect(() => broken.eval(`(function() {\n${script}\n})()`)).not.toThrow()
+    const alone = broken.document.querySelector('[data-mcp-replay]') as unknown as HTMLElement
+    expect(() => click(broken, broken.document.querySelector('.mcp-replay__sidehead button') as unknown as Element)).not.toThrow()
+    expect(alone.hasAttribute('data-preview-hidden')).toBe(true)
+  })
+
+  it('draws a hidden preview from the first paint and keeps the stage height: the sheet reserves the head row and the chat\'s room', () => {
+    const css = readFileSync(new URL('../src/styles/mcp-replay.css', import.meta.url), 'utf8')
+    expect(css).toMatch(/\.mcp-replay\[data-preview-hidden\] \.mcp-replay__tmux,\s*html\[data-replay-preview\] \.mcp-replay:not\(\[data-live\]\) \.mcp-replay__tmux \{\s*display: none;/)
+    expect(css, 'the chat clears Show preview').toMatch(/\.mcp-replay\[data-preview-hidden\] \.mcp-replay__chat,[^{]*\{\s*padding-top: 3rem;/)
+    expect(css, 'the stacked stage and tmux box grow by what the head row takes, from the first paint of a page with script').toMatch(/html\[data-js\] \.mcp-replay:not\(\.mcp-replay--requests\) \{\s*--mcp-extra: 1\.75rem;\s*--mcp-tmux-top: 0rem;/)
+    expect(css).toMatch(/\.mcp-replay__body \{[^}]*height: calc\(30rem \+ var\(--mcp-extra\)\);/)
+    expect(css, 'the wide stage is 30rem whether or not the column shows').toMatch(/@container \(min-width: 44rem\) \{\s*\.mcp-replay__body \{\s*flex-direction: row;\s*height: 30rem;/)
+  })
+
   it('has no pin button before script runs, and none in the requests-only form', async () => {
     const before = await mount('ts')
     for (const pin of before.document.querySelectorAll<HTMLButtonElement>('[data-pin]')) expect(pin.hidden).toBe(true)

@@ -327,6 +327,8 @@ describe('control outlines', () => {
     ['components/widgets/package-install.css', '.lm-pkg-install__copy'],
     ['components/widgets/AgentPrompt.astro', '.lm-agent-prompt__copy'],
     ['styles/core-player.css', '.expressive-code .core-copy'],
+    ['styles/core-player.css', '.expressive-code .core-show'],
+    ['styles/mcp-replay.css', '.mcp-replay__show'],
     ['styles/global.css', '.scheme-switch'],
     ['styles/global.css', '.scheme-cycle'],
     ['components/widgets/install-surface.css', '.lm-install__cdtoggle'],

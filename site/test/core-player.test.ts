@@ -906,6 +906,36 @@ describe('the player component', () => {
     expect(count((await mount({ run: true, search: '?step=999' })).document), 'a step past the end is the end').toBe(`${calls}/${calls}`)
   })
 
+  it('adds Hide preview to the side column and Show preview beside each copy button from script only, and remembers the choice', async () => {
+    const quiet = await mount()
+    expect(quiet.document.querySelectorAll('.mcp-replay__sidehead button, .core-show'), 'no dead button without script').toHaveLength(0)
+    expect(quiet.document.querySelector('.core-player__side > .mcp-replay__sidehead:first-child'), 'the head row is drawn empty, so the script moves nothing').not.toBeNull()
+    const { document, win } = await mount({ run: true })
+    const side = document.querySelector<HTMLElement>('.core-player__side')!
+    const hide = side.querySelector<HTMLButtonElement>('.mcp-replay__sidehead button')!
+    expect([hide.getAttribute('aria-label'), hide.getAttribute('aria-expanded'), hide.getAttribute('aria-controls')]).toEqual(['Hide preview', 'true', side.id])
+    const shows = [...document.querySelectorAll<HTMLButtonElement>('.expressive-code .core-show')]
+    expect(shows, 'one beside each view\'s copy button').toHaveLength(document.querySelectorAll('.expressive-code .core-copy').length)
+    for (const show of shows) expect([show.nextElementSibling?.className, show.getAttribute('aria-label'), show.getAttribute('aria-controls')], 'before the copy button, so the tab order follows the screen').toEqual(['core-copy', 'Show preview', side.id])
+    const card = document.querySelector('.home-example-player')!
+    click(win, hide)
+    expect([card.hasAttribute('data-preview-hidden'), win.localStorage.getItem('libtmux-docs.core-player-preview')]).toEqual([true, 'hidden'])
+    click(win, shows[0]!)
+    expect([card.hasAttribute('data-preview-hidden'), win.localStorage.getItem('libtmux-docs.core-player-preview')]).toEqual([false, null])
+    click(win, document.querySelector('[data-action="forward"]')!)
+    expect(count(document), 'stepping still works with the preview hidden').toMatch(/^2\//)
+  })
+
+  it('draws a hidden preview from the first paint and keeps the stage height: the sheet and ThemeScript agree on the choice', () => {
+    const css = readFileSync(new URL('../src/styles/core-player.css', import.meta.url), 'utf8')
+    expect(css).toMatch(/\.home-example-player\[data-preview-hidden\] \.core-player__side,\s*html\[data-core-preview\] \.home-example-player:not\(\[data-live\]\) \.core-player__side \{\s*display: none;/)
+    expect(css, 'the wide stage takes one column and keeps its 35rem height').toMatch(/@container core-player \(min-width: 44rem\) \{\s*:is\(\.home-example-player\[data-preview-hidden\][^{]*\.home-example-stage \{\s*grid-template-columns: minmax\(0, 1fr\);/)
+    const theme = readFileSync(new URL('../src/components/ThemeScript.astro', import.meta.url), 'utf8')
+    expect(theme).toContain("['libtmux-docs.core-player-preview', 'data-core-preview']")
+    expect(theme).toContain("['libtmux-docs.replay-preview', 'data-replay-preview']")
+    expect(theme, 'a swapped page is resolved too').toContain('window.__applyPlayerPreviews?.()')
+  })
+
   it('uses the replay\'s keys on the stage and on a result\'s pin button, and no other key', async () => {
     const { document, win } = await mount({ run: true })
     const stage = document.querySelector('.home-example-stage')!
