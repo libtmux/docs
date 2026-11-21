@@ -153,20 +153,22 @@ describe('the Common Lisp recording of the landing page program', () => {
   })
 })
 
-describe('the player of a program that connects to a server its setup started', () => {
-  it('says the server is running before the first call, and plans every call in every view', async () => {
+describe('the player with an already-running tmux server', () => {
+  it('says the server is running before the first call and plans every view', async () => {
     const played = (await playableCapability('haskell', 'typed-graph', shown('haskell')))!
+    const created = played.capability.steps.find((step) => step.id === 'create-session')!
+    const capability = { ...played.capability, tmuxBefore: created.tmux }
     const template = await loadAstroTemplate('components/core/CorePlayer.astro', {
       real: ['components/HomeExample.astro', 'components/replay/TmuxScreen.astro', 'components/replay/ReplayControls.astro'],
       modules: { 'astro-expressive-code/components': { Code } },
     })
     const window = new Window({ url: 'https://libtmux.org/haskell/latest/' })
-    window.document.body.innerHTML = await renderAstroTemplate(template, { props: { port: 'haskell', language: 'Haskell', example: QUICKSTARTS.haskell!.complete!, recording: played.recording, capability: played.capability } })
+    window.document.body.innerHTML = await renderAstroTemplate(template, { props: { port: 'haskell', language: 'Haskell', example: QUICKSTARTS.haskell!.complete!, recording: played.recording, capability } })
     const document = window.document as unknown as Document
     expect(document.querySelector('[data-frame="0"] .mcp-frame__note')!.textContent).toBe('tmux before the first call: the server the setup commands started is running.')
     const plan = JSON.parse(document.querySelector('[data-core-plan]')!.getAttribute('data-core-plan')!) as Record<string, unknown[]>
     expect(Object.keys(plan)).toEqual([...HOME_VIEWS])
-    for (const view of HOME_VIEWS) expect(plan[view], view).toHaveLength(played.capability.steps.length)
+    for (const view of HOME_VIEWS) expect(plan[view], view).toHaveLength(capability.steps.length)
   })
 })
 
