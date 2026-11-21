@@ -439,6 +439,22 @@ describe('the showcase section', () => {
       expect(closing[0]!.previousElementSibling, 'the last call comes before it').toBe([...document.querySelectorAll('article.mcp-turn')].at(-1))
     })
 
+    it('is not a step: its stylesheet rules skip it, and its code is the inline-code chip', () => {
+      const css = readFileSync(new URL('../src/styles/mcp-replay.css', import.meta.url), 'utf8')
+      expect(css).toContain(".mcp-turn[data-turn]:not([data-turn='prompt'], .mcp-turn--answer) {")
+      expect(css).toContain(".mcp-turn[data-turn]:not([data-turn='prompt'], .mcp-turn--answer):not([aria-current='step']):hover {")
+      // The chip's selector must outrank `.mcp-replay code`, which removes it from the call's own code.
+      expect(css).toMatch(/\.mcp-replay \.mcp-turn--answer :is\(code, samp\) \{[^}]*background: var\(--color-inline-code-background\);[^}]*font-size: 0\.875em;[^}]*font-weight: 400;/)
+    })
+
+    it('names the replay body, the one focus stop, and says its keys', async () => {
+      const body = (await withReply('go', reply)).querySelector('[data-body]')!
+      expect(body.getAttribute('role')).toBe('group')
+      expect(body.getAttribute('aria-label')).toBe('The chat and the tmux it leaves')
+      expect(body.getAttribute('tabindex')).toBe('0')
+      expect(body.closest('[data-mcp-replay]')!.querySelector('[data-hint]')!.textContent).toMatch(/arrow keys, Home and End/)
+    })
+
     it('draws no closing turn for a recording without a reply: nothing is built from the panes (record 0074)', async () => {
       expect((await withReply('go', reply)).querySelectorAll('.mcp-turn--answer'), 'the control: a stored reply closes the chat').toHaveLength(1)
       for (const port of ['go', 'julia']) {
