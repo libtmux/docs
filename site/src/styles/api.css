@@ -1383,6 +1383,8 @@ a.api-doc-link[data-api-kind][data-link-preview]:not(.api-badge):not(.api-mentio
   text-decoration-thickness: 1px;
   text-underline-offset: .22em;
 }
+/* Code inside a doc comment's link keeps the 12px floor for inline code (record 0071); at .8125em it measured 11.4px in a 14px sentence. */
+.api-doc-link .api-literal { font-size: max(0.875em, 12px); }
 a.api-doc-link[data-api-kind]:not(.api-mention--chip) .api-literal--link {
   background: none;
   border: 0;

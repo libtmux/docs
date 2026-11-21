@@ -673,3 +673,23 @@ describe('"In other ports" (record 0049)', () => {
     expect(table).toMatch(/\.api-eq-table \.api-elsewhere-value a:is\(:hover, :focus-visible\) > \.api-nav__kind \{\s*--mk-fill: var\(--mk-bg\);/)
   })
 })
+
+describe('inline code in 13px lists (records 0051 and 0071)', () => {
+  const source = (path: string) => readFileSync(new URL(`../src/${path}`, import.meta.url), 'utf8')
+
+  it('sets the tmux usage list\'s names at the list\'s own 13px and its other code at no less than 13px', () => {
+    const usage = source('components/tmux/TmuxUsage.astro')
+    expect(usage).toMatch(/\.tmux-usage \{ --name-scale: 1;[^}]*font-size: 0\.8125rem;/)
+    expect(usage).toContain('.tmux-usage__item code { font-size: max(0.875em, 13px); }')
+  })
+
+  it('keeps the mark centred on the name at whatever scale the name takes', () => {
+    const marks = read('kind-marks.css')
+    expect(marks).toContain('top: calc(-1 * round(calc((var(--name-scale, .875) * 1cap - var(--mk-gh)) / 2), var(--mark-step)));')
+    expect(marks).toContain('font-size: calc(var(--name-scale, .875) * 1em);')
+  })
+
+  it('floors the code in a doc comment\'s link at 12px', () => {
+    expect(read('api.css')).toContain('.api-doc-link .api-literal { font-size: max(0.875em, 12px); }')
+  })
+})

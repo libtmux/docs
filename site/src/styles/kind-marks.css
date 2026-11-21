@@ -238,10 +238,10 @@
   text-decoration: none;
 }
 :is(.api-elsewhere-value, .api-command-related, .tmux-usage, nav.api-related) a > .api-nav__kind:where(:not(.api-link-kind)) {
-  /* The mark's ink and the name's capitals (the name is .875em) share a centre, as in a card's link. */
+  /* The mark's ink and the name's capitals (the name is --name-scale of the line, .875em unless a list sets it) share a centre, as in a card's link. */
   align-self: baseline;
   position: relative;
-  top: calc(-1 * round(calc((.875 * 1cap - var(--mk-gh)) / 2), var(--mark-step)));
+  top: calc(-1 * round(calc((var(--name-scale, .875) * 1cap - var(--mk-gh)) / 2), var(--mark-step)));
   margin-inline-end: var(--mark-gap);
 }
 :is(.api-elsewhere-value, .api-command-related, .tmux-usage, nav.api-related) a > .api-nav__kind:where(:not(.api-link-kind)) + code {
@@ -249,7 +249,7 @@
   padding: 0;
   border: 0;
   background: none;
-  font-size: .875em;
+  font-size: calc(var(--name-scale, .875) * 1em);
   line-height: 1.4;
   text-decoration: underline dotted;
   text-decoration-thickness: 1px;
