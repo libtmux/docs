@@ -876,7 +876,7 @@ describe('the rendered lists', () => {
 describe('a C page', () => {
   async function page(name: string) {
     const template = await loadAstroTemplate('components/api/ApiReference.astro', {
-      real: ['components/api/ApiPageContents.astro', 'components/tmux/TmuxUsage.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro', 'components/api/ApiRelationships.astro', 'components/api/RelationshipCollection.astro'],
+      real: ['components/api/ApiPageContents.astro', 'components/api/ApiSectionBar.astro', 'components/tmux/TmuxUsage.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro', 'components/api/ApiRelationships.astro', 'components/api/RelationshipCollection.astro'],
     })
     const model = tmuxSourceModel('latest')
     const symbol = model.symbols.find((entry) => entry.name === name)!

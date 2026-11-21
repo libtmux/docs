@@ -17,15 +17,15 @@ function mount({ header = 53, row = 48, members = 180, hash = '', scripting = tr
   win.document.body.innerHTML = `<header class="site-header"></header>
     <main class="api-reference-layout api-reference-layout--symbol">
       <div class="api-reference-content"><header id="api-overview"></header>
-        <nav class="api-section-links" aria-label="Reference sections"><a href="#api-overview" data-api-section-link>Overview</a>
-          <a href="#api-members" data-api-section-link>Members</a><a href="#api-related-types" data-api-section-link>Related types</a></nav>
+        <api-section-bar class="api-section-bar"><nav class="api-section-links" aria-label="Reference sections"><a href="#api-overview" data-api-section-link>Overview</a>
+          <a href="#api-members" data-api-section-link>Members</a><a href="#api-related-types" data-api-section-link>Related types</a></nav></api-section-bar>
         <section id="api-members"><h3 id="member-parameter">Parameter</h3></section>
         <section id="api-related-types"></section></div>
       <api-page-contents><a href="#api-members" data-api-section-link>Members</a></api-page-contents>
     </main>`
   const geometry = { header, row, members }
   vi.spyOn(win.document.querySelector('.site-header')!, 'getBoundingClientRect').mockImplementation(() => new win.DOMRect(0, 0, 390, geometry.header))
-  vi.spyOn(win.document.querySelector('.api-section-links')!, 'getBoundingClientRect').mockImplementation(() => new win.DOMRect(0, geometry.header, 350, geometry.row))
+  vi.spyOn(win.document.querySelector('.api-section-bar')!, 'getBoundingClientRect').mockImplementation(() => new win.DOMRect(0, geometry.header, 350, geometry.row))
   for (const [id, top] of [['api-overview', -300], ['api-members', members], ['api-related-types', 700]] as const) {
     vi.spyOn(win.document.getElementById(id)!, 'getBoundingClientRect').mockImplementation(() => new win.DOMRect(0, id === 'api-members' ? geometry.members : top, 350, 30))
   }
@@ -100,7 +100,7 @@ it.each([
   mount({ ...viewport, scripting: false })
   const root = win.document.documentElement
   expect(win.getComputedStyle(win.document.querySelector('.site-header')!).position).toBe('static')
-  expect(win.getComputedStyle(win.document.querySelector('.api-section-links')!).position).toBe('static')
+  expect(win.getComputedStyle(win.document.querySelector('.api-section-bar')!).position).toBe('static')
   expect(win.getComputedStyle(root).getPropertyValue('--api-header-height')).toBe('0px')
   expect(win.getComputedStyle(root).getPropertyValue('--api-sections-height')).toBe('0px')
   expect(root.hasAttribute('data-api-sections-measured')).toBe(false)
@@ -127,7 +127,7 @@ it.each([
   expect(win.document.documentElement.style.getPropertyValue('--api-sections-height')).toBe(`${Math.ceil(geometry.row)}px`)
   expect(win.document.documentElement.hasAttribute('data-api-sections-measured')).toBe(true)
   expect(win.getComputedStyle(win.document.querySelector('.site-header')!).position).toBe('sticky')
-  expect(win.getComputedStyle(win.document.querySelector('.api-section-links')!).position).toBe('sticky')
+  expect(win.getComputedStyle(win.document.querySelector('.api-section-bar')!).position).toBe('sticky')
   expect(page.current()).toBe('#api-members')
 })
 
@@ -157,7 +157,7 @@ it('disconnects layout observers and removes page-specific clearance after leavi
   win.document.querySelector('api-page-contents')!.remove()
   expect(win.document.documentElement.style.getPropertyValue('--api-header-height')).toBe('')
   expect(win.document.documentElement.hasAttribute('data-api-sections-measured')).toBe(false)
-  expect(win.getComputedStyle(win.document.querySelector('.api-section-links')!).position).toBe('static')
+  expect(win.getComputedStyle(win.document.querySelector('.api-section-bar')!).position).toBe('static')
   page.geometry.header = 150
   win.dispatchEvent(new win.Event('resize')); page.flush()
   expect(win.document.documentElement.style.getPropertyValue('--api-header-height')).toBe('')
@@ -222,11 +222,15 @@ it('reveals a newly active link using only the horizontal section scroller', () 
   const page = mount({ hash: '#api-members', members: 250 })
   const row = win.document.querySelector('.api-section-links')!
   const link = row.querySelector('a[href="#api-related-types"]')!
+  vi.spyOn(row, 'getBoundingClientRect').mockImplementation(() => new win.DOMRect(0, 53, 350, 48))
   vi.spyOn(link, 'getBoundingClientRect').mockImplementation(() => new win.DOMRect(420, 53, 130, 48))
   const position = win.scrollY
+  // The window has no layout to clamp a scroll at the row's start.
+  row.scrollLeft = 0
   win.location.hash = '#api-related-types'
   win.dispatchEvent(new win.HashChangeEvent('hashchange')); page.flush()
-  expect(row.scrollLeft).toBe(200)
+  // The link ends 200px past the row; the row also clears the 24px edge fade.
+  expect(row.scrollLeft).toBe(224)
   expect(win.scrollY).toBe(position)
 })
 

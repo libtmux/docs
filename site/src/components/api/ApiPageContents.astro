@@ -48,7 +48,9 @@ const { sections, related, outline = true } = Astro.props as Props
       const { signal } = this.controller
       const layout = this.closest('.api-reference-layout')
       const header = document.querySelector('.site-header')
-      const row = layout?.querySelector('.api-section-links')
+      // The wrapper owns the bar's height and sticky position; its links are the row that scrolls.
+      const bar = layout?.querySelector('.api-section-bar')
+      const row = bar?.querySelector('.api-section-links')
       const root = document.documentElement
       const members = layout?.querySelector('.api-members')
       const memberHeading = members?.querySelector(':scope > h2')
@@ -150,7 +152,7 @@ const { sections, related, outline = true } = Astro.props as Props
       let requestedFragment
       const measure = () => {
         const headerHeight = Math.ceil(header?.getBoundingClientRect().height ?? 0)
-        const rowHeight = Math.ceil(row?.getBoundingClientRect().height ?? 0)
+        const rowHeight = Math.ceil(bar?.getBoundingClientRect().height ?? 0)
         root.style.setProperty('--api-header-height', `${headerHeight}px`)
         root.style.setProperty('--api-sections-height', `${rowHeight}px`)
         root.setAttribute('data-api-sections-measured', '')
@@ -209,8 +211,10 @@ const { sections, related, outline = true } = Astro.props as Props
           if (active) {
             const bounds = row.getBoundingClientRect()
             const link = active.getBoundingClientRect()
-            if (link.left < bounds.left) row.scrollLeft += link.left - bounds.left
-            else if (link.right > bounds.right) row.scrollLeft += link.right - bounds.right
+            // Clear of the edge fade, which dims the last 1rem on either side of a row that has more behind it.
+            const inset = (Number.parseFloat(getComputedStyle(root).fontSize) || 16) * 1.5
+            if (link.left < bounds.left + inset) row.scrollLeft += link.left - bounds.left - inset
+            else if (link.right > bounds.right - inset) row.scrollLeft += link.right - bounds.right + inset
           }
         }
         previousSection = current?.id
@@ -248,7 +252,7 @@ const { sections, related, outline = true } = Astro.props as Props
       document.addEventListener('focusout', () => requestAnimationFrame(schedule), { signal })
       this.observer = new ResizeObserver(schedule)
       if (header) this.observer.observe(header)
-      if (row) this.observer.observe(row)
+      if (bar) this.observer.observe(bar)
       if (members) this.observer.observe(members)
       if (memberHeading) this.observer.observe(memberHeading)
       for (const entry of groupHeadings) this.observer.observe(entry.heading)

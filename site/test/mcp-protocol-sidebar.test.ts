@@ -14,7 +14,7 @@ const options = {
   real: [
     'layouts/DocsLayout.astro', 'components/docs/Sidebar.astro', 'components/docs/SidebarSection.astro', 'components/docs/SidebarLink.astro',
     'components/docs/DocumentationNavigationButtons.astro', 'components/docs/SidebarHead.astro', 'components/StatusBadge.astro',
-    'components/PageToolbar.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro',
+    'components/PageToolbar.astro', 'components/api/ApiBadge.astro', 'components/api/ApiSectionBar.astro', 'components/api/SymbolName.astro',
   ],
   stubs: {
     'layouts/BaseLayout.astro': '<slot name="context" /><slot />',

@@ -18,6 +18,7 @@ import { apiGlossary, apiGlossaryHeadings, API_GLOSSARY_TITLE, apiGlossaryHref }
 import ApiQualifiedName from '../../components/api/ApiQualifiedName.astro'
 import ApiType from '../../components/api/ApiType.astro'
 import ApiPageContents from '../../components/api/ApiPageContents.astro'
+import ApiSectionBar from './ApiSectionBar.astro'
 import SourcePane from './SourcePane.astro'
 import { apiEntryFields, apiEntrySections, apiMemberGroups, apiMemberSections, fieldsLabel, fieldsRepeated, memberCollectionFacts, memberTable, memberTableColumns, relatedTypeLinks, variantPayloads, type ApiSection } from '../../lib/api-sections'
 import PageToolbar from '../../components/PageToolbar.astro'
@@ -692,10 +693,10 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
         owner && (
           <>
             {pageSections.length > 1 &&
-              <nav class="api-section-links" aria-label="Reference sections" data-pagefind-ignore="all">
+              <ApiSectionBar>
                 {pageSections.filter((section) => !section.nested && !['Description', 'References'].includes(section.label))
                   .map((section, i) => <a href={`#${section.id}`} data-api-section-link aria-current={i === 0 ? 'location' : undefined}>{section.label}{section.count && <span>{section.count}</span>}</a>)}
-              </nav>}
+              </ApiSectionBar>}
             <!-- The type's own entry, through the same component as its
                  members. It is a declaration like any other — the only
                  difference is that this one is what the page is about, which

@@ -1053,7 +1053,7 @@ export async function checkApiStickyHeadings(browser, base, { only, sabotage } =
     const box = heading.parentElement.getBoundingClientRect()
     const rect = heading.getBoundingClientRect()
     const line = owner
-      ? document.querySelector('.api-section-links').getBoundingClientRect().bottom +
+      ? document.querySelector('.api-section-bar').getBoundingClientRect().bottom +
         (Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16) * 0.75
       : document.querySelector('.api-members > h2').getBoundingClientRect().bottom
     const hit = document.elementFromPoint(rect.left + 20, rect.top + rect.height / 2)

@@ -1107,20 +1107,43 @@ dl.py.gp-sphinx-api-container > dd > .gp-sphinx-api-parameters:last-child > dl.f
   outline: 2px solid var(--focus-ring-color);
   outline-offset: 2px;
 }
-.api-section-links {
+/*
+ * The section bar is one row at every width (record 0007). The wrapper (`api-section-bar`) keeps the bar's rule, spacing
+ * and sticky position, so the arrow buttons sit on the rule; the links are the `nav`, a row that scrolls inside itself.
+ * `section-bar.ts` shows the arrows and sets `data-overflow`, `data-start` and `data-end`, which fade the edge that has
+ * more links behind it. The row is one line before the script runs. Without scripts it scrolls, with a thin scrollbar.
+ */
+.api-section-bar {
   position: static;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem 1.5rem;
+  align-items: center;
+  gap: 0.25rem;
   margin-block: 1.25rem;
   border-bottom: 1px solid var(--color-edge);
   background: var(--background-color);
   font-size: 0.875rem;
 }
-html[data-api-sections-measured] .api-section-links {
+html[data-api-sections-measured] .api-section-bar {
   position: sticky;
   top: var(--api-header-height);
   z-index: 20;
+}
+.api-section-links {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0 1.5rem;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: none;
+}
+@media (scripting: none) {
+  .api-section-links { scrollbar-width: thin; scrollbar-color: var(--color-muted) transparent; }
+}
+@media (max-width: 35rem), (max-height: 30rem) {
+  .api-section-links { gap: 0 1rem; }
 }
 .api-section-links a {
   flex: 0 0 auto;
@@ -1129,19 +1152,49 @@ html[data-api-sections-measured] .api-section-links {
   min-height: 2.75rem;
   padding-block: 0.75rem;
   text-decoration: none;
+  white-space: nowrap;
   border-bottom: 2px solid transparent;
 }
 .api-section-links a:hover, .api-section-links a:focus-visible { border-bottom-color: currentColor; }
 .api-section-links a:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: -2px; }
-@media (max-width: 35rem), (max-height: 30rem) {
-  .api-section-links {
-    flex-wrap: nowrap;
-    gap: 1rem;
-    overflow-x: auto;
-    overscroll-behavior-inline: contain;
-    scrollbar-width: thin;
-  }
-  .api-section-links a { white-space: nowrap; }
+/* Links fade where more are hidden: both edges mid-row, one at either end of it. */
+.api-section-bar[data-overflow] > .api-section-links {
+  --api-section-fade: 1rem;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--api-section-fade), #000 calc(100% - var(--api-section-fade)), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 var(--api-section-fade), #000 calc(100% - var(--api-section-fade)), transparent);
+}
+.api-section-bar[data-start] > .api-section-links {
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - var(--api-section-fade)), transparent);
+  mask-image: linear-gradient(to right, #000 calc(100% - var(--api-section-fade)), transparent);
+}
+.api-section-bar[data-end] > .api-section-links {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--api-section-fade));
+  mask-image: linear-gradient(to right, transparent, #000 var(--api-section-fade));
+}
+.api-section-bar__btn {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+  padding: 0;
+  border: 1px solid var(--control-border);
+  border-radius: 0.3rem;
+  background: var(--background-color);
+  color: var(--color-link);
+  cursor: pointer;
+}
+.api-section-bar__btn[hidden] { display: none; }
+.api-section-bar__btn:hover:not(:disabled) { background: var(--color-surface-hover); }
+.api-section-bar__btn:disabled { border-color: var(--color-edge); color: var(--color-muted); cursor: default; }
+.api-section-bar__btn:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
+/* A touch target is taller than the drawn button; the hit area reaches past it and takes no layout. */
+@media (pointer: coarse) {
+  .api-section-bar__btn::after { content: ''; position: absolute; inset: calc((100% - var(--touch-target)) / 2) -0.25rem; }
+}
+@media (forced-colors: active) {
+  .api-section-bar > .api-section-links { -webkit-mask-image: none; mask-image: none; }
 }
 .api-section-links a[aria-current="location"] {
   color: var(--color-link);
@@ -1244,7 +1297,7 @@ html[data-api-sections-measured] .api-section-links {
   .api-members[data-api-sticky-members] .api-member-budget > .api-member-group > h3 { --api-bar-clearance: 0px; }
 }
 @media print {
-  .api-page-contents, .api-glossary-contents, .api-section-links { display: none; }
+  .api-page-contents, .api-glossary-contents, .api-section-bar { display: none; }
   :is(.api-reference-layout--symbol, .api-reference-layout--glossary) { display: block; }
 }
 

@@ -15,7 +15,7 @@ const Code = createComponent((_result: unknown, props: { code: string }) => rend
 const LAYOUT = '---\nconst { documentationLayout, tableOfContents } = Astro.props\n---\n<div data-layout={documentationLayout ?? "prose"} data-contents={String(tableOfContents ?? true)}><slot /></div>'
 
 async function render(slug: string) {
-  const page = await loadAstroTemplate('pages/tmux/[version]/manual/[...slug].astro', { real: ['components/api/ApiBadge.astro', 'components/SectionHeading.astro'],
+  const page = await loadAstroTemplate('pages/tmux/[version]/manual/[...slug].astro', { real: ['components/api/ApiBadge.astro', 'components/api/ApiSectionBar.astro', 'components/SectionHeading.astro'],
     stubs: { 'layouts/DocsLayout.astro': LAYOUT }, modules: { 'astro-expressive-code/components': { Code } } })
   const container = await experimental_AstroContainer.create({ astroConfig: { site: 'https://libtmux.org' } })
   return withoutScope(await container.renderToString(page as Parameters<typeof container.renderToString>[0], {

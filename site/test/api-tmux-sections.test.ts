@@ -294,7 +294,7 @@ describe('a symbol with no tmux data', () => {
 })
 
 describe('the reference page of pane.Pane.sendKeys', () => {
-  const PAGE = ['components/api/ApiPageContents.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro', 'components/api/ApiRelationships.astro', ...COMPONENTS]
+  const PAGE = ['components/api/ApiPageContents.astro', 'components/api/ApiSectionBar.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro', 'components/api/ApiRelationships.astro', ...COMPONENTS]
   async function page(port: string, owner: ApiSymbol) {
     const template = await loadAstroTemplate('components/api/ApiReference.astro', { real: PAGE })
     const container = await experimental_AstroContainer.create({ astroConfig: { site: 'https://libtmux.org' } } as never)

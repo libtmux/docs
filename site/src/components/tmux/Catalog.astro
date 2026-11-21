@@ -3,6 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
 import ApiTree from '../api/ApiTree.astro'
 import ApiBadge from '../api/ApiBadge.astro'
 import ApiPageContents from '../api/ApiPageContents.astro'
+import ApiSectionBar from '../api/ApiSectionBar.astro'
 import SymbolName from '../api/SymbolName.astro'
 import PageToolbar from '../PageToolbar.astro'
 import PagePortSwitcher from '../PagePortSwitcher.astro'
@@ -110,9 +111,9 @@ const typeChips = kind ? catalogTypeCounts(tmuxCatalogEntries(version, kind)) : 
       </header>
 
       {entry ? <>
-        <nav class="api-section-links" aria-label="Reference sections" data-pagefind-ignore="all">
+        <ApiSectionBar>
           {sections.map((section, i) => <a href={`#${section.id}`} data-api-section-link aria-current={i === 0 ? 'location' : undefined}>{section.label}</a>)}
-        </nav>
+        </ApiSectionBar>
         <dl class="api-definition api-command-facts catalog-facts">
           {entry.scope && <><dt>Scope</dt><dd>{entry.kind === 'format' ? <>Describes the {entry.scope[0]} being formatted</> : entry.scope.join(', ')}</dd></>}
           {entry.kind === 'option' && <><dt>Type</dt><dd>{OPTION_TYPES[entry.type!] ?? entry.type}{entry.array && ', array of values'}{entry.style && ', style'}</dd></>}

@@ -5,6 +5,7 @@ import DocsLayout from '../../layouts/DocsLayout.astro'
 import ApiBadge from '../api/ApiBadge.astro'
 import { apiGlossaryHref } from '../../lib/api-glossary'
 import ApiPageContents from '../api/ApiPageContents.astro'
+import ApiSectionBar from '../api/ApiSectionBar.astro'
 import SymbolName from '../api/SymbolName.astro'
 import McpSchemaFields from './McpSchema.astro'
 import McpSchemaType from './McpSchemaType.astro'
@@ -126,7 +127,7 @@ const wrapsHref = wraps ? referenceHref(port, wraps.call, version) : undefined
         {!object && <p class="mt-3">{introductions[section]}</p>}
       </header>
       {object ? <>
-        <nav class="api-section-links" aria-label="Reference sections" data-pagefind-ignore="all">{sections.map((entry, i) => <a href={`#${encodeURIComponent(entry.id)}`} data-api-section-link aria-current={i === 0 ? 'location' : undefined}>{entry.label}</a>)}</nav>
+        <ApiSectionBar>{sections.map((entry, i) => <a href={`#${encodeURIComponent(entry.id)}`} data-api-section-link aria-current={i === 0 ? 'location' : undefined}>{entry.label}</a>)}</ApiSectionBar>
         <dl class="py gp-sphinx-api-container" data-inventory-owner={object.id} data-inventory-anchor={object.id}>
           <dt id={object.id} data-inventory-id={object.item?.uriTemplate ?? object.item?.uri ?? object.name} data-inventory-category={object.kind} data-inventory-display={object.name} class="sig sig-object gp-sphinx-api-header" data-domain="mcp" data-objtype={object.kind}>
             <div class="gp-sphinx-api-layout gp-sphinx-api-layout--responsive">

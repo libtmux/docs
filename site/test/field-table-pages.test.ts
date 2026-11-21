@@ -23,7 +23,7 @@ afterEach(async () => { for (const win of windows.splice(0)) await win.happyDOM.
 
 describe('a type page with a table of fields', () => {
   // The table, the contents rail and the badges are the page's own; the type and prose cells draw plain text.
-  const PAGE = ['components/api/ApiMemberList.astro', 'components/api/ApiPageContents.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro', 'components/api/ApiScalarMembers.astro']
+  const PAGE = ['components/api/ApiMemberList.astro', 'components/api/ApiPageContents.astro', 'components/api/ApiSectionBar.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro', 'components/api/ApiScalarMembers.astro']
   async function page(port: Port, id: string) {
     const template = await loadAstroTemplate('components/api/ApiReference.astro', {
       real: PAGE,

@@ -119,7 +119,7 @@ async function sweep(html: ApiSymbol[], markdown: ApiSymbol[] = html, only?: str
 }
 
 // The table, the contents rail and the badges are the page's own; types and summaries draw plain text.
-const PAGE = ['components/api/ApiMemberList.astro', 'components/api/ApiPageContents.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro', 'components/api/ApiScalarMembers.astro']
+const PAGE = ['components/api/ApiMemberList.astro', 'components/api/ApiPageContents.astro', 'components/api/ApiSectionBar.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro', 'components/api/ApiScalarMembers.astro']
 let template: Promise<unknown> | undefined
 async function page(id: string) {
   template ??= loadAstroTemplate('components/api/ApiReference.astro', {
