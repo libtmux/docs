@@ -120,3 +120,19 @@ describe('programming-language label', () => {
     expect(doc.querySelector('summary')!.getAttribute('aria-label')).toBe('Go: choose a programming language or tmux documentation')
   })
 })
+
+describe('the bar at an enlarged root size (adoption plan step 51)', () => {
+  const launcher = readFileSync(new URL('../src/components/HomeLauncher.astro', import.meta.url), 'utf8')
+  const bar = /\n\.site-header__bar \{([^}]*)\}/.exec(css)![1]!
+
+  it('wraps whenever its content does not fit, on every page, and keeps the colour controls at the end of their row', () => {
+    expect(bar).toMatch(/flex-wrap:\s*wrap/)
+    expect(css).not.toMatch(/\.site-header__bar:has\(\.site-header-language\)\s*\{\s*flex-wrap/)
+    expect(launcher, 'the home no longer holds the bar to one row').not.toMatch(/site-header__bar:has\(\.home-launcher\)\)\s*\{\s*flex-wrap:\s*nowrap/)
+    expect(/\n\.site-header__always \{([^}]*)\}/.exec(css)![1]).toMatch(/margin-inline-start:\s*auto/)
+  })
+
+  it('keeps the home language picker at its content width, so its label is not cut away', () => {
+    expect(/\.home-language-control \{([^}]*)\}/.exec(launcher)![1]).toMatch(/min-width:\s*max-content/)
+  })
+})

@@ -1410,10 +1410,13 @@ main[tabindex='-1']:focus {
  * Language controls use the same height on the homepage and documentation.
  * On phones the picker moves to a second header row.
  */
+/* The bar wraps whenever its content does not fit, at any root size: the controls take a second row rather than running past the
+   viewport or squeezing the language picker to nothing. At the default size they all fit on one row. */
 .site-header__bar {
   margin-inline: auto;
   max-width: 108rem;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem;
   padding: 0.5rem var(--site-gutter);
@@ -1442,7 +1445,6 @@ main[tabindex='-1']:focus {
 }
 
 @media (max-width: 35rem) {
-  .site-header__bar:has(.site-header-language) { flex-wrap: wrap; }
   .site-header-language { order: 5; flex-basis: 100%; padding-block: .25rem; }
 }
 
@@ -1466,6 +1468,8 @@ main[tabindex='-1']:focus {
   align-items: center;
   gap: 0.5rem;
   flex: none;
+  /* On a row of its own, once the bar wraps, the search and colour controls stay at the end. */
+  margin-inline-start: auto;
 }
 
 .site-header__search,
