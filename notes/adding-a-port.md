@@ -165,7 +165,7 @@ In the new worktree, on `docs-site`:
 
 Haskell's [Haddock exporter](../packages/api-model/scripts/export-haskell.py)
 builds a selected committed source archive. Its
-[adapter](../packages/api-model/src/languages/haskell.ts) accepts eight qualified
+[adapter](../packages/api-model/src/languages/haskell.ts) accepts eleven qualified
 profiles with the port's pinned GHC/Haddock toolchain:
 
 - Scalar v1 covers `LibTmux.Id`, `LibTmux.Value` and `LibTmux.Version`.
@@ -191,6 +191,15 @@ profiles with the port's pinned GHC/Haddock toolchain:
 - Environment v8 adds `LibTmux.Environment`, pane text waits and window-link
   operations. Its [native fixture](../packages/api-model/test/fixtures/haskell-environment-native/README.md)
   retains the private defining source of public named layouts.
+- Options v9 adds `LibTmux.Options`, catalogue definitions and scoped settings.
+  [Native fixture](../packages/api-model/test/fixtures/haskell-options-native/README.md)
+- Control v10 adds `LibTmux.Control` and `LibTmux.Recovery`. The fixture checks
+  STM event reads, stream outcomes and canonical recovery exports.
+  [Native fixture](../packages/api-model/test/fixtures/haskell-control-native/README.md)
+- Fields v11 consolidates query fields in `LibTmux.Query.Fields`. The current
+  fixture also covers private startup and explicit daemon retirement.
+  [Consolidated fields](../packages/api-model/test/fixtures/haskell-fields-native/README.md) ·
+  [Private daemon fixture](../packages/api-model/test/fixtures/haskell-owned-native/README.md)
 
 All profiles retain native signatures, opaque data heads, constructors, record labels,
 instance heads and authored export groups. Observation field identities include
