@@ -17,6 +17,13 @@ describe('code size', () => {
     expect(source('components/CoreShowcase.astro')).toContain('clamp(.78125rem, calc((100cqi - 2rem) / (var(--home-code-columns, 80) * .625)), .875rem)')
   })
 
+  it('floors the Core player\'s program at 13px, and a returned value without the script at the same', () => {
+    const player = source('styles/core-player.css')
+    expect(player).toContain('--ec-codeFontSize: clamp(0.8125rem, calc((100cqi - 2rem) / (var(--home-code-columns) * 0.625)), 0.875rem);')
+    expect(player).toContain('--ec-codeFontSize: var(--core-program-size, 0.8125rem);')
+    expect(player, 'no 12px floor is left').not.toMatch(/--ec-codeFontSize:[^;]*0\.75rem/)
+  })
+
   it('leaves no program or excerpt sized at 15px', () => {
     for (const path of ['components/HomeExample.astro', 'components/CoreShowcase.astro', 'components/PortLanding.astro']) {
       expect(source(path), path).not.toContain('.9375rem')

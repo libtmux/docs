@@ -48,8 +48,9 @@ async function parameterComponents() {
     '../../lib/symbol-form': new URL('../src/lib/symbol-form.ts', import.meta.url).href,
     '../../lib/api-labels': new URL('../src/lib/api-labels.ts', import.meta.url).href })
   const overloads = await compile('../src/components/api/ApiFieldOverloads.astro')
+  const heading = await compile('../src/components/HeadingLink.astro', { '../lib/heading-link': new URL('../src/lib/heading-link.ts', import.meta.url).href })
   const imports = { '@libtmux/api-model': bridge, '@libtmux/api-model/reference': bridge, '../../lib/api-sections': bridge,
-    './ApiType.astro': type, './ApiDoc.astro': doc, './ApiFieldOverloads.astro': overloads }
+    './ApiType.astro': type, './ApiDoc.astro': doc, './ApiFieldOverloads.astro': overloads, '../HeadingLink.astro': heading }
   const commands = await compile('../src/components/api/ApiCommandParameters.astro', imports)
   const source = readFileSync(new URL('../src/components/api/ApiEntry.astro', import.meta.url), 'utf8')
   const start = source.indexOf('<p class:list={[(language ===')
@@ -61,6 +62,7 @@ import { parameterId } from '@libtmux/api-model/reference'
 import ApiType from './ApiType.astro'
 import ApiDoc from './ApiDoc.astro'
 import ApiFieldOverloads from './ApiFieldOverloads.astro'
+import HeadingLink from '../HeadingLink.astro'
 const { p, symbol, index, language, overloadTargets } = Astro.props
 ---
 ${source.slice(start, end)}`
@@ -106,7 +108,7 @@ const follows = (first: Element, second: Element) => Boolean(first.compareDocume
 
 it('keeps the ordinary parameter permalink before its prose and lifecycle metadata', async () => {
   const { paragraph } = await render()
-  const permalink = paragraph.querySelector('a.api-heading-link')!
+  const permalink = paragraph.querySelector('a.heading-link')!
   const prose = [...paragraph.querySelectorAll('span')].find((span) => span.textContent === parameter.doc)!
   expect(prose).toBeDefined()
   expect(follows(permalink, prose)).toBe(true)
@@ -127,7 +129,7 @@ it('keeps the parameter type tight inside its parentheses', async () => {
 
 it('keeps command parameter controls beside their signature instead of the far edge', async () => {
   const { win } = await render(true)
-  const permalinks = [...win.document.querySelectorAll('a.api-heading-link')]
+  const permalinks = [...win.document.querySelectorAll('a.heading-link')]
   expect(permalinks).toHaveLength(2)
   for (const permalink of permalinks) {
     expect(win.getComputedStyle(permalink).marginInlineStart).toBe('0.25rem')
@@ -137,7 +139,7 @@ it('keeps command parameter controls beside their signature instead of the far e
 
 it.each(['py', 'go', 'ts', 'julia'])('preserves %s name, type, overload and accessible permalink destinations', async (language) => {
   const { win, paragraph } = await render(false, language)
-  const permalink = paragraph.querySelector('a.api-heading-link')!
+  const permalink = paragraph.querySelector('a.heading-link')!
   expect(permalink.getAttribute('href')).toBe('#demo.Probe.read.parameter.target')
   expect(permalink.getAttribute('aria-label')).toBe('Link to target parameter')
   expect(permalink.getAttribute('data-pagefind-ignore')).toBe('all')
@@ -160,7 +162,7 @@ it('preserves command and common-parameter targets and native links', async () =
     const id = parameterId(entry, name)
     const row = win.document.getElementById(id)!
     expect(row).not.toBeNull()
-    const permalink = row.querySelector('a.api-heading-link')!
+    const permalink = row.querySelector('a.heading-link')!
     expect(permalink.getAttribute('href')).toBe(`#${encodeURIComponent(id)}`)
     expect(permalink.getAttribute('aria-label')).toBe(`Link to -${name} parameter`)
     expect(row.querySelector('strong > a')?.getAttribute('href')).toBe(permalink.getAttribute('href'))

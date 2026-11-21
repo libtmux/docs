@@ -27,37 +27,67 @@ export const ROOT_PORT = 'All languages'
 export const REFERENCE_SECTION = 'reference'
 
 /**
- * The `section` filter value of a page: the first path segment after any port and version, such as
- * `topics`, `guides`, `concepts`, `examples` or `reference`. A reader searching for `capture` usually wants
- * one of those, not all five. `pagePath` is relative to the port and version, except for tmux pages, whose
- * own version and kind come first.
+ * The site's sections, in reading order, with the words a reader sees. The Section facet holds these and
+ * nothing else, on every port: a page that fits none of them carries no `section` value.
  */
-export function pageSection(pagePath: string): string {
-  const path = pagePath.startsWith('tmux/')
-    ? pagePath.slice(5).replace(/^[^/]+\/(?=manual|reference|catalog)/, '') : pagePath
-  return (path.split('/').filter(Boolean)[0] ?? 'home').toLowerCase()
+export const SECTION_LABELS: Record<string, string> = {
+  guides: 'Guides',
+  concepts: 'Concepts',
+  examples: 'Examples',
+  topics: 'Topics',
+  reference: 'API reference',
+  mcp: 'MCP',
+  workspace: 'Workspace Manager',
+}
+
+const SECTION_ORDER = Object.keys(SECTION_LABELS)
+
+const knownSection = (name: string | undefined): name is string => name !== undefined && Object.hasOwn(SECTION_LABELS, name)
+
+export const sectionLabel = (section: string) => SECTION_LABELS[section] ?? section.charAt(0).toUpperCase() + section.slice(1)
+
+/** The seven sections the counts hold, in the site's order. Another value, such as one a typed URL names, is not a row. */
+export function orderedSections(counts: Record<string, number>): [string, number][] {
+  return SECTION_ORDER.filter((name) => counts[name] !== undefined).map((name): [string, number] => [name, counts[name]!])
 }
 
 /**
- * The sections a port's native Sphinx tree names differently from the Astro pages. Sphinx's own `api/`
- * directory is the API reference, which the Astro pages publish as `reference`; its quickstart is the
- * getting-started guide.
+ * The `section` filter value of a page, or none: the first path segment after any port and version, when it
+ * is one of the site's sections (`guides`, `concepts`, `examples`, `topics`, `reference`, `mcp`, `workspace`).
+ * The home page, the search page, the 404 page, a tmux manual page, the catalog, a port's Core directory and
+ * the rest belong to none, and a facet that listed them would name folders instead of sections (record 0075).
+ * `pagePath` is relative to the port and version, except for tmux pages, whose own version and kind come first.
+ */
+export function pageSection(pagePath: string): string | undefined {
+  const path = pagePath.startsWith('tmux/')
+    ? pagePath.slice(5).replace(/^[^/]+\/(?=manual|reference|catalog)/, '') : pagePath
+  const first = path.split('/').filter(Boolean)[0]?.toLowerCase()
+  return knownSection(first) ? first : undefined
+}
+
+/**
+ * The sections a port's native Sphinx tree names differently from the Astro pages: Sphinx's own `api/` and
+ * `internals/` trees and its indexes are the API reference, the glossary is a concept page, and the
+ * quickstart and the migration notes are guides. `topics/` is `topics` in both.
  */
 const NATIVE_SECTIONS: Record<string, string> = {
   api: REFERENCE_SECTION,
   genindex: REFERENCE_SECTION,
   'py-modindex': REFERENCE_SECTION,
+  internals: REFERENCE_SECTION,
+  glossary: 'concepts',
   quickstart: 'guides',
+  migration: 'guides',
 }
 
 /**
  * The `section` value of a native Sphinx page, from its path inside the tree the port publishes at
- * `/<port>/<version>/api/` (`api/pane/`, `topics/architecture/`). Other paths take the Astro rule, so
- * `topics` is `topics` in both.
+ * `/<port>/<version>/api/` (`api/pane/`, `topics/architecture/`), or none. A first segment that is not
+ * mapped, and that the Astro rule does not place either, such as `project/` or `history`, takes no value.
  */
-export function nativeSection(path: string): string {
+export function nativeSection(path: string): string | undefined {
   const first = path.split('/').filter(Boolean)[0]?.toLowerCase()
-  return (first && NATIVE_SECTIONS[first]) || pageSection(path)
+  return (first && Object.hasOwn(NATIVE_SECTIONS, first) ? NATIVE_SECTIONS[first] : undefined) ?? pageSection(path)
 }
 
 const isScope = (value: string | null): value is SearchScope => SEARCH_SCOPES.includes(value as SearchScope)
@@ -110,31 +140,6 @@ export function filtersFor(state: SearchState, portName: string | undefined, por
   if (section) filters.section = [section]
   if (state.kind) filters.kind = [state.kind]
   return Object.keys(filters).length ? filters : undefined
-}
-
-/** Facet values the panel shows, in reading order, with the words a reader sees. */
-export const SECTION_LABELS: Record<string, string> = {
-  guides: 'Guides',
-  concepts: 'Concepts',
-  examples: 'Examples',
-  topics: 'Topics',
-  reference: 'API reference',
-  mcp: 'MCP',
-  workspace: 'Workspace Manager',
-}
-
-const SECTION_ORDER = Object.keys(SECTION_LABELS)
-
-export const sectionLabel = (section: string) =>
-  SECTION_LABELS[section] ?? section.charAt(0).toUpperCase() + section.slice(1)
-
-/** Known sections first, in the site's order, then any other by name. */
-export function orderedSections(counts: Record<string, number>): [string, number][] {
-  const rank = (name: string) => {
-    const i = SECTION_ORDER.indexOf(name)
-    return i === -1 ? SECTION_ORDER.length : i
-  }
-  return Object.entries(counts).sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0]))
 }
 
 /** What the scope control says, for a port named `portName` (or the whole site). */

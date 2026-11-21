@@ -307,7 +307,7 @@ html[data-theme-mode='dark'] .lm-install {
   gap: 0.35rem;
   min-height: 26px;
   padding: 0 0.6rem;
-  border: 1px solid var(--lm-install-edge);
+  border: 1px solid var(--control-border);
   border-radius: 999px;
   background: var(--lm-install-raised);
   color: var(--lm-install-muted);

@@ -95,9 +95,9 @@ describe('the sections of pane.Pane.sendKeys', () => {
     const document = await html(list)
     const headings = [...document.querySelectorAll('section.api-tmux-section > h2.api-section-heading, section.api-equivalents > h2.api-section-heading')]
     expect(headings.map((heading) => heading.id)).toEqual(list.map((section) => section.id))
-    for (const heading of headings) expect(heading.querySelector(`a.api-heading-link[href="#${heading.id}"]`)).not.toBeNull()
+    for (const heading of headings) expect(heading.querySelector(`a.heading-link[href="#${heading.id}"]`)).not.toBeNull()
     const cApi = document.querySelector('#api-tmux-c-api')!.closest('section')!
-    const chips = [...cApi.querySelectorAll('a:not(.api-heading-link)')]
+    const chips = [...cApi.querySelectorAll('a:not(.heading-link)')]
     expect(chips.map((a) => a.querySelector('code')!.textContent)).toEqual(['cmd_send_keys_entry', 'cmd_send_keys_exec'])
     for (const chip of chips) expect(chip.querySelector('.api-nav__kind')?.textContent).toBeTruthy()
     // Other ports: one Port | API | Differs table with the page's own row marked, and no disclosure.
@@ -252,7 +252,7 @@ describe('the HTML and the Markdown of pane.Pane.sendKeys', () => {
     const chunks = markdown()
     for (const section of sections('ts', sendKeys).filter((entry) => entry.type !== 'ports')) {
       const element = document.getElementById(section.id)!.closest('section')!
-      const shown = [...element.querySelectorAll('a:not(.api-heading-link)')].map((a) => a.getAttribute('href'))
+      const shown = [...element.querySelectorAll('a:not(.heading-link)')].map((a) => a.getAttribute('href'))
       expect(hrefs(chunks.find((chunk) => chunk.heading === section.label)!.body), section.label).toEqual(shown)
     }
   })
@@ -294,7 +294,7 @@ describe('a symbol with no tmux data', () => {
 })
 
 describe('the reference page of pane.Pane.sendKeys', () => {
-  const PAGE = ['components/api/ApiPageContents.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro', 'components/api/ApiRelationships.astro', ...COMPONENTS]
+  const PAGE = ['components/api/ApiPageContents.astro', 'components/api/ApiSectionBar.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro', 'components/api/ApiRelationships.astro', ...COMPONENTS]
   async function page(port: string, owner: ApiSymbol) {
     const template = await loadAstroTemplate('components/api/ApiReference.astro', { real: PAGE })
     const container = await experimental_AstroContainer.create({ astroConfig: { site: 'https://libtmux.org' } } as never)
@@ -325,7 +325,7 @@ describe('the reference page of pane.Pane.sendKeys', () => {
     // Each count is what its section draws, counted from the page and not from the derivation.
     const section = (id: string) => document.getElementById(id)!.closest('section')!
     expect(section('api-tmux-command').querySelectorAll('.tmux-usage__item').length).toBe(wanted[0].count)
-    expect(new Set([...section('api-tmux-c-api').querySelectorAll('a:not(.api-heading-link)')].map((a) => a.getAttribute('href'))).size).toBe(wanted[1].count)
+    expect(new Set([...section('api-tmux-c-api').querySelectorAll('a:not(.heading-link)')].map((a) => a.getAttribute('href'))).size).toBe(wanted[1].count)
     expect(section('api-guides').querySelectorAll('.api-guides-list a').length).toBe(wanted[2].count)
     expect(section('api-other-ports').querySelectorAll('tbody tr:not([aria-current])').length).toBe(wanted[3].count)
   })
@@ -337,7 +337,7 @@ describe('the reference page of pane.Pane.sendKeys', () => {
     const drawn = document.getElementById('api-tmux-c-api')!.closest('section')!
     // newSession's curated path draws steps beyond the degree-1 chips, so a count of the chips alone falls short.
     expect(drawn.querySelectorAll('.api-source-path li a').length).toBeGreaterThan(0)
-    expect(new Set([...drawn.querySelectorAll('a:not(.api-heading-link)')].map((a) => a.getAttribute('href'))).size).toBe(cApi.count)
+    expect(new Set([...drawn.querySelectorAll('a:not(.heading-link)')].map((a) => a.getAttribute('href'))).size).toBe(cApi.count)
     const link = [...document.querySelectorAll('nav.api-section-links a')].find((a) => a.getAttribute('href') === '#api-tmux-c-api')!
     expect(link.querySelector('span')?.textContent).toBe(String(cApi.count))
   })

@@ -61,6 +61,10 @@
 /*
  * Print is a document: the page's chrome goes, every line of code shows wrapped, collapsed sections open and an
  * external link writes out its address after its text. Kind words stay visible (a mark alone is a colour and a glyph).
+ * Controls print as nothing and content prints whole (design record 0078): the API view bar, heading links, copy icons,
+ * the footer's links, a player's controls and its pickers go; a heading stays with what follows it; a link inside code
+ * or a signature prints no address, since the frame has no room for one; and a player prints its whole program, not the
+ * step it was left on.
  */
 @media print {
   .site-header,
@@ -81,7 +85,48 @@
   .page-end,
   #back-to-top,
   .search-modal,
-  .expressive-code .copy {
+  .expressive-code .copy,
+  .api-columns__bar,
+  .api-columns__config,
+  .heading-link,
+  .row-anchor-link,
+  .api-copy-name,
+  [class*='__copy'],
+  .core-copy,
+  .core-hang,
+  .core-showcase__picker,
+  .core-showcase__static,
+  body > footer {
+    display: none !important;
+  }
+  .row-label-link::after {
+    content: none !important;
+  }
+
+  /* A heading stays with what follows it: the label, count and sentence a collection draws under its heading, and the
+     first rows of a list. A collection of a few rows does not start a page it cannot fill; a long one may break. */
+  h1, h2, h3, h4, h5, h6, summary, dt, caption,
+  .api-collection__kind, .api-collection__count, .api-collection__why {
+    break-after: avoid;
+  }
+  /* A collection is a grid on screen, and a browser may break between a grid's rows whatever its items ask. In print it is
+     a column of blocks, its heading, its kind and its count one above the next, so the rule above holds. */
+  .api-collection {
+    display: block !important;
+  }
+  .api-collection > :is(.api-collection__kind, .api-collection__count) {
+    display: block !important;
+  }
+  .api-collection:not(:has(li:nth-child(9))),
+  .api-member-group:not(:has(li:nth-child(9))),
+  .gp-sphinx-api-header,
+  tr {
+    break-inside: avoid;
+  }
+
+  /* A player prints its program, whole, as a code frame. What it draws beside the program is the state after the call the
+     reader left it on (the tmux and what the call returned), which on paper is one arbitrary step. */
+  .core-player__side {
     display: none !important;
   }
 
@@ -94,6 +139,8 @@
   }
   .home-example-stage {
     height: auto !important;
+    /* The side is gone, so the program takes the whole width instead of its half. */
+    grid-template-columns: minmax(0, 1fr) !important;
   }
 
   /* A closed disclosure shows its content: the summary stays and the content is drawn below it. */
@@ -113,5 +160,12 @@
     mask: none !important;
     font-weight: 400;
     overflow-wrap: anywhere;
+  }
+
+  /* Code, signatures and parameter types carry their types as links, and a frame has no room for an address inside it:
+     those print the text alone. Links in prose keep theirs. */
+  main :is(code, pre, .api-native-signature, .api-parameter-signature, .api-type, .gp-sphinx-api-header, .gp-sphinx-api-signature) :is(a[href^='http'], a[data-external-link])::after {
+    content: none !important;
+    display: none !important;
   }
 }

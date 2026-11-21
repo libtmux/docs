@@ -62,3 +62,31 @@ export function resolveCheckout(port, options = {}) {
   if (!first) throw new Error(`port-checkout: ${typeof port === 'string' ? port : port.slug} has no checkout`)
   return first
 }
+
+/**
+ * The ports a run names as allowed to lack a checkout: `--allow-missing go,py`.
+ * Without the flag no port may.
+ */
+export function allowMissingPorts(argv = process.argv) {
+  const at = argv.indexOf('--allow-missing')
+  if (at < 0) return []
+  const value = argv[at + 1]
+  if (!value || value.startsWith('--')) throw new Error('--allow-missing takes a comma-separated list of port slugs')
+  return value.split(',').map((slug) => slug.trim()).filter(Boolean)
+}
+
+/**
+ * What it means that a check cannot read a port's source. A check that reads
+ * nothing proves nothing, and a run that passes anyway reads as proof, so the
+ * port fails unless the run named it in `allowMissing`, which records a skip.
+ *
+ * @param {string} slug
+ * @param {string | undefined} unreadable Why the source cannot be read, or undefined when it can.
+ * @param {readonly string[]} allowMissing
+ * @returns {{ outcome: 'checked' | 'skipped' | 'failed', message?: string }}
+ */
+export function sourceGate(slug, unreadable, allowMissing = []) {
+  if (!unreadable) return { outcome: 'checked' }
+  if (allowMissing.includes(slug)) return { outcome: 'skipped', message: `${slug} (${unreadable})` }
+  return { outcome: 'failed', message: `${slug}: not checked, ${unreadable}. Provide the checkout, or name the port with --allow-missing.` }
+}

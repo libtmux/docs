@@ -87,7 +87,7 @@ describe('modifier chips', () => {
   it('shares the legend chip\'s height, radius, sans weight and baseline snap', () => {
     const chip = marks.match(/\.api-badge\.api-badge--mod\.api-badge--mod \{[^}]*\}/)![0]
     const legend = marks.match(/\.api-badge\.api-leg \{[^}]*\}/)![0]
-    for (const declaration of ['--leg-h: round(1.35em, 2px)', 'border-radius: .2em', 'font: 600 .8125rem']) {
+    for (const declaration of ['--leg-h: round(1.35em, 2px)', 'border-radius: .2em', 'font: 600 max(.8125rem, calc(var(--badge-word-floor) / .8))']) {
       expect(chip, declaration).toContain(declaration)
       expect(legend, declaration).toContain(declaration)
     }

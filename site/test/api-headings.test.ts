@@ -51,21 +51,33 @@ function revealViolations(css: string, owner: string, options: { rest: RegExp; f
   return found
 }
 
-/** The API heading hash: the contract above plus the ways a hash can be hidden from the keyboard. */
-function headingViolations(css: string): string[] {
-  const found = revealViolations(css, '.api-heading-link', { rest: /^\.api-heading-link$/, focus: /\.api-heading-link:focus-visible$/, child: true })
-  const rules = parseRules(css).filter((rule) => rule.selectors.some((selector) => selector.includes('.api-heading-link')))
-  const revealing = rules.filter((rule) => shows(rule) && inFinePointer(rule)).flatMap((rule) => rule.selectors)
-  // A section wrapper owns the id in ApiEntry, so the target is one level above the heading.
-  if (!holders(revealing, '.api-heading-link').some((entry) => entry.child && entry.holder.includes(':target') && entry.holder.includes('>'))) {
+/**
+ * The heading link (design record 0006): muted and always visible at rest, stronger when its heading is hovered, holds focus
+ * or is the target, and never out of the tab order. Muted text takes a colour, never `opacity`.
+ */
+function headingLinkViolations(css: string): string[] {
+  const rules = parseRules(css).filter((rule) => rule.selectors.some((selector) => selector.includes('.heading-link')))
+  const found: string[] = []
+  // The "Copied" label is a pseudo-element beside the link; it takes no pointer events so a click reaches the link.
+  for (const rule of rules.filter((rule) => !rule.selectors.some((selector) => selector.includes('::')))) {
+    if (rule.declarations.opacity !== undefined && rule.declarations.opacity !== '1') found.push('opacity dims the link instead of a muted colour')
+    if (rule.declarations.display === 'none') found.push('display: none takes the link out of the tab order')
+    if (rule.declarations.visibility === 'hidden') found.push('visibility: hidden takes the link out of the tab order')
+    if (rule.declarations['pointer-events'] === 'none') found.push('pointer-events: none blocks the link')
+  }
+  const rest = rules.find((rule) => rule.selectors.includes('.heading-link') && rule.media.length === 0)
+  if (rest?.declarations.color !== 'var(--color-foreground-muted)') found.push('the link is not drawn in the muted text colour at rest')
+  const stronger = rules.filter((rule) => rule.declarations.color === 'var(--color-link)').flatMap((rule) => rule.selectors)
+  const direct = holders(stronger, '.heading-link').filter((entry) => entry.child && !entry.holder.includes('>'))
+  for (const state of [':hover', ':focus-within', ':target']) {
+    if (!direct.some((entry) => entry.holder.includes(state))) found.push(`the heading holding the link does not strengthen it on ${state}`)
+  }
+  if (!stronger.includes('.heading-link:focus-visible')) found.push('the link is not stronger on its own focus')
+  // A section's wrapper can own the id, so the target is one level above the heading.
+  if (!holders(stronger, '.heading-link').some((entry) => entry.child && entry.holder.includes(':target') && entry.holder.includes('>'))) {
     found.push('a target on a section wrapper does not reach its heading')
   }
-  for (const rule of rules) {
-    if (rule.declarations.display === 'none') found.push('display: none takes the permalink out of the tab order')
-    if (rule.declarations.visibility === 'hidden') found.push('visibility: hidden takes the permalink out of the tab order')
-    if (rule.declarations['pointer-events'] === 'none') found.push('pointer-events: none blocks the permalink')
-    if (rule.declarations.transition && !inMedia(rule, '(prefers-reduced-motion: no-preference)')) found.push('a transition runs under reduced motion')
-  }
+  if (!rules.some((rule) => rule.selectors.includes('.heading-link:focus-visible') && rule.declarations.outline?.includes('var(--focus-ring-color)'))) found.push('the link has no focus ring')
   return [...new Set(found)]
 }
 
@@ -80,25 +92,7 @@ function rowViolations(css: string): string[] {
 /** The row rules of global.css. */
 const rowRules = (css: string) => css.slice(css.indexOf('.prose .row-label-link {'), css.indexOf('/*\n * Top-nav chips'))
 
-// The stylesheets as they stood before permalinks were revealed on demand.
-const MAIN_HEADINGS = `/* Shared API and glossary permalinks stay beside the heading label. */
-.api-heading-link {
-  flex: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-inline-size: 1.5rem;
-  min-block-size: 1.5rem;
-  margin-inline-start: 0.25rem;
-  padding: 0.2rem 0.35rem;
-  color: var(--color-muted);
-  font-size: 0.875rem;
-  font-weight: 400;
-  text-decoration: none;
-}
-.api-heading-link:hover { color: var(--color-link); }
-.api-heading-link:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
-`
+// The row stylesheet as it stood before touch had a path.
 const MAIN_ROWS = `.prose .row-label-link { position: relative; display: inline-block; color: inherit; text-decoration: none; }
 .prose .row-label-link:hover { text-decoration: underline; }
 .prose .row-label-link::after {
@@ -132,97 +126,48 @@ const edit = (css: string, from: string | RegExp, to: string) => {
   return changed
 }
 
-describe('API heading permalinks', () => {
-  it('reveal on a fine pointer and stay in view everywhere else', () => {
-    expect(headingViolations(headings)).toEqual([])
+describe('heading links', () => {
+  it('are muted and visible at rest and stronger on hover, focus and target', () => {
+    expect(headingLinkViolations(headings)).toEqual([])
   })
 
-  it('sit at opacity 0 only inside the fine-pointer query', () => {
-    const quiet = parseRules(headings).filter(hides)
-    expect(quiet.length).toBeGreaterThan(0)
-    for (const rule of quiet) expect(inFinePointer(rule), rule.selectors.join()).toBe(true)
-  })
-
-  it('reveal from the heading that holds the hash on hover, focus within and target, and on its own focus', () => {
-    const revealing = parseRules(headings).filter((rule) => shows(rule) && inFinePointer(rule)).flatMap((rule) => rule.selectors)
-    const direct = holders(revealing, '.api-heading-link').filter((entry) => entry.child && !entry.holder.includes('>'))
-    for (const state of [':hover', ':focus-within', ':target']) {
-      expect(direct.some((entry) => entry.holder.includes(state)), `${state} is on the heading, the link its child`).toBe(true)
-    }
-    expect(revealing).toContain('.api-heading-link:focus-visible')
-    // No state is carried by the hash alone, which a pointer elsewhere on the heading never reaches.
-    for (const selector of revealing) expect(selector, selector).not.toMatch(/\.api-heading-link:(hover|focus-within|target|is\()/)
-  })
-
-  it('force the hash visible under hover: none and forced colours', () => {
-    const forced = parseRules(headings).filter(shows)
-    expect(forced.some((rule) => inMedia(rule, '(hover: none)'))).toBe(true)
-    expect(forced.some((rule) => inMedia(rule, '(forced-colors: active)'))).toBe(true)
-  })
-
-  it('never takes the link out of the tab order', () => {
-    for (const rule of parseRules(headings)) {
-      expect(rule.declarations.display, rule.selectors.join()).not.toBe('none')
-      expect(rule.declarations.visibility, rule.selectors.join()).not.toBe('hidden')
-      expect(rule.declarations['pointer-events'], rule.selectors.join()).not.toBe('none')
-    }
+  it('hold the hover, focus-within and target state on the heading, not on the link alone', () => {
+    const stronger = parseRules(headings).filter((rule) => rule.declarations.color === 'var(--color-link)').flatMap((rule) => rule.selectors)
+    // A pointer elsewhere on the heading never reaches a state carried by the link alone.
+    for (const selector of stronger) expect(selector, selector).not.toMatch(/\.heading-link:(focus-within|target|is\()/)
   })
 
   describe('controls', () => {
-    it('fail against the stylesheet before permalinks were revealed', () => {
-      expect(headingViolations(MAIN_HEADINGS)).toEqual([
-        'nothing hides the permalink at rest',
-        'no element holding the permalink reveals it on :hover',
-        'no element holding the permalink reveals it on :focus-within',
-        'no element holding the permalink reveals it on :target',
-        'a fine pointer does not reveal it on its own :focus-visible',
-        'touch does not keep it visible',
-        'forced colours do not keep it visible',
-        'a target on a section wrapper does not reach its heading',
-      ])
-    })
-
     it.each([
-      ['hiding it on every pointer', (css: string) => edit(css, '@media (hover: hover) and (pointer: fine) {', '@media screen {'),
-        'the permalink is hidden outside a fine-pointer query'],
-      ['no reveal on hover', (css: string) => edit(css, ':is(:hover, :focus-within, :target) >', ':is(:focus-within, :target) >'),
-        'no element holding the permalink reveals it on :hover'],
-      ['no reveal on focus within', (css: string) => edit(css, ':is(:hover, :focus-within, :target) >', ':is(:hover, :target) >'),
-        'no element holding the permalink reveals it on :focus-within'],
-      ['no reveal on target', (css: string) => edit(edit(css, ':is(:hover, :focus-within, :target) >', ':is(:hover, :focus-within) >'), /\s*:target > :is\(h2, h3, p\) > \.api-heading-link/, ''),
-        'no element holding the permalink reveals it on :target'],
-      ['no reveal through a wrapper target', (css: string) => edit(css, /,\s*:target > :is\(h2, h3, p\) > \.api-heading-link/, ''),
+      ['dimming it with opacity', (css: string) => `${css}\n.heading-link { opacity: .6 }`, 'opacity dims the link instead of a muted colour'],
+      ['the muted colour replaced', (css: string) => edit(css, 'color: var(--color-foreground-muted);', 'color: var(--color-link);'),
+        'the link is not drawn in the muted text colour at rest'],
+      ['no strengthening on hover', (css: string) => edit(css, ':is(:hover, :focus-within, :target) >', ':is(:focus-within, :target) >'),
+        'the heading holding the link does not strengthen it on :hover'],
+      ['no strengthening on focus within', (css: string) => edit(css, ':is(:hover, :focus-within, :target) >', ':is(:hover, :target) >'),
+        'the heading holding the link does not strengthen it on :focus-within'],
+      ['no strengthening on target', (css: string) => edit(edit(css, ':is(:hover, :focus-within, :target) >', ':is(:hover, :focus-within) >'), /,\s*:target > :is\(h2, h3, p\) > \.heading-link/, ''),
+        'the heading holding the link does not strengthen it on :target'],
+      ['no strengthening through a wrapper target', (css: string) => edit(css, /,\s*:target > :is\(h2, h3, p\) > \.heading-link/, ''),
         'a target on a section wrapper does not reach its heading'],
-      ['no reveal on its own focus', (css: string) => edit(css, '.api-heading-link:focus-visible,\n  :is(', ':is('),
-        'a fine pointer does not reveal it on its own :focus-visible'],
-      ['hiding it from touch', (css: string) => edit(css, '@media (hover: none), (forced-colors: active)', '@media (forced-colors: active)'),
-        'touch does not keep it visible'],
-      ['hiding it from forced colours', (css: string) => edit(css, '@media (hover: none), (forced-colors: active)', '@media (hover: none)'),
-        'forced colours do not keep it visible'],
-      ['display: none at rest', (css: string) => `${css}\n.api-heading-link { display: none }`,
-        'display: none takes the permalink out of the tab order'],
-      ['visibility: hidden at rest', (css: string) => `${css}\n.api-heading-link { visibility: hidden }`,
-        'visibility: hidden takes the permalink out of the tab order'],
-      ['pointer-events: none at rest', (css: string) => `${css}\n.api-heading-link { pointer-events: none }`,
-        'pointer-events: none blocks the permalink'],
-      ['a transition that ignores reduced motion', (css: string) => `${css}\n.api-heading-link { transition: opacity .2s }`,
-        'a transition runs under reduced motion'],
+      ['no strengthening on its own focus', (css: string) => edit(css, '.heading-link:focus-visible,\n', ''),
+        'the link is not stronger on its own focus'],
+      ['no focus ring', (css: string) => edit(css, 'outline: 2px solid var(--focus-ring-color)', 'outline: 0'),
+        'the link has no focus ring'],
+      ['display: none', (css: string) => `${css}\n.heading-link { display: none }`, 'display: none takes the link out of the tab order'],
+      ['visibility: hidden', (css: string) => `${css}\n.heading-link { visibility: hidden }`, 'visibility: hidden takes the link out of the tab order'],
+      ['pointer-events: none', (css: string) => `${css}\n.heading-link { pointer-events: none }`, 'pointer-events: none blocks the link'],
     ])('fail with %s', (_name, mutate, violation) => {
-      expect(headingViolations(mutate(headings))).toContain(violation)
+      expect(headingLinkViolations(mutate(headings))).toContain(violation)
     })
 
-    it('fail with the reveal moved onto the hash itself, which only its own hover would reach', () => {
-      const moved = edit(headings, ':is(:hover, :focus-within, :target) > .api-heading-link,', '.api-heading-link:is(:hover, :focus-within, :target),')
-      expect(headingViolations(moved)).toEqual(expect.arrayContaining([
-        'no element holding the permalink reveals it on :hover',
-        'no element holding the permalink reveals it on :focus-within',
-        'no element holding the permalink reveals it on :target',
+    it('fail with the strength moved onto the link itself, which only its own hover would reach', () => {
+      const moved = edit(headings, ':is(:hover, :focus-within, :target) > .heading-link,', '.heading-link:is(:hover, :focus-within, :target),')
+      expect(headingLinkViolations(moved)).toEqual(expect.arrayContaining([
+        'the heading holding the link does not strengthen it on :hover',
+        'the heading holding the link does not strengthen it on :focus-within',
+        'the heading holding the link does not strengthen it on :target',
       ]))
-    })
-
-    it('accept a fade that waits for motion to be allowed', () => {
-      const faded = `${headings}\n@media (prefers-reduced-motion: no-preference) { .api-heading-link { transition: opacity .15s } }`
-      expect(headingViolations(faded)).toEqual([])
     })
 
     it('read the media condition around a rule, not the rule text', () => {
@@ -276,17 +221,8 @@ describe('prose row permalinks', () => {
 })
 
 describe('prose heading anchors', () => {
-  const full = style('global.css')
-  const touch = /@media \(hover: none\) \{\s*\.anchor-link \{\s*@apply opacity-50;/
-  const forced = /@media \(forced-colors: active\) \{\s*\.anchor-link \{\s*@apply opacity-100;/
-
-  it('stay in view on touch and in forced colours', () => {
-    expect(full).toMatch(touch)
-    expect(full).toMatch(forced)
-  })
-
-  it('fail without the forced-colours rule', () => {
-    expect(edit(full, forced, '')).not.toMatch(forced)
+  it('have no stylesheet of their own: the Markdown pilcrow is gone and the heading link covers every page', () => {
+    expect(style('global.css')).not.toMatch(/\.anchor-(link|icon)\b(?!.*row)/)
   })
 })
 
@@ -299,7 +235,7 @@ function permalinks(html: string) {
   windows.push(win)
   win.document.body.innerHTML = html
   const ids = [...win.document.querySelectorAll('[id]')].map((node) => node.id)
-  const links = [...win.document.querySelectorAll('a.api-heading-link')].map((link) => ({
+  const links = [...win.document.querySelectorAll('a.heading-link')].map((link) => ({
     href: link.getAttribute('href')!, label: link.getAttribute('aria-label')!, owner: link.closest('[id]')?.id,
     resolves: ids.filter((id) => id === decodeURIComponent(link.getAttribute('href')!.slice(1))).length,
   }))
@@ -370,11 +306,11 @@ describe('product reference pages', () => {
     expect(heading.classList.contains('api-section-heading')).toBe(true)
     expect(heading.firstChild?.textContent).toBe('Members')
     expect(heading.querySelector('.api-section-count')?.textContent).toBe(`${members.length} members`)
-    const link = heading.querySelector('a.api-heading-link')!
+    const link = heading.querySelector('a.heading-link')!
     expect(link.getAttribute('href')).toBe('#api-members')
     expect(link.getAttribute('aria-label')).toBe('Link to Members')
     // The count sits between the label and the hash, as it does on a type page.
-    expect([...heading.children].map((child) => child.className)).toEqual(['api-section-count', 'api-heading-link'])
+    expect([...heading.children].map((child) => child.className)).toEqual(['api-section-count', 'heading-link'])
   }, 60_000)
 
   describe('with the owner renderer', () => {
@@ -419,9 +355,9 @@ const { symbol, member, nameHref } = Astro.props
       expect(heading.classList.contains('api-section-heading')).toBe(true)
       expect(heading.firstChild?.textContent).toBe(word)
       expect(heading.querySelector('.api-section-count')?.textContent).toBe(String(fields.length))
-      expect(heading.querySelector('a.api-heading-link')?.getAttribute('href')).toBe('#api-fields')
-      expect(heading.querySelector('a.api-heading-link')?.getAttribute('aria-label')).toBe(`Link to ${word}`)
-      expect([...heading.children].map((child) => child.className)).toEqual(['api-section-count', 'api-heading-link'])
+      expect(heading.querySelector('a.heading-link')?.getAttribute('href')).toBe('#api-fields')
+      expect(heading.querySelector('a.heading-link')?.getAttribute('aria-label')).toBe(`Link to ${word}`)
+      expect([...heading.children].map((child) => child.className)).toEqual(['api-section-count', 'heading-link'])
 
       // Its own wrapper: .api-members would hand the Fields bar to the sticky Members logic.
       const block = heading.parentElement!

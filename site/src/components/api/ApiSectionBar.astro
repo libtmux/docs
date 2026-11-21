@@ -1,0 +1,28 @@
+---
+/**
+ * The section bar under a reference page's title: one row of links at every width (design record 0007).
+ *
+ * The wrapper holds the bar's rule, spacing and sticky position, so the arrow buttons sit on the rule. The links are the
+ * `nav`, which scrolls inside the row. Both buttons are `hidden` in the markup and `section-bar.ts` shows them only when
+ * links overflow; the row is one line before any script runs, so mounting moves nothing below it, and without scripts
+ * the row still scrolls.
+ */
+interface Props { class?: string }
+const { class: className } = Astro.props
+const arrow = (d: string) => `<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="${d}"/></svg>`
+---
+<api-section-bar class="api-section-bar" data-pagefind-ignore="all">
+  <button type="button" class="api-section-bar__btn" data-dir="-1" aria-label="Earlier sections" hidden set:html={arrow('m10 3-5 5 5 5')} />
+  <nav class:list={['api-section-links', className]} aria-label="Reference sections" data-scroll-track><slot /></nav>
+  <button type="button" class="api-section-bar__btn" data-dir="1" aria-label="Later sections" hidden set:html={arrow('m6 3 5 5-5 5')} />
+</api-section-bar>
+<script>
+  import { mountSectionBar } from '../../lib/section-bar'
+
+  class ApiSectionBar extends HTMLElement {
+    stop?: () => void
+    connectedCallback() { this.stop = mountSectionBar(this) }
+    disconnectedCallback() { this.stop?.() }
+  }
+  if (!customElements.get('api-section-bar')) customElements.define('api-section-bar', ApiSectionBar)
+</script>

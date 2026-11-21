@@ -223,6 +223,34 @@ describe('native shell URL normalization', () => {
     } finally { rmSync(directory, { recursive: true, force: true }) }
   })
 
+  it.each(['0.7.0', '0.8.0'])('adapts the pinned sphinx-design %s tabs script to appearance layout and blocked storage', async (release) => {
+    const directory = mkdtempSync(join(tmpdir(), 'native-tabs-'))
+    const win = new Window({ url: 'https://libtmux.org/en/py/latest/api/?tab=b' })
+    try {
+      mkdirSync(join(directory, '_static'))
+      const file = join(directory, '_static/design-tabs.js')
+      writeFileSync(file, readFileSync(new URL(`./fixtures/native-design-tabs-${release}.js`, import.meta.url)))
+      const contextFile = join(directory, 'context.json')
+      writeFileSync(contextFile, JSON.stringify({ port: 'py', version: 'latest', root: '/en/', pages: [] }))
+      const options = { sphinxPort: 'py', contextFile }
+      expect(await normalizeNativeShell(directory, '/en', options)).toBeGreaterThan(0)
+      const layouts: (() => void)[] = []
+      Object.assign(win, { __libtmuxAppearance: { layout: (work: () => void) => layouts.push(work) } })
+      for (const name of ['localStorage', 'sessionStorage']) {
+        Object.defineProperty(win, name, { get: () => { throw new win.DOMException('Blocked', 'SecurityError') } })
+      }
+      const tab = (id: string, key: string) => `<input id="${id}" type="radio" name="${id}"><label class="sd-tab-label" for="${id}" data-sync-group="tab" data-sync-id="${key}">${key}</label><div class="sd-tab-content"></div>`
+      win.document.body.innerHTML = `<div class="sd-tab-set">${tab('one-a', 'a')}${tab('one-b', 'b')}</div>`
+      win.eval(readFileSync(file, 'utf8'))
+      // Startup waits for appearance layout; a later run must not throw when the browser blocks site data.
+      expect(layouts).toHaveLength(1)
+      expect(() => { layouts[0]!(); layouts[0]!() }).not.toThrow()
+      expect(await normalizeNativeShell(directory, '/en', options)).toBe(0)
+      const digest = nativeHash(readFileSync(file)).slice(0, 12)
+      expect(readFileSync(join(directory, `_astro/design-tabs.${digest}.js`), 'utf8')).toBe(readFileSync(file, 'utf8'))
+    } finally { await win.happyDOM.abort(); rmSync(directory, { recursive: true, force: true }) }
+  })
+
   it.each(['search.html', 'search/index.html'])('routes native %s to scoped search with the query intact', async (name) => {
     const directory = mkdtempSync(join(tmpdir(), 'native-search-'))
     try {
@@ -319,13 +347,18 @@ describe('native shell URL normalization', () => {
   })
 
   it('marks each native page with the section filter the Astro layout writes, once, ahead of its article', async () => {
-    const cases = { 'api/pane/': 'reference', 'quickstart/': 'guides', 'topics/architecture/': 'topics', '': 'home' }
-    const { html, changed, again } = await normalizedNativePages(Object.keys(cases))
+    const cases = { 'api/pane/': 'reference', 'quickstart/': 'guides', 'topics/architecture/': 'topics', 'internals/': 'reference', 'glossary/': 'concepts', 'migration/': 'guides' }
+    const { html, changed, again } = await normalizedNativePages([...Object.keys(cases), 'project/', 'history/', ''])
     expect(changed).toBeGreaterThan(0)
     for (const [path, section] of Object.entries(cases)) {
       const marker = `<div data-pagefind-filter="section:${section}" hidden></div>`
       expect(html[path]!.split('data-pagefind-filter="section:').length, path).toBe(2)
       expect(html[path], path).toContain(`${marker}<article role="main" data-pagefind-body data-pagefind-filter="port:Python">`)
+    }
+    // A page that fits none of the site's sections carries no section marker at all (record 0075).
+    for (const path of ['project/', 'history/', '']) {
+      expect(html[path], path).not.toContain('data-pagefind-filter="section:')
+      expect(html[path], path).toContain('<article role="main" data-pagefind-body data-pagefind-filter="port:Python">')
     }
     // A second pass finds the marker in place and writes nothing.
     expect(again).toBe(0)

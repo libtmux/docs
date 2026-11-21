@@ -314,7 +314,7 @@ const breadcrumbs = withSidebarBreadcrumbs(requestedBreadcrumbs ?? (product && p
       </div>
     </aside>}
 
-    <main class="min-w-0 flex-1">
+    <main class="min-w-0 flex-1" id="content" tabindex="-1">
       {(!port || pagePath) && !(bare && breadcrumbs.length === 0) && <PageToolbar breadcrumbs={breadcrumbs} pagePorts={hasContext ? [] : pagePorts} port={port} editHref={editHref} editLabel={editLabel} />}
       {bare ? <slot /> : (
       <article class:list={[!reference && 'prose max-w-none dark:prose-invert']} data-content={contentKind(pagePath)}>

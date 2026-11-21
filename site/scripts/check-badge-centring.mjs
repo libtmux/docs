@@ -270,7 +270,9 @@ export async function chipGrowthProblems(page, scope) {
       return {
         text: name.textContent.trim(), box: plain(box), mark: plain(a.querySelector(':scope > .api-nav__kind').getBoundingClientRect()), lines,
         rail: plain(a.closest(list).getBoundingClientRect()), where,
-        clipped: a.scrollHeight > a.clientHeight + 1 || a.scrollWidth > a.clientWidth + 1,
+        // Only a link that hides its overflow clips: the text box of a line sticks out of a link by a pixel or two, though no letter does.
+        clipped: (getComputedStyle(a).overflowY !== 'visible' && a.scrollHeight > a.clientHeight + 1)
+          || (getComputedStyle(a).overflowX !== 'visible' && a.scrollWidth > a.clientWidth + 1),
       }
     })
   }, scope)
@@ -321,8 +323,10 @@ export async function qualifierProblems(page) {
  * Each is probed with a zero-size inline box, which sits on the baseline of the line it is in.
  */
 export async function headingProblems(page) {
-  const found = await page.evaluate(() => [...document.querySelectorAll('h2.api-index-summary')].filter((h) => h.offsetParent && h.querySelector('.headerlink')).slice(0, 6).map((heading) => {
+  const found = await page.evaluate(() => [...document.querySelectorAll('h2.api-index-summary')].filter((h) => h.offsetParent && h.querySelector('.heading-link')).slice(0, 6).map((heading) => {
     const baseline = (host) => {
+      // The link icon is the one flex item of its link: its bottom edge is the link's baseline, where a probe would be centred.
+      if (host.matches('.heading-link')) return host.querySelector('svg').getBoundingClientRect().bottom
       const probe = document.createElement('span')
       probe.style.cssText = 'display:inline-block;width:0;height:0'
       host.prepend(probe)
@@ -330,7 +334,7 @@ export async function headingProblems(page) {
       probe.remove()
       return y
     }
-    const parts = { title: heading, count: heading.querySelector(':scope > span'), permalink: heading.querySelector(':scope > .headerlink') }
+    const parts = { title: heading, count: heading.querySelector(':scope > span'), permalink: heading.querySelector(':scope > .heading-link') }
     return { text: heading.firstChild?.textContent?.trim() ?? '', baselines: Object.fromEntries(Object.entries(parts).filter(([, node]) => node).map(([name, node]) => [name, baseline(node)])) }
   }))
   const problems = []
@@ -529,7 +533,7 @@ async function negativeControl(page, base, results) {
   await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
   await page.addStyleTag({ content: MEASURING_STYLE })
   assert((await headingProblems(page)).problems.length === 0, 'The group headings are not clean before the control')
-  const lifted = await page.addStyleTag({ content: 'h2.api-index-summary > .headerlink { vertical-align: 4px !important; }' })
+  const lifted = await page.addStyleTag({ content: 'h2.api-index-summary > .heading-link { vertical-align: 4px !important; }' })
   results.headingControl = (await headingProblems(page)).problems.length
   await lifted.evaluate((node) => node.remove())
   assert(results.headingControl > 0, 'The heading check did not notice a permalink off the baseline')
@@ -539,21 +543,30 @@ async function negativeControl(page, base, results) {
   await touching.evaluate((node) => node.remove())
   assert(results.rowControl > 0, 'The row check did not notice a mark that touches its name and sits off its centre')
 
-  // A linked name sets its name in a code element at .875em of its link: the capitals to centre on are the name's, not the link's.
-  await page.goto(`${base}${PAGES[4].path}`, { waitUntil: 'load' })
-  await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
-  await page.addStyleTag({ content: MEASURING_STYLE })
-  const linked = await page.locator(`.tmux-usage a > ${LINK_MARK}`).filter({ visible: true, hasText: /^[maf]$/ }).first().elementHandle()
-  const nameSize = await linked.evaluate((element) => parseFloat(getComputedStyle(element.nextElementSibling).fontSize))
-  const linkSize = await linked.evaluate((element) => parseFloat(getComputedStyle(element.parentElement).fontSize))
-  assert(nameSize < linkSize, `The linked name is not smaller than its link (${nameSize}px of ${linkSize}px), so the control cannot tell them apart`)
-  const sampled = await sample(page, linked, 'row')
-  assert.equal(sampled.info.wordFont, nameSize, 'The row measurement does not read the size of the name')
-  assert.deepEqual(judge('control', measure(sampled, 'row'), 'row'), [], 'A linked name is not centred before the control')
-  const drifted = await page.addStyleTag({ content: `${ROW_MARKS} { top: 3px !important; }` })
-  results.linkedControl = judge('control', measure(await sample(page, linked, 'row'), 'row'), 'row').length
-  await drifted.evaluate((node) => node.remove())
-  assert(results.linkedControl > 0, 'The row check did not notice a linked-name mark three pixels off its name')
+  // A linked name sets its name in a code element: the capitals to centre on are the name's, not the link's. The "In other ports" table
+  // sets the name smaller than its link, so the control tells the two apart there; the tmux usage list sets it at its link's size (record 0051).
+  const linkedRuns = [
+    { run: '.api-elsewhere-value', path: PAGES[6].path, smaller: true },
+    { run: '.tmux-usage', path: PAGES[4].path, smaller: false },
+  ]
+  results.linkedControl = 0
+  for (const { run, path, smaller } of linkedRuns) {
+    await page.goto(`${base}${path}`, { waitUntil: 'load' })
+    await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
+    await page.addStyleTag({ content: MEASURING_STYLE })
+    const linked = await page.locator(`${run} a > ${LINK_MARK}`).filter({ visible: true, hasText: /^[maf]$/ }).first().elementHandle()
+    const nameSize = await linked.evaluate((element) => parseFloat(getComputedStyle(element.nextElementSibling).fontSize))
+    const linkSize = await linked.evaluate((element) => parseFloat(getComputedStyle(element.parentElement).fontSize))
+    if (smaller) assert(nameSize < linkSize, `The linked name is not smaller than its link (${nameSize}px of ${linkSize}px in ${run}), so the control cannot tell them apart`)
+    const sampled = await sample(page, linked, 'row')
+    assert.equal(sampled.info.wordFont, nameSize, `The row measurement does not read the size of the name in ${run}`)
+    assert.deepEqual(judge('control', measure(sampled, 'row'), 'row'), [], `A linked name in ${run} is not centred before the control`)
+    const drifted = await page.addStyleTag({ content: `${ROW_MARKS} { top: 3px !important; }` })
+    const caught = judge('control', measure(await sample(page, linked, 'row'), 'row'), 'row').length
+    await drifted.evaluate((node) => node.remove())
+    assert(caught > 0, `The row check did not notice a linked-name mark three pixels off its name in ${run}`)
+    results.linkedControl += caught
+  }
 }
 
 export async function checkBadgeCentring(browser, base, { sample: bounded = false } = {}) {
@@ -744,6 +757,7 @@ export async function checkUsageChips(browser, base) {
     await page.addStyleTag({ content: `${CHIP} { height: 1.4em !important; overflow: hidden !important; }` })
     const pinned = await growth()
     assert(pinned.problems.some((problem) => /past the link's bottom edge/.test(problem)), 'The check did not notice a link too short for its name')
+    assert(pinned.problems.some((problem) => /the link clips its name/.test(problem)), 'The check did not notice a link that clips its name')
     // Control 2: a name that ends below its link's bottom edge.
     await fresh()
     await page.addStyleTag({ content: `${CHIP} > ${LINK_MARK} + code { margin-bottom: -8px !important; }` })

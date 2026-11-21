@@ -163,6 +163,87 @@ describe('contrast of the shared chrome', () => {
     }
   })
 
+  // Firefox draws a white scrollbar on an inner scroller in dark unless the page names its colours.
+  it('names the scrollbar colours from the control token in dark, at the root where every scroller inherits them', () => {
+    const global = read('global.css')
+    expect(global).toMatch(/html\[data-theme-mode='dark'\]\s*\{\s*scrollbar-color:\s*var\(--control-border\) transparent;/)
+    expect(global).toMatch(/prefers-color-scheme: dark\)\s*\{\s*html:not\(\[data-theme-mode\]\):not\(\[data-theme='light'\]\)\s*\{\s*scrollbar-color:\s*var\(--control-border\) transparent;/)
+    expect(global, 'light keeps the native scrollbar').not.toMatch(/html\[data-theme-mode='light'\][^{]*\{[^}]*scrollbar-color/)
+  })
+
+  // The `$` of a shell session is bold 13px text on the code frame: syntax-bg, white in light and #24292e in dark.
+  it('keeps the shell prompt at 4.5:1 on the code frame in both themes, in the violet it had', () => {
+    const [light, dark] = [...read('global.css').matchAll(/--lm-shell-prompt:\s*(#[0-9a-f]{6})/g)].map((match) => match[1]!)
+    expect(light && dark, 'a light and a dark prompt colour').toBeTruthy()
+    // The token ground, and the ground Expressive Code's GitHub themes draw (#f6f8fa and #1f2428, read from a rendered frame in Firefox).
+    for (const ground of [THEMED['syntax-bg']![0], '#f6f8fa']) expect(ratio(hex(light!), hex(ground)), `light on ${ground}`).toBeGreaterThanOrEqual(4.5)
+    for (const ground of [THEMED['syntax-bg']![1], '#1f2428']) expect(ratio(hex(dark!), hex(ground)), `dark on ${ground}`).toBeGreaterThanOrEqual(4.5)
+    // The hue stays violet (about 271 degrees), as `#a855f7` and `#c084fc` were.
+    const hueOf = ([r, g, b]: Rgb) => {
+      const [max, min] = [Math.max(r, g, b), Math.min(r, g, b)]
+      return (r === max ? ((g - b) / (max - min)) % 6 : g === max ? (b - r) / (max - min) + 2 : (r - g) / (max - min) + 4) * 60 + (r === max && g < b ? 360 : 0)
+    }
+    for (const colour of [light!, dark!]) expect(hueOf(hex(colour))).toBeGreaterThan(265)
+    for (const colour of [light!, dark!]) expect(hueOf(hex(colour))).toBeLessThan(278)
+    // The control: the colour this replaced is below 4.5:1 on the white frame.
+    expect(ratio(hex('#a855f7'), hex('#f6f8fa'))).toBeLessThan(4.5)
+  })
+
+  // The 12px selected label sits on a 16% wash of the text colour over the header ground (adoption plan step 50).
+  it('keeps the selected scheme label at 4.5:1 on its wash in every palette and both themes, in the text colour, not the link colour', () => {
+    const switchCss = read('global.css')
+    const selected = switchCss.slice(switchCss.indexOf(".scheme-switch__option:has(input:checked)"), switchCss.indexOf("/* The attribute is the authority"))
+    expect(selected).toMatch(/color:\s*var\(--topnav-text-color\)/)
+    expect(selected).toMatch(/color-mix\(in oklab, var\(--topnav-background\), var\(--topnav-text-color\) 16%\)/)
+    const brand = read('brand.css')
+    // Light is `html[data-brand="x"]`; dark is the same with `[data-theme-mode="dark"]`.
+    const blocks = [...brand.matchAll(/^html\[data-brand="([^"]+)"\](\[data-theme-mode="dark"\])?[^{]*\{([^}]*)\}/gm)]
+    const value = (body: string, name: string) => new RegExp(`--${name}:\\s*(#[0-9a-fA-F]{6})`).exec(body)?.[1]
+    let checked = 0
+    for (const [, slug, dark, body] of blocks) {
+      const [ground, text, link] = ['topnav-background', 'topnav-text-color', 'topnav-link-color'].map((name) => hex(value(body!, name)!))
+      const wash = tint(text!, 0.16, ground!)
+      expect(ratio(text!, wash), `${slug} ${dark ? 'dark' : 'light'} text`).toBeGreaterThanOrEqual(4.5)
+      checked++
+      // The control: the link colour this replaced is below 4.5:1 in some palette's wash, or this loop could not fail.
+      if (ratio(link!, wash) < 4.5) expect(ratio(text!, wash), `${slug} text beats link`).toBeGreaterThan(ratio(link!, wash))
+    }
+    expect(checked, 'a light and a dark block for each palette').toBe(Object.keys(palettes).length * 2)
+  })
+
+  // Record 0079. The tint is the link colour over the code background, under the syntax inks: GitHub light and dark, which tokens.css states.
+  it('keeps every syntax ink at 4.5:1 on the Core player\'s current and hover tints, in every palette and both themes', () => {
+    const css = read('core-player.css')
+    const shares = {
+      light: rule(css, '\n.home-example-view'),
+      dark: rule(css, '\nhtml[data-theme-mode="dark"] .home-example-view'),
+    }
+    expect(rule(css.slice(css.indexOf('@media (prefers-color-scheme: dark)')), '\n  html:not([data-theme-mode]):not([data-theme="light"]) .home-example-view'), 'before the theme script runs, dark reads the same shares').toEqual(shares.dark)
+    const tokens = { light: LIGHT, dark: DARK }
+    /** The lowest ratio of any ink over any palette's tint, and where it is. */
+    const lowest = (share: (mode: (typeof modes)[number]) => number) => {
+      let worst: [number, string] = [Infinity, '']
+      for (const [slug, palette] of Object.entries(palettes)) {
+        for (const mode of modes) {
+          const ground = tint(hex(palette[mode].link), share(mode), hex(tokens[mode]['--syntax-bg']!))
+          for (const [name, ink] of Object.entries(tokens[mode]).filter(([key]) => /^--syntax-(?!bg$)/.test(key))) {
+            const value = ratio(hex(ink), ground)
+            if (value < worst[0]) worst = [value, `${slug} ${mode} ${name}`]
+          }
+        }
+      }
+      return worst
+    }
+    for (const state of ['current', 'hover']) {
+      const [value, where] = lowest((mode) => Number.parseFloat(shares[mode][`--core-tint-${state}`]!) / 100)
+      expect(value, `${state}: ${where}`).toBeGreaterThanOrEqual(4.5)
+    }
+    // A control: the 14% the owner set on 2026-11-14 must read as failing, or this loop could not fail.
+    expect(lowest(() => 0.14)[0], 'the old current tint').toBeLessThan(4.5)
+    expect(shares.light, 'light: current 8%, hover 5%').toEqual({ '--core-tint-hover': '5%', '--core-tint-current': '8%' })
+    expect(shares.dark, 'dark: current 7%, hover 4%').toEqual({ '--core-tint-hover': '4%', '--core-tint-current': '7%' })
+  })
+
   it('keeps the focus ring at 3:1 on the page and on a panel in every palette', () => {
     for (const [slug, palette] of Object.entries(palettes)) {
       for (const mode of modes) {
@@ -248,6 +329,11 @@ describe('control outlines', () => {
     ['styles/core-player.css', '.expressive-code .core-copy'],
     ['styles/global.css', '.scheme-switch'],
     ['styles/global.css', '.scheme-cycle'],
+    ['components/widgets/install-surface.css', '.lm-install__cdtoggle'],
+    ['styles/global.css', '.prerelease-notice__dismiss'],
+    ['components/SearchPanel.astro', '.search-panel__more'],
+    ['styles/api-tree.css', 'html[data-api-nav] .api-nav-toggle'],
+    ['components/StatusBadge.astro', 'button.status-badge'],
   ]
 
   it.each(CONTROLS)('%s %s is outlined in --control-border', (file, selector) => {
@@ -379,12 +465,12 @@ describe('pickers, touch targets, focus and labels', () => {
     const square = 'content: \'\'; position: absolute; inset: min(0px, calc((100% - var(--touch-target)) / 2)); }'
     const rules: Array<[string, string]> = [
       ['styles/global.css', '.prerelease-notice__more summary)::after { content: \'\'; position: absolute; inset: -.25rem -.25rem calc(.25rem + 100% - var(--touch-target)); }'],
-      ['styles/global.css', '.anchor-link, .inventory-help-link, footer .icons a)::after { ' + square],
+      ['styles/global.css', '.inventory-help-link, footer .icons a)::after { ' + square],
       ['styles/global.css', ':is([data-breadcrumb-item], .crumb-collapsed > a, footer ul.flex a, [data-ci-examples] li a) { display: inline-flex; align-items: center; min-height: var(--touch-target); }'],
       ['styles/global.css', '.site-header .scheme-switch__option::before { ' + hit],
       ['styles/global.css', '.expressive-code .frame .copy button { width: var(--touch-target); height: var(--touch-target); }'],
       ['styles/api.css', '.api-member-chips button::after, :is(.api-reference-eyebrow, .gp-sphinx-api-layout-right) > a.api-badge::before { ' + hit],
-      ['styles/api.css', '.api-heading-link::after { ' + square],
+      ['styles/api.css', '.heading-link::after { ' + square],
       ['styles/api.css', '.api-copy-name::before { inset: min(0px, calc((1lh - var(--touch-target)) / 2)); }'],
       ['styles/api.css', 'a.api-badge:is(.api-leg, .api-badge--mod) { overflow: visible; }'],
       ['styles/api.css', '.api-member-search > input { min-height: var(--touch-target); }'],
@@ -458,6 +544,49 @@ describe('pickers, touch targets, focus and labels', () => {
   })
 })
 
+/** Labels are people's words, set in IBM Plex Sans (record 0031); mono stays for code, identifiers, paths and values. */
+describe('labels in sans', () => {
+  const source = (path: string) => readFileSync(new URL(`../src/${path}`, import.meta.url), 'utf8')
+
+  it.each([
+    ['components/api/RelationshipCollection.astro', '  .api-collection__kind { font'],
+    ['components/HomeIntro.astro', '.home-eyebrow {'],
+    ['styles/global.css', '.mcp-group > h2.api-index-summary {'],
+  ])('%s sets %s in the sans face', (file, selector) => {
+    const start = source(file).indexOf(selector)
+    expect(start, selector).toBeGreaterThan(-1)
+    const body = source(file).slice(start, source(file).indexOf('}', start))
+    expect(body).toMatch(/var\(--font-sans[,)]|var\(--font-sans\)/)
+    expect(body).not.toMatch(/mono/)
+  })
+})
+
+/** "Back to top" covered about 30% of "Copy the prompt" at 476px (adoption plan step 51): below the phone breakpoint it sits 12px in and waits for two screens. */
+describe('the Back to top button', () => {
+  const source = (path: string) => readFileSync(new URL(`../src/${path}`, import.meta.url), 'utf8')
+  const button = source('components/BackToTop.astro')
+
+  it('takes its corner from the inset property, 2rem and 0.75rem below the phone breakpoint, and its size from the size property', () => {
+    const global = source('styles/global.css')
+    expect(global).toMatch(/:root \{\s*--back-to-top-size: 2\.875rem;\s*--back-to-top-inset: 2rem;\s*\}/)
+    expect(global).toMatch(/@media \(max-width: 29\.999rem\) \{\s*:root \{\s*--back-to-top-inset: 0\.75rem;/)
+    expect(button).toMatch(/right: var\(--back-to-top-inset\);/)
+    expect(button, 'no fixed 2rem inset left in the classes').not.toMatch(/\b(?:bottom|right)-8\b/)
+  })
+
+  it('appears after two screens of scrolling on a phone, and after 300px elsewhere', () => {
+    expect(button).toContain("import { below } from '../lib/breakpoints'")
+    expect(button).toMatch(/matchMedia\(below\('phone'\)\)/)
+    expect(button).toMatch(/pageYOffset > \(phone\.matches \? 2 \* window\.innerHeight : 300\)/)
+  })
+
+  it('leaves the home page\'s last block room for it: its size plus its inset below the phone breakpoint', () => {
+    const home = source('pages/index.astro')
+    expect(home).toContain('class="home-last mt-16"')
+    expect(home).toMatch(/@media \(max-width: 29\.999rem\) \{\s*\.home-last \{ padding-bottom: calc\(var\(--back-to-top-size\) \+ var\(--back-to-top-inset\)\); \}/)
+  })
+})
+
 describe('shared chrome reads tokens, not greys', () => {
   const source = (path: string) => readFileSync(new URL(`../src/${path}`, import.meta.url), 'utf8')
 
@@ -476,5 +605,91 @@ describe('shared chrome reads tokens, not greys', () => {
 
   it('draws the reroll gradient from its tokens', () => {
     expect(source('components/RerollButton.astro')).toContain('linear-gradient(to right, var(--lm-reroll-from), var(--lm-reroll-to))')
+  })
+})
+
+describe('muted text on API pages: a colour, never opacity', () => {
+  const source = (path: string) => readFileSync(new URL(`../src/${path}`, import.meta.url), 'utf8')
+
+  it('draws definition labels, signature separators and Default labels in the muted text colour', () => {
+    const api = read('api.css')
+    expect(api).toMatch(/\.api-definition dt \{[^}]*color: var\(--color-foreground-muted\);/)
+    expect(api).not.toMatch(/\.api-definition dt \{[^}]*opacity/)
+    expect(api).toMatch(/\.api-punct, \.api-type-label \{ color: var\(--color-foreground-muted\); \}/)
+  })
+
+  it.each(['components/api/ApiReference.astro', 'components/mcp/ProtocolReference.astro', 'components/tmux/Catalog.astro'])(
+    '%s dims no member or type count, and no card summary, with opacity', (file) => {
+      expect(source(file)).not.toMatch(/\bopacity-(?:60|80)\b/)
+    })
+})
+
+describe('the dark signature header (record 0080)', () => {
+  // The page ground and text of the default dark palette, and the approved dark name red.
+  const ground = hex(/--background-color:\s*(#[0-9a-f]{6})/i.exec(read('brand.css').slice(read('brand.css').indexOf('dark')))![1]!)
+  const text = hex('#e7edf3')
+  const name = hex(/--color-api-name:\s*(#[0-9a-f]{6})/i.exec(read('vendor/gp-sphinx-api.css').slice(read('vendor/gp-sphinx-api.css').indexOf('--color-api-name: #ee5151') - 10))![1]!)
+  const header = (share: number) => tint(text, share, ground)
+
+  it('reads its share of the text colour from a token that dark sets to 3%', () => {
+    const tokens = read('tokens.css')
+    expect(tokens).toMatch(/:root \{[^}]*--signature-ground-share: 6%;/)
+    expect(tokens.match(/--signature-ground-share: 3%;/g)).toHaveLength(2)
+    expect(read('api.css')).toContain('var(--text-color) var(--signature-ground-share, 6%)')
+  })
+
+  it('keeps the approved name red at 4.5:1 on the 3% ground, which the 6% ground does not', () => {
+    expect(ratio(name, header(0.03))).toBeGreaterThanOrEqual(4.5)
+    expect(ratio(name, header(0.06))).toBeLessThan(4.5)
+  })
+})
+
+describe('badge and tab label floors (records 0051 and 0071)', () => {
+  it('names the floors: 11px for a badge word, 10.5px for a corner tab word', () => {
+    const tokens = read('tokens.css')
+    expect(tokens).toContain('--badge-word-floor: 11px;')
+    expect(tokens).toContain('--corner-word-floor: 10.5px;')
+  })
+
+  it('sizes the legend chip and the modifier badge so their .8em word reaches the badge floor', () => {
+    const marks = read('kind-marks.css')
+    expect(marks.match(/font: 600 max\(\.8125rem, calc\(var\(--badge-word-floor\) \/ \.8\)\)\/1/g)).toHaveLength(2)
+  })
+
+  it('sizes the corner tab chips so the kind word and Source reach the tab floor and the modifier reaches the badge floor', () => {
+    const api = read('api.css')
+    expect(api).toContain('font-size: max(0.75rem, calc(var(--corner-word-floor) / 0.8));')
+    expect(api).toContain('font-size: max(0.7421875rem, calc(var(--badge-word-floor) / 0.8));')
+  })
+
+  it('draws a parameter\'s "added" and deprecation labels at 12px, over the vendored 11px', () => {
+    expect(read('api.css')).toContain('span.gp-sphinx-api-param-since, span.gp-sphinx-api-param-deprecated { font-size: max(0.75rem, 12px); }')
+  })
+})
+
+describe('"In other ports" (record 0049)', () => {
+  it('fills a hovered or focused name\'s kind mark with its family fill, not the table\'s neutral one', () => {
+    const table = readFileSync(new URL('../src/components/api/EquivalentsTable.astro', import.meta.url), 'utf8')
+    expect(table).toMatch(/\.api-eq-table \.api-elsewhere-value a:is\(:hover, :focus-visible\) > \.api-nav__kind \{\s*--mk-fill: var\(--mk-bg\);/)
+  })
+})
+
+describe('inline code in 13px lists (records 0051 and 0071)', () => {
+  const source = (path: string) => readFileSync(new URL(`../src/${path}`, import.meta.url), 'utf8')
+
+  it('sets the tmux usage list\'s names at the list\'s own 13px and its other code at no less than 13px', () => {
+    const usage = source('components/tmux/TmuxUsage.astro')
+    expect(usage).toMatch(/\.tmux-usage \{ --name-scale: 1;[^}]*font-size: 0\.8125rem;/)
+    expect(usage).toContain('.tmux-usage__item code { font-size: max(0.875em, 13px); }')
+  })
+
+  it('keeps the mark centred on the name at whatever scale the name takes', () => {
+    const marks = read('kind-marks.css')
+    expect(marks).toContain('top: calc(-1 * round(calc((var(--name-scale, .875) * 1cap - var(--mk-gh)) / 2), var(--mark-step)));')
+    expect(marks).toContain('font-size: calc(var(--name-scale, .875) * 1em);')
+  })
+
+  it('floors the code in a doc comment\'s link at 12px', () => {
+    expect(read('api.css')).toContain('.api-doc-link .api-literal { font-size: max(0.875em, 12px); }')
   })
 })

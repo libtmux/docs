@@ -37,21 +37,35 @@ describe('search URL state', () => {
 })
 
 describe('the section of a page', () => {
-  it('is the first path segment after any port and version, as the layout writes it', () => {
+  it('is the first path segment after any port and version, when it is one of the site\'s seven', () => {
     expect(pageSection('guides/capturing-output')).toBe('guides')
     expect(pageSection('reference/tmux-pane-capture')).toBe('reference')
-    expect(pageSection('tmux/latest/manual/new-session')).toBe('manual')
-    expect(pageSection('')).toBe('home')
+    expect(pageSection('tmux/latest/reference/new-session')).toBe('reference')
+    for (const section of ['guides', 'concepts', 'examples', 'topics', 'reference', 'mcp', 'workspace']) expect(pageSection(`${section}/x`), section).toBe(section)
   })
 
-  it('places a native Sphinx page by its path in the tree, with the names the Astro pages use', () => {
+  it('is none for a page that fits none of them, so the Section facet never lists it (record 0075)', () => {
+    for (const path of ['', '404', 'search', 'core/capture', 'tmux/latest/catalog/options', 'tmux/latest/manual/new-session', 'meta/linking', 'constructor']) {
+      expect(pageSection(path), `"${path}"`).toBeUndefined()
+    }
+  })
+
+  it('places a native Sphinx page by what it serves, with the names the Astro pages use', () => {
     expect(nativeSection('api/pane/')).toBe('reference')
     expect(nativeSection('api/testing/')).toBe('reference')
     expect(nativeSection('genindex/')).toBe('reference')
     expect(nativeSection('py-modindex/')).toBe('reference')
+    expect(nativeSection('internals/api/')).toBe('reference')
+    expect(nativeSection('glossary/')).toBe('concepts')
     expect(nativeSection('quickstart/')).toBe('guides')
+    expect(nativeSection('migration/')).toBe('guides')
     expect(nativeSection('topics/architecture/')).toBe('topics')
-    expect(nativeSection('')).toBe('home')
+  })
+
+  it('gives a native page that fits none of the seven no section, whatever its folder is called', () => {
+    for (const path of ['project/contributing/', 'project/', 'history/', 'search/', '_modules/libtmux/pane/', 'constructor/', '']) {
+      expect(nativeSection(path), `"${path}"`).toBeUndefined()
+    }
   })
 })
 
@@ -85,8 +99,8 @@ describe('scope and facets as Pagefind filters', () => {
     expect(filterCount({ q: '', scope: 'all' }, ['Go', 'Rust'])).toBe(2)
   })
 
-  it('orders sections as the site does, unknown ones last', () => {
-    expect(orderedSections({ topics: 1, mcp: 2, other: 3, guides: 4 }).map(([name]) => name)).toEqual(['guides', 'topics', 'mcp', 'other'])
+  it('lists the site\'s seven in the site\'s order, and no other value', () => {
+    expect(orderedSections({ topics: 1, mcp: 2, other: 3, guides: 4 }).map(([name]) => name)).toEqual(['guides', 'topics', 'mcp'])
   })
 
   it('states the count and how many are showing', () => {

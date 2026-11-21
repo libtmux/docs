@@ -458,8 +458,16 @@ describe('the replay component', () => {
 
     it('draws no bar on the start edge of a turn: the tint and aria-current mark the current one', () => {
       expect(css).not.toMatch(startBar)
-      expect(css, 'the tint stays the link colour at 14%, 24% pinned').toMatch(/\.mcp-turn\[aria-current='step'\] \{\s*background: color-mix\(in srgb, var\(--color-link\) 14%, transparent\);/)
-      expect(css).toMatch(/\.mcp-turn\.is-pinned,\s*\.mcp-turn\[aria-current='step'\]\.is-pinned \{\s*background: color-mix\(in srgb, var\(--color-link\) 24%, transparent\);/)
+      expect(css, 'the tint stays the link colour, at the current share for a current or pinned turn').toMatch(/\.mcp-turn\[aria-current='step'\],\s*\.mcp-turn\.is-pinned \{\s*background: color-mix\(in srgb, var\(--color-link\) var\(--mcp-tint-current\), transparent\);/)
+      expect(css, 'a pinned turn is marked by an inset hairline, not a heavier wash or a border').toMatch(/\.mcp-turn\.is-pinned \{\s*box-shadow: inset 1px 0 0 var\(--color-link\);/)
+    })
+
+    it('takes the tint shares from the theme, as the Core player does (record 0079): current 8% light and 7% dark, hover 5% and 4%', () => {
+      expect(css).toMatch(/\.mcp-replay \{\s*--mcp-tint-hover: 5%;\s*--mcp-tint-current: 8%;/)
+      expect(css).toMatch(/html\[data-theme-mode="dark"\] \.mcp-replay \{\s*--mcp-tint-hover: 4%;\s*--mcp-tint-current: 7%;/)
+      expect(css).toMatch(/@media \(prefers-color-scheme: dark\) \{\s*html:not\(\[data-theme-mode\]\):not\(\[data-theme="light"\]\) \.mcp-replay \{\s*--mcp-tint-hover: 4%;\s*--mcp-tint-current: 7%;/)
+      expect(css).toMatch(/:hover \{\s*background: color-mix\(in srgb, var\(--color-link\) var\(--mcp-tint-hover\), transparent\);/)
+      expect(css, 'no turn is washed at the old 14% or 24%').not.toMatch(/var\(--color-link\) (14|24)%/)
     })
 
     it('has a control: the start-edge check does catch the bar it is for', () => {

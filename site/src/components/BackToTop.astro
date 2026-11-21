@@ -5,11 +5,12 @@
 // - Hover scale
 // - The shared focus ring (base rule in global.css)
 // - ARIA attributes for screen reader support
+// - Below the phone breakpoint a 12px inset, and it appears only after two screens of scrolling
 ---
 
 <button
   id="back-to-top"
-  class="fixed bottom-8 right-8 z-50 p-3 rounded-full
+  class="fixed z-50 p-3 rounded-full
   bg-[var(--background-color)] text-muted
   border border-control shadow-md
   hover:bg-surface-hover hover:text-[var(--text-color)]
@@ -39,7 +40,19 @@
   </svg>
 </button>
 
+<style>
+  /* The corner and the lift above the footer and the audio player bar (4rem each) come from named properties. */
+  #back-to-top {
+    right: var(--back-to-top-inset);
+    bottom: calc(var(--back-to-top-inset) + var(--back-to-top-lift, 0rem));
+  }
+  #back-to-top[data-lift='one'] { --back-to-top-lift: 4rem; }
+  #back-to-top[data-lift='both'] { --back-to-top-lift: 6rem; }
+</style>
+
 <script>
+  import { below } from '../lib/breakpoints'
+
   // Listeners are scoped to an AbortController so re-initialization after
   // ClientRouter navigations replaces them instead of stacking duplicates.
   let controller: AbortController | null = null
@@ -55,24 +68,17 @@
     let isAtBottom = false
     let isPlayerVisible = false
 
+    // The player bar is h-16 (4rem), and so is the lift above the footer; the stylesheet adds each to the inset.
     const updateBottomPosition = () => {
-      // Remove all bottom position classes
-      button.classList.remove('bottom-8', 'bottom-24', 'bottom-32')
-
-      // Determine correct bottom position based on state
-      // Player bar is h-16 (4rem), so add 4rem when player is visible
-      if (isAtBottom && isPlayerVisible) {
-        button.classList.add('bottom-32') // 8rem - above footer + player
-      } else if (isAtBottom || isPlayerVisible) {
-        button.classList.add('bottom-24') // 6rem - above footer OR player
-      } else {
-        button.classList.add('bottom-8') // 2rem - default
-      }
+      button.dataset.lift = isAtBottom && isPlayerVisible ? 'both' : isAtBottom || isPlayerVisible ? 'one' : ''
     }
 
+    // On a phone the button waits for two screens of scrolling, so it does not sit over the first screens' controls.
+    const phone = window.matchMedia(below('phone'))
+
     const toggleVisibility = () => {
-      // Show button when scrolled down 300px
-      if (window.pageYOffset > 300) {
+      // Show button when scrolled down 300px, or two screens on a phone
+      if (window.pageYOffset > (phone.matches ? 2 * window.innerHeight : 300)) {
         if (!isVisible) {
           isVisible = true
           button.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none')
@@ -110,6 +116,7 @@
 
     // Add listeners; the controller cleans up the previous generation
     window.addEventListener('scroll', toggleVisibility, { signal, passive: true })
+    phone.addEventListener('change', toggleVisibility, { signal })
     button.addEventListener('click', handleClick, { signal })
 
     // Check initial state

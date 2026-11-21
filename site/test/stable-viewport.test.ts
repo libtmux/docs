@@ -60,11 +60,11 @@ it('keeps member bars sticky while the keyboard shrinks the viewport', () => {
   win.happyDOM.setWindowSize({ width: 1210, height: 696 })
   win.document.head.innerHTML = `<style>${css}</style>`
   win.document.body.innerHTML = `<header class="site-header"></header><main class="api-reference-layout api-reference-layout--symbol"><div class="api-reference-content">
-    <nav class="api-section-links"><a href="#api-members" data-api-section-link>Members</a></nav>
+    <api-section-bar class="api-section-bar"><nav class="api-section-links"><a href="#api-members" data-api-section-link>Members</a></nav></api-section-bar>
     <section class="api-members"><h2 id="api-members">Members</h2><div class="api-member-group"><h3 id="g">Common</h3></div></section>
     <input id="filter"></div><api-page-contents></api-page-contents></main>`
   const rect = (selector: string, height: number, top: number) => vi.spyOn(win.document.querySelector(selector)!, 'getBoundingClientRect').mockImplementation(() => new win.DOMRect(0, top, 350, height))
-  rect('.site-header', 53, 0); rect('.api-section-links', 48, 53); rect('.api-members > h2', 48, 300); rect('.api-member-group > h3', 45, 370); rect('.api-member-group', 400, 370)
+  rect('.site-header', 53, 0); rect('.api-section-bar', 48, 53); rect('.api-members > h2', 48, 300); rect('.api-member-group > h3', 45, 370); rect('.api-member-group', 400, 370)
   const flush = frames(win)
   Object.defineProperty(win, 'ResizeObserver', { value: class { observe() {} disconnect() {} } })
   win.eval(script)

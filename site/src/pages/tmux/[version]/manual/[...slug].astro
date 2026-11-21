@@ -6,6 +6,7 @@ import SectionHeading from '../../../../components/SectionHeading.astro'
 import { Code } from 'astro-expressive-code/components'
 import TmuxUsage from '../../../../components/tmux/TmuxUsage.astro'
 import ApiBadge from '../../../../components/api/ApiBadge.astro'
+import ApiSectionBar from '../../../../components/api/ApiSectionBar.astro'
 import { tmuxCommandSources, tmuxReferenceUrl, tmuxResolvedUsage } from '../../../../lib/tmux-reference'
 import { withRoot } from '../../../../lib/site-root'
 import type { PageSource } from '../../../../lib/markdown-twins'
@@ -89,9 +90,9 @@ const manualHtml = command || isManual
       <span class="api-badge api-badge--mod api-reference-version"><span class="api-badge__label">{reference.version}</span></span>
     </div>
     <p>{command.summary}</p>
-    <nav class="api-section-links manual-sections" aria-label="Reference sections" data-pagefind-ignore="all">
+    <ApiSectionBar class="manual-sections">
       {sectionBar.map((section, i) => <a href={`#${section.id}`} data-api-section-link aria-current={i === 0 ? 'location' : undefined}>{section.label}</a>)}
-    </nav>
+    </ApiSectionBar>
     {notes && <>
       <SectionHeading id={rowAnchor(command.name, 'common uses')} legacyId="examples">Common uses</SectionHeading>
       <p>{notes.context}</p>

@@ -44,7 +44,8 @@ const { status, product, id, class: className } = Astro.props
     vertical-align: middle;
     white-space: nowrap;
   }
-  button.status-badge { cursor: pointer; }
+  /* A badge that opens a card is a control, so its outline takes the control token (07 Visual foundations). */
+  button.status-badge { border: 1px solid var(--control-border); cursor: pointer; }
   button.status-badge:hover { background: var(--color-surface-hover); }
   button.status-badge:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
   @media (pointer: coarse) {

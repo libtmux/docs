@@ -10,7 +10,7 @@ vi.mock('astro:content', () => ({ getCollection: vi.fn(async () => []) }))
  * side (type, default) are columns, one table per scope, every row in the page.
  */
 async function render(kind: 'option' | 'hook' | 'format') {
-  const page = await loadAstroTemplate('components/tmux/Catalog.astro', { real: ['components/api/ApiBadge.astro', 'components/api/SymbolName.astro'] })
+  const page = await loadAstroTemplate('components/tmux/Catalog.astro', { real: ['components/api/ApiBadge.astro', 'components/api/ApiSectionBar.astro', 'components/api/SymbolName.astro'] })
   // The page builds its canonical URL from the site, which the shared helper's container does not set.
   const container = await experimental_AstroContainer.create({ astroConfig: { site: 'https://libtmux.org' } })
   return container.renderToString(page as Parameters<typeof container.renderToString>[0], { request: new Request('https://libtmux.org/tmux/3.7c/catalog/'), props: { version: '3.7c', kind } }).then(withoutScope)

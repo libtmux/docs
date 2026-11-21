@@ -90,6 +90,12 @@ const initialSlug = defaultPort && items.some((p) => p.slug === defaultPort) ? d
  */
 const managerScope = (slug: string) => (packageId === 'core' ? slug : `${slug}-${packageId}`)
 
+/** Ids that pair each tab with what it controls, for the language tabs and the package-manager tabs (08 Responsive and accessible). */
+const tabId = (slug: string) => `pkg-install-tab-${managerScope(slug)}`
+const panelId = (slug: string) => `pkg-install-panel-${managerScope(slug)}`
+const managerTabId = (slug: string, i: number) => `pkg-install-manager-${managerScope(slug)}-${i}`
+const commandId = (slug: string, i: number) => `pkg-install-command-${managerScope(slug)}-${i}`
+
 // Which panel to show once `data-active-port` is set is data-driven (one
 // rule per port actually rendered in *this* instance), not hand-typed —
 // ports.ts stays the only place a port's slug is spelled out. See the
@@ -210,6 +216,8 @@ const CHANNEL_NOTES = {
           type="button"
           class="lm-pkg-install__tab"
           role="tab"
+          id={tabId(p.slug)}
+          aria-controls={panelId(p.slug)}
           data-tab-value={p.slug}
           aria-selected={p.slug === initialSlug ? 'true' : 'false'}
           tabindex={p.slug === initialSlug ? '0' : '-1'}
@@ -225,6 +233,8 @@ const CHANNEL_NOTES = {
         <div
           class="lm-pkg-install__panel"
           role="tabpanel"
+          id={panelId(p.slug)}
+          aria-labelledby={items.length > 1 ? tabId(p.slug) : undefined}
           data-port={p.slug}
           data-manager-scope={managerScope(p.slug)}
           data-active-channel="release"
@@ -241,6 +251,8 @@ const CHANNEL_NOTES = {
                         type="button"
                         class="lm-pkg-install__manager"
                         role="tab"
+                        id={managerTabId(p.slug, i)}
+                        aria-controls={commandId(p.slug, i)}
                         data-manager-value={i}
                         data-no-days={hasCooldown(p) && !cmd.cooldown?.code ? '' : undefined}
                         data-no-bypass={hasCooldown(p) && !cmd.cooldown?.bypass ? '' : undefined}
@@ -294,7 +306,7 @@ const CHANNEL_NOTES = {
             <div class="lm-install__body">
               <div class="lm-pkg-install__chan" data-channel="release">
                 {p.installs.map((cmd, i) => (
-                  <div class="lm-pkg-install__cmd" data-manager={i} data-default={i === 0 ? true : undefined}>
+                  <div class="lm-pkg-install__cmd" id={p.installs.length > 1 ? commandId(p.slug, i) : undefined} data-manager={i} data-default={i === 0 ? true : undefined}>
                     {cmd.cooldown ? MODES.map((mode) => {
                       const form = mode === 'days' ? 'code' : mode === 'bypass' ? 'bypass' : undefined
                       const refused = form && !cmd.cooldown![form]

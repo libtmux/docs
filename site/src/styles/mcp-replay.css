@@ -169,8 +169,8 @@ html:not([data-js]) .mcp-replay .mcp-frame:not(:last-child) {
   color: var(--text-color);
 }
 
-/* The pin button's room is there from the first paint, so binding the script does not rewrap a call. */
-html[data-js] .mcp-replay .mcp-turn[data-turn]:not([data-turn='prompt']) {
+/* The pin button's room is there from the first paint, so binding the script does not rewrap a call. The closing reply has no pin. */
+html[data-js] .mcp-replay .mcp-turn[data-turn]:not([data-turn='prompt'], .mcp-turn--answer) {
   padding-inline-end: 2.25rem;
 }
 
@@ -178,21 +178,42 @@ html[data-js] .mcp-replay .mcp-turn[data-turn]:not([data-turn='prompt']) {
  * Selecting text in a turn never changes the step: hovering one previews the
  * tmux after it, and its pin button holds it. The call the tmux shows is
  * tinted, as the Core player tints its current line; no bar marks the start
- * edge of a current row.
+ * edge of a current row. The shares are the player's (record 0079): a wash that
+ * keeps muted text and every syntax ink at 4.5:1 or more. They differ by theme;
+ * dark is the resolved data-theme-mode or, before the theme script runs, the
+ * system preference, as in tokens.css.
  */
-@media (hover: hover) {
-  .mcp-replay[data-live] .mcp-turn[data-turn]:not([data-turn='prompt']):not([aria-current='step']):hover {
-    background: var(--color-surface-hover);
+.mcp-replay {
+  --mcp-tint-hover: 5%;
+  --mcp-tint-current: 8%;
+}
+
+html[data-theme-mode="dark"] .mcp-replay {
+  --mcp-tint-hover: 4%;
+  --mcp-tint-current: 7%;
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme-mode]):not([data-theme="light"]) .mcp-replay {
+    --mcp-tint-hover: 4%;
+    --mcp-tint-current: 7%;
   }
 }
 
-.mcp-turn[aria-current='step'] {
-  background: color-mix(in srgb, var(--color-link) 14%, transparent);
+@media (hover: hover) {
+  .mcp-replay[data-live] .mcp-turn[data-turn]:not([data-turn='prompt'], .mcp-turn--answer):not([aria-current='step']):hover {
+    background: color-mix(in srgb, var(--color-link) var(--mcp-tint-hover), transparent);
+  }
 }
 
-.mcp-turn.is-pinned,
-.mcp-turn[aria-current='step'].is-pinned {
-  background: color-mix(in srgb, var(--color-link) 24%, transparent);
+.mcp-turn[aria-current='step'],
+.mcp-turn.is-pinned {
+  background: color-mix(in srgb, var(--color-link) var(--mcp-tint-current), transparent);
+}
+
+/* A pinned call keeps the current tint, since a heavier wash would take its text under 4.5:1. A 1px hairline along the turn's start marks it: an inset shadow, so no border takes width and nothing shifts. */
+.mcp-turn.is-pinned {
+  box-shadow: inset 1px 0 0 var(--color-link);
 }
 
 /* A call is pinned with a real button at its top right; the state is aria-pressed. */
@@ -269,9 +290,15 @@ html[data-js] .mcp-replay .mcp-turn[data-turn]:not([data-turn='prompt']) {
   margin-top: 0.5rem;
 }
 
-.mcp-turn--answer :is(code, samp) {
+/* The site's inline-code chip, as the prose rule in global.css draws it (this sheet is `not-prose`): body weight at 0.875em, in the text colour. The extra class outranks `.mcp-replay code` below, which strips the chip from the call's own code. */
+.mcp-replay .mcp-turn--answer :is(code, samp) {
+  padding: 0.125rem 0.1875rem;
+  border-radius: 0.25rem;
+  background: var(--color-inline-code-background);
   font-family: var(--mcp-mono);
   font-size: 0.875em;
+  font-weight: 400;
+  overflow-wrap: anywhere;
 }
 
 .mcp-call {

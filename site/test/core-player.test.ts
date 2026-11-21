@@ -606,9 +606,13 @@ describe('the player component', () => {
     expect(document.querySelectorAll('[data-home-view="concise"] .ec-line.is-hover')).toHaveLength(0)
     click(win, document.querySelector('.core-result:not([data-off]) [data-pin]')!)
     expect([...document.querySelectorAll('[data-home-view="concise"] .ec-line.is-pinned')].length).toBeGreaterThan(0)
+    expect(markerOf(document, 'concise', 1).classList.contains('is-pinned'), 'the pinned call\'s marker is marked, and filled with the shown call\'s').toBe(true)
+    expect(markerOf(document, 'concise', 1).classList.contains('is-current')).toBe(true)
+    expect(markerOf(document, 'concise', 2).classList.contains('is-pinned')).toBe(false)
     expect([...document.querySelectorAll('.core-result:not([data-off]) [data-pin]')].map((pin) => pin.getAttribute('aria-pressed'))).toEqual(['true'])
     key(win, stage, 'Escape')
     expect([...document.querySelectorAll('.core-result:not([data-off]) [data-pin]')].map((pin) => pin.getAttribute('aria-pressed'))).toEqual(['false'])
+    expect(document.querySelectorAll('[data-home-view="concise"] .core-step.is-pinned'), 'letting go clears it').toHaveLength(0)
   })
 
   it('previews a call when its marker takes focus, and goes to the call when it is pressed', async () => {
@@ -897,6 +901,14 @@ describe('the player component', () => {
     expect(css).toMatch(/color-mix\(in srgb, var\(--color-link\)/)
     expect(css, 'a tint marks the current call, not a bar on its edge').not.toMatch(/\.ec-line[^{]*\{[^}]*border-inline-start/)
   })
+
+  it('marks a pinned call with the current tint and a 1px hairline along its start, never a heavier wash or a border that takes width (record 0079)', () => {
+    const css = readFileSync(new URL('../src/styles/core-player.css', import.meta.url), 'utf8')
+    const pinned = /\.ec-line\.is-current\.is-pinned \{([^}]*)\}/.exec(css)?.[1]
+    expect(pinned, 'the pinned rule').toBeDefined()
+    expect(pinned!.trim(), 'no background of its own: the current tint shows').toBe('box-shadow: inset 1px 0 0 var(--color-link);')
+    expect(css).toMatch(/\.core-step\.is-current,\s*\.expressive-code \.core-step\.is-pinned \{[^}]*background: var\(--color-link\);/)
+  })
 })
 
 /** A port's quickstart recording, as its landing page plays it. */
@@ -1170,6 +1182,6 @@ describe('the room a layout leaves for hanging markers and numbers (record 0058)
     expect(css).toMatch(/\.home-page \{[^}]*--code-hang-room: 1rem;/)
     expect(css).toMatch(/@media \(min-width: 40rem\) \{[^}]*\.home-page \{[^}]*--code-hang-room: 1\.5rem;/)
     expect(css).toMatch(/@media \(min-width: 64rem\) \{[^}]*\.home-page \{[^}]*--code-hang-room: 2rem;/)
-    expect(read('pages/index.astro')).toMatch(/<main class="home-page mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">/)
+    expect(read('pages/index.astro')).toMatch(/<main class="home-page mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8"[^>]*>/)
   })
 })

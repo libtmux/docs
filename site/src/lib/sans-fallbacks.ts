@@ -10,7 +10,7 @@
  */
 
 /** Hiragino on macOS and iOS, Yu Gothic and Meiryo on Windows, Noto Sans CJK on Linux and Android. */
-const JAPANESE_SANS = ['Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', 'Yu Gothic', 'Meiryo', 'Noto Sans CJK JP', 'Noto Sans JP']
+export const JAPANESE_SANS = ['Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', 'Yu Gothic', 'Meiryo', 'Noto Sans CJK JP', 'Noto Sans JP']
 const EMOJI = ['Apple Color Emoji', 'Segoe UI Emoji']
 
 export function sansFallbacks(locale: string): string[] {

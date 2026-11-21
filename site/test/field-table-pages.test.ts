@@ -23,7 +23,7 @@ afterEach(async () => { for (const win of windows.splice(0)) await win.happyDOM.
 
 describe('a type page with a table of fields', () => {
   // The table, the contents rail and the badges are the page's own; the type and prose cells draw plain text.
-  const PAGE = ['components/api/ApiMemberList.astro', 'components/api/ApiPageContents.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro', 'components/api/ApiScalarMembers.astro']
+  const PAGE = ['components/api/ApiMemberList.astro', 'components/api/ApiPageContents.astro', 'components/api/ApiSectionBar.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro', 'components/api/ApiScalarMembers.astro']
   async function page(port: Port, id: string) {
     const template = await loadAstroTemplate('components/api/ApiReference.astro', {
       real: PAGE,
@@ -46,8 +46,8 @@ describe('a type page with a table of fields', () => {
       const document = await page(port, id)
       const heading = document.querySelector('h2#api-fields')!
       expect(heading.firstChild?.textContent).toBe(word)
-      expect(heading.querySelector('a.api-heading-link')?.getAttribute('aria-label')).toBe(`Link to ${word}`)
-      expect(heading.querySelector('a.api-heading-link')?.getAttribute('href')).toBe('#api-fields')
+      expect(heading.querySelector('a.heading-link')?.getAttribute('aria-label')).toBe(`Link to ${word}`)
+      expect(heading.querySelector('a.heading-link')?.getAttribute('href')).toBe('#api-fields')
       expect(document.querySelector('.api-field-table caption')?.textContent).toContain(` ${word.toLowerCase()}`)
       expect(contents(document)).toContainEqual(['#api-fields', word])
       // The rest of the members keep their own heading and id.
@@ -63,7 +63,7 @@ describe('a type page with a table of fields', () => {
     expect(document.querySelector('#api-fields')).toBeNull()
     const heading = document.querySelector('.api-members > h2#api-members')!
     expect(heading.firstChild?.textContent).toBe('Properties')
-    expect(heading.querySelector('a.api-heading-link')?.getAttribute('aria-label')).toBe('Link to Properties')
+    expect(heading.querySelector('a.heading-link')?.getAttribute('aria-label')).toBe('Link to Properties')
     expect(contents(document)).toContainEqual(['#api-members', 'Properties'])
     expect(document.querySelector('.api-members caption')?.textContent).toContain(' properties')
   }, 60_000)

@@ -48,6 +48,7 @@ import * as toc from '../src/utils/generateToC'
 import * as branding from '../src/lib/branding'
 import * as mentionBadge from '../src/lib/mention-badge'
 import * as perlPod from '../src/lib/perl-pod'
+import * as headingLink from '../src/lib/heading-link'
 import mentions from '../src/data/mentions.json'
 
 const windows: Window[] = []
@@ -71,7 +72,7 @@ async function components(stubs: Readonly<Record<string, string>> = {}) {
       'api-labels': labels, 'word-break': wordBreak, 'native-name': nativeName, ports, 'product-api': products,
       versions, 'site-root': roots, 'docs-paths': docsPaths, sidebar, 'documentation-navigation': documentation, 'sidebar-head': sidebarHead, 'page-end': pageEnd,
       'page-ports-for': pagePorts, 'markdown-twins': markdown, 'tmux-manual-data': manual, 'tmux-reference': reference, 'tmux-catalog': catalog,
-      branding, 'mention-badge': mentionBadge, 'perl-pod': perlPod,
+      branding, 'mention-badge': mentionBadge, 'perl-pod': perlPod, 'heading-link': headingLink,
     }).map(([name, exports]) => [new URL(`../src/lib/${name}.ts`, import.meta.url).href, exports])),
     ...Object.fromEntries(Object.entries({ locales, resolve, contribute, ui }).map(([name, exports]) =>
       [new URL(`../src/i18n/${name}.ts`, import.meta.url).href, exports])),
@@ -87,7 +88,7 @@ async function components(stubs: Readonly<Record<string, string>> = {}) {
   const realTemplates = new Set([
     'api/ApiReference.astro', 'api/ApiGlossary.astro', 'api/ApiGlossaryContent.astro',
     'api/ApiPageContents.astro', 'api/ApiTree.astro', 'api/ApiTreeItems.astro',
-    'api/ApiBadge.astro', 'api/SymbolName.astro', 'TableOfContents/TableOfContents.astro',
+    'api/ApiBadge.astro', 'api/SymbolName.astro', 'HeadingLink.astro', 'TableOfContents/TableOfContents.astro',
     'TableOfContents/TableOfContentsList.astro', 'MobileToC.astro',
     'docs/DocumentationContext.astro', 'docs/DocumentationNavigationButtons.astro', 'docs/PageEnd.astro',
   ].map((name) => new URL(`../src/components/${name}`, import.meta.url).href))
@@ -163,7 +164,9 @@ function checkHeadings(document: Document, path: string) {
     expect(permalink, `${path} heading ${id} has a permalink`).not.toBeNull()
     expect(permalink.getAttribute('href')).toBe(`#${id}`)
     expect(permalink.getAttribute('aria-label')).toContain(text)
-    expect(permalink.textContent).toBe('#')
+    // The link is the heading link icon: no text, a class every page family shares.
+    expect(permalink.textContent).toBe('')
+    expect(permalink.classList.contains('heading-link')).toBe(true)
     expect(heading.lastElementChild).toBe(permalink)
     expect(permalink.getAttribute('data-pagefind-ignore')).toBe('all')
     expect(permalink.getAttribute('tabindex')).not.toBe('-1')

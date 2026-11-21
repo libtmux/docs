@@ -39,7 +39,11 @@ export function saveApiTreeState(event?: Event) {
   const link = transition.sourceElement?.closest<HTMLAnchorElement>('.api-nav__tree a[data-api-shortcut]')
   const nav = link?.closest<HTMLElement>('.api-nav')
   const tree = nav?.querySelector<HTMLElement>('[role="tree"]')
+  // A swap replaces the page and the row that held focus with it, which leaves focus on the body. One that began in the tree,
+  // by Enter on a row or a click, hands the new tree this flag so its current row takes focus back.
+  const fromTree = Boolean(transition.sourceElement?.closest('.api-nav__tree') || document.activeElement?.closest('.api-nav__tree'))
   for (const incoming of transition.newDocument.querySelectorAll<HTMLElement>('.api-nav')) {
+    if (fromTree) incoming.dataset.apiTreeFocus = 'true'
     const selection: ApiTreeSelection | null = link && nav && tree &&
       incoming.dataset.base === nav.dataset.base && incoming.dataset.version === nav.dataset.version &&
       link.origin === transition.to.origin && link.pathname + link.search === transition.to.pathname + transition.to.search
@@ -263,6 +267,18 @@ function focusRow(tree: HTMLElement, item: HTMLElement | undefined | null) {
   else if (row.bottom > box.bottom) tree.scrollTop += row.bottom - box.bottom
 }
 
+/**
+ * After a swap that began in the tree, focus the new page's current row and scroll it into view, so the keyboard reader
+ * keeps their place. A closed drawer is inert and takes no focus.
+ */
+function focusArrival(nav: HTMLElement, tree: HTMLElement) {
+  if (nav.dataset.apiTreeFocus !== 'true') return
+  delete nav.dataset.apiTreeFocus
+  if (nav.inert || !tree.isConnected || tree.hidden) return
+  const current = tree.querySelector<HTMLElement>('[aria-current="page"]')?.closest<HTMLElement>(ITEM)
+  focusRow(tree, current)
+}
+
 function label(name: string): HTMLSpanElement {
   const span = document.createElement('span')
   span.className = 'api-nav__label'
@@ -466,6 +482,9 @@ function presentationRows(nodes: SidebarNode[]): HTMLLIElement[] {
 export async function setApiSidebar(nav: HTMLElement, mode: SidebarPresentation, symbol: string, options: { notify?: boolean; allTypes?: boolean } = {}) {
   const hadTreeFocus = document.hasFocus() && Boolean(nav.querySelector('.api-nav__tree')?.contains(document.activeElement)
     || nav.querySelector('[data-api-search-results]')?.contains(document.activeElement))
+  // The first call after a swap that began in the tree owns the arrival; a later one finds the flag spent.
+  const arriving = nav.dataset.apiTreeFocus === 'true'
+  delete nav.dataset.apiTreeFocus
   configurations.get(nav)?.abort()
   const pending = new AbortController()
   configurations.set(nav, pending)
@@ -547,7 +566,7 @@ export async function setApiSidebar(nav: HTMLElement, mode: SidebarPresentation,
   }
   await restoreTree(nav, tree, pending.signal)
   if (pending.signal.aborted) return
-  if (hadTreeFocus && !nav.inert) focusRow(tree, tab)
+  if ((hadTreeFocus || arriving) && !nav.inert) focusRow(tree, tab)
   nav.dataset.presentationReady = 'true'
   if (options.notify !== false) nav.dispatchEvent(new CustomEvent('api-sidebar:change', { bubbles: true, detail: { symbol: selected, presentation: mode } }))
   return record
@@ -919,7 +938,7 @@ export function initApiTree() {
       initTree(nav, tree, signal)
       initSearch(nav, tree, signal)
       if (nav.dataset.presentation) initPresentation(nav, tree, signal)
-      else waitForAppearance(restoreTree(nav, tree, signal))
+      else waitForAppearance(restoreTree(nav, tree, signal).then(() => { if (!signal.aborted) focusArrival(nav, tree) }))
     }
     initDrawer(nav, signal)
     fitSidebar(nav, signal)

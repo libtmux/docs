@@ -95,10 +95,20 @@ export function codeFrame() {
       .frame[data-role='excerpt'] .header { background-image: none; border-bottom: 1px dashed var(--ec-frm-edTabBarBrdBtmCol); }
       /* The lines an excerpt's range link points at, on arrival. The first row also takes :target where a script has not run. */
       .ec-line[id] { scroll-margin-top: 5rem; }
-      .ec-line[data-hit], .ec-line:target { background: var(--color-highlight-on-target, color-mix(in srgb, var(--color-link, currentColor) 14%, transparent)); }
+      /* Where the page defines no target tint, the line takes the link colour at record 0079's shares: syntax inks stay at 4.5:1 on it. Dark is the resolved data-theme-mode or, before the theme script runs, the system preference, as in tokens.css. */
+      .ec-line[data-hit], .ec-line:target { --hit-tint: 8%; background: var(--color-highlight-on-target, color-mix(in srgb, var(--color-link, currentColor) var(--hit-tint), transparent)); }
+      html[data-theme-mode='dark'] .ec-line:is([data-hit], :target) { --hit-tint: 7%; }
+      @media (prefers-color-scheme: dark) { html:not([data-theme-mode]):not([data-theme='light']) .ec-line:is([data-hit], :target) { --hit-tint: 7%; } }
       @media (forced-colors: active) { .ec-line[data-hit], .ec-line:target { outline: 2px solid Highlight; outline-offset: -2px; } }
       .frame .header .role a { color: var(--color-link, inherit); text-decoration: underline dotted; text-underline-offset: 0.2em; }
       .frame .header .role a:hover { text-decoration-style: solid; }
+      /*
+       * Every focus ring is the site's 2px --focus-ring-color ring (08 Responsive and accessible). Expressive Code resets the
+       * browser's own, so the role links and the copy button would draw the UA's outline: auto, and a scrollable frame draws
+       * its own 3px #005cc5 ring (2.33:1 in dark). A scrollable frame's ring sits inside its edge, where an ancestor cannot clip it.
+       */
+      .frame .header .role a:focus-visible, .copy button:focus-visible { outline: 2px solid var(--focus-ring-color, var(--color-link, currentColor)); outline-offset: 2px; }
+      pre:focus-visible { outline: 2px solid var(--focus-ring-color, var(--color-link, currentColor)); outline-offset: -2px; }
       /*
        * The source's line numbers hang in a rail outside the frame at a negative margin, and never in the code's padding
        * (record 0058). A layout states the margin it leaves left of its frames in --code-hang-room (default 1rem); a frame

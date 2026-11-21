@@ -31,7 +31,7 @@ html[data-native-shell] body {
 }
 /* Keep managed native declarations on the shared themed signature surface. */
 html[data-native-shell] dl.gp-sphinx-api-container:not(.fixture) > dt.gp-sphinx-api-header:not(:target) {
-  background: color-mix(in srgb, var(--background-color), var(--text-color) 6%);
+  background: color-mix(in srgb, var(--background-color), var(--text-color) var(--signature-ground-share, 6%));
 }
 /*
  * Declaration controls share the vertical centre of the signature's first
@@ -73,7 +73,7 @@ html[data-native-shell] dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .
   }
   /* The pinned row must hide what scrolls beneath it; a target keeps its highlight. */
   html[data-native-shell][data-native-class-rows] section > dl.py.class.gp-sphinx-api-container > dt.gp-sphinx-api-header:not(:target) {
-    background-color: color-mix(in srgb, var(--background-color), var(--text-color) 6%);
+    background-color: color-mix(in srgb, var(--background-color), var(--text-color) var(--signature-ground-share, 6%));
   }
   /*
    * An anchored member lands below the pinned row instead of under it. The

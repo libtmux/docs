@@ -226,7 +226,9 @@ const tips = steps.map((step, index) => ({ call: step.label, text: noteParts(ind
           })
         }
         for (const { view, marker, line } of hung) {
-          marker.classList.toggle('is-current', view === viewName() && call !== undefined && line >= call.lines[0] && line <= call.lines[1])
+          const mine = view === viewName() && call !== undefined && line >= call.lines[0] && line <= call.lines[1]
+          marker.classList.toggle('is-current', mine)
+          marker.classList.toggle('is-pinned', mine && pinned !== null)
         }
         // A call the reader previews from a marker is on screen already, so only the step itself scrolls the program.
         if (call && call !== revealed && shown === (pinned ?? step)) reveal(call, !opened)

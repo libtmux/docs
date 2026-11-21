@@ -119,7 +119,7 @@ async function sweep(html: ApiSymbol[], markdown: ApiSymbol[] = html, only?: str
 }
 
 // The table, the contents rail and the badges are the page's own; types and summaries draw plain text.
-const PAGE = ['components/api/ApiMemberList.astro', 'components/api/ApiPageContents.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro', 'components/api/ApiScalarMembers.astro']
+const PAGE = ['components/api/ApiMemberList.astro', 'components/api/ApiPageContents.astro', 'components/api/ApiSectionBar.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro', 'components/api/ApiScalarMembers.astro']
 let template: Promise<unknown> | undefined
 async function page(id: string) {
   template ??= loadAstroTemplate('components/api/ApiReference.astro', {
@@ -260,8 +260,8 @@ describe('an enum page', () => {
     const heading = document.querySelector('h2#api-variants')!
     expect(heading.firstChild?.textContent).toBe('Variants')
     expect(heading.querySelector('.api-section-count')?.textContent).toBe(String(variants.length))
-    expect(heading.querySelector('a.api-heading-link')?.getAttribute('href')).toBe('#api-variants')
-    expect(heading.querySelector('a.api-heading-link')?.getAttribute('aria-label')).toBe('Link to Variants')
+    expect(heading.querySelector('a.heading-link')?.getAttribute('href')).toBe('#api-variants')
+    expect(heading.querySelector('a.heading-link')?.getAttribute('aria-label')).toBe('Link to Variants')
     // Its own wrapper: .api-members would hand this bar to the sticky Members logic.
     const block = heading.parentElement!
     expect(block.classList.contains('api-field-table')).toBe(true)
@@ -313,7 +313,7 @@ describe('an enum page', () => {
     const heading = document.querySelector('.api-members > h2#api-members')!
     expect(heading.firstChild?.textContent).toBe('Variants')
     expect(heading.querySelector('.api-section-count')?.textContent).toBe(`${rawVariants('window.SplitDirection').length} variants`)
-    expect(heading.querySelector('a.api-heading-link')?.getAttribute('aria-label')).toBe('Link to Variants')
+    expect(heading.querySelector('a.heading-link')?.getAttribute('aria-label')).toBe('Link to Variants')
     expect(contents(document)).toContainEqual(['#api-members', 'Variants'])
     expect(document.querySelector('.api-members caption')?.textContent).toBe('SplitDirection variants')
     expect(document.querySelectorAll('.api-members tbody tr')).toHaveLength(rawVariants('window.SplitDirection').length)

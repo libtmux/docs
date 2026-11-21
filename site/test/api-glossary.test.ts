@@ -58,16 +58,24 @@ function declaredLabels(name: string): string[] {
 /** Compile the real small component without starting a site or building API pages. */
 async function badgeComponent(name = 'ApiBadge') {
   const { transform } = await import(astroRequire.resolve('@astrojs/compiler-rs'))
-  const source = new URL(`../src/components/api/${name}.astro`, import.meta.url)
-  const compiled = await transform(readFileSync(source, 'utf8'), {
-    filename: source.pathname, internalURL: 'astro/compiler-runtime', resultScopedSlot: true,
-    resolvePath: (specifier: string) => specifier,
-  })
-  expect(compiled.diagnostics.filter((item: { severity: string }) => item.severity === 'error')).toEqual([])
-  let code = compiled.code.replaceAll('"astro/compiler-runtime"', JSON.stringify(pathToFileURL(astroRequire.resolve('astro/compiler-runtime')).href))
-  for (const name of ['api-labels', 'api-glossary']) {
-    code = code.replaceAll(`"../../lib/${name}"`, JSON.stringify(new URL(`../src/lib/${name}.ts`, import.meta.url).href))
+  const compile = async (source: URL, imports: Record<string, string>) => {
+    const compiled = await transform(readFileSync(source, 'utf8'), {
+      filename: source.pathname, internalURL: 'astro/compiler-runtime', resultScopedSlot: true,
+      resolvePath: (specifier: string) => specifier,
+    })
+    expect(compiled.diagnostics.filter((item: { severity: string }) => item.severity === 'error')).toEqual([])
+    let code = compiled.code.replaceAll('"astro/compiler-runtime"', JSON.stringify(pathToFileURL(astroRequire.resolve('astro/compiler-runtime')).href))
+    for (const [specifier, target] of Object.entries(imports)) code = code.replaceAll(JSON.stringify(specifier), JSON.stringify(target))
+    return code
   }
+  // Every heading draws the shared heading link.
+  const link = `data:text/javascript;base64,${Buffer.from(await compile(new URL('../src/components/HeadingLink.astro', import.meta.url),
+    { '../lib/heading-link': new URL('../src/lib/heading-link.ts', import.meta.url).href })).toString('base64')}`
+  const source = new URL(`../src/components/api/${name}.astro`, import.meta.url)
+  const code = await compile(source, {
+    '../HeadingLink.astro': link,
+    ...Object.fromEntries(['api-labels', 'api-glossary'].map((lib) => [`../../lib/${lib}`, new URL(`../src/lib/${lib}.ts`, import.meta.url).href])),
+  })
   return (await import(/* @vite-ignore */ `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`)).default
 }
 

@@ -169,7 +169,12 @@ describe('the library call a tool wraps', () => {
     const document = await page('go', 'tools', 'capture_pane')
     const term = [...document.querySelectorAll('dt')].find((entry) => entry.textContent === 'Wraps')!
     const [call, source] = [...term.nextElementSibling!.querySelectorAll('a')]
-    expect([call!.textContent, call!.getAttribute('href')]).toEqual(['tmux.Pane.Capture', '/go/next/reference/tmux-pane-capture/'])
+    expect([call!.querySelector('.api-symbol-link__name')!.textContent, call!.getAttribute('href')]).toEqual(['tmux.Pane.Capture', '/go/next/reference/tmux-pane-capture/'])
+    // A linked API name leads with its kind's mark and has no chip of its own (record 0025): the markup a tool link and a declaration index row use.
+    const mark = call!.querySelector(':scope > .api-link-kind')!
+    expect(mark.getAttribute('data-api-kind')).toBe('method')
+    expect(mark.nextElementSibling!.className).toBe('api-symbol-link__name')
+    expect(call!.querySelector('.api-literal--link, .api-mention--chip')).toBeNull()
     expect(source!.getAttribute('href')).toBe('https://github.com/libtmux/libtmux-go/blob/2de249b600d65218ee8b8fdc07c6b2b919242151/mcp/capture_tools.go#L67')
   })
 

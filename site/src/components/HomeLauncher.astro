@@ -31,20 +31,23 @@ const initial = entries[0].port
 </nav>
 
 <style>
-  .home-launcher { --home-launcher-icon-size: 1.5rem; display: flex; align-items: center; gap: .5rem; min-width: 0; }
+  /* The bar breaks to a second row only when its items do not fit at their smallest. The launcher counts at its minimum content, language label included, then grows to its content, so it gives up label room before the bar wraps. */
+  .home-launcher { --home-launcher-icon-size: 1.5rem; display: flex; align-items: center; gap: .5rem; min-width: 0; flex: 1 1 min-content; max-width: max-content; }
+  /* The launcher takes the spare room; the colour controls keep the end of the row through their auto margin. */
+  :global(.site-header__bar:has(.home-launcher) .site-header__spacer) { flex: none; }
   .home-launcher [hidden] { display: none !important; }
   .home-launcher-next { color: var(--color-muted); font-size: .8125rem; }
   .home-language-control { --picker-trigger-padding-inline: .55rem; }
   .home-launcher-solution { flex: none; }
+  /* While the bar can wrap, the label text is not clipped; only the room reserved for the longest language name gives way. */
   .home-launcher :global(.page-port-name),
-  .home-launcher :global(.page-port-short-name) { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .home-launcher :global(.page-port-short-name) { min-width: max-content; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
   .home-launcher-reset { flex: none; padding: .2rem 0; color: var(--color-link); font-size: .75rem; font-weight: 400; text-decoration: underline; text-underline-offset: .15em; cursor: pointer; }
   .home-launcher-reset:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
   .home-launcher :global([data-page-port-switcher] > summary),
   .home-launcher :global(.surface-picker > summary) { min-height: 2.25rem; padding: .25rem .55rem; }
   .home-launcher :global(.surface-current strong) { white-space: nowrap; font-size: .8125rem; font-weight: 400; }
   .home-launcher :global(.surface-artwork) { width: var(--home-launcher-icon-size); height: var(--home-launcher-icon-size); }
-  :global(.site-header__bar:has(.home-launcher)) { flex-wrap: nowrap; }
   @media (max-width: 46rem) {
     .home-launcher :global(.doc-picker:not([data-enhanced]) > .doc-picker-panel) { position: fixed; top: auto; left: .5rem; width: min(var(--picker-width), calc(100% - 1rem)); }
     .home-launcher :global(.page-port-name),
@@ -53,9 +56,11 @@ const initial = entries[0].port
     .home-launcher :global(.page-port-short-name),
     .home-launcher :global(.home-solution-name-short) { display: inline; }
   }
+  /* On its own row the launcher cannot wrap further, so a long label gives way with an ellipsis before the row overflows. */
   @media (max-width: 35rem) {
-    :global(.site-header__bar:has(.home-launcher)) { flex-wrap: wrap; }
     .home-launcher { order: 5; flex-basis: 100%; padding-block: .25rem; }
+    .home-launcher :global(.page-port-name),
+    .home-launcher :global(.page-port-short-name) { min-width: 0; }
   }
   @media (max-width: 24rem) {
     .home-language-control { --picker-trigger-padding-inline: .35rem; }

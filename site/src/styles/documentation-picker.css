@@ -71,31 +71,31 @@ a.header-picker__option[data-external-link]:not([data-external-link-icon])::afte
 }
 
 /* Panels open by display (record 0071). documentation-navigation.ts sets data-panel-mode from PANEL_QUERIES in
-   lib/breakpoints.ts and leaves placement to these rules. Bottom sheet: phones in portrait. */
-.doc-picker[data-enhanced][data-panel-mode="sheet"] > .doc-picker-panel {
+   lib/breakpoints.ts and leaves placement to these rules; the header Menu opens the same way. Bottom sheet: phones in portrait. */
+:is(.doc-picker, .site-header__menu)[data-enhanced][data-panel-mode="sheet"] > :is(.doc-picker-panel, .site-header__panel) {
   inset: auto 0 0 0; width: 100%; max-width: none; max-height: 85dvh; margin: 0;
   padding-bottom: max(.75rem, env(safe-area-inset-bottom)); border-width: 1px 0 0; border-radius: 1rem 1rem 0 0;
 }
-.doc-picker[data-enhanced][data-panel-mode="sheet"] > .doc-picker-panel::before {
+:is(.doc-picker, .site-header__menu)[data-enhanced][data-panel-mode="sheet"] > :is(.doc-picker-panel, .site-header__panel)::before {
   content: ''; display: block; width: 2.5rem; height: .25rem; margin: -.25rem auto .5rem; border-radius: 1rem; background: var(--color-edge);
 }
 /* Side sheet: short landscape screens, from the trigger's side. */
-.doc-picker[data-enhanced][data-panel-mode="side"] > .doc-picker-panel {
+:is(.doc-picker, .site-header__menu)[data-enhanced][data-panel-mode="side"] > :is(.doc-picker-panel, .site-header__panel) {
   inset: 0 auto 0 0; width: min(28rem, 70vw); max-width: none; height: 100dvh; max-height: none; margin: 0;
   border-width: 0 1px 0 0; border-radius: 0 .75rem .75rem 0;
 }
-.doc-picker[data-enhanced][data-panel-mode="side"][data-panel-side="end"] > .doc-picker-panel { inset: 0 0 0 auto; border-width: 0 0 0 1px; border-radius: .75rem 0 0 .75rem; }
-.doc-picker[data-enhanced]:is([data-panel-mode="sheet"], [data-panel-mode="side"]) > .doc-picker-panel::backdrop { background: var(--scrim); }
+:is(.doc-picker, .site-header__menu)[data-enhanced][data-panel-mode="side"][data-panel-side="end"] > :is(.doc-picker-panel, .site-header__panel) { inset: 0 0 0 auto; border-width: 0 0 0 1px; border-radius: .75rem 0 0 .75rem; }
+:is(.doc-picker, .site-header__menu)[data-enhanced]:is([data-panel-mode="sheet"], [data-panel-mode="side"]) > :is(.doc-picker-panel, .site-header__panel)::backdrop { background: var(--scrim); }
 /* The search stays in reach while a sheet's rows scroll. */
 .doc-picker:is([data-panel-mode="sheet"], [data-panel-mode="side"]) .doc-picker-search {
   position: sticky; top: -.75rem; z-index: 1; padding-block: .5rem; background: var(--background-color);
 }
 html[data-sheet-open] { overflow: hidden; }
 @media (prefers-reduced-motion: no-preference) {
-  .doc-picker[data-enhanced][data-panel-mode="popover"] > .doc-picker-panel:popover-open { animation: doc-picker-rise 120ms ease-out; }
-  .doc-picker[data-enhanced][data-panel-mode="sheet"] > .doc-picker-panel:popover-open { animation: doc-picker-sheet 200ms ease-out; }
-  .doc-picker[data-enhanced][data-panel-mode="side"] > .doc-picker-panel:popover-open { animation: doc-picker-side 200ms ease-out; }
-  .doc-picker[data-enhanced][data-panel-mode="side"][data-panel-side="end"] > .doc-picker-panel:popover-open { animation-name: doc-picker-side-end; }
+  :is(.doc-picker, .site-header__menu)[data-enhanced][data-panel-mode="popover"] > :is(.doc-picker-panel, .site-header__panel):popover-open { animation: doc-picker-rise 120ms ease-out; }
+  :is(.doc-picker, .site-header__menu)[data-enhanced][data-panel-mode="sheet"] > :is(.doc-picker-panel, .site-header__panel):popover-open { animation: doc-picker-sheet 200ms ease-out; }
+  :is(.doc-picker, .site-header__menu)[data-enhanced][data-panel-mode="side"] > :is(.doc-picker-panel, .site-header__panel):popover-open { animation: doc-picker-side 200ms ease-out; }
+  :is(.doc-picker, .site-header__menu)[data-enhanced][data-panel-mode="side"][data-panel-side="end"] > :is(.doc-picker-panel, .site-header__panel):popover-open { animation-name: doc-picker-side-end; }
 }
 @keyframes doc-picker-rise { from { opacity: 0; translate: 0 4px; } }
 @keyframes doc-picker-sheet { from { translate: 0 100%; } }

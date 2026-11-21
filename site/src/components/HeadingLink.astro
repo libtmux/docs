@@ -1,0 +1,17 @@
+---
+/**
+ * The link after a heading's text: one icon, muted and always visible (design record 0006). `lib/heading-link.ts` copies
+ * the URL it names when it is clicked; `api-headings.css` draws it. Keep it the last child of the heading, with no
+ * whitespace before it, so it sits against the text.
+ */
+import { HEADING_LINK_PATHS } from '../lib/heading-link'
+
+interface Props {
+  /** The fragment, with its `#`. */
+  href: string
+  /** The accessible name, such as "Link to Parameters". */
+  label: string
+}
+const { href, label } = Astro.props
+---
+<a class="heading-link" href={href} aria-label={label} data-pagefind-ignore="all"><svg class="heading-link__icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true" focusable="false">{HEADING_LINK_PATHS.map((d) => <path d={d} />)}</svg></a>
