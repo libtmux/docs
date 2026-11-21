@@ -32,7 +32,7 @@ stops the server it started and removes its socket directory. If that server
 cannot be stopped, the program reports the retained directory and exits with
 an error.
 
-```scala title="Connect.scala"
+```scala title="Connect.scala" role="program"
 import io.github.libtmux.{ServerConfig, ServerEndpoint, SessionSpec}
 import io.github.libtmux.scaladsl.*
 import java.nio.file.{Files, Path}

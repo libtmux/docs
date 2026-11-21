@@ -91,7 +91,8 @@ describe('Common Lisp recipe', () => {
     for (const call of new Set(recipe.steps.map((step: { call: string }) => step.call))) expect(helper.split(`(wrap '${call} `).length - 1, call).toBe(1)
     expect(helper).toMatch(/\(wrap 'libtmux:fetch-snapshot t \(list \(list "snapshot-before".*\(list "snapshot"/)
     expect(helper).toContain("(wrap 'libtmux:window nil ")
-    expect(helper).toContain("(wrap 'libtmux:kill-server t ")
+    expect(helper).toContain("(wrap 'libtmux:new-session t ")
+    expect(helper).toContain("(wrap 'libtmux:stop-daemon t ")
   })
 })
 
@@ -108,12 +109,15 @@ describe('the Common Lisp recording of the landing page program', () => {
     expect(capability.steps.map((each) => [each.id, each.label, each.anchor, each.type])).toEqual(LISP['typed-graph'].steps.map((each: { id: string; label: string; anchor: string; type: string }) => [each.id, each.label, each.anchor, each.type]))
   })
 
-  it('starts from the server the page\'s setup commands start, which no step is credited with', () => {
-    expect(capability.tmuxBefore.sessions.map((session) => session.name)).toEqual(['demo'])
-    expect(capability.steps.flatMap((each) => each.commands).some((command) => command.tmux.startsWith('new-session'))).toBe(false)
+  it('starts with no server: the program starts the daemon it uses, and the shim leaves that invocation untraced', () => {
+    expect(capability.tmuxBefore).toEqual({ sessions: [], windows: [], panes: [] })
+    expect(LISP['typed-graph'].inPlaceFirst).toEqual(['-D'])
+    expect(capability.steps.flatMap((each) => each.commands).some((command) => / -D\b/.test(` ${command.tmux}`))).toBe(false)
+    expect(sent('new-session')).toContain('new-session')
   })
 
   it('records what each call returned and the commands that changed tmux', () => {
+    expect(step('new-session').returned).toEqual({ status: 'succeeded', session: '$0' })
     expect(step('snapshot-before').returned).toEqual({ sessions: 1, windows: 1, panes: 1 })
     expect(step('split').returned).toEqual({ status: 'succeeded', pane: '%1' })
     expect(step('new-window').returned).toEqual({ status: 'succeeded', window: '@1' })
@@ -123,7 +127,8 @@ describe('the Common Lisp recording of the landing page program', () => {
     expect(sent('split')).toContain('split-window')
     expect(sent('new-window')).toContain('new-window')
     expect(sent('send-text')).toContain('send-keys')
-    expect(sent('kill-server')).toEqual(['kill-server'])
+    expect(step('stop-daemon'), 'with-daemon stops the daemon by its process id, so no tmux command shows it').toMatchObject({ stopsServer: true, commands: [], returned: null })
+    expect(step('stop-daemon').tmux.sessions).toEqual([])
     expect(sent('sessions'), 'reading a captured graph sends nothing').toEqual([])
   })
 
@@ -150,13 +155,13 @@ describe('the Common Lisp recording of the landing page program', () => {
 
 describe('the player of a program that connects to a server its setup started', () => {
   it('says the server is running before the first call, and plans every call in every view', async () => {
-    const played = (await playableCapability('lisp', 'typed-graph', shown('lisp')))!
+    const played = (await playableCapability('haskell', 'typed-graph', shown('haskell')))!
     const template = await loadAstroTemplate('components/core/CorePlayer.astro', {
       real: ['components/HomeExample.astro', 'components/replay/TmuxScreen.astro', 'components/replay/ReplayControls.astro'],
       modules: { 'astro-expressive-code/components': { Code } },
     })
-    const window = new Window({ url: 'https://libtmux.org/lisp/latest/' })
-    window.document.body.innerHTML = await renderAstroTemplate(template, { props: { port: 'lisp', language: 'Common Lisp', example: QUICKSTARTS.lisp!.complete!, recording: played.recording, capability: played.capability } })
+    const window = new Window({ url: 'https://libtmux.org/haskell/latest/' })
+    window.document.body.innerHTML = await renderAstroTemplate(template, { props: { port: 'haskell', language: 'Haskell', example: QUICKSTARTS.haskell!.complete!, recording: played.recording, capability: played.capability } })
     const document = window.document as unknown as Document
     expect(document.querySelector('[data-frame="0"] .mcp-frame__note')!.textContent).toBe('tmux before the first call: the server the setup commands started is running.')
     const plan = JSON.parse(document.querySelector('[data-core-plan]')!.getAttribute('data-core-plan')!) as Record<string, unknown[]>

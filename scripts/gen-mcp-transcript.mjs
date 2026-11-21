@@ -11,7 +11,7 @@ import { hasState, recordingStateProblems } from '../site/src/lib/mcp-tmux-state
 import { contractsOf, sameContracts } from '../site/src/lib/mcp-contract.ts'
 import { listedBy, listedValue, recordCalls, recordSettled, requireRefusal, standInCalls, standInControls } from './lib/mcp-session.mjs'
 import { readTmuxState, settledState, stopSandboxServers } from './lib/mcp-tmux-state.mjs'
-import { hostLeaks, sanitize, verifyRecording } from './lib/mcp-transcript-checks.mjs'
+import { hostLeaks, recordedReply, sanitize, verifyRecording } from './lib/mcp-transcript-checks.mjs'
 
 /**
  * Record what each port's MCP server answers to the worked example on the MCP
@@ -40,6 +40,10 @@ import { hostLeaks, sanitize, verifyRecording } from './lib/mcp-transcript-check
  * run or the answers fail the check afterwards, the recorder stops the tmux
  * servers of its own sandbox, starts the borrowed session again when the
  * server borrows one, and records again, up to ATTEMPTS times in all.
+ *
+ * The closing message of the agent is the example's `reply`, stored as `reply`.
+ * It quotes the output the session printed, and the recording is refused when
+ * a quoted value is not in a recorded result.
  *
  * The transcript also stores the input and output schemas of each tool it
  * calls, from that snapshot. A page documenting another revision shows the
@@ -197,6 +201,7 @@ try {
     serverInfo: run.serverInfo,
     contracts,
     prompt: example.prompt,
+    reply: recordedReply(example.reply, run.steps, only),
     tmuxBefore: run.before,
     steps: run.steps.map((step, index) => ({ ...step, caption: example.steps[index].caption })),
   }
@@ -215,6 +220,8 @@ if (checking) {
   const stored = JSON.parse(readFileSync(out, 'utf8'))
   const unstated = hasState(stored) ? recordingStateProblems(stored) : ['no tmux state is recorded']
   if (unstated.length) throw new Error(`${only}: ${unstated.join('; ')}`)
+  // A recording made before the reply was stored has none; once it has one, the example's must match it.
+  if (stored.reply !== undefined && stored.reply !== transcript.reply) throw new Error(`${only}: the stored reply differs from the example's`)
   if (stored.revision !== transcript.revision || !sameContracts(stored.contracts, transcript.contracts) || JSON.stringify(stored.steps.map((s) => [s.tool, s.arguments])) !== JSON.stringify(transcript.steps.map((s) => [s.tool, s.arguments]))) throw new Error(`${only}: transcript is stale`)
 } else {
   mkdirSync(dirname(out), { recursive: true })

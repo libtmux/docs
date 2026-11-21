@@ -1,4 +1,5 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { createRenderer } from 'astro-expressive-code'
 import { select, selectAll, toHtml } from 'astro-expressive-code/hast'
 import { fromMarkdown } from 'mdast-util-from-markdown'
@@ -6,8 +7,6 @@ import { Window } from 'happy-dom'
 import { beforeAll, describe, expect, it } from 'vitest'
 import ecConfig from '../ec.config.mjs'
 import {
-  LONG_PROGRAM_LINES,
-  PROGRAM_CAP_LINES,
   citeMeta,
   excerptMeta,
   formatLines,
@@ -316,7 +315,7 @@ describe('Expressive Code frames', () => {
     })
 
     it('opens a capped program that holds a highlighted line', async () => {
-      const { document } = await open(go(60), 'title="main.go" frame="code" role="program" cite="50-52"', 'https://libtmux.org/en/example/#L50-L52')
+      const { document } = await open(go(60), 'title="main.go" frame="code" role="program" height="24" cite="50-52"', 'https://libtmux.org/en/example/#L50-L52')
       expect(document.querySelector('.frame')!.hasAttribute('data-expanded')).toBe(true)
       expect(document.querySelector('.cap button')!.getAttribute('aria-expanded')).toBe('true')
       expect(hitNumbers(document)).toEqual(['50', '51', '52'])
@@ -388,15 +387,20 @@ describe('Expressive Code frames', () => {
       expect(select('.cap', await rendered(go(20), 'title="main.go" frame="code" height="16"'))).toBeDefined()
     })
 
-    it('caps a long complete program and never an excerpt', async () => {
-      const long = go(LONG_PROGRAM_LINES)
-      const program = await rendered(long, 'title="main.go" frame="code" role="program"')
-      expect(select('figure.frame', program)!.properties.dataCap).toBe(String(PROGRAM_CAP_LINES))
-      expect(toHtml(select('.cap-count', program)!)).toContain(`${PROGRAM_CAP_LINES} of ${LONG_PROGRAM_LINES} lines`)
-      const short = await rendered(go(LONG_PROGRAM_LINES - 1), 'title="main.go" frame="code" role="program"')
-      expect(select('.cap', short)).toBeUndefined()
-      const excerpt = await rendered(go(90, 1), 'title="main.go" frame="code" role="excerpt" lines="1-90"')
-      expect(select('.cap', excerpt)).toBeUndefined()
+    it('shows every line of a long complete program unless its author sets a cap (record 0027)', async () => {
+      const program = await rendered(go(200), 'title="main.go" frame="code" role="program"')
+      expect(select('.cap', program)).toBeUndefined()
+      expect(select('figure.frame', program)!.properties.dataCap).toBeUndefined()
+      expect(selectAll('.ec-line', program)).toHaveLength(200)
+    })
+
+    it('applies the cap an author sets on a program, on output and on a plain frame, and never on an excerpt', async () => {
+      const program = await rendered(go(120), 'title="main.go" frame="code" role="program" height="24"')
+      expect(select('figure.frame', program)!.properties.dataCap).toBe('24')
+      expect(toHtml(select('.cap-count', program)!)).toBe('<span class="cap-count">24 of 120 lines</span>')
+      expect(selectAll('.ec-line', program), 'the markup keeps every line, so Copy and print show them all').toHaveLength(120)
+      expect(select('figure.frame', await rendered(go(60), 'frame="none" height="24"'))!.properties.dataCap).toBe('24')
+      expect(select('.cap', await rendered(go(90, 1), 'title="main.go" frame="code" role="excerpt" lines="1-90" height="24"'))).toBeUndefined()
     })
 
     it('lets the author show a long program in full', async () => {
@@ -438,6 +442,65 @@ describe('Expressive Code frames', () => {
       button.click()
       expect(document.querySelector('.copy button')!.getAttribute('data-code')).toBe(code.replace(/\n/g, '\x7f'))
     })
+  })
+})
+
+/** Long frames that read better capped: the author's cap is the only way a frame stops short (record 0027). */
+describe('the long frames of the pages the design review named', () => {
+  /** The page's code blocks as the build sees them: `file=` inclusions read from the example cache, frame attributes added. */
+  const frames = (path: string) => {
+    const file = fileURLToPath(new URL(`../src/content/docs/${path}`, import.meta.url))
+    const markdown = readFileSync(file, 'utf8')
+    const tree = fromMarkdown(markdown) as { children: { type: string; meta?: string | null; value: string }[] }
+    remarkPortCode.call({ parse: (text: string) => fromMarkdown(text) } as never)(tree as never, { path: file, value: markdown, data: {} } as never)
+    return tree.children.filter((node) => node.type === 'code').map((node) => ({ attributes: parseFenceAttributes(node.meta), total: node.value.split('\n').length }))
+  }
+
+  it.each([
+    ['ports/rs/mcp/examples/inspect-sessions.md', 'src/main.rs', 194],
+    ['ports/rs/guides/control-mode.md', 'control.rs', 138],
+    ['ports/go/mcp/examples/run-command.md', 'main.go', 145],
+  ])('caps the program of %s at 24 lines', (path, title, total) => {
+    const program = frames(path).find((frame) => frame.attributes.title === title)!
+    expect(program.total).toBe(total)
+    expect(program.attributes.height).toBe('24')
+  })
+
+  it.each([
+    ['ports/go/examples/attach-and-send-keys.md', 98],
+    ['ports/go/examples/capture-pane-output.md', 80],
+  ])('keeps the cap on the long program of %s, which the removed default capped', (path, total) => {
+    const program = frames(path).filter((frame) => frame.total === total)
+    expect(program).toHaveLength(1)
+    expect(program[0]!.attributes.height).toBe('24')
+  })
+})
+
+/** Record 0026's neighbour in the typesetting audit: "Complete program" labels a whole file, and only that. */
+describe('the role labels of the attach guides', () => {
+  const frames = (path: string) => {
+    const file = fileURLToPath(new URL(`../src/content/docs/${path}`, import.meta.url))
+    const markdown = readFileSync(file, 'utf8')
+    const tree = fromMarkdown(markdown) as { children: { type: string; meta?: string | null; value: string }[] }
+    remarkPortCode.call({ parse: (text: string) => fromMarkdown(text) } as never)(tree as never, { path: file, value: markdown, data: {} } as never)
+    return tree.children.filter((node) => node.type === 'code').map((node) => parseFenceAttributes(node.meta))
+  }
+  /** Build and manifest files beside a program: whole files, but not programs. */
+  const SETUP = /^(?:CMakeLists\.txt|Gemfile|Package\.swift|package\.json|Cargo\.toml|go\.mod|[\w.-]+\.(?:csproj|fsproj)|(?:build|settings)\.gradle\.kts|gradle\.properties)$/
+  const guides = ['guides/attaching-to-tmux.md', ...readdirSync(fileURLToPath(new URL('../src/content/docs/ports', import.meta.url)))
+    .map((port) => `ports/${port}/guides/attaching-to-tmux.md`)].filter((path) => existsSync(fileURLToPath(new URL(`../src/content/docs/${path}`, import.meta.url))))
+
+  it('finds the guides it checks, so the loop below cannot pass on nothing', () => {
+    expect(guides.length).toBeGreaterThanOrEqual(15)
+  })
+
+  it.each(guides)('labels the whole program of %s Complete program and no setup file', (guide) => {
+    const titled = frames(guide).filter((fence) => fence.title !== undefined)
+    expect(titled.length, 'a program').toBeGreaterThan(0)
+    for (const fence of titled) {
+      expect(fence.role, fence.title).toBe(SETUP.test(fence.title!) ? undefined : 'program')
+    }
+    expect(titled.some((fence) => fence.role === 'program'), 'one whole program').toBe(true)
   })
 })
 

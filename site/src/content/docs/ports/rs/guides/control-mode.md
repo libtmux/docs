@@ -53,7 +53,7 @@ Only the `control-mode` feature is enabled. It does not require [plan][plan-feat
 
 Save the complete program as `control.rs`:
 
-```rust title="control.rs"
+```rust title="control.rs" height="24"
 use std::error::Error;
 use std::time::Duration;
 

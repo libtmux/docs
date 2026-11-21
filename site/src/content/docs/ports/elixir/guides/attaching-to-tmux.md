@@ -34,7 +34,7 @@ the program reports the error and keeps the directory.
 The first line installs libtmux from Hex. Its requirement, `~> 0.1`, accepts
 any release from 0.1.0 up to, but not including, 1.0.0.
 
-```elixir title="connect.exs"
+```elixir title="connect.exs" role="program"
 Mix.install([{:libtmux, "~> 0.1"}])
 
 alias LibTmux.{Command, Selection, Server, Snapshot}

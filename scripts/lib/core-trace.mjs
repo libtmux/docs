@@ -193,16 +193,21 @@ function quietReply(directory, seq) {
  * the real tmux untraced, for a foreground daemon (`-D`) that a library owns by the
  * process id it started: libtmux-raku binds the daemon to that id, and a wrapper
  * process in between would make it a stranger. Such an invocation has no command to trace.
+ * One whose first word is one of `inPlaceFirst` is the same, for a daemon whose command line
+ * ends in a socket path that differs on every run (libtmux-lisp starts `tmux -D -f /dev/null -S <socket>`).
  *
- * @param {{ node: string, entry: string, inPlace?: string[] }} where the node binary and `core-trace.mjs`, and the flags that end an in-place invocation
+ * @param {{ node: string, entry: string, inPlace?: string[], inPlaceFirst?: string[] }} where the node binary and `core-trace.mjs`, the flags that end an in-place invocation and the ones that begin one
  */
-export const shimScript = ({ node, entry, inPlace = [] }) => `#!/bin/sh
+export const shimScript = ({ node, entry, inPlace = [], inPlaceFirst = [] }) => `#!/bin/sh
 NODE=${JSON.stringify(node)}
 ENTRY=${JSON.stringify(entry)}
 ${inPlace.length === 0 ? '' : `last=
 for word in "$@"; do last=$word; done
 case $last in
   ${inPlace.map((flag) => JSON.stringify(flag)).join('|')}) exec "$LIBTMUX_DOCS_REAL_TMUX" "$@" ;;
+esac
+`}${inPlaceFirst.length === 0 ? '' : `case \${1-} in
+  ${inPlaceFirst.map((flag) => JSON.stringify(flag)).join('|')}) exec "$LIBTMUX_DOCS_REAL_TMUX" "$@" ;;
 esac
 `}for word in "$@"; do
   case $word in

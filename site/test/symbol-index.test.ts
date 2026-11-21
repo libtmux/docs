@@ -144,6 +144,31 @@ describe('the A-Z page of a port build', () => {
     expect(document.querySelector('main .api-reference-content [data-symidx]')).not.toBeNull()
   })
 
+  // The strip's letters are links to sibling pages of the same index: in a port build they are pages of that port's reference,
+  // and on the cross-port page they are root pages. A letter link that left the Go tree took a reader to a root page.
+  it('keeps every letter link of the strip inside the port, and the cross-port strip at the root', async () => {
+    const letters = ['A', 'C', 'Z', '0']
+    const render = async (port: string, url: string) => {
+      vi.stubEnv('LIBTMUX_DOCS_PORT', port)
+      vi.stubEnv('LIBTMUX_DOCS_LOCALE', 'en')
+      vi.stubEnv('LIBTMUX_DOCS_VERSION', 'latest')
+      const page = await loadAstroTemplate('pages/reference/symbols/[letter].astro', {
+        real: ['components/api/SymbolIndex.astro', 'components/api/ApiBadge.astro', 'components/PageToolbar.astro', 'components/docs/PageEnd.astro'],
+        stubs: {
+          'layouts/BaseLayout.astro': '<slot name="context" /><slot />',
+          'components/api/ApiTree.astro': '<aside></aside>',
+        },
+        modules: { '../../../i18n/resolve': { buildLocale: () => 'en' } },
+      })
+      const window = new Window()
+      window.document.body.innerHTML = await renderAstroTemplate(page, { url, props: { letter: 'C', letters, entries: [entry('Capture')], total: 1, shared: [], port } })
+      return [...window.document.querySelectorAll('[data-symidx-strip] a')].map((link) => link.getAttribute('href'))
+    }
+    const reference = referenceUrl(PORT_BY_SLUG.go!, 'latest')
+    expect(await render('go', `https://libtmux.org${reference}symbols/c/`)).toEqual(['a', 'c', 'z', '0'].map((letter) => `${reference}symbols/${letter}/`))
+    expect(await render('', 'https://libtmux.org/en/reference/symbols/c/')).toEqual(['a', 'c', 'z', '0'].map((letter) => `/reference/symbols/${letter}/`))
+  })
+
   // The shared shell build runs with LIBTMUX_DOCS_PORT set to the empty
   // string. A port of '' must reach the layout as no port at all: its
   // inventory scope falls back with `??`, and an empty scope fails the build.

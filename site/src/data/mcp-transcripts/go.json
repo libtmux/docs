@@ -3,7 +3,7 @@
   "repo": "libtmux/libtmux-go",
   "revision": "f59af95c257c8c1ebaed14d79be61e4a24777f01",
   "sandbox": {
-    "tmux": "tmux 3.8a",
+    "tmux": "tmux 3.7c",
     "pytest": "pytest 9.2.0",
     "project": [
       "test_example.py",
@@ -376,6 +376,7 @@
     }
   },
   "prompt": "Create a tmux session called checks, split its window into two panes, run pytest -q in one and show checks.log in the other, show me the results, then remove the session.",
+  "reply": "pytest printed \"2 passed\" and checks.log ends with \"checks finished\". I removed the checks session.",
   "tmuxBefore": {
     "sessions": [],
     "windows": [],
@@ -412,7 +413,7 @@
             "index": 0,
             "name": "sh",
             "active": true,
-            "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+            "layout": "b25d,80x24,0,0,0"
           }
         ],
         "panes": [
@@ -475,7 +476,7 @@
             "index": 0,
             "name": "sh",
             "active": true,
-            "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+            "layout": "b25d,80x24,0,0,0"
           }
         ],
         "panes": [
@@ -523,7 +524,7 @@
             "index": 0,
             "name": "sh",
             "active": true,
-            "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
+            "layout": "8205,80x24,0,0{40x24,0,0,0,39x24,41,0,1}"
           }
         ],
         "panes": [
@@ -612,7 +613,7 @@
             "index": 0,
             "name": "sh",
             "active": true,
-            "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
+            "layout": "8205,80x24,0,0{40x24,0,0,0,39x24,41,0,1}"
           }
         ],
         "panes": [
@@ -680,7 +681,7 @@
             "index": 0,
             "name": "sh",
             "active": true,
-            "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
+            "layout": "8205,80x24,0,0{40x24,0,0,0,39x24,41,0,1}"
           }
         ],
         "panes": [
@@ -748,7 +749,7 @@
             "index": 0,
             "name": "sh",
             "active": true,
-            "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
+            "layout": "8205,80x24,0,0{40x24,0,0,0,39x24,41,0,1}"
           }
         ],
         "panes": [

@@ -70,9 +70,10 @@ unnumbered, since it is for copying. Three optional
 attributes adjust a frame: `role="program"` labels a block the page does not
 quote, `title="main.go"` names the file in the header (an excerpt takes its
 source's name), and `height="16"` stops a long block at that many lines with a
-"Show all N lines" button. A complete program of 40 lines or more takes a
-24-line cap; `height="full"` shows it whole. An excerpt always shows every
-line, Copy always copies every line, and print shows every line.
+"Show all N lines" button. A frame shows every line unless its author sets a
+cap, so a long program or output takes `height="24"` where it reads better
+capped. An excerpt always shows every line, Copy always copies every line, and
+print shows every line.
 
 The numbers hang outside the frame in a rail, at a negative margin, and never
 in the code's padding, so Copy and a text selection never have them and

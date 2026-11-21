@@ -1,0 +1,51 @@
+---
+/**
+ * A section index's body and its cards, in the order a reader wants them.
+ *
+ * With a lead (`introFirst`) the lead above the first heading comes first, then
+ * the cards, then the headed sections. Without one the cards come first and the
+ * body follows. Splitting needs the body's markup, so the body is rendered to a
+ * string only on a page that has a lead.
+ */
+import DocCard from '../DocCard.astro'
+import { proseHref } from '../../lib/docs-paths'
+import { SITE_ROOT } from '../../lib/site-root'
+import { splitAtFirstHeading } from '../../lib/section-index'
+
+interface Props {
+  cards: { href: string; label: string; body: string }[]
+  /** Cards for a few peers, a compact list for many, nothing for none. */
+  directory: 'cards' | 'list' | 'none'
+  introFirst: boolean
+  /** The kind of page each list row opens, such as "Guide". */
+  pageKind?: string
+  port?: string
+  version?: string
+}
+const { cards, directory, introFirst, pageKind, port, version } = Astro.props as Props
+const { lead, rest } = introFirst ? splitAtFirstHeading(await Astro.slots.render('default')) : { lead: '', rest: '' }
+const gap = introFirst ? 'mt-6 mb-10' : 'mt-8 mb-10'
+---
+{introFirst && <Fragment set:html={lead} />}
+{directory === 'cards' && (
+  <div class:list={['not-prose grid gap-4 sm:grid-cols-2 lg:grid-cols-3', gap]}>
+    {cards.map((card) => <DocCard href={proseHref(card.href, SITE_ROOT, port, version)} label={card.label} body={card.body} />)}
+  </div>
+)}
+{/* A directory of seven or more is scanned, not chosen from: a compact list with the kind of page beside its sentence. */}
+{directory === 'list' && (
+  <ul class:list={['doc-dirlist not-prose', gap]}>
+    {cards.map((card) => <li>
+      <a href={proseHref(card.href, SITE_ROOT, port, version)}>{card.label}</a>
+      <span>{[pageKind, card.body].filter(Boolean).join(' · ')}</span>
+    </li>)}
+  </ul>
+)}
+{introFirst ? <Fragment set:html={rest} /> : <slot />}
+<style is:global>
+  /* GuideDirectory, compact: two columns from 32rem, a title and one line each, every row a link target. */
+  .doc-dirlist { margin-inline: 0; padding: 0; list-style: none; columns: 2 16rem; column-gap: 1.5rem; }
+  .doc-dirlist li { break-inside: avoid; padding: 0.375rem 0; border-bottom: 1px solid var(--color-background-border); }
+  .doc-dirlist a { font-size: 0.875rem; font-weight: 600; }
+  .doc-dirlist span { display: block; font-size: 0.8125rem; line-height: 1.25rem; color: var(--color-foreground-muted); }
+</style>

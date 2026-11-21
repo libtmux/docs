@@ -2,7 +2,7 @@ import { mcpObjects } from './mcp-catalog'
 import { PORT_BY_SLUG, portPageUrl } from './ports'
 import { EXAMPLES, STALE_TARGET, type ExampleStep } from './mcp-examples.ts'
 import { contractOf, sameContract, statesOutputs, type ToolContract } from './mcp-contract.ts'
-import { replayFrames, runAnswers, type Frame } from './mcp-replay'
+import { replayFrames, type Frame } from './mcp-replay'
 import { hasState, recordingStateProblems, type TmuxState } from './mcp-tmux-state.ts'
 
 export { EXAMPLES }
@@ -38,6 +38,19 @@ export const TIERS: readonly Tier[] = [
 ]
 
 /** The tier a tool belongs to, or nothing for a server that declares no toolsets. */
+/** A run of a closing reply: plain words, `inline code`, or output the session printed, which the reply quotes in double quotes. */
+export type ReplyRun = { kind: 'text' | 'code' | 'output'; text: string }
+
+/** The agent's closing reply as paragraphs of runs. It is people's words, so only paragraphs and inline code are read (record 0074). The generator refuses a quote the session never printed, so each quoted run is terminal output. */
+export function replyParagraphs(reply: string): ReplyRun[][] {
+  return reply.split(/\n\s*\n/).map((paragraph) => paragraph.trim()).filter(Boolean).map((paragraph) =>
+    paragraph.split(/(`[^`]+`|"[^"]+")/).filter(Boolean).map((part): ReplyRun => {
+      if (part.length > 2 && part.startsWith('`') && part.endsWith('`')) return { kind: 'code', text: part.slice(1, -1) }
+      if (part.length > 2 && part.startsWith('"') && part.endsWith('"')) return { kind: 'output', text: part.slice(1, -1) }
+      return { kind: 'text', text: part }
+    }))
+}
+
 export const tierFor = (tool: { tier?: TierId }): Tier | undefined => TIERS.find((entry) => entry.id === tool.tier)
 
 /** One tool as `tools/list` advertises it. */
@@ -174,8 +187,8 @@ export interface Recording {
    * refuses the token itself, with the error code `refusedAs`.
    */
   generation?: { token: string; listedBy: string; refusedAs: string }
-  /** What each command run left in its pane, as the last line with text, with the pane it ran in. */
-  answers: { pane?: string; line: string }[]
+  /** The agent's closing message as the recording stores it, with the output it quotes in double quotes. A recording made before the field existed has none, and the replay has no closing turn. */
+  reply?: string
 }
 
 export interface WorkedExample {
@@ -194,6 +207,8 @@ export interface Transcript {
   sandbox: { tmux: string; pytest: string; rewritten?: { projectDirectory?: string; generation?: string; generationListedBy?: string; generationRefusedAs?: string } }
   /** The recording's own tmux server before the first call; present with the `tmux` of every step, or with none. */
   tmuxBefore?: TmuxState
+  /** The agent's closing message, stored by the recorder after it checked that the session printed every value the reply quotes. */
+  reply?: string
   steps: { tool: string; arguments: Record<string, unknown>; isError: boolean; content: { type: string; text?: string }[]; structuredContent?: unknown; tmux?: TmuxState }[]
 }
 
@@ -342,7 +357,7 @@ export function buildShowcase(port: string, version: string, snapshot: ProtocolS
         tool: tools.get(step.tool)!, arguments: step.arguments, caption: step.caption,
         ...(recorded ? { result: shown[index] } : {}),
       })),
-      ...(recorded ? { recording: { repo: recorded.repo, revision: recorded.revision, tmux: recorded.sandbox.tmux, runner: recorded.sandbox.pytest, frames: replayFrames(recorded.steps, recorded.tmuxBefore), tmuxState: hasState(recorded), shortened: shown.some((value, index) => JSON.stringify(value) !== JSON.stringify(full[index])), ...(recorded.revision === snapshot.revision ? {} : { documentedRevision: snapshot.revision }), outputsChecked: statesOutputs(recorded.contracts), ...(recorded.sandbox.rewritten?.projectDirectory ? { projectDirectory: recorded.sandbox.rewritten.projectDirectory } : {}), ...(recorded.sandbox.rewritten?.generation ? { generation: { token: recorded.sandbox.rewritten.generation, listedBy: recorded.sandbox.rewritten.generationListedBy!, refusedAs: recorded.sandbox.rewritten.generationRefusedAs! } } : {}), answers: runAnswers(recorded.steps) } } : {}),
+      ...(recorded ? { recording: { repo: recorded.repo, revision: recorded.revision, tmux: recorded.sandbox.tmux, runner: recorded.sandbox.pytest, frames: replayFrames(recorded.steps, recorded.tmuxBefore), tmuxState: hasState(recorded), shortened: shown.some((value, index) => JSON.stringify(value) !== JSON.stringify(full[index])), ...(recorded.revision === snapshot.revision ? {} : { documentedRevision: snapshot.revision }), outputsChecked: statesOutputs(recorded.contracts), ...(recorded.sandbox.rewritten?.projectDirectory ? { projectDirectory: recorded.sandbox.rewritten.projectDirectory } : {}), ...(recorded.sandbox.rewritten?.generation ? { generation: { token: recorded.sandbox.rewritten.generation, listedBy: recorded.sandbox.rewritten.generationListedBy!, refusedAs: recorded.sandbox.rewritten.generationRefusedAs! } } : {}), ...(recorded.reply ? { reply: recorded.reply } : {}) } } : {}),
     }
     : undefined
   return {

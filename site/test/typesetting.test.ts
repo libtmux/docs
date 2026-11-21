@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it, vi } from 'vitest'
-import { directoryPattern, introBeforeCards } from '../src/lib/section-index'
+import { directoryPattern, introBeforeCards, splitAtFirstHeading } from '../src/lib/section-index'
+import { sansFallbacks } from '../src/lib/sans-fallbacks'
 import { loadAstroTemplate, renderAstroTemplate, withoutScope } from './astro-templates'
 import { siteCss } from './site-css'
 
@@ -105,13 +106,39 @@ describe('headings set outside prose', () => {
 })
 
 describe('section index', () => {
-  it('puts a plain intro before the cards and leaves a page with headings, tables or code below them', () => {
+  it('puts the lead before the cards, so a page with headed sections still opens on its intro, and keeps a page that opens on a table or code below them', () => {
     expect(introBeforeCards('Use these guides to connect to tmux.\n', 6)).toBe(true)
-    expect(introBeforeCards('Intro.\n\n## A section\n\nMore.', 6)).toBe(false)
+    // Headed sections follow the cards; the lead above the first heading does not wait behind them.
+    expect(introBeforeCards('Intro.\n\n## A section\n\nMore.', 6)).toBe(true)
+    expect(introBeforeCards('## A section\n\nMore.', 6), 'no lead to put first').toBe(false)
     expect(introBeforeCards('Intro.\n\n| a | b |\n| - | - |\n', 6)).toBe(false)
+    expect(introBeforeCards('Intro.\n\n```sh\ntmux\n```\n\n## A section', 6), 'a lead with code is a page of its own').toBe(false)
     expect(introBeforeCards('```sh\ntmux\n```', 6)).toBe(false)
     expect(introBeforeCards('', 6)).toBe(false)
     expect(introBeforeCards('Intro.', 0)).toBe(false)
+  })
+
+  it('splits the rendered body at its first heading and leaves an anchor with the heading it names', () => {
+    expect(splitAtFirstHeading('<p>Lead.</p>\n<h2 id="a">A</h2><p>x</p>')).toEqual({ lead: '<p>Lead.</p>\n', rest: '<h2 id="a">A</h2><p>x</p>' })
+    expect(splitAtFirstHeading('<p>Lead.</p>\n<a id="named"></a>\n<h2>A</h2>')).toEqual({ lead: '<p>Lead.</p>', rest: '\n<a id="named"></a>\n<h2>A</h2>' })
+    expect(splitAtFirstHeading('<p>Lead.</p>')).toEqual({ lead: '<p>Lead.</p>', rest: '' })
+    expect(splitAtFirstHeading('<h2>A</h2><p>x</p>')).toEqual({ lead: '', rest: '<h2>A</h2><p>x</p>' })
+  })
+
+  it('draws the lead, the cards, then the headed sections, in that order', async () => {
+    const body = await loadAstroTemplate('components/docs/SectionBody.astro', { real: ['components/DocCard.astro'] })
+    const cards = [{ label: 'First card', href: 'first/', body: 'One.' }, { label: 'Second card', href: 'second/', body: 'Two.' }]
+    const order = async (html: string, introFirst: boolean) => {
+      const out = await renderAstroTemplate(body, { props: { cards, directory: 'cards', introFirst }, slots: { default: html } })
+      return ['Lead paragraph', 'First card', 'Headed section'].map((text) => out.indexOf(text))
+    }
+    const [lead, card, section] = await order('<p>Lead paragraph</p><h2>Headed section</h2><p>More.</p>', true)
+    expect(lead).toBeGreaterThan(-1)
+    expect(lead, 'the lead is above the cards').toBeLessThan(card!)
+    expect(card, 'the headed section follows them').toBeLessThan(section!)
+    // A body that opens on its heading keeps the cards above it.
+    const [, cardsFirst, headed] = await order('<h2>Headed section</h2><p>Lead paragraph</p>', false)
+    expect(cardsFirst).toBeLessThan(headed!)
   })
 })
 
@@ -121,7 +148,7 @@ describe('guide directories', () => {
   })
 
   it('draws the compact list in two columns with a title and one line each', () => {
-    const page = readFileSync(new URL('../src/components/docs/DocPage.astro', import.meta.url), 'utf8')
+    const page = readFileSync(new URL('../src/components/docs/SectionBody.astro', import.meta.url), 'utf8')
     expect(page).toMatch(/\.doc-dirlist \{[^}]*columns: 2 16rem/)
     expect(page).toContain("directory === 'list'")
   })
@@ -154,14 +181,23 @@ describe('Japanese', () => {
   const ja = rule(':lang(ja)')
   const stack = ja['font-family']!.split(',').map((face) => face.trim().replace(/^'|'$/g, ''))
 
-  it('keeps Latin in IBM Plex Sans, names the reader\'s own Japanese sans faces behind it and ships no web font (record 0052)', () => {
+  it('names the hashed Plex family alone, then the reader\'s own Japanese sans faces, ahead of any generic fallback, and ships no web font (record 0052)', () => {
     // Plex has no Japanese glyphs, so every kana and kanji falls through to the next named face. The site's Plex is
-    // registered under a hashed family name, so `--font-sans` (which resolves to it) stands for "IBM Plex Sans" here.
+    // registered under a hashed family name, and the Fonts API's `--font-ibm-plex-sans` is that family followed by the
+    // build's `fallbacks`. The Japanese build's fallbacks open with the Japanese sans faces, so `--font-sans` is the stack:
+    // the hashed family, then these, then system-ui and sans-serif. The generic faces the English build lists first
+    // (ui-sans-serif, system-ui) must not come up ahead of them.
     expect(css).toMatch(/--font-sans: var\(--font-ibm-plex-sans\)/)
-    expect(stack).toEqual(['var(--font-sans)', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', 'Yu Gothic', 'Meiryo', 'Noto Sans CJK JP', 'Noto Sans JP', 'system-ui', 'sans-serif'])
+    expect(stack).toEqual(['var(--font-sans)'])
+    const fallbacks = sansFallbacks('ja')
+    expect(fallbacks.slice(0, 9)).toEqual(['Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', 'Yu Gothic', 'Meiryo', 'Noto Sans CJK JP', 'Noto Sans JP', 'system-ui', 'sans-serif'])
+    expect(fallbacks.indexOf('ui-sans-serif'), 'no generic face ahead of the Japanese ones').toBe(-1)
+    expect(sansFallbacks('en').slice(0, 3)).toEqual(['ui-sans-serif', 'system-ui', 'sans-serif'])
+    const config = readFileSync(new URL('../astro.config.ts', import.meta.url), 'utf8')
+    expect(config).toMatch(/cssVariable: '--font-ibm-plex-sans',[^}]*fallbacks: sansFallbacks\(buildLocale\(\)\)/)
     expect(css).not.toMatch(/@font-face[^}]*(Noto Sans JP|Plex Sans JP)/)
     // A Mincho face must never be named.
-    expect(stack.join(' ')).not.toMatch(/Mincho|(?<!sans-)serif/i)
+    expect(fallbacks.join(' ')).not.toMatch(/Mincho|(?<!sans-)serif/i)
   })
 
   it('drops Latin tracking and breaks at phrases', () => {

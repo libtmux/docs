@@ -3,6 +3,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest
 import { loadAstroTemplate, renderAstroTemplate, withoutScope } from './astro-templates'
 import { go, options, symbolOf } from './api-page-fixtures'
 import { buildIndex, type FixtureIndex, type FixturePage } from './search-fixture'
+import { normalizedNativePages } from './native-fixture'
 import { mountSearchPanel } from '../src/lib/search-panel'
 import type { ApiTreeJson } from '../src/lib/api-search'
 
@@ -72,6 +73,61 @@ describe('the filters of a page through the real layout', () => {
   it('adds no text for the section marker to the page', async () => {
     const guide = (await index.pages()).find((page) => page.url.includes('/guides/'))
     expect(guide?.content).toBe('go/latest/guides/capturing-output. Read the lines of a pane with capture.')
+  })
+})
+
+/**
+ * Python's Sphinx pages reach the index through the native normalizer, not the Astro layout. A reader who
+ * sets the Section facet must get them with the section the layout would have written.
+ */
+describe('the filters of a native Python page', () => {
+  let index: FixtureIndex
+  let native: Awaited<ReturnType<typeof normalizedNativePages>>
+
+  beforeAll(async () => {
+    env()
+    const layout = await loadAstroTemplate('layouts/BaseLayout.astro')
+    native = await normalizedNativePages(['api/pane/', 'quickstart/', 'topics/architecture/'])
+    index = await buildIndex([
+      {
+        url: '/en/py/latest/guides/getting-started/',
+        html: await renderAstroTemplate(layout, {
+          url: 'https://libtmux.org/en/py/latest/guides/getting-started/',
+          props: { title: 'Getting started', pagePath: 'guides/getting-started', portSlug: 'py', pageSource: SOURCE },
+          slots: { default: '<main><h1>Getting started</h1><p>Install, then capture a pane.</p></main>' },
+        }),
+      },
+      ...Object.entries(native.html).map(([path, html]) => ({ url: native.urls[path]!, html })),
+    ])
+  })
+  afterAll(async () => {
+    await index?.close()
+    vi.unstubAllEnvs()
+  })
+
+  const urls = async (filters: Record<string, unknown>) => {
+    const { results } = await index.api.search('capture', { filters })
+    return (await Promise.all(results.map((result) => result.data()))).map((data) => data.url).sort()
+  }
+
+  it('indexes the section of each native page beside its port', async () => {
+    const found = Object.fromEntries((await index.pages()).map((page) => [page.url, [page.filters.port, page.filters.section]]))
+    expect(found).toEqual({
+      '/en/py/latest/guides/getting-started/': [['Python'], ['guides']],
+      '/en/py/latest/api/api/pane/': [['Python'], ['reference']],
+      '/en/py/latest/api/quickstart/': [['Python'], ['guides']],
+      '/en/py/latest/api/topics/architecture/': [['Python'], ['topics']],
+    })
+  })
+
+  it('returns the native API page for section=reference with port=Python, and the Python guides for section=guides', async () => {
+    expect(await urls({ port: ['Python'], section: ['reference'] })).toEqual(['/en/py/latest/api/api/pane/'])
+    expect(await urls({ port: ['Python'], section: ['guides'] })).toEqual(['/en/py/latest/api/quickstart/', '/en/py/latest/guides/getting-started/'])
+  })
+
+  it('adds no text for the section marker to a native page', async () => {
+    const page = (await index.pages()).find((entry) => entry.url === '/en/py/latest/api/api/pane/')
+    expect(page?.content).toBe('api/pane/ Native page text for capture.')
   })
 })
 

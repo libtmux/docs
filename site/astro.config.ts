@@ -6,7 +6,8 @@ import { createReadStream, existsSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { defineConfig, fontProviders } from 'astro/config'
-import { DEFAULT_LOCALE, LOCALES } from './src/i18n/locales.ts'
+import { DEFAULT_LOCALE, LOCALES, buildLocale } from './src/i18n/locales.ts'
+import { sansFallbacks } from './src/lib/sans-fallbacks.ts'
 import expressiveCode from 'astro-expressive-code'
 import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 import { apiDb } from './src/integrations/api-db'
@@ -173,7 +174,7 @@ export default defineConfig({
       name: 'IBM Plex Sans',
       cssVariable: '--font-ibm-plex-sans',
       provider: fontProviders.local(),
-      fallbacks: ['ui-sans-serif', 'system-ui', 'sans-serif', 'Apple Color Emoji', 'Segoe UI Emoji'],
+      fallbacks: sansFallbacks(buildLocale()),
       optimizedFallbacks: true,
       options: {
         // The same twenty faces gp-sphinx serves: five weights of each family,

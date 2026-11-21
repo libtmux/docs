@@ -32,7 +32,7 @@ stops the server it started and removes its socket directory. If that server
 cannot be stopped, the program reports the retained directory and exits with
 an error.
 
-```java title="Connect.java"
+```java title="Connect.java" role="program"
 import io.github.libtmux.Server;
 import io.github.libtmux.ServerConfig;
 import io.github.libtmux.ServerEndpoint;

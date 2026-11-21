@@ -81,6 +81,13 @@ describe('the tools index', () => {
     expect(document.querySelector('[data-mcp-tier-filter], .mcp-tool-card__tier, [data-tier]')).toBeNull()
   })
 
+  it.each(['ruby', 'julia'])('shows no tier control, label or count on the %s tools index', async (port) => {
+    const document = await page(port, 'tools')
+    expect(document.querySelectorAll('.mcp-tool-card')).toHaveLength(mcpObjects(port).filter((entry) => entry.kind === 'tool').length)
+    expect(document.querySelector('[data-mcp-tier-filter], input[name="tier"], .mcp-tier, .mcp-count:not([data-count="all"])')).toBeNull()
+    expect(document.body.textContent).not.toMatch(/\bTier\b|\b(?:Inspect|Manage|Execute|Teardown)\b/)
+  })
+
   it('has a stylesheet that filters on each tier, hides the groups left empty, and shows the chosen tier\'s counts', () => {
     const source = readFileSync(new URL('../src/components/mcp/ProtocolReference.astro', import.meta.url), 'utf8')
     const lacking = (css: string) => TIERS.filter(({ id }) => ![
@@ -143,11 +150,17 @@ describe('a tool page', () => {
     expect(rows).toEqual(expect.arrayContaining(['Toolset', 'Process reach', 'tmux effects']))
   })
 
-  it('has no capability row for a server that states none, and no Wraps row for a tool with no recorded call', async () => {
-    const ruby = await page('ruby', 'tools', mcpObjects('ruby').find((entry) => entry.kind === 'tool')!.name)
-    expect(ruby.querySelector('[data-mcp-capability], .mcp-tier')).toBeNull()
-    const list = await page('go', 'tools', 'list_sessions')
-    expect([...list.querySelectorAll('dt')].map((term) => term.textContent)).not.toContain('Wraps')
+  it.each(['ruby', 'julia'])('shows no tier, toolset or capability row on any %s tool page', async (port) => {
+    for (const { name } of mcpObjects(port).filter((entry) => entry.kind === 'tool')) {
+      const document = await page(port, 'tools', name)
+      expect(document.querySelector('[data-mcp-capability], .mcp-tier, [data-tier]'), name).toBeNull()
+      expect([...document.querySelectorAll('dt')].map((term) => term.textContent), name).not.toContain('Toolset')
+    }
+  })
+
+  it('has no Wraps row for a tool with no recorded call', async () => {
+    const batch = await page('go', 'tools', 'call_read_tools_batch')
+    expect([...batch.querySelectorAll('dt')].map((term) => term.textContent)).not.toContain('Wraps')
   })
 })
 
@@ -161,13 +174,14 @@ describe('the library call a tool wraps', () => {
   })
 
   it('records only calls that are in the port\'s API model, for tools the port registers', () => {
-    const data = JSON.parse(readFileSync(new URL('../src/data/mcp-wraps.json', import.meta.url), 'utf8')) as Record<string, { revision: string; tools: Record<string, { call: string; source: string }> }>
+    const data = JSON.parse(readFileSync(new URL('../src/data/mcp-wraps.json', import.meta.url), 'utf8')) as Record<string, { repo: string; revision: string; tools: Record<string, { call: string; source: string }> }>
     for (const [port, entry] of Object.entries(data)) {
       expect(MCP_REFERENCE[port]!.revision, `${port}: recorded at the documented revision`).toBe(entry.revision)
+      expect(MCP_REFERENCE[port]!.repo, `${port}: recorded in the documented repository`).toBe(entry.repo)
       for (const [tool, wrapped] of Object.entries(entry.tools)) {
         expect(mcpObjects(port).some((object) => object.name === tool), `${port} ${tool} is registered`).toBe(true)
         expect(API_MODELS[port]!.symbols.some((symbol) => (symbol.publicId ?? symbol.id) === wrapped.call), `${port} ${tool} wraps ${wrapped.call}`).toBe(true)
-        expect(wrapped.source).toMatch(/^mcp\/[\w.]+:\d+$/)
+        expect(wrapped.source).toMatch(/^[\w./-]+:[1-9]\d*$/)
         expect(mcpWraps(port, tool)).toMatchObject({ call: wrapped.call })
       }
     }

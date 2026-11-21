@@ -11,10 +11,11 @@ tableOfContents: true
 
 The Common Lisp workspace manager is implemented and tested from the same
 source checkout as the core library. It is not published as a separate system
-or executable. Build the pinned toolchain and run it through `mise`:
+or executable. Build the pinned toolchain and run it through `mise`. Without
+arguments the program prints its command grammar and exits 2:
 
 ```console
-$ mise exec -- tools/lisp.sh tools/workspace-cli.lisp -h
+$ mise exec -- sbcl --script tools/workspace-cli.lisp
 ```
 
 The command validates a bounded JSON document before it contacts tmux. Its

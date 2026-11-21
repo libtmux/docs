@@ -218,6 +218,12 @@ node scripts/gen-mcp-tools.mjs --check
 step 'mcp source links'
 node scripts/check-mcp-source-links.mjs
 
+# The Wraps row on a tool page names a library call and the line of the
+# server's source that makes it. This reads each cited line at the revision
+# the entry names, and skips a port with no checkout, as the step above does.
+step 'mcp wraps'
+node scripts/check-mcp-wraps.mjs
+
 # Each port's own MCP server, built and run to compare its live tool,
 # resource and prompt schemas against the committed snapshot in
 # site/src/data/mcp-protocol/. Skips when the sibling checkouts are absent,

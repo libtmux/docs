@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process'
-import { chmodSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { chmodSync, existsSync, mkdirSync, readFileSync, renameSync, symlinkSync, writeFileSync } from 'node:fs'
+import { delimiter, dirname, join } from 'node:path'
 import { statementLines, syntaxOf } from '../../../site/src/lib/core-statement.ts'
 import { splitCommandLine } from '../core-trace.mjs'
 import { checkoutOf, quickstartSource, withoutMarks } from './common.mjs'
@@ -137,8 +137,14 @@ const asdf = (checkout) => join(toolDir(checkout, 'asdf-lisp'), 'asdf.lisp')
 /** Where the library's compiled files go: beside the checkout, on disk, so the second run does not compile again. */
 const cacheOf = (checkout) => join(dirname(checkout), 'lisp-core-player-cache')
 
-/** The step map, in the order the calls run. `call` is the function the marked copy wraps to mark it. */
+/**
+ * The step map, in the order the calls run. `call` is the function the marked copy wraps to mark it. `with-daemon` is
+ * a macro: it starts the daemon before the body, which sends the version and readiness probes that the first call of
+ * the body is credited with, and stops it by its process id after the body, with no tmux command of its own. The stop is
+ * the last step, anchored on the `(daemon)` that opens the form, so that its lines are that one and no other call's.
+ */
 const STEPS = [
+  { id: 'new-session', label: 'libtmux:new-session', anchor: '(libtmux:new-session', type: 'command-outcome', call: 'libtmux:new-session', value: OUTCOME('"session" (libtmux:id (libtmux:outcome-value result))') },
   { id: 'snapshot-before', label: 'libtmux:fetch-snapshot', anchor: '(before (libtmux:fetch-snapshot client))', type: 'snapshot', call: 'libtmux:fetch-snapshot', value: COUNTS },
   { id: 'sessions', label: 'libtmux:sessions', anchor: '(libtmux:sessions before)', type: '(vector session)', call: 'libtmux:sessions', pure: true, value: "(map 'list #'libtmux:name result)" },
   { id: 'window-links', label: 'libtmux:window-links', anchor: '(libtmux:window-links demo)', type: '(vector window-link)', call: 'libtmux:window-links', pure: true, value: "(map 'list #'libtmux:index result)" },
@@ -151,9 +157,8 @@ const STEPS = [
   { id: 'snapshot', label: 'libtmux:fetch-snapshot', anchor: '(snapshot (libtmux:fetch-snapshot client))', type: 'snapshot', call: 'libtmux:fetch-snapshot', value: COUNTS },
   { id: 'panes', label: 'libtmux:panes', anchor: '(libtmux:panes snapshot)', type: '(vector pane)', call: 'libtmux:panes', pure: true, value: '(ids result)' },
   { id: 'pane-window', label: 'libtmux:window', anchor: '(libtmux:window pane)', type: 'window', call: 'libtmux:window', pure: true, value: '(entity result)' },
-  { id: 'owner-links', label: 'libtmux:window-links', anchor: '(libtmux:window-links window)', type: '(vector window-link)', call: 'libtmux:window-links', pure: true, value: "(map 'list #'libtmux:index result)" },
-  { id: 'owner', label: 'libtmux:session', anchor: '(libtmux:session owner-link)', type: 'session', call: 'libtmux:session', pure: true, value: '(entity result)' },
-  { id: 'kill-server', label: 'libtmux:kill-server', anchor: '(libtmux:kill-server client)', type: 'command-outcome', call: 'libtmux:kill-server', value: OUTCOME('') },
+  { id: 'owner', label: 'libtmux:session', anchor: '(libtmux:session (aref', type: 'session', call: 'libtmux:session', pure: true, value: '(entity result)' },
+  { id: 'stop-daemon', label: 'libtmux:with-daemon', anchor: '(daemon)', type: 'void', call: 'libtmux:stop-daemon', value: ':null', stopsServer: true },
 ]
 
 /** The helper with its plan: for each function a step marks, the steps its calls make, in order. */
@@ -203,24 +208,25 @@ const unwrap = (command) => {
 /** A command that only reports a marker, or the daemon's identity (`witness/1`): the library's own check, not its work. */
 const fence = (command) => command[0] === 'list-commands' && command[1] === '-F' && (command[2].startsWith('witness/') || /^libtmux-[0-9A-F]{32}:/.test(command[2]))
 
-/** The server's socket, in a directory under the sandbox's `tmp`, where the recorder reads tmux. */
-const socketOf = (dir) => join(dir, '..', 'tmp', 'demo', 'tmux.sock')
-
 /** The checkout the program was built against, which pins the tools it runs on. */
 let built
+
+/** What the page's own command leaves to `mise exec`: the pinned asdf.lisp first on PATH (a mise shim of the same name must not come first), which `tools/load.lisp` reads. */
+const withAsdf = (checkout) => `${dirname(asdf(checkout))}${delimiter}${process.env.PATH}`
 
 export const RECIPES = {
   'typed-graph': {
     capability: 'typed-graph',
-    file: 'quickstart.lisp',
+    file: 'examples/quickstart.lisp',
     stepMap: 'hand-written',
-    source: (root) => quickstartSource(root, 'lisp', 'quickstart.lisp'),
-    /**
-     * What a pane runs once it has settled: the pane of the page's setup command runs `/bin/cat` through the shell, which
-     * the sandbox pins to /bin/sh, and the panes the program makes run `cat` itself.
-     */
-    paneCommands: ['sh', 'cat'],
+    source: (root) => quickstartSource(root, 'lisp', 'examples/quickstart.lisp'),
+    /** The panes the program makes run `/bin/cat` itself, with no shell in between. */
+    paneCommands: ['cat'],
     checkout: (port, env, expand) => checkoutOf(port, env, expand),
+    /** `with-daemon` makes its directory under TMPDIR as `libtmux-lisp-daemon-<six letters or digits>`, with the socket in it. */
+    socket: { pattern: 'libtmux-lisp-daemon-[A-Za-z0-9]{6}', fixed: 'libtmux-lisp-daemon-a1B2c3' },
+    /** The library starts its daemon as `tmux -D -f /dev/null -S <socket>` and stops it by that process id, so the shim becomes tmux for it, which a wrapper process in between would prevent. */
+    inPlaceFirst: ['-D'],
     helpers: [{ file: 'docs-mark.lisp', source: lispHelper(STEPS) }],
     steps: STEPS,
     fence,
@@ -232,19 +238,14 @@ export const RECIPES = {
     /** The markers and identity rows the library's checks print, whose pid and start time differ on every run. */
     reply: (text) => text.split('\n').filter((line) => !/^(?:witness\/1\t|libtmux-[0-9A-F]{32}:)/.test(line)).join('\n'),
     instrument: instrumentLisp,
-    /** The page's own setup commands: a server with the `demo` session, started before the program runs. */
-    setup({ dir, env }) {
-      const socket = socketOf(dir)
-      rmSync(dirname(socket), { recursive: true, force: true })
-      mkdirSync(dirname(socket), { recursive: true })
-      execFileSync(env.LIBTMUX_DOCS_REAL_TMUX, ['-S', socket, '-f', '/dev/null', 'new-session', '-d', '-s', 'demo', '-n', 'editor', '-x', '80', '-y', '24', '--', '/bin/cat'], { cwd: dir, env: { ...env, TMUX: '', TMUX_PANE: '' }, stdio: 'ignore' })
-    },
     command: (dir) => ['/bin/sh', join(dir, 'program')],
     toolchain: () => ({ sbcl: /SBCL (\S+)/.exec(execFileSync(sbcl(built), ['--version'], { encoding: 'utf8' }))?.[1] ?? 'unknown', asdf: pinned(built, 'asdf-lisp') }),
     /**
-     * Write the displayed and the marked copy beside a launcher that runs them as the page's commands do. The library
+     * Write the displayed and the marked copy at `examples/quickstart.lisp`, beside a link to the checkout's `tools/`, which
+     * is where the program finds the checkout from, and a launcher that runs them as the page's command does. The library
      * refuses a `tmux` that is not an ELF executable, so the shim the recorder wrote becomes `tmux.sh` and `tmux` is a
-     * native program that runs it.
+     * native program that runs it. The launcher gives the program a `TMPDIR` of its own under the sandbox's `tmp`, where
+     * the recorder looks for the daemon's socket.
      */
     build({ sandbox, checkout, code, marked, helpers }) {
       built = checkout
@@ -255,16 +256,17 @@ export const RECIPES = {
       mkdirSync(join(sandbox, 'tmp'), { recursive: true })
       mkdirSync(cacheOf(checkout), { recursive: true })
       for (const [dir, source] of [['exact', code], ['marked', marked]]) {
-        mkdirSync(join(sandbox, dir), { recursive: true })
+        mkdirSync(join(sandbox, dir, 'examples'), { recursive: true })
         writeFileSync(join(sandbox, dir, this.file), source)
+        symlinkSync(join(checkout, 'tools'), join(sandbox, dir, 'tools'))
         const helper = dir === 'marked' ? `LIBTMUX_DOCS_HELPER=${JSON.stringify(join(sandbox, dir, 'docs-mark.lisp'))}\nexport LIBTMUX_DOCS_HELPER\n` : ''
-        writeFileSync(join(sandbox, dir, 'program'), `unset TMUX TMUX_PANE\nXDG_CACHE_HOME=${JSON.stringify(cacheOf(checkout))}\nLIBTMUX_SOURCE=${JSON.stringify(checkout)}\nLIBTMUX_PROGRAM=${JSON.stringify(shim)}\nLIBTMUX_EXAMPLE_SOCKET=${JSON.stringify(socketOf(join(sandbox, dir)))}\nexport XDG_CACHE_HOME LIBTMUX_SOURCE LIBTMUX_PROGRAM LIBTMUX_EXAMPLE_SOCKET\n${helper}exec ${JSON.stringify(sbcl(checkout))} --noinform --no-sysinit --no-userinit --load ${JSON.stringify(asdf(checkout))} --script ${JSON.stringify(join(sandbox, dir, this.file))}\n`)
+        writeFileSync(join(sandbox, dir, 'program'), `unset TMUX TMUX_PANE\nXDG_CACHE_HOME=${JSON.stringify(cacheOf(checkout))}\nTMPDIR=${JSON.stringify(join(sandbox, 'tmp'))}\nPATH=${JSON.stringify(dirname(asdf(checkout)))}:"$PATH"\nexport XDG_CACHE_HOME TMPDIR PATH\n${helper}exec ${JSON.stringify(sbcl(checkout))} --script ${this.file}\n`)
         chmodSync(join(sandbox, dir, 'program'), 0o755)
       }
       for (const helper of helpers) writeFileSync(join(sandbox, 'marked', helper.file), helper.source)
       // Compile the library now, so neither timed run does.
       if (!existsSync(join(cacheOf(checkout), 'common-lisp'))) {
-        execFileSync(sbcl(checkout), ['--noinform', '--no-sysinit', '--no-userinit', '--load', asdf(checkout), '--eval', `(progn (asdf:load-asd ${JSON.stringify(join(checkout, 'libtmux.asd'))}) (asdf:load-system "libtmux"))`, '--quit'], { stdio: ['ignore', 'ignore', 'inherit'], env: { ...process.env, XDG_CACHE_HOME: cacheOf(checkout) } })
+        execFileSync(sbcl(checkout), ['--noinform', '--no-sysinit', '--no-userinit', '--non-interactive', '--eval', `(load ${JSON.stringify(join(checkout, 'tools/load.lisp'))})`, '--eval', '(asdf:load-system "libtmux")'], { stdio: ['ignore', 'ignore', 'inherit'], env: { ...process.env, XDG_CACHE_HOME: cacheOf(checkout), PATH: withAsdf(checkout) } })
       }
     },
   },

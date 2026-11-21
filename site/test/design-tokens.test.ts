@@ -318,6 +318,40 @@ describe('the current row', () => {
   })
 })
 
+/** Records 0015 and 0047: only an aside's start edge carries a bar; a current or lit row is marked by tint, colour and weight. */
+describe('the start edge of a row', () => {
+  const api = readFileSync(new URL('../src/styles/api.css', import.meta.url), 'utf8')
+  /** The declarations of every rule whose selector list contains `selector`, including its states. */
+  const declarations = (text: string, selector: string) => {
+    const escaped = selector.replace(/[.*+?^${}()|[\]\\>]/g, '\\$&')
+    const found = [...text.matchAll(new RegExp(`(?:^|[\\n,}])\\s*${escaped}[^{}]*\\{([^}]*)\\}`, 'g'))].map((match) => match[1]!)
+    expect(found, selector).not.toHaveLength(0)
+    return found.join('\n')
+  }
+  /** A border or an inset shadow on the start edge: how a bar is drawn without a pseudo-element. */
+  const BAR = /border-(?:left|inline-start)(?:-color|-width)?\s*:|box-shadow:\s*inset\s+-?\d+(?:\.\d+)?px\s+0/
+
+  it('draws no bar on an entry of the contents of an API page, a glossary or the tmux catalog; the current one is tinted', () => {
+    const entry = declarations(api, ':is(.api-page-contents, .api-glossary-contents) a')
+    expect(entry).not.toMatch(BAR)
+    expect(declarations(api, ':is(.api-page-contents, .api-glossary-contents) a[aria-current="location"]')).toMatch(/background:\s*var\(--current-row-bg\);[^}]*color:\s*var\(--color-link\);[^}]*font-weight:\s*600;/)
+  })
+
+  it('marks a tree row or a member link lit by its twin with a tint, not a bar', () => {
+    const lit = declarations(api, '.api-nav__row.is-cross-lit')
+    expect(lit).not.toMatch(BAR)
+    // The tint kind-palette-contrast.test.ts measures the link colour against.
+    expect(lit).toMatch(/background:\s*color-mix\(in srgb,\s*var\(--color-link\)/)
+  })
+
+  it('has a control: the border and the inset shadow that drew the bars are caught', () => {
+    expect('a { border-left: 2px solid transparent; }').toMatch(BAR)
+    expect('a[aria-current] { border-left-color: var(--color-link); }').toMatch(BAR)
+    expect('.row { box-shadow: inset 2px 0 0 var(--color-link); }').toMatch(BAR)
+    expect('.row { box-shadow: 0 0 0 .15em red; border-radius: 2px; }').not.toMatch(BAR)
+  })
+})
+
 describe('pickers, touch targets, focus and labels', () => {
   const source = (path: string) => readFileSync(new URL(`../src/${path}`, import.meta.url), 'utf8')
 

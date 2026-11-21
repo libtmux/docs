@@ -3,7 +3,7 @@
   "repo": "libtmux/libtmux-ruby",
   "revision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
   "sandbox": {
-    "tmux": "tmux 3.8a",
+    "tmux": "tmux 3.7c",
     "pytest": "pytest 9.2.0",
     "project": [
       "test_example.py",
@@ -6000,6 +6000,7 @@
     }
   },
   "prompt": "Create a tmux session called checks, split its window into two panes, run pytest -q in one and show checks.log in the other, show me the results, then remove the session.",
+  "reply": "pytest printed \"2 passed\" and checks.log ends with \"checks finished\". I removed the checks session.",
   "tmuxBefore": {
     "sessions": [
       {
@@ -6014,7 +6015,7 @@
         "index": 0,
         "name": "cat",
         "active": true,
-        "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+        "layout": "b25d,80x24,0,0,0"
       }
     ],
     "panes": [
@@ -6047,9 +6048,9 @@
           "endpoint": "docs",
           "server_identity": {
             "generation": "3f9a1c",
-            "pid": 1119217,
-            "start_time": 1794050582,
-            "tmux_version": "3.8a"
+            "pid": 3186969,
+            "start_time": 1795059591,
+            "tmux_version": "3.7c"
           },
           "enabled_tools": [
             "tmux_capabilities",
@@ -8445,7 +8446,7 @@
             "index": 0,
             "name": "cat",
             "active": true,
-            "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+            "layout": "b25d,80x24,0,0,0"
           }
         ],
         "panes": [
@@ -8526,7 +8527,7 @@
             "index": 0,
             "name": "sh",
             "active": true,
-            "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%1\"}}"
+            "layout": "b25e,80x24,0,0,1"
           },
           {
             "session": "$0",
@@ -8534,7 +8535,7 @@
             "index": 0,
             "name": "cat",
             "active": true,
-            "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+            "layout": "b25d,80x24,0,0,0"
           }
         ],
         "panes": [
@@ -8620,7 +8621,7 @@
             "index": 0,
             "name": "sh",
             "active": true,
-            "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%1\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%2\"}]}}"
+            "layout": "020a,80x24,0,0{40x24,0,0,1,39x24,41,0,2}"
           },
           {
             "session": "$0",
@@ -8628,7 +8629,7 @@
             "index": 0,
             "name": "cat",
             "active": true,
-            "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+            "layout": "b25d,80x24,0,0,0"
           }
         ],
         "panes": [
@@ -8681,12 +8682,12 @@
       "structuredContent": {
         "ok": true,
         "data": {
-          "capture_id": "a13829fbcf68c4d13192d49431427978",
+          "capture_id": "7bb59567e11cb867c3f0f95659d21022",
           "server_identity": {
             "generation": "3f9a1c",
-            "pid": 1119217,
-            "start_time": 1794050582,
-            "tmux_version": "3.8a"
+            "pid": 3186969,
+            "start_time": 1795059591,
+            "tmux_version": "3.7c"
           },
           "entity": "window",
           "coverage": {
@@ -8698,8 +8699,8 @@
           },
           "interval": {
             "clock": "monotonic_seconds",
-            "started": 6950.386331011,
-            "finished": 6950.398742721,
+            "started": 61849.169432126,
+            "finished": 61849.200660868,
             "reads": 5
           },
           "items": [
@@ -8711,7 +8712,7 @@
                 "width": 80,
                 "height": 24,
                 "paneCount": 1,
-                "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+                "layout": "b25d,80x24,0,0,0"
               },
               "ref": {
                 "generation": "3f9a1c",
@@ -8727,7 +8728,7 @@
                 "width": 80,
                 "height": 24,
                 "paneCount": 2,
-                "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%1\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%2\"}]}}"
+                "layout": "020a,80x24,0,0{40x24,0,0,1,39x24,41,0,2}"
               },
               "ref": {
                 "generation": "3f9a1c",
@@ -8757,7 +8758,7 @@
             "index": 0,
             "name": "sh",
             "active": true,
-            "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%1\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%2\"}]}}"
+            "layout": "020a,80x24,0,0{40x24,0,0,1,39x24,41,0,2}"
           },
           {
             "session": "$0",
@@ -8765,7 +8766,7 @@
             "index": 0,
             "name": "cat",
             "active": true,
-            "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+            "layout": "b25d,80x24,0,0,0"
           }
         ],
         "panes": [
@@ -8854,7 +8855,7 @@
             "index": 0,
             "name": "sh",
             "active": true,
-            "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%1\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%2\"}]}}"
+            "layout": "020a,80x24,0,0{40x24,0,0,1,39x24,41,0,2}"
           },
           {
             "session": "$0",
@@ -8862,7 +8863,7 @@
             "index": 0,
             "name": "cat",
             "active": true,
-            "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+            "layout": "b25d,80x24,0,0,0"
           }
         ],
         "panes": [
@@ -8937,8 +8938,8 @@
               "id": "%1",
               "generation": "3f9a1c"
             },
-            "capture_id": "7614cc6ece6c7b3bbcb5119bb6291b2f",
-            "process_generation": "23fb4e239db0000be47a27a2b54059d5",
+            "capture_id": "0b557080e24599b13387b89d6127a75c",
+            "process_generation": "e8ee85283aa2f6a198d8defe10b612b3",
             "rows": [
               "$ pytest -q\n",
               "..                               [100%]\n",
@@ -8977,8 +8978,8 @@
             },
             "interval": {
               "clock": "monotonic_seconds",
-              "started": 6953.983863023,
-              "finished": 6954.004227945
+              "started": 61852.88839716,
+              "finished": 61852.933211017
             }
           }
         }
@@ -9001,7 +9002,7 @@
             "index": 0,
             "name": "sh",
             "active": true,
-            "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%1\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%2\"}]}}"
+            "layout": "020a,80x24,0,0{40x24,0,0,1,39x24,41,0,2}"
           },
           {
             "session": "$0",
@@ -9009,7 +9010,7 @@
             "index": 0,
             "name": "cat",
             "active": true,
-            "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+            "layout": "b25d,80x24,0,0,0"
           }
         ],
         "panes": [
@@ -9098,7 +9099,7 @@
             "index": 0,
             "name": "sh",
             "active": true,
-            "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%1\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%2\"}]}}"
+            "layout": "020a,80x24,0,0{40x24,0,0,1,39x24,41,0,2}"
           },
           {
             "session": "$0",
@@ -9106,7 +9107,7 @@
             "index": 0,
             "name": "cat",
             "active": true,
-            "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+            "layout": "b25d,80x24,0,0,0"
           }
         ],
         "panes": [
@@ -9181,8 +9182,8 @@
               "id": "%2",
               "generation": "3f9a1c"
             },
-            "capture_id": "14373ab34e565f19369f7e1bc9e0b210",
-            "process_generation": "0dd4defa031cdb8636cd70dc67eede49",
+            "capture_id": "26813b0bf27b2f28f7f5e64d670a7016",
+            "process_generation": "29436e6d01d29da27537d2a7ffa40dc4",
             "rows": [
               "$ cat checks.log\n",
               "2026-01-01 checks started\n",
@@ -9221,8 +9222,8 @@
             },
             "interval": {
               "clock": "monotonic_seconds",
-              "started": 6957.556795452,
-              "finished": 6957.578571397
+              "started": 61856.582323629,
+              "finished": 61856.647062881
             }
           }
         }
@@ -9245,7 +9246,7 @@
             "index": 0,
             "name": "sh",
             "active": true,
-            "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%1\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%2\"}]}}"
+            "layout": "020a,80x24,0,0{40x24,0,0,1,39x24,41,0,2}"
           },
           {
             "session": "$0",
@@ -9253,7 +9254,7 @@
             "index": 0,
             "name": "cat",
             "active": true,
-            "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+            "layout": "b25d,80x24,0,0,0"
           }
         ],
         "panes": [
@@ -9333,7 +9334,7 @@
             "index": 0,
             "name": "cat",
             "active": true,
-            "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+            "layout": "b25d,80x24,0,0,0"
           }
         ],
         "panes": [

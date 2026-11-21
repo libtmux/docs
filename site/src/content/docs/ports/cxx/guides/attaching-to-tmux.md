@@ -33,7 +33,7 @@ private server's destructor stops only the private server and removes its
 directory, also when the lookup throws. If tmux cannot be stopped, it keeps the
 directory, prints its location and makes the program exit with status 1.
 
-```cpp title="connect.cpp"
+```cpp title="connect.cpp" role="program"
 #include <cstdlib>
 #include <filesystem>
 #include <iostream>

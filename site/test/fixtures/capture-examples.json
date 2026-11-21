@@ -600,7 +600,7 @@
       "files": [
         {
           "name": "capture.lisp",
-          "sha256": "173357f6b001e818af53043a9d5a9e121699623c6325fbadbd6c0afc3806b00a"
+          "sha256": "5f99dccdf01b87f9f73b11683691a61200c02308c7fc4a054fbe5bef43e9001d"
         }
       ],
       "toolchain": [
@@ -608,8 +608,8 @@
       ],
       "tmux": [
         "3.3a",
-        "3.8",
-        "3.8a"
+        "3.7c",
+        "3.8"
       ],
       "page": "ports/lisp/examples/capture-pane-output",
       "shellRecipe": [
@@ -621,24 +621,24 @@
         "platform": "Linux",
         "checks": [
           {
-            "name": "positive-3.3a",
+            "name": "displayed-setup-3.3a",
             "tmux": "3.3a",
             "exit": 0,
-            "seconds": 1.32,
+            "seconds": 3.02,
             "remainingSocketDirectories": 0
           },
           {
-            "name": "positive-3.8",
+            "name": "displayed-setup-3.7c",
+            "tmux": "3.7c",
+            "exit": 0,
+            "seconds": 3.28,
+            "remainingSocketDirectories": 0
+          },
+          {
+            "name": "displayed-setup-3.8",
             "tmux": "3.8",
             "exit": 0,
-            "seconds": 1.31,
-            "remainingSocketDirectories": 0
-          },
-          {
-            "name": "displayed-setup-3.8a",
-            "tmux": "3.8a",
-            "exit": 0,
-            "seconds": 22.28,
+            "seconds": 3.02,
             "remainingSocketDirectories": 0
           }
         ]

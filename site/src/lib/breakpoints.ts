@@ -6,11 +6,11 @@
  * a script's query drifts from its token.
  */
 export const BP = {
-  /** Below it the context strip folds its settings into one trigger and the release notice keeps to one line. */
+  /** Below it the context strip folds its settings into one trigger. */
   phone: 30,
   /** The header's destinations move out of the Menu and into the bar. */
   tablet: 48,
-  /** The sidebar or API tree becomes a column. */
+  /** The sidebar or API tree becomes a column. Below it the release notice keeps to one line, with its sentence behind "More". */
   nav: 64,
   /** The outline column appears. */
   outline: 80,

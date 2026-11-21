@@ -94,7 +94,7 @@
   ],
   "port": "lisp",
   "repo": "libtmux/libtmux-lisp",
-  "revision": "a29c6b96e1c78501dff5073b538ae3180b0e63e3",
+  "revision": "9f364931a38fafce7bfea7cb4f7e6b32ef49ebb4",
   "schemaVersion": 1,
   "symbols": {
     "libtmux:bind-key": [

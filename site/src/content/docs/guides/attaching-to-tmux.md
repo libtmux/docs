@@ -71,7 +71,7 @@ It stops its own server on success or failure.
 Save it as `connect.sh` and run `sh connect.sh`, or paste the whole block into
 a POSIX shell. It requires tmux 3.3a or newer.
 
-```sh title="connect.sh"
+```sh title="connect.sh" role="program"
 (
     set -eu
     directory=$(mktemp -d "${TMPDIR:-/tmp}/libtmux-attach.XXXXXX")

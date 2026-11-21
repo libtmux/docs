@@ -166,12 +166,12 @@ function nugetInstalls(packageName: string, projectFile: '.csproj' | '.fsproj', 
       note: 'Requires Paket and a solution initialized with paket init. The interactive prompt selects the projects that should reference the package.',
     },
     {
-      label: 'Script & Interactive', target: 'F# script', lang: 'fsharp', code: `#r "nuget: ${packageName}, {version}"`,
+      label: 'Script & interactive', target: 'F# script', lang: 'fsharp', code: `#r "nuget: ${packageName}, {version}"`,
       note: 'Use in an F# .fsx script, dotnet fsi, or a Polyglot Notebook with NuGet support, on .NET 8 or later. This is not a directive for an ordinary compiled project.',
     },
     {
-      label: 'File-Based Apps', target: 'app.cs', lang: 'csharp', code: `#:package ${packageName}@{version}`,
-      note: 'C# file-based apps require the .NET 10 SDK. Place this at the top of a .cs file, before code, then run dotnet run app.cs. F# scripts use the Script & Interactive tab.',
+      label: 'File-based apps', target: 'app.cs', lang: 'csharp', code: `#:package ${packageName}@{version}`,
+      note: 'C# file-based apps require the .NET 10 SDK. Place this at the top of a .cs file, before code, then run dotnet run app.cs. F# scripts use the Script & interactive tab.',
     },
     {
       label: 'Cake', target: 'build.cake', lang: 'csharp', code: `#addin nuget:?package=${packageName}&version={version}&loaddependencies=true`,
@@ -845,8 +845,8 @@ const CORE_PORTS: readonly Port[] = [
     renderer: 'astro',
     publishesOwnTree: true,
     generator: 'SBCL package introspection, docstrings and CLOS metadata',
-    workspaceCli: 'mise exec -- tools/lisp.sh tools/workspace-cli.lisp',
-    workspaceCliRun: 'bin/libtmux-workspace',
+    workspaceCli: 'mise exec -- sbcl --script tools/workspace-cli.lisp',
+    workspaceCliRun: 'sbcl --script tools/workspace-cli.lisp',
     workspaceCliAvailability: 'local',
     productAvailability: { workspace: 'available', mcp: 'excluded' },
     productDescriptions: {
@@ -854,7 +854,7 @@ const CORE_PORTS: readonly Port[] = [
     },
     packages: [{
       id: 'workspace', name: 'libtmux/workspace', require: '(asdf:load-system "libtmux/workspace")',
-      executable: 'mise exec -- tools/lisp.sh tools/workspace-cli.lisp', source: { path: 'src', ref: 'master' },
+      executable: 'mise exec -- sbcl --script tools/workspace-cli.lisp', source: { path: 'src', ref: 'master' },
       installs: [{
         label: 'Source checkout', target: 'Terminal', lang: 'console',
         code: 'git clone https://github.com/libtmux/libtmux-lisp.git\ncd libtmux-lisp\nmise trust\nmise install\nmise run setup',

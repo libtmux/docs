@@ -153,7 +153,7 @@ read from the repository's tested example. From a clone of libtmux-go,
 `go -C examples run ./pane-io` runs it, and it prints
 `the pane answered 6 x 7 = 42` and then `read the line: streamed 2 lines`.
 
-```go file="examples/pane-io/main.go"
+```go file="examples/pane-io/main.go" height="24"
 ```
 
 ## Finding an existing session instead

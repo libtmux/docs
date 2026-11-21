@@ -3,7 +3,7 @@
   "repo": "libtmux/libtmux-swift",
   "revision": "3fd9dfe3d5f7c46dab9e9603695ae55440c9884c",
   "sandbox": {
-    "tmux": "tmux 3.8a",
+    "tmux": "tmux 3.7c",
     "pytest": "pytest 9.2.0",
     "project": [
       "test_example.py",
@@ -18,9 +18,9 @@
     }
   },
   "serverInfo": {
-    "title": "tmux",
     "name": "libtmux",
-    "version": "0.1.1"
+    "version": "0.1.1",
+    "title": "tmux"
   },
   "contracts": {
     "create_session": {
@@ -455,6 +455,7 @@
     }
   },
   "prompt": "Create a tmux session called checks, split its window into two panes, run pytest -q in one and show checks.log in the other, show me the results, then remove the session.",
+  "reply": "pytest printed \"2 passed\" and checks.log ends with \"checks finished\". I removed the checks session.",
   "tmuxBefore": {
     "sessions": [],
     "windows": [],
@@ -469,17 +470,17 @@
       "isError": false,
       "content": [
         {
-          "text": "{\"createdAt\":1793757185,\"id\":\"$0\",\"isAttached\":false,\"name\":\"checks\",\"ref\":\"tmux1_AQ3atHtng1Jj30-gqW-Fv541MVcZ4sFXqPNXZIudQNAT\",\"windowCount\":1}",
+          "text": "{\"createdAt\":1795061804,\"id\":\"$0\",\"isAttached\":false,\"name\":\"checks\",\"ref\":\"tmux1_AWXw31wwjyXoEaqBo3la-V4mtPL0vRI4iGVS1yE78h4Y\",\"windowCount\":1}",
           "type": "text"
         }
       ],
       "structuredContent": {
-        "id": "$0",
-        "name": "checks",
-        "ref": "tmux1_AQ3atHtng1Jj30-gqW-Fv541MVcZ4sFXqPNXZIudQNAT",
         "isAttached": false,
+        "id": "$0",
         "windowCount": 1,
-        "createdAt": 1793757185
+        "ref": "tmux1_AWXw31wwjyXoEaqBo3la-V4mtPL0vRI4iGVS1yE78h4Y",
+        "createdAt": 1795061804,
+        "name": "checks"
       },
       "tmux": {
         "sessions": [
@@ -495,7 +496,7 @@
             "index": 0,
             "name": "sh",
             "active": true,
-            "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+            "layout": "b25d,80x24,0,0,0"
           }
         ],
         "panes": [
@@ -521,29 +522,29 @@
       "isError": false,
       "content": [
         {
-          "text": "{\"panes\":[{\"currentCommand\":\"sh\",\"currentPath\":\"\\/home\\/user\\/project\",\"height\":24,\"id\":\"%0\",\"index\":0,\"isActive\":true,\"isAtBottom\":true,\"isAtLeft\":true,\"isAtRight\":true,\"isAtTop\":true,\"isDead\":false,\"isSynchronized\":false,\"modeCount\":0,\"ref\":\"tmux1_BA3atHtng1Jj30-gqW-Fv56j-w_GfT5lw2c-1M9eytN5\",\"width\":80,\"windowID\":\"@0\"}]}",
+          "text": "{\"panes\":[{\"currentCommand\":\"sh\",\"currentPath\":\"\\/home\\/user\\/project\",\"height\":24,\"id\":\"%0\",\"index\":0,\"isActive\":true,\"isAtBottom\":true,\"isAtLeft\":true,\"isAtRight\":true,\"isAtTop\":true,\"isDead\":false,\"isSynchronized\":false,\"modeCount\":0,\"ref\":\"tmux1_BGXw31wwjyXoEaqBo3la-V4QetAYfM5JN9hpsAyrKwx3\",\"width\":80,\"windowID\":\"@0\"}]}",
           "type": "text"
         }
       ],
       "structuredContent": {
         "panes": [
           {
-            "ref": "tmux1_BA3atHtng1Jj30-gqW-Fv56j-w_GfT5lw2c-1M9eytN5",
-            "isAtLeft": true,
-            "isActive": true,
-            "width": 80,
-            "height": 24,
-            "isAtBottom": true,
-            "isSynchronized": false,
-            "windowID": "@0",
-            "isAtTop": true,
-            "isDead": false,
-            "id": "%0",
-            "modeCount": 0,
-            "index": 0,
-            "currentCommand": "sh",
             "currentPath": "/home/user/project",
-            "isAtRight": true
+            "windowID": "@0",
+            "isActive": true,
+            "isAtTop": true,
+            "isAtBottom": true,
+            "width": 80,
+            "isAtRight": true,
+            "isAtLeft": true,
+            "ref": "tmux1_BGXw31wwjyXoEaqBo3la-V4QetAYfM5JN9hpsAyrKwx3",
+            "height": 24,
+            "currentCommand": "sh",
+            "isDead": false,
+            "isSynchronized": false,
+            "index": 0,
+            "modeCount": 0,
+            "id": "%0"
           }
         ]
       },
@@ -561,7 +562,7 @@
             "index": 0,
             "name": "sh",
             "active": true,
-            "layout": "{\"V\":2,\"L\":{\"t\":\"p\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"}}"
+            "layout": "b25d,80x24,0,0,0"
           }
         ],
         "panes": [
@@ -588,27 +589,27 @@
       "isError": false,
       "content": [
         {
-          "text": "{\"currentCommand\":\"sh\",\"currentPath\":\"\\/home\\/user\\/project\",\"height\":24,\"id\":\"%1\",\"index\":1,\"isActive\":false,\"isAtBottom\":true,\"isAtLeft\":false,\"isAtRight\":true,\"isAtTop\":true,\"isDead\":false,\"isSynchronized\":false,\"modeCount\":0,\"ref\":\"tmux1_BA3atHtng1Jj30-gqW-Fv57PdeYPGTOQg9noVSe2N4-7\",\"width\":39,\"windowID\":\"@0\"}",
+          "text": "{\"currentCommand\":\"sh\",\"currentPath\":\"\\/home\\/user\\/project\",\"height\":24,\"id\":\"%1\",\"index\":1,\"isActive\":false,\"isAtBottom\":true,\"isAtLeft\":false,\"isAtRight\":true,\"isAtTop\":true,\"isDead\":false,\"isSynchronized\":false,\"modeCount\":0,\"ref\":\"tmux1_BGXw31wwjyXoEaqBo3la-V6jHcgKRph3CM6YZTGyd4fB\",\"width\":39,\"windowID\":\"@0\"}",
           "type": "text"
         }
       ],
       "structuredContent": {
         "id": "%1",
+        "height": 24,
+        "isDead": false,
+        "ref": "tmux1_BGXw31wwjyXoEaqBo3la-V6jHcgKRph3CM6YZTGyd4fB",
+        "isAtLeft": false,
+        "isActive": false,
+        "windowID": "@0",
         "isSynchronized": false,
+        "width": 39,
+        "isAtRight": true,
+        "isAtBottom": true,
+        "modeCount": 0,
+        "index": 1,
         "currentPath": "/home/user/project",
         "isAtTop": true,
-        "currentCommand": "sh",
-        "height": 24,
-        "isActive": false,
-        "ref": "tmux1_BA3atHtng1Jj30-gqW-Fv57PdeYPGTOQg9noVSe2N4-7",
-        "isAtLeft": false,
-        "isAtBottom": true,
-        "index": 1,
-        "isDead": false,
-        "width": 39,
-        "modeCount": 0,
-        "windowID": "@0",
-        "isAtRight": true
+        "currentCommand": "sh"
       },
       "tmux": {
         "sessions": [
@@ -624,7 +625,7 @@
             "index": 0,
             "name": "sh",
             "active": true,
-            "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
+            "layout": "8205,80x24,0,0{40x24,0,0,0,39x24,41,0,1}"
           }
         ],
         "panes": [
@@ -663,13 +664,13 @@
       "isError": false,
       "content": [
         {
-          "text": "{\"values\":{\"window_layout\":\"{\\\"V\\\":2,\\\"L\\\":{\\\"t\\\":\\\"h\\\",\\\"w\\\":80,\\\"h\\\":24,\\\"x\\\":0,\\\"y\\\":0,\\\"c\\\":[{\\\"t\\\":\\\"p\\\",\\\"w\\\":40,\\\"h\\\":24,\\\"x\\\":0,\\\"y\\\":0,\\\"a\\\":true,\\\"i\\\":0,\\\"I\\\":\\\"%0\\\"},{\\\"t\\\":\\\"p\\\",\\\"w\\\":39,\\\"h\\\":24,\\\"x\\\":41,\\\"y\\\":0,\\\"i\\\":1,\\\"I\\\":\\\"%1\\\"}]}}\"}}",
+          "text": "{\"values\":{\"window_layout\":\"8205,80x24,0,0{40x24,0,0,0,39x24,41,0,1}\"}}",
           "type": "text"
         }
       ],
       "structuredContent": {
         "values": {
-          "window_layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
+          "window_layout": "8205,80x24,0,0{40x24,0,0,0,39x24,41,0,1}"
         }
       },
       "tmux": {
@@ -686,7 +687,7 @@
             "index": 0,
             "name": "sh",
             "active": true,
-            "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
+            "layout": "8205,80x24,0,0{40x24,0,0,0,39x24,41,0,1}"
           }
         ],
         "panes": [
@@ -723,23 +724,23 @@
       "isError": false,
       "content": [
         {
-          "text": "{\"droppedLines\":0,\"effectiveTimeout\":30,\"exitStatus\":0,\"linesMissed\":false,\"output\":[\"..                               [100%]\",\"2 passed in 0.00s\"],\"pane\":\"%0\",\"paneRef\":\"tmux1_BA3atHtng1Jj30-gqW-Fv56j-w_GfT5lw2c-1M9eytN5\",\"seconds\":0.346968068,\"timedOut\":false}",
+          "text": "{\"droppedLines\":0,\"effectiveTimeout\":30,\"exitStatus\":0,\"linesMissed\":false,\"output\":[\"..                               [100%]\",\"2 passed in 0.00s\"],\"pane\":\"%0\",\"paneRef\":\"tmux1_BGXw31wwjyXoEaqBo3la-V4QetAYfM5JN9hpsAyrKwx3\",\"seconds\":0.449415896,\"timedOut\":false}",
           "type": "text"
         }
       ],
       "structuredContent": {
+        "pane": "%0",
         "droppedLines": 0,
+        "seconds": 0.449415896,
+        "exitStatus": 0,
         "effectiveTimeout": 30,
+        "paneRef": "tmux1_BGXw31wwjyXoEaqBo3la-V4QetAYfM5JN9hpsAyrKwx3",
+        "linesMissed": false,
         "output": [
           "..                               [100%]",
           "2 passed in 0.00s"
         ],
-        "paneRef": "tmux1_BA3atHtng1Jj30-gqW-Fv56j-w_GfT5lw2c-1M9eytN5",
-        "seconds": 0.346968068,
-        "pane": "%0",
-        "exitStatus": 0,
-        "timedOut": false,
-        "linesMissed": false
+        "timedOut": false
       },
       "tmux": {
         "sessions": [
@@ -755,7 +756,7 @@
             "index": 0,
             "name": "sh",
             "active": true,
-            "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
+            "layout": "8205,80x24,0,0{40x24,0,0,0,39x24,41,0,1}"
           }
         ],
         "panes": [
@@ -792,23 +793,23 @@
       "isError": false,
       "content": [
         {
-          "text": "{\"droppedLines\":0,\"effectiveTimeout\":30,\"exitStatus\":0,\"linesMissed\":false,\"output\":[\"2026-01-01 checks started\",\"2026-01-01 checks finished\"],\"pane\":\"%1\",\"paneRef\":\"tmux1_BA3atHtng1Jj30-gqW-Fv57PdeYPGTOQg9noVSe2N4-7\",\"seconds\":0.087398972,\"timedOut\":false}",
-          "type": "text"
+          "type": "text",
+          "text": "{\"droppedLines\":0,\"effectiveTimeout\":30,\"exitStatus\":0,\"linesMissed\":false,\"output\":[\"2026-01-01 checks started\",\"2026-01-01 checks finished\"],\"pane\":\"%1\",\"paneRef\":\"tmux1_BGXw31wwjyXoEaqBo3la-V6jHcgKRph3CM6YZTGyd4fB\",\"seconds\":0.085019186,\"timedOut\":false}"
         }
       ],
       "structuredContent": {
-        "seconds": 0.087398972,
-        "exitStatus": 0,
-        "paneRef": "tmux1_BA3atHtng1Jj30-gqW-Fv57PdeYPGTOQg9noVSe2N4-7",
         "pane": "%1",
         "effectiveTimeout": 30,
+        "seconds": 0.085019186,
+        "timedOut": false,
+        "droppedLines": 0,
+        "exitStatus": 0,
+        "paneRef": "tmux1_BGXw31wwjyXoEaqBo3la-V6jHcgKRph3CM6YZTGyd4fB",
         "linesMissed": false,
         "output": [
           "2026-01-01 checks started",
           "2026-01-01 checks finished"
-        ],
-        "droppedLines": 0,
-        "timedOut": false
+        ]
       },
       "tmux": {
         "sessions": [
@@ -824,7 +825,7 @@
             "index": 0,
             "name": "sh",
             "active": true,
-            "layout": "{\"V\":2,\"L\":{\"t\":\"h\",\"w\":80,\"h\":24,\"x\":0,\"y\":0,\"c\":[{\"t\":\"p\",\"w\":40,\"h\":24,\"x\":0,\"y\":0,\"a\":true,\"i\":0,\"I\":\"%0\"},{\"t\":\"p\",\"w\":39,\"h\":24,\"x\":41,\"y\":0,\"i\":1,\"I\":\"%1\"}]}}"
+            "layout": "8205,80x24,0,0{40x24,0,0,0,39x24,41,0,1}"
           }
         ],
         "panes": [

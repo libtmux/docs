@@ -26,6 +26,40 @@ export const ROOT_PORT = 'All languages'
 /** The `section` value that holds a port's API reference pages. */
 export const REFERENCE_SECTION = 'reference'
 
+/**
+ * The `section` filter value of a page: the first path segment after any port and version, such as
+ * `topics`, `guides`, `concepts`, `examples` or `reference`. A reader searching for `capture` usually wants
+ * one of those, not all five. `pagePath` is relative to the port and version, except for tmux pages, whose
+ * own version and kind come first.
+ */
+export function pageSection(pagePath: string): string {
+  const path = pagePath.startsWith('tmux/')
+    ? pagePath.slice(5).replace(/^[^/]+\/(?=manual|reference|catalog)/, '') : pagePath
+  return (path.split('/').filter(Boolean)[0] ?? 'home').toLowerCase()
+}
+
+/**
+ * The sections a port's native Sphinx tree names differently from the Astro pages. Sphinx's own `api/`
+ * directory is the API reference, which the Astro pages publish as `reference`; its quickstart is the
+ * getting-started guide.
+ */
+const NATIVE_SECTIONS: Record<string, string> = {
+  api: REFERENCE_SECTION,
+  genindex: REFERENCE_SECTION,
+  'py-modindex': REFERENCE_SECTION,
+  quickstart: 'guides',
+}
+
+/**
+ * The `section` value of a native Sphinx page, from its path inside the tree the port publishes at
+ * `/<port>/<version>/api/` (`api/pane/`, `topics/architecture/`). Other paths take the Astro rule, so
+ * `topics` is `topics` in both.
+ */
+export function nativeSection(path: string): string {
+  const first = path.split('/').filter(Boolean)[0]?.toLowerCase()
+  return (first && NATIVE_SECTIONS[first]) || pageSection(path)
+}
+
 const isScope = (value: string | null): value is SearchScope => SEARCH_SCOPES.includes(value as SearchScope)
 
 /** `?q=&scope=&section=&kind=`, read back; an unknown scope takes the default. */

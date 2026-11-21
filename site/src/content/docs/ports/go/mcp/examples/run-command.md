@@ -65,7 +65,7 @@ require (
 
 Save this as `main.go`:
 
-```go title="main.go"
+```go title="main.go" height="24"
 package main
 
 import (

@@ -129,7 +129,7 @@ reachable. Otherwise the program removes the directory.
 In the file, step 9's `defer` comes before step 2 so that it covers every call
 after it. Save the program as `main.go`:
 
-```go title="main.go"
+```go title="main.go" height="24"
 package main
 
 import (

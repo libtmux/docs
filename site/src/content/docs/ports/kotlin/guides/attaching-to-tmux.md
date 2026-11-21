@@ -32,7 +32,7 @@ stops the server it started and removes its socket directory. If that server
 cannot be stopped, the program reports the retained directory and exits with
 an error.
 
-```kotlin title="Connect.kt"
+```kotlin title="Connect.kt" role="program"
 import io.github.libtmux.ServerConfig
 import io.github.libtmux.ServerEndpoint
 import io.github.libtmux.kotlin.killServer
