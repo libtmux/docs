@@ -79,7 +79,7 @@ const done = (l: string) => rows.filter((r) => r.statuses[l] === 'translated').l
   locale={locale}
   localeStatuses={ALL_TRANSLATED}
 >
-  <div class="meta-page">
+  <main class="meta-page" id="content" tabindex="-1">
     <PageToolbar breadcrumbs={breadcrumbs} />
     <h1>{t(locale, 'i18n.coverage')}</h1>
     <p>{t(locale, 'i18n.coverageIntro')}</p>
@@ -158,5 +158,5 @@ const done = (l: string) => rows.filter((r) => r.statuses[l] === 'translated').l
         </tbody>
       </table>
     </div>
-  </div>
+  </main>
 </BaseLayout>

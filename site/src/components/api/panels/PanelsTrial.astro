@@ -19,7 +19,7 @@ const data = JSON.stringify({ list: concepts.list, ports: concepts.ports }).repl
 ---
 <BaseLayout title="Panels" description="Linked, dockable panels over the concepts every libtmux port shares." pagePath="reference/trial/panels"
   portSlug="go" version={version} noindex searchable={false} documentationLayout="reference" markdown="rendered">
-  <div class="pw columns-trial" data-panels-trial>
+  <main class="pw columns-trial" id="content" tabindex="-1" data-panels-trial>
     <h1>Panels</h1>
     <div class="pw__bar">
       <span>Artboard <span class="pw__scroll"><span class="pw__seg" role="group" aria-label="Artboard">
@@ -50,5 +50,5 @@ const data = JSON.stringify({ list: concepts.list, ports: concepts.ports }).repl
       start()
       document.addEventListener('astro:page-load', start)
     </script>
-  </div>
+  </main>
 </BaseLayout>
