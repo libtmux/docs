@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "repository": "libtmux/libtmux-haskell",
-  "revision": "89861f39535299472b33feed225cd5bb2fa131e9",
+  "revision": "bf2d94753a8309b75d6f9853e5719572d57d209d",
   "files": {
     ".tool-versions": "13c8a19b336b86a161f4d5ea74347960e884e2c0887d399fe752d84eecfd35e7",
     "cabal.project": "6890ddc60947061b057c023a1d2708372052cfc8dff98f50dfced6fbbfecdcf7",
@@ -772,5 +772,5 @@
       ]
     }
   ],
-  "modelSha256": "bc4f74ab0cfab98365f2a7e099dd22e12dcd5a41e3ab1b7fcfe14ee58a15bbdc"
+  "modelSha256": "ab3c1891c4e5ea205e49789728f6782e352a24917a04c0c7b3c10019d91d7fc2"
 }
