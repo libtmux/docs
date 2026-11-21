@@ -10,9 +10,12 @@
  *
  * Each port is read from its checkout (`LIBTMUX_DOCS_CHECKOUT_<PORT>`, else its
  * worktree, else its standard checkout). A port with no checkout, or whose
- * checkout lacks the revision, is reported as skipped, not as passing.
+ * checkout lacks the revision, fails: its links were not checked. A run that
+ * cannot have every checkout names the ports that may lack one with
+ * `--allow-missing`; those are reported as skipped, not as passing.
  *
- * Usage: node scripts/check-mcp-source-links.mjs [--port ts] [--tools path/to/mcp-tools.json]
+ * Usage: node scripts/check-mcp-source-links.mjs [--port ts] [--allow-missing go,py]
+ *        [--tools path/to/mcp-tools.json]
  */
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
@@ -20,13 +23,14 @@ import { homedir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PORTS } from '../site/src/lib/ports.ts'
-import { checkoutCandidates } from './lib/port-checkout.mjs'
+import { allowMissingPorts, checkoutCandidates, sourceGate } from './lib/port-checkout.mjs'
 import { registrationLinkProblems } from './lib/mcp-source-links.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const expand = (path) => (path.startsWith('~/') ? join(homedir(), path.slice(2)) : path)
 const option = (name) => (process.argv.includes(name) ? process.argv[process.argv.indexOf(name) + 1] : undefined)
 const only = option('--port')
+const allowMissing = allowMissingPorts()
 const matrix = JSON.parse(readFileSync(option('--tools') ?? join(root, 'site/src/data/mcp-tools.json'), 'utf8'))
 
 const git = (checkout, ...args) => {
@@ -38,6 +42,7 @@ const git = (checkout, ...args) => {
 }
 
 let failed = 0
+let unchecked = 0
 const skipped = []
 for (const [slug, entry] of Object.entries(matrix.ports)) {
   if (only && only !== slug) continue
@@ -46,14 +51,16 @@ for (const [slug, entry] of Object.entries(matrix.ports)) {
     ? [process.env.LIBTMUX_DOCS_MCP_PY, '~/work/python/libtmux-mcp']
     : port ? checkoutCandidates(port) : []
   const checkout = candidates.filter(Boolean).map(expand).find((path) => existsSync(path))
-  if (!checkout) {
-    skipped.push(`${slug} (no checkout)`)
+  const revisions = [...new Set(entry.registrations.map((row) => row.source.revision))]
+  const absent = checkout ? revisions.filter((revision) => git(checkout, 'cat-file', '-e', `${revision}^{commit}`) === undefined) : []
+  const gate = sourceGate(slug, !checkout ? 'no checkout' : absent.length ? `${absent.map((revision) => revision.slice(0, 9)).join(', ')} not in ${checkout}` : undefined, allowMissing)
+  if (gate.outcome === 'skipped') {
+    skipped.push(gate.message)
     continue
   }
-  const revisions = [...new Set(entry.registrations.map((row) => row.source.revision))]
-  const absent = revisions.filter((revision) => git(checkout, 'cat-file', '-e', `${revision}^{commit}`) === undefined)
-  if (absent.length) {
-    skipped.push(`${slug} (${absent.map((revision) => revision.slice(0, 9)).join(', ')} not in ${checkout})`)
+  if (gate.outcome === 'failed') {
+    console.error(`check-mcp-source-links: ${gate.message}`)
+    unchecked += 1
     continue
   }
   const problems = registrationLinkProblems(slug, entry.registrations, (revision, file) => git(checkout, 'show', `${revision}:${file}`))
@@ -62,7 +69,6 @@ for (const [slug, entry] of Object.entries(matrix.ports)) {
   if (!problems.length) console.log(`check-mcp-source-links: ${slug} ${entry.registrations.length} registrations resolve at ${revisions.map((revision) => revision.slice(0, 9)).join(', ')}`)
 }
 if (skipped.length) console.log(`check-mcp-source-links: skipped ${skipped.join('; ')}`)
-if (failed) {
-  console.error(`check-mcp-source-links: ${failed} link(s) do not resolve`)
-  process.exit(1)
-}
+if (failed) console.error(`check-mcp-source-links: ${failed} link(s) do not resolve`)
+if (unchecked) console.error(`check-mcp-source-links: ${unchecked} port(s) not checked`)
+if (failed || unchecked) process.exit(1)

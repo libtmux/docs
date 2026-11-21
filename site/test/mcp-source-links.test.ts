@@ -156,6 +156,25 @@ describe('the source link of an MCP registration', () => {
   })
 })
 
+describe('a port whose registrations the check cannot read', () => {
+  it('fails the check unless the run names that port as allowed to lack a checkout', () => {
+    const root = fileURLToPath(new URL('../../', import.meta.url))
+    const directory = mkdtempSync(join(tmpdir(), 'mcp-source-links-'))
+    try {
+      const tools = join(directory, 'mcp-tools.json')
+      // A slug outside ports.ts has no standard checkout to fall back on.
+      writeFileSync(tools, JSON.stringify({ ports: { nosuch: { registrations: [{ name: 'list_windows', wireName: 'list_windows', source: { revision: 'a'.repeat(40), file: 'tools.ts', line: 1 } }] } } }))
+      const run = (...args: string[]) => spawnSync(process.execPath, ['scripts/check-mcp-source-links.mjs', '--tools', tools, ...args], { cwd: root, encoding: 'utf8' })
+      const missing = run()
+      expect(missing.status).toBe(1)
+      expect(missing.stderr).toContain('nosuch: not checked, no checkout')
+      const allowed = run('--allow-missing', 'nosuch')
+      expect(allowed.status, allowed.stderr).toBe(0)
+      expect(allowed.stdout).toContain('skipped nosuch (no checkout)')
+    } finally { rmSync(directory, { recursive: true, force: true }) }
+  })
+})
+
 describe('the committed registrations', () => {
   const data = (path: string) => new URL(`../src/data/${path}`, import.meta.url)
   const matrix = JSON.parse(readFileSync(data('mcp-tools.json'), 'utf8')) as { ports: Record<string, { registrations: { name: string, source: { revision: string, file: string } }[] }> }

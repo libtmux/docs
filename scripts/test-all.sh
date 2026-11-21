@@ -213,16 +213,22 @@ node scripts/gen-mcp-tools.mjs --check
 # A tool page links the file and line where its tool is registered, at the
 # revision of the port's API model. The matrix can run ahead of that model, and
 # a tool the model's revision lacks then links a file that is not there. This
-# reads each registration at the revision it cites, and skips a port with no
-# checkout or without that revision, as the steps around it do.
+# reads each registration at the revision it cites. A port with no checkout, or
+# without that revision, fails unless it is named in `--allow-missing`: a check
+# that read nothing is not a pass. The publication workflow checks out only
+# Ruby among the ports with MCP servers, so the others are named here and are
+# still read wherever their checkout exists. A port added to the matrix is not
+# named, so it fails until its checkout is provided or it is named on purpose.
+mcp_unchecked_in_ci='csharp,cxx,go,java,julia,py,rs,swift,ts'
 step 'mcp source links'
-node scripts/check-mcp-source-links.mjs
+node scripts/check-mcp-source-links.mjs --allow-missing "$mcp_unchecked_in_ci"
 
 # The Wraps row on a tool page names a library call and the line of the
 # server's source that makes it. This reads each cited line at the revision
-# the entry names, and skips a port with no checkout, as the step above does.
+# the entry names, under the same rule as the step above, and prints the ports
+# whose lines it read and the calls it did not.
 step 'mcp wraps'
-node scripts/check-mcp-wraps.mjs
+node scripts/check-mcp-wraps.mjs --allow-missing "$mcp_unchecked_in_ci"
 
 # Each port's own MCP server, built and run to compare its live tool,
 # resource and prompt schemas against the committed snapshot in
