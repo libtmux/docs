@@ -178,21 +178,42 @@ html[data-js] .mcp-replay .mcp-turn[data-turn]:not([data-turn='prompt'], .mcp-tu
  * Selecting text in a turn never changes the step: hovering one previews the
  * tmux after it, and its pin button holds it. The call the tmux shows is
  * tinted, as the Core player tints its current line; no bar marks the start
- * edge of a current row.
+ * edge of a current row. The shares are the player's (record 0079): a wash that
+ * keeps muted text and every syntax ink at 4.5:1 or more. They differ by theme;
+ * dark is the resolved data-theme-mode or, before the theme script runs, the
+ * system preference, as in tokens.css.
  */
-@media (hover: hover) {
-  .mcp-replay[data-live] .mcp-turn[data-turn]:not([data-turn='prompt'], .mcp-turn--answer):not([aria-current='step']):hover {
-    background: var(--color-surface-hover);
+.mcp-replay {
+  --mcp-tint-hover: 5%;
+  --mcp-tint-current: 8%;
+}
+
+html[data-theme-mode="dark"] .mcp-replay {
+  --mcp-tint-hover: 4%;
+  --mcp-tint-current: 7%;
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme-mode]):not([data-theme="light"]) .mcp-replay {
+    --mcp-tint-hover: 4%;
+    --mcp-tint-current: 7%;
   }
 }
 
-.mcp-turn[aria-current='step'] {
-  background: color-mix(in srgb, var(--color-link) 14%, transparent);
+@media (hover: hover) {
+  .mcp-replay[data-live] .mcp-turn[data-turn]:not([data-turn='prompt'], .mcp-turn--answer):not([aria-current='step']):hover {
+    background: color-mix(in srgb, var(--color-link) var(--mcp-tint-hover), transparent);
+  }
 }
 
-.mcp-turn.is-pinned,
-.mcp-turn[aria-current='step'].is-pinned {
-  background: color-mix(in srgb, var(--color-link) 24%, transparent);
+.mcp-turn[aria-current='step'],
+.mcp-turn.is-pinned {
+  background: color-mix(in srgb, var(--color-link) var(--mcp-tint-current), transparent);
+}
+
+/* A pinned call keeps the current tint, since a heavier wash would take its text under 4.5:1. A 1px hairline along the turn's start marks it: an inset shadow, so no border takes width and nothing shifts. */
+.mcp-turn.is-pinned {
+  box-shadow: inset 1px 0 0 var(--color-link);
 }
 
 /* A call is pinned with a real button at its top right; the state is aria-pressed. */
