@@ -281,6 +281,11 @@ describe('control outlines', () => {
     ['styles/core-player.css', '.expressive-code .core-copy'],
     ['styles/global.css', '.scheme-switch'],
     ['styles/global.css', '.scheme-cycle'],
+    ['components/widgets/install-surface.css', '.lm-install__cdtoggle'],
+    ['styles/global.css', '.prerelease-notice__dismiss'],
+    ['components/SearchPanel.astro', '.search-panel__more'],
+    ['styles/api-tree.css', 'html[data-api-nav] .api-nav-toggle'],
+    ['components/StatusBadge.astro', 'button.status-badge'],
   ]
 
   it.each(CONTROLS)('%s %s is outlined in --control-border', (file, selector) => {
