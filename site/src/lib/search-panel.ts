@@ -8,6 +8,7 @@
  * (`data-pagefind-meta`), so this renders them under each result.
  */
 
+import { below } from './breakpoints'
 import { boostExactMembers } from './search-rank'
 import {
   countLine,
@@ -117,6 +118,8 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings
   const kindGroup = root.querySelector<HTMLElement>('.search-panel__facet--kind')
   const kindList = root.querySelector<HTMLElement>('.search-panel__kind-list')
   const dialog = root.closest('dialog')
+  const fold = root.querySelector<HTMLDetailsElement>('.search-panel__fold')
+  const foldSummary = root.querySelector<HTMLElement>('.search-panel__fold-summary')
   const clearField = root.querySelector<HTMLButtonElement>('.search-panel__clear-field')
   const closeButton = root.querySelector<HTMLButtonElement>('.search-panel__close')
 
@@ -277,6 +280,23 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings
     }
   }
 
+  /** Below bp-phone the filters are one disclosure, closed so the results come first, and its summary counts the filters that are on (record 0076). */
+  function paintFold() {
+    if (!foldSummary) return
+    const on = filterCount(state, [...selectedPorts])
+    foldSummary.textContent = on > 0 ? `Filters · ${on}` : 'Filters'
+  }
+
+  if (fold && typeof matchMedia === 'function') {
+    const phone = matchMedia(below('phone'))
+    const place = () => {
+      if (!root.isConnected) phone.removeEventListener('change', place)
+      else fold.open = !phone.matches
+    }
+    place()
+    phone.addEventListener('change', place)
+  }
+
   /** The scope buttons say which one is on; a root search has none. */
   function paintScope() {
     if (!scopeBox) return
@@ -306,6 +326,7 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings
 
   async function renderFilters(counts: FilterCounts) {
     paintScope()
+    paintFold()
     // Hidden, not removed: a facet the data does not have stays out of the way.
     const ports = state.scope === 'all' ? { ...Object.fromEntries([...selectedPorts].map((port) => [port, 0])), ...counts.port } : {}
     const sections = state.scope === 'reference' ? {} : { ...(state.section ? { [state.section]: 0 } : {}), ...counts.section }
@@ -689,6 +710,7 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings
   input.value = state.q
   syncClear()
   paintScope()
+  paintFold()
   const ready = run(state.q)
 
   return {

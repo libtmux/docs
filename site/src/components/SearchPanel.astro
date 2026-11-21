@@ -87,18 +87,24 @@ const segmentNames =
 
   <div class="search-panel__body">
     <aside class="search-panel__filters" aria-label="Filters" hidden>
-      <div class="search-panel__facet search-panel__facet--section" hidden>
-        <p class="search-panel__filters-title">Section</p>
-        <div class="search-panel__filter-list search-panel__section-list"></div>
-      </div>
-      <div class="search-panel__facet search-panel__facet--kind" hidden>
-        <p class="search-panel__filters-title">Kind</p>
-        <div class="search-panel__filter-list search-panel__kind-list"></div>
-      </div>
-      <div class="search-panel__facet search-panel__facet--port">
-        <p class="search-panel__filters-title">Port</p>
-        <div class="search-panel__filter-list"></div>
-      </div>
+      {/* Open and without its summary from bp-phone up; below it the script closes it, and the summary says how many filters are on (record 0076). */}
+      <details class="search-panel__fold" open>
+        <summary class="search-panel__fold-summary">Filters</summary>
+        <div class="search-panel__fold-body">
+          <div class="search-panel__facet search-panel__facet--section" hidden>
+            <p class="search-panel__filters-title">Section</p>
+            <div class="search-panel__filter-list search-panel__section-list"></div>
+          </div>
+          <div class="search-panel__facet search-panel__facet--kind" hidden>
+            <p class="search-panel__filters-title">Kind</p>
+            <div class="search-panel__filter-list search-panel__kind-list"></div>
+          </div>
+          <div class="search-panel__facet search-panel__facet--port">
+            <p class="search-panel__filters-title">Port</p>
+            <div class="search-panel__filter-list"></div>
+          </div>
+        </div>
+      </details>
     </aside>
     <div class="search-panel__results" role="listbox" aria-label="Search results">
       <p class="search-panel__status">Type to search.</p>
@@ -146,6 +152,12 @@ const segmentNames =
     height: 1.1rem;
     flex: none;
     color: var(--color-foreground-muted);
+  }
+
+  /* The input draws no ring of its own: the field around it does, with the 2px ring every control takes. */
+  .search-panel__field:focus-within {
+    outline: 2px solid var(--focus-ring-color, var(--theme-primary));
+    outline-offset: 2px;
   }
 
   .search-panel__input {
@@ -315,6 +327,80 @@ const segmentNames =
 
   .search-panel__facet[hidden] {
     display: none;
+  }
+
+  /* The filters fold into one disclosure below bp-phone (30rem), between the field and the results (record 0076).
+     From there up the column shows as it did and the summary is not drawn. */
+  .search-panel__fold-summary {
+    display: none;
+  }
+
+  @media (max-width: 29.999rem) {
+    .search-panel__fold-summary {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-height: var(--touch-target);
+      padding: 0 0.8rem;
+      border: 1px solid var(--control-border);
+      border-radius: var(--radius-md, 0.375rem);
+      background: var(--color-background-secondary);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .search-panel__fold-summary::marker {
+      content: '';
+    }
+
+    .search-panel__fold-summary::after {
+      content: '';
+      width: 0.5rem;
+      height: 0.5rem;
+      margin-inline-start: auto;
+      border-inline-end: 2px solid currentColor;
+      border-block-end: 2px solid currentColor;
+      transform: rotate(45deg);
+    }
+
+    .search-panel__fold[open] > .search-panel__fold-summary::after {
+      transform: rotate(-135deg);
+    }
+
+    .search-panel__fold-summary:focus-visible {
+      outline: 2px solid var(--focus-ring-color, var(--theme-primary));
+      outline-offset: 2px;
+    }
+
+    .search-panel__fold-body {
+      padding-top: 0.5rem;
+    }
+
+    /* Rows reach the touch target with their counts kept; the whole row is the label's hit area. */
+    .search-panel__filter-list {
+      gap: 0;
+      margin-top: 0;
+    }
+
+    .search-panel__filter {
+      min-height: var(--touch-target);
+    }
+
+    .search-panel__filter input {
+      width: 1.125rem;
+      height: 1.125rem;
+    }
+
+    /* In the full-screen dialog the open filters scroll inside their own band and leave the results the rest. */
+    .search-panel[data-modal='true'] .search-panel__body:not(:has(> .search-panel__filters[hidden])) {
+      grid-template-rows: auto minmax(0, 1fr);
+    }
+
+    .search-panel[data-modal='true'] .search-panel__fold-body {
+      max-height: min(50dvh, 24rem);
+      overflow-y: auto;
+    }
   }
 
   /* The scope is the first decision, so it sits under the field. */

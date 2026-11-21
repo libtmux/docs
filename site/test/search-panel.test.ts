@@ -18,6 +18,8 @@ interface FixtureOptions {
   /** Mount inside a dialog, as the Cmd-K panel is. */
   dialog?: boolean
   total?: number
+  /** Whether the viewport is below bp-phone, where the filters fold; omitted, the browser has no media queries. */
+  phone?: boolean
 }
 
 function fixture(initialPort?: string, options: FixtureOptions = {}) {
@@ -33,11 +35,11 @@ function fixture(initialPort?: string, options: FixtureOptions = {}) {
     <button class="search-panel__clear-field" hidden></button>
     <button class="search-panel__close"></button>
     <div class="search-panel__scope"><button data-scope="port"></button><button data-scope="reference"></button><button data-scope="all"></button></div>
-    <aside class="search-panel__filters" hidden>
+    <aside class="search-panel__filters" hidden><details class="search-panel__fold" open><summary class="search-panel__fold-summary">Filters</summary>
       <div class="search-panel__facet search-panel__facet--section" hidden><div class="search-panel__filter-list search-panel__section-list"></div></div>
       <div class="search-panel__facet search-panel__facet--kind" hidden><div class="search-panel__filter-list search-panel__kind-list"></div></div>
       <div class="search-panel__facet search-panel__facet--port"><div class="search-panel__filter-list"></div></div>
-    </aside>
+    </details></aside>
     <div class="search-panel__results"></div>
   </div>`
   window.document.body.innerHTML = options.dialog ? `<dialog open>${panel}</dialog>` : panel
@@ -70,6 +72,16 @@ function fixture(initialPort?: string, options: FixtureOptions = {}) {
     }
   })
   const filters = vi.fn<PagefindApi['filters']>(async () => ({ port: { Go: 1, Rust: 1 } }))
+  // The viewport query the fold listens to: `matches` is the phone case, and `narrow` flips it as a resize would.
+  const media = { matches: options.phone ?? false, listeners: new Set<() => void>() }
+  if (options.phone !== undefined) {
+    vi.stubGlobal('matchMedia', () => ({
+      get matches() { return media.matches },
+      addEventListener: (_type: string, listener: () => void) => media.listeners.add(listener),
+      removeEventListener: (_type: string, listener: () => void) => media.listeners.delete(listener),
+    }))
+  }
+  const resize = (phone: boolean) => { media.matches = phone; media.listeners.forEach((listener) => listener()) }
   const handle = mountSearchPanel(root, '/en/pagefind/', {
     initialPort, initialQuery: 'capture', mock: { search, filters }, ...options.settings,
   })
@@ -81,7 +93,7 @@ function fixture(initialPort?: string, options: FixtureOptions = {}) {
   const filter = (port: string) => root.querySelector<HTMLInputElement>(`.search-panel__facet--port input[value="${port}"]`)!
   const scope = (value: string) => root.querySelector<HTMLButtonElement>(`button[data-scope="${value}"]`)!.click()
   const dialog = root.closest('dialog') as unknown as HTMLDialogElement | null
-  return { root, input, search, filters, handle, query, results, filter, scope, dialog }
+  return { root, input, search, filters, handle, query, results, filter, scope, dialog, resize }
 }
 
 describe('port search defaults', () => {
@@ -304,5 +316,30 @@ describe('the field is a combobox over the results', () => {
     await vi.waitFor(() => expect(results()).toHaveLength(0))
     expect(input.hasAttribute('aria-activedescendant')).toBe(false)
     expect(input.getAttribute('aria-expanded')).toBe('false')
+  })
+})
+
+describe('the filters below bp-phone (record 0076)', () => {
+  const fold = (root: HTMLElement) => root.querySelector<HTMLDetailsElement>('.search-panel__fold')!
+  const summary = (root: HTMLElement) => root.querySelector('.search-panel__fold-summary')!.textContent
+
+  it('folds into one closed disclosure whose summary counts the filters that are on', async () => {
+    const { root, results, filter } = fixture(undefined, { phone: true, url: 'https://libtmux.org/en/search/' })
+    await vi.waitFor(() => expect(results()).toHaveLength(2))
+    expect(fold(root).open, 'results come first').toBe(false)
+    expect(summary(root)).toBe('Filters')
+    filter('Go').click()
+    await vi.waitFor(() => expect(results()).toHaveLength(1))
+    expect(summary(root)).toBe('Filters · 1')
+  })
+
+  it('stays open, as the column was, from bp-phone up, and follows a resize across it', async () => {
+    const { root, results, resize } = fixture(undefined, { phone: false, url: 'https://libtmux.org/en/search/' })
+    await vi.waitFor(() => expect(results()).toHaveLength(2))
+    expect(fold(root).open).toBe(true)
+    resize(true)
+    expect(fold(root).open).toBe(false)
+    resize(false)
+    expect(fold(root).open).toBe(true)
   })
 })
