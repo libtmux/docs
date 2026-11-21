@@ -541,21 +541,30 @@ async function negativeControl(page, base, results) {
   await touching.evaluate((node) => node.remove())
   assert(results.rowControl > 0, 'The row check did not notice a mark that touches its name and sits off its centre')
 
-  // A linked name sets its name in a code element at .875em of its link: the capitals to centre on are the name's, not the link's.
-  await page.goto(`${base}${PAGES[4].path}`, { waitUntil: 'load' })
-  await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
-  await page.addStyleTag({ content: MEASURING_STYLE })
-  const linked = await page.locator(`.tmux-usage a > ${LINK_MARK}`).filter({ visible: true, hasText: /^[maf]$/ }).first().elementHandle()
-  const nameSize = await linked.evaluate((element) => parseFloat(getComputedStyle(element.nextElementSibling).fontSize))
-  const linkSize = await linked.evaluate((element) => parseFloat(getComputedStyle(element.parentElement).fontSize))
-  assert(nameSize < linkSize, `The linked name is not smaller than its link (${nameSize}px of ${linkSize}px), so the control cannot tell them apart`)
-  const sampled = await sample(page, linked, 'row')
-  assert.equal(sampled.info.wordFont, nameSize, 'The row measurement does not read the size of the name')
-  assert.deepEqual(judge('control', measure(sampled, 'row'), 'row'), [], 'A linked name is not centred before the control')
-  const drifted = await page.addStyleTag({ content: `${ROW_MARKS} { top: 3px !important; }` })
-  results.linkedControl = judge('control', measure(await sample(page, linked, 'row'), 'row'), 'row').length
-  await drifted.evaluate((node) => node.remove())
-  assert(results.linkedControl > 0, 'The row check did not notice a linked-name mark three pixels off its name')
+  // A linked name sets its name in a code element: the capitals to centre on are the name's, not the link's. The "In other ports" table
+  // sets the name smaller than its link, so the control tells the two apart there; the tmux usage list sets it at its link's size (record 0051).
+  const linkedRuns = [
+    { run: '.api-elsewhere-value', path: PAGES[6].path, smaller: true },
+    { run: '.tmux-usage', path: PAGES[4].path, smaller: false },
+  ]
+  results.linkedControl = 0
+  for (const { run, path, smaller } of linkedRuns) {
+    await page.goto(`${base}${path}`, { waitUntil: 'load' })
+    await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
+    await page.addStyleTag({ content: MEASURING_STYLE })
+    const linked = await page.locator(`${run} a > ${LINK_MARK}`).filter({ visible: true, hasText: /^[maf]$/ }).first().elementHandle()
+    const nameSize = await linked.evaluate((element) => parseFloat(getComputedStyle(element.nextElementSibling).fontSize))
+    const linkSize = await linked.evaluate((element) => parseFloat(getComputedStyle(element.parentElement).fontSize))
+    if (smaller) assert(nameSize < linkSize, `The linked name is not smaller than its link (${nameSize}px of ${linkSize}px in ${run}), so the control cannot tell them apart`)
+    const sampled = await sample(page, linked, 'row')
+    assert.equal(sampled.info.wordFont, nameSize, `The row measurement does not read the size of the name in ${run}`)
+    assert.deepEqual(judge('control', measure(sampled, 'row'), 'row'), [], `A linked name in ${run} is not centred before the control`)
+    const drifted = await page.addStyleTag({ content: `${ROW_MARKS} { top: 3px !important; }` })
+    const caught = judge('control', measure(await sample(page, linked, 'row'), 'row'), 'row').length
+    await drifted.evaluate((node) => node.remove())
+    assert(caught > 0, `The row check did not notice a linked-name mark three pixels off its name in ${run}`)
+    results.linkedControl += caught
+  }
 }
 
 export async function checkBadgeCentring(browser, base, { sample: bounded = false } = {}) {
