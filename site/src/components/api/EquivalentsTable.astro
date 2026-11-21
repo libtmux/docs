@@ -161,6 +161,10 @@ const countText = (count: number) => `${count} other ${count === 1 ? 'port' : 'p
     --mk-ink: var(--color-foreground-primary, currentColor);
     border-inline-end-color: color-mix(in srgb, var(--color-foreground-primary, currentColor) 14%, transparent);
   }
+  /* A hovered or focused name fills its mark with the family's own fill, as a linked name's mark does elsewhere (record 0049). The callable, member and tool families fill from `--mk-fill`, which the rule above sets neutral. */
+  .api-eq-table .api-elsewhere-value a:is(:hover, :focus-visible) > .api-nav__kind {
+    --mk-fill: var(--mk-bg);
+  }
   .api-eq-sum, .api-eq-note { margin-block-start: 2px; font-size: 0.8125rem; line-height: 19.5px; color: var(--color-foreground-muted); }
   .api-eq-note { margin-block-start: 4px; }
   .api-eq-muted { color: var(--color-foreground-muted); }

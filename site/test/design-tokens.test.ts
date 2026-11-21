@@ -666,3 +666,10 @@ describe('badge and tab label floors (records 0051 and 0071)', () => {
     expect(read('api.css')).toContain('span.gp-sphinx-api-param-since, span.gp-sphinx-api-param-deprecated { font-size: max(0.75rem, 12px); }')
   })
 })
+
+describe('"In other ports" (record 0049)', () => {
+  it('fills a hovered or focused name\'s kind mark with its family fill, not the table\'s neutral one', () => {
+    const table = readFileSync(new URL('../src/components/api/EquivalentsTable.astro', import.meta.url), 'utf8')
+    expect(table).toMatch(/\.api-eq-table \.api-elsewhere-value a:is\(:hover, :focus-visible\) > \.api-nav__kind \{\s*--mk-fill: var\(--mk-bg\);/)
+  })
+})
