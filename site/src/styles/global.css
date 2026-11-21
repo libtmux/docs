@@ -1708,6 +1708,22 @@ html[data-theme-mode='dark'] .site-header .header-picker > summary:is(:hover, :f
   gap: 0.75rem;
 }
 
+/* Once a script places it (documentation-navigation.ts), the Menu opens by display like a picker's panel, and documentation-picker.css
+   draws its sheets. A popover is placed with inline coordinates; a sheet's rows reach the touch target (record 0071). */
+.site-header__menu[data-enhanced] > .site-header__panel {
+  position: fixed;
+  right: auto;
+  z-index: 90;
+  margin: 0;
+}
+
+.site-header__menu:is([data-panel-mode='sheet'], [data-panel-mode='side']) .site-header__panel :is(a.topnav-chip, .header-link, .header-picker > summary, .doc-picker > summary) {
+  box-sizing: border-box;
+  align-items: center;
+  height: auto;
+  min-height: var(--touch-target);
+}
+
 .site-header__panel-row {
   display: flex;
   flex-wrap: wrap;

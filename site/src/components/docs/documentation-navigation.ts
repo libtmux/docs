@@ -1,7 +1,48 @@
-import { below, PANEL_QUERIES } from '../../lib/breakpoints'
+import { below, panelMode } from '../../lib/breakpoints'
 import { fitQualifiedNames } from '../../lib/qualified-name'
 
 let controller: AbortController | undefined
+
+/** What opens as a panel by display: the pickers and the header's Menu (record 0071). */
+const OPEN_PANELS = '[data-doc-picker][open], [data-header-menu][open]'
+
+/** A sheet locks the page's scroll while it is open; a popover does not. */
+function syncSheetLock() {
+  const sheet = [...document.querySelectorAll<HTMLElement>(OPEN_PANELS)].some((owner) => owner.dataset.panelMode && owner.dataset.panelMode !== 'popover')
+  document.documentElement.toggleAttribute('data-sheet-open', sheet)
+}
+
+/**
+ * Place an open panel for this display. A popover is fixed under its trigger, above it when there is no room below, and clamped to the
+ * viewport; a bottom or side sheet is placed by CSS from `data-panel-mode` and `data-panel-side` on `owner`. Closes `owner` when its
+ * trigger is gone or scrolled out of view.
+ */
+function placePanel(owner: HTMLDetailsElement, trigger: HTMLElement, panel: HTMLElement) {
+  const rect = trigger.getBoundingClientRect()
+  if (!trigger.getClientRects().length || trigger.closest('[inert]') || rect.bottom <= 8 || rect.top >= window.innerHeight - 8) {
+    owner.open = false
+    if (typeof panel.showPopover === 'function' && panel.matches(':popover-open')) panel.hidePopover()
+    return
+  }
+  const mode = panelMode()
+  owner.dataset.panelMode = mode
+  syncSheetLock()
+  if (mode !== 'popover') {
+    owner.dataset.panelSide = rect.left + rect.width / 2 > document.documentElement.clientWidth / 2 ? 'end' : 'start'
+    for (const property of ['left', 'top', 'bottom', 'maxHeight', 'maxWidth'] as const) panel.style[property] = ''
+    return
+  }
+  const viewportWidth = document.documentElement.clientWidth
+  panel.style.maxWidth = `${Math.max(0, viewportWidth - 16)}px`
+  const width = panel.getBoundingClientRect().width
+  panel.style.left = `${Math.max(8, Math.min(rect.left, viewportWidth - width - 8))}px`
+  const below = window.innerHeight - rect.bottom - 14
+  const above = rect.top - 14
+  const upward = below < 220 && above > below
+  panel.style.maxHeight = `${Math.max(0, Math.min(window.innerHeight - 16, upward ? above : below))}px`
+  panel.style.top = upward ? 'auto' : `${Math.max(8, rect.bottom + 6)}px`
+  panel.style.bottom = upward ? `${window.innerHeight - rect.top + 6}px` : 'auto'
+}
 
 export function initDocumentationNavigation() {
   controller?.abort()
@@ -66,34 +107,7 @@ export function initDocumentationNavigation() {
     if (topLayer) panel.setAttribute('popover', 'manual')
     const searchLabel = picker.querySelector<HTMLElement>('[data-picker-search-label]')
     if (searchLabel) searchLabel.hidden = false
-    const position = () => {
-      const rect = summary.getBoundingClientRect()
-      if (!summary.getClientRects().length || summary.closest('[inert]') || rect.bottom <= 8 || rect.top >= window.innerHeight - 8) {
-        picker.open = false
-        if (topLayer && panel.matches(':popover-open')) panel.hidePopover()
-        return
-      }
-      // Phones in portrait get a bottom sheet and short landscape screens a side sheet; CSS places both (record 0071).
-      const matches = (query: string) => typeof window.matchMedia === 'function' && window.matchMedia(query).matches
-      const mode = matches(PANEL_QUERIES.side) ? 'side' : matches(PANEL_QUERIES.sheet) ? 'sheet' : 'popover'
-      picker.dataset.panelMode = mode
-      document.documentElement.toggleAttribute('data-sheet-open', mode !== 'popover')
-      if (mode !== 'popover') {
-        picker.dataset.panelSide = rect.left + rect.width / 2 > document.documentElement.clientWidth / 2 ? 'end' : 'start'
-        for (const property of ['left', 'top', 'bottom', 'maxHeight', 'maxWidth'] as const) panel.style[property] = ''
-        return
-      }
-      const viewportWidth = document.documentElement.clientWidth
-      panel.style.maxWidth = `${Math.max(0, viewportWidth - 16)}px`
-      const width = panel.getBoundingClientRect().width
-      panel.style.left = `${Math.max(8, Math.min(rect.left, viewportWidth - width - 8))}px`
-      const below = window.innerHeight - rect.bottom - 14
-      const above = rect.top - 14
-      const upward = below < 220 && above > below
-      panel.style.maxHeight = `${Math.max(0, Math.min(window.innerHeight - 16, upward ? above : below))}px`
-      panel.style.top = upward ? 'auto' : `${Math.max(8, rect.bottom + 6)}px`
-      panel.style.bottom = upward ? `${window.innerHeight - rect.top + 6}px` : 'auto'
-    }
+    const position = () => placePanel(picker, summary, panel)
     const filter = () => {
       const tokens = (search?.value ?? '').toLocaleLowerCase().trim().split(/\s+/).filter(Boolean)
       const entries = options()
@@ -114,7 +128,7 @@ export function initDocumentationNavigation() {
     picker.addEventListener('toggle', () => {
       if (!picker.open) {
         if (topLayer && panel.matches(':popover-open')) panel.hidePopover()
-        if (!document.querySelector('[data-doc-picker][open]')) document.documentElement.removeAttribute('data-sheet-open')
+        syncSheetLock()
         if (search?.value) { search.value = ''; filter() }
         return
       }
@@ -177,5 +191,59 @@ export function initDocumentationNavigation() {
     document.addEventListener('scroll', (event) => {
       if (picker.open && event.target instanceof Node && !panel.contains(event.target)) position()
     }, { capture: true, signal })
+  }
+
+  // The header Menu is a disclosure that opens by display like a picker's panel: a bottom sheet on a phone, a side sheet on a short
+  // landscape screen, a popover elsewhere (record 0071). Escape closes it and returns focus to its button.
+  for (const menu of document.querySelectorAll<HTMLDetailsElement>('details[data-header-menu]')) {
+    const summary = menu.querySelector<HTMLElement>(':scope > summary')!
+    const panel = menu.querySelector<HTMLElement>(':scope > .site-header__panel')!
+    if (!summary || !panel) continue
+    const topLayer = typeof panel.showPopover === 'function'
+    if (topLayer) panel.setAttribute('popover', 'manual')
+    menu.dataset.enhanced = ''
+    const position = () => placePanel(menu, summary, panel)
+    const close = () => { menu.open = false }
+    const firstControl = () => [...panel.querySelectorAll<HTMLElement>('a[href], button, summary, input')].find((control) => control.getClientRects().length)
+    menu.addEventListener('toggle', () => {
+      if (!menu.open) {
+        for (const picker of menu.querySelectorAll<HTMLDetailsElement>('[data-doc-picker][open]')) picker.open = false
+        if (topLayer && panel.matches(':popover-open')) panel.hidePopover()
+        syncSheetLock()
+        return
+      }
+      // One panel at a time: a picker elsewhere closes, one in the Menu's own panel belongs to it.
+      for (const other of document.querySelectorAll<HTMLDetailsElement>('[data-doc-picker][open]')) {
+        if (!menu.contains(other)) other.open = false
+      }
+      if (topLayer && !panel.matches(':popover-open')) panel.showPopover()
+      position()
+      panel.scrollTop = 0
+      if (menu.open) firstControl()?.focus({ preventScroll: true })
+    }, { signal })
+    menu.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape' || !menu.open) return
+      event.preventDefault()
+      event.stopPropagation()
+      close()
+      summary.focus({ preventScroll: true })
+    }, { signal })
+    // Choosing a destination closes the panel, so a link that opens a new tab does not leave a sheet locking the page.
+    panel.addEventListener('click', (event) => {
+      if (event.target instanceof Element && event.target.closest('a[href]')) close()
+    }, { signal })
+    document.addEventListener('click', (event) => {
+      if (!menu.open) return
+      if (event.target instanceof Node && !menu.contains(event.target)) close()
+      // A tap on a sheet's backdrop lands on the panel itself, outside its box.
+      else if (event.target === panel && menu.dataset.panelMode !== 'popover') {
+        const box = panel.getBoundingClientRect()
+        if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) close()
+      }
+    }, { signal })
+    document.addEventListener('focusin', (event) => {
+      if (menu.open && event.target instanceof Node && !menu.contains(event.target)) close()
+    }, { signal })
+    window.addEventListener('resize', () => { if (menu.open) position() }, { signal })
   }
 }

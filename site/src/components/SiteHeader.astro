@@ -105,7 +105,7 @@ const links = port ? portHeaderLinks(port) : undefined
       the whole disclosure goes and its panel stays in the document for the
       first-paint hold below.
     */}
-    <details class:list={['site-header__menu', documentationContext && 'site-header__menu--overflow']}>
+    <details class:list={['site-header__menu', documentationContext && 'site-header__menu--overflow']} data-header-menu>
       <summary class="topnav-chip site-header__menu-button" aria-label="More navigation">
         <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
           <path d="M2 4h12M2 8h12M2 12h12" stroke-linecap="round" />

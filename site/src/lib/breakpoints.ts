@@ -37,3 +37,11 @@ export const PANEL_QUERIES = {
   sheet: `${below('phone')}, ${below('tablet')} and (orientation: portrait)`,
   side: `(max-height: ${SHORT - 0.001}rem) and (orientation: landscape)`,
 } as const
+
+export type PanelMode = 'popover' | 'sheet' | 'side'
+
+/** How a panel opens on this display: a side sheet on a short landscape screen, a bottom sheet on a phone, a popover elsewhere (record 0071). */
+export function panelMode(): PanelMode {
+  const matches = (query: string) => typeof window.matchMedia === 'function' && window.matchMedia(query).matches
+  return matches(PANEL_QUERIES.side) ? 'side' : matches(PANEL_QUERIES.sheet) ? 'sheet' : 'popover'
+}

@@ -79,7 +79,7 @@ describe('header disclosure behavior', () => {
     expect(win.document.querySelectorAll('.site-header__destinations > a[data-header-action]')).toHaveLength(3)
   })
 
-  it('toggles independently of the Menu panel and keeps one disclosure open at a time', () => {
+  it('keeps one disclosure open at a time, and one panel: a disclosure in the Menu belongs to it, one outside closes it', () => {
     initDocumentationNavigation()
     const menu = win.document.querySelector<HTMLDetailsElement>('details.site-header__menu')!
     menu.open = true
@@ -89,10 +89,10 @@ describe('header disclosure behavior', () => {
     open(picker('bar'))
     expect(picker('bar').open).toBe(true)
     expect(picker('menu').open, 'one picker open at a time').toBe(false)
-    expect(menu.open).toBe(true)
+    expect(menu.open, 'a panel opening elsewhere takes the focus and closes the Menu').toBe(false)
     picker('bar').open = false
     picker('bar').dispatchEvent(new win.Event('toggle'))
-    expect(menu.open, 'closing the disclosure leaves the Menu open').toBe(true)
+    expect(picker('bar').open).toBe(false)
   })
 
   it('closes on Escape from a row or the search box and returns focus to the trigger', () => {
