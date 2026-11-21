@@ -302,7 +302,8 @@ const wrapsHref = wraps ? referenceHref(port, wraps.call, version) : undefined
   .mcp-tier-filter__label { margin-inline-end: 0.25rem; color: var(--color-muted); font-size: 0.8125rem; font-weight: 600; }
   .mcp-tier-filter__option { position: relative; display: inline-flex; }
   .mcp-tier-filter__option input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
-  .mcp-tier-filter__option span { display: inline-flex; align-items: center; gap: 0.375rem; min-height: 2rem; padding: 0 0.625rem; border: 1px solid var(--control-border, var(--color-edge)); border-radius: 0.25rem; background: var(--background-color); font-size: 0.8125rem; }
+  /* A chip sizes to its word. Under the inherited overflow-wrap: anywhere, Firefox broke "Execute" and "Teardown" inside the word at 1280px. */
+  .mcp-tier-filter__option span { display: inline-flex; align-items: center; gap: 0.375rem; min-height: 2rem; padding: 0 0.625rem; border: 1px solid var(--control-border, var(--color-edge)); border-radius: 0.25rem; background: var(--background-color); font-size: 0.8125rem; overflow-wrap: normal; white-space: nowrap; }
   .mcp-tier-filter__option small { color: var(--color-muted); font-size: 0.75rem; }
   .mcp-tier-filter__option:hover span { background: var(--color-surface-hover); }
   .mcp-tier-filter__option:has(:checked) span { border-color: var(--theme-primary); background: color-mix(in srgb, var(--theme-primary) 10%, transparent); color: var(--theme-primary); font-weight: 600; }
