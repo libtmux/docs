@@ -270,7 +270,9 @@ export async function chipGrowthProblems(page, scope) {
       return {
         text: name.textContent.trim(), box: plain(box), mark: plain(a.querySelector(':scope > .api-nav__kind').getBoundingClientRect()), lines,
         rail: plain(a.closest(list).getBoundingClientRect()), where,
-        clipped: a.scrollHeight > a.clientHeight + 1 || a.scrollWidth > a.clientWidth + 1,
+        // Only a link that hides its overflow clips: the text box of a line sticks out of a link by a pixel or two, though no letter does.
+        clipped: (getComputedStyle(a).overflowY !== 'visible' && a.scrollHeight > a.clientHeight + 1)
+          || (getComputedStyle(a).overflowX !== 'visible' && a.scrollWidth > a.clientWidth + 1),
       }
     })
   }, scope)
@@ -755,6 +757,7 @@ export async function checkUsageChips(browser, base) {
     await page.addStyleTag({ content: `${CHIP} { height: 1.4em !important; overflow: hidden !important; }` })
     const pinned = await growth()
     assert(pinned.problems.some((problem) => /past the link's bottom edge/.test(problem)), 'The check did not notice a link too short for its name')
+    assert(pinned.problems.some((problem) => /the link clips its name/.test(problem)), 'The check did not notice a link that clips its name')
     // Control 2: a name that ends below its link's bottom edge.
     await fresh()
     await page.addStyleTag({ content: `${CHIP} > ${LINK_MARK} + code { margin-bottom: -8px !important; }` })
