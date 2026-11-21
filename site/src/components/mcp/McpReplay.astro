@@ -56,10 +56,10 @@ const note = (frame: Frame) => {
   {recording && (
     <header class="mcp-replay__head" data-head>
       <span class="mcp-replay__title">Replay</span>
-      <span class="mcp-replay__hint" data-hint>Hover a call to preview the tmux state after it. Use its pin button to hold it.</span>
+      <span class="mcp-replay__hint" data-hint>Hover a call to preview the tmux state after it. Use its pin button to hold it. With the replay focused, the arrow keys, Home and End step through the calls.</span>
     </header>
   )}
-  <div class="mcp-replay__body" tabindex={recording ? 0 : undefined} data-body>
+  <div class="mcp-replay__body" tabindex={recording ? 0 : undefined} role={recording ? 'group' : undefined} aria-label={recording ? 'The chat and the tmux it leaves' : undefined} aria-keyshortcuts={recording ? 'ArrowLeft ArrowRight Home End' : undefined} data-body>
     {recording && (
       <div class="mcp-replay__tmux" data-tmux role="group" aria-label="tmux state after the call shown">
         {recording.frames.map((frame) => {
@@ -126,7 +126,8 @@ const note = (frame: Frame) => {
     const hint = root.querySelector<HTMLElement>('[data-hint]')
     // A touch screen fires mouseenter on a tap and never mouseleave, so only a pointer that can hover previews.
     const canHover = window.matchMedia?.('(hover: hover)').matches ?? true
-    const IDLE_HINT = canHover ? 'Hover a call to preview the tmux state after it. Use its pin button to hold it.' : 'Use a call\'s pin button to hold the tmux state after it.'
+    const KEYS = ' With the replay focused, the arrow keys, Home and End step through the calls.'
+    const IDLE_HINT = (canHover ? 'Hover a call to preview the tmux state after it. Use its pin button to hold it.' : 'Use a call\'s pin button to hold the tmux state after it.') + KEYS
     // The one call whose pin button is a tab stop; arrow keys move it, so the list is a single stop.
     let rover = -1
 
