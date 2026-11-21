@@ -163,6 +163,14 @@ describe('contrast of the shared chrome', () => {
     }
   })
 
+  // Firefox draws a white scrollbar on an inner scroller in dark unless the page names its colours.
+  it('names the scrollbar colours from the control token in dark, at the root where every scroller inherits them', () => {
+    const global = read('global.css')
+    expect(global).toMatch(/html\[data-theme-mode='dark'\]\s*\{\s*scrollbar-color:\s*var\(--control-border\) transparent;/)
+    expect(global).toMatch(/prefers-color-scheme: dark\)\s*\{\s*html:not\(\[data-theme-mode\]\):not\(\[data-theme='light'\]\)\s*\{\s*scrollbar-color:\s*var\(--control-border\) transparent;/)
+    expect(global, 'light keeps the native scrollbar').not.toMatch(/html\[data-theme-mode='light'\][^{]*\{[^}]*scrollbar-color/)
+  })
+
   // The `$` of a shell session is bold 13px text on the code frame: syntax-bg, white in light and #24292e in dark.
   it('keeps the shell prompt at 4.5:1 on the code frame in both themes, in the violet it had', () => {
     const [light, dark] = [...read('global.css').matchAll(/--lm-shell-prompt:\s*(#[0-9a-f]{6})/g)].map((match) => match[1]!)

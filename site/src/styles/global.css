@@ -123,6 +123,14 @@
   /* Short and long pages keep the same width with classic scrollbars. */
   html { scrollbar-gutter: stable; }
 
+  /* In dark, native scrollbars take the tokens: Firefox draws a white one on an inner scroller (the sidebar, the API tree, the
+     home program, the search facets, a section bar) otherwise. The property is inherited, so the root reaches them all. Dark is the
+     resolved data-theme-mode or, before the theme script runs, the system preference, as in tokens.css. */
+  html[data-theme-mode='dark'] { scrollbar-color: var(--control-border) transparent; }
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme-mode]):not([data-theme='light']) { scrollbar-color: var(--control-border) transparent; }
+  }
+
   /* Every focusable control shows the one ring. A control's own rule, which is unlayered, still wins where a clipped
      container needs the ring inside its edge. */
   :where(a[href], button, summary, input, select, textarea, [tabindex]:not([tabindex="-1"])):focus-visible {
