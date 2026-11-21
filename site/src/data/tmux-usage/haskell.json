@@ -94,7 +94,7 @@
   ],
   "port": "haskell",
   "repo": "libtmux/libtmux-haskell",
-  "revision": "85091e2ec0459d6815dda96213db231916df8bd6",
+  "revision": "6491b89cf2b0287437d3fa7d92e95623fda1303e",
   "schemaVersion": 1,
   "symbols": {
     "LibTmux.Program#v:readProgramScreen": [

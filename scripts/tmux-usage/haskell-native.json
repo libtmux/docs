@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
   "repository": "libtmux/libtmux-haskell",
-  "revision": "85091e2ec0459d6815dda96213db231916df8bd6",
+  "revision": "6491b89cf2b0287437d3fa7d92e95623fda1303e",
   "files": {
     ".tool-versions": "13c8a19b336b86a161f4d5ea74347960e884e2c0887d399fe752d84eecfd35e7",
-    "cabal.project": "6890ddc60947061b057c023a1d2708372052cfc8dff98f50dfced6fbbfecdcf7",
+    "cabal.project": "e0b3c63a4df8d5acc732b4a7b866c0d843bafc261b11f907b3a1d66e19989844",
     "cbits/guardian-client.c": "1996a61ad02f9b15ec372013e1b5682a087c7425b3864e651cab340aa29ebf1d",
     "cbits/guardian.c": "745d2e66adb8b694d26304a7cf33742fe9cda16ca8105c5942b93ddfd2b567f7",
     "cbits/owned-socket.c": "7f8431ae89b1dfe5e437a352c7560daebae21637d84d9d8d4ee8c964a5ff3a04",
@@ -38,7 +38,7 @@
     "internal/LibTmux/Internal/TmuxText.hs": "5c58645aa089c306cf68f69c4b209eba78f915320547c0d1b8bdfb003b086dd8",
     "internal/LibTmux/Internal/Topology.hs": "9ce18906a4b622710aba09e692f893571e2c153ef8d5b54ba13f4928706ef6a3",
     "internal/LibTmux/Internal/VersionProbe.hs": "8d3861ffd53c5b512cfd88629ebfa2b7e254101d825ad33d6a5c8e5a6cf7e1e2",
-    "libtmux-haskell.cabal": "dbf5f9f5b88f8acf274ec56f318a04bb7fcbb8d8bec58333a4b20926cf1fb64b",
+    "libtmux-haskell.cabal": "2e78dcbdb22d1607974f46027953bd2a64d5d0ab5b0368bd911e199ab8c89185",
     "src/LibTmux.hs": "7523a0032483fa65aab7012e8a17998206cae32ed75a874092b1b770a08a287a",
     "src/LibTmux/Capabilities.hs": "07a42e1505a5d9f30a3fc9480d6f322055e0736b070e5248813aa423b9fadfd2",
     "src/LibTmux/Control.hs": "503bee4982db5116a190ac5c1913e83d852377902288093f684bfc67173b8222",
@@ -811,5 +811,5 @@
       ]
     }
   ],
-  "modelSha256": "c7a2d8ae0bdf533d3350ce50e22cc7a8b934bfe299d17f5a95512a624edeea7b"
+  "modelSha256": "01ad5bc82ac153a7e716bb6c1cb83c9008df4fea412d7cc45cebf66c01319204"
 }
