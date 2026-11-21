@@ -46,6 +46,9 @@ describe('the skip link', () => {
     })
     const files = walk(root).map((file) => ({ file, text: readFileSync(file, 'utf8').replace(/\{\/\*[\s\S]*?\*\/\}|<!--[\s\S]*?-->/g, '') }))
     const drawsMain = (text: string) => /<main\b/.test(text)
+    // A component that picks its root element at render time (`const Root = embedded ? 'div' : 'main'`) must give it the id too.
+    const dynamic = files.filter(({ text }) => /\bconst\s+[A-Z]\w*\s*=\s*[^\n]*\?\s*['"]\w+['"]\s*:\s*['"]\w+['"]/.test(text) && /\?\s*['"]\w+['"]\s*:\s*['"]main['"]|\?\s*['"]main['"]\s*:/.test(text) && !/id=\{[^}]*['"]content['"]/.test(text)).map(({ file }) => file.slice(root.length + 1))
+    expect(dynamic, 'a dynamic main root without id="content"').toEqual([])
     const providers = files.filter(({ file, text }) => drawsMain(text) && !file.includes('/pages/')).map(({ file }) => file.split('/').pop()!.replace(/\.astro$/, ''))
     const pages = files.filter(({ text }) => /<BaseLayout\b/.test(text))
     expect(pages.length).toBeGreaterThan(5)
