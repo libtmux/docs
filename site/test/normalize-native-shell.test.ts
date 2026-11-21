@@ -319,13 +319,18 @@ describe('native shell URL normalization', () => {
   })
 
   it('marks each native page with the section filter the Astro layout writes, once, ahead of its article', async () => {
-    const cases = { 'api/pane/': 'reference', 'quickstart/': 'guides', 'topics/architecture/': 'topics', '': 'home' }
-    const { html, changed, again } = await normalizedNativePages(Object.keys(cases))
+    const cases = { 'api/pane/': 'reference', 'quickstart/': 'guides', 'topics/architecture/': 'topics', 'internals/': 'reference', 'glossary/': 'concepts', 'migration/': 'guides' }
+    const { html, changed, again } = await normalizedNativePages([...Object.keys(cases), 'project/', 'history/', ''])
     expect(changed).toBeGreaterThan(0)
     for (const [path, section] of Object.entries(cases)) {
       const marker = `<div data-pagefind-filter="section:${section}" hidden></div>`
       expect(html[path]!.split('data-pagefind-filter="section:').length, path).toBe(2)
       expect(html[path], path).toContain(`${marker}<article role="main" data-pagefind-body data-pagefind-filter="port:Python">`)
+    }
+    // A page that fits none of the site's sections carries no section marker at all (record 0075).
+    for (const path of ['project/', 'history/', '']) {
+      expect(html[path], path).not.toContain('data-pagefind-filter="section:')
+      expect(html[path], path).toContain('<article role="main" data-pagefind-body data-pagefind-filter="port:Python">')
     }
     // A second pass finds the marker in place and writes nothing.
     expect(again).toBe(0)

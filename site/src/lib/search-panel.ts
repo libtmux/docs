@@ -295,7 +295,8 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings
     // Kinds belong to reference pages, so the facet shows once the search is among them.
     const kinds = state.scope === 'reference' || state.section === 'reference' ? { ...(state.kind ? { [state.kind]: 0 } : {}), ...counts.kind } : {}
     const hasPorts = Object.keys(ports).length > 0
-    const hasSections = Boolean(sectionList) && Object.keys(sections).length > 0
+    const sectionRows = orderedSections(sections)
+    const hasSections = Boolean(sectionList) && sectionRows.length > 0
     const hasKinds = Boolean(kindList) && Object.keys(kinds).length > 0
     if (portGroup) portGroup.hidden = !hasPorts
     if (sectionGroup) sectionGroup.hidden = !hasSections
@@ -319,7 +320,7 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings
       },
     )
     if (sectionList) {
-      facetRows(sectionList, orderedSections(sections), (value) => state.section === value, sectionLabel, (value, on) =>
+      facetRows(sectionList, sectionRows, (value) => state.section === value, sectionLabel, (value, on) =>
         // One section at a time: the facet narrows, it does not combine.
         setState({ section: on ? value : undefined, kind: on && value === 'reference' ? state.kind : undefined }))
     }
