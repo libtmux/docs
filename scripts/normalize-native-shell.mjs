@@ -32,7 +32,11 @@ function adaptHighlight(directory) {
   return 1
 }
 
-/** Complete retained native widgets before the shared page gate reveals them. */
+/**
+ * Complete retained native widgets before the shared page gate reveals them.
+ * An asset may pin several digests, one per shipped release; every edit applies
+ * only where its `from` text exists, so one edit list serves all of them.
+ */
 function adaptWidgets(directory) {
   const assets = [
     ['js/layout.js', 'f10b833c4781bc9ac9dd99762e840c4990a2036011e4f11572f6831611cb52d3', [
@@ -49,7 +53,8 @@ function adaptWidgets(directory) {
       ["const clipboard = new ClipboardJS('.copybtn', {text: copyTargetText})", "const clipboard = nativeClipboard = new ClipboardJS('.copybtn', {text: copyTargetText})"],
       ['runWhenDOMLoaded(addCopyButtonToCodeCells)', 'if (window.__libtmuxAppearance) window.__libtmuxAppearance.layout(addCopyButtonToCodeCells);\nelse runWhenDOMLoaded(addCopyButtonToCodeCells);'],
     ]],
-    ['design-tabs.js', 'de2467cfca5bb555043369f1eea82c9cd794e70fa0444f216aa4ebb18cefc9f0', [
+    // sphinx-design 0.7.0 ships compiled/sd_tabs.js; 0.8.0 ships static/design-tabs.js, which guards localStorage itself.
+    ['design-tabs.js', ['de2467cfca5bb555043369f1eea82c9cd794e70fa0444f216aa4ebb18cefc9f0', 'aac3f57ddb86333d6777b78b21ed01ba329c98e22879f81de07b6d222604587e'], [
       ['function ready() {', 'function ready() {\n  sd_id_to_elements = {};'],
       ['document.addEventListener("DOMContentLoaded", ready, false);', 'if (window.__libtmuxAppearance) window.__libtmuxAppearance.layout(ready);\nelse document.addEventListener("DOMContentLoaded", ready, false);'],
       ['window.sessionStorage.getItem(\n          storageKeyPrefix + group\n        )', '(() => { try { return window.sessionStorage.getItem(storageKeyPrefix + group); } catch { return null; } })()'],
@@ -64,7 +69,7 @@ function adaptWidgets(directory) {
     if (!existsSync(file)) continue
     const original = readFileSync(file, 'utf8')
     const before = edits.reduce((value, [from, to]) => value.replaceAll(to, from), original)
-    if (nativeHash(before) !== digest) throw new Error(`Native widget changed: ${file}`)
+    if (![digest].flat().includes(nativeHash(before))) throw new Error(`Native widget changed: ${file}`)
     const after = edits.reduce((value, [from, to]) => value.replaceAll(from, to), before)
     digests[name] = nativeHash(after)
     if (after !== original) { writeFileSync(file, after); changed++ }
