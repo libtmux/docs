@@ -458,6 +458,23 @@ describe('pickers, touch targets, focus and labels', () => {
   })
 })
 
+/** Labels are people's words, set in IBM Plex Sans (record 0031); mono stays for code, identifiers, paths and values. */
+describe('labels in sans', () => {
+  const source = (path: string) => readFileSync(new URL(`../src/${path}`, import.meta.url), 'utf8')
+
+  it.each([
+    ['components/api/RelationshipCollection.astro', '  .api-collection__kind { font'],
+    ['components/HomeIntro.astro', '.home-eyebrow {'],
+    ['styles/global.css', '.mcp-group > h2.api-index-summary {'],
+  ])('%s sets %s in the sans face', (file, selector) => {
+    const start = source(file).indexOf(selector)
+    expect(start, selector).toBeGreaterThan(-1)
+    const body = source(file).slice(start, source(file).indexOf('}', start))
+    expect(body).toMatch(/var\(--font-sans[,)]|var\(--font-sans\)/)
+    expect(body).not.toMatch(/mono/)
+  })
+})
+
 describe('shared chrome reads tokens, not greys', () => {
   const source = (path: string) => readFileSync(new URL(`../src/${path}`, import.meta.url), 'utf8')
 

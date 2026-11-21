@@ -1116,6 +1116,15 @@ html[data-theme="purple"][data-theme-mode="dark"] {
 }
 
 /*
+ * A group's name on the MCP tools and prompts index is a label, not an
+ * identifier, so it is set in the sans face (record 0031). Unlayered, to
+ * outrank the `font-mono` utility the component writes on the heading.
+ */
+.mcp-group > h2.api-index-summary {
+  font-family: var(--font-sans);
+}
+
+/*
  * The prerelease bar, and the rule that keeps it from flashing.
  *
  * `display: none` on a document attribute rather than on a class the bar
