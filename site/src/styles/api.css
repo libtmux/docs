@@ -800,9 +800,11 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout > .
   margin: 0;
   border-radius: var(--tab-r) 0 0 0;
   border-bottom-color: transparent;
-  font-size: 0.75rem;
+  /* The kind's word and Source are .8em of this, floored at the tab's 10.5px (record 0051). */
+  font-size: max(0.75rem, calc(var(--corner-word-floor) / 0.8));
 }
-.api-corner > .api-badge--mod.api-badge--mod.api-badge--mod { padding-inline: 0.35rem; font-size: 0.7421875rem; }
+/* A modifier's label (`async`) floors at the badge's 11px. */
+.api-corner > .api-badge--mod.api-badge--mod.api-badge--mod { padding-inline: 0.35rem; font-size: max(0.7421875rem, calc(var(--badge-word-floor) / 0.8)); }
 .api-corner > .api-badge.api-badge.api-badge:last-child { border-bottom-right-radius: var(--tab-r); border-right-color: transparent; }
 /* The MCP toolset badge sits in the tab between the kind and Source, in the tab's 15px and with the tab's shape. */
 .api-corner > .mcp-tier {
@@ -1209,6 +1211,8 @@ html[data-api-sections-measured] .api-section-bar {
   white-space: nowrap;
 }
 .api-source-details { margin-block: 1rem 1.5rem; font-size: 0.875rem; }
+/* The version and deprecation labels of a parameter: 12px, the floor for a label that is not a badge (record 0071). The vendored rule sets 11px. */
+span.gp-sphinx-api-param-since, span.gp-sphinx-api-param-deprecated { font-size: max(0.75rem, 12px); }
 .api-source-details > summary { cursor: pointer; color: var(--color-muted); }
 :is(.api-reference-layout--symbol, .api-reference-layout--glossary) .api-reference-content [id] {
   scroll-margin-top: 0;

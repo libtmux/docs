@@ -643,3 +643,26 @@ describe('the dark signature header (record 0080)', () => {
     expect(ratio(name, header(0.06))).toBeLessThan(4.5)
   })
 })
+
+describe('badge and tab label floors (records 0051 and 0071)', () => {
+  it('names the floors: 11px for a badge word, 10.5px for a corner tab word', () => {
+    const tokens = read('tokens.css')
+    expect(tokens).toContain('--badge-word-floor: 11px;')
+    expect(tokens).toContain('--corner-word-floor: 10.5px;')
+  })
+
+  it('sizes the legend chip and the modifier badge so their .8em word reaches the badge floor', () => {
+    const marks = read('kind-marks.css')
+    expect(marks.match(/font: 600 max\(\.8125rem, calc\(var\(--badge-word-floor\) \/ \.8\)\)\/1/g)).toHaveLength(2)
+  })
+
+  it('sizes the corner tab chips so the kind word and Source reach the tab floor and the modifier reaches the badge floor', () => {
+    const api = read('api.css')
+    expect(api).toContain('font-size: max(0.75rem, calc(var(--corner-word-floor) / 0.8));')
+    expect(api).toContain('font-size: max(0.7421875rem, calc(var(--badge-word-floor) / 0.8));')
+  })
+
+  it('draws a parameter\'s "added" and deprecation labels at 12px, over the vendored 11px', () => {
+    expect(read('api.css')).toContain('span.gp-sphinx-api-param-since, span.gp-sphinx-api-param-deprecated { font-size: max(0.75rem, 12px); }')
+  })
+})

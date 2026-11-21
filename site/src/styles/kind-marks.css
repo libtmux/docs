@@ -107,6 +107,9 @@
 /* ---- The legend chip: mark and word in one token ---- */
 
 /*
+ * The word is .8em of the chip, which the chip's font size floors at `--badge-word-floor` (record 0051): the chip is sized
+ * so its word is never under 11px, and the centring below, which reads the cap height of .8em, stays exact.
+ *
  * One box with one border and radius. The mark and the word are equal-height
  * segments inside it, split by a 1px divider with the mark on a darker tint.
  * They are one line of text: both sit on the same snapped baseline, and the run
@@ -130,7 +133,7 @@
   border-radius: .2em;
   background: var(--mk-bg, transparent);
   color: var(--mk-fg, inherit);
-  font: 600 .8125rem/1 var(--font-sans, ui-sans-serif, system-ui, sans-serif);
+  font: 600 max(.8125rem, calc(var(--badge-word-floor) / .8))/1 var(--font-sans, ui-sans-serif, system-ui, sans-serif);
   letter-spacing: 0;
   text-transform: none;
   text-decoration: none;
@@ -305,7 +308,7 @@
   border-radius: .2em;
   background: transparent;
   color: var(--md-fg);
-  font: 600 .8125rem/1 var(--font-sans, ui-sans-serif, system-ui, sans-serif);
+  font: 600 max(.8125rem, calc(var(--badge-word-floor) / .8))/1 var(--font-sans, ui-sans-serif, system-ui, sans-serif);
   letter-spacing: 0;
   text-transform: none;
   text-decoration: none;

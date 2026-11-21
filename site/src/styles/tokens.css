@@ -170,6 +170,11 @@ html[data-theme-mode="dark"] {
   --space-8: 32px;
   --space-12: 48px;
 
+  /* The 13px floor holds for running text, metadata and controls. A short label may go below it (record 0051): a kind or
+     modifier badge's word to 11px, and a card corner tab's to 10.5px, the tab being one pixel thinner than the card's padding. */
+  --badge-word-floor: 11px;
+  --corner-word-floor: 10.5px;
+
   --radius-xs: 4px;
 
   /* Columns and reading measures. */
