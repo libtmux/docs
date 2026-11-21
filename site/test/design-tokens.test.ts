@@ -163,6 +163,39 @@ describe('contrast of the shared chrome', () => {
     }
   })
 
+  // Record 0079. The tint is the link colour over the code background, under the syntax inks: GitHub light and dark, which tokens.css states.
+  it('keeps every syntax ink at 4.5:1 on the Core player\'s current and hover tints, in every palette and both themes', () => {
+    const css = read('core-player.css')
+    const shares = {
+      light: rule(css, '\n.home-example-view'),
+      dark: rule(css, '\nhtml[data-theme-mode="dark"] .home-example-view'),
+    }
+    expect(rule(css.slice(css.indexOf('@media (prefers-color-scheme: dark)')), '\n  html:not([data-theme-mode]):not([data-theme="light"]) .home-example-view'), 'before the theme script runs, dark reads the same shares').toEqual(shares.dark)
+    const tokens = { light: LIGHT, dark: DARK }
+    /** The lowest ratio of any ink over any palette's tint, and where it is. */
+    const lowest = (share: (mode: (typeof modes)[number]) => number) => {
+      let worst: [number, string] = [Infinity, '']
+      for (const [slug, palette] of Object.entries(palettes)) {
+        for (const mode of modes) {
+          const ground = tint(hex(palette[mode].link), share(mode), hex(tokens[mode]['--syntax-bg']!))
+          for (const [name, ink] of Object.entries(tokens[mode]).filter(([key]) => /^--syntax-(?!bg$)/.test(key))) {
+            const value = ratio(hex(ink), ground)
+            if (value < worst[0]) worst = [value, `${slug} ${mode} ${name}`]
+          }
+        }
+      }
+      return worst
+    }
+    for (const state of ['current', 'hover']) {
+      const [value, where] = lowest((mode) => Number.parseFloat(shares[mode][`--core-tint-${state}`]!) / 100)
+      expect(value, `${state}: ${where}`).toBeGreaterThanOrEqual(4.5)
+    }
+    // A control: the 14% the owner set on 2026-11-14 must read as failing, or this loop could not fail.
+    expect(lowest(() => 0.14)[0], 'the old current tint').toBeLessThan(4.5)
+    expect(shares.light, 'light: current 8%, hover 5%').toEqual({ '--core-tint-hover': '5%', '--core-tint-current': '8%' })
+    expect(shares.dark, 'dark: current 7%, hover 4%').toEqual({ '--core-tint-hover': '4%', '--core-tint-current': '7%' })
+  })
+
   it('keeps the focus ring at 3:1 on the page and on a panel in every palette', () => {
     for (const [slug, palette] of Object.entries(palettes)) {
       for (const mode of modes) {

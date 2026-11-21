@@ -134,17 +134,40 @@
   }
 }
 
-/* The call a reader is previewing from its marker, then the call being shown. A tint, not a bar: the code's own colours stay readable on it. */
+/*
+ * The call a reader is previewing from its marker, then the call being shown. A tint, not a bar: the code's own colours stay readable on it
+ * (record 0079): `--color-link` at these shares over the code background keeps every syntax ink at 4.5:1 or more. The shares differ by
+ * theme; dark is the resolved data-theme-mode or, before the theme script runs, the system preference, as in tokens.css.
+ */
+.home-example-view {
+  --core-tint-hover: 5%;
+  --core-tint-current: 8%;
+}
+
+html[data-theme-mode="dark"] .home-example-view {
+  --core-tint-hover: 4%;
+  --core-tint-current: 7%;
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme-mode]):not([data-theme="light"]) .home-example-view {
+    --core-tint-hover: 4%;
+    --core-tint-current: 7%;
+  }
+}
+
 .home-example-view .ec-line.is-hover {
-  background: color-mix(in srgb, var(--color-link) 8%, transparent);
+  background: color-mix(in srgb, var(--color-link) var(--core-tint-hover), transparent);
 }
 
 .home-example-view .ec-line.is-current {
-  background: color-mix(in srgb, var(--color-link) 14%, transparent);
+  background: color-mix(in srgb, var(--color-link) var(--core-tint-current), transparent);
 }
 
+/* A pinned call keeps the current tint, since a heavier wash would take the syntax colours under 4.5:1. A 1px hairline along the line's start marks it:
+   an inset shadow, so no border takes width and nothing shifts. Code is always left to right, so the start is the left. */
 .home-example-view .ec-line.is-current.is-pinned {
-  background: color-mix(in srgb, var(--color-link) 24%, transparent);
+  box-shadow: inset 1px 0 0 var(--color-link);
 }
 
 /*
@@ -210,7 +233,9 @@
   outline-offset: 2px;
 }
 
-.expressive-code .core-step.is-current {
+/* The shown call's marker is filled, and so is a pinned call's, which is the shown call (record 0079). */
+.expressive-code .core-step.is-current,
+.expressive-code .core-step.is-pinned {
   border-color: var(--color-link);
   background: var(--color-link);
   color: var(--ec-codeBg, var(--color-surface));
