@@ -346,7 +346,7 @@ html[data-theme-mode="dark"] .mcp-replay {
 
 .mcp-turn__pin:focus-visible {
   outline: 2px solid var(--focus-ring-color, currentColor);
-  outline-offset: 1px;
+  outline-offset: 2px;
 }
 
 /* A speaker's name, in sentence case on a line of its own. */
@@ -741,7 +741,7 @@ html[data-theme-mode="dark"] .mcp-replay {
 }
 
 .mcp-client__button:focus-visible {
-  outline: 2px solid var(--color-link);
+  outline: 2px solid var(--focus-ring-color, currentColor);
   outline-offset: -2px;
 }
 

@@ -127,7 +127,7 @@ const countText = (count: number) => `${count} other ${count === 1 ? 'port' : 'p
   .api-eq-chipset button { display: inline-flex; align-items: center; gap: 5px; min-height: 26px; padding: 0 8px; border: 1px solid var(--eq-control-border); border-radius: 9999px; background: var(--background-color); color: var(--text-color); font: inherit; font-size: 0.75rem; cursor: pointer; }
   .api-eq-chipset button:hover { background: var(--color-api-background-hover, var(--color-surface-hover)); }
   .api-eq-chipset button[aria-pressed='true'] { background: color-mix(in srgb, var(--color-link) 12%, var(--background-color)); border-color: color-mix(in srgb, var(--color-link) 45%, transparent); color: var(--color-link); font-weight: 600; }
-  .api-eq-chipset button:focus-visible { outline: 2px solid var(--focus-ring-color, var(--theme-primary)); outline-offset: 1px; }
+  .api-eq-chipset button:focus-visible { outline: 2px solid var(--focus-ring-color, var(--theme-primary)); outline-offset: 2px; }
   /* On touch the chips keep their drawn size and take a touch-target-tall hit area, kept off the next row by the row gap; a
      cell's link takes the full row height through its padding, so its marks stay on the name's baseline (record 0071). */
   @media (pointer: coarse) {

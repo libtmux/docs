@@ -68,6 +68,8 @@ html[data-theme-mode='dark'] .api-nav { --api-nav-guide: color-mix(in srgb, var(
   padding-inline-start: calc(0.5rem + max(0, var(--level, 1) - 2) * var(--api-nav-indent));
 }
 .api-nav[data-presentation] :is(button, input, select, summary, a):focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
+/* The tree scrolls, so a ring on its last row would be cut at the bottom edge. */
+.api-nav[data-presentation] .api-nav__tree :is(button, a):focus-visible { outline-offset: -2px; }
 .api-nav__section { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; padding: 0.75rem 0.5rem 0.35rem; color: var(--color-muted); font-size: 0.75rem; }
 .api-nav__section > :first-child { font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
 .api-nav__section > :last-child { white-space: nowrap; }

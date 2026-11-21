@@ -450,6 +450,11 @@ const segmentNames =
     outline-offset: 2px;
   }
 
+  /* The segments run to the control's edge, which clips a ring drawn outside them. */
+  .search-panel__seg button:focus-visible {
+    outline-offset: -2px;
+  }
+
   .search-panel__clear,
   .search-panel__widen,
   .search-panel__failure button {

@@ -64,7 +64,7 @@
 .api-signature-parameters .api-signature-summary { color: var(--color-foreground-secondary); font-weight: 400; }
 .api-signature-parameters .api-parameter-name { color: inherit; text-decoration: none; }
 .api-signature-parameters .api-parameter-name:hover { text-decoration: underline; }
-.api-signature-parameters .api-parameter-name:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+.api-signature-parameters .api-parameter-name:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
 
 /* Member declarations need the same distinct surface as type declarations. */
 dt.gp-sphinx-api-header { position: relative; }
@@ -1336,7 +1336,7 @@ span.gp-sphinx-api-param-since, span.gp-sphinx-api-param-deprecated { font-size:
 .api-source-path li a { display: block; min-width: 0; padding: .45rem .6rem; border: 1px solid var(--color-edge); border-radius: .35rem; font-family: var(--font-mono); font-size: .8rem; overflow-wrap: anywhere; text-decoration: none; }
 .api-source-path li a > .api-nav__kind { margin-inline-end: .35rem; }
 .api-source-path [aria-current="page"] { background: color-mix(in srgb, var(--theme-primary) 10%, transparent); font-weight: 600; }
-.api-source-path a:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+.api-source-path a:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
 .api-source-path__edge { font-size: .75rem; flex-shrink: 0; }
 
 /*
@@ -1546,6 +1546,8 @@ a.api-doc-link.is-cross-lit:not(.api-mention--chip):not(:has(.api-literal--link)
   scrollbar-color: var(--color-muted) transparent;
 }
 .api-member-budget:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
+/* A link in the budgeted list's last rows would have its ring cut by the scrolling box. */
+.api-member-budget :is(a, button):focus-visible { outline-offset: -2px; }
 .api-member-budget .api-member-group { margin-block: 0; }
 .api-member-budget .api-member-list { margin-top: 0; border: 0; border-radius: 0; }
 .api-member-budget > .api-member-group > h3 {

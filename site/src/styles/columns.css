@@ -117,7 +117,9 @@ h2.miller__title { font-size: 1.25rem; }
 .miller__up span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .miller__up svg { flex: none; }
 a.miller__up:hover { background: var(--color-surface-hover); color: var(--color-link); }
-a.miller__up:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 1px; }
+a.miller__up:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
+/* The pane scrolls, so a ring on its last row would be cut at the bottom edge. */
+.api-columns .miller__panebody :is(a, button):focus-visible { outline-offset: -2px; }
 .miller__fnav-off { opacity: 0.45; }
 .miller__fback { flex: none; min-height: 1.625rem; padding: 0 0.375rem; }
 .miller__scope { display: flex; align-items: center; gap: 0.5rem; min-height: 2rem; }
@@ -132,10 +134,10 @@ a.miller__up:focus-visible { outline: 2px solid var(--focus-ring-color); outline
 .miller__colhead--g > span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .miller__ctool { display: inline-grid; place-items: center; flex: none; width: 24px; height: 24px; border: 0; border-radius: 0.25rem; background: none; color: var(--color-foreground-muted); cursor: pointer; }
 .miller__ctool:hover, .miller__ctool[aria-pressed='true'] { background: var(--color-surface-hover); color: var(--text-color); }
-.miller__ctool:focus-visible, .miller__pager button:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 1px; }
+.miller__ctool:focus-visible, .miller__pager button:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
 .miller__cfilter { display: flex; align-items: center; gap: 0.375rem; margin: 0.125rem 0.5rem 0.375rem; }
 .miller__cinput { flex: 1; min-width: 0; height: 28px; padding: 0 0.5rem; border: 1px solid var(--control-border, #718294); border-radius: var(--radius-md, 0.375rem); background: var(--background-color); color: var(--text-color); font: 400 0.8125rem/1 var(--font-sans); }
-.miller__cinput:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 0; }
+.miller__cinput:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
 .miller__cmeta { flex: none; color: var(--color-foreground-muted); font: 400 0.75rem/1 var(--font-sans); font-variant-numeric: tabular-nums; }
 .miller__col--g .miller__cfilter:last-child, .miller__col--g .miller__list + .miller__cfilter { margin: 0.375rem 0.5rem; }
 .miller__list--virtual { padding-top: 0; padding-bottom: 0; }

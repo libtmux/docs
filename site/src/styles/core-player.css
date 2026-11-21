@@ -467,7 +467,7 @@ html[data-js] .core-player__results > .core-result[data-off] {
 .core-result__pin:focus-visible,
 .core-result__tmux > summary:focus-visible {
   outline: 2px solid var(--focus-ring-color, currentColor);
-  outline-offset: 1px;
+  outline-offset: 2px;
 }
 
 .core-result__plain {

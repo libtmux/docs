@@ -65,6 +65,8 @@ const { toc, isMobile = false, depth = 0 } = Astro.props
       line-height: 1.25;
       color: var(--color-muted);
       text-decoration: none;
+      /* The links start at the scrolling column's edge, which clips a ring drawn outside them. */
+      outline-offset: -2px;
     }
     a:hover {
       color: var(--text-color);

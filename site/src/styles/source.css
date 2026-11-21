@@ -67,7 +67,7 @@ html[data-theme-mode='dark'] {
 .lm-src > span > code { grid-column: 3; grid-row: 1; padding: 0 12px; background: none; font: inherit; color: inherit; }
 .lm-src > span > .gm { grid-column: 1; grid-row: 1; display: inline-flex; align-items: center; justify-content: center; font-weight: 400; }
 .lm-src > span > .gm a { display: inline-flex; border-radius: .2em; text-decoration: none; }
-.lm-src > span > .gm a:focus-visible { outline: 2px solid var(--focus-ring-color, currentColor); outline-offset: 1px; }
+.lm-src > span > .gm a:focus-visible { outline: 2px solid var(--focus-ring-color, currentColor); outline-offset: 2px; }
 .lm-src > span.hl > code { background: var(--color-highlight-on-target); }
 .lm-src > span:target > code { background: var(--color-highlight-on-target); }
 .lm-src code > span { color: var(--shiki-light); }

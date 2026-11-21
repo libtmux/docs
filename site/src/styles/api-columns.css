@@ -20,6 +20,8 @@ html[data-api-view] .api-columns__bar { display: flex; flex-wrap: wrap; align-it
 .api-columns__seg button:hover { background: var(--color-surface-hover); }
 .api-columns__seg [aria-pressed='true'] { background: var(--color-surface-hover); font-weight: 600; }
 .api-columns :is(button, select, input, a):focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
+/* The segments run to the control's edge, which clips a ring drawn outside them. */
+.api-columns__seg button:focus-visible { outline-offset: -2px; }
 
 html[data-api-view='columns'] .api-columns__config:not([hidden]) { display: flex; flex-wrap: wrap; align-items: center; gap: 0.375rem 1rem; padding: 0.5rem 1rem; border-bottom: 1px solid var(--color-edge); background: var(--color-background-secondary); font: 400 0.8125rem/1.4 var(--font-sans); }
 .api-columns__config label { display: inline-flex; align-items: center; gap: 0.375rem; color: var(--color-foreground-muted); }

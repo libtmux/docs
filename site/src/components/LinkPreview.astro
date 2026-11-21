@@ -46,7 +46,8 @@ const { id = 'reference-link-preview', preview, class: className } = Astro.props
   }
   .reference-link-preview [hidden] { display: none; }
   .reference-link-preview code { font-family: var(--font-mono, ui-monospace, monospace); }
-  .reference-link-preview :focus-visible { outline: 2px solid var(--color-link); outline-offset: 3px; }
+  /* The card scrolls and its strips run to its edge, which clips a ring drawn outside them. */
+  .reference-link-preview :focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: -2px; }
 
   /* Header: the legend chip, then the qualified name. */
   .reference-link-preview__heading {
@@ -67,8 +68,6 @@ const { id = 'reference-link-preview', preview, class: className } = Astro.props
     background: var(--color-background-secondary); color: var(--color-link); font: .75rem/1.5 var(--font-sans);
     text-align: start; text-decoration: underline; cursor: pointer;
   }
-  /* The strip runs to the card's edge, which clips an outline drawn outside it. */
-  .reference-link-preview__expand:focus-visible { outline-offset: -2px; }
 
   /* The declaration, on a band of its own. The tokens colour the text; the band is the card's surface. */
   .reference-link-preview__signature {

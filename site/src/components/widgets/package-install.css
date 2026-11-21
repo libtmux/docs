@@ -77,7 +77,7 @@
   }
 
   .lm-pkg-install__tab:focus-visible {
-    outline: 2px solid var(--lm-pkg-install-accent);
+    outline: 2px solid var(--focus-ring-color);
     outline-offset: -2px;
   }
 
@@ -136,8 +136,8 @@
   }
 
   .lm-pkg-install__panel:focus-visible {
-    outline: 2px solid var(--lm-pkg-install-accent);
-    outline-offset: 4px;
+    outline: 2px solid var(--focus-ring-color);
+    outline-offset: 2px;
     border-radius: 0.25rem;
   }
 
@@ -175,8 +175,8 @@
   }
 
   .lm-pkg-install__manager:focus-visible {
-    outline: 2px solid var(--lm-pkg-install-accent);
-    outline-offset: 1px;
+    outline: 2px solid var(--focus-ring-color);
+    outline-offset: 2px;
   }
 
   /* SSR/no-JS default: the first command of each port, no script required.
@@ -458,7 +458,7 @@
   }
 
   .lm-pkg-install__copy:focus-visible {
-    outline: 2px solid var(--lm-pkg-install-accent);
+    outline: 2px solid var(--focus-ring-color);
     outline-offset: 2px;
   }
 
