@@ -1,4 +1,4 @@
-import { Window } from 'happy-dom'
+import { Window, type Document as HappyDocument } from 'happy-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
 
@@ -24,11 +24,11 @@ async function render(name: 'PackageInstall' | 'McpInstall', props: Record<strin
   return window.document
 }
 
-const ids = (document: Document, selector: string) => [...document.querySelectorAll(selector)]
+const ids = (document: HappyDocument, selector: string) => [...document.querySelectorAll(selector)]
 const tokens = (value: string | null) => (value ?? '').split(/\s+/).filter(Boolean)
 
 /** Every id is unique, each tab's `aria-controls` names panels that exist, and each panel's `aria-labelledby` names tabs that exist and list it. */
-function expectPaired(document: Document, tabs: string, panels: string) {
+function expectPaired(document: HappyDocument, tabs: string, panels: string) {
   const all = [...document.querySelectorAll('[id]')].map((element) => element.id)
   expect(new Set(all).size, 'ids are unique').toBe(all.length)
   const tabList = ids(document, tabs)

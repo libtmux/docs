@@ -1,4 +1,4 @@
-import { Window, type HTMLDetailsElement, type HTMLElement } from 'happy-dom'
+import { Window, type Element as HappyElement, type HTMLDetailsElement, type HTMLElement } from 'happy-dom'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { initDocumentationNavigation } from '../src/components/docs/documentation-navigation'
 import { PANEL_QUERIES } from '../src/lib/breakpoints'
@@ -36,7 +36,7 @@ const toggle = (element: HTMLDetailsElement, open: boolean) => {
   element.open = open
   element.dispatchEvent(new win.Event('toggle'))
 }
-const escape = (target: Element) => target.dispatchEvent(new win.KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }))
+const escape = (target: HappyElement) => target.dispatchEvent(new win.KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }))
 
 describe('the header Menu', () => {
   it('moves focus into its panel when it opens', () => {

@@ -89,7 +89,7 @@ const typeChips = kind ? catalogTypeCounts(tmuxCatalogEntries(version, kind)) : 
       <span class="sr-only">{CATALOG_TITLE} contents</span>
     </button>
   </DocumentationContext>
-  <main id="content" tabindex="-1" class:list={['api-reference-layout grid', entry && 'api-reference-layout--symbol']}>
+  <main class:list={['api-reference-layout grid', entry && 'api-reference-layout--symbol']} id="content" tabindex="-1">
     <ApiTree presentation="outline" inventory={navigation.json} selectedSymbol={entry ? `${entry.kind}.${entry.name}` : info ? `section:${info.segment}` : ''}
       referenceBase={base} portName="tmux" tree={navigation.tree} currentRoot={info?.segment}
       currentBucket={group ? `${info!.segment}-${group.id}` : undefined} currentIndex={kind && !entry ? info!.segment : undefined}

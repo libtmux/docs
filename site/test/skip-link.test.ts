@@ -58,7 +58,7 @@ describe('the skip link', () => {
 
     it('follows a native page\'s article, which keeps its own id', () => {
       const win = mount('<a class="skip-link" href="#content">Skip to content</a><article role="main" id="furo-main-content"><h1>Page</h1></article>')
-      const link = win.document.querySelector<HTMLAnchorElement>('a.skip-link')!
+      const link = win.document.querySelector('a.skip-link')!
       expect(link.getAttribute('href')).toBe('#furo-main-content')
       follow(win)
       expect(win.document.activeElement?.id).toBe('furo-main-content')
