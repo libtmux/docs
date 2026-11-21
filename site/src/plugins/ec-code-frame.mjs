@@ -103,6 +103,13 @@ export function codeFrame() {
       .frame .header .role a { color: var(--color-link, inherit); text-decoration: underline dotted; text-underline-offset: 0.2em; }
       .frame .header .role a:hover { text-decoration-style: solid; }
       /*
+       * Every focus ring is the site's 2px --focus-ring-color ring (08 Responsive and accessible). Expressive Code resets the
+       * browser's own, so the role links and the copy button would draw the UA's outline: auto, and a scrollable frame draws
+       * its own 3px #005cc5 ring (2.33:1 in dark). A scrollable frame's ring sits inside its edge, where an ancestor cannot clip it.
+       */
+      .frame .header .role a:focus-visible, .copy button:focus-visible { outline: 2px solid var(--focus-ring-color, var(--color-link, currentColor)); outline-offset: 2px; }
+      pre:focus-visible { outline: 2px solid var(--focus-ring-color, var(--color-link, currentColor)); outline-offset: -2px; }
+      /*
        * The source's line numbers hang in a rail outside the frame at a negative margin, and never in the code's padding
        * (record 0058). A layout states the margin it leaves left of its frames in --code-hang-room (default 1rem); a frame
        * whose rail needs more moves in by the difference, so the numbers stay on the page. The rail is the width of the numbers
