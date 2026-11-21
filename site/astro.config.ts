@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url'
 import { defineConfig, fontProviders } from 'astro/config'
 import { DEFAULT_LOCALE, LOCALES, buildLocale } from './src/i18n/locales.ts'
 import { sansFallbacks } from './src/lib/sans-fallbacks.ts'
+import { HEADING_LINK_AUTOLINK } from './src/lib/heading-link.ts'
 import expressiveCode from 'astro-expressive-code'
 import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 import { apiDb } from './src/integrations/api-db'
@@ -352,11 +353,7 @@ export default defineConfig({
         rehypeRowAnchors,
         [
           rehypeAutolinkHeadings,
-          {
-            behavior: 'append',
-            properties: { className: ['anchor-link'], ariaLabel: 'Link to this section' },
-            content: [{ type: 'text', value: '¶' }],
-          },
+          HEADING_LINK_AUTOLINK,
         ],
       ],
     }),

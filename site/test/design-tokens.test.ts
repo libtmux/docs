@@ -412,12 +412,12 @@ describe('pickers, touch targets, focus and labels', () => {
     const square = 'content: \'\'; position: absolute; inset: min(0px, calc((100% - var(--touch-target)) / 2)); }'
     const rules: Array<[string, string]> = [
       ['styles/global.css', '.prerelease-notice__more summary)::after { content: \'\'; position: absolute; inset: -.25rem -.25rem calc(.25rem + 100% - var(--touch-target)); }'],
-      ['styles/global.css', '.anchor-link, .inventory-help-link, footer .icons a)::after { ' + square],
+      ['styles/global.css', '.inventory-help-link, footer .icons a)::after { ' + square],
       ['styles/global.css', ':is([data-breadcrumb-item], .crumb-collapsed > a, footer ul.flex a, [data-ci-examples] li a) { display: inline-flex; align-items: center; min-height: var(--touch-target); }'],
       ['styles/global.css', '.site-header .scheme-switch__option::before { ' + hit],
       ['styles/global.css', '.expressive-code .frame .copy button { width: var(--touch-target); height: var(--touch-target); }'],
       ['styles/api.css', '.api-member-chips button::after, :is(.api-reference-eyebrow, .gp-sphinx-api-layout-right) > a.api-badge::before { ' + hit],
-      ['styles/api.css', '.api-heading-link::after { ' + square],
+      ['styles/api.css', '.heading-link::after { ' + square],
       ['styles/api.css', '.api-copy-name::before { inset: min(0px, calc((1lh - var(--touch-target)) / 2)); }'],
       ['styles/api.css', 'a.api-badge:is(.api-leg, .api-badge--mod) { overflow: visible; }'],
       ['styles/api.css', '.api-member-search > input { min-height: var(--touch-target); }'],

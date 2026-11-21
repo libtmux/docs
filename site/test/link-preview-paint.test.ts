@@ -71,7 +71,7 @@ it.each([
   '<a id="excluded" class="api-index-card__link" href="../libtmux-from_env/">card</a>',
   '<a id="excluded" class="doc-card" href="../libtmux-from_env/">card</a>',
   '<a id="excluded" href="../libtmux-from_env/"><h3>Runtime support</h3><p>Requirements and behavior.</p></a>',
-  '<a id="excluded" class="api-heading-link" href="../libtmux-from_env/">heading</a>',
+  '<a id="excluded" class="heading-link" href="../libtmux-from_env/">heading</a>',
   '<a id="excluded" class="headerlink" href="../libtmux-from_env/">permalink</a>',
   '<a id="excluded" href="#from_env">fragment</a>',
   '<a id="excluded" href="../libtmux-from_env/?q=1">query</a>',

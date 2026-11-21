@@ -271,9 +271,9 @@ html { font-size: clamp(1rem, 1rem + (100vw - 120rem) / 480, 1.25rem); }
    the notice, so their hit area reaches only .25rem up and takes the rest below. The code frame's copy button is a drawn
    square, so it grows to the touch target and its icon keeps its size. */
 @media (pointer: coarse) {
-  :is(.page-control, .toolbar-button, .context-settings-toggle, .context-settings-back, .api-nav-toggle, .anchor-link, .inventory-help-link, footer .icons a) { position: relative; }
+  :is(.page-control, .toolbar-button, .context-settings-toggle, .context-settings-back, .api-nav-toggle, .inventory-help-link, footer .icons a) { position: relative; }
   :is(.prerelease-notice__dismiss, .prerelease-notice__more summary) { contain: layout; }
-  :is(.page-control, .toolbar-button, .context-settings-toggle, .context-settings-back, .api-nav-toggle, .anchor-link, .inventory-help-link, footer .icons a)::after { content: ''; position: absolute; inset: min(0px, calc((100% - var(--touch-target)) / 2)); }
+  :is(.page-control, .toolbar-button, .context-settings-toggle, .context-settings-back, .api-nav-toggle, .inventory-help-link, footer .icons a)::after { content: ''; position: absolute; inset: min(0px, calc((100% - var(--touch-target)) / 2)); }
   :is(.prerelease-notice__dismiss, .prerelease-notice__more summary)::after { content: ''; position: absolute; inset: -.25rem -.25rem calc(.25rem + 100% - var(--touch-target)); }
   :is([data-breadcrumb-item], .crumb-collapsed > a, footer ul.flex a, [data-ci-examples] li a) { display: inline-flex; align-items: center; min-height: var(--touch-target); }
   .section-search input { min-height: var(--touch-target); }
@@ -750,100 +750,7 @@ html[data-theme="purple"][data-theme-mode="dark"] {
     hyphens: auto;
   }
 
-  /* Anchor link styling - positioned to the right */
-  .anchor-link {
-    @apply ml-2 opacity-0;
-    @apply text-[var(--theme-primary)] hover:text-[var(--theme-secondary)];
-    @apply no-underline inline-flex items-center;
-    /* Prevent link from wrapping alone */
-    @apply flex-shrink-0;
-    /* Increase clickable area without affecting layout */
-    @apply relative p-1 -m-1;
-    /* Focus styles */
-    @apply focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring-color)] focus:ring-offset-2 rounded;
-  }
-
-  /* Show anchor on heading hover with smooth transition */
-  .prose h1:hover .anchor-link,
-  .prose h2:hover .anchor-link,
-  .prose h3:hover .anchor-link,
-  .prose h4:hover .anchor-link,
-  .prose h5:hover .anchor-link,
-  .prose h6:hover .anchor-link {
-    @apply opacity-100;
-  }
-
-  .prose :target > .anchor-link { @apply opacity-100; }
-
-  /* Anchor icon styling */
-  .anchor-icon {
-    @apply w-4 h-4;
-  }
-
-  /* Hover effect on the anchor link itself */
-  .anchor-link:hover .anchor-icon {
-    @apply scale-110;
-  }
-
-  /* Active state */
-  .anchor-link:active .anchor-icon {
-    @apply scale-95;
-  }
-
-  /* Dark mode adjustments */
-  html[data-theme-mode="dark"] .anchor-link {
-    @apply text-[var(--theme-primary)] hover:text-[var(--theme-accent)];
-  }
-
-  /* Accessibility: Always show for keyboard navigation */
-  .prose h1:focus-within .anchor-link,
-  .prose h2:focus-within .anchor-link,
-  .prose h3:focus-within .anchor-link,
-  .prose h4:focus-within .anchor-link,
-  .prose h5:focus-within .anchor-link,
-  .prose h6:focus-within .anchor-link {
-    @apply opacity-100;
-  }
-
-  /* Mobile adjustments - always show on touch devices */
-  @media (hover: none) {
-    .anchor-link {
-      @apply opacity-50;
-    }
-  }
-
-  /* A forced palette must not lose the anchor. */
-  @media (forced-colors: active) {
-    .anchor-link {
-      @apply opacity-100;
-    }
-  }
-
-  /* Ensure proper spacing for different heading sizes */
-  .prose h1 .anchor-link {
-    @apply ml-3;
-  }
-  .prose h2 .anchor-link {
-    @apply ml-3;
-  }
-  .prose h3 .anchor-link {
-    @apply ml-2;
-  }
-  .prose h4 .anchor-link {
-    @apply ml-2;
-  }
-  .prose h5 .anchor-link {
-    @apply ml-2;
-  }
-  .prose h6 .anchor-link {
-    @apply ml-1;
-  }
-
-  /* Adjust icon size for smaller headings */
-  .prose h5 .anchor-icon,
-  .prose h6 .anchor-icon {
-    @apply w-3.5 h-3.5;
-  }
+  /* The heading link is drawn by `api-headings.css` (record 0006). */
 }
 
 /*

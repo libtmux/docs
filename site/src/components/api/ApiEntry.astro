@@ -1,4 +1,5 @@
 ---
+import HeadingLink from '../HeadingLink.astro'
 import { boundLabel, parameterId, qualifiedNameOf, typeParameterId, typeParameterList, type ApiSymbol, type SymbolIndex, type SymbolKind } from '@libtmux/api-model/reference'
 import { apiInventoryAttributes } from '../../lib/inventory-targets'
 import { API_MODELS, mentionsOf, referenceAlternatives } from '../../lib/api-models'
@@ -436,14 +437,14 @@ const hasBody =
     )}
     {symbol.doc?.body && (
       <div class="gp-sphinx-api-description" id={`${anchor}.description`}>
-        <h2 class="rubric api-section-heading">Description<a class="api-heading-link" href={`#${anchor}.description`} aria-label="Link to Description">#</a></h2>
+        <h2 class="rubric api-section-heading">Description<HeadingLink href={`#${anchor}.description`} label="Link to Description" /></h2>
         <ApiProse text={symbol.doc.body} index={index} context={symbol} />
       </div>
     )}
 
     {symbol.command && (
       <div class="gp-sphinx-api-command" id={`${anchor}.command`}>
-        <h2 class="rubric api-section-heading">Command details<a class="api-heading-link" href={`#${anchor}.command`} aria-label="Link to Command details">#</a></h2>
+        <h2 class="rubric api-section-heading">Command details<HeadingLink href={`#${anchor}.command`} label="Link to Command details" /></h2>
         <dl class="api-definition api-command-facts">
           {apiCommandFacts(symbol, Astro.url.pathname).map((fact) => <><dt>{fact.label}</dt><dd><ApiDoc text={fact.value} index={index} context={symbol} /></dd></>)}
         </dl>
@@ -459,12 +460,12 @@ const hasBody =
     {methods.length > 0 && (
       <div class="gp-sphinx-api-methods" id={`${anchor}.methods`}>
         {/* A lone method that repeats the declaration keeps its anchor and inventory entry but no heading. */}
-        {methods.some(({ signature }) => apiMethodHasContent(symbol, signature)) && <h2 class="rubric api-section-heading">Methods<a class="api-heading-link" href={`#${anchor}.methods`} aria-label="Link to Methods">#</a></h2>}
+        {methods.some(({ signature }) => apiMethodHasContent(symbol, signature)) && <h2 class="rubric api-section-heading">Methods<HeadingLink href={`#${anchor}.methods`} label="Link to Methods" /></h2>}
         {methods.map(({ id, label, signature }) => {
           const methodSource = signature.source && sourceUrl?.({ ...symbol, source: signature.source })
           return (
           <section id={id} data-inventory-category="dispatch" data-inventory-id={`${anchor}.method:${signature.identity}`} data-inventory-display={label} class="api-method">
-            {symbol.signatures.length > 1 ? <h3 class="api-native-signature"><ApiType type={nativeSignatureText(symbol, signature, language)} index={index} context={symbol} signature={signature} layout={signatureLayouts.get(signature)} />{methodSource && <span class="api-method-source">[<a href={methodSource} aria-label={`Source for ${label}`}>source</a>]</span>}<a class="api-heading-link" href={`#${id}`} aria-label="Link to method">#</a></h3>
+            {symbol.signatures.length > 1 ? <h3 class="api-native-signature"><ApiType type={nativeSignatureText(symbol, signature, language)} index={index} context={symbol} signature={signature} layout={signatureLayouts.get(signature)} />{methodSource && <span class="api-method-source">[<a href={methodSource} aria-label={`Source for ${label}`}>source</a>]</span>}<HeadingLink href={`#${id}`} label="Link to method" /></h3>
               : methodSource && methodSource !== source && <p><span class="api-method-source">[<a href={methodSource} aria-label={`Source for ${label}`}>source</a>]</span></p>}
             {signature.extension && <p>Available when <code>{signature.extension}</code> is loaded.</p>}
             {signature.doc?.summary && <ApiProse text={signature.doc.summary} index={index} context={symbol} />}
@@ -491,7 +492,7 @@ const hasBody =
                             {/* One line: Astro turns a line break between these parts into a space. */}
                             {p.modifier && <span class="api-type-parameter-modifier">{modifierOf(p)}</span>}<strong><a href={`#${encodeURIComponent(typeParameterId(symbol, p.name))}`}><code>{p.name}</code></a></strong>
                           </span>
-                          <a class="api-heading-link" href={`#${encodeURIComponent(typeParameterId(symbol, p.name))}`} aria-label={`Link to ${p.name} type parameter`} data-pagefind-ignore="all">#</a>
+                          <HeadingLink href={`#${encodeURIComponent(typeParameterId(symbol, p.name))}`} label={`Link to ${p.name} type parameter`} />
                           <ApiFieldOverloads labels={p.overloads} targets={overloadTargets} />
                         </p>
                         {(p.bound || p.default) && (
@@ -536,7 +537,7 @@ const hasBody =
                             {/* One line: Astro turns a line break between these parts into a space. */}
                             <strong><a href={`#${encodeURIComponent(parameterId(symbol, p.name))}`}><code>{p.name}</code></a></strong>{p.optional && '?'}{(language === 'julia' || language === 'ts') && p.default !== undefined && <>{' = '}<code>{p.default}</code></>}{p.type && <>{' ('}<ApiType type={p.type} index={index} context={symbol} language={language} />{') '}</>}
                           </span>
-                          <a class="api-heading-link" href={`#${encodeURIComponent(parameterId(symbol, p.name))}`} aria-label={`Link to ${p.name} parameter`} data-pagefind-ignore="all">#</a>
+                          <HeadingLink href={`#${encodeURIComponent(parameterId(symbol, p.name))}`} label={`Link to ${p.name} parameter`} />
                           {p.doc && !['julia', 'ts'].includes(language ?? '') && <>{' – '}<ApiDoc text={p.doc} index={index} context={symbol} /></>}
                           {p.since && <span class="gp-sphinx-api-param-since">added {p.since}</span>}
                           {p.deprecated && (
@@ -600,7 +601,7 @@ const hasBody =
     {
       examples.length > 0 && (
         <div class="gp-sphinx-api-examples" id={`${anchor}.examples`}>
-          <h2 class="rubric api-section-heading">Examples<a class="api-heading-link" href={`#${anchor}.examples`} aria-label="Link to Examples">#</a></h2>
+          <h2 class="rubric api-section-heading">Examples<HeadingLink href={`#${anchor}.examples`} label="Link to Examples" /></h2>
           {examples.map((ex) => {
             // A whole file is named, and called a complete program when it is one; a fragment has no header.
             const frame = exampleFrame(ex)
@@ -627,7 +628,7 @@ const hasBody =
     {
       references.length > 0 && (
         <div class="gp-sphinx-api-references" id={`${anchor}.references`}>
-          <h2 class="rubric api-section-heading">References<a class="api-heading-link" href={`#${anchor}.references`} aria-label="Link to References">#</a></h2>
+          <h2 class="rubric api-section-heading">References<HeadingLink href={`#${anchor}.references`} label="Link to References" /></h2>
           <dl class="citation">
             {references.map((r) => (
               <>

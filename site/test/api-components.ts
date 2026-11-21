@@ -43,8 +43,10 @@ export async function apiComponents() {
     '../../lib/symbol-form': new URL('../src/lib/symbol-form.ts', import.meta.url).href,
     '../../lib/api-labels': new URL('../src/lib/api-labels.ts', import.meta.url).href })
   const overloads = await compile('../src/components/api/ApiFieldOverloads.astro')
+  const heading = await compile('../src/components/HeadingLink.astro', { '../lib/heading-link': new URL('../src/lib/heading-link.ts', import.meta.url).href })
   const commands = await compile('../src/components/api/ApiCommandParameters.astro', {
     '@libtmux/api-model': bridge, '@libtmux/api-model/reference': bridge, '../../lib/api-sections': bridge, './ApiType.astro': type, './ApiDoc.astro': doc, './ApiFieldOverloads.astro': overloads,
+    '../HeadingLink.astro': heading,
   })
   const members = await compile('../src/components/api/ApiScalarMembers.astro', { '../../lib/api-sections': bridge, './ApiDoc.astro': doc, './ApiType.astro': type })
   const load = async (url: string) => (await import(/* @vite-ignore */ url)).default

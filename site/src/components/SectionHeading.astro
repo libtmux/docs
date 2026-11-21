@@ -1,4 +1,6 @@
 ---
+import HeadingLink from './HeadingLink.astro'
+
 interface Props {
   id: string
   level?: 2 | 3 | 4 | 5 | 6
@@ -10,5 +12,5 @@ const Heading = `h${level}` as const
 
 <Heading id={id}>
   {legacyId && legacyId !== id && <span id={legacyId} class="section-anchor-alias" />}
-  <slot /><a class="anchor-link" href={`#${id}`} aria-label="Link to this section" data-pagefind-ignore="all">¶</a>
+  <slot /><HeadingLink href={`#${id}`} label="Link to this section" />
 </Heading>

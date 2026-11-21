@@ -185,12 +185,12 @@ they paint forced colours:
 $ node site/scripts/check-dev.mjs --home-controls
 ```
 
-A heading's `#` permalink stays quiet on a fine pointer and appears when its
-heading is hovered, focused with the keyboard or targeted by the URL. Touch and
-forced colours keep it in view. The check reads computed opacity, the tab stop
-and the accessible name on a Swift and a Python reference page, in light and
-dark, with and without JavaScript, and ends with controls that break each
-state and require the check to notice:
+A heading's link icon is muted and visible at rest and stronger when its heading
+is hovered, focused with the keyboard or targeted by the URL; a click copies the
+section's URL. The check reads computed colour, the tab stop and the accessible
+name on a Swift and a Python reference page, in light and dark, with and without
+JavaScript, and ends with controls that break each state and require the check
+to notice:
 
 ```console
 $ node site/scripts/check-dev.mjs --permalink-reveal

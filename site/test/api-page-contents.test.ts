@@ -51,10 +51,10 @@ function mountMembers({ kind = 'grouped', scripting = true, fieldsFirst = false,
   const grouped = kind === 'grouped'
   const sections = ['collections', 'operations', 'other']
   win.document.getElementById('api-members')!.outerHTML = kind === 'empty' ? '' : `${fieldsFirst ? `<div class="api-field-table"><h2 id="api-fields" class="api-section-heading">Fields<span class="api-section-count">2</span></h2><table><tbody><tr id="member-field"><td>a</td></tr></tbody></table></div>` : ''}<div class="api-members">
-    <h2 id="api-members" class="api-section-heading">${kind === 'scalar' ? 'Fields' : 'Members'}<span class="api-section-count">3</span><a class="api-heading-link" href="#api-members" aria-label="Link to members">#</a></h2>
+    <h2 id="api-members" class="api-section-heading">${kind === 'scalar' ? 'Fields' : 'Members'}<span class="api-section-count">3</span><a class="heading-link" href="#api-members" aria-label="Link to members">#</a></h2>
     ${kind === 'scalar' ? '<table><tbody><tr id="member-value"><td>Up</td><td>U</td></tr></tbody></table>'
       : sections.slice(0, grouped ? 3 : 1).map((id) => `<section class="api-member-group" data-group="${id}" ${grouped ? '' : `id="api-${id}"`}>
-        ${grouped ? `<h3 id="api-${id}">${id}<span class="api-section-count">1</span><a class="api-heading-link" href="#api-${id}" aria-label="Link to ${id}">#</a></h3>` : ''}
+        ${grouped ? `<h3 id="api-${id}">${id}<span class="api-section-count">1</span><a class="heading-link" href="#api-${id}" aria-label="Link to ${id}">#</a></h3>` : ''}
         <ul><li id="member-${id}"><a href="./${id}/">member</a></li></ul></section>`).join('')}
     </div>`
   if (grouped) win.document.querySelector('api-page-contents')!.innerHTML += sections.map((id) =>
@@ -467,7 +467,7 @@ it.each([['#api-members', -613], ['#api-collections', -454]] as const)(
     const href = win.location.href
     const length = win.history.length
     const scroll = vi.spyOn(win, 'scrollBy').mockImplementation(() => {})
-    const link = page.members!.querySelector<HTMLAnchorElement>(`.api-heading-link[href="${hash}"]`)!
+    const link = page.members!.querySelector<HTMLAnchorElement>(`.heading-link[href="${hash}"]`)!
     link.dispatchEvent(new win.MouseEvent('click', { bubbles: true, cancelable: true, button: 0 })); page.flush()
     expect(scroll).toHaveBeenCalledExactlyOnceWith({ top, behavior: 'instant' })
     expect(win.location.href).toBe(href)

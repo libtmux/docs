@@ -24,6 +24,7 @@ import {
 import { tmuxCatalogReferences, tmuxCatalogUses } from '../../lib/tmux-catalog-usage'
 import '../../styles/api.css'
 import '../../styles/vendor/gp-sphinx-api.css'
+import HeadingLink from '../HeadingLink.astro'
 
 interface Props { version: string; kind?: CatalogKind; name?: string }
 const { version, kind, name } = Astro.props
@@ -146,7 +147,7 @@ const typeChips = kind ? catalogTypeCounts(tmuxCatalogEntries(version, kind)) : 
         </dl>
 
         <section id="description" class="catalog-section">
-          <h2>Description<a class="headerlink" href="#description" aria-label="Permalink to description">#</a></h2>
+          <h2>Description<HeadingLink href="#description" label="Link to description" /></h2>
           {html ? <div class="api-doc tmux-manual" set:html={html} />
             : entry.sourceText ? <p>{entry.sourceText} <span class="catalog-note">Taken from the option table; the {model.version} manual has no entry for it.</span></p>
             : <p>The tmux {model.version} manual does not describe this {info!.singular}.</p>}
@@ -155,7 +156,7 @@ const typeChips = kind ? catalogTypeCounts(tmuxCatalogEntries(version, kind)) : 
         </section>
 
         <section id="releases" class="catalog-section">
-          <h2>Releases<a class="headerlink" href="#releases" aria-label="Permalink to releases">#</a></h2>
+          <h2>Releases<HeadingLink href="#releases" label="Link to releases" /></h2>
           <ul class="catalog-releases">
             {[...history].reverse().map((release) => <li>
               {release.present
@@ -167,7 +168,7 @@ const typeChips = kind ? catalogTypeCounts(tmuxCatalogEntries(version, kind)) : 
         </section>
 
         <section id="source" class="catalog-section">
-          <h2>Source<a class="headerlink" href="#source" aria-label="Permalink to source">#</a></h2>
+          <h2>Source<HeadingLink href="#source" label="Link to source" /></h2>
           <dl class="api-definition api-command-facts catalog-facts">
             <dt>Defined in</dt><dd><a href={tmuxCatalogSourceUrl(version, entry.source)} rel="nofollow noopener"><code>{entry.source.file}:{entry.source.line}</code></a></dd>
             {entry.firedFrom && <><dt>Fired from</dt><dd><ul class="catalog-sites">{entry.firedFrom.map((site) => <li>
@@ -179,7 +180,7 @@ const typeChips = kind ? catalogTypeCounts(tmuxCatalogEntries(version, kind)) : 
         </section>
 
         {uses.length > 0 && <section id="used-by" class="catalog-section">
-          <h2>Used by<a class="headerlink" href="#used-by" aria-label="Permalink to used by">#</a></h2>
+          <h2>Used by<HeadingLink href="#used-by" label="Link to used by" /></h2>
           <p>Library documentation that names this {info!.singular}.</p>
           <dl class="api-definition api-command-facts catalog-facts">
             {uses.map((use) => <><dt>{use.name}</dt><dd>{use.symbols.slice(0, 6).map((symbol, i) => <>{i > 0 && ', '}<a href={symbol.href}><code>{symbol.label}</code></a></>)}{use.symbols.length > 6 && <> and {use.symbols.length - 6} more</>}</dd></>)}
@@ -329,8 +330,7 @@ const typeChips = kind ? catalogTypeCounts(tmuxCatalogEntries(version, kind)) : 
   .catalog-facts { margin-block: 1.25rem; }
   .catalog-section { margin-block-start: 2rem; }
   .catalog-section h2 { font-size: 1.125rem; font-weight: 600; margin-bottom: .75rem; padding-bottom: .4rem; border-bottom: 1px solid var(--api-border); }
-  .catalog-section :global(.headerlink) { margin-inline-start: .4rem; }
-  .catalog-section a:not(.headerlink) { text-decoration: underline; text-underline-offset: .2em; }
+  .catalog-section a:not(.heading-link) { text-decoration: underline; text-underline-offset: .2em; }
   .catalog-note { color: var(--color-muted); font-size: .875rem; }
   .catalog-default { white-space: pre-wrap; overflow-wrap: anywhere; font-size: .8125rem; }
   .catalog-groups { margin: .75rem 0 0; padding: 0; list-style: none; font-size: .875rem; }

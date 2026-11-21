@@ -695,10 +695,10 @@ export async function checkApiAnchorArrival(browser, base) {
 }
 
 /**
- * A heading's hash is quiet on a fine pointer and appears with the heading's hover, keyboard focus or
- * target; touch and forced colours keep it in view, and it never leaves the tab order or the
- * accessibility tree. `only` limits the scenarios, and `sabotage` adds a style (`css`) or a script
- * (`script`) to each page, for the control below.
+ * A heading's link icon (design record 0006) is muted and visible at rest, in a fine pointer, on touch and in forced
+ * colours alike, and stronger with the heading's hover, keyboard focus or target. It never leaves the tab order or the
+ * accessibility tree. The prose row permalinks and section signs beside it stay quiet until revealed. `only` limits the
+ * scenarios, and `sabotage` adds a style (`css`) or a script (`script`) to each page, for the control below.
  */
 export async function checkPermalinkReveal(browser, base, { only, sabotage } = {}) {
   const engine = browser.browserType().name()
@@ -706,10 +706,10 @@ export async function checkPermalinkReveal(browser, base, { only, sabotage } = {
   const wants = (scenario) => !only || only.includes(scenario)
   // A hash beside a heading that owns its id, beside a heading whose section wrapper owns it, and on a parameter line.
   const pages = [
-    ['swift/latest/reference/server/', [['the Members heading', '.api-members > h2 a.api-heading-link'],
-      ['a member group heading', '.api-members .api-member-group > h3[id] a.api-heading-link']]],
-    ['py/latest/reference/libtmux-server-new_session/', [['a heading in a section wrapper', '.gp-sphinx-api-description > h2 a.api-heading-link'],
-      ['a parameter line', 'ul.api-parameters > li[id] > p > a.api-heading-link']]],
+    ['swift/latest/reference/server/', [['the Members heading', '.api-members > h2 a.heading-link'],
+      ['a member group heading', '.api-members .api-member-group > h3[id] a.heading-link']]],
+    ['py/latest/reference/libtmux-server-new_session/', [['a heading in a section wrapper', '.gp-sphinx-api-description > h2 a.heading-link'],
+      ['a parameter line', 'ul.api-parameters > li[id] > p > a.heading-link']]],
   ]
   const open = async (options) => {
     const context = await newCheckContext(browser, base, { reducedMotion: 'reduce', ...options })
@@ -761,6 +761,15 @@ export async function checkPermalinkReveal(browser, base, { only, sabotage } = {
     return found
   }
   const opacity = (link) => link.evaluate((node) => getComputedStyle(node).opacity)
+  const tone = (link) => link.evaluate((node) => getComputedStyle(node).color)
+  // The resting colour of a heading link is the muted text token; anything else is stronger.
+  const mutedTone = (page) => page.evaluate(() => {
+    const probe = Object.assign(document.createElement('span'), { style: 'color: var(--color-foreground-muted)' })
+    document.body.append(probe)
+    const color = getComputedStyle(probe).color
+    probe.remove()
+    return color
+  })
   const pseudoOpacity = (link) => link.evaluate((node) => getComputedStyle(node, '::after').opacity)
   // The prose permalinks: a table row's link, and the section sign after an option's name.
   const SECTION_SIGN_PAGE = 'tmux/latest/manual/capture-pane/'
@@ -826,29 +835,29 @@ export async function checkPermalinkReveal(browser, base, { only, sabotage } = {
               return { opacity: style.opacity, display: style.display, visibility: style.visibility,
                 transition: style.transitionDuration, tabIndex: node.tabIndex }
             })
-            assert.equal(rest.opacity, '0', `${where(name)}: the hash is quiet at rest`)
+            assert.equal(rest.opacity, '1', `${where(name)}: the hash is visible at rest`)
+            assert.equal(await tone(link), await mutedTone(page), `${where(name)}: the hash rests in the muted text colour`)
             assert(rest.display !== 'none' && rest.visibility === 'visible' && rest.tabIndex >= 0,
-              `${where(name)}: the quiet hash keeps its box and tab stop: ${JSON.stringify(rest)}`)
-            assert.equal(rest.transition, '0s', `${where(name)}: no transition runs under reduced motion`)
+              `${where(name)}: the hash keeps its box and tab stop: ${JSON.stringify(rest)}`)
             const label = await link.getAttribute('aria-label')
             const named = page.getByRole('link', { name: label, exact: true })
             assert(await named.evaluateAll((nodes, target) => nodes.includes(target), await link.elementHandle()),
-              `${where(name)}: the quiet hash keeps its accessible name "${label}"`)
+              `${where(name)}: the hash keeps its accessible name "${label}"`)
           }
           if (wants('hover')) {
             await park(page)
             await hover(page, link, where(name), javaScriptEnabled)
-            assert.equal(await opacity(link), '1', `${where(name)}: the hash is revealed when its heading is hovered`)
+            assert.notEqual(await tone(link), await mutedTone(page), `${where(name)}: the hash is stronger when its heading is hovered`)
             await page.mouse.move(0, 0)
-            assert.equal(await opacity(link), '0', `${where(name)}: the hash is quiet again once the pointer leaves`)
+            assert.equal(await tone(link), await mutedTone(page), `${where(name)}: the hash is muted again once the pointer leaves`)
           }
           if (wants('focus')) {
             await park(page)
             await tabTo(page, link, where(name))
             assert(await link.evaluate((node) => node.matches(':focus-visible')), `${where(name)}: Tab gives the hash a focus ring`)
-            assert.equal(await opacity(link), '1', `${where(name)}: the hash is revealed on keyboard focus`)
+            assert.notEqual(await tone(link), await mutedTone(page), `${where(name)}: the hash is stronger on keyboard focus`)
             await park(page)
-            assert.equal(await opacity(link), '0', `${where(name)}: the hash is quiet again once focus leaves`)
+            assert.equal(await tone(link), await mutedTone(page), `${where(name)}: the hash is muted again once focus leaves`)
           }
         }
         if (wants('target')) {
@@ -859,8 +868,8 @@ export async function checkPermalinkReveal(browser, base, { only, sabotage } = {
               const targeted = other.id === id
               assert.equal(await other.link.evaluate((node) => node.closest('[id]').matches(':target')), targeted,
                 `${where(name)}: ${other.name} ${targeted ? 'is' : 'is not'} the target of #${id}`)
-              assert.equal(await opacity(other.link), targeted ? '1' : '0',
-                targeted ? `${where(name)}: the hash is revealed when it is the target` : `${where(name)}: ${other.name} stays quiet when #${id} is the target`)
+              assert.equal((await tone(other.link)) === (await mutedTone(page)), !targeted,
+                targeted ? `${where(name)}: the hash is stronger when it is the target` : `${where(name)}: ${other.name} stays muted when #${id} is the target`)
             }
           }
         }
@@ -879,6 +888,7 @@ export async function checkPermalinkReveal(browser, base, { only, sabotage } = {
     }
   }
   // Touch has no hover and a forced palette has no quiet: both keep every hash in view, prose row permalinks included.
+  // A heading link is visible at rest everywhere; the rows are the ones a fine pointer keeps quiet.
   const touch = { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: engine !== 'firefox' }
   const premises = {
     touch: ['(hover: none)', 'visible on touch', touch],
@@ -916,21 +926,23 @@ export async function checkPermalinkReveal(browser, base, { only, sabotage } = {
       await context.close()
     }
   }
-  if (!only) console.log(`Permalink reveal: ${engine} keeps the hash quiet at rest and reveals it on hover, keyboard focus and target in light and dark, with and without JavaScript, and shows it on touch and in forced colours`)
+  if (!only) console.log(`Permalink reveal: ${engine} keeps the heading link muted and visible at rest, strengthens it on hover, keyboard focus and target in light and dark, with and without JavaScript, and shows it on touch and in forced colours`)
 }
 
-/** The permalink check fails when a hash or section sign is always shown, never revealed, hidden from touch or removed from the tree. */
+/** The permalink check fails when a heading link is hidden, never strengthened, hidden from touch or removed from the tree, or a section sign is always shown. */
 export async function checkPermalinkRevealFail(browser, base) {
   const engine = browser.browserType().name()
-  const never = '.api-heading-link { opacity: 0 !important }'
+  const never = '.heading-link { opacity: 0 !important }'
+  // A link that holds its resting colour in every state is never stronger.
+  const flat = '.heading-link { color: var(--color-foreground-muted) !important }'
   const controls = [
-    ['a hash shown at rest', { only: ['rest'], sabotage: { css: '.api-heading-link { opacity: 1 !important }' } }, /the hash is quiet at rest/],
-    ['a hash that cannot be tabbed to', { only: ['rest'], sabotage: { css: '.api-heading-link { visibility: hidden !important }' } }, /keeps its box and tab stop/],
-    ['a hash without an accessible name', { only: ['rest'], sabotage: { script: 'document.addEventListener("DOMContentLoaded", () => document.querySelectorAll(".api-heading-link").forEach((link) => link.setAttribute("aria-hidden", "true")))' } },
-      /keeps its accessible name/],
-    ['a hash that never appears on hover', { only: ['hover'], sabotage: { css: never } }, /revealed when its heading is hovered/],
-    ['a hash that never appears on focus', { only: ['focus'], sabotage: { css: never } }, /revealed on keyboard focus/],
-    ['a hash that never appears on its target', { only: ['target'], sabotage: { css: never } }, /revealed when it is the target/],
+    ['a hash hidden at rest', { only: ['rest'], sabotage: { css: never } }, /the hash is visible at rest/],
+    ['a hash that cannot be tabbed to', { only: ['rest'], sabotage: { css: '.heading-link { visibility: hidden !important }' } }, /the hash keeps its box and tab stop/],
+    ['a hash without an accessible name', { only: ['rest'], sabotage: { script: 'document.addEventListener("DOMContentLoaded", () => document.querySelectorAll(".heading-link").forEach((link) => link.setAttribute("aria-hidden", "true")))' } },
+      /the hash keeps its accessible name/],
+    ['a hash that is never stronger on hover', { only: ['hover'], sabotage: { css: flat } }, /stronger when its heading is hovered/],
+    ['a hash that is never stronger on focus', { only: ['focus'], sabotage: { css: flat } }, /stronger on keyboard focus/],
+    ['a hash that is never stronger on its target', { only: ['target'], sabotage: { css: flat } }, /stronger when it is the target/],
     ['a hash hidden from touch', { only: ['touch'], sabotage: { css: `@media (hover: none) { ${never} }` } }, /visible on touch/],
     ['a hash hidden in forced colours', { only: ['forced'], sabotage: { css: `@media (forced-colors: active) { ${never} }` } }, /visible in forced colours/],
     ['a section sign hidden from touch', { only: ['touch'], sabotage: { css: '@media (hover: none) { .prose .row-label-link::after { opacity: 0 !important } }' } }, /the section sign is visible on touch/],
@@ -940,7 +952,7 @@ export async function checkPermalinkRevealFail(browser, base) {
     console.log(`Permalink reveal: ${engine} control: ${name}`)
     await assert.rejects(() => checkPermalinkReveal(browser, base, options), failure, `${engine}: the check fails with ${name}`)
   }
-  console.log(`Permalink reveal: ${engine} fails with a hash shown at rest, one that is untabbable or unnamed, and one that never appears on hover, focus, target, touch or forced colours`)
+  console.log(`Permalink reveal: ${engine} fails with a hash hidden at rest, one that is untabbable or unnamed, one that is never stronger on hover, focus or target, and one hidden on touch or in forced colours`)
 }
 
 /** The control for `checkApiNavigation`: a drawer whose close button does nothing must fail it. */
@@ -1137,7 +1149,7 @@ export async function checkApiStickyHeadings(browser, base, { only, sabotage } =
         await page.evaluate(() => {
           const box = document.querySelector('.api-members > .api-member-budget')
           const { top, height } = box.getBoundingClientRect()
-          const links = [...box.querySelectorAll('.api-member-group a[href]:not(.api-heading-link)')]
+          const links = [...box.querySelectorAll('.api-member-group a[href]:not(.heading-link)')]
           links.find((a) => a.getBoundingClientRect().top >= top + height * 0.6).focus({ preventScroll: true })
         })
         let stops = 0
@@ -1165,11 +1177,11 @@ export async function checkApiStickyHeadings(browser, base, { only, sabotage } =
         // Keyboard focus returns the Members bar to flow; the gap cover must not paint over it.
         await showBox(page)
         await page.keyboard.press('Shift')
-        await page.evaluate(() => document.querySelector('.api-members > h2 a.api-heading-link').focus())
+        await page.evaluate(() => document.querySelector('.api-members > h2 a.heading-link').focus())
         await quiet(page)
         const owner = await page.evaluate(() => {
           const heading = document.querySelector('.api-members > h2')
-          const link = heading.querySelector('a.api-heading-link')
+          const link = heading.querySelector('a.heading-link')
           const rect = link.getBoundingClientRect()
           const x = rect.left + rect.width / 2
           return { visible: link.matches(':focus-visible'), link: heading.contains(document.elementFromPoint(x, rect.top + 1)),
@@ -1189,7 +1201,7 @@ export async function checkApiStickyHeadings(browser, base, { only, sabotage } =
       const { context, page } = await open(viewport)
       try {
         const tall = (await boxOf(page)).groups.reduce((a, b) => a.height > b.height ? a : b)
-        const permalink = page.locator(`[id="${tall.id}"] a.api-heading-link`)
+        const permalink = page.locator(`[id="${tall.id}"] a.heading-link`)
         await showBox(page)
         await scrollBox(page, tall.top + tall.height / 2)
         await press(page, permalink); await quiet(page)

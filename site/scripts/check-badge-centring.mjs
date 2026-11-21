@@ -321,8 +321,10 @@ export async function qualifierProblems(page) {
  * Each is probed with a zero-size inline box, which sits on the baseline of the line it is in.
  */
 export async function headingProblems(page) {
-  const found = await page.evaluate(() => [...document.querySelectorAll('h2.api-index-summary')].filter((h) => h.offsetParent && h.querySelector('.headerlink')).slice(0, 6).map((heading) => {
+  const found = await page.evaluate(() => [...document.querySelectorAll('h2.api-index-summary')].filter((h) => h.offsetParent && h.querySelector('.heading-link')).slice(0, 6).map((heading) => {
     const baseline = (host) => {
+      // The link icon is the one flex item of its link: its bottom edge is the link's baseline, where a probe would be centred.
+      if (host.matches('.heading-link')) return host.querySelector('svg').getBoundingClientRect().bottom
       const probe = document.createElement('span')
       probe.style.cssText = 'display:inline-block;width:0;height:0'
       host.prepend(probe)
@@ -330,7 +332,7 @@ export async function headingProblems(page) {
       probe.remove()
       return y
     }
-    const parts = { title: heading, count: heading.querySelector(':scope > span'), permalink: heading.querySelector(':scope > .headerlink') }
+    const parts = { title: heading, count: heading.querySelector(':scope > span'), permalink: heading.querySelector(':scope > .heading-link') }
     return { text: heading.firstChild?.textContent?.trim() ?? '', baselines: Object.fromEntries(Object.entries(parts).filter(([, node]) => node).map(([name, node]) => [name, baseline(node)])) }
   }))
   const problems = []
@@ -529,7 +531,7 @@ async function negativeControl(page, base, results) {
   await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
   await page.addStyleTag({ content: MEASURING_STYLE })
   assert((await headingProblems(page)).problems.length === 0, 'The group headings are not clean before the control')
-  const lifted = await page.addStyleTag({ content: 'h2.api-index-summary > .headerlink { vertical-align: 4px !important; }' })
+  const lifted = await page.addStyleTag({ content: 'h2.api-index-summary > .heading-link { vertical-align: 4px !important; }' })
   results.headingControl = (await headingProblems(page)).problems.length
   await lifted.evaluate((node) => node.remove())
   assert(results.headingControl > 0, 'The heading check did not notice a permalink off the baseline')

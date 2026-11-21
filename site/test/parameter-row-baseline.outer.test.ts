@@ -8,14 +8,14 @@ import { afterAll, beforeAll, expect, it } from 'vitest'
  */
 const read = (path: string) => readFileSync(new URL(`../src/styles/${path}`, import.meta.url), 'utf8')
 const styles = ['api-kinds.css', 'api-headings.css', 'api.css', 'vendor/gp-sphinx-api.css'].map(read).join('\n')
-const rule = /\n {2}dl\.py\.gp-sphinx-api-container > dd \.gp-sphinx-api-parameters > dl\.field-list > dt:has\(\+ dd \.api-heading-link\) \{\n {4}line-height: [^\n]+\n {2}\}/
+const rule = /\n {2}dl\.py\.gp-sphinx-api-container > dd \.gp-sphinx-api-parameters > dl\.field-list > dt:has\(\+ dd \.heading-link\) \{\n {4}line-height: [^\n]+\n {2}\}/
 const margin = /\n {2}dl\.py\.gp-sphinx-api-container > dd \.gp-sphinx-api-parameters > dl\.field-list > dd \{\n {4}margin-top: 0;\n {2}\}/
 const baseline = '@container gp-sphinx-api-entry (width > 36rem) { dl.py.gp-sphinx-api-container > dd .gp-sphinx-api-parameters > dl.field-list { align-items: baseline; } }'
 
 // A typed parameter, whose line holds its permalink, and a returned value in plain text. A prose page gives its labels a looser
 // line height than the entry's values have, which the label rule has to override.
 const entry = `<dl class="py gp-sphinx-api-container"><dt>Declaration</dt><dd><div class="gp-sphinx-api-parameters"><dl class="field-list simple">
-  <dt>Parameters</dt><dd><ul class="simple api-parameters"><li><p><span class="api-parameter-signature"><strong><a href="#name"><code>name</code></a></strong></span> <a class="api-heading-link" href="#name">#</a></p></li></ul></dd>
+  <dt>Parameters</dt><dd><ul class="simple api-parameters"><li><p><span class="api-parameter-signature"><strong><a href="#name"><code>name</code></a></strong></span> <a class="heading-link" href="#name">#</a></p></li></ul></dd>
   <dt>Returns</dt><dd><p>The pane.</p></dd>
 </dl></div></dd></dl>`
 const page = (css: string) => `<!doctype html><html><head><style>:root { --gp-sphinx-type-metadata: 0.875rem; --color-muted: #53606d; }

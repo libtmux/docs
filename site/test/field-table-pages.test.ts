@@ -46,8 +46,8 @@ describe('a type page with a table of fields', () => {
       const document = await page(port, id)
       const heading = document.querySelector('h2#api-fields')!
       expect(heading.firstChild?.textContent).toBe(word)
-      expect(heading.querySelector('a.api-heading-link')?.getAttribute('aria-label')).toBe(`Link to ${word}`)
-      expect(heading.querySelector('a.api-heading-link')?.getAttribute('href')).toBe('#api-fields')
+      expect(heading.querySelector('a.heading-link')?.getAttribute('aria-label')).toBe(`Link to ${word}`)
+      expect(heading.querySelector('a.heading-link')?.getAttribute('href')).toBe('#api-fields')
       expect(document.querySelector('.api-field-table caption')?.textContent).toContain(` ${word.toLowerCase()}`)
       expect(contents(document)).toContainEqual(['#api-fields', word])
       // The rest of the members keep their own heading and id.
@@ -63,7 +63,7 @@ describe('a type page with a table of fields', () => {
     expect(document.querySelector('#api-fields')).toBeNull()
     const heading = document.querySelector('.api-members > h2#api-members')!
     expect(heading.firstChild?.textContent).toBe('Properties')
-    expect(heading.querySelector('a.api-heading-link')?.getAttribute('aria-label')).toBe('Link to Properties')
+    expect(heading.querySelector('a.heading-link')?.getAttribute('aria-label')).toBe('Link to Properties')
     expect(contents(document)).toContainEqual(['#api-members', 'Properties'])
     expect(document.querySelector('.api-members caption')?.textContent).toContain(' properties')
   }, 60_000)

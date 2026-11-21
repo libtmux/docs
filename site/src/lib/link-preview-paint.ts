@@ -19,7 +19,7 @@ export function createLinkPreviewPolicy() {
   }
   function candidate(eventTarget: EventTarget | null, base: string): HTMLAnchorElement | undefined {
     const link = eventTarget instanceof Element ? eventTarget.closest<HTMLAnchorElement>('a[href]') : null
-    if (!link || link.matches('[data-preview-skip], [href^="#"], .api-heading-link, .api-index-card__link, .headerlink, .permalink')
+    if (!link || link.matches('[data-preview-skip], [href^="#"], .heading-link, .api-index-card__link, .headerlink, .permalink')
       || link.closest('nav, footer, [data-doc-picker], .api-index-card, .cli-command-list, .reference-link-preview') || blockLink(link)) return undefined
     try {
       const url = new URL(link.getAttribute('href')!, base)

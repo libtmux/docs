@@ -1,4 +1,5 @@
 ---
+import HeadingLink from '../HeadingLink.astro'
 /**
  * One browsing surface scoped to the current declaration.
  *
@@ -27,7 +28,7 @@ const Heading = level === 2 ? 'h2' : 'h3'
 const parts = (text: string) => text.split(/`([^`]+)`/)
 ---
 <section class:list={['api-collection', className]} aria-labelledby={id}>
-  <Heading class="api-section-heading text-lg font-semibold" id={id}>{label}<a class="api-heading-link" href={`#${id}`} aria-label={`Link to ${label}`}>#</a></Heading>
+  <Heading class="api-section-heading text-lg font-semibold" id={id}>{label}<HeadingLink href={`#${id}`} label={`Link to ${label}`} /></Heading>
   <span class="api-collection__kind">{kind}</span>
   {count && <span class="api-collection__count">{count}</span>}
   {why && <p class="api-collection__why">{parts(why).map((part, i) => i % 2 ? <code>{part}</code> : part)}</p>}
