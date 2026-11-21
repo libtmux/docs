@@ -136,8 +136,8 @@ describe('manifest packages', () => {
   it('reads the unreleased Common Lisp source distribution and its public systems and command', () => {
     const result = readPort('lisp', repo({
       'libtmux.asd': '(defsystem "libtmux" :version "0.1.0")\n(defsystem "libtmux/query")\n(defsystem "libtmux/workspace/cli")\n(defsystem "libtmux/tests")\n',
-      'mise.toml': '[tasks.workspace]\nrun = "tools/lisp.sh tools/test.lisp workspace"\n',
-      'bin/libtmux-workspace': '#!/bin/sh\nexec sbcl --script tools/workspace-cli.lisp "$@"\n',
+      'mise.toml': '[tasks.workspace]\nrun = "sbcl --script tools/test.lisp workspace"\n',
+      'tools/workspace-cli.lisp': '(uiop:quit (uiop:symbol-call :libtmux.workspace.cli :main))\n',
     }))
     expect(result.distributions).toEqual([{ name: 'libtmux', version: '0.1.0', manifest: 'libtmux.asd' }])
     expect(result.units).toEqual([

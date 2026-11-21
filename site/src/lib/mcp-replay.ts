@@ -376,18 +376,3 @@ export function windowLabel(window: WindowState): string {
   return window.name ?? window.id ?? ''
 }
 
-/** The last line of a pane's output that has text on it, for the agent's answer. */
-export function lastOutputLine(output: string | undefined): string | undefined {
-  // A bare shell prompt left after the command is not what it printed.
-  return output?.split('\n').map((line) => line.trimEnd()).filter((line) => line && !/^[$#>%]$/.test(line)).at(-1)
-}
-
-/** What each command run left in its pane, as the last line with text, for the agent's answer. */
-export function runAnswers(steps: readonly ReplayStep[]): { pane?: string; line: string }[] {
-  return steps.flatMap((step) => {
-    if (step.tool !== 'run_shell_command' && step.tool !== 'run_command') return []
-    const line = lastOutputLine(textOf(answerOf(step).output) ?? textOf(answerOf(step).text))
-    const pane = paneOf(step.arguments) ?? str(answerOf(step).paneId) ?? str(answerOf(step).pane)
-    return line ? [{ ...(pane ? { pane } : {}), line }] : []
-  })
-}

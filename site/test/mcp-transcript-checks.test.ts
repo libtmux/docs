@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { hostLeaks, idsIn, leaks, readings, recordingLeaks, sanitize, UnsettledPaneError, verifyRecording, verifySettledPanes, withoutContracts } from '../../scripts/lib/mcp-transcript-checks.mjs'
+import { hostLeaks, idsIn, leaks, readings, recordedReply, recordingLeaks, sanitize, UnsettledPaneError, verifyRecording, verifySettledPanes, withoutContracts } from '../../scripts/lib/mcp-transcript-checks.mjs'
+import { EXAMPLES } from '../src/lib/mcp-examples'
+import { transcriptFor } from '../src/lib/mcp-showcase'
 import type { TmuxState } from '../src/lib/mcp-tmux-state'
 
 type Step = { tool: string; arguments: unknown; isError: boolean; content: unknown[]; structuredContent?: unknown }
@@ -78,6 +80,27 @@ describe('the checks a recording must pass', () => {
 
   it('finds ids in text', () => {
     expect([...idsIn({ a: '%0', b: ['$1', '@22'] })].sort()).toEqual(['$1', '%0', '@22'])
+  })
+})
+
+describe('the agent\'s reply a recording stores', () => {
+  const reply = 'pytest printed "2 passed" and the log ends with "checks finished". I removed the checks session.'
+
+  it('stores a reply whose quoted values the recording printed', () => {
+    const steps = good()
+    steps.splice(2, 0, { tool: 'run_shell_command', arguments: { paneId: '%0', command: 'cat checks.log' }, isError: false, content: [], structuredContent: { output: '2026-01-01 checks finished', exitStatus: 0 } })
+    expect(recordedReply(reply, steps, 'x')).toBe(reply)
+  })
+
+  it('refuses a reply that quotes output the recording lacks, and one that quotes nothing', () => {
+    expect(() => recordedReply(reply, good(), 'x')).toThrow(/reply quotes "checks finished".*recording lacks it/)
+    expect(() => recordedReply('The tests passed.', good(), 'x')).toThrow(/quotes nothing/)
+  })
+
+  // The stored recordings predate the reply field. Each prints what the example's reply quotes, so recording one again stores it.
+  it.each(Object.keys(EXAMPLES))('quotes only what the stored %s recording printed', async (port) => {
+    const transcript = (await transcriptFor(port))!
+    expect(() => recordedReply(EXAMPLES[port]!.reply, transcript.steps, port)).not.toThrow()
   })
 })
 

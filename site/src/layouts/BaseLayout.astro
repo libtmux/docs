@@ -15,7 +15,7 @@ import ShellHead from '../components/ShellHead.astro'
 import DocumentationScript from '../components/docs/DocumentationScript.astro'
 import SearchModal from '../components/SearchModal.astro'
 import LinkPreview from '../components/LinkPreview.astro'
-import { ROOT_PORT } from '../lib/search-state'
+import { pageSection, ROOT_PORT } from '../lib/search-state'
 import { buildTarget } from '../lib/versions'
 import type { VersionEntry } from '../lib/versions'
 import { withPortRoot, withRoot } from '../lib/site-root'
@@ -133,16 +133,8 @@ const versionEntry: VersionEntry = {
   kind: target.kind,
   supported: true,
 }
-/**
- * Which part of the site this page is in, as a search filter.
- *
- * The first path segment after any port and version: `topics`, `guides`,
- * `concepts`, `examples`, `reference`. A reader searching for `capture`
- * usually wants one of those, not all five.
- */
-const sectionPath = pagePath.startsWith('tmux/')
-  ? pagePath.slice(5).replace(/^[^/]+\/(?=manual|reference|catalog)/, '') : pagePath
-const section = (sectionPath.split('/').filter(Boolean)[0] ?? 'home').toLowerCase()
+// Which part of the site this page is in, as a search filter; native pages get the same value from the build.
+const section = pageSection(pagePath)
 
 const routePort = portSlug ?? (process.env.LIBTMUX_DOCS_PORT || undefined) ?? (pagePath.startsWith('reference/') ? pagePath.split('/')[1] : undefined)
 const navPort = routePort ? PORT_BY_SLUG[routePort]?.slug : undefined

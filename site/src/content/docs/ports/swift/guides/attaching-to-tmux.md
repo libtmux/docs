@@ -33,7 +33,7 @@ Afterward it stops only the private server and removes its directory, also when
 the lookup fails. If tmux cannot be stopped, it keeps the directory and prints
 its location.
 
-```swift title="Connect.swift"
+```swift title="Connect.swift" role="program"
 import Foundation
 import LibTmux
 

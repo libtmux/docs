@@ -32,7 +32,7 @@ temporary directory, then stops that server and removes the directory, even if
 the lookup fails. If tmux does not stop, the program keeps the directory and
 prints its location.
 
-```rust title="src/main.rs"
+```rust title="src/main.rs" role="program"
 use std::error::Error;
 use std::path::PathBuf;
 use std::time::Duration;

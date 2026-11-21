@@ -20,9 +20,10 @@ Save this program, then follow [Setup and run](#setup-and-run).
 ## Read what's on screen
 
 The pane command prints on a fresh row and signals a tmux `wait-for` channel.
-The client waits for that signal with a five-second command deadline, then
-captures once. Matching a complete line avoids accepting the echoed command
-as output.
+The pane inherits the program's `PATH`, so its `tmux` is the one the program
+started. The client waits for that signal with a five-second command deadline,
+then captures once. Matching a complete line avoids accepting the echoed
+command as output.
 
 ```lisp title="capture.lisp"
 (require :asdf)
@@ -38,11 +39,10 @@ as output.
 
 (let* ((directory (sb-posix:mkdtemp "/tmp/libtmux-lisp-capture-XXXXXX"))
        (socket (concatenate 'string directory "/tmux.sock"))
-       (program (or (uiop:getenv "LIBTMUX_PROGRAM") "tmux"))
        (normal nil)
        (cleanup-ok t))
   (unwind-protect
-       (libtmux:with-client (client :program program :socket-path socket
+       (libtmux:with-client (client :socket-path socket
                                     :config-file "/dev/null" :timeout 5)
          (unwind-protect
               (multiple-value-prog1
@@ -52,7 +52,6 @@ as output.
                      client
                      (list "new-session" "-d" "-s" "capture"
                            "-e" "ENV=/dev/null"
-                           "-e" (concatenate 'string "CAPTURE_TMUX=" program)
                            "-e" (concatenate 'string "CAPTURE_SOCKET=" socket)
                            "/bin/sh")
                      :effect :mutation)
@@ -62,7 +61,7 @@ as output.
                        client pane
                        (concatenate
                         'string "printf '\\nlibtmux capture ready\\n'; "
-                        "\"$CAPTURE_TMUX\" -N -S \"$CAPTURE_SOCKET\" "
+                        "tmux -N -S \"$CAPTURE_SOCKET\" "
                         "wait-for -S capture-ready")
                        :enter t)
                       (libtmux:run-command
@@ -135,14 +134,14 @@ $ cd libtmux-source && mise trust && mise install && mise exec -- sbcl \
     --script ../capture.lisp
 ```
 
-Success prints `libtmux capture ready` once. Set `LIBTMUX_PROGRAM` to select
-another native tmux executable; it defaults to `tmux` on `PATH`.
+Success prints `libtmux capture ready` once. The program runs the `tmux` on
+your `PATH`.
 
 <a id="source-inclusion"></a>
 
 ## Where this comes from
 
 The displayed program ran against the pinned library on Linux with SBCL
-2.6.10, ASDF 3.3.7, and isolated tmux 3.3a and 3.8 servers. Its output assertion
-and directory cleanup passed. The shared-docs checks preserve the displayed
-source bytes and validate API links.
+2.6.10, ASDF 3.3.7, and isolated tmux 3.3a, 3.7c, and 3.8 servers. Its
+output assertion and directory cleanup passed. The shared-docs checks preserve
+the displayed source bytes and validate API links.

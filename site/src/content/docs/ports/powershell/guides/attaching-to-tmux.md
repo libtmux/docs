@@ -35,7 +35,7 @@ block stops the private server with
 the directory after success or failure. If the server does not stop, the
 script reports the error and keeps the directory.
 
-```powershell title="connect.ps1"
+```powershell title="connect.ps1" role="program"
 $ErrorActionPreference = 'Stop'
 Import-Module LibTmux -RequiredVersion 0.1.0
 

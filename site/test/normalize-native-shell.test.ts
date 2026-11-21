@@ -9,6 +9,7 @@ import { nativeArticle, nativeHash } from '../../scripts/native-shell-context.mj
 import { recordBuild, verifyBuild } from '../../scripts/publication-provenance.mjs'
 import { installAnchorNavigation } from '../public/_shell/anchors.js'
 import { renderedTargets } from '../src/lib/inventory-targets'
+import { normalizedNativePages } from './native-fixture'
 
 /** Compose the pinned native widget and actual shell arrival callbacks. */
 async function nativeLayout(coordinated = true, sharedFirst = false) {
@@ -315,6 +316,19 @@ describe('native shell URL normalization', () => {
     } finally {
       rmSync(directory, { recursive: true, force: true })
     }
+  })
+
+  it('marks each native page with the section filter the Astro layout writes, once, ahead of its article', async () => {
+    const cases = { 'api/pane/': 'reference', 'quickstart/': 'guides', 'topics/architecture/': 'topics', '': 'home' }
+    const { html, changed, again } = await normalizedNativePages(Object.keys(cases))
+    expect(changed).toBeGreaterThan(0)
+    for (const [path, section] of Object.entries(cases)) {
+      const marker = `<div data-pagefind-filter="section:${section}" hidden></div>`
+      expect(html[path]!.split('data-pagefind-filter="section:').length, path).toBe(2)
+      expect(html[path], path).toContain(`${marker}<article role="main" data-pagefind-body data-pagefind-filter="port:Python">`)
+    }
+    // A second pass finds the marker in place and writes nothing.
+    expect(again).toBe(0)
   })
 
   it('normalizes nested HTML/CSS for previews without changing other URLs', async () => {

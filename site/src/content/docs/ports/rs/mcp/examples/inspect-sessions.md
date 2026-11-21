@@ -57,7 +57,7 @@ tokio = { version = "=1.53.1", features = ["io-util", "macros", "net", "rt-multi
 
 Save this as `src/main.rs`:
 
-```rust title="src/main.rs"
+```rust title="src/main.rs" height="24"
 use std::error::Error;
 use std::io::ErrorKind;
 use std::path::Path;

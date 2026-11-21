@@ -16,6 +16,7 @@
   .api-nav__tree > .api-nav__item[aria-expanded='false']:has([aria-current='page']) > .api-nav__row,
   .sidebar-link.active,
   .sidebar-section:not([open]):has([aria-current='page']) > summary,
+  :is(.api-page-contents, .api-glossary-contents) a[aria-current="location"],
   .doc-picker-option[aria-current],
   [aria-pressed='true'],
   [role='tab'][aria-selected='true'] {
@@ -28,6 +29,7 @@
   .api-nav__tree > .api-nav__item[aria-expanded='false']:has([aria-current='page']) > .api-nav__row *,
   .sidebar-link.active *,
   .sidebar-section:not([open]):has([aria-current='page']) > summary *,
+  :is(.api-page-contents, .api-glossary-contents) a[aria-current="location"] *,
   .doc-picker-option[aria-current] *,
   [aria-pressed='true'] *,
   [role='tab'][aria-selected='true'] * {

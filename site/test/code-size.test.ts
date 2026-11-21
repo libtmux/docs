@@ -30,4 +30,11 @@ describe('code size', () => {
   ])('sets the code of %s at 13px and 1.7', (path, pattern) => {
     expect(source(path)).toMatch(pattern)
   })
+
+  it('draws the prompts page curl command in a code frame at the frame size, not in a hand-sized pre (record 0032)', () => {
+    const page = source('pages/prompts/[...topic].astro')
+    expect(page).toContain("import { Code } from 'astro-expressive-code/components'")
+    expect(page).toMatch(/<Code code="\$ curl https:\/\/libtmux\.org\/en\/prompts\/py\/session-switcher\.txt" lang="console" frame="none" \/>/)
+    expect(page, 'a hand-set 12px mono size is what the frame replaces').not.toMatch(/font-mono text-xs/)
+  })
 })

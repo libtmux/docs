@@ -18,10 +18,12 @@ import { formatLines, lineNumbers, parseLines, rangeFragment, requestedCap, role
  *   numbers from line 1. The excerpt's range links to its lines (`#L63-L72`),
  *   which highlight on arrival. A program nothing cites stays unnumbered,
  *   because it is for copying (record 0054).
- * - A line cap (`height="16"`) for a long program or output: the frame stops
- *   at that many lines, scrolls inside, and a bar under it says how many it
- *   shows and offers the rest. Copy always copies every line, and print
- *   shows every line.
+ * - A line cap (`height="16"`), set by the frame's author for a long program or
+ *   output: the frame stops at that many lines, scrolls inside, and a bar
+ *   under it says how many it shows and offers the rest. A frame without one
+ *   shows every line. Copy always copies every line, and print shows every
+ *   line.
+ * - No empty header: a frame with no file name draws no caption at all.
  * - `copy="off"` removes the frame's own Copy button, for a component that draws
  *   one of its own, so a frame has one copy control.
  *
@@ -228,6 +230,11 @@ export function codeFrame() {
         if (!figure || !pre) return
         const role = codeBlock.metaOptions.getString('role')
         const ranges = parseLines(codeBlock.metaOptions.getString('lines'))
+
+        // A frame with no file name has no header: Expressive Code always writes the element and hides it with CSS, which
+        // leaves an empty caption in the markup. A terminal's bar carries its own label, so it is never empty.
+        const bare = select('figcaption.header', figure)
+        if (bare && bare.children.length === 0) figure.children.splice(figure.children.indexOf(bare), 1)
 
         // A component that draws its own Copy turns the frame's off, so the frame has one.
         if (codeBlock.metaOptions.getString('copy') === 'off') {

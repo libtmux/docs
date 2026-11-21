@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 
 import { dirname, join, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PORT_BY_SLUG } from '../site/src/lib/ports.ts'
+import { nativeSection } from '../site/src/lib/search-state.ts'
 import { nativeArticle, nativeHash } from './native-shell-context.mjs'
 
 const escapeAttribute = (text) => text.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;')
@@ -165,6 +166,10 @@ function adaptNativePage(html, page, context, chrome, file, assetDigests) {
   after = after
     .replace(/<aside class="toc-drawer"(?: id="native-toc")?>/, '<aside class="toc-drawer" id="native-toc">')
     .replace(/\s*<\/body>/i, () => `\n<!-- libtmux-native-footer -->${chrome.footer}<!-- /libtmux-native-footer -->\n</body>`)
+  // The layout writes the section as an empty element ahead of the page body; the article's bytes stay opaque,
+  // so the marker goes before it, where Pagefind still reads it.
+  const section = `<div data-pagefind-filter="section:${nativeSection(page.file.replace(/(?:^|\/)index\.html$/, ''))}" hidden></div>`
+  before = before.replace(/<div data-pagefind-filter="section:[^"]*" hidden><\/div>$/, '') + section
   const attributes = opening[0].replace(/\sdata-pagefind-(?:body|filter)(?:=["'][^"']*["'])?/gi, '').replace(/>$/, ` data-pagefind-body data-pagefind-filter="port:${PORT_BY_SLUG[context.port].name}">`)
   const result = before + attributes + article + after
   if (result.split('<!-- libtmux-native-sidebar -->').length !== 2) throw new Error(`Native page must contain one shared sidebar: ${page.file}`)

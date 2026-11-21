@@ -3,7 +3,7 @@ import { createComponent, renderTemplate } from 'astro/runtime/server/index.js'
 import { Window } from 'happy-dom'
 import { ModuleKind, ScriptTarget, transpileModule } from 'typescript'
 import { afterEach, describe, expect, it } from 'vitest'
-import { lastOutputLine, replayFrames, windowLabel, type Frame, type ReplayStep } from '../src/lib/mcp-replay'
+import { replayFrames, windowLabel, type Frame, type ReplayStep } from '../src/lib/mcp-replay'
 import { buildShowcase, EXAMPLES, mcpShowcase, transcriptFor, type Transcript } from '../src/lib/mcp-showcase'
 import { recordingStateProblems, type TmuxState } from '../src/lib/mcp-tmux-state'
 import { parseLayout } from '../src/lib/tmux-layout-string'
@@ -165,7 +165,7 @@ describe('the tmux state each recorded call leaves, drawn from the results of a 
     expect(frames[7]!.sessions).toEqual([])
   })
 
-  it('follows Python: ids from create_session, the split pane, the layout from list_windows, output with the prompt dropped from the answer', async () => {
+  it('follows Python: ids from create_session, the split pane, the layout from list_windows, and the output in the panes', async () => {
     const frames = replayFrames(await steps('py'))
     expect(frames.map((frame) => frame.sessions.length)).toEqual([0, 1, 1, 1, 1, 1, 0])
     expect(frames[1]!.sessions[0]).toMatchObject({ id: '$0', name: 'checks', windows: [{ panes: [{ id: '%0' }] }] })
@@ -177,7 +177,6 @@ describe('the tmux state each recorded call leaves, drawn from the results of a 
     expect(parseLayout(read.layout!)!.panes.map((pane) => pane.id)).toEqual(['%0', '%1'])
     expect(frames[5]!.sessions[0]!.windows[0]!.panes[1]!.output).toMatch(/checks finished/)
     expect(frames[6]!.sessions).toEqual([])
-    expect(lastOutputLine('..\n2 passed in 0.00s\n$ ')).toBe('2 passed in 0.00s')
   })
 
   it('draws nothing for Ruby from its results alone: they carry no pane geometry and name no session', async () => {
@@ -254,10 +253,6 @@ describe('the tmux state each recorded call leaves, drawn from the results of a 
     expect(window(6).layout, 'a layout name has no geometry').toBeUndefined()
   })
 
-  it('quotes the last line of output that has text, for the agent\'s answer', () => {
-    expect(lastOutputLine('..   [100%]\n2 passed in 0.00s\n\n')).toBe('2 passed in 0.00s')
-    expect(lastOutputLine(undefined)).toBeUndefined()
-  })
 })
 
 describe('the frames of a recording that stored its tmux server\'s state', () => {
@@ -478,6 +473,9 @@ describe('the replay component', () => {
       expect(rule(css, '.mcp-turn__who'), 'no uppercase label').not.toMatch(/text-transform/)
       expect(rule(css, '.mcp-turn--user p')).toMatch(/font-weight: 400;/)
       expect(rule(css, '.mcp-turn--user p'), 'the prompt is not bold').not.toMatch(/font-weight: [6-9]00/)
+      // Record 0074: the closing reply is people's words, at the prompt's size and weight, with inline code in mono.
+      expect(rule(css, '.mcp-turn--answer p')).toMatch(/font-size: 0\.9375rem;[^}]*font-weight: 400;/)
+      expect(rule(css, '.mcp-turn--answer :is(code, samp)')).toMatch(/font-family: var\(--mcp-mono\);/)
       expect(rule(css, '.mcp-call'), 'tool names and arguments stay mono').toMatch(/font-family: var\(--mcp-mono\);/)
     })
 
@@ -856,12 +854,13 @@ describe('the replay component', () => {
     const turns = [...document.querySelectorAll('[data-turn]')].filter((turn) => turn.getAttribute('data-turn') !== 'prompt')
     expect(turns).toHaveLength(CALLS.ts + 1)
     for (const turn of turns) expect(turn.hasAttribute('tabindex'), 'a call is not a tab stop of its own').toBe(false)
-    const pins = turns.map((turn) => turn.querySelector<HTMLButtonElement>('button[data-pin]')!)
+    expect(turns.at(-1)!.querySelector('[data-pin]'), 'the closing reply is not a call, so it has no pin').toBeNull()
+    const pins = turns.slice(0, CALLS.ts).map((turn) => turn.querySelector<HTMLButtonElement>('button[data-pin]')!)
     for (const pin of pins) {
       expect(pin.tagName).toBe('BUTTON')
       expect(pin.type).toBe('button')
       expect(pin.hidden).toBe(false)
-      expect(pin.getAttribute('aria-label')).toMatch(/^Pin the (tmux state after \w+|final tmux state)$/)
+      expect(pin.getAttribute('aria-label')).toMatch(/^Pin the tmux state after \w+$/)
       expect(pin.getAttribute('aria-pressed')).toBe('false')
     }
     // Enter and Space on a button click it; a click pins the call's state and presses the button.
@@ -902,6 +901,28 @@ describe('the replay component', () => {
     click(win, action(document, 'back'))
     expect(stops()).toHaveLength(1)
     expect(stops()[0]!.closest('[data-turn]')!.hasAttribute('hidden')).toBe(false)
+  })
+
+  it('closes on the agent\'s reply: its words after the last call, with no call parts, no rail mark and no step of its own (record 0074)', async () => {
+    const before = await mount('ts')
+    const reply = before.document.querySelector('[data-chat]')!.lastElementChild as HTMLElement
+    expect(reply.classList.contains('mcp-turn--answer')).toBe(true)
+    expect(reply.querySelector('.mcp-turn__who')!.textContent).toBe('Agent')
+    expect(reply.querySelector('[data-pin], .mcp-call, .mcp-tier, details.mcp-result'), 'no tool, tier, arguments, result or pin').toBeNull()
+    // Quoted output is verified terminal output: <samp> in mono, with no quotation marks (record 0074).
+    expect(reply.querySelector('p samp')!.textContent).toBe('2 passed')
+    expect(reply.textContent, 'no quotation marks around it').not.toContain('"2 passed"')
+    const { win, document } = await mount('ts', { run: true, reduced: true })
+    expect(document.querySelectorAll('[data-mark]'), 'one mark per call and the start, none for the reply').toHaveLength(CALLS.ts + 1)
+    expect(document.querySelector('[data-count]')!.textContent).toBe(`${CALLS.ts}/${CALLS.ts}`)
+    const shown = () => visible(document, '.mcp-turn--answer').length
+    expect(shown(), 'shown once the last call has played').toBe(1)
+    click(win, action(document, 'back'))
+    expect(shown(), 'hidden before the last call').toBe(0)
+    const last = document.querySelectorAll<HTMLButtonElement>('[data-pin]')[CALLS.ts - 1]!
+    click(win, action(document, 'forward'))
+    click(win, last)
+    expect(document.querySelector('.mcp-turn--answer')!.classList.contains('is-pinned'), 'pinning the last call does not mark the reply').toBe(false)
   })
 
   it('has no pin button before script runs, and none in the requests-only form', async () => {

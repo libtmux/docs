@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { contractOf, contractsOf, sameContract, sameContracts, type ToolContract } from '../src/lib/mcp-contract'
 import { MCP_REFERENCE, mcpReferenceRoutes } from '../src/lib/mcp-reference'
 import {
-  abbreviate, buildShowcase, CAPABILITY_KEY, transcriptFor, EXAMPLES, mcpShowcase, protocolSnapshot, recordingHolds, showcaseHeadings, TIERS, toolHeadings, toolPurposes, toolTier,
+  abbreviate, buildShowcase, CAPABILITY_KEY, replyParagraphs, transcriptFor, EXAMPLES, mcpShowcase, protocolSnapshot, recordingHolds, showcaseHeadings, TIERS, toolHeadings, toolPurposes, toolTier,
   type McpShowcase, type ProtocolSnapshot, type ProtocolTool, type Transcript,
 } from '../src/lib/mcp-showcase'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
@@ -318,8 +318,8 @@ describe('the overview page', () => {
     // The demo follows the intro and leads the page; the installer follows the demo, on every port, as it does in a port home's panel.
     expect(page.indexOf('productIntro && <ProductIntro parts={productIntro} />'), 'the example follows the intro').toBeLessThan(example)
     expect(example, 'the example comes before install').toBeLessThan(install)
-    expect(install).toBeLessThan(page.indexOf('placeholderLocale && !introFirst && <Content />'))
-    expect(page.indexOf('placeholderLocale && !introFirst && <Content />'), 'the tool grid follows the prose').toBeLessThan(tools)
+    expect(install).toBeLessThan(page.indexOf('<SectionBody cards='))
+    expect(page.indexOf('<SectionBody cards='), 'the tool grid follows the prose').toBeLessThan(tools)
     expect(page).toContain('!placeholderLocale && mcpTools && <McpShowcase')
   })
 
@@ -408,14 +408,46 @@ describe('the showcase section', () => {
     }
   })
 
-  it('shows a recorded result under each call, and the agent\'s answer quoting the pane output last', async () => {
+  it('shows a recorded result under each call, and the agent\'s recorded reply last', async () => {
     const document = await section('ts')
     const items = [...document.querySelectorAll('article.mcp-turn')]
     for (const item of items) expect(item.querySelectorAll('details.mcp-result pre')).toHaveLength(1)
     expect(JSON.parse(items[0]!.querySelector('details.mcp-result pre')!.textContent!).paneId, 'the id later calls use comes from this result').toBe('%0')
-    expect([...document.querySelectorAll('.mcp-turn--answer q')].map((q) => q.textContent)).toEqual([expect.stringMatching(/^2 passed/), expect.stringMatching(/checks finished$/)])
+    expect([...document.querySelectorAll('.mcp-turn--answer samp')].map((output) => output.textContent)).toEqual([expect.stringMatching(/^2 passed/), expect.stringMatching(/checks finished$/)])
     expect(document.querySelector('.mcp-provenance'), 'how the recording was made is for the commit that refreshed it').toBeNull()
     expect(document.body.textContent).not.toMatch(/recorded against|private tmux|illustrative|is shown as|generation differs/i)
+  })
+
+  describe('with the agent\'s reply in the recording', () => {
+    const reply = 'pytest printed "2 passed" and the log ends with "checks finished". I removed the checks session.'
+    // Without `text`, the recording is shown as one made before replies were stored, whatever the file holds.
+    const withReply = async (port: string, text?: string) => {
+      const { reply: _stored, ...recorded } = (await transcriptFor(port))!
+      const transcript = text ? { ...recorded, reply: text } : recorded
+      return section(port, buildShowcase(port, 'latest', onDisk(port), transcript))
+    }
+
+    it.each(['go', 'julia'])('closes the %s chat with the recorded reply, quoting what it printed, after the last call', async (port) => {
+      const document = await withReply(port, reply)
+      const closing = document.querySelectorAll('.mcp-turn--answer')
+      expect(closing).toHaveLength(1)
+      expect(closing[0]!.querySelector('.mcp-turn__who')!.textContent).toBe('Agent')
+      expect([...closing[0]!.querySelectorAll('p')].map((paragraph) => paragraph.textContent).join(' ').replace(/\s+/g, ' ').trim()).toBe(reply.replaceAll('"', ''))
+      expect([...closing[0]!.querySelectorAll('samp')].map((output) => output.textContent)).toEqual(['2 passed', 'checks finished'])
+      expect(closing[0]!.querySelector('q'), 'printed output is <samp>, not a quotation').toBeNull()
+      expect(closing[0]!.getAttribute('data-turn')).toBe(String(EXAMPLES[port]!.steps.length))
+      expect(closing[0]!.previousElementSibling, 'the last call comes before it').toBe([...document.querySelectorAll('article.mcp-turn')].at(-1))
+    })
+
+    it('draws no closing turn for a recording without a reply: nothing is built from the panes (record 0074)', async () => {
+      expect((await withReply('go', reply)).querySelectorAll('.mcp-turn--answer'), 'the control: a stored reply closes the chat').toHaveLength(1)
+      for (const port of ['go', 'julia']) {
+        const document = await withReply(port)
+        expect(document.querySelector('.mcp-turn--answer'), `${port} without a reply`).toBeNull()
+        expect(document.body.textContent, `${port}: no words put in the agent's mouth`).not.toMatch(/printed/)
+        expect([...document.querySelectorAll('article.mcp-turn')].at(-1), 'the last call ends the chat').toBe(document.querySelector('[data-chat]')!.lastElementChild)
+      }
+    })
   })
 
   it('says nothing of the sandbox or of a stand-in generation, for Julia or any port', async () => {
@@ -530,9 +562,9 @@ describe('recorded results', () => {
 
   it.each(RECORDED)('records %s printing the test runner\'s result and the log in their panes', async (port) => {
     const { example } = await showcase(port)
-    const lines = example!.recording!.answers.map((answer) => answer.line)
-    expect(lines[0]).toMatch(/2 passed/)
-    expect(lines.at(-1)).toMatch(/checks finished/)
+    const results = JSON.stringify(example!.steps.map((step) => step.result))
+    expect(results).toMatch(/2 passed/)
+    expect(results).toMatch(/checks finished/)
     expect(example!.steps.every((step) => step.result !== undefined)).toBe(true)
   })
 
@@ -810,5 +842,14 @@ describe('a recording made at an earlier revision', () => {
         expect(listsThem, `${port} results name no tool`).toEqual([])
       }
     })
+  })
+})
+
+describe('the agent\'s closing reply', () => {
+  it('reads paragraphs, inline code and the printed output it quotes, and nothing else (record 0074)', () => {
+    expect(replyParagraphs('pytest printed "2 passed" in `checks.log`.\n\nI removed the *checks* session.')).toEqual([
+      [{ kind: 'text', text: 'pytest printed ' }, { kind: 'output', text: '2 passed' }, { kind: 'text', text: ' in ' }, { kind: 'code', text: 'checks.log' }, { kind: 'text', text: '.' }],
+      [{ kind: 'text', text: 'I removed the *checks* session.' }],
+    ])
   })
 })

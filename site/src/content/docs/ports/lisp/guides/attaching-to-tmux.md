@@ -25,18 +25,15 @@ without owning its lifetime. With the variable unset, it creates a private
 server, proves the inspection left it alive, and then removes its own fixture.
 Both paths run from the library checkout using its pinned SBCL and ASDF.
 
-```lisp title="connect.lisp"
+```lisp title="connect.lisp" role="program"
 (require :asdf)
 (require :sb-posix)
 (asdf:load-asd (truename "libtmux.asd"))
 (asdf:load-system "libtmux")
 
-(defparameter *program* (or (uiop:getenv "LIBTMUX_PROGRAM") "tmux"))
-
 (defun inspect-work (socket)
   "Print the captured work session and leave the borrowed server running."
-  (libtmux:with-client (client :program *program* :socket-path socket
-                               :timeout 5)
+  (libtmux:with-client (client :socket-path socket :timeout 5)
     (let* ((snapshot (libtmux:fetch-snapshot client))
            (session (find "work" (libtmux:sessions snapshot)
                           :key #'libtmux:name :test #'string=)))
@@ -51,7 +48,7 @@ Both paths run from the library checkout using its pinned SBCL and ASDF.
          (normal nil)
          (cleanup-ok t))
     (unwind-protect
-         (libtmux:with-client (owner :program *program* :socket-path socket
+         (libtmux:with-client (owner :socket-path socket
                                      :config-file "/dev/null" :timeout 5)
            (unwind-protect
                 (multiple-value-prog1
@@ -123,8 +120,8 @@ Success prints `work`. The demo verifies that the inspection leaves its server
 alive before the owning scope terminates it and removes the directory.
 The demo command clears `LIBTMUX_SOCKET_PATH` to ensure fixture isolation.
 To inspect your own server, set that variable to its absolute socket path
-and repeat the SBCL invocation without `env -u`. That path performs no creation or
-termination. Set `LIBTMUX_PROGRAM` to select another native tmux executable.
+and repeat the SBCL invocation without `env -u`. That path performs no creation
+or termination. Both paths run the `tmux` on your `PATH`.
 
 ## Find or create
 
@@ -138,6 +135,7 @@ session, window-link, window, and pane graph.
 ## Verification
 
 The exact displayed program and setup ran against the pinned library on Linux
-with SBCL 2.6.10 and ASDF 3.3.7. Isolated tmux 3.3a and 3.8 runs printed `work`,
-proved that the borrowed connection left its server alive, and cleaned up the
-owned fixture. The shared-docs checks bind the displayed bytes to these runs.
+with SBCL 2.6.10 and ASDF 3.3.7. Isolated tmux 3.3a, 3.7c, and 3.8 runs
+printed `work`, proved that the borrowed connection left its server alive, and
+cleaned up the owned fixture. The shared-docs checks bind the displayed bytes
+to these runs.

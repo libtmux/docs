@@ -32,7 +32,7 @@ connects a second `Server` to the socket by path and runs the same lookup. The
 `finally` block stops only the private server and removes its directory. If
 tmux cannot be stopped, the program keeps the directory and prints its location.
 
-```fsharp title="Program.fs"
+```fsharp title="Program.fs" role="program"
 open System
 open System.IO
 open System.Threading

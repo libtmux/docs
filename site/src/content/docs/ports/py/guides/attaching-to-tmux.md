@@ -32,7 +32,7 @@ temporary directory. Its `finally` block stops that server and removes the
 directory, including after an error. If tmux does not stop, the error names the
 directory the program kept.
 
-```python title="connect.py"
+```python title="connect.py" role="program"
 import os
 import shutil
 from pathlib import Path
