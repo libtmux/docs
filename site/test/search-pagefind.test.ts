@@ -42,6 +42,9 @@ describe('the filters of a page through the real layout', () => {
       await page('go/latest/reference/tmux-pane-capture', { pagePath: 'reference/tmux-pane-capture', portSlug: 'go' }, 'Capture reads a pane.'),
       await page('go/latest/examples/capture-pane-output', { pagePath: 'examples/capture-pane-output', portSlug: 'go' }, 'A runnable capture.'),
       await page('tmux/latest/manual/new-session', { pagePath: 'tmux/latest/manual/new-session' }, 'Create a session, then capture its panes.'),
+      // Pages that fit none of the site's seven sections, which the facet once listed by their folder (record 0075).
+      await page('go/latest/core/programs', { pagePath: 'core/programs', portSlug: 'go' }, 'Programs for the core library.'),
+      await page('search', { pagePath: 'search' }, 'Find pages.'),
     ])
   })
   afterAll(async () => {
@@ -55,9 +58,12 @@ describe('the filters of a page through the real layout', () => {
       '/en/go/latest/guides/capturing-output/': ['guides'],
       '/en/go/latest/reference/tmux-pane-capture/': ['reference'],
       '/en/go/latest/examples/capture-pane-output/': ['examples'],
-      '/en/tmux/latest/manual/new-session/': ['manual'],
+      // No marker at all for a page that fits none of the seven: the tmux manual, a Core directory, the search page.
+      '/en/tmux/latest/manual/new-session/': undefined,
+      '/en/go/latest/core/programs/': undefined,
+      '/en/search/': undefined,
     })
-    expect((await index.api.filters()).section).toEqual({ guides: 1, reference: 1, examples: 1, manual: 1 })
+    expect((await index.api.filters()).section, 'the facet holds the seven sections and nothing else').toEqual({ guides: 1, reference: 1, examples: 1 })
   })
 
   it('finds the Go API pages through the API scope and the root pages through the port scope', async () => {
