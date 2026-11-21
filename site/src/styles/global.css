@@ -1486,13 +1486,21 @@ main[tabindex='-1']:focus {
   flex: 1;
 }
 
+/* The search and colour controls and the Menu button wrap as one group and sit at the end of their row, so a bar that wraps never
+   leaves the button alone at the start of a row of its own. The group keeps the bar's gap between them. */
+.site-header__controls {
+  display: flex;
+  align-items: center;
+  gap: inherit;
+  flex: none;
+  margin-inline-start: auto;
+}
+
 .site-header__always {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   flex: none;
-  /* On a row of its own, once the bar wraps, the search and colour controls stay at the end. */
-  margin-inline-start: auto;
 }
 
 .site-header__search,

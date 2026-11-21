@@ -74,7 +74,8 @@ const links = port ? portHeaderLinks(port) : undefined
       )
     }
 
-    {/* Keep search and colour controls visible at every width. */}
+    {/* Keep search and colour controls visible at every width. They and the Menu button share one group, so a bar that wraps moves them together and never leaves the button alone on a row. */}
+    <div class="site-header__controls">
     <div class="site-header__always">
       <a
         href={portSlug ? withPortRoot(`/${portSlug}/${version}/search/`) : withRoot('/search/')}
@@ -136,6 +137,7 @@ const links = port ? portHeaderLinks(port) : undefined
         </div>}
       </div>
     </details>
+    </div>
   </div>
 </header>
 

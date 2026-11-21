@@ -125,11 +125,11 @@ describe('the bar at an enlarged root size (adoption plan step 51)', () => {
   const launcher = readFileSync(new URL('../src/components/HomeLauncher.astro', import.meta.url), 'utf8')
   const bar = /\n\.site-header__bar \{([^}]*)\}/.exec(css)![1]!
 
-  it('wraps whenever its content does not fit, on every page, and keeps the colour controls at the end of their row', () => {
+  it('wraps whenever its content does not fit, on every page, and keeps the colour controls and the Menu button together at the end of their row', () => {
     expect(bar).toMatch(/flex-wrap:\s*wrap/)
     expect(css).not.toMatch(/\.site-header__bar:has\(\.site-header-language\)\s*\{\s*flex-wrap/)
     expect(launcher, 'the home no longer holds the bar to one row').not.toMatch(/site-header__bar:has\(\.home-launcher\)\)\s*\{\s*flex-wrap:\s*nowrap/)
-    expect(/\n\.site-header__always \{([^}]*)\}/.exec(css)![1]).toMatch(/margin-inline-start:\s*auto/)
+    expect(/\n\.site-header__controls \{([^}]*)\}/.exec(css)![1]).toMatch(/margin-inline-start:\s*auto/)
   })
 
   it('counts the home launcher at its floor and lets it grow, so only a bar that cannot fit its floors wraps', () => {
