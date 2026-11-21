@@ -290,7 +290,10 @@ const wrapsBadge = wrapped ? mentionBadge(nativeKind(wrapped, port), wrapped.com
   .mcp-method-description { display: block; margin-top: .25rem; }
   .mcp-schema-type { font-size: .8125rem; color: var(--color-muted); margin-bottom: .75rem; }
   .mcp-schema-type code { color: var(--api-ink-type); }
-  .mcp-type-name { font: 600 .9375rem var(--font-mono, ui-monospace, monospace); margin: 0; }
+  /* The heading is one 1.5rem line, the height of the heading link beside it. The kind and the link have no text baseline to
+     share with the name (the link's is the bottom of its icon), so the row puts them at its top, level with that first line. */
+  .mcp-type-name { font: 600 .9375rem/1.5rem var(--font-mono, ui-monospace, monospace); margin: 0; }
+  dl.gp-sphinx-api-container.mcp-type-definition > dt.gp-sphinx-api-header:not(.api-native-header) > .gp-sphinx-api-layout--responsive { align-items: flex-start; }
   .mcp-type-group { margin-block: 1rem .75rem; font-size: .9375rem; }
   .mcp-type-definition { margin-block: 1rem; }
   .mcp-types :global(.api-type) { font-weight: 400; }
