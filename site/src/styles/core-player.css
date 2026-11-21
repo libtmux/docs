@@ -66,9 +66,9 @@
   border-top: 1px solid var(--color-edge);
 }
 
-/* The program is set a size smaller than the homepage's, so that most of its lines fit the column beside the tmux; the frame's padding, 1rem a side, is part of what the column holds. */
+/* The program is sized to its column, from 13px (record 0032) to 14px, so that most of its lines fit beside the tmux; the frame's padding, 1rem a side, is part of what the column holds. */
 .home-example-player .home-example-stage > .home-example-code > .home-example-view .expressive-code {
-  --ec-codeFontSize: clamp(0.75rem, calc((100cqi - 2rem) / (var(--home-code-columns) * 0.625)), 0.875rem);
+  --ec-codeFontSize: clamp(0.8125rem, calc((100cqi - 2rem) / (var(--home-code-columns) * 0.625)), 0.875rem);
   position: relative;
 }
 
@@ -462,7 +462,7 @@ html[data-js] .core-player__results > .core-result[data-off] {
 .home-example-player .core-player__side .core-result__value .expressive-code {
   --ec-codePadBlk: 0.5rem;
   --ec-codePadInl: 0.75rem;
-  --ec-codeFontSize: var(--core-program-size, 0.75rem);
+  --ec-codeFontSize: var(--core-program-size, 0.8125rem);
 }
 
 /* The showcase and the landing page set the height of their programs on every code block in a panel; a returned value takes the height it needs. */
