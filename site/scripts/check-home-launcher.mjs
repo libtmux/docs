@@ -111,6 +111,40 @@ export async function checkHomeResponsiveLayout(page, width, port = null) {
   assert(layout.optionsInPanel && layout.optionsBelowTitle, `${width}: example options stay inside the code panel's bottom row`)
 }
 
+/**
+ * At 200% text (a 32px root) on a 1280px window the header controls do not fit one row. The bar wraps: nothing overlaps or runs past the
+ * window, and the language picker keeps its label. `css` lets a control break the rule under test.
+ */
+export async function checkHomeEnlargedText(page, css = '') {
+  await page.setViewportSize({ width: 1280, height: 789 })
+  const style = css ? await page.addStyleTag({ content: css }) : null
+  await page.evaluate(() => { document.documentElement.style.fontSize = '200%' })
+  try {
+    await page.evaluate(async () => {
+      await new Promise(requestAnimationFrame)
+      await new Promise(requestAnimationFrame)
+    })
+    const bar = await page.evaluate(() => {
+      const items = [...document.querySelectorAll('.site-header__bar > :not(script)')]
+        .map((node) => [node.className, node.getBoundingClientRect()]).filter(([, box]) => box.width > 0 && box.height > 0)
+      const overlapping = items.flatMap(([name, box], index) => items.slice(index + 1)
+        .filter(([, other]) => box.left < other.right - 1 && other.left < box.right - 1 && box.top < other.bottom - 1 && other.top < box.bottom - 1)
+        .map(([other]) => `${name} and ${other}`))
+      const summary = document.querySelector('[data-home-launcher] [data-page-port-switcher] > summary')
+      const label = [...summary.querySelectorAll('.page-port-name, .page-port-short-name')].find((node) => node.checkVisibility())
+      // The label has its own width, and its picker is wide enough to hold it: a collapsed picker leaves the label drawn outside it.
+      const labelClipped = !label || label.clientWidth === 0 || label.scrollWidth > label.clientWidth || summary.scrollWidth > summary.clientWidth + 1
+      return { overflow: document.documentElement.scrollWidth > innerWidth + 1, overlapping, labelClipped }
+    })
+    assert(!bar.overflow, '200% text: the header fits without page overflow')
+    assert.deepEqual(bar.overlapping, [], '200% text: the header controls do not overlap')
+    assert(!bar.labelClipped, '200% text: the language picker keeps its label')
+  } finally {
+    await page.evaluate(() => { document.documentElement.style.fontSize = '' })
+    await style?.evaluate((node) => node.remove())
+  }
+}
+
 /** The chosen language's Home leads its solution menu, opens that language's page, and is not a product. */
 async function checkSolutionHome(page, solution, port) {
   const rows = solution.locator('nav a[data-picker-option]')
@@ -167,6 +201,9 @@ export async function checkHomeLauncher(browser, base) {
     for (const width of [944, 840, 778, 763, 736, 659, 628, 596, 561, 560, 518, 390, 320, 280]) {
       await checkHomeResponsiveLayout(page, width)
     }
+    await checkHomeEnlargedText(page)
+    // Control: a bar that never wraps collapses the language picker, and the check notices.
+    await assert.rejects(checkHomeEnlargedText(page, '.site-header__bar { flex-wrap: nowrap !important }'), /200% text/)
     await page.setViewportSize({ width: 1280, height: 777 })
     assert.equal(await logo.count(), 0, 'The top header has no duplicate artwork')
     for (const { slug } of PORTS) {

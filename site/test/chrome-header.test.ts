@@ -132,7 +132,18 @@ describe('the bar at an enlarged root size (adoption plan step 51)', () => {
     expect(/\n\.site-header__always \{([^}]*)\}/.exec(css)![1]).toMatch(/margin-inline-start:\s*auto/)
   })
 
-  it('keeps the home language picker at its content width, so its label is not cut away', () => {
-    expect(/\.home-language-control \{([^}]*)\}/.exec(launcher)![1]).toMatch(/min-width:\s*max-content/)
+  it('counts the home launcher at its floor and lets it grow, so only a bar that cannot fit its floors wraps', () => {
+    const rule = /\n  \.home-launcher \{([^}]*)\}/.exec(launcher)![1]!
+    expect(rule, 'the line-breaking size is the minimum content, the language label included').toMatch(/flex:\s*1 1 min-content/)
+    expect(rule, 'the launcher grows to its content and no further').toMatch(/max-width:\s*max-content/)
+    expect(launcher, 'the launcher takes the spare room, so the spacer takes none').toMatch(/\.site-header__bar:has\(\.home-launcher\) \.site-header__spacer\) \{\s*flex:\s*none/)
+  })
+
+  it('keeps the language label text while the bar can wrap, and lets it give way on the phone row', () => {
+    const label = /\n  \.home-launcher :global\(\.page-port-name\),\n  \.home-launcher :global\(\.page-port-short-name\) \{([^}]*)\}/.exec(launcher)![1]!
+    expect(label).toMatch(/min-width:\s*max-content/)
+    expect(/\.home-language-control \{([^}]*)\}/.exec(launcher)![1], 'the control itself holds no floor').not.toMatch(/min-width/)
+    const phone = launcher.slice(launcher.indexOf('@media (max-width: 35rem)'))
+    expect(phone.slice(0, phone.indexOf('\n  }')), 'on its own row nothing can wrap, so the label may shrink').toMatch(/page-port-short-name\) \{ min-width: 0; \}/)
   })
 })
