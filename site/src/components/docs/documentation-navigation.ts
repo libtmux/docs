@@ -12,6 +12,36 @@ function syncSheetLock() {
   document.documentElement.toggleAttribute('data-sheet-open', sheet)
 }
 
+const CLOSE_ICON = '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m4 4 8 8M12 4l-8 8" stroke-linecap="round" /></svg>'
+
+/**
+ * Give a panel the title row and Close button that a side sheet pins at its top (record 0071). The row is the panel's own
+ * `.doc-picker-title`, or one named `title` for a panel with none; CSS shows the added row and the button in a side sheet only, so the
+ * popover and bottom sheet keep their anatomy. Close shuts `owner` and returns focus to `trigger`.
+ */
+function addPanelHead(owner: HTMLDetailsElement, trigger: HTMLElement, panel: HTMLElement, title: string, noun: string, signal: AbortSignal) {
+  let head = panel.querySelector<HTMLElement>(':scope > .doc-picker-title')
+  if (!head) {
+    head = document.createElement('p')
+    head.className = 'doc-picker-title'
+    head.dataset.panelHeadAdded = ''
+    head.textContent = title
+    panel.prepend(head)
+  }
+  head.querySelector('[data-panel-close]')?.remove()
+  const close = document.createElement('button')
+  close.type = 'button'
+  close.className = 'doc-panel-close'
+  close.dataset.panelClose = ''
+  close.setAttribute('aria-label', `Close ${noun}`)
+  close.innerHTML = CLOSE_ICON
+  close.addEventListener('click', () => {
+    owner.open = false
+    trigger.focus({ preventScroll: true })
+  }, { signal })
+  head.append(close)
+}
+
 /**
  * Place an open panel for this display. A popover is fixed under its trigger, above it when there is no room below, and clamped to the
  * viewport; a bottom or side sheet is placed by CSS from `data-panel-mode` and `data-panel-side` on `owner`. Closes `owner` when its
@@ -108,6 +138,7 @@ export function initDocumentationNavigation() {
     const searchLabel = picker.querySelector<HTMLElement>('[data-picker-search-label]')
     if (searchLabel) searchLabel.hidden = false
     const position = () => placePanel(picker, summary, panel)
+    addPanelHead(picker, summary, panel, summary.getAttribute('aria-label') ?? summary.textContent?.trim() ?? 'Options', 'picker', signal)
     const filter = () => {
       const tokens = (search?.value ?? '').toLocaleLowerCase().trim().split(/\s+/).filter(Boolean)
       const entries = options()
@@ -194,7 +225,7 @@ export function initDocumentationNavigation() {
   }
 
   // The header Menu is a disclosure that opens by display like a picker's panel: a bottom sheet on a phone, a side sheet on a short
-  // landscape screen, a popover elsewhere (record 0071). Escape closes it and returns focus to its button.
+  // landscape screen, a popover elsewhere (record 0071). Escape and a side sheet's Close button close it and return focus to its button.
   for (const menu of document.querySelectorAll<HTMLDetailsElement>('details[data-header-menu]')) {
     const summary = menu.querySelector<HTMLElement>(':scope > summary')!
     const panel = menu.querySelector<HTMLElement>(':scope > .site-header__panel')!
@@ -204,7 +235,9 @@ export function initDocumentationNavigation() {
     menu.dataset.enhanced = ''
     const position = () => placePanel(menu, summary, panel)
     const close = () => { menu.open = false }
-    const firstControl = () => [...panel.querySelectorAll<HTMLElement>('a[href], button, summary, input')].find((control) => control.getClientRects().length)
+    addPanelHead(menu, summary, panel, 'Menu', 'menu', signal)
+    // The Close button is the sheet's way out, not where a reader starts.
+    const firstControl = () => [...panel.querySelectorAll<HTMLElement>('a[href], button:not([data-panel-close]), summary, input')].find((control) => control.getClientRects().length)
     menu.addEventListener('toggle', () => {
       if (!menu.open) {
         for (const picker of menu.querySelectorAll<HTMLDetailsElement>('[data-doc-picker][open]')) picker.open = false

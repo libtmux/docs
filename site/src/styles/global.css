@@ -1667,7 +1667,7 @@ html[data-theme-mode='dark'] .site-header .header-picker > summary:is(:hover, :f
   padding-top: 0.75rem;
 }
 
-.site-header__panel-row:first-child {
+.site-header__panel-row:first-of-type {
   border-top: 0;
   padding-top: 0;
 }

@@ -90,6 +90,23 @@ a.header-picker__option[data-external-link]:not([data-external-link-icon])::afte
 .doc-picker:is([data-panel-mode="sheet"], [data-panel-mode="side"]) .doc-picker-search {
   position: sticky; top: -.75rem; z-index: 1; padding-block: .5rem; background: var(--background-color);
 }
+/* A side sheet pins its title row and a Close button above the search (record 0071). documentation-navigation.ts adds the button to
+   every panel, and a title row to one with none; both show in a side sheet only. */
+.doc-panel-close, .doc-picker-title[data-panel-head-added] { display: none; }
+.doc-panel-close { flex: none; place-items: center; width: 2.25rem; height: 2.25rem; padding: 0; border: 1px solid var(--control-border); border-radius: .4rem; background: transparent; color: var(--text-color); cursor: pointer; }
+.doc-panel-close:hover { background: var(--color-surface-hover); }
+.doc-panel-close:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
+@media (width < 30rem), (pointer: coarse) {
+  .doc-panel-close { width: var(--touch-target); height: var(--touch-target); }
+}
+:is(.doc-picker, .site-header__menu)[data-enhanced][data-panel-mode="side"] > :is(.doc-picker-panel, .site-header__panel) { --panel-head: 3.25rem; }
+:is(.doc-picker, .site-header__menu)[data-enhanced][data-panel-mode="side"] > :is(.doc-picker-panel, .site-header__panel) > .doc-picker-title {
+  position: sticky; top: -.75rem; z-index: 2; display: flex; box-sizing: border-box; min-height: var(--panel-head);
+  margin: -.75rem -.75rem .5rem; padding: 0 .75rem 0 calc(.75rem + var(--picker-inset, .5rem));
+  border-bottom: 1px solid var(--color-edge); background: inherit;
+}
+:is(.doc-picker, .site-header__menu)[data-enhanced][data-panel-mode="side"] > :is(.doc-picker-panel, .site-header__panel) > .doc-picker-title > .doc-panel-close { display: grid; margin-inline-start: auto; }
+.doc-picker[data-enhanced][data-panel-mode="side"] .doc-picker-search { top: calc(var(--panel-head) - .75rem); }
 html[data-sheet-open] { overflow: hidden; }
 @media (prefers-reduced-motion: no-preference) {
   :is(.doc-picker, .site-header__menu)[data-enhanced][data-panel-mode="popover"] > :is(.doc-picker-panel, .site-header__panel):popover-open { animation: doc-picker-rise 120ms ease-out; }

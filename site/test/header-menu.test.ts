@@ -56,6 +56,18 @@ describe('the header Menu', () => {
     expect(focus).toHaveBeenCalledWith({ preventScroll: true })
   })
 
+  it('closes from its Close button and returns focus to its button', () => {
+    toggle(menu(), true)
+    const close = menu().querySelector<HTMLElement>('.site-header__panel > .doc-picker-title > button[data-panel-close]')!
+    expect(close.getAttribute('aria-label')).toBe('Close menu')
+    // The Close button is not where a reader starts.
+    expect(win.document.activeElement).not.toBe(close)
+    const focus = vi.spyOn(menu().querySelector('summary')!, 'focus')
+    close.click()
+    expect(menu().open).toBe(false)
+    expect(focus).toHaveBeenCalledWith({ preventScroll: true })
+  })
+
   it('leaves the Menu open when Escape closes a picker inside it', () => {
     toggle(menu(), true)
     const picker = menu().querySelector<HTMLDetailsElement>('[data-doc-picker]')!
