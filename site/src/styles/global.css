@@ -160,7 +160,8 @@
   --text-color-inverted: white;
 
   /* Shell prompt, gp-sphinx's Pygments `Generic.Prompt` */
-  --lm-shell-prompt: #a855f7;
+  /* Violet, 5.4:1 on the white code frame (`#a855f7` was 3.96:1); the dark value below clears the dark frame. */
+  --lm-shell-prompt: #9333ea;
 
   /* TopNav variables (light mode) */
   --topnav-background: white;

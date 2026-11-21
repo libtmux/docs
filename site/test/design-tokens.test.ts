@@ -163,6 +163,24 @@ describe('contrast of the shared chrome', () => {
     }
   })
 
+  // The `$` of a shell session is bold 13px text on the code frame: syntax-bg, white in light and #24292e in dark.
+  it('keeps the shell prompt at 4.5:1 on the code frame in both themes, in the violet it had', () => {
+    const [light, dark] = [...read('global.css').matchAll(/--lm-shell-prompt:\s*(#[0-9a-f]{6})/g)].map((match) => match[1]!)
+    expect(light && dark, 'a light and a dark prompt colour').toBeTruthy()
+    // The token ground, and the ground Expressive Code's GitHub themes draw (#f6f8fa and #1f2428, read from a rendered frame in Firefox).
+    for (const ground of [THEMED['syntax-bg']![0], '#f6f8fa']) expect(ratio(hex(light!), hex(ground)), `light on ${ground}`).toBeGreaterThanOrEqual(4.5)
+    for (const ground of [THEMED['syntax-bg']![1], '#1f2428']) expect(ratio(hex(dark!), hex(ground)), `dark on ${ground}`).toBeGreaterThanOrEqual(4.5)
+    // The hue stays violet (about 271 degrees), as `#a855f7` and `#c084fc` were.
+    const hueOf = ([r, g, b]: Rgb) => {
+      const [max, min] = [Math.max(r, g, b), Math.min(r, g, b)]
+      return (r === max ? ((g - b) / (max - min)) % 6 : g === max ? (b - r) / (max - min) + 2 : (r - g) / (max - min) + 4) * 60 + (r === max && g < b ? 360 : 0)
+    }
+    for (const colour of [light!, dark!]) expect(hueOf(hex(colour))).toBeGreaterThan(265)
+    for (const colour of [light!, dark!]) expect(hueOf(hex(colour))).toBeLessThan(278)
+    // The control: the colour this replaced is below 4.5:1 on the white frame.
+    expect(ratio(hex('#a855f7'), hex('#f6f8fa'))).toBeLessThan(4.5)
+  })
+
   // The 12px selected label sits on a 16% wash of the text colour over the header ground (adoption plan step 50).
   it('keeps the selected scheme label at 4.5:1 on its wash in every palette and both themes, in the text colour, not the link colour', () => {
     const switchCss = read('global.css')
