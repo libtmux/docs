@@ -148,6 +148,8 @@
   border-inline-end: 1px solid color-mix(in srgb, var(--mk-hue, currentColor) var(--mark-border-alpha), transparent);
   background: color-mix(in srgb, var(--mk-hue, currentColor) 22%, var(--mk-bg, transparent));
 }
+/* A letter mark rests on bottom padding sized for its descender space. An icon has no descender, so that padding would lift it: it centres instead. */
+.api-leg__m:has(> svg) { align-items: center; padding-bottom: 0; }
 .api-leg__g { display: block; font-size: .8em; line-height: 1; text-box: trim-both cap alphabetic; }
 .api-leg__w {
   display: flex;
