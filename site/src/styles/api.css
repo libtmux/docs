@@ -756,8 +756,9 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header.api-native-header .gp-sphin
   dl.py.gp-sphinx-api-container > dd .gp-sphinx-api-parameters > dl.field-list > dt {
     line-height: 1.5;
   }
+  /* A value line that holds a heading link is as tall as the link's 1.5rem box, so its label's line matches it to share the baseline. */
   dl.py.gp-sphinx-api-container > dd .gp-sphinx-api-parameters > dl.field-list > dt:has(+ dd .heading-link) {
-    line-height: calc(1.5em + 2 * var(--api-permalink-pad));
+    line-height: 1.5rem;
   }
 }
 dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout > .gp-sphinx-api-layout-right {
