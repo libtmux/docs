@@ -30,6 +30,8 @@ function fixture(initialPort?: string, options: FixtureOptions = {}) {
   if (options.state) window.history.replaceState(options.state, '')
   const panel = `<div class="search-panel">
     <input class="search-panel__input">
+    <button class="search-panel__clear-field" hidden></button>
+    <button class="search-panel__close"></button>
     <div class="search-panel__scope"><button data-scope="port"></button><button data-scope="reference"></button><button data-scope="all"></button></div>
     <aside class="search-panel__filters" hidden>
       <div class="search-panel__facet search-panel__facet--section" hidden><div class="search-panel__filter-list search-panel__section-list"></div></div>
@@ -228,17 +230,38 @@ describe('URL state and Back', () => {
 })
 
 describe('the dialog keeps its query on close', () => {
-  it('undoes the field\'s own clearing on Escape, so the query is there when the dialog reopens', async () => {
-    const { root, input, results } = fixture('Go', { dialog: true })
+  it('closes on the first Escape from a field that holds a query, and the field is not cleared', async () => {
+    const { input, results, dialog } = fixture('Go', { dialog: true })
     await vi.waitFor(() => expect(results()).toHaveLength(1))
-    // What Chromium does to a search field on Escape: empty it and say so.
-    input.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }) as unknown as Event)
-    input.value = ''
-    input.dispatchEvent(new Event('input', { bubbles: true }))
-    await new Promise((resolve) => setTimeout(resolve, 200))
+    // Firefox empties a search field on Escape and leaves the dialog open; the key is taken for the dialog.
+    const escape = new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })
+    input.dispatchEvent(escape as unknown as Event)
+    expect(escape.defaultPrevented, 'the field\'s own clearing is cancelled').toBe(true)
+    expect(dialog!.open).toBe(false)
     expect(input.value).toBe('capture')
     expect(results()).toHaveLength(1)
-    expect(root.querySelector('.search-panel__status')?.textContent).toContain('1 result')
+  })
+
+  it('leaves Escape alone on the search page, which has no dialog to close', async () => {
+    const { input, results } = fixture('Go')
+    await vi.waitFor(() => expect(results()).toHaveLength(1))
+    const escape = new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })
+    input.dispatchEvent(escape as unknown as Event)
+    expect(escape.defaultPrevented).toBe(false)
+  })
+
+  it('clears the query with its own button, shown only while the field holds one, and closes with its close button', async () => {
+    const { root, input, results, dialog } = fixture('Go', { dialog: true })
+    const clear = root.querySelector<HTMLButtonElement>('.search-panel__clear-field')!
+    await vi.waitFor(() => expect(results()).toHaveLength(1))
+    expect(clear.hidden, 'a query is there to clear').toBe(false)
+    clear.click()
+    expect(input.value).toBe('')
+    expect(clear.hidden).toBe(true)
+    await vi.waitFor(() => expect(results()).toHaveLength(0))
+    expect(dialog!.open, 'clearing does not close').toBe(true)
+    root.querySelector<HTMLButtonElement>('.search-panel__close')!.click()
+    expect(dialog!.open).toBe(false)
   })
 
   it('leaves the field and results as they were when the dialog closes', async () => {
@@ -250,5 +273,36 @@ describe('the dialog keeps its query on close', () => {
     expect(root.querySelector('.search-panel__status')?.textContent).toContain('1 result')
     // Closing records the dialog as shut, so Back does not reopen it.
     expect(readSnapshot(window.history.state)).toMatchObject({ q: 'capture', open: false })
+  })
+})
+
+describe('the field is a combobox over the results', () => {
+  it('names the listbox it controls, and the option the arrow keys select, as aria-activedescendant', async () => {
+    const { root, input, results } = fixture('Go')
+    await vi.waitFor(() => expect(results()).toHaveLength(1))
+    const list = root.querySelector('.search-panel__results')!
+    expect(input.getAttribute('role')).toBe('combobox')
+    expect(input.getAttribute('aria-controls')).toBe(list.id)
+    expect(list.id).not.toBe('')
+    expect(input.getAttribute('aria-expanded')).toBe('true')
+    expect(input.hasAttribute('aria-activedescendant'), 'nothing is selected yet').toBe(false)
+    const arrow = (key: string) => input.dispatchEvent(new window.KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }) as unknown as Event)
+    arrow('ArrowDown')
+    const option = root.querySelector('.search-panel__result')!
+    expect(option.getAttribute('aria-selected')).toBe('true')
+    expect(option.id).not.toBe('')
+    expect(input.getAttribute('aria-activedescendant')).toBe(option.id)
+    expect(list.contains(option)).toBe(true)
+  })
+
+  it('drops the active option and collapses when the results go', async () => {
+    const { input, results, query } = fixture('Go')
+    await vi.waitFor(() => expect(results()).toHaveLength(1))
+    input.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }) as unknown as Event)
+    expect(input.hasAttribute('aria-activedescendant')).toBe(true)
+    query('')
+    await vi.waitFor(() => expect(results()).toHaveLength(0))
+    expect(input.hasAttribute('aria-activedescendant')).toBe(false)
+    expect(input.getAttribute('aria-expanded')).toBe('false')
   })
 })
