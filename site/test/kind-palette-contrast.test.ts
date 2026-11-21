@@ -138,18 +138,23 @@ describe('kind palette contrast', () => {
   })
 
   describe('the inks of a native signature', () => {
-    /** The signature surface in every brand and mode: the page colour with 6% of the text colour mixed in, as the header paints it. */
+    /** The signature surface in every brand and mode: the page colour with a share of the text colour mixed in, as the header paints it (6% in light, 3% in dark: record 0080). */
     const surfaces = () => {
-      const share = Number(/dt\.gp-sphinx-api-header\s*\{\s*background:\s*color-mix\(in srgb,\s*var\(--background-color\),\s*var\(--text-color\)\s+(\d+)%\)/.exec(apiCss)?.[1])
-      expect(Number.isFinite(share), 'the signature surface is read from the stylesheet').toBe(true)
+      expect(apiCss, 'the header mixes the share the token names').toMatch(/dt\.gp-sphinx-api-header\s*\{\s*background:\s*color-mix\(in srgb,\s*var\(--background-color\),\s*var\(--text-color\)\s+var\(--signature-ground-share,\s*6%\)\)/)
+      const tokens = readFileSync(new URL('../src/styles/tokens.css', import.meta.url), 'utf8')
+      const shares = {
+        light: Number(/:root \{[^}]*--signature-ground-share:\s*(\d+)%/.exec(tokens)?.[1]),
+        dark: Number(/html\[data-theme-mode="dark"\] \{[^}]*--signature-ground-share:\s*(\d+)%/.exec(tokens)?.[1]),
+      }
+      expect(Number.isFinite(shares.light) && Number.isFinite(shares.dark), 'the signature surface is read from the stylesheet').toBe(true)
       const blocks = [...brand.matchAll(/(html\[[^{}]*)\{([^{}]*)\}/g)]
         .map(([, selector, body]) => ({ selector: selector!.trim(), colours: Object.fromEntries([...body!.matchAll(/(--[\w-]+):\s*(#[0-9a-f]{6})/gi)].map(([, name, value]) => [name, value!.toLowerCase()])) as Record<string, string> }))
         .filter(({ colours }) => colours['--background-color'] && colours['--text-color'])
       expect(blocks.length).toBeGreaterThan(0)
-      return blocks.map(({ selector, colours }) => ({
-        selector, colours, mode: luminance(colours['--background-color']!) > 0.5 ? 'light' as const : 'dark' as const,
-        surface: mix(colours['--text-color']!, share, colours['--background-color']!),
-      }))
+      return blocks.map(({ selector, colours }) => {
+        const mode = luminance(colours['--background-color']!) > 0.5 ? 'light' as const : 'dark' as const
+        return { selector, colours, mode, surface: mix(colours['--text-color']!, shares[mode], colours['--background-color']!) }
+      })
     }
     /** The brands whose signature surface a colour misses 4.5:1 on, given the colour each mode paints. */
     const failing = (colour: (mode: 'light' | 'dark', colours: Record<string, string>) => string) => surfaces()
