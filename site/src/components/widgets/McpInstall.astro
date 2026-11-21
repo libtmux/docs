@@ -171,6 +171,22 @@ const notesOf = (panel: (typeof panels)[number]) => [
   panel.note ?? '',
 ].filter(Boolean)
 
+/*
+ * Ids that pair each tab with the panels it switches (08 Responsive and accessible). A client, a way to run it and a scope
+ * each choose among the panels, so a tab controls every panel it appears in and a panel is named by the tabs that chose it.
+ */
+const slugOf = (value: string) => value.replace(/[^A-Za-z0-9]+/g, '-')
+const clientTabId = (client: string) => `mcp-install-client-${port}-${slugOf(client)}`
+const methodTabId = (method: string) => `mcp-install-method-${port}-${slugOf(method)}`
+const scopeTabId = (client: string, scope: string) => `mcp-install-scope-${port}-${slugOf(client)}-${slugOf(scope)}`
+const panelId = (panel: (typeof panels)[number]) => `mcp-install-panel-${port}-${slugOf(panelKey(panel))}`
+const controls = (match: (panel: (typeof panels)[number]) => boolean) => panels.filter(match).map(panelId).join(' ')
+const panelLabels = (panel: (typeof panels)[number]) => [
+  clientTabId(panel.client.id),
+  spec.methods.length > 1 ? methodTabId(panel.method.id) : undefined,
+  scopedClients.some((client) => client.id === panel.client.id) ? scopeTabId(panel.client.id, panel.scope.id) : undefined,
+].filter(Boolean).join(' ')
+
 /** One panel's attributes, shared by the three places it is drawn. */
 const panelAttrs = (panel: (typeof panels)[number]) => ({
   'data-client': panel.client.id,
@@ -201,6 +217,8 @@ const panelAttrs = (panel: (typeof panels)[number]) => ({
                 type="button"
                 class="lm-mcp-install__tab"
                 role="tab"
+                id={clientTabId(client.id)}
+                aria-controls={controls((panel) => panel.client.id === client.id)}
                 data-tab-kind="client"
                 data-tab-value={client.id}
                 aria-selected={i === 0 ? 'true' : 'false'}
@@ -232,6 +250,8 @@ const panelAttrs = (panel: (typeof panels)[number]) => ({
                   type="button"
                   class="lm-mcp-install__tab"
                   role="tab"
+                  id={methodTabId(method.id)}
+                  aria-controls={controls((panel) => panel.method.id === method.id)}
                   data-tab-kind="method"
                   data-tab-value={method.id}
                   data-no-days={hasCooldowns && refuses(method.id, 'days') ? '' : undefined}
@@ -253,6 +273,8 @@ const panelAttrs = (panel: (typeof panels)[number]) => ({
                   type="button"
                   class="lm-mcp-install__tab"
                   role="tab"
+                  id={scopeTabId(client.id, scope.id)}
+                  aria-controls={controls((panel) => panel.client.id === client.id && panel.scope.id === scope.id)}
                   data-tab-kind="scope"
                   data-tab-client={client.id}
                   data-tab-value={scope.id}
@@ -280,7 +302,7 @@ const panelAttrs = (panel: (typeof panels)[number]) => ({
         const key = panelKey(panel)
         const alt = panel.cooldown.id === 'days' && panel.cooldownReason ? alternative(panel) : undefined
         return (
-          <div class="lm-mcp-install__panel" role="tabpanel" {...panelAttrs(panel)}>
+          <div class="lm-mcp-install__panel" role="tabpanel" id={panelId(panel)} aria-labelledby={panelLabels(panel)} {...panelAttrs(panel)}>
             {panel.pipPrereq && <InstallCode family="mcp" html={prereqHtml.get(key)!} language="console" layout="strip" strip="First" prompt="$" label="server install" />}
             {panel.cooldown.id !== 'off' && hasCooldowns && <InstallCooldown
               family="mcp"
