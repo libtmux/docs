@@ -878,13 +878,18 @@ const LANGUAGE_PLACEMENTS: Record<string, Record<string, string[]>> = {
         .map((name) => `LibTmux.Server#v:${name}`),
     ],
     pane: ['LibTmux.Pane', 'LibTmux.Server#t:PaneInput', 'LibTmux.Server#t:PaneText',
-      ...['SplitDirection', 'SplitSize', 'SplitOptions', 'CreatedPane'].map((name) => `LibTmux.Creation#t:${name}`),
-      'LibTmux.Creation#v:defaultSplitOptions',
+      ...['SplitDirection', 'SplitSize', 'SplitOptions', 'CreatedPane', 'PaneMoveOptions', 'PaneRelocationReceipt']
+        .map((name) => `LibTmux.Creation#t:${name}`),
+      'LibTmux.Creation#v:defaultSplitOptions', 'LibTmux.Creation#v:defaultPaneMoveOptions',
+      'LibTmux.Snapshot#v:lookupPaneOccurrence',
       ...['PaneCaptureOptions', 'PaneRows', 'PaneRendering'].map((name) => `LibTmux.Pane#t:${name}`),
       'LibTmux.Pane#v:defaultPaneCapture',
-      ...['PaneWaitOptions', 'PaneWaitResult', 'PaneMatch'].map((name) => `LibTmux.Server#t:${name}`),
+      ...['PaneWaitOptions', 'PaneWaitResult', 'PaneMatch', 'PaneState', 'PaneStateWaitOptions', 'PaneStateWaitResult']
+        .map((name) => `LibTmux.Server#t:${name}`),
       ...['splitPane', 'splitPaneWith', 'sendKeys', 'sendKeysWith', 'killPane', 'killPaneWith', 'capturePane', 'paneText',
-        'selectExactPane', 'selectExactPaneWith', 'defaultPaneWait', 'waitForText', 'resizePane', 'resizePaneWith']
+        'selectExactPane', 'selectExactPaneWith', 'defaultPaneWait', 'waitForText', 'resizePane', 'resizePaneWith',
+        'movePane', 'movePaneWith', 'joinPane', 'joinPaneWith', 'breakPane', 'breakPaneWith',
+        'defaultPaneStateWait', 'waitForPaneState']
         .map((name) => `LibTmux.Server#v:${name}`)],
     options: ['LibTmux.Options', ...['setOptionWith', 'unsetOptionWith'].map((name) => `LibTmux.Server#v:${name}`)],
     errors: ['ConfigurationProblem', 'ObservationProblem', 'TimeoutKind', 'ArgumentError'].map((name) => `LibTmux.Server#t:${name}`),
