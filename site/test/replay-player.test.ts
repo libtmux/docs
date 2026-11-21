@@ -178,6 +178,38 @@ describe('the replay player', () => {
       await wait(40)
       expect(count()).toBe('2/4')
     })
+
+    it('does not start once any button was pressed before it was seen, even one that steps nothing', async () => {
+      const { reveal, click, root, count, wait } = bind({ rest: true, autoplay: true })
+      root.insertAdjacentHTML('beforeend', '<button type="button" id="elsewhere">Hide preview</button>')
+      click(root.querySelector('#elsewhere')!)
+      reveal()
+      await wait(40)
+      expect(count()).toBe('1/4')
+    })
+
+    it('stops on a button that steps nothing while it plays', async () => {
+      const { reveal, click, root, player } = bind({ rest: true, autoplay: true })
+      root.insertAdjacentHTML('beforeend', '<button type="button" id="elsewhere">Hide preview</button>')
+      reveal()
+      click(root.querySelector('#elsewhere')!)
+      expect(player.state().playing).toBe(false)
+    })
+
+    it('leaves Pause paused when the pointer press that pauses it also focused the button', async () => {
+      const { reveal, document, root, win, player, click, wait, count } = bind({ rest: true, autoplay: true })
+      const play = document.querySelector('[data-action="play"]')!
+      reveal()
+      await wait(8)
+      root.dispatchEvent(new win.Event('pointerdown', { bubbles: false }) as unknown as Event)
+      play.dispatchEvent(new win.FocusEvent('focusin', { bubbles: true }) as unknown as Event)
+      expect(player.state().playing, 'the focus a press brings is not the stop').toBe(true)
+      click(play)
+      const at = count()
+      expect(player.state().playing).toBe(false)
+      await wait(40)
+      expect(count(), 'it stays paused').toBe(at)
+    })
   })
 
   describe('at rest', () => {

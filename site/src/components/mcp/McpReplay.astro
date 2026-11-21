@@ -17,7 +17,9 @@
  * Selecting text in a turn never changes the step. Hovering a turn previews the
  * tmux after it; its pin button holds that step, and the controls and the arrow
  * keys move between steps. The first stepping action leaves rest. Nothing plays
- * until the reader presses play, unless the instance sets `autoplay`.
+ * until the reader presses play, unless the instance sets `autoplay`: a
+ * stepping replay is the default, and an autoplay one starts from rest and stops
+ * on the reader's first interaction.
  */
 import { Code } from 'astro-expressive-code/components'
 import type { Frame } from '../../lib/mcp-replay'
@@ -32,7 +34,7 @@ interface Props {
   portName: string
   /** The heading's level: 2 on the overview, where it is a section, 3 inside a landing panel. */
   level?: 2 | 3
-  /** Play by itself once the replay is 40% on screen. Off by default; a reader's selection, scroll or focus stops it, and reduced motion never starts it. */
+  /** An autoplay replay: it starts from rest once 40% of it is on screen. Off by default, which is a stepping replay; the reader's first control, selection, wheel, touch or focus stops it for good, and reduced motion never starts it. */
   autoplay?: boolean
 }
 const { example, portName, level = 2, autoplay = false } = Astro.props as Props

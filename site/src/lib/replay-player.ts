@@ -277,10 +277,10 @@ export function bindReplay(root: HTMLElement, options: ReplayOptions): ReplayPla
   }
 
   render()
-  // Nothing plays until the reader presses play, unless the instance asked for it; and a reader who asked for less motion never gets it.
+  // A stepping player (the default) stays at rest until the reader acts. An autoplay player opts in, and a reader who asked for less motion never gets it.
   if (!options.autoplay || reduced) return player
 
-  // A reader who selects text, scrolls or touches the content, or focuses into the player, is reading: the replay stops and stays stopped.
+  // A reader's first control, a selection in the content, a wheel or a touch there, or focus into the player ends autoplay for good, even before it has started.
   const halt = () => {
     touched = true
     if (!automatic) return
@@ -288,14 +288,21 @@ export function bindReplay(root: HTMLElement, options: ReplayOptions): ReplayPla
     render()
   }
   const content = options.content
-  root.addEventListener('focusin', halt)
-  for (const type of ['wheel', 'touchmove', 'pointerdown']) content?.addEventListener(type, halt, { passive: true })
+  // A pointer press on a control also focuses it. That focus is not the stop: the click that follows is the reader's control, and pressing Pause must leave it paused.
+  let pressing = false
+  const doc = root.ownerDocument
+  root.addEventListener('pointerdown', () => { pressing = true }, true)
+  for (const type of ['pointerup', 'pointercancel']) doc.addEventListener(type, () => { setTimeout(() => { pressing = false }, 0) }, true)
+  root.addEventListener('focusin', (event) => { if (!(pressing && (event.target as HTMLElement).closest('[data-controls]'))) halt() })
+  // A step control stops the run in its own handler; a button that steps nothing (Hide preview, copy, the rail's pages) ends autoplay here.
+  root.addEventListener('click', (event) => { if ((event.target as HTMLElement).closest('button')) halt() })
+  for (const type of ['wheel', 'touchstart', 'touchmove', 'pointerdown']) content?.addEventListener(type, halt, { passive: true })
   const selected = () => {
-    const selection = root.ownerDocument.getSelection()
-    if (!root.isConnected) { root.ownerDocument.removeEventListener('selectionchange', selected); return }
+    const selection = doc.getSelection()
+    if (!root.isConnected) { doc.removeEventListener('selectionchange', selected); return }
     if (content && selection && !selection.isCollapsed && content.contains(selection.anchorNode)) halt()
   }
-  root.ownerDocument.addEventListener('selectionchange', selected)
+  doc.addEventListener('selectionchange', selected)
 
   const begin = () => {
     // A hidden panel can still intersect the viewport; it plays when the reader sees it.
