@@ -330,6 +330,13 @@ describe('Expressive Code frames', () => {
       expect(baseStyles).toMatch(/\.ec-line\[data-hit\][^{]*\{[^}]*background:\s*var\(--color-highlight-on-target/)
       expect(baseStyles).toMatch(/forced-colors:\s*active\)\s*\{[^@]*\.ec-line\[data-hit\][^{]*\{[^}]*outline/)
     })
+
+    it('washes the line in the link colour at 8% in light and 7% in dark where the page has no target colour (record 0079)', () => {
+      expect(baseStyles).toMatch(/\.ec-line\[data-hit\][^{]*\{[^}]*--hit-tint:\s*8%[^}]*color-mix\(in srgb, var\(--color-link, currentColor\) var\(--hit-tint\), transparent\)/)
+      expect(baseStyles).toMatch(/html\[data-theme-mode='dark'\] \.ec-line:is\(\[data-hit\], :target\)\s*\{\s*--hit-tint:\s*7%/)
+      expect(baseStyles).toMatch(/prefers-color-scheme: dark\)\s*\{\s*html:not\(\[data-theme-mode\]\):not\(\[data-theme='light'\]\) \.ec-line:is\(\[data-hit\], :target\)\s*\{\s*--hit-tint:\s*7%/)
+      expect(baseStyles).not.toMatch(/--color-link, currentColor\) 14%/)
+    })
   })
 
   describe('copy button', () => {
