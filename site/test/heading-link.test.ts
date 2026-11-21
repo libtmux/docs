@@ -38,10 +38,11 @@ function mount({ clipboard = true } = {}) {
     ? { writeText: async (text: string) => { copied.push(text) } }
     : { writeText: async () => { throw new Error('denied') } } })
   // Without the async clipboard the handler falls back to a selected scratch field.
-  win.document.execCommand = () => false
+  Object.assign(win.document, { execCommand: () => false })
   const stop = bindHeadingLinks(win.document as unknown as Document)
   const link = win.document.querySelector('a.heading-link')! as unknown as HTMLAnchorElement
-  const click = (init: MouseEventInit = {}, target: Element = link) => target.dispatchEvent(new win.MouseEvent('click', { bubbles: true, cancelable: true, button: 0, ...init }))
+  const click = (init: Record<string, unknown> = {}, target: Element = link) =>
+    target.dispatchEvent(new win.MouseEvent('click', { bubbles: true, cancelable: true, button: 0, ...init }) as unknown as Event)
   const region = () => win.document.getElementById('heading-link-status')
   return { win, link, click, copied, region, stop }
 }
@@ -77,7 +78,7 @@ describe('copying a section link', () => {
     expect(click({ ctrlKey: true })).toBe(true)
     expect(click({ shiftKey: true })).toBe(true)
     expect(click({ button: 1 })).toBe(true)
-    click({}, win.document.getElementById('other')!)
+    click({}, win.document.getElementById('other') as unknown as Element)
     await Promise.resolve(); await Promise.resolve()
     expect(copied).toHaveLength(1)
     expect(link.dataset.copied).toBe('true')

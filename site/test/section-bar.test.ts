@@ -21,7 +21,7 @@ function mount({ visible, total }: { visible: number; total: number }) {
     scrollLeft: { get: () => left, set: (value: number) => { left = value } },
   })
   const stop = mountSectionBar(bar)
-  const scrollTo = (value: number) => { left = value; track.dispatchEvent(new win.Event('scroll')) }
+  const scrollTo = (value: number) => { left = value; track.dispatchEvent(new win.Event('scroll') as unknown as Event) }
   return { bar, previous, next, scrollTo, stop }
 }
 
