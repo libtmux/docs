@@ -323,9 +323,9 @@ describe('the player component', () => {
   // The page's script imports the shared player; the stand-in `require` hands it the player's own source, evaluated beside it.
   const script = `var exports = {};\nvar playerExports = {};\n(function (exports) {\n${commonjs(readFileSync(new URL('../src/lib/replay-player.ts', import.meta.url), 'utf8'))}\n})(playerExports);\nvar require = function (name) { if (/replay-player$/.test(name)) return playerExports; throw new Error('unexpected import ' + name) };\n${commonjs(/<script>([\s\S]*?)<\/script>/.exec(component)![1]!)}`
 
-  async function mount({ run = false, reduced = true, autoplay = false, intersect = false, single = false }: { run?: boolean; reduced?: boolean; autoplay?: boolean; intersect?: boolean; single?: boolean } = {}) {
+  async function mount({ run = false, reduced = true, autoplay = false, intersect = false, single = false, search = '' }: { run?: boolean; reduced?: boolean; autoplay?: boolean; intersect?: boolean; single?: boolean; search?: string } = {}) {
     const { recording, capability } = await recorded()
-    const win = new Window({ url: 'https://libtmux.org/go/latest/' })
+    const win = new Window({ url: `https://libtmux.org/go/latest/${search}` })
     windows.push(win)
     win.document.body.innerHTML = await renderAstroTemplate(await template, { props: { port: 'go', language: 'Go', example: single ? { ...example, singleView: 'This program has one view.' } : example, recording, capability, autoplay } })
     const document = win.document as unknown as Document
@@ -542,14 +542,20 @@ describe('the player component', () => {
       filled: document.querySelector<HTMLElement>('[data-fill]')!.style.width,
       controls: document.querySelector<HTMLElement>('[data-controls]')!.hidden,
       done: [...document.querySelectorAll('[data-mark].is-done')].map((mark) => mark.getAttribute('data-mark')),
+      rest: [...document.querySelectorAll('[data-mark].is-rest')].map((mark) => mark.getAttribute('data-mark')),
+      lit: [...document.querySelectorAll('.ec-line.is-current, .core-step.is-current')].length,
     })
     const drawn = onScreen()
     bind()
     expect(onScreen()).toEqual(drawn)
-    expect(drawn.frames, 'the first call, not the state before it and not the end').toEqual(['1'])
+    expect(drawn.frames, 'step 1\'s tmux, not the state before it and not the end').toEqual(['1'])
     expect(drawn.results).toEqual(['1'])
     expect(drawn.count).toMatch(/^1\//)
     expect(drawn.current).toBe('1')
+    expect(drawn.rest, 'the first mark is a hollow ring: shown, not chosen').toEqual(['1'])
+    expect(drawn.done, 'only the mark before it is done').toEqual(['0'])
+    expect(drawn.filled).toBe('0%')
+    expect(drawn.lit, 'no line or marker is highlighted').toBe(0)
   })
 
   it('shows the final tmux and every result to a page with no script, and opens every reader with script, reduced motion included, on the first call', () => {
@@ -577,7 +583,11 @@ describe('the player component', () => {
     const calls = view.length
     expect(count(document), 'the player opens on the first call, not the last').toBe(`1/${calls}`)
     const expected = (position: number) => Array.from({ length: view[position]!.lines[1] - view[position]!.lines[0] + 1 }, (_, offset) => view[position]!.lines[0] + offset)
-    expect(lit(document, 'concise')).toEqual(expected(0))
+    expect(lit(document, 'concise'), 'at rest no line is highlighted').toEqual([])
+    expect(document.querySelectorAll('.core-step.is-current'), 'nor is a marker').toHaveLength(0)
+    click(win, document.querySelector('[data-action="play"]')!)
+    expect(lit(document, 'concise'), 'Play highlights step 1').toEqual(expected(0))
+    click(win, document.querySelector('[data-action="play"]')!)
     click(win, document.querySelector(`[data-mark="${calls}"]`)!)
     expect(lit(document, 'concise')).toEqual(expected(calls - 1))
     click(win, document.querySelector('[data-mark="1"]')!)
@@ -763,11 +773,13 @@ describe('the player component', () => {
   })
 
   it('marks and numbers the calls of a program that has a single view, which is its full one', async () => {
-    const { document, capability } = await mount({ run: true, single: true })
+    const { document, win, capability } = await mount({ run: true, single: true })
     expect([...document.querySelectorAll('[data-home-view]')].map((view) => view.getAttribute('data-home-view'))).toEqual(['full'])
     const calls = viewSteps(capability, code('full'))
     expect(document.querySelectorAll('[data-home-view="full"] .core-step')).toHaveLength(calls.length)
-    expect(lit(document, 'full'), 'the first call is current').toEqual(Array.from({ length: calls[0]!.lines[1] - calls[0]!.lines[0] + 1 }, (_, offset) => calls[0]!.lines[0] + offset))
+    expect(lit(document, 'full'), 'at rest no call is current').toEqual([])
+    click(win, document.querySelector('[data-mark="1"]')!)
+    expect(lit(document, 'full'), 'a step leaves rest on the first call').toEqual(Array.from({ length: calls[0]!.lines[1] - calls[0]!.lines[0] + 1 }, (_, offset) => calls[0]!.lines[0] + offset))
   })
 
   it('gives calls that share a line one marker, which goes to the first of them', async () => {
@@ -876,6 +888,22 @@ describe('the player component', () => {
     expect(shown(document, '[data-mark]')).toHaveLength(calls)
     click(win, document.querySelector('[data-mark="0"]')!)
     expect(count(document)).toBe(`0/${calls - 1}`)
+  })
+
+  it('rests until the reader steps: step 1\'s tmux and result show, Next goes to step 2, and a link that names a step opens on it', async () => {
+    const { document, win } = await mount({ run: true })
+    const calls = viewSteps((await recorded()).capability, code('concise')).length
+    expect(count(document)).toBe(`1/${calls}`)
+    expect(shown(document, '.core-player__tmux [data-frame]').map((frame) => frame.dataset.frame)).toEqual(['1'])
+    expect(shown(document, '[data-result]').map((result) => result.dataset.result)).toEqual(['1'])
+    expect(lit(document, 'concise')).toEqual([])
+    click(win, document.querySelector('[data-action="forward"]')!)
+    expect(count(document), 'Next from rest goes to step 2, since step 1 is already shown').toBe(`2/${calls}`)
+    expect(lit(document, 'concise').length).toBeGreaterThan(0)
+    const linked = await mount({ run: true, search: '?step=3' })
+    expect(count(linked.document), 'a step link opens on that step').toBe(`3/${calls}`)
+    expect(lit(linked.document, 'concise').length, 'and is not at rest').toBeGreaterThan(0)
+    expect(count((await mount({ run: true, search: '?step=999' })).document), 'a step past the end is the end').toBe(`${calls}/${calls}`)
   })
 
   it('uses the replay\'s keys on the stage and on a result\'s pin button, and no other key', async () => {

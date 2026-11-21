@@ -21,8 +21,10 @@ interface Props {
   playable?: number
   /** The step the bar is drawn at, which the player opens on: 0, the state before the first call, by default. */
   at?: number
+  /** The bar is drawn at rest on `at`: its mark a hollow ring, the fill empty, the marks before it done (record 0081). */
+  rest?: boolean
 }
-const { start, marks, playable = marks.length, at = 0 } = Astro.props as Props
+const { start, marks, playable = marks.length, at = 0, rest = false } = Astro.props as Props
 const total = playable
 // A program with this many dots or more can outrun the widest bar's track, so its buttons keep their place on a wide bar too.
 const LONG = 15
@@ -36,10 +38,10 @@ const LONG = 15
     <div class="mcp-replay__track" data-track role="group" aria-label="Calls" style={`--mcp-count:${total + 1}`}>
       <div class="mcp-replay__strip">
         <div class="mcp-replay__line">
-          <div class="mcp-replay__fill" data-fill style={`width:${(at / total) * 100}%`}></div>
+          <div class="mcp-replay__fill" data-fill style={`width:${rest ? 0 : (at / total) * 100}%`}></div>
           <button type="button" class="mcp-replay__mark is-done" data-mark="0" aria-label={start} aria-current={at === 0 ? 'step' : undefined} style="left:0%"></button>
           {marks.map((label, index) => (
-            <button type="button" class={`mcp-replay__mark${index + 1 <= at ? ' is-done' : ''}`} hidden={index + 1 > playable} data-mark={index + 1} aria-label={label} aria-current={index + 1 === at ? 'step' : undefined} style={`left:${((index + 1) / total) * 100}%`}></button>
+            <button type="button" class={`mcp-replay__mark${(rest ? index + 1 < at : index + 1 <= at) ? ' is-done' : ''}${rest && index + 1 === at ? ' is-rest' : ''}`} hidden={index + 1 > playable} data-mark={index + 1} aria-label={label} aria-current={index + 1 === at ? 'step' : undefined} style={`left:${((index + 1) / total) * 100}%`}></button>
           ))}
         </div>
       </div>

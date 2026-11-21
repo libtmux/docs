@@ -48,6 +48,11 @@ html[data-js] .mcp-replay[data-live] :is(.mcp-turn, .mcp-frame)[data-off] {
   html[data-js] .mcp-replay:not([data-live]) :is(.mcp-turn, .mcp-frame)[data-off] {
     display: none;
   }
+
+  /* The first call is on screen at rest, and the script folds its Result away as it does every played call's; until it has, the page draws it folded. */
+  html[data-js] .mcp-replay:not([data-live]) .mcp-result > :not(summary) {
+    display: none;
+  }
 }
 
 html:not([data-js]) .mcp-replay .mcp-frame:not(:last-child) {
@@ -923,6 +928,12 @@ html[data-theme-mode='dark'] .mcp-replay__rail {
 
 .mcp-replay__mark[aria-current='step']:hover {
   transform: translate(-50%, -50%) scale(1.45);
+}
+
+/* At rest (record 0081) the shown mark is only the inferred one: a hollow ring, not the filled current mark. */
+.mcp-replay__mark.is-rest[aria-current='step'],
+.mcp-replay__mark.is-rest[aria-current='step']:hover {
+  background: var(--color-surface);
 }
 
 .mcp-replay__count {

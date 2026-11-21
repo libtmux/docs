@@ -10,6 +10,10 @@
  * forward and fullscreen, one `[data-mark]` per step, `[data-fill]` and
  * `[data-count]`. Step `n` means the state after the `n`th call, and step 0
  * the state before the first.
+ *
+ * A player opens at rest (record 0081): it shows step 1 because nothing is
+ * chosen yet, and the host highlights nothing. The reader's first stepping
+ * action leaves rest.
  */
 
 const REDUCED = '(prefers-reduced-motion: reduce)'
@@ -21,6 +25,8 @@ export interface ReplayState {
   shown: number
   pinned: number | null
   playing: boolean
+  /** The player rests: `shown` is only the step it infers, so the host highlights no line or turn. A pin or a preview under the pointer ends it for the moment. */
+  rest: boolean
 }
 
 export interface ReplayOptions {
@@ -44,8 +50,14 @@ export interface ReplayOptions {
    * touches it. Nothing in it changes the step; the host's own controls do.
    */
   content?: HTMLElement | null
-  /** Play by itself once the player is on screen. Off unless the instance opts in, and never under reduced motion. */
+  /** Play by itself once the player is on screen and still at rest. Off unless the instance opts in, and never under reduced motion. */
   autoplay?: boolean
+  /**
+   * Open at rest on step 1, which is shown but not chosen. Ignored for a reader who asked for less motion when
+   * `reducedOpening` names another place for them, and when there is no step to rest on. A host that opens on a
+   * step a link names leaves it off, so that player is not at rest and does not autoplay.
+   */
+  rest?: boolean
   /**
    * The step the markup is drawn at and the player opens on: 0 is the state
    * before the first call, `'end'` the last. A page the script has not bound
@@ -117,8 +129,9 @@ export function bindReplay(root: HTMLElement, options: ReplayOptions): ReplayPla
 
   const reducedStart = options.reducedOpening ?? options.opening ?? 0
   const opening = (reduced ? reducedStart : options.opening ?? 0)
-  let step = opening === 'end' ? total() : Math.min(opening, total())
-  const first = step
+  // At rest the shown step is the first one, inferred because the reader has chosen none.
+  let rest = options.rest === true && total() > 0 && !(reduced && options.reducedOpening !== undefined)
+  let step = rest ? 1 : opening === 'end' ? total() : Math.min(opening, total())
   let pinned: number | null = null
   let hover: number | null = null
   let timer: ReturnType<typeof setTimeout> | undefined
@@ -130,28 +143,32 @@ export function bindReplay(root: HTMLElement, options: ReplayOptions): ReplayPla
 
   const use = () => { touched = true; automatic = false; hover = null }
   const stop = () => { playing = false; automatic = false; if (timer) clearTimeout(timer); timer = undefined }
-  const state = (): ReplayState => ({ step, shown: hover ?? pinned ?? step, pinned, playing })
+  const state = (): ReplayState => ({ step, shown: hover ?? pinned ?? step, pinned, playing, rest: rest && pinned === null && hover === null })
 
   function render(scroll = false) {
     const last = total()
     if (step > last) step = last
     if (pinned !== null && pinned > last) pinned = null
+    if (last < 1) rest = false
     marks.forEach((mark) => {
       const position = Number(mark.dataset.mark)
       mark.hidden = position > last
       mark.style.left = `${(position / last) * 100}%`
-      mark.classList.toggle('is-done', position <= step)
+      // At rest the step-1 mark is a hollow ring: shown, not yet reached.
+      mark.classList.toggle('is-done', rest ? position < step : position <= step)
+      mark.classList.toggle('is-rest', rest && position === step)
       if (position === step) mark.setAttribute('aria-current', 'step')
       else mark.removeAttribute('aria-current')
     })
-    fill.style.width = `${(step / last) * 100}%`
+    fill.style.width = `${rest ? 0 : (step / last) * 100}%`
     track?.style.setProperty('--mcp-count', String(last + 1))
     if (step !== railStep) { keepInView(railStep !== -1); railStep = step }
     edges()
     count.textContent = `${step}/${last}`
-    play.setAttribute('aria-label', step >= last && !playing ? 'Replay' : playing ? 'Pause' : 'Play')
+    const ended = step >= last && !rest
+    play.setAttribute('aria-label', ended && !playing ? 'Replay' : playing ? 'Pause' : 'Play')
     // The button draws its icon from this state (see mcp-replay.css).
-    play.dataset.state = playing ? 'pause' : step >= last ? 'replay' : 'play'
+    play.dataset.state = playing ? 'pause' : ended ? 'replay' : 'play'
     draw(state(), scroll)
   }
 
@@ -163,9 +180,11 @@ export function bindReplay(root: HTMLElement, options: ReplayOptions): ReplayPla
     render(true)
     if (step >= total()) { stop(); render() } else timer = setTimeout(tick, interval)
   }
+  // Play from rest highlights step 1 and plays on; from the end it plays again from before the first call.
   function start() {
     use()
-    if (step >= total()) step = 0
+    if (rest) rest = false
+    else if (step >= total()) step = 0
     pinned = null
     playing = true
     render(true)
@@ -174,6 +193,7 @@ export function bindReplay(root: HTMLElement, options: ReplayOptions): ReplayPla
   function go(next: number) {
     use()
     stop()
+    rest = false
     pinned = null
     step = Math.max(0, Math.min(total(), next))
     render(true)
@@ -181,6 +201,7 @@ export function bindReplay(root: HTMLElement, options: ReplayOptions): ReplayPla
   function togglePin(frame: number) {
     use()
     stop()
+    rest = false
     pinned = pinned === frame ? null : frame
     render()
   }
@@ -279,8 +300,9 @@ export function bindReplay(root: HTMLElement, options: ReplayOptions): ReplayPla
   const begin = () => {
     // A hidden panel can still intersect the viewport; it plays when the reader sees it.
     const shown = root.checkVisibility?.({ visibilityProperty: true }) ?? true
-    if (!shown || touched || playing || step !== first || pinned !== null) return
+    if (!shown || touched || playing || !rest) return
     automatic = true
+    rest = false
     playing = true
     render(true)
     timer = setTimeout(tick, interval)
@@ -293,6 +315,16 @@ export function bindReplay(root: HTMLElement, options: ReplayOptions): ReplayPla
     watcher.observe(root)
   }
   return player
+}
+
+/**
+ * The step a link names (`?step=3`), or undefined: the player then opens at rest. A link names one position, so it
+ * counts only on a page with a single player of the host's kind (`selector`); with several there is no player it could mean.
+ */
+export function linkedStep(selector: string, doc: Document = document): number | undefined {
+  if (doc.querySelectorAll(selector).length !== 1) return undefined
+  const value = new URLSearchParams(doc.location.search).get('step')
+  return value !== null && /^\d+$/.test(value) ? Number(value) : undefined
 }
 
 /**
