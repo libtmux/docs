@@ -38,6 +38,21 @@ describe('the skip link', () => {
     expect(bare.map(({ file }) => file)).toEqual([])
   })
 
+  it('gives every BaseLayout page a main, its own or one a component draws', () => {
+    const root = fileURLToPath(new URL('../src', import.meta.url))
+    const walk = (dir: string): string[] => readdirSync(dir).flatMap((name) => {
+      const path = join(dir, name)
+      return statSync(path).isDirectory() ? walk(path) : path.endsWith('.astro') ? [path] : []
+    })
+    const files = walk(root).map((file) => ({ file, text: readFileSync(file, 'utf8').replace(/\{\/\*[\s\S]*?\*\/\}|<!--[\s\S]*?-->/g, '') }))
+    const drawsMain = (text: string) => /<main\b/.test(text)
+    const providers = files.filter(({ file, text }) => drawsMain(text) && !file.includes('/pages/')).map(({ file }) => file.split('/').pop()!.replace(/\.astro$/, ''))
+    const pages = files.filter(({ text }) => /<BaseLayout\b/.test(text))
+    expect(pages.length).toBeGreaterThan(5)
+    const bare = pages.filter(({ text }) => !drawsMain(text) && !providers.some((name) => new RegExp(`<${name}\\b`).test(text)))
+    expect(bare.map(({ file }) => file.slice(root.length + 1))).toEqual([])
+  })
+
   describe('followed', () => {
     const mount = (body: string) => {
       const win = new Window({ url: 'https://libtmux.org/en/go/latest/' })
