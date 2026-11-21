@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it, vi } from 'vitest'
 import { directoryPattern, introBeforeCards, splitAtFirstHeading } from '../src/lib/section-index'
-import { sansFallbacks } from '../src/lib/sans-fallbacks'
+import { JAPANESE_SANS, sansFallbacks } from '../src/lib/sans-fallbacks'
 import { loadAstroTemplate, renderAstroTemplate, withoutScope } from './astro-templates'
 import { siteCss } from './site-css'
 
@@ -200,6 +200,13 @@ describe('Japanese', () => {
     expect(fallbacks.join(' ')).not.toMatch(/Mincho|(?<!sans-)serif/i)
   })
 
+  it('names the same Japanese faces for Japanese text on a page in another language, where --font-sans lists the generic ones first', () => {
+    // The language menu's "日本語" is marked lang="ja" on every build; only the Japanese build's --font-sans names the faces.
+    const other = rule('html:not(:lang(ja)) :lang(ja)')['font-family']!.split(',').map((face) => face.trim().replace(/^"|"$/g, ''))
+    expect(other[0]).toBe('var(--font-sans)')
+    expect(other.slice(1), 'the list sans-fallbacks.ts holds').toEqual(JAPANESE_SANS)
+  })
+
   it('drops Latin tracking and breaks at phrases', () => {
     expect(ja['letter-spacing']).toBe('0')
     expect(ja['word-break']).toBe('auto-phrase')
@@ -229,7 +236,8 @@ describe('the Japanese page', () => {
 describe('the checks above can fail', () => {
   it('sees a stylesheet that loses its Japanese rule or its table cue', async () => {
     const without = await siteCss(['prose'], (source) => source.replace(':lang(ja) {', ':lang(xx) {').replace('no-repeat local', 'no-repeat scroll'))
-    expect(without).not.toContain(':lang(ja) {\n    font-family')
+    expect(without).not.toMatch(/(?:^|\n)\s*:lang\(ja\) \{\s*font-family/)
+    expect(css).toMatch(/(?:^|\n)\s*:lang\(ja\) \{\s*font-family/)
     expect(without.match(/\blocal\b/g)?.length ?? 0).toBeLessThan(css.match(/\blocal\b/g)!.length)
   })
 })

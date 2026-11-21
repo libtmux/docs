@@ -1081,6 +1081,19 @@ html[data-theme="purple"][data-theme-mode="dark"] {
     line-break: strict;
   }
 
+  /*
+   * A Japanese phrase on a page in another language, such as the language
+   * menu's "日本語". That build's `--font-sans` lists `ui-sans-serif` and
+   * `system-ui` after Plex, and the hashed Plex family cannot be named alone
+   * here, so the record's Japanese faces (`JAPANESE_SANS` in
+   * `lib/sans-fallbacks.ts`) follow the stack instead of being left out, and
+   * the browser reaches them before any platform fallback that might pick a
+   * Mincho serif. `typesetting.test.ts` holds this list to that one.
+   */
+  html:not(:lang(ja)) :lang(ja) {
+    font-family: var(--font-sans), "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Yu Gothic", Meiryo, "Noto Sans CJK JP", "Noto Sans JP";
+  }
+
   :lang(ja) :where(code, kbd, pre, samp) {
     font-family: var(--font-mono);
   }
