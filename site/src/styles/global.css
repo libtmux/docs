@@ -1057,6 +1057,15 @@ html[data-prerelease='dismissed'] .prerelease-notice[data-prerelease-notice] {
 }
 
 /*
+ * Panel mode, the reader's opt-in (`lib/panels/mode.ts`). `ShellHead` sets `data-panels` in <head>, so the page's
+ * own body waits for the workspace instead of drawing and being replaced. `visibility` keeps the layout still while it
+ * waits. Once the workspace has drawn it stands in for the body and the footer. Without the attribute neither rule
+ * matches anything.
+ */
+html[data-panels] :is(body > div[data-pagefind-filter], body > footer[data-site-footer], #back-to-top) { visibility: hidden; }
+html[data-panels][data-panels-ready] :is(body > div[data-pagefind-filter], body > footer[data-site-footer], #back-to-top) { display: none; }
+
+/*
  * A product's status bar shares every rule below and hides the same way, from
  * its own list of dismissed ids on the root. One selector per id the site can
  * draw: `product-notice.test.ts` fails for a status that has none.

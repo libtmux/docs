@@ -1,5 +1,5 @@
-/** The part of `Storage` the panels use. */
-export type PanelStorage = Pick<Storage, 'getItem' | 'setItem'>
+/** The part of `Storage` the panels use; a store that cannot remove a key keeps it. */
+export type PanelStorage = Pick<Storage, 'getItem' | 'setItem'> & Partial<Pick<Storage, 'removeItem'>>
 
 /** Reading `localStorage` throws where site data is blocked, so the page asks for it here. */
 export function browserStorage(): PanelStorage | undefined {
@@ -22,6 +22,14 @@ export function panelStore(storage: PanelStorage | undefined) {
       try {
         if (!storage) return false
         storage.setItem(key, JSON.stringify(value))
+        return true
+      } catch { return false }
+    },
+    /** Forget a key, so the next read is the fallback. A failed removal is `false`. */
+    remove(key: string): boolean {
+      try {
+        if (!storage?.removeItem) return false
+        storage.removeItem(key)
         return true
       } catch { return false }
     },

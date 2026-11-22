@@ -2,6 +2,7 @@
   import { initDocumentationNavigation } from './documentation-navigation'
   import { guardTreeNavigation } from '../../lib/router-guard'
   import { bindHeadingLinks } from '../../lib/heading-link'
+  import { watchPanelMode } from '../../lib/panels/mode'
 
   // A Sidebar may start inside noscript; initialize shared behavior outside it.
   initDocumentationNavigation()
@@ -9,4 +10,6 @@
   guardTreeNavigation()
   // One listener on the document copies the section URL for every heading link, and survives page swaps.
   bindHeadingLinks(document)
+  // Panel mode is opt-in, and its workspace loads only for a reader who chose it.
+  watchPanelMode(document, () => import('../api/panels/mode-workspace'))
 </script>

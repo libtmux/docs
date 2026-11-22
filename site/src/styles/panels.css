@@ -213,6 +213,53 @@ html[data-theme-mode="dark"] .pw__badge { color: #0b1220; }
 .is-short.is-chrome-hidden .pw__top { margin-top: -44px; }
 .is-short.is-chrome-hidden .pw__chips { margin-top: -45px; }
 .is-short .pw__head { height: 38px; }
+/*
+ * Panel mode (`lib/panels/mode.ts`): the page's article in the main panel of a workspace that fills the window below the
+ * page's header, with linked pages beside it. Every panel keeps at most 8px of padding on each side, so a page reads at
+ * the width of its panel. The row stacks on a narrow screen, where splitters have nothing to divide.
+ */
+.pw--mode { display: flex; flex-direction: column; gap: var(--space-1); max-width: none; height: max(30rem, calc(100dvh - var(--pw-top, 0px))); padding: var(--space-2); }
+.pw__routebar { display: flex; flex: none; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); font: 400 0.8125rem/1.4 var(--font-sans); }
+.pw__hint { flex: 1 1 22rem; max-width: 70ch; margin: 0; color: var(--color-foreground-muted); }
+.pw__hint kbd { padding: 0 0.3rem; border: 1px solid var(--color-edge); border-radius: 0.25rem; font: 400 0.75rem/1.4 var(--font-mono); }
+.pw__panels { position: relative; }
+.pw__panels > summary { list-style: none; }
+.pw__panels > summary::-webkit-details-marker { display: none; }
+.pw__panellist { position: absolute; z-index: 40; top: calc(100% + var(--space-1)); left: 0; min-width: 15rem; margin: 0; padding: 0.375rem; list-style: none; border: 1px solid var(--color-edge); border-radius: 0.5rem; background: var(--background-color); box-shadow: 0 10px 30px color-mix(in srgb, var(--text-color) 18%, transparent); }
+.pw__panellist button { display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; width: 100%; padding: 0.3125rem var(--space-2); border: 0; border-radius: 0.3rem; background: none; color: var(--text-color); font: inherit; text-align: left; cursor: pointer; }
+.pw__panellist button:hover { background: var(--color-surface-hover); }
+.pw__panellist button[aria-pressed='true'] { background: var(--current-row-bg); color: var(--theme-primary); font-weight: 600; }
+.pw__panellist small { color: var(--color-foreground-muted); font-weight: 400; }
+.pw__stage--route { display: flex; flex: 1; width: auto; min-height: 0; margin: 0; border: 1px solid var(--color-edge); border-radius: var(--radius-md); }
+.pw__stage--route .pw__loc { cursor: default; }
+.pw__stage--route .pw__loc:hover { background: color-mix(in srgb, var(--text-color) 6%, transparent); }
+.pw__panel[aria-busy='true'] > .pw__body { opacity: 0.6; }
+/*
+ * A page lifted into a panel keeps none of the padding its own columns gave it: the panel's body is the only padding,
+ * and the page's navigation, which the workspace replaces, is left out. These rules outrank the page's own, which are
+ * a layer of utilities or a single class.
+ */
+.pw__body main#content { max-width: none; margin: 0; padding: 0; }
+.pw__body :is(.api-reference-layout, .api-reference-layout--symbol, .api-reference-layout--glossary) { display: block; max-width: none; }
+.pw__body .api-reference-layout > :not(.api-reference-content) { display: none; }
+.pw__body :is(.api-reference-layout, .api-reference-layout--symbol, .api-reference-layout--glossary) > .api-reference-content { box-sizing: border-box; max-width: none; padding: 0; }
+.pw__body [data-page-toolbar] .page-toolbar-controls { display: none; }
+@media (max-width: 47.99rem) {
+  .pw--mode { height: auto; }
+  .pw__stage--route { flex: none; }
+  .pw__stage--route .pw__split { flex-direction: column; }
+  .pw__stage--route .pw__cell { flex: none !important; min-height: 70vh; }
+  .pw__stage--route .pw__splitter { display: none; }
+}
+/* On touch the header, its close button, the toolbar and a splitter keep their drawn size and take a touch-target-tall hit area. */
+@media (pointer: coarse) {
+  .pw__head { height: var(--touch-target); }
+  .pw__panellist button { min-height: var(--touch-target); align-items: center; }
+  .pw--mode :is(.pw__btn, .pw__icon) { position: relative; }
+  .pw--mode :is(.pw__btn, .pw__icon)::after { content: ''; position: absolute; inset: min(0px, calc((100% - var(--touch-target)) / 2)); }
+  .pw__split--row > .pw__splitter::before { inset: 0 calc((1px - var(--touch-target)) / 2); }
+  .pw__split--col > .pw__splitter::before { inset: calc((1px - var(--touch-target)) / 2) 0; }
+}
 @media (prefers-reduced-motion: reduce) {
   .pw__top, .pw__chips, .pw__dropzone, [data-xc] { transition: none; }
   .pw__chip.is-pulse { animation: none; }

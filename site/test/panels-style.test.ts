@@ -23,7 +23,7 @@ describe('the workspace\'s stylesheet', () => {
   const sides = (value: string): number[] => value.split(/\s+(?![^(]*\))/).map(px)
 
   /** The surfaces of a panel: its header, its body, the cards, sheets and popovers that hold a document, and the workspace. */
-  const SURFACES = ['.pw__head', '.pw__body', '.pw__top', '.pw__toolbody', '.pw__tooloverlay', '.pw__cardhead', '.pw__cardbody',
+  const SURFACES = ['.pw--mode', '.pw__head', '.pw__body', '.pw__top', '.pw__toolbody', '.pw__tooloverlay', '.pw__cardhead', '.pw__cardbody',
     '.pw__sheet', '.pw__sheetbar', '.pw__popbar', '.pw__floatbar', '.pw__pop .pw__doc', '.pw__popfoot', '.pw__notes li', '.pw__cmd li']
 
   /** Every padding a rule gives a surface, with the side that exceeds the cap. */
@@ -39,7 +39,7 @@ describe('the workspace\'s stylesheet', () => {
   it('keeps every surface of a panel to 8px of padding on every side', () => {
     expect(overCap(rules)).toEqual([])
     // The surfaces really are in the file: a rename would otherwise pass the cap by matching nothing.
-    for (const surface of ['.pw__head', '.pw__body', '.pw__cardbody', '.pw__sheet']) {
+    for (const surface of ['.pw--mode', '.pw__head', '.pw__body', '.pw__cardbody', '.pw__sheet']) {
       expect(rules.some((r) => r.selectors.includes(surface) && 'padding' in r.declarations), surface).toBe(true)
     }
   })
@@ -47,6 +47,12 @@ describe('the workspace\'s stylesheet', () => {
   it('catches a surface that grows past the cap', () => {
     expect(overCap(parseRules(css.replace('.pw__body { flex: 1; min-height: 0; overflow: auto; padding: var(--space-2);', '.pw__body { flex: 1; min-height: 0; overflow: auto; padding: 1rem 1.25rem 2rem;'))))
       .toEqual(['.pw__body { padding: 1rem 1.25rem 2rem }'])
+  })
+
+  it('takes the padding a page\'s own columns gave it off the article lifted into a panel, so the panel\'s 8px is the only padding', () => {
+    const lifted = rules.filter((r) => r.selectors.some((s) => /^\.pw__body (main#content|:is\(\.api-reference-layout.*\) > \.api-reference-content)$/.test(s)))
+    expect(lifted.length).toBe(2)
+    for (const rule of lifted) expect(rule.declarations.padding, rule.selectors.join()).toBe('0')
   })
 
   it('lets a header\'s title and readout take the room their text needs, and cut it only when the header is out of room', () => {
@@ -66,9 +72,24 @@ describe('the workspace\'s stylesheet', () => {
   })
 
   it('catches a readout capped below its header', () => {
-    const capped = parseRules(css.replace('.pw__loc { flex: 0 1 auto; min-width: 0; max-width: 100%;', '.pw__loc { flex: 0 1 auto; min-width: 0; max-width: 40%;'))
+    const capped = parseRules(css.replace('.pw__stage--route .pw__loc { cursor: default; }', '.pw__stage--route .pw__loc { max-width: 40%; cursor: default; }'))
     const bad = capped.filter((r) => r.selectors.some((s) => s.endsWith('.pw__loc')) && !['none', '100%', undefined].includes(r.declarations['max-width']))
     expect(bad.length).toBe(1)
   })
 
+  it('keeps a header, its controls and a splitter to a touch target on a coarse pointer, and the focus ring and motion to the site\'s', () => {
+    const coarse = rules.filter((r) => r.media.some((m) => m.includes('(pointer: coarse)')))
+    expect(coarse.find((r) => r.selectors.includes('.pw__head'))!.declarations.height).toBe('var(--touch-target)')
+    expect(coarse.some((r) => r.selectors.some((s) => s.includes('.pw__btn')) && /--touch-target/.test(r.declarations.inset ?? ''))).toBe(true)
+    expect(coarse.some((r) => r.selectors.some((s) => s.includes('.pw__splitter::before')))).toBe(true)
+    expect(css).not.toMatch(/outline:\s*[^;]*(1px|3px)/)
+    expect(rules.filter((r) => r.media.some((m) => m.includes('prefers-reduced-motion'))).some((r) => r.declarations.transition === 'none')).toBe(true)
+  })
+
+  it('names no colour of its own in the rules the mode adds: site tokens only', () => {
+    const start = css.indexOf('Panel mode (`lib/panels/mode.ts`)')
+    const added = css.slice(start)
+    expect(added.length).toBeGreaterThan(500)
+    expect(added).not.toMatch(/#[0-9a-fA-F]{3,8}\b|rgba?\(|hsla?\(/)
+  })
 })

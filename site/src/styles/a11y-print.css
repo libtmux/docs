@@ -20,6 +20,7 @@
   a[aria-current='true'],
   .doc-picker-option[aria-current],
   .pw__panel.is-active > .pw__head,
+  .pw__panellist button[aria-pressed='true'],
   [aria-pressed='true'],
   [role='tab'][aria-selected='true'] {
     forced-color-adjust: none;
@@ -35,6 +36,7 @@
   a[aria-current='true'] *,
   .doc-picker-option[aria-current] *,
   .pw__panel.is-active > .pw__head *,
+  .pw__panellist button[aria-pressed='true'] *,
   [aria-pressed='true'] *,
   [role='tab'][aria-selected='true'] * {
     color: HighlightText !important;
@@ -50,6 +52,15 @@
   .api-nav__row:has(> [aria-current='page']) > .api-nav__kind *,
   .sidebar-link.active > .api-nav__kind * {
     color: Highlight !important;
+  }
+
+  /* A splitter is a one-pixel bar drawn in a background, which forced colours would repaint as the page's ground. */
+  .pw__splitter {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
+  .pw__splitter:is(:hover, :focus-visible) {
+    background: Highlight;
   }
 
   /* A focus ring is a Highlight outline wherever a component draws one; a row's own offset stays. */
