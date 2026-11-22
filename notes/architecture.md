@@ -14,41 +14,41 @@ narrative, and the header/footer/switcher chrome. No documentation framework
 component model; every layout and component under `site/src/` is ours to
 change.
 
-The shell renders two of the eight ports' API references directly
-(TypeScript and .NET, see below). The other self-hosted ports bring their own
-generator's HTML into the same output tree; the shell's header, footer, and
-version-switcher markup is injected into that output rather than rendered by
-Astro for it. `site/src/layouts/BaseLayout.astro` and
-`site/src/components/VersionSwitcher.astro` both carry this split in their
-own comments: the switcher is a framework-free custom element
-(`<libtmux-version-switcher>`) precisely so the *same* markup can be dropped
-into Sphinx, rustdoc-family, Dokka, or DocC output as well as into an Astro
-page.
+The shell renders a unified API reference at `/<port>/<version>/reference/`
+for all 23 language entries in `PORTS` (19 core ports and 4 JVM and .NET
+companion libraries) from extracted models in `site/src/lib/api-models.ts`.
+Ports with native HTML builds (`sphinx` or `native-skinned`) can also bring
+their own generator's output into the assembled tree, where the shell's
+header, footer, and `<libtmux-version-switcher>` custom element are injected
+or normalized so native pages share the same navigation chrome as Astro
+pages.
 
 ## The three renderers
 
-`site/src/lib/ports.ts` defines a `Renderer` type with three renderers that
-actually produce a self-hosted page, plus a `'none'` value for ports that
-don't render here at all:
+`site/src/lib/ports.ts` defines
+`Renderer = 'sphinx' | 'astro' | 'native-skinned'`. Every port declares one
+renderer; there is no `'none'` value or off-site-only mode:
 
 | Renderer | Ports | What feeds it |
 |---|---|---|
-| `sphinx` | Python, C++ | Python: existing Sphinx + `sphinx-gp-theme` docs, unchanged. C++: Doxygen XML → Breathe → the same Sphinx theme, so no Doxygen-produced HTML is ever published (licensing: running a GPL tool is fine, importing a GPL Sphinx extension is not — see `notes/research/00-DECISIONS.md` §2.6). |
-| `astro` | TypeScript, .NET | TypeScript: `@microsoft/api-extractor`'s JSON model, hand-rendered — TypeDoc cannot run against this project's TypeScript 7 toolchain (`00-DECISIONS.md` §2.1), so there is no themable off-the-shelf generator for this language and the pages are built directly against the JSON. .NET: `docfx metadata`'s YAML model, same treatment. |
-| `native-skinned` | Swift | Apple's DocC, skinned with our CSS and a `header.html`/`footer.html` fragment pair rather than replaced. |
+| `sphinx` | Python, C++ | Python: upstream Sphinx + `sphinx-gp-theme` docs. C++: Doxygen XML -> Breathe -> the same Sphinx theme, so no Doxygen-produced HTML is published (running a GPL tool is fine, importing a GPL Sphinx extension is not; see `notes/research/00-DECISIONS.md` §2.6). Both ports also ship extracted API models at `/<port>/<version>/reference/`. |
+| `astro` | Ruby, Lua, PowerShell, Julia, Erlang, Elixir, Haskell, Common Lisp, TypeScript, Rust, Go, Java, C#, OCaml, Perl, Raku, plus Clojure, Kotlin, Scala, and F# | Language-specific compiler, doc-chunk, AST, or metadata artifacts normalized by `packages/api-model/` into `site/src/data/api/<port>.json` and rendered directly by Astro at `/<port>/<version>/reference/`. |
+| `native-skinned` | Swift | Apple's DocC (`swift-docc-plugin`), skinned with the site's CSS and shell fragments, alongside Swift's SymbolGraph model at `/swift/<version>/reference/`. |
 
-The remaining three ports — Rust, Go, Java/Kotlin — have `renderer: 'none'`
-and `referenceMode: 'ecosystem'`: their reference lives entirely on a
-canonical outside host (docs.rs, pkg.go.dev, javadoc.io respectively) and
-this repo never builds or hosts a page for them. `PortSwitcher.astro` marks
-these with an external-link glyph so a reader knows the click leaves
-`libtmux.org` before they take it, rather than discovering it from the
-address bar.
+Ports whose ecosystems also run a canonical external API host set optional
+`ecosystemHost` metadata in `ports.ts` (`ECOSYSTEM_PORTS`): `docs.rs` for
+Rust, `pkg.go.dev` for Go, `javadoc.io` for Java, `Dokka` and `Scaladoc` on
+`javadoc.io` for Kotlin and Scala, `HexDocs` for Elixir, and `MetaCPAN POD`
+for Perl (`port-inventory.ts` also links `Swift Package Index` DocC targets
+for Swift). Those external links appear alongside each port's `libtmux.org`
+reference in sidebars, headers, and reference cards, marked as leaving the
+site rather than replacing the self-hosted reference.
 
-`referenceUrl(port, version)` in `ports.ts` is the one function that knows
-how to turn a port into a reference URL, self-hosted or ecosystem; nothing
-else in the shell should special-case a port slug to decide where its docs
-live.
+`referenceUrl(port, version, product)` in `ports.ts` is the one function that
+resolves a port's reference URL (`/<port>/<version>/reference/` for `core`,
+or `/<port>/<version>/<product>/reference/` for `workspace` and `mcp`);
+nothing else in the shell should special-case a port slug to decide where its
+reference lives.
 
 `<port>/<version>/api/` is the older path, and it answers differently by port.
 Each assembly writes a `noindex` redirect there to the reference this site
@@ -59,7 +59,7 @@ documentation, the oracle `site/scripts/check-style-parity.mjs` measures this
 site against. `scripts/publication-metadata.mjs` drops that tree before the
 artifact is declared, and `scripts/publish-root.sh` refuses the path for such a
 port however the artifact declares it. Deleting it for every port, which is
-what the publisher used to do, left the other seven answering 403.
+what the publisher used to do, left every other port answering 403.
 
 ## The version axis
 
@@ -94,7 +94,7 @@ given build still shows up in that build's own switcher without a rebuild.
 
 ## The SEO model
 
-The one problem a versioned, eight-port site has by construction: most URLs
+The one problem a versioned multi-port site has by construction: most URLs
 on it are near-duplicates of another URL on it, and search engines rank
 duplicates against each other unless told which one wins.
 
@@ -173,28 +173,31 @@ disagree with `ports.ts`'s actual `PORTS` array, which is the one place this
 matters — everything above follows the array, not the prose. Filed here
 rather than silently fixed, since fixing these files is not this note's job:
 
-- **Go is not Astro-rendered.** `site/src/content.config.ts`'s header
-  comment ("Three ports render their reference through this Astro app... —
-  TypeScript, .NET, Go") and `site/src/layouts/BaseLayout.astro`'s header
-  comment ("the three ports whose reference we render ourselves") both claim
-  a third Astro-rendered port. `ports.ts`'s data says otherwise: Go is
-  `referenceMode: 'ecosystem'`, `renderer: 'none'`, pointing at pkg.go.dev.
-  Only TypeScript and .NET have `renderer: 'astro'`.
-- **`ports.ts`'s own top-of-file policy comment overstates its ecosystem
-  list.** It names "docs.rs, pkg.go.dev, javadoc.io, Swift Package Index" as
-  the deep-link hosts, but the `PORTS` array gives Swift
-  `referenceMode: 'self-hosted'` and `renderer: 'native-skinned'`, with no
-  `ecosystemHost` at all. Swift is self-hosted, skinned DocC — the comment's
-  fourth host is stale.
-- **`notes/research/00-DECISIONS.md` §1 describes a different, larger
-  design** than what's built: its recommendation self-hosts all eight ports,
-  including Rust (skinned rustdoc), Go (doc2go `-embed`, wrapped by Astro),
-  and Java/Kotlin (skinned Dokka) — the "Astro shell + native tier2"
-  architecture, scored against a "Thin Shell" fallback that deep-links those
-  same three to their ecosystem hosts (§1, "Why not the alternatives").
-  `ports.ts` implements the **Thin Shell fallback for exactly those three
-  languages** (Rust, Go, Java) while keeping the other five self-hosted —
-  a hybrid the research document names as an option (§5) but doesn't itself
-  land on. Any note in `notes/research/` describing Rust, Go, or Java as
-  self-hosted or Astro/native-skinned is describing the unbuilt
-  alternative, not this codebase.
+- **Stale three-port comments in `content.config.ts` and `BaseLayout.astro`.**
+  `site/src/content.config.ts`'s header comment ("Three ports render their
+  reference through this Astro app from a generated model (TypeScript, .NET,
+  Go)") and `site/src/layouts/BaseLayout.astro`'s header comment ("the three
+  ports whose reference we render ourselves") still describe an earlier
+  three-port split. `ports.ts` now sets `renderer: 'astro'` on 20 of the 23
+  entries in `PORTS`, and `site/src/pages/reference/[...slug].astro` renders
+  extracted `API_MODELS` through `BaseLayout.astro` for every port; the `api`
+  collection in `content.config.ts` serves only the legacy
+  `/<port>/<version>/api/` route, which redirects to `/reference/` everywhere
+  except `publishesOwnApi` (`py`).
+- **`ports.ts`'s top-of-file `Renderer` comment omits Perl's `ecosystemHost`.**
+  The doc comment above `Renderer` names `(docs.rs, pkg.go.dev, javadoc.io,
+  HexDocs, Dokka, Scaladoc)` as `ecosystemHost` examples, leaving out Perl's
+  `MetaCPAN POD` entry in `CORE_PORTS` (`ECOSYSTEM_PORTS` has seven ports:
+  `elixir`, `rs`, `go`, `java`, `perl`, `kotlin`, and `scala`). Swift's
+  external `Swift Package Index` DocC targets are recorded in
+  `port-inventory.ts` rather than `ecosystemHost`.
+- **`notes/research/00-DECISIONS.md` §1 predates the unified `api-model`
+  expansion.** Its September 2026 recommendation covers eight ports, sending
+  only TypeScript, .NET, and Go through Astro while keeping skinned `rustdoc`
+  and Dokka HTML for Rust and Java/Kotlin (scored against a "Thin Shell"
+  fallback that delegated Rust, Go, and Java to `docs.rs`, `pkg.go.dev`, and
+  `javadoc.io`). `ports.ts` instead grew to 19 core ports and 4 JVM and .NET
+  companion libraries and converged on `packages/api-model/` plus
+  `renderer: 'astro'` across 20 of the 23 ports, keeping `sphinx` for Python
+  and C++, `native-skinned` DocC for Swift, and `ecosystemHost` as an external
+  companion link beside the self-hosted reference.

@@ -15,19 +15,23 @@ Add a `Port` object to the `PORTS` array with every required field:
 `productAvailability`, `ecosystemHost`, and `publishesOwnApi` only when their
 contracts apply. Set `publishesOwnTree` on every library whose caller publishes
 its version tree; without it the shell also publishes the port's `latest`
-prefix. Decide the renderer and hosting ownership first:
+prefix. Choose `renderer` and optional `ecosystemHost` first:
 
-- **Ecosystem-hosted** (`renderer: 'none'`, `ecosystemHost` set) only when a
-  canonical, free, self-updating host for that language's ecosystem already
-  exists and is where that language's developers already look — the bar
-  that justified Rust → docs.rs, Go → pkg.go.dev, Java/Kotlin → javadoc.io.
-  Never route a new port to Read the Docs; it's a generic hosting platform,
-  not a canonical package index, and self-hosting gets you the design system
-  and version scheme that RTD would not.
-- **Site-rendered** otherwise, with `renderer` set to whichever of `sphinx`,
-  `astro`, or `native-skinned` fits the language's own generator — reuse an
-  existing renderer before inventing a fourth. See `notes/architecture.md`
-  for what each renderer expects as input.
+- **`renderer` (`'sphinx' | 'astro' | 'native-skinned'`)**: every port
+  renders a self-hosted reference on `libtmux.org`; there is no `'none'`
+  renderer. Reuse `astro` (an extracted `packages/api-model/` model, used by
+  most ports), `sphinx` (`sphinx-gp-theme`, directly or via Doxygen XML and
+  Breathe), or `native-skinned` (DocC skinned with shell chrome) before
+  inventing a fourth. See `notes/architecture.md` for what each renderer
+  expects as input.
+- **Optional `ecosystemHost`**: set `ecosystemHost` (`{ name, url, rationale }`)
+  when a canonical, free, package-indexed API host for that language's
+  ecosystem already exists alongside `libtmux.org` (`docs.rs`, `pkg.go.dev`,
+  `javadoc.io`, `Dokka` or `Scaladoc` on `javadoc.io`, `HexDocs`, or
+  `MetaCPAN POD`). `ecosystemHost` adds a companion external link beside the
+  port's `libtmux.org` reference rather than replacing it. Never link Read
+  the Docs as an `ecosystemHost`; it is a generic hosting platform, not a
+  canonical package index.
 
 Set `docsDispatch` when the port has a reviewed workflow that accepts the
 shared dispatch inputs. `workflow` names its YAML file; optional `ref` names
@@ -129,9 +133,11 @@ $ git -C ~/work/libtmux/libtmux-<lang> worktree add \
 
 In the new worktree, on `docs-site`:
 
-- **Ecosystem-hosted port**: nothing to wire here. Confirm the ecosystem host
-  actually serves this package (`cargo add`/`go get`/the Maven coordinate
-  from `install` resolves), and stop — there is no generator to run.
+- **`ecosystemHost` companion (optional)**: every port still wires one of the
+  three renderers below for its `libtmux.org` reference. When `ecosystemHost`
+  is set, confirm the live host serves the published package and record its
+  API destination in `port-inventory.ts` (§1) so `verify-destinations.mjs`
+  checks it.
 - **`sphinx` port**: point the language's doc build at `sphinx-gp-theme`,
   same as the Python and C++ ports already do. C++ specifically routes
   through Doxygen `GENERATE_XML=YES` / `GENERATE_HTML=NO` → Breathe, so no
