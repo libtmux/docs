@@ -8,7 +8,16 @@ export const NATIVE_KINDS = {
 } as const
 
 const nativeKindInfo = (kind: string) => Object.hasOwn(NATIVE_KINDS, kind) ? NATIVE_KINDS[kind as keyof typeof NATIVE_KINDS] : undefined
-export const kindLabel = (kind: string) => nativeKindInfo(kind)?.label ?? kind
+
+/**
+ * A port's own word for a kind, modifier or context the shared reference names by a machine token.
+ * The token stays the glossary's term id, so anchors and links do not move.
+ */
+const PORT_WORDS: Record<string, Record<string, string>> = {
+  erlang: { struct: 'record', typealias: 'type', abstract: 'callback', package: 'application' },
+}
+const portWord = (kind: string, port?: string) => port && Object.hasOwn(PORT_WORDS, port) && Object.hasOwn(PORT_WORDS[port]!, kind) ? PORT_WORDS[port]![kind] : undefined
+export const kindLabel = (kind: string, port?: string) => portWord(kind, port) ?? nativeKindInfo(kind)?.label ?? kind
 export const kindPalette = (kind: string) => nativeKindInfo(kind)?.palette ?? (kind === 'cmdlet' ? 'function' : kind)
 
 /** Presentation of the qualified native declaration; identity and ownership remain in the model. */
