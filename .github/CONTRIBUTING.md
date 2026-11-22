@@ -736,6 +736,69 @@ User-Agent, at most `--concurrency` at a time (4 by default) and a gap of
 header lists every option, and `site/test/head-audit.test.ts` plants one bad
 head for each snag rule.
 
+## Panel mode
+
+Panel mode is an opt-in way to read any page. The page's article becomes the
+main panel of a workspace, the same page in other ports opens in panels
+beside it, and a link in a panel opens its page in that panel. A reader can
+drag a header to move or dock a panel, press `Alt` with an arrow key to move
+a focused header, and resize with a splitter. Nothing on the site links to the
+mode, a reader who has not opted in sees no change, and a build writes no extra
+page for it.
+
+Add `?panels=1` to the address of any page to turn the mode on. The choice
+is kept in `localStorage` under `libtmux-docs.panel-mode`, so it follows the
+reader across pages, router swaps and visits. `?panels=0` or the workspace's
+Exit panels button turns it off and reloads the page as it is on the site.
+Where storage is blocked, `?panels=1` lasts for that page only and stays in
+the address.
+
+[`mode.ts`](../site/src/lib/panels/mode.ts) owns the choice. `ShellHead` runs
+`applyPanelMode` in `<head>`, so the first paint already knows; a rule in
+`global.css`, behind `html[data-panels]`, keeps the page's own body out of
+sight until the workspace draws. `DocumentationScript` loads the workspace's
+code only when the mode is on. A page with no `main#content`, such as a native
+Sphinx page, and a workspace that fails to load or draw, leave the page as it
+was.
+
+A link in a panel fetches the target's normal page and lifts its
+`main#content` into the panel. Only a page of this site opens that way: the
+same origin and a directory URL, and for a page panel the same tree. Any other
+link, such as one to another site or a file, goes to the browser. `Shift` with a
+click opens an in-tree link in a panel of its own, and a fragment link scrolls
+the panel that holds it. The main panel's page also sets the address and the
+title, so a reload opens the same page. An API symbol page takes its linked
+panels from the rows of its "In other ports" table; every other page takes them
+from the language picker. Both are read from the page's markup, so a fetched
+page offers the same panels.
+
+The arrangement of columns, rows, splits, sizes and open panels is kept in
+`localStorage` under `libtmux-docs.panel-layout`, shared by every page. Panel
+ids name a role (`main`, `link:<port>`), so one saved arrangement applies on
+every page that offers those panels. Nothing is saved until the reader changes
+the layout. Reset layout forgets the saved arrangement and draws the page's own
+default. A panel opened with `Shift` lasts for the visit and is not saved.
+
+Panel surfaces keep at most 8px of padding on every side, and a page lifted into
+a panel gives up the padding its own columns set. Headers show their title and
+path in full until the header runs out of room. These rules are in
+[`panels.css`](../site/src/styles/panels.css), which loads with the workspace;
+[`panels-style.test.ts`](../site/test/panels-style.test.ts) reads it to hold them,
+and [`panels-mode.test.ts`](../site/test/panels-mode.test.ts) mounts the workspace
+to hold the rest.
+
+Serve one port from a development server and add the parameter to any page:
+
+```console
+$ LIBTMUX_DOCS_PORT=go \
+    LIBTMUX_DOCS_BASE=/en/go/latest/ \
+    LIBTMUX_DOCS_ROOT=/en \
+    LIBTMUX_DOCS_PORT_ROOT=/en \
+    pnpm dev
+```
+
+Then open `/en/go/latest/guides/capturing-output/?panels=1`.
+
 ## Pull requests
 
 Apply the `no-preview` label before pushing a revision that needs CI validation
