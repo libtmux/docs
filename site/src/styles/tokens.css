@@ -171,9 +171,16 @@ html[data-theme-mode="dark"] {
   --space-12: 48px;
 
   /* The 13px floor holds for running text, metadata and controls. A short label may go below it (record 0051): a kind or
-     modifier badge's word to 11px, and a card corner tab's to 10.5px, the tab being one pixel thinner than the card's padding. */
+     modifier badge's word to 11px. A declaration's tab chips are native badges, so they take the same floor. */
   --badge-word-floor: 11px;
-  --corner-word-floor: 10.5px;
+
+  /* A declaration's badges stand on the card's top edge (record 0082) as native 18px chips. The gap above the card holds the
+     chip, the 1px that sets it on the border and a few pixels of air. On touch a link chip's target is a full touch target
+     reaching upward only, so the gap holds that and the block above has no link under it. */
+  --tab-height: 18px;
+  --tab-air: 6px;
+  --tab-gap: calc(var(--tab-height) + 1px + var(--tab-air));
+  --tab-gap-touch: calc(var(--touch-target) + 1px);
 
   --radius-xs: 4px;
 

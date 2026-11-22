@@ -1,8 +1,10 @@
+import { readFileSync } from 'node:fs'
 import type { Element } from 'happy-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { SymbolIndex, type ApiSymbol } from '@libtmux/api-model/reference'
 import { API_MODELS } from '../src/lib/api-models'
 import { closeWindows, entry, go, symbolOf } from './api-page-fixtures'
+import { parseRules } from './css-rules'
 
 vi.mock('astro:content', () => ({ getCollection: async () => [] }))
 afterEach(closeWindows)
@@ -29,6 +31,26 @@ describe('the declaration card (Signature, adoption steps 2 and 36)', () => {
     expect(head.textContent).not.toContain('[source]')
     // The tab is flush on the card: it is the header's own corner, not a row of the layout that holds the signature.
     expect(head.querySelector('.gp-sphinx-api-layout-left .api-corner')).toBeNull()
+  })
+
+  it('stands the tab on the card\'s top edge and reserves nothing for it in the header (record 0082)', () => {
+    const css = readFileSync(new URL('../src/styles/api.css', import.meta.url), 'utf8')
+    const rules = parseRules(css)
+    const tab = rules.find((rule) => rule.selectors.includes('dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout > .api-corner'))!
+    expect(tab.declarations.position).toBe('absolute')
+    expect(tab.declarations.bottom, 'the chips rest on the card\'s top border, outside the header').toBe('calc(100% + 1px)')
+    expect(tab.declarations.right).toBe('0.75rem')
+    expect(tab.declarations.gap, 'four pixels between chips').toBe('0.25rem')
+    // The card that carries a tab leaves a gap above it that holds the tab, and a larger one on touch for the whole target.
+    const gap = rules.filter((rule) => rule.selectors.some((selector) => selector.includes(':has(> dt.gp-sphinx-api-header > .gp-sphinx-api-layout > .api-corner)') && selector.startsWith('dl.')) && rule.declarations['margin-block-start'])
+    expect(gap.map((rule) => [rule.media.some((media) => media.includes('pointer: coarse')), rule.declarations['margin-block-start']]))
+      .toEqual([[false, 'var(--tab-gap)'], [true, 'var(--tab-gap-touch)']])
+    // A link chip's touch target reaches upward only: its top is a touch target above the floor, and its bottom stops at the floor.
+    const target = rules.find((rule) => rule.media.some((media) => media.includes('pointer: coarse')) && rule.selectors.includes('.api-corner > a:is(.api-badge, .mcp-tier)::before'))!
+    expect(target.declarations.inset).toBe('calc(var(--tab-height) - var(--touch-target) - 1px) calc(-0.125rem - 1px) -1px')
+    // Nothing is reserved under the signature, and no band is added below the container breakpoint.
+    expect(css).not.toMatch(/gp-sphinx-api-layout-left:not\(:has\(\.api-native-signature--formatted\)\)/)
+    expect(rules.filter((rule) => rule.selectors.some((selector) => /gp-sphinx-api-(layout|header)/.test(selector)) && 'padding-block-end' in rule.declarations)).toEqual([])
   })
 
   it('keeps every modifier in the tab, before Source', async () => {

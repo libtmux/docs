@@ -78,16 +78,17 @@ reader should see them, so a signature wraps one parameter per line past 60
 columns and is never hidden. `data-has-fold` is not emitted;
 `data-signature-expanded` stays `false` because the vendored CSS reads it.
 
-**The declaration header draws one corner tab, no `[source]` and no `¶`.**
+**The declaration header draws one folder tab, no `[source]` and no `¶`.**
 gp-sphinx puts the kind badge, the modifiers, `[source]` and a pilcrow in a row
 beside the signature. Here the kind chip, the modifiers, the Source badge and
-the ecosystem reference share one tab, 15px high, flush in the card's
-bottom-right corner, over the header's unchanged .5rem bottom padding. It takes
-no width from the signature. The page is the entry, so its URL is the permalink
-and the header draws no pilcrow; `check-api-fidelity.mjs` therefore expects no
-permalink from an Astro entry and two from a paired Sphinx entry, and
-`check-style-parity.mjs`, which compares padding, minimum height and the
-signature's colour, is unaffected.
+the ecosystem reference share one tab of native 18px chips, standing on the
+card's top edge at the right (design record 0082). Nothing of it is inside the
+header, so the header's padding, height and line breaks are those of a header
+with no badges and no signature runs under it. The page is the entry, so its URL
+is the permalink and the header draws no pilcrow; `check-api-fidelity.mjs`
+therefore expects no permalink from an Astro entry and two from a paired Sphinx
+entry, and `check-style-parity.mjs`, which compares padding, minimum height and
+the signature's colour, is unaffected.
 
 **Domains are mapped, not claimed.** `data-domain` is `py` for Python, `cpp`
 for C++ and `js` for TypeScript, because those Sphinx domains exist and mean
