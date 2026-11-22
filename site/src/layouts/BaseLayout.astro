@@ -59,7 +59,10 @@ interface Props {
    * and links its Markdown, docs.json and llms files.
    */
   bare?: boolean
-  /** BCP-47 tag for this page. Drives <html lang> and the hreflang cluster. */
+  /**
+   * BCP-47 tag for this page. Drives <html lang> and the hreflang cluster. A static
+   * page that names none is in the tree it is built into, as `Seo` reads it.
+   */
   locale?: string
   /** Locales this page genuinely exists in — never the full LOCALES list. */
   locales?: string[]
@@ -102,7 +105,7 @@ const {
   searchable = true,
   updated,
   bare = false,
-  locale = 'en',
+  locale = buildLocale(),
   locales = [],
   sourcePath,
   canonicalOverride,

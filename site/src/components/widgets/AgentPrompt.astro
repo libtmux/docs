@@ -464,6 +464,10 @@ const activePortRules = items
 
   .lm-agent-prompt__code pre {
     margin: 0;
+    /* The block sets the row pitch: inline code at 1.7 still sits in the
+     * pre's own 16px/24px line box, which is 24.5px a row at 13px. */
+    font-size: 0.8125rem;
+    line-height: 1.7;
     /* The default scrollbar is a light chunk against a dark panel. `thin`
      * plus explicit colours is the standard property; the WebKit rules below
      * say the same thing for browsers that ignore it. */

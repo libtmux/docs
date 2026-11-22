@@ -9,7 +9,7 @@
  * outline-only words, so kind stays the loudest thing.
  */
 import { kindLabel, kindMark, kindPalette, markClass } from '../../lib/api-labels'
-import { apiGlossaryHref } from '../../lib/api-glossary'
+import { apiGlossary, apiGlossaryHref } from '../../lib/api-glossary'
 interface Props {
   label: string
   variant: 'kind' | 'mod'
@@ -24,7 +24,9 @@ interface Props {
 }
 const { label, variant, value, compact = false, plain = false, preview = true } = Astro.props as Props
 const palette = kindPalette(value)
-const word = kindLabel(label)
+// A port page names some kinds in the port's own words: an Erlang `struct` reads `record`.
+const { port } = apiGlossary(Astro.url.pathname)
+const word = kindLabel(label, port)
 const text = compact ? kindMark(value) : word
 // Cmdlets use the function palette but retain their PowerShell command kind.
 const href = compact || plain ? undefined : apiGlossaryHref(variant === 'kind' ? label : value, Astro.url.pathname)
@@ -50,7 +52,7 @@ const mark = legend ? kindMark(value) : undefined
     `api-badge--${variant}`,
     `api-badge--${variant}-${palette}`,
   ]}
-  title={preview ? compact ? kindLabel(value) : variant === 'kind' ? `${word} (kind)` : label : variant === 'mod' && !compact ? label : undefined}
-  aria-label={href ? `${word}: read the ${variant === 'kind' ? word : value} definition in the API glossary` : undefined}
+  title={preview ? compact ? kindLabel(value, port) : variant === 'kind' ? `${word} (kind)` : label : variant === 'mod' && !compact ? label : undefined}
+  aria-label={href ? `${word}: read the ${variant === 'kind' ? word : kindLabel(value, port)} definition in the API glossary` : undefined}
   aria-hidden={compact ? 'true' : undefined}
 ><span class="api-badge__label" data-mark={compact ? markClass(text) : undefined}>{text}</span></Tag>}

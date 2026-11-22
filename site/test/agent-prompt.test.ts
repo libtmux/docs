@@ -54,6 +54,8 @@ describe('the language control', () => {
   it('sets the prompt at the code size, 13px at a line height of 1.7', () => {
     const source = readFileSync(new URL('../src/components/widgets/AgentPrompt.astro', import.meta.url), 'utf8')
     expect(/\.lm-agent-prompt__code code \{[^}]*font-size: 0\.8125rem;[^}]*line-height: 1\.7;/.test(source)).toBe(true)
+    // The block sets the row pitch, so its own line height has to be 1.7 too: the pre's 16px/24px made 24.5px rows.
+    expect(/\.lm-agent-prompt__code pre \{[^}]*font-size: 0\.8125rem;[^}]*line-height: 1\.7;/.test(source)).toBe(true)
     // Control: the published 14px rule is the one this check refuses.
     expect(/\.lm-agent-prompt__code code \{[^}]*font-size: 0\.8125rem;/.test('.lm-agent-prompt__code code { font-size: 0.875rem; line-height: 1.7; }')).toBe(false)
   })

@@ -356,12 +356,13 @@ const hasBody =
         </span>
       </div>
       {/*
-        * The kind, the modifiers and where the code lives share one corner tab,
-        * flush in the card's bottom-right corner (design system: Card,
-        * Signature). It takes no width from the signature, and the page is this
-        * entry, so its URL is the permalink and there is no `¶`. Source is a
-        * badge in the tab: it opens the pinned source beside the page where the
-        * site holds a copy, and is the pinned GitHub line otherwise.
+        * The kind, the modifiers and where the code lives share one folder tab,
+        * standing on the card's top edge at the right (design system:
+        * Signature, record 0082). Nothing of it enters the header, so no
+        * signature runs under it, and the page is this entry, so its URL is the
+        * permalink and there is no `¶`. Source is a badge in the tab: it opens
+        * the pinned source beside the page where the site holds a copy, and is
+        * the pinned GitHub line otherwise.
         */}
       <div class="gp-sphinx-api-layout-right api-corner" role="group" aria-label={`${symbol.name}: kind and source`}>
         {badges.map((b) => <ApiBadge label={b.label} variant={b.variant} value={b.value} />)}

@@ -389,7 +389,8 @@ describe('the current row', () => {
     expect(tree).not.toMatch(/theme-accent\) 18%/)
   })
 
-  it('gives the docs sidebar, which the MCP protocol pages use, the same rule', () => {
+  it('gives the docs sidebar, which the MCP protocol pages use, and the page outline the same rule', () => {
+    expect(source('components/TableOfContents/TableOfContentsList.astro')).toMatch(/a\[aria-current='true'\] \{\s*color: var\(--theme-primary\);\s*background: var\(--current-row-bg\);\s*font-weight: 600;/)
     expect(source('components/docs/SidebarLink.astro')).toMatch(/\.sidebar-link\.active \{\s*color: var\(--theme-primary\);\s*background: var\(--current-row-bg\);\s*font-weight: 600;/)
     expect(source('components/docs/SidebarSection.astro')).toMatch(/> summary \{\s*background: var\(--current-row-bg\);\s*color: var\(--theme-primary\);\s*font-weight: 600;/)
   })
@@ -401,7 +402,6 @@ describe('the current row', () => {
   it('draws no start-edge bar on a current row', () => {
     const outline = source('components/TableOfContents/TableOfContentsList.astro')
     expect(outline).not.toMatch(/aria-current='true'\]::before/)
-    expect(outline).toMatch(/a\[aria-current='true'\] \{\s*color: var\(--theme-primary\);\s*font-weight: 500;/)
     expect(outline).not.toMatch(/rgb\(/)
   })
 })
@@ -471,7 +471,7 @@ describe('pickers, touch targets, focus and labels', () => {
       ['styles/global.css', ':is([data-breadcrumb-item], .crumb-collapsed > a, footer ul.flex a, [data-ci-examples] li a) { display: inline-flex; align-items: center; min-height: var(--touch-target); }'],
       ['styles/global.css', '.site-header .scheme-switch__option::before { ' + hit],
       ['styles/global.css', '.expressive-code .frame .copy button { width: var(--touch-target); height: var(--touch-target); }'],
-      ['styles/api.css', '.api-member-chips button::after, :is(.api-reference-eyebrow, .gp-sphinx-api-layout-right) > a.api-badge::before { ' + hit],
+      ['styles/api.css', '.api-member-chips button::after, .api-reference-eyebrow > a.api-badge::before { ' + hit],
       ['styles/api.css', '.heading-link::after { ' + square],
       ['styles/api.css', '.api-copy-name::before { inset: min(0px, calc((1lh - var(--touch-target)) / 2)); }'],
       ['styles/api.css', 'a.api-badge:is(.api-leg, .api-badge--mod) { overflow: visible; }'],
@@ -647,10 +647,8 @@ describe('the dark signature header (record 0080)', () => {
 })
 
 describe('badge and tab label floors (records 0051 and 0071)', () => {
-  it('names the floors: 11px for a badge word, 10.5px for a corner tab word', () => {
-    const tokens = read('tokens.css')
-    expect(tokens).toContain('--badge-word-floor: 11px;')
-    expect(tokens).toContain('--corner-word-floor: 10.5px;')
+  it('names the floor: 11px for a badge word', () => {
+    expect(read('tokens.css')).toContain('--badge-word-floor: 11px;')
   })
 
   it('sizes the legend chip and the modifier badge so their .8em word reaches the badge floor', () => {
@@ -658,10 +656,13 @@ describe('badge and tab label floors (records 0051 and 0071)', () => {
     expect(marks.match(/font: 600 max\(\.8125rem, calc\(var\(--badge-word-floor\) \/ \.8\)\)\/1/g)).toHaveLength(2)
   })
 
-  it('sizes the corner tab chips so the kind word and Source reach the tab floor and the modifier reaches the badge floor', () => {
+  it('draws a declaration\'s tab chips as the native 18px chip, so the kind word, Source and the modifier all reach the badge floor', () => {
     const api = read('api.css')
-    expect(api).toContain('font-size: max(0.75rem, calc(var(--corner-word-floor) / 0.8));')
-    expect(api).toContain('font-size: max(0.7421875rem, calc(var(--badge-word-floor) / 0.8));')
+    const tab = api.slice(api.indexOf('The folder tab (design system'), api.indexOf('Source and the other ecosystem reference'))
+    expect(read('tokens.css')).toContain('--tab-height: 18px;')
+    // The chips take no size of their own, so each keeps the native chip's font and height; only the toolset badge is held to the tab's height.
+    expect(tab).not.toMatch(/font-size|--leg-h|--corner/)
+    expect(tab).toMatch(/\.api-corner > \.mcp-tier \{[^}]*height: var\(--tab-height\);/)
   })
 
   it('draws a parameter\'s "added" and deprecation labels at 12px, over the vendored 11px', () => {

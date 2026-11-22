@@ -1,0 +1,124 @@
+---
+/**
+ * Where a declaration's badges stand, three ways, on real header markup.
+ *
+ * Record 0082 decided the folder tab and uses it on every declaration and object header. The other two placements stay here for
+ * later comparison and are not used on the site. Each is the site's own `ApiEntry` header, in a card as wide as the live
+ * declaration card is at a 375px and at a 1280px viewport (343px and 958px), with the body hidden so that the header is the
+ * card. The variants are CSS on that one markup, scoped to `.cb`: nothing here changes the site's styles.
+ */
+import ApiEntry from '../../components/api/ApiEntry.astro'
+import DemoLayout from '../../components/demo/DemoLayout.astro'
+import { API_MODELS, indexFor } from '../../lib/api-models'
+import { PORT_BY_SLUG, referenceUrl } from '../../lib/ports'
+import { sourceUrl as apiSourceUrl, type ApiSymbol } from '@libtmux/api-model/reference'
+import '../../styles/api.css'
+import '../../styles/vendor/gp-sphinx-api.css'
+
+const SAMPLES = [
+  { port: 'go', id: 'tmux.Pane.Capture', heading: false, name: 'Go tmux.Pane.Capture' },
+  { port: 'kotlin', id: 'io.github.libtmux.kotlin.Server', heading: true, name: 'Kotlin Server' },
+]
+const WIDTHS = [
+  { px: 343, label: '375px viewport, card 343px' },
+  { px: 958, label: '1280px viewport, card 958px' },
+]
+const VARIANTS = [
+  {
+    id: 'folder', title: 'a. Folder tab on the card’s top edge (decided, record 0082)',
+    cost: 'Cost: the card needs a 25px gap above it for the 18px chips, so cards packed with no gap keep the corner slot.',
+  },
+  {
+    id: 'straddle', title: 'b. Straddling the top edge (not used)',
+    cost: 'Cost: the lower half of each chip sits in the header’s 8px top padding, so any less padding or a taller chip reaches the first line.',
+  },
+  {
+    id: 'tucked', title: 'c. The published slot, tucked into the bottom-right corner (not used)',
+    cost: 'Cost: the slot sits over the end of a long last line, and [source] and ¶ are 14px text links, under a 44px touch target.',
+  },
+]
+
+const cards = SAMPLES.map(({ port, id, heading, name }) => {
+  const model = API_MODELS[port]!
+  const symbol = model.symbols.find((entry) => entry.id === id)!
+  const reference = referenceUrl(PORT_BY_SLUG[port]!, 'latest')
+  return { port, heading, name, symbol, index: indexFor(model, (entry) => `${reference}${entry.slug}/`),
+    source: apiSourceUrl(model, symbol, reference) ?? '#', file: symbol.source?.file ?? '' }
+})
+/** Each card is on the page once per variant and width, so each takes ids of its own. */
+const unique = (symbol: ApiSymbol, key: string): ApiSymbol => ({ ...symbol, publicId: `${key}.${symbol.publicId ?? symbol.id}`, doc: undefined })
+---
+
+<DemoLayout title="Declaration badges" description="Where a declaration's badges stand: the folder tab, the straddling variant and the published slot." current="/demo/corner-badges/" wide>
+  <h1 class="text-3xl font-semibold tracking-tight">Declaration badges</h1>
+  <p class="mt-2 max-w-3xl text-muted">
+    Where the kind chip, the modifiers and Source stand on a declaration header. The site uses (a). (b) and (c) are kept here to compare against it later.
+    Each is the site&rsquo;s own header on the Go <code>tmux.Pane.Capture</code> and the Kotlin <code>Server</code>, at the card width of a 375px and a 1280px viewport.
+  </p>
+  <div class="cb not-prose mt-8 grid gap-12">
+    {VARIANTS.map((variant) => (
+      <section class={`cb-variant cb--${variant.id}`} aria-labelledby={`cb-${variant.id}`}>
+        <h2 id={`cb-${variant.id}`} class="text-xl font-semibold">{variant.title}</h2>
+        <p class="mb-4 mt-1 text-sm text-muted">{variant.cost}</p>
+        <div class="cb-row">
+          {WIDTHS.map((width) => (
+            <figure class="cb-figure" style={`--cb-width: ${width.px}px`}>
+              <figcaption class="text-xs text-muted">{width.label}</figcaption>
+              <div class="cb-scroll">
+                {cards.map((card) => (
+                  <div class="cb-frame">
+                    <p class="cb-stub">Source <a href={card.source} rel="nofollow noopener">{card.file}</a></p>
+                    <ApiEntry symbol={unique(card.symbol, `${variant.id}-${width.px}`)} index={card.index} port={card.port} language={card.port}
+                      heading={card.heading} showSummary={false} showBases={false} linkRows={false} sourceUrl={() => card.source} />
+                  </div>
+                ))}
+              </div>
+            </figure>
+          ))}
+        </div>
+      </section>
+    ))}
+  </div>
+</DemoLayout>
+
+<style is:global>
+  .cb-row { display: grid; gap: 1.75rem; justify-items: start; }
+  .cb-figure { display: grid; gap: 0.5rem; max-width: 100%; margin: 0; }
+  .cb-scroll { display: grid; gap: 1.25rem; max-width: 100%; padding: 2px 2px 4px; overflow-x: auto; }
+  .cb-frame { width: var(--cb-width); max-width: none; }
+  /* The block a declaration card follows on a page ("Source and package"): its card sits 24px below it, as on libtmux.org. */
+  .cb-stub { margin: 0; color: var(--color-muted); font: 400 0.8125rem/1.25rem var(--font-sans, ui-sans-serif, system-ui, sans-serif); overflow-wrap: anywhere; }
+  .cb-stub a { color: var(--color-link); text-decoration: none; }
+  /* A header is the card here: the body is hidden, as `:only-child` draws a header that has none. */
+  .cb dl.gp-sphinx-api-container > dd { display: none; }
+  .cb dl.gp-sphinx-api-container > dt.gp-sphinx-api-header { border-bottom-width: 0; border-radius: calc(0.5rem - 1px); }
+  .cb dl.gp-sphinx-api-container { margin-bottom: 0; }
+  .cb-variant:not(.cb--folder) dl.gp-sphinx-api-container.gp-sphinx-api-container { margin-block-start: 1.5rem; }
+
+  /* b. Straddling: the chips centre on the card's top edge, their lower part in the header's top padding. They keep all four borders. */
+  .cb--straddle dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout > .api-corner { top: -10px; bottom: auto; }
+  .cb--straddle .api-corner > .api-badge.api-badge.api-badge { border-end-start-radius: 0.2em; border-end-end-radius: 0.2em; }
+  .cb--straddle .api-corner > .api-leg.api-leg.api-leg { border-bottom-color: color-mix(in srgb, var(--mk-hue, currentColor) var(--mark-border-alpha), transparent); }
+  .cb--straddle .api-corner > .api-badge--mod.api-badge--mod.api-badge--mod { border-bottom-color: var(--md-bd); }
+  .cb--straddle .api-corner > .api-leg > .api-leg__m { border-end-start-radius: 0.2em; }
+  .cb--straddle .api-corner > .api-leg > .api-leg__w { border-end-end-radius: 0.2em; }
+  .cb--straddle .api-corner > a::before { content: none; }
+
+  /* c. The published slot, tucked in: the kind chip, [source] and the pilcrow as libtmux.org drew them, absolute 2px from the
+     header's bottom edge and 4px from its right. The markup is the folder tab's; [source] and the pilcrow are drawn as text. */
+  .cb--tucked dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout > .api-corner { right: 0.25rem; bottom: 0.125rem; align-items: center; gap: 0.375rem; line-height: 1.25; }
+  .cb--tucked .api-corner > .api-badge.api-badge.api-badge:not(.api-leg--action) {
+    overflow: hidden;
+    border-bottom-color: color-mix(in srgb, var(--mk-hue, currentColor) var(--mark-border-alpha), transparent);
+    border-end-start-radius: 0.2em; border-end-end-radius: 0.2em;
+  }
+  .cb--tucked .api-corner > .api-leg > .api-leg__m { border-start-start-radius: 0; }
+  .cb--tucked .api-corner > .api-leg > .api-leg__w { border-start-end-radius: 0; }
+  .cb--tucked .api-corner > a.api-leg--action.api-leg--action.api-leg--action {
+    display: inline; position: static; height: auto; padding: 0; overflow: visible; border: 0; background: none;
+    color: var(--color-link); font: 400 0.875rem/1.25 var(--font-sans, ui-sans-serif, system-ui, sans-serif);
+  }
+  .cb--tucked .api-corner > a.api-leg--action > * { display: none; }
+  .cb--tucked .api-corner > a.api-leg--action::before { content: '[source]'; position: static; }
+  .cb--tucked .api-corner::after { content: '\00b6'; color: var(--color-link); font: 400 0.875rem/1.25 var(--font-sans, ui-sans-serif, system-ui, sans-serif); }
+</style>

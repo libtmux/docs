@@ -20,7 +20,7 @@ export async function checkGuideRedirect(browser, base) {
     await page.locator('html[data-page-readiness="ready"]').waitFor({ state: 'attached' })
     assert.equal((await page.locator('main h1').textContent()).trim(), 'Getting started')
     assert(await page.locator('main h1').isVisible(), 'The loaded guide is readable')
-    assert.equal(await page.title(), 'Getting started | libtmux-ruby')
+    assert.equal(await page.title(), 'Getting started | Ruby guide | libtmux.org')
     assert.equal(await page.evaluate(() => document.readyState), 'complete')
     console.log('Guide redirect: the legacy Ruby URL loads its article without third-party requests')
   } finally {
@@ -321,7 +321,7 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
     await page.goto(`${base}/fsharp/latest/guides/api-overview/?from=bookmark`, { waitUntil: 'load' })
     await page.waitForURL(`${base}/fsharp/latest/reference/?from=bookmark`)
     assert.equal((await page.locator('main h1').textContent()).trim(), 'API reference')
-    assert.equal(await page.title(), 'F# API reference | libtmux-fsharp')
+    assert.equal(await page.title(), 'F# API reference | libtmux.org')
     await checkGuideRedirect(browser, base)
     console.log(`Documentation surfaces: ${ports.length} ports retain real section links; Ruby/F# setup, cards and legacy links pass`)
   } finally {
@@ -678,6 +678,9 @@ export async function checkApiAnchorArrival(browser, base) {
               target: element.matches(':target, :has(> .section-anchor-alias:target)'),
               color: getComputedStyle(element).backgroundColor, top: rect.top,
               header: document.querySelector('.site-header').getBoundingClientRect().bottom,
+              // The folder tab stands above the card (record 0082), so arrival clears the sticky section bar for it too.
+              bars: Math.max(document.querySelector('.site-header').getBoundingClientRect().bottom, document.querySelector('.api-section-bar')?.getBoundingClientRect().bottom ?? 0),
+              tab: element.querySelector('.api-corner')?.getBoundingClientRect().top ?? null,
               viewport: innerHeight, overflow: document.documentElement.scrollWidth - innerWidth }
           }, fragment)
           assert(arrival.ownsFragment && arrival.target, `${path}: ${fragment} targets the declaration`)
@@ -685,6 +688,8 @@ export async function checkApiAnchorArrival(browser, base) {
           assert.equal(arrival.color, idleColor, `${path}#${fragment}: arrival leaves the declaration background as it was`)
           assert(arrival.top >= arrival.header - 1 && arrival.top < arrival.viewport && arrival.overflow <= 1,
             `${path}#${fragment} at ${width}px (JavaScript ${javaScriptEnabled}): the declaration is visible below the header without overflow: ${JSON.stringify(arrival)}`)
+          assert(arrival.tab !== null && arrival.tab >= arrival.bars - 1,
+            `${path}#${fragment} at ${width}px (JavaScript ${javaScriptEnabled}): the folder tab stands clear of the sticky bars: ${JSON.stringify(arrival)}`)
         }
       }
     } finally {

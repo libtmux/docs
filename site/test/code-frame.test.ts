@@ -440,12 +440,12 @@ describe('Expressive Code frames', () => {
       expect(button.getAttribute('aria-expanded')).toBe('true')
       expect(button.textContent).toBe('Show fewer lines')
       expect(frame.hasAttribute('data-expanded')).toBe(true)
-      expect(document.querySelector('.cap-count')!.hasAttribute('hidden')).toBe(true)
+      expect(document.querySelector('.cap-count')!.textContent, 'the bar names what the open frame shows').toBe('86 lines')
       button.click()
       expect(button.getAttribute('aria-expanded')).toBe('false')
       expect(button.textContent).toBe('Show all 86 lines')
       expect(frame.hasAttribute('data-expanded')).toBe(false)
-      expect(document.querySelector('.cap-count')!.hasAttribute('hidden')).toBe(false)
+      expect(document.querySelector('.cap-count')!.textContent).toBe('16 of 86 lines')
     })
 
     it('does not touch the lines Copy takes', async () => {
@@ -488,15 +488,17 @@ describe('the long frames of the pages the design review named', () => {
   })
 })
 
+/** The fences of a content page as the build leaves them, with their info strings read. */
+const fencesOf = (path: string) => {
+  const file = fileURLToPath(new URL(`../src/content/docs/${path}`, import.meta.url))
+  const markdown = readFileSync(file, 'utf8')
+  const tree = fromMarkdown(markdown) as { children: { type: string; meta?: string | null; value: string }[] }
+  remarkPortCode.call({ parse: (text: string) => fromMarkdown(text) } as never)(tree as never, { path: file, value: markdown, data: {} } as never)
+  return tree.children.filter((node) => node.type === 'code').map((node) => parseFenceAttributes(node.meta))
+}
+
 /** Record 0026's neighbour in the typesetting audit: "Complete program" labels a whole file, and only that. */
 describe('the role labels of the attach guides', () => {
-  const frames = (path: string) => {
-    const file = fileURLToPath(new URL(`../src/content/docs/${path}`, import.meta.url))
-    const markdown = readFileSync(file, 'utf8')
-    const tree = fromMarkdown(markdown) as { children: { type: string; meta?: string | null; value: string }[] }
-    remarkPortCode.call({ parse: (text: string) => fromMarkdown(text) } as never)(tree as never, { path: file, value: markdown, data: {} } as never)
-    return tree.children.filter((node) => node.type === 'code').map((node) => parseFenceAttributes(node.meta))
-  }
   /** Build and manifest files beside a program: whole files, but not programs. */
   const SETUP = /^(?:CMakeLists\.txt|Gemfile|Package\.swift|package\.json|Cargo\.toml|go\.mod|[\w.-]+\.(?:csproj|fsproj)|(?:build|settings)\.gradle\.kts|gradle\.properties)$/
   const guides = ['guides/attaching-to-tmux.md', ...readdirSync(fileURLToPath(new URL('../src/content/docs/ports', import.meta.url)))
@@ -507,12 +509,37 @@ describe('the role labels of the attach guides', () => {
   })
 
   it.each(guides)('labels the whole program of %s Complete program and no setup file', (guide) => {
-    const titled = frames(guide).filter((fence) => fence.title !== undefined)
+    const titled = fencesOf(guide).filter((fence) => fence.title !== undefined)
     expect(titled.length, 'a program').toBeGreaterThan(0)
     for (const fence of titled) {
       expect(fence.role, fence.title).toBe(SETUP.test(fence.title!) ? undefined : 'program')
     }
     expect(titled.some((fence) => fence.role === 'program'), 'one whole program').toBe(true)
+  })
+})
+
+/** These example pages drew only the file name above a whole program, because no excerpt quotes it. */
+describe('the role labels of the example pages', () => {
+  it.each([
+    ['ports/py/examples/capture-pane-output.md', 'capture.py', []],
+    ['ports/ruby/examples/capture-pane-output.md', 'capture.rb', ['Gemfile']],
+    ['ports/lua/examples/capture-pane-output.md', 'capture.lua', []],
+    ['ports/rs/examples/capture-pane-output.md', 'src/main.rs', ['Cargo.toml']],
+    ['ports/java/examples/capture-pane-output.md', 'Capture.java', ['settings.gradle.kts', 'build.gradle.kts']],
+    ['ports/csharp/examples/capture-pane-output.md', 'Program.cs', ['Capture.csproj']],
+    ['ports/cxx/examples/capture-pane-output.md', 'capture.cpp', ['CMakeLists.txt']],
+    ['ports/julia/examples/owned-capture.md', 'owned_capture.jl', []],
+    ['ports/powershell/examples/create-layout.md', 'quickstart.ps1', []],
+  ])('labels %s Complete program for %s and not for %j', (page, program, beside) => {
+    const titled = fencesOf(page).filter((fence) => fence.title !== undefined)
+    expect(titled.filter((fence) => fence.role === 'program').map((fence) => fence.title)).toEqual([program])
+    expect(titled.filter((fence) => fence.role === undefined).map((fence) => fence.title)).toEqual(beside)
+  })
+
+  it('leaves a file a concept page shows in steps without the label', () => {
+    const steps = fencesOf('ports/fsharp/concepts/queries.md').filter((fence) => fence.title?.endsWith('.fs'))
+    expect(steps.length).toBeGreaterThan(0)
+    expect(steps.map((fence) => fence.role)).toEqual(steps.map(() => undefined))
   })
 })
 

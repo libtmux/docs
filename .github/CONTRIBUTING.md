@@ -221,6 +221,21 @@ problem it names:
 $ node site/scripts/check-dev.mjs --badge-centring
 ```
 
+A declaration's kind, modifier and Source chips stand on the card's top edge as
+a folder tab, not in the header. The folder tab gate reads a Go, a Kotlin and a
+Python declaration and an MCP tool at 375 and 1280 pixels in light and dark. It
+requires that no chip meets a text box of the header, that every chip's floor is
+on the card's top border, that the chips clear the block above, and that the
+header has the height and line count of the same header without its badges. Under
+touch emulation it requires a 44 pixel target for each link chip that reaches
+upward only, in a gap that holds it. Each check ends with the fault it holds
+against, the badges back in the bottom-right corner among them, and requires the
+gate to notice:
+
+```console
+$ node site/scripts/check-dev.mjs --folder-tab
+```
+
 A Workspace Manager or MCP page reports its status in a dismissible bar under
 the header, beside the release bar, and never as an admonition in the article.
 The product notice gate reads the bar on an OCaml, Java, Rust and Python page for
@@ -691,6 +706,98 @@ Add `--dry-run` to list the directories or `--cache` to remove cached shell
 and reference builds too. Cleanup shares the assembly lock and refuses to
 run during an assembly. It preserves source, dependencies and `output/`
 review evidence. Custom output and cache locations need their own cleanup.
+
+## Auditing page heads
+
+`site/scripts/audit-head.mjs` reads the head of every page and reports what
+each tells a browser tab, a crawler and a link card: title, description,
+canonical, robots, Open Graph, Twitter, icons, manifest, alternates and
+whether a sitemap lists the page. It is an on-demand audit; no test loop or
+CI job runs it.
+
+Audit the live site from the sitemaps its `robots.txt` advertises:
+
+```console
+$ node site/scripts/audit-head.mjs --out /tmp/head-audit
+```
+
+Audit an assembled tree, which also finds pages that exist and no sitemap
+lists:
+
+```console
+$ node site/scripts/audit-head.mjs --dist _site --out /tmp/head-audit
+```
+
+The report is `head-audit.json` plus `head-audit.md`; add
+`--format json,md,html` for a single static table of every page. Narrow a
+run with `--include`, `--exclude` or `--sample`. Requests use a named
+User-Agent, at most `--concurrency` at a time (4 by default) and a gap of
+`--delay-ms` between starts, so a run against production is safe. The script
+header lists every option, and `site/test/head-audit.test.ts` plants one bad
+head for each snag rule.
+
+## Panel mode
+
+Panel mode is an opt-in way to read any page. The page's article becomes the
+main panel of a workspace, the same page in other ports opens in panels
+beside it, and a link in a panel opens its page in that panel. A reader can
+drag a header to move or dock a panel, press `Alt` with an arrow key to move
+a focused header, and resize with a splitter. Nothing on the site links to the
+mode, a reader who has not opted in sees no change, and a build writes no extra
+page for it.
+
+Add `?panels=1` to the address of any page to turn the mode on. The choice
+is kept in `localStorage` under `libtmux-docs.panel-mode`, so it follows the
+reader across pages, router swaps and visits. `?panels=0` or the workspace's
+Exit panels button turns it off and reloads the page as it is on the site.
+Where storage is blocked, `?panels=1` lasts for that page only and stays in
+the address.
+
+[`mode.ts`](../site/src/lib/panels/mode.ts) owns the choice. `ShellHead` runs
+`applyPanelMode` in `<head>`, so the first paint already knows; a rule in
+`global.css`, behind `html[data-panels]`, keeps the page's own body out of
+sight until the workspace draws. `DocumentationScript` loads the workspace's
+code only when the mode is on. A page with no `main#content`, such as a native
+Sphinx page, and a workspace that fails to load or draw, leave the page as it
+was.
+
+A link in a panel fetches the target's normal page and lifts its
+`main#content` into the panel. Only a page of this site opens that way: the
+same origin and a directory URL, and for a page panel the same tree. Any other
+link, such as one to another site or a file, goes to the browser. `Shift` with a
+click opens an in-tree link in a panel of its own, and a fragment link scrolls
+the panel that holds it. The main panel's page also sets the address and the
+title, so a reload opens the same page. An API symbol page takes its linked
+panels from the rows of its "In other ports" table; every other page takes them
+from the language picker. Both are read from the page's markup, so a fetched
+page offers the same panels.
+
+The arrangement of columns, rows, splits, sizes and open panels is kept in
+`localStorage` under `libtmux-docs.panel-layout`, shared by every page. Panel
+ids name a role (`main`, `link:<port>`), so one saved arrangement applies on
+every page that offers those panels. Nothing is saved until the reader changes
+the layout. Reset layout forgets the saved arrangement and draws the page's own
+default. A panel opened with `Shift` lasts for the visit and is not saved.
+
+Panel surfaces keep at most 8px of padding on every side, and a page lifted into
+a panel gives up the padding its own columns set. Headers show their title and
+path in full until the header runs out of room. These rules are in
+[`panels.css`](../site/src/styles/panels.css), which loads with the workspace;
+[`panels-style.test.ts`](../site/test/panels-style.test.ts) reads it to hold them,
+and [`panels-mode.test.ts`](../site/test/panels-mode.test.ts) mounts the workspace
+to hold the rest.
+
+Serve one port from a development server and add the parameter to any page:
+
+```console
+$ LIBTMUX_DOCS_PORT=go \
+    LIBTMUX_DOCS_BASE=/en/go/latest/ \
+    LIBTMUX_DOCS_ROOT=/en \
+    LIBTMUX_DOCS_PORT_ROOT=/en \
+    pnpm dev
+```
+
+Then open `/en/go/latest/guides/capturing-output/?panels=1`.
 
 ## Pull requests
 

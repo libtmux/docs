@@ -60,7 +60,7 @@ describe('the sequence', () => {
   it('puts the previous page before the next in the block, as two cards', async () => {
     const end = fixture('go', '/go/latest/guides/sending-keys/')
     expect(labels([end.prev!, end.next!])).toEqual(['Getting started', 'Capturing output'])
-    const template = await loadAstroTemplate('components/docs/PageEnd.astro', { real: ['components/StatusBadge.astro', 'components/api/ApiBadge.astro'], modules: { '../../lib/api-labels': await import('../src/lib/api-labels'), '../../lib/api-glossary': { apiGlossaryHref: () => undefined } } })
+    const template = await loadAstroTemplate('components/docs/PageEnd.astro', { real: ['components/StatusBadge.astro', 'components/api/ApiBadge.astro'], modules: { '../../lib/api-labels': await import('../src/lib/api-labels'), '../../lib/api-glossary': { apiGlossary: () => ({ port: undefined }), apiGlossaryHref: () => undefined } } })
     const doc = parseHtml(await renderAstroTemplate(template, { props: { ...end } })).document
     expect(doc.querySelector('nav')!.getAttribute('aria-label')).toBe('Continue')
     const steps = [...doc.querySelectorAll('.page-end__step')]

@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it, vi } from 'vitest'
 import { directoryPattern, introBeforeCards, splitAtFirstHeading } from '../src/lib/section-index'
 import { JAPANESE_SANS, sansFallbacks } from '../src/lib/sans-fallbacks'
+import { buildLocale } from '../src/i18n/locales'
 import { loadAstroTemplate, renderAstroTemplate, withoutScope } from './astro-templates'
 import { siteCss } from './site-css'
 
@@ -224,6 +225,32 @@ describe('the Japanese page', () => {
   it('writes lang on the root, so :lang(ja) reaches every element on /ja/ pages', () => {
     const layout = readFileSync(new URL('../src/layouts/BaseLayout.astro', import.meta.url), 'utf8')
     expect(layout).toMatch(/<html lang=\{locale\}/)
+  })
+
+  it('puts the build\'s language on a page that names none, such as /ja/search/ and /ja/meta/parity/', async () => {
+    const layout = await loadAstroTemplate('layouts/BaseLayout.astro', { modules: { '../i18n/resolve': { buildLocale } } })
+    const lang = async (locale: string) => {
+      vi.stubEnv('LIBTMUX_DOCS_PORT', '')
+      vi.stubEnv('LIBTMUX_DOCS_LOCALE', locale)
+      vi.stubEnv('LIBTMUX_DOCS_BASE', `/${locale}/`)
+      try {
+        const html = await renderAstroTemplate(layout, {
+          url: `https://libtmux.org/${locale}/search/`,
+          props: { title: 'Search', pageSource: { repo: 'libtmux/docs', ref: 'main', path: 'site/src/pages/search.astro' } },
+          slots: { default: '<main>Page content</main>' },
+        })
+        return /<html lang="([^"]*)"/.exec(html)?.[1]
+      } finally {
+        vi.unstubAllEnvs()
+      }
+    }
+    expect(await lang('ja')).toBe('ja')
+    expect(await lang('en')).toBe('en')
+  })
+
+  it('drops the tracking of a meta page\'s headings, which are not in the layer that drops it elsewhere', () => {
+    const meta = readFileSync(new URL('../src/styles/meta.css', import.meta.url), 'utf8')
+    expect(meta).toMatch(/:lang\(ja\) \.meta-page :is\(h1, h2\) \{[^}]*letter-spacing: 0;/)
   })
 
   it('wraps the machine-translation notice so it keeps the Japanese measure', () => {

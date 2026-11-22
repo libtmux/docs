@@ -355,6 +355,29 @@ describe('rendered API badges', () => {
     expect(win.document.querySelector('span')!.textContent).toBe('future-kind')
   })
 
+  it('names the Erlang glossary terms and their badges in Erlang\'s own words, and no other port\'s', async () => {
+    const words = { struct: 'record', typealias: 'type', abstract: 'callback', package: 'application' }
+    const glossary = await badgeComponent('ApiGlossaryContent')
+    const badge = await badgeComponent()
+    const container = await experimental_AstroContainer.create()
+    const win = new Window()
+    windows.push(win)
+    const erlang = '/en/erlang/latest/reference/glossary/'
+    win.document.body.innerHTML = await container.renderToString(glossary, { props: { contextPath: erlang } })
+    for (const [id, word] of Object.entries(words)) {
+      expect(win.document.querySelector(`h3#${id} code`)!.textContent, id).toBe(word)
+      expect(apiGlossaryMarkdown('https://libtmux.org', erlang), id).toContain(`### ${word}\n`)
+      expect(apiGlossaryHref(id, erlang), 'the anchor keeps its machine token').toBe(`${erlang}#${id}`)
+    }
+    for (const [path, expected] of [['/en/erlang/latest/reference/server/', 'record'], ['/en/rs/latest/reference/server/', 'struct']]) {
+      win.document.body.innerHTML = await container.renderToString(badge, { request: new Request(`http://localhost:53971${path}`), props: { label: 'struct', variant: 'kind', value: 'struct' } })
+      const link = win.document.querySelector('a.api-badge--kind')!
+      expect(link.textContent, path).toContain(expected)
+      expect(link.getAttribute('href'), path).toBe(`${path.replace(/server\/$/, '')}glossary/#struct`)
+      expect(link.getAttribute('aria-label'), path).toBe(`${expected}: read the ${expected} definition in the API glossary`)
+    }
+  })
+
   it('renders the extracted Rust async contract with its native glossary link', async () => {
     const model = JSON.parse(readFileSync(new URL('../src/data/api/rs.json', import.meta.url), 'utf8'))
     const method = model.symbols.find((symbol: { id: string }) => symbol.id === 'server.Server.set_hook')

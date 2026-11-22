@@ -111,6 +111,16 @@ describe('forced colours', () => {
     expect(pressed?.declarations['forced-color-adjust']).toBe('none')
   })
 
+  it('keeps the CanvasText outline on each chip of a declaration\'s folder tab, the toolset badge included, with the floor open for the card\'s own border (record 0082)', () => {
+    const tab = parseRules(read('styles/api.css')).filter((rule) => inMedia(rule, '(forced-colors: active)')
+      && rule.selectors.some((selector) => selector.startsWith('.api-corner > :is(')))
+    expect(tab.length).toBeGreaterThan(0)
+    const chips = tab.find((rule) => rule.selectors.some((selector) => selector.includes('.mcp-tier') && selector.includes('.api-badge')))
+    expect(chips?.declarations['border-color']).toBe('CanvasText')
+    expect(chips?.declarations['border-bottom-color']).toBe('transparent')
+    expect(chips?.declarations['forced-color-adjust']).toBe('none')
+  })
+
   it('draws every focus ring in Highlight', () => {
     const ring = parseRules(a11y).find((rule) => inMedia(rule, '(forced-colors: active)') && rule.selectors.includes(':focus-visible'))
     expect(important(ring?.declarations['outline-color'])).toBe('Highlight')

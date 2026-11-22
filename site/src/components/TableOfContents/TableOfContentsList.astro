@@ -71,10 +71,11 @@ const { toc, isMobile = false, depth = 0 } = Astro.props
     a:hover {
       color: var(--text-color);
     }
-    /* The current entry keeps its colour and weight; no bar marks its start edge. */
+    /* The current entry takes the one current-row rule of the sidebar and the API tree; no bar marks its start edge. */
     a[aria-current='true'] {
       color: var(--theme-primary);
-      font-weight: 500;
+      background: var(--current-row-bg);
+      font-weight: 600;
     }
     .isMobile a {
       --pad-inline: 1rem;

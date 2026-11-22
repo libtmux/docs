@@ -11,6 +11,7 @@ import externalLink from '../../public/_shell/external-link.svg?raw'
 import externalLinksCss from '../../public/_shell/external-links.css?raw'
 import anchorsCss from '../../public/_shell/anchors.css?raw'
 import { createLinkPreviewPolicy, initializeLinkPreviewPaint } from '../lib/link-preview-paint'
+import { MODE_ATTRIBUTE, MODE_KEY, MODE_PARAM, applyPanelMode } from '../lib/panels/mode'
 
 interface Props { preloadSansItalic?: boolean }
 const { preloadSansItalic = false } = Astro.props
@@ -45,6 +46,8 @@ const hintsCss = externalLinksCss.replace('url("./external-link.svg")', `url("${
   }
 </script>
 <ThemeScript />
+{/* Panel mode is a reader's opt-in: resolved here so a reader who chose it never sees the page drawn and replaced. */}
+<script is:inline set:html={`(${applyPanelMode.toString()})(document,${JSON.stringify(MODE_KEY)},${JSON.stringify(MODE_PARAM)},${JSON.stringify(MODE_ATTRIBUTE)});`} />
 <style is:inline set:html={hintsCss} />
 <script is:inline set:html={`(${initializePageReadiness.toString()})(${installExternalLinks.toString()},${JSON.stringify(mask)});`} />
 <script is:inline set:html={`(${initializeWebAnalytics.toString()})(${JSON.stringify(withRoot('/_shell/web-analytics.json'))});`} />

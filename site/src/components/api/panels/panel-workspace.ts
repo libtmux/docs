@@ -3,16 +3,19 @@
  * locator, rendered at six width tiers from one state.
  *
  * The state and the tier rules live in `lib/panels`; this module draws them.
- * Not built here: dragging a panel header to dock it, floating windows and the
- * panels that pop out to them, dragging a pinned card, and reordering chips on a
- * phone. Previews, pins, link sets, locks, Re-sync, send-to, saved layouts, the
- * command bar and the keyboard map are.
+ * Not built here: floating windows and the panels that pop out to them, dragging
+ * a pinned card, and reordering chips on a phone. Dragging or Alt+Arrow moving a
+ * header to dock it (`panel-dock.ts`), closing a panel and reopening it from the
+ * Closed list, the layout kept per browser, previews, pins, link sets, locks,
+ * Re-sync, send-to, saved layouts, the command bar and the keyboard map are.
  */
 import { ICON, esc } from '../columns/html'
-import { grow, isLeaf, leaves, snapRatio, type ViewNode } from '../../../lib/panels/layout'
+import { grow, isLeaf, leaves, moveLeaf, nudgeLeaf, pairPercent, swapLeaves, type Arrow, type ViewNode } from '../../../lib/panels/layout'
+import { panelStore, type PanelStorage } from '../../../lib/panels/persist'
 import { planWorkspace, type WorkspacePlan } from '../../../lib/panels/plan'
-import { MIN_COL, type Tier } from '../../../lib/panels/tiers'
-import { SET_NAMES, TEMPLATE_NAMES, activate, activeTab, apiOf, clone, closePanel, fromTemplate, go, isStale, openResource, panelIds, partners, resync, setLink, step, validResource, type Panel, type TemplateName, type Workspace } from '../../../lib/panels/state'
+import type { Tier } from '../../../lib/panels/tiers'
+import { SET_NAMES, TEMPLATE_NAMES, activate, activeTab, apiOf, clone, closePanel, fromTemplate, go, isStale, openResource, panelIds, partners, reopenPanel, resync, revive, setLink, step, validResource, violations, type Panel, type TemplateName, type Workspace } from '../../../lib/panels/state'
+import { attachDock, attachSplitters, type Drop } from './panel-dock'
 import { symbolOf, type ConceptIndex, type ConceptRecord } from '../../../lib/panels/concepts'
 
 export const BOARDS = [
@@ -28,7 +31,9 @@ export interface WorkspaceOptions {
   board?: BoardId
   pointer?: 'hover' | 'touch'
   /** Where saved layouts and notes persist; the page passes `localStorage`. */
-  storage?: Pick<Storage, 'getItem' | 'setItem'>
+  storage?: PanelStorage
+  /** Start from the last session's layout when it is whole. A template or locator the address names wins. */
+  restore?: boolean
   height?: number
   maxHeight?: number
   onChange?: (info: { board: BoardId; pointer: 'hover' | 'touch'; plan: WorkspacePlan; ws: Workspace }) => void
@@ -81,22 +86,29 @@ export function mountPanelWorkspace(root: HTMLElement, options: WorkspaceOptions
   const conceptOf = (loc: string): ConceptRecord => concepts.byId.get(loc) ?? concepts.list[0]!
   const firstLoc = options.loc && known(options.loc) ? options.loc : concepts.byId.has('capture-pane') ? 'capture-pane' : concepts.list[0]!.id
 
-  const store = {
-    read<T>(key: string, fallback: T): T { try { const v = options.storage?.getItem(key); return v ? JSON.parse(v) as T : fallback } catch { return fallback } },
-    write(key: string, value: unknown) { try { options.storage?.setItem(key, JSON.stringify(value)) } catch { /* storage is optional */ } },
-  }
+  const store = panelStore(options.storage)
   const st = {
     board: (options.board ?? 'fit') as BoardId, custom: null as { w: number; h: number } | null,
     pointer: (options.pointer ?? (hoverable ? 'hover' : 'touch')) as 'hover' | 'touch',
     railPinned: true, fullWidth: false, prevTier: null as Tier | null,
     saved: store.read<Workspace[]>(LAYOUTS_KEY, []),
     filters: { notes: true, absent: true } as Record<string, boolean>,
-    tool: null as string | null, menu: null as Menu | null, pops: [] as Pop[], cmd: null as Cmd | null,
+    tool: null as string | null, menu: null as Menu | null, closedMenu: null as { x: number; y: number } | null, pops: [] as Pop[], cmd: null as Cmd | null,
     compare: false, sheet: null as { res: string; loc: string; full: boolean } | null, side: null as string | null,
     pulse: [] as string[], toast: '',
   }
   const notes = store.read<Record<string, string[]>>(NOTES_KEY, { [firstLoc]: ['A note is kept against the locator, so every panel showing this concept marks it, in any port.'] })
-  let ws = fromTemplate(options.template ?? 'study', firstLoc)
+  // A session from older code, or hand-edited, is checked as a layout loaded from the Layouts list would be: whole, or not used.
+  function lastSession(): Workspace | null {
+    if (!options.restore) return null
+    try {
+      const saved = store.read<Workspace | null>(SESSION_KEY, null)
+      const snap = saved && revive(saved)
+      const whole = (c: Panel) => Boolean(c.tabs?.[c.activeTab]) && known(activeTab(c).loc) && validResource(activeTab(c).res, ports)
+      return snap && violations(snap, known).length === 0 && snap.closed.every(whole) ? snap : null
+    } catch { return null }
+  }
+  let ws = lastSession() ?? fromTemplate(options.template ?? 'study', firstLoc)
   let last: WorkspacePlan | null = null
   let viewSplits: Extract<ViewNode, { src: unknown }>[] = []
   let focusNext: string | null = null
@@ -187,7 +199,8 @@ export function mountPanelWorkspace(root: HTMLElement, options: WorkspaceOptions
     const t = tabOf(p)
     const c = conceptOf(t.loc)
     const stale = isStale(ws, p)
-    return `<header class="pw__head" data-head="${esc(p.id)}" tabindex="-1">${badge(p)}<span class="pw__title">${esc(resTitle(t.res))}</span>` +
+    const dock = plan.tier.t >= 2 && !ws.maximized && plan.visible.length > 1
+    return `<header class="pw__head" data-head="${esc(p.id)}"${dock ? ' data-draggable' : ''} role="group" tabindex="0" aria-label="${esc(resTitle(t.res))} panel header${dock ? '. Alt and an arrow key move the panel.' : ''}"${dock ? ' aria-keyshortcuts="Alt+ArrowLeft Alt+ArrowRight Alt+ArrowUp Alt+ArrowDown"' : ''}>${badge(p)}<span class="pw__title">${esc(resTitle(t.res))}</span>` +
       `<button type="button" class="pw__loc" data-act="cmd:${esc(p.id)}" title="${esc(c.label)} (go to another concept)">${esc(t.loc)}</button>` +
       (stale ? `<button type="button" class="pw__stale" data-act="resync:${esc(p.id)}" title="Drifted from link set ${esc(p.linkSet ?? p.formerSet ?? '')}, now at ${esc(ws.linkSets[p.linkSet ?? p.formerSet ?? ''] ?? '')}">Re-sync</button>` : '') +
       (p.locked ? `<span class="pw__lock" title="Locked: ignores links and send-to" aria-label="Locked">${glyph('lock')}</span>` : '') +
@@ -213,7 +226,7 @@ export function mountPanelWorkspace(root: HTMLElement, options: WorkspaceOptions
     const flex = grow(n.sizes)
     return `<div class="pw__split pw__split--${n.dir}">${n.kids.map((kid, i) =>
       `<div class="pw__cell" style="flex:${flex[i]} 1 0">${nodeHtml(kid, plan)}</div>` +
-      (i < n.kids.length - 1 ? `<div class="pw__splitter" role="separator" tabindex="0" aria-orientation="${n.dir === 'row' ? 'vertical' : 'horizontal'}" aria-label="Resize" data-splitter="${k}:${i}"></div>` : '')).join('')}</div>`
+      (i < n.kids.length - 1 ? `<div class="pw__splitter" role="separator" tabindex="0" aria-orientation="${n.dir === 'row' ? 'vertical' : 'horizontal'}" aria-label="Resize the panels on either side" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pairPercent(n.sizes, i)}" data-splitter="${k}:${i}"></div>` : '')).join('')}</div>`
   }
 
   function toolHtml(kind: string): string {
@@ -260,8 +273,9 @@ export function mountPanelWorkspace(root: HTMLElement, options: WorkspaceOptions
   function topHtml(plan: WorkspacePlan): string {
     const layers = `<span class="pw__layers" role="group" aria-label="Layers"><button type="button" data-act="filter:notes" aria-pressed="${st.filters.notes}">Notes</button><button type="button" data-act="filter:absent" aria-pressed="${st.filters.absent}">Absent ports</button></span>`
     if (plan.narrow) return `<header class="pw__top"><span class="pw__brand">${esc(ws.name)}</span><span class="pw__spacer"></span><button type="button" class="pw__icon" data-act="cmd" aria-label="Command bar">${glyph('search')}</button></header>`
+    const closed = ws.closed.length ? `<button type="button" class="pw__btn" data-act="closed" aria-haspopup="menu" aria-expanded="${Boolean(st.closedMenu)}">Closed panels (${ws.closed.length})</button>` : ''
     return `<header class="pw__top"><span class="pw__brand">Workspace</span><span class="pw__layoutname">${esc(ws.name)}</span>` +
-      '<button type="button" class="pw__go" data-act="cmd"><span>Go to a concept, port or command</span><kbd>/</kbd></button><span class="pw__spacer"></span>' + layers +
+      '<button type="button" class="pw__go" data-act="cmd"><span>Go to a concept, port or command</span><kbd>/</kbd></button><span class="pw__spacer"></span>' + closed + layers +
       (plan.tier.t === 5 ? `<button type="button" class="pw__btn" data-act="fullwidth" aria-pressed="${st.fullWidth}">Full width</button>` : '') +
       (ws.maximized ? `<button type="button" class="pw__btn" data-act="max:${esc(ws.maximized)}">Restore layout</button>` : '') +
       '<button type="button" class="pw__btn" data-tool="layouts">Save layout</button></header>'
@@ -274,7 +288,7 @@ export function mountPanelWorkspace(root: HTMLElement, options: WorkspaceOptions
   }
 
   function moreHtml(): string {
-    return `<h3 class="pw__toolh">More</h3><ul class="pw__toollist"><li><button type="button" data-act="filter:notes" aria-pressed="${st.filters.notes}">Notes layer</button></li><li><button type="button" data-act="filter:absent" aria-pressed="${st.filters.absent}">Absent ports layer</button></li><li><button type="button" data-act="cmd">Command bar</button></li></ul>`
+    return `<h3 class="pw__toolh">More</h3><ul class="pw__toollist"><li><button type="button" data-act="filter:notes" aria-pressed="${st.filters.notes}">Notes layer</button></li><li><button type="button" data-act="filter:absent" aria-pressed="${st.filters.absent}">Absent ports layer</button></li><li><button type="button" data-act="cmd">Command bar</button></li></ul>${closedListHtml('pw__toollist')}`
   }
 
   function narrowHtml(plan: WorkspacePlan): string {
@@ -305,6 +319,15 @@ export function mountPanelWorkspace(root: HTMLElement, options: WorkspaceOptions
       `<div class="pw__work" data-work>${work}${side}</div>${tabbar}${sheet}<div class="pw__layer" data-layer>${layerHtml()}</div><div class="pw__toast" role="status" aria-live="polite">${esc(st.toast)}</div></div>`
   }
 
+  /** Closed panels, each a button that brings it back. */
+  function closedListHtml(cls: string): string {
+    if (!ws.closed.length) return ''
+    return `<h3 class="pw__toolh">Closed panels</h3><ul class="${cls}">${ws.closed.map((c) =>
+      `<li><button type="button" data-act="reopen:${esc(c.id)}"><span>${esc(resTitle(tabOf(c).res))}</span><small>${esc(tabOf(c).loc)}</small></button></li>`).join('')}</ul>`
+  }
+  const closedMenuHtml = () => `<div class="pw__menu" role="menu" aria-label="Closed panels" style="left:${st.closedMenu!.x}px;top:${st.closedMenu!.y}px"><ul>${ws.closed.map((c) =>
+    `<li role="none"><button type="button" role="menuitem" data-act="reopen:${esc(c.id)}">${esc(resTitle(tabOf(c).res))} <code>${esc(tabOf(c).loc)}</code></button></li>`).join('')}</ul></div>`
+
   function menuHtml(): string {
     const m = st.menu!
     const P = ws.panels[m.id]
@@ -329,7 +352,7 @@ export function mountPanelWorkspace(root: HTMLElement, options: WorkspaceOptions
   }
 
   const cmdHtml = () => `<div class="pw__cmd${last?.narrow ? ' is-full' : ''}" role="dialog" aria-label="Command bar"><input class="pw__input" data-cmd-input placeholder="A concept (send-keys), a port (Rust), or a command (save, link B, lock)" aria-label="Command" autocomplete="off" value="${esc(st.cmd!.q)}"><ul role="listbox" data-cmd-list>${cmdListHtml()}</ul></div>`
-  const layerHtml = () => (st.menu ? menuHtml() : '') + st.pops.map(popHtml).join('') + (st.cmd ? cmdHtml() : '')
+  const layerHtml = () => (st.menu ? menuHtml() : '') + (st.closedMenu && ws.closed.length ? closedMenuHtml() : '') + st.pops.map(popHtml).join('') + (st.cmd ? cmdHtml() : '')
   const renderLayer = () => { const l = $('[data-layer]', stage); if (l) l.innerHTML = layerHtml() }
 
   // ---- Render
@@ -521,6 +544,8 @@ export function mountPanelWorkspace(root: HTMLElement, options: WorkspaceOptions
     if (t.closest('a[href="#"]')) e.preventDefault()
     if ((el = t.closest<HTMLElement>('[data-cmd-item]'))) { runCmd(Number(el.dataset.cmdItem)); return }
     if (st.menu && !t.closest('.pw__menu') && !t.closest('[data-menu]')) { st.menu = null; renderLayer() }
+    if (st.closedMenu && !t.closest('.pw__menu') && !t.closest('[data-act="closed"]')) { st.closedMenu = null; renderLayer() }
+    if ((el = t.closest<HTMLElement>('[data-act="closed"]'))) { toggleClosedMenu(el); return }
     if ((el = t.closest<HTMLElement>('[data-act]'))) { act(el.dataset.act!); return }
     if ((el = t.closest<HTMLElement>('[data-menu]'))) {
       const id = el.dataset.menu!
@@ -563,6 +588,14 @@ export function mountPanelWorkspace(root: HTMLElement, options: WorkspaceOptions
     }
   }
 
+  function toggleClosedMenu(button: HTMLElement) {
+    if (st.closedMenu) { st.closedMenu = null; renderLayer(); return }
+    const pt = stagePoint(button.getBoundingClientRect())
+    st.closedMenu = { x: Math.round(clamp(pt.x - 100, 8, pt.w - 268)), y: Math.round(pt.y + 4) }
+    renderLayer()
+    $<HTMLElement>('.pw__menu button', stage)?.focus()
+  }
+
   function act(a: string) {
     const [k, id, arg] = a.split(':') as [string, string | undefined, string | undefined]
     const P = id ? ws.panels[id] : undefined
@@ -593,7 +626,8 @@ export function mountPanelWorkspace(root: HTMLElement, options: WorkspaceOptions
       case 'sendnew': if (P) { st.menu = null; open(tabOf(P).res, tabOf(P).loc, 'panel') } return
       case 'max': st.menu = null; return toggleMax(id!)
       case 'fold': if (P) { st.menu = null; P.preferredVisible = false; if (ws.activePanelId === id) { const o = leaves(ws.layoutTree).find((x) => x !== id); if (o) activate(ws, o) } render('panel') } return
-      case 'close': st.menu = null; if (closePanel(ws, id!)) render('panel'); return
+      case 'close': st.menu = null; if (closePanel(ws, id!)) { announce(`${resTitle(tabOf(P!).res)} panel closed. It is in the Closed panels list.`); render('panel') } return
+      case 'reopen': { st.closedMenu = null; st.tool = null; const nid = reopenPanel(ws, id!); if (nid) { announce(`${title(nid)} panel reopened`); render('panel') } return }
     }
   }
 
@@ -634,19 +668,17 @@ export function mountPanelWorkspace(root: HTMLElement, options: WorkspaceOptions
     if ((e.key === 'k' && (e.metaKey || e.ctrlKey)) || (e.key === '/' && !typing)) { e.preventDefault(); openCmd(); return }
     if (e.key === 'Escape') {
       if (st.pops.length) { e.preventDefault(); closePops(st.pops.length - 1); return }
-      if (st.menu) { e.preventDefault(); st.menu = null; render('panel'); return }
+      if (st.menu || st.closedMenu) { e.preventDefault(); st.menu = null; st.closedMenu = null; render('panel'); return }
       if (st.sheet || st.tool || st.side) { e.preventDefault(); st.sheet = null; st.tool = null; st.side = null; render('panel') }
       return
     }
-    if (st.menu && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+    if ((st.menu || st.closedMenu) && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
       const items = $$<HTMLButtonElement>('.pw__menu button:not([disabled])', stage)
       const i = items.indexOf(document.activeElement as HTMLButtonElement)
       e.preventDefault()
       items[clamp(i + (e.key === 'ArrowDown' ? 1 : -1), 0, items.length - 1)]?.focus()
       return
     }
-    const sp = t.closest<HTMLElement>('[data-splitter]')
-    if (sp && e.key.startsWith('Arrow')) { e.preventDefault(); nudgeSplit(sp, e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 0.05 : -0.05); return }
     if (typing || !last) return
     const order = last.narrow ? last.order : last.visible
     if (e.key === 'F6') { e.preventDefault(); const j = order.indexOf(ws.activePanelId); activate(ws, order[(j + (e.shiftKey ? order.length - 1 : 1)) % order.length]!); render('panel'); return }
@@ -665,54 +697,33 @@ export function mountPanelWorkspace(root: HTMLElement, options: WorkspaceOptions
     if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'Enter') { e.preventDefault(); toggleMax(ws.activePanelId) }
   }
 
-  // ---- Splitters: snap to 40, 50 and 60 percent, and refuse to squeeze a panel below 320 px.
+  // ---- Docking and splitters: the shared module reads the geometry; this decides what a move does to the layout.
 
-  function setPair(spl: HTMLElement, ratio: number) {
-    const [k, i] = spl.dataset.splitter!.split(':').map(Number) as [number, number]
-    const n = viewSplits[k]
-    if (!n) return
-    const cells = Array.from(spl.parentElement!.children).filter((c) => c.classList.contains('pw__cell')) as HTMLElement[]
-    const row = n.dir === 'row'
-    const z = Number(root.dataset.zoom) || 1
-    const a = cells[i]!.getBoundingClientRect()
-    const b = cells[i + 1]!.getBoundingClientRect()
-    const pairPx = (row ? a.width + b.width : a.height + b.height) / z
-    const r = snapRatio(ratio, pairPx, row ? MIN_COL : 140, n.kids.length === 2)
-    const sum = n.sizes[i]! + n.sizes[i + 1]!
-    n.sizes[i] = sum * r
-    n.sizes[i + 1] = sum * (1 - r)
-    n.src.sizes[n.idx[i]!] = n.sizes[i]!
-    n.src.sizes[n.idx[i + 1]!] = n.sizes[i + 1]!
-    const g = grow(n.sizes)
-    cells[i]!.style.flexGrow = String(g[i])
-    cells[i + 1]!.style.flexGrow = String(g[i + 1])
-    spl.setAttribute('aria-valuenow', String(Math.round(r * 100)))
+  function dock(id: string, target: string, zone: Drop) {
+    const tree = zone === 'swap' ? swapLeaves(ws.layoutTree, id, target) : moveLeaf(ws.layoutTree, id, target, zone)
+    if (tree === ws.layoutTree) return
+    ws.layoutTree = tree
+    activate(ws, id)
+    announce(`${title(id)} ${zone === 'swap' ? `swapped with ${title(target)}` : `docked ${zone} of ${title(target)}`}`)
+    render('panel')
   }
-  function nudgeSplit(spl: HTMLElement, d: number) {
-    const [k, i] = spl.dataset.splitter!.split(':').map(Number) as [number, number]
-    const n = viewSplits[k]
-    if (n) setPair(spl, n.sizes[i]! / (n.sizes[i]! + n.sizes[i + 1]!) + d)
+  function nudge(id: string, arrow: Arrow) {
+    const tree = nudgeLeaf(ws.layoutTree, id, arrow)
+    activate(ws, id)
+    if (tree === ws.layoutTree) { announce(`${title(id)} is already as far ${arrow} as it goes`); render('panel'); return }
+    ws.layoutTree = tree
+    announce(`${title(id)} moved ${arrow}`)
+    render('panel')
   }
+  const detachDock = attachDock(root, { move: dock, nudge })
+  const detachSplitters = attachSplitters(stage, {
+    split: (k) => viewSplits[k],
+    scale: () => Number(root.dataset.zoom) || 1,
+    commit: (via) => { if (via === 'pointer') render(); else store.write(SESSION_KEY, ws) },
+  })
 
   const onPointerDown = (e: PointerEvent) => {
     const t = e.target as Element
-    const spl = t.closest<HTMLElement>('[data-splitter]')
-    if (spl?.dataset.splitter) {
-      e.preventDefault()
-      spl.setPointerCapture(e.pointerId)
-      const [k, i] = spl.dataset.splitter.split(':').map(Number) as [number, number]
-      const n = viewSplits[k]!
-      const cells = Array.from(spl.parentElement!.children).filter((c) => c.classList.contains('pw__cell')) as HTMLElement[]
-      const move = (ev: PointerEvent) => {
-        const r1 = cells[i]!.getBoundingClientRect()
-        const r2 = cells[i + 1]!.getBoundingClientRect()
-        setPair(spl, n.dir === 'row' ? (ev.clientX - r1.left) / (r2.right - r1.left) : (ev.clientY - r1.top) / (r2.bottom - r1.top))
-      }
-      const up = () => { spl.removeEventListener('pointermove', move); spl.removeEventListener('pointerup', up); render() }
-      spl.addEventListener('pointermove', move)
-      spl.addEventListener('pointerup', up)
-      return
-    }
     const a = t.closest<HTMLElement>('[data-xref]')
     if (a && st.pointer === 'touch') {
       press = { x: e.clientX, y: e.clientY, fired: false, timer: 0 }
@@ -776,6 +787,8 @@ export function mountPanelWorkspace(root: HTMLElement, options: WorkspaceOptions
     loadTemplate(name) { loadLayout(fromTemplate(name, tabOf(ws.panels[ws.activePanelId]!).loc)) },
     destroy() {
       destroyed = true
+      detachDock()
+      detachSplitters()
       observer?.disconnect()
       root.removeEventListener('click', onClick)
       root.removeEventListener('submit', onSubmit)

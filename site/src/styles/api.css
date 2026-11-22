@@ -768,59 +768,82 @@ dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout > .
   align-self: center;
 }
 /*
- * The corner tab (design system: Card, Signature; adoption steps 2 and 36). The kind, the modifiers and Source share one tab,
- * flush in the declaration card's bottom-right corner. It is a gutter tab: 15px high, one pixel thinner than the 1rem it sits in,
- * which is the header's .5rem bottom padding and the last code line's leading, so it takes no width from the signature and
- * no height from the card. Each badge keeps its own tab shape with 4px between; the corner one follows the card's inner
- * radius, and squares off when a body follows the header because the card has no corner there. The page is the entry, so
- * its URL is the permalink and there is no `¶`.
+ * The folder tab (design system: Signature; record 0082, which overturns 0003). The kind, the modifiers and Source stand on the
+ * card's top edge at the right, in the gap above it, so nothing enters the header and no signature runs under them. `bottom:
+ * calc(100% + 1px)` sets each chip on the card's top border, which closes its open floor. The class keeps the name `api-corner`.
+ * The page is the entry, so its URL is the permalink and there is no `¶`.
+ *
+ * The card that carries a tab sets a top margin that holds it (`--tab-gap`), which collapses into any larger gap the page leaves.
  */
-dl.gp-sphinx-api-container > dt.gp-sphinx-api-header {
-  --corner-h: calc(1rem - 1px);
-  --tab-r: calc(0.5rem - 1px);
+dl.gp-sphinx-api-container:has(> dt.gp-sphinx-api-header > .gp-sphinx-api-layout > .api-corner) {
+  margin-block-start: var(--tab-gap);
+}
+/* Arriving at the declaration lands its tab clear of the sticky bars too, not only the card. */
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:has(> .gp-sphinx-api-layout > .api-corner),
+dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:has(> .gp-sphinx-api-layout > .api-corner) > .section-anchor-alias {
+  scroll-margin-top: calc(var(--tab-height) + 1px);
 }
 dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout > .api-corner {
   position: absolute;
   z-index: 1;
-  right: 0;
-  bottom: 0;
+  right: 0.75rem;
+  bottom: calc(100% + 1px);
   display: flex;
   flex-wrap: nowrap;
-  align-items: stretch;
+  align-items: flex-end;
+  justify-content: flex-end;
   gap: 0.25rem;
   order: 0;
-  max-width: 100%;
+  max-width: calc(100% - 1.5rem);
   margin: 0;
   white-space: nowrap;
 }
-/* Tripled so the modifier's own box (`.api-badge.api-badge--mod.api-badge--mod`) cannot make the tab taller than its gutter. */
-.api-corner > .api-badge.api-badge.api-badge {
-  --leg-h: var(--corner-h);
-  box-sizing: border-box;
-  height: var(--corner-h);
+/*
+ * The chips are the native chip (`kind-marks.css`), with the floor open and the bottom corners square. They let their parts out of
+ * the clip, so each part rounds its own top corner and a touch target can reach past the chip. Tripled so the modifier's own
+ * box (`.api-badge.api-badge--mod.api-badge--mod`) cannot take the floor back.
+ */
+.api-corner > :is(.api-badge.api-badge.api-badge, .mcp-tier) {
   margin: 0;
-  border-radius: var(--tab-r) 0 0 0;
+  overflow: visible;
   border-bottom-color: transparent;
-  /* The kind's word and Source are .8em of this, floored at the tab's 10.5px (record 0051). */
-  font-size: max(0.75rem, calc(var(--corner-word-floor) / 0.8));
+  border-end-start-radius: 0;
+  border-end-end-radius: 0;
 }
-/* A modifier's label (`async`) floors at the badge's 11px. */
-.api-corner > .api-badge--mod.api-badge--mod.api-badge--mod { padding-inline: 0.35rem; font-size: max(0.7421875rem, calc(var(--badge-word-floor) / 0.8)); }
-.api-corner > .api-badge.api-badge.api-badge:last-child { border-bottom-right-radius: var(--tab-r); border-right-color: transparent; }
-/* The MCP toolset badge sits in the tab between the kind and Source, in the tab's 15px and with the tab's shape. */
+.api-corner > .api-leg > .api-leg__m { border-start-start-radius: 0.2em; }
+.api-corner > .api-leg > .api-leg__w { border-start-end-radius: 0.2em; }
+/* The MCP toolset badge is a chip of the same height, between the kind and Source. */
 .api-corner > .mcp-tier {
   box-sizing: border-box;
-  height: var(--corner-h);
-  margin: 0;
-  border-radius: var(--tab-r) 0 0 0;
-  border-bottom-color: transparent;
+  height: var(--tab-height);
   line-height: 1;
 }
-/* A header with a body below has no card corner at its bottom-right. */
-dl.gp-sphinx-api-container > dt.gp-sphinx-api-header:not(:only-child) > .gp-sphinx-api-layout > .api-corner > .api-badge.api-badge.api-badge:last-child { border-bottom-right-radius: 0; }
 .api-corner > :focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: -2px; }
-/* A formatted signature carries .25rem of its own under its last line; any other gets the same, so the tab sits in the leading and never meets a glyph. */
-dl.gp-sphinx-api-container > dt.gp-sphinx-api-header > .gp-sphinx-api-layout > .gp-sphinx-api-layout-left:not(:has(.api-native-signature--formatted)) { padding-block-end: 0.25rem; }
+/*
+ * Touch (record 0071): a link chip keeps its drawn size and takes a touch-target-tall target reaching upward from its floor and
+ * never down into the header. The card's gap grows to hold it, so no link of the block above is under a target. Neighbouring
+ * targets meet across the gap between chips and never overlap. `inset` counts from the padding box, 1px inside the border.
+ */
+@media (pointer: coarse) {
+  dl.gp-sphinx-api-container:has(> dt.gp-sphinx-api-header > .gp-sphinx-api-layout > .api-corner) { margin-block-start: var(--tab-gap-touch); }
+  .api-corner > a:is(.api-badge, .mcp-tier) { position: relative; }
+  .api-corner > a:is(.api-badge, .mcp-tier)::before {
+    content: '';
+    position: absolute;
+    inset: calc(var(--tab-height) - var(--touch-target) - 1px) calc(-0.125rem - 1px) -1px;
+  }
+}
+/* Forced colours keep each chip's outline in `CanvasText` (the toolset badge included); the floor stays open, and the card's own top border closes it. */
+@media (forced-colors: active) {
+  .api-corner > :is(.api-badge.api-badge.api-badge, .mcp-tier) {
+    forced-color-adjust: none;
+    background: Canvas;
+    color: CanvasText;
+    border-color: CanvasText;
+    border-bottom-color: transparent;
+  }
+  .api-corner > .api-leg > .api-leg__m { background: Canvas; border-inline-end-color: CanvasText; }
+}
 /* Source and the other ecosystem reference are buttons in the legend chip's box, in the link palette. */
 .api-leg--action {
   --mk-bg: var(--background-color);
@@ -1613,20 +1636,20 @@ html[data-js] .api-member-tools { display: flex; }
 /*
  * On touch screens the page's controls keep their drawn size and take a touch-target-tall hit area through a pseudo-element
  * (record 0071), the way the header's chips do (`global.css`). The filter chips are drawn 2.25rem tall, so they gain .25rem
- * above and below and sit .5rem apart: a wrapped row never takes the next row's taps. A badge that is a link is a tab of
- * the declaration card, so its hit area is no wider than the tab; it uses `::before`, because the shell draws an external
- * link's mark in `::after`. The kind and modifier tabs clip their contents with `overflow: hidden`, which would clip the hit
- * area too, so they let it out and the kind mark rounds its own corners instead. The member and guide lists are rows, so a
- * link takes the full row height.
+ * above and below and sit .5rem apart: a wrapped row never takes the next row's taps. A badge that is a link in the page's
+ * eyebrow is no wider than itself; it uses `::before`, because the shell draws an external link's mark in `::after`. The
+ * kind and modifier chips clip their contents with `overflow: hidden`, which would clip the hit area too, so they let it out
+ * and the kind mark rounds its own corners instead. The chips of a declaration's folder tab have their own target, above.
+ * The member and guide lists are rows, so a link takes the full row height.
  */
 @media (pointer: coarse) {
   .api-member-chips { row-gap: 0.5rem; }
-  :is(.api-member-chips button, :is(.api-reference-eyebrow, .gp-sphinx-api-layout-right) > a.api-badge, .heading-link) { position: relative; }
-  .api-member-chips button::after, :is(.api-reference-eyebrow, .gp-sphinx-api-layout-right) > a.api-badge::before { content: ''; position: absolute; inset: calc((100% - var(--touch-target)) / 2) 0; }
+  :is(.api-member-chips button, .api-reference-eyebrow > a.api-badge, .heading-link) { position: relative; }
+  .api-member-chips button::after, .api-reference-eyebrow > a.api-badge::before { content: ''; position: absolute; inset: calc((100% - var(--touch-target)) / 2) 0; }
   .heading-link::after { content: ''; position: absolute; inset: min(0px, calc((100% - var(--touch-target)) / 2)); }
   .api-copy-name::before { inset: min(0px, calc((1lh - var(--touch-target)) / 2)); }
-  :is(.api-reference-eyebrow, .gp-sphinx-api-layout-right) > a.api-badge:is(.api-leg, .api-badge--mod) { overflow: visible; }
-  :is(.api-reference-eyebrow, .gp-sphinx-api-layout-right) > a.api-badge.api-leg > .api-leg__m { border-start-start-radius: inherit; border-end-start-radius: inherit; }
+  .api-reference-eyebrow > a.api-badge:is(.api-leg, .api-badge--mod) { overflow: visible; }
+  .api-reference-eyebrow > a.api-badge.api-leg > .api-leg__m { border-start-start-radius: inherit; border-end-start-radius: inherit; }
   .api-member-search > input { min-height: var(--touch-target); }
   :is(.api-source-details > summary, .api-module__name, .api-index-summary) { padding-block: max(0px, calc((var(--touch-target) - 1lh) / 2)); }
   :is(a.api-member-link, .api-guides-list a, .api-collection__limit a, .api-definition dd a, .tmux-usage__links a) { display: inline-flex; align-items: center; min-height: var(--touch-target); }
