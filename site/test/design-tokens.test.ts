@@ -389,7 +389,8 @@ describe('the current row', () => {
     expect(tree).not.toMatch(/theme-accent\) 18%/)
   })
 
-  it('gives the docs sidebar, which the MCP protocol pages use, the same rule', () => {
+  it('gives the docs sidebar, which the MCP protocol pages use, and the page outline the same rule', () => {
+    expect(source('components/TableOfContents/TableOfContentsList.astro')).toMatch(/a\[aria-current='true'\] \{\s*color: var\(--theme-primary\);\s*background: var\(--current-row-bg\);\s*font-weight: 600;/)
     expect(source('components/docs/SidebarLink.astro')).toMatch(/\.sidebar-link\.active \{\s*color: var\(--theme-primary\);\s*background: var\(--current-row-bg\);\s*font-weight: 600;/)
     expect(source('components/docs/SidebarSection.astro')).toMatch(/> summary \{\s*background: var\(--current-row-bg\);\s*color: var\(--theme-primary\);\s*font-weight: 600;/)
   })
@@ -401,7 +402,6 @@ describe('the current row', () => {
   it('draws no start-edge bar on a current row', () => {
     const outline = source('components/TableOfContents/TableOfContentsList.astro')
     expect(outline).not.toMatch(/aria-current='true'\]::before/)
-    expect(outline).toMatch(/a\[aria-current='true'\] \{\s*color: var\(--theme-primary\);\s*font-weight: 500;/)
     expect(outline).not.toMatch(/rgb\(/)
   })
 })
