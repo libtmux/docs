@@ -20,7 +20,7 @@ export async function checkGuideRedirect(browser, base) {
     await page.locator('html[data-page-readiness="ready"]').waitFor({ state: 'attached' })
     assert.equal((await page.locator('main h1').textContent()).trim(), 'Getting started')
     assert(await page.locator('main h1').isVisible(), 'The loaded guide is readable')
-    assert.equal(await page.title(), 'Getting started | libtmux-ruby')
+    assert.equal(await page.title(), 'Getting started | Ruby guide | libtmux.org')
     assert.equal(await page.evaluate(() => document.readyState), 'complete')
     console.log('Guide redirect: the legacy Ruby URL loads its article without third-party requests')
   } finally {
