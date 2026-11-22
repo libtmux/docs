@@ -393,6 +393,19 @@ it.each(['workspace/guides', 'workspace/internals/guides'])('keeps %s counterpar
   }
 })
 
+it('closes from the Close button a side sheet pins beside its title, and returns focus to the trigger', () => {
+  initDocumentationNavigation()
+  const picker = win.document.querySelector('details')!
+  picker.open = true
+  picker.dispatchEvent(new win.Event('toggle'))
+  const close = picker.querySelector<HTMLElement>('[data-picker-panel] > .doc-picker-title > button[data-panel-close]')!
+  expect(close.getAttribute('aria-label')).toBe('Close picker')
+  const focus = vi.spyOn(picker.querySelector('summary')!, 'focus')
+  close.click()
+  expect(picker.open).toBe(false)
+  expect(focus).toHaveBeenCalledWith({ preventScroll: true })
+})
+
 it('opens as a bottom sheet on a phone in portrait and as a popover under its trigger otherwise', () => {
   const portraitPhone = (query: string) => query.includes('max-width: 29.999rem')
   let sheet = true

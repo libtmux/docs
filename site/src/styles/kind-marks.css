@@ -107,6 +107,9 @@
 /* ---- The legend chip: mark and word in one token ---- */
 
 /*
+ * The word is .8em of the chip, which the chip's font size floors at `--badge-word-floor` (record 0051): the chip is sized
+ * so its word is never under 11px, and the centring below, which reads the cap height of .8em, stays exact.
+ *
  * One box with one border and radius. The mark and the word are equal-height
  * segments inside it, split by a 1px divider with the mark on a darker tint.
  * They are one line of text: both sit on the same snapped baseline, and the run
@@ -130,7 +133,7 @@
   border-radius: .2em;
   background: var(--mk-bg, transparent);
   color: var(--mk-fg, inherit);
-  font: 600 .8125rem/1 var(--font-sans, ui-sans-serif, system-ui, sans-serif);
+  font: 600 max(.8125rem, calc(var(--badge-word-floor) / .8))/1 var(--font-sans, ui-sans-serif, system-ui, sans-serif);
   letter-spacing: 0;
   text-transform: none;
   text-decoration: none;
@@ -145,6 +148,8 @@
   border-inline-end: 1px solid color-mix(in srgb, var(--mk-hue, currentColor) var(--mark-border-alpha), transparent);
   background: color-mix(in srgb, var(--mk-hue, currentColor) 22%, var(--mk-bg, transparent));
 }
+/* A letter mark rests on bottom padding sized for its descender space. An icon has no descender, so that padding would lift it: it centres instead. */
+.api-leg__m:has(> svg) { align-items: center; padding-bottom: 0; }
 .api-leg__g { display: block; font-size: .8em; line-height: 1; text-box: trim-both cap alphabetic; }
 .api-leg__w {
   display: flex;
@@ -235,10 +240,10 @@
   text-decoration: none;
 }
 :is(.api-elsewhere-value, .api-command-related, .tmux-usage, nav.api-related) a > .api-nav__kind:where(:not(.api-link-kind)) {
-  /* The mark's ink and the name's capitals (the name is .875em) share a centre, as in a card's link. */
+  /* The mark's ink and the name's capitals (the name is --name-scale of the line, .875em unless a list sets it) share a centre, as in a card's link. */
   align-self: baseline;
   position: relative;
-  top: calc(-1 * round(calc((.875 * 1cap - var(--mk-gh)) / 2), var(--mark-step)));
+  top: calc(-1 * round(calc((var(--name-scale, .875) * 1cap - var(--mk-gh)) / 2), var(--mark-step)));
   margin-inline-end: var(--mark-gap);
 }
 :is(.api-elsewhere-value, .api-command-related, .tmux-usage, nav.api-related) a > .api-nav__kind:where(:not(.api-link-kind)) + code {
@@ -246,7 +251,7 @@
   padding: 0;
   border: 0;
   background: none;
-  font-size: .875em;
+  font-size: calc(var(--name-scale, .875) * 1em);
   line-height: 1.4;
   text-decoration: underline dotted;
   text-decoration-thickness: 1px;
@@ -305,7 +310,7 @@
   border-radius: .2em;
   background: transparent;
   color: var(--md-fg);
-  font: 600 .8125rem/1 var(--font-sans, ui-sans-serif, system-ui, sans-serif);
+  font: 600 max(.8125rem, calc(var(--badge-word-floor) / .8))/1 var(--font-sans, ui-sans-serif, system-ui, sans-serif);
   letter-spacing: 0;
   text-transform: none;
   text-decoration: none;

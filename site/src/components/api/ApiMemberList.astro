@@ -5,6 +5,7 @@ import ApiDoc from './ApiDoc.astro'
 import ApiType from './ApiType.astro'
 import { apiGlossaryHref } from '../../lib/api-glossary'
 import { nativeKind } from '../../lib/api-labels'
+import HeadingLink from '../HeadingLink.astro'
 
 interface Props {
   groups: { id: string; label: string; members: ApiSymbol[] }[]
@@ -57,7 +58,7 @@ const box = budget ? { class: 'api-member-budget', role: 'region', tabindex: 0, 
 </div>}
 <Box {...box}>
 {groups.map((group) => <section id={showGroups ? undefined : group.id} class:list={['api-member-group', !showGroups && 'api-member-group--single']} aria-labelledby={showGroups ? group.id : 'api-members'} data-member-group={group.id}>
-  {showGroups && <h3 id={group.id}>{group.label}<span class="api-section-count">{group.members.length}</span><a class="api-heading-link" href={`#${group.id}`} aria-label={`Link to ${group.label}`}>#</a></h3>}
+  {showGroups && <h3 id={group.id}>{group.label}<span class="api-section-count">{group.members.length}</span><HeadingLink href={`#${group.id}`} label={`Link to ${group.label}`} /></h3>}
   <ul class="api-member-list mt-3">
     {group.members.map((m) => (
       <li data-member-kind={kindOf(m)}>
@@ -228,7 +229,7 @@ const box = budget ? { class: 'api-member-budget', role: 'region', tabindex: 0, 
   // a new hash arrives through hashchange above, and the hash that is already set (which changes nothing) opens the group here.
   document.addEventListener('click', (event) => {
     const target = event.target
-    const link = target instanceof Element ? target.closest<HTMLAnchorElement>('.api-member-budget .api-member-group > h3 a.api-heading-link') : null
+    const link = target instanceof Element ? target.closest<HTMLAnchorElement>('.api-member-budget .api-member-group > h3 a.heading-link') : null
     if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
     event.preventDefault()
     if (link.hash === location.hash) revealGroup(hashId())

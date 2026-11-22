@@ -9,6 +9,9 @@ import { nativeArticle, nativeHash } from '../../scripts/native-shell-context.mj
 import { recordBuild, verifyBuild } from '../../scripts/publication-provenance.mjs'
 import { installAnchorNavigation } from '../public/_shell/anchors.js'
 import { renderedTargets } from '../src/lib/inventory-targets'
+import { headingLinkHtml } from '../src/lib/heading-link'
+import { experimental_AstroContainer } from 'astro/container'
+import { loadAstroTemplate, withoutScope } from './astro-templates'
 import { normalizedNativePages } from './native-fixture'
 
 /** Compose the pinned native widget and actual shell arrival callbacks. */
@@ -223,6 +226,34 @@ describe('native shell URL normalization', () => {
     } finally { rmSync(directory, { recursive: true, force: true }) }
   })
 
+  it.each(['0.7.0', '0.8.0'])('adapts the pinned sphinx-design %s tabs script to appearance layout and blocked storage', async (release) => {
+    const directory = mkdtempSync(join(tmpdir(), 'native-tabs-'))
+    const win = new Window({ url: 'https://libtmux.org/en/py/latest/api/?tab=b' })
+    try {
+      mkdirSync(join(directory, '_static'))
+      const file = join(directory, '_static/design-tabs.js')
+      writeFileSync(file, readFileSync(new URL(`./fixtures/native-design-tabs-${release}.js`, import.meta.url)))
+      const contextFile = join(directory, 'context.json')
+      writeFileSync(contextFile, JSON.stringify({ port: 'py', version: 'latest', root: '/en/', pages: [] }))
+      const options = { sphinxPort: 'py', contextFile }
+      expect(await normalizeNativeShell(directory, '/en', options)).toBeGreaterThan(0)
+      const layouts: (() => void)[] = []
+      Object.assign(win, { __libtmuxAppearance: { layout: (work: () => void) => layouts.push(work) } })
+      for (const name of ['localStorage', 'sessionStorage']) {
+        Object.defineProperty(win, name, { get: () => { throw new win.DOMException('Blocked', 'SecurityError') } })
+      }
+      const tab = (id: string, key: string) => `<input id="${id}" type="radio" name="${id}"><label class="sd-tab-label" for="${id}" data-sync-group="tab" data-sync-id="${key}">${key}</label><div class="sd-tab-content"></div>`
+      win.document.body.innerHTML = `<div class="sd-tab-set">${tab('one-a', 'a')}${tab('one-b', 'b')}</div>`
+      win.eval(readFileSync(file, 'utf8'))
+      // Startup waits for appearance layout; a later run must not throw when the browser blocks site data.
+      expect(layouts).toHaveLength(1)
+      expect(() => { layouts[0]!(); layouts[0]!() }).not.toThrow()
+      expect(await normalizeNativeShell(directory, '/en', options)).toBe(0)
+      const digest = nativeHash(readFileSync(file)).slice(0, 12)
+      expect(readFileSync(join(directory, `_astro/design-tabs.${digest}.js`), 'utf8')).toBe(readFileSync(file, 'utf8'))
+    } finally { await win.happyDOM.abort(); rmSync(directory, { recursive: true, force: true }) }
+  })
+
   it.each(['search.html', 'search/index.html'])('routes native %s to scoped search with the query intact', async (name) => {
     const directory = mkdtempSync(join(tmpdir(), 'native-search-'))
     try {
@@ -319,16 +350,51 @@ describe('native shell URL normalization', () => {
   })
 
   it('marks each native page with the section filter the Astro layout writes, once, ahead of its article', async () => {
-    const cases = { 'api/pane/': 'reference', 'quickstart/': 'guides', 'topics/architecture/': 'topics', '': 'home' }
-    const { html, changed, again } = await normalizedNativePages(Object.keys(cases))
+    const cases = { 'api/pane/': 'reference', 'quickstart/': 'guides', 'topics/architecture/': 'topics', 'internals/': 'reference', 'glossary/': 'concepts', 'migration/': 'guides' }
+    const { html, changed, again } = await normalizedNativePages([...Object.keys(cases), 'project/', 'history/', ''])
     expect(changed).toBeGreaterThan(0)
     for (const [path, section] of Object.entries(cases)) {
       const marker = `<div data-pagefind-filter="section:${section}" hidden></div>`
       expect(html[path]!.split('data-pagefind-filter="section:').length, path).toBe(2)
       expect(html[path], path).toContain(`${marker}<article role="main" data-pagefind-body data-pagefind-filter="port:Python">`)
     }
+    // A page that fits none of the site's sections carries no section marker at all (record 0075).
+    for (const path of ['project/', 'history/', '']) {
+      expect(html[path], path).not.toContain('data-pagefind-filter="section:')
+      expect(html[path], path).toContain('<article role="main" data-pagefind-body data-pagefind-filter="port:Python">')
+    }
     // A second pass finds the marker in place and writes nothing.
     expect(again).toBe(0)
+  })
+
+  it('draws Sphinx permalinks as the shared heading link and leaves the rest of the article alone', async () => {
+    const reference = '<a class="reference internal" href="#pane">pane</a>'
+    const nearMiss = '<a class="headerlinks" href="#x">near miss</a>'
+    const article = '<section id="pane"><h1>Pane<a class="headerlink" href="#pane" title="Link to this heading">&para;</a></h1>'
+      + '<dl class="py class"><dt class="sig" id="libtmux.Pane"><span class="sig-name">Pane</span><a class="headerlink gp-sphinx-api-link" href="#libtmux.Pane" title="Link to this definition">&para;</a></dt></dl>'
+      + '<dt id="std::hash<libtmux::Pane>"><a title=\'Q &amp; A\' class=\'headerlink\' href=\'#std::hash<libtmux::Pane>\'>#</a></dt>'
+      + `<p>${reference} ${nearMiss}</p></section>`
+    const { html, changed, again } = await normalizedNativePages(['api/pane/'], () => article)
+    const adapted = nativeArticle(html['api/pane/']!)
+    expect(changed).toBeGreaterThan(0)
+    expect(adapted).not.toMatch(/class=["'][^"']*\bheaderlink\b/)
+    expect(adapted).toContain('<h1>Pane' + headingLinkHtml('#pane', 'Link to this heading') + '</h1>')
+    expect(adapted).toContain(headingLinkHtml('#libtmux.Pane', 'Link to this definition') + '</dt>')
+    // Quote tracking finds the tag past a `>` inside an attribute, and the label is read, decoded and escaped again.
+    expect(adapted).toContain(headingLinkHtml('#std::hash<libtmux::Pane>', 'Q & A') + '</dt>')
+    expect(adapted.match(/class="heading-link"/g)).toHaveLength(3)
+    expect(adapted).toContain(`<p>${reference} ${nearMiss}</p></section>`)
+    // The page's second pass finds nothing left to change.
+    expect(again).toBe(0)
+
+    // The same element the Astro component draws on every other page.
+    const template = await loadAstroTemplate('components/HeadingLink.astro', {})
+    const container = await experimental_AstroContainer.create()
+    const drawn = withoutScope(await container.renderToString(template as Parameters<typeof container.renderToString>[0], { props: { href: '#pane', label: 'Link to this heading' } }))
+    const win = new Window()
+    const link = (markup: string) => { win.document.body.innerHTML = markup; return win.document.body.firstElementChild!.outerHTML }
+    expect(link(headingLinkHtml('#pane', 'Link to this heading'))).toBe(link(drawn))
+    await win.happyDOM.abort()
   })
 
   it('normalizes nested HTML/CSS for previews without changing other URLs', async () => {

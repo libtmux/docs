@@ -131,11 +131,3 @@ instead of assuming the lookup reserved the name.
 
 Continue with the [REPL tutorial](../tutorial/) to traverse the complete
 session, window-link, window, and pane graph.
-
-## Verification
-
-The exact displayed program and setup ran against the pinned library on Linux
-with SBCL 2.6.10 and ASDF 3.3.7. Isolated tmux 3.3a, 3.7c, and 3.8 runs
-printed `work`, proved that the borrowed connection left its server alive, and
-cleaned up the owned fixture. The shared-docs checks bind the displayed bytes
-to these runs.

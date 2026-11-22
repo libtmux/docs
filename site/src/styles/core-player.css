@@ -66,9 +66,9 @@
   border-top: 1px solid var(--color-edge);
 }
 
-/* The program is set a size smaller than the homepage's, so that most of its lines fit the column beside the tmux; the frame's padding, 1rem a side, is part of what the column holds. */
+/* The program is sized to its column, from 13px (record 0032) to 14px, so that most of its lines fit beside the tmux; the frame's padding, 1rem a side, is part of what the column holds. */
 .home-example-player .home-example-stage > .home-example-code > .home-example-view .expressive-code {
-  --ec-codeFontSize: clamp(0.75rem, calc((100cqi - 2rem) / (var(--home-code-columns) * 0.625)), 0.875rem);
+  --ec-codeFontSize: clamp(0.8125rem, calc((100cqi - 2rem) / (var(--home-code-columns) * 0.625)), 0.875rem);
   position: relative;
 }
 
@@ -134,17 +134,60 @@
   }
 }
 
-/* The call a reader is previewing from its marker, then the call being shown. A tint, not a bar: the code's own colours stay readable on it. */
+/*
+ * Hide preview (record 0081): the side column is removed and the code takes the full width at the same stage height, so nothing
+ * below the player moves. Stacked, the tmux and result boxes go. A stored choice is on the root before the first paint, so a
+ * player the script has not bound yet is drawn the same way; once bound it follows its own `data-preview-hidden`.
+ */
+.home-example-player[data-preview-hidden] .core-player__side,
+html[data-core-preview] .home-example-player:not([data-live]) .core-player__side {
+  display: none;
+}
+
+@container core-player (min-width: 44rem) {
+  :is(.home-example-player[data-preview-hidden], html[data-core-preview] .home-example-player:not([data-live])) .home-example-stage {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .home-example[data-player] :is(.home-example-player[data-preview-hidden], html[data-core-preview] .home-example-player:not([data-live])) .home-example-stage > .home-example-code > .home-example-view .expressive-code pre {
+    border-start-end-radius: calc(var(--card-radius, 0.5rem) - 1px);
+  }
+}
+
+/*
+ * The call a reader is previewing from its marker, then the call being shown. A tint, not a bar: the code's own colours stay readable on it
+ * (record 0079): `--color-link` at these shares over the code background keeps every syntax ink at 4.5:1 or more. The shares differ by
+ * theme; dark is the resolved data-theme-mode or, before the theme script runs, the system preference, as in tokens.css.
+ */
+.home-example-view {
+  --core-tint-hover: 5%;
+  --core-tint-current: 8%;
+}
+
+html[data-theme-mode="dark"] .home-example-view {
+  --core-tint-hover: 4%;
+  --core-tint-current: 7%;
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme-mode]):not([data-theme="light"]) .home-example-view {
+    --core-tint-hover: 4%;
+    --core-tint-current: 7%;
+  }
+}
+
 .home-example-view .ec-line.is-hover {
-  background: color-mix(in srgb, var(--color-link) 8%, transparent);
+  background: color-mix(in srgb, var(--color-link) var(--core-tint-hover), transparent);
 }
 
 .home-example-view .ec-line.is-current {
-  background: color-mix(in srgb, var(--color-link) 14%, transparent);
+  background: color-mix(in srgb, var(--color-link) var(--core-tint-current), transparent);
 }
 
+/* A pinned call keeps the current tint, since a heavier wash would take the syntax colours under 4.5:1. A 1px hairline along the line's start marks it:
+   an inset shadow, so no border takes width and nothing shifts. Code is always left to right, so the start is the left. */
 .home-example-view .ec-line.is-current.is-pinned {
-  background: color-mix(in srgb, var(--color-link) 24%, transparent);
+  box-shadow: inset 1px 0 0 var(--color-link);
 }
 
 /*
@@ -210,7 +253,9 @@
   outline-offset: 2px;
 }
 
-.expressive-code .core-step.is-current {
+/* The shown call's marker is filled, and so is a pinned call's, which is the shown call (record 0079). */
+.expressive-code .core-step.is-current,
+.expressive-code .core-step.is-pinned {
   border-color: var(--color-link);
   background: var(--color-link);
   color: var(--ec-codeBg, var(--color-surface));
@@ -221,7 +266,8 @@
  * control, so its outline is --control-border like the installer's (record 0067), and the button is never translucent:
  * an outline dimmed by `opacity` is no longer the 3:1 that token measures.
  */
-.expressive-code .core-copy {
+.expressive-code .core-copy,
+.expressive-code .core-show {
   position: absolute;
   top: 0.5rem;
   right: 1.25rem;
@@ -240,6 +286,8 @@
 
 .expressive-code .core-copy:hover,
 .expressive-code .core-copy:focus-visible,
+.expressive-code .core-show:hover,
+.expressive-code .core-show:focus-visible,
 .expressive-code .core-copy[data-copied] {
   color: var(--ec-codeFg, var(--text-color));
 }
@@ -249,13 +297,24 @@
   color: var(--color-link);
 }
 
-.expressive-code .core-copy:focus-visible {
+.expressive-code .core-copy:focus-visible,
+.expressive-code .core-show:focus-visible {
   outline: 2px solid var(--focus-ring-color, currentColor);
   outline-offset: 2px;
 }
 
+/* Show preview sits 0.5rem left of the copy button, and is there only while the preview is hidden. */
+.expressive-code .core-show {
+  right: 3.75rem;
+}
+
+.home-example-player:not([data-preview-hidden]) .expressive-code .core-show {
+  display: none;
+}
+
 @media print {
   .expressive-code .core-copy,
+  .expressive-code .core-show,
   .expressive-code .core-hang {
     display: none;
   }
@@ -275,6 +334,11 @@
 .core-player__tmux {
   flex: none;
   padding: 0.75rem 1rem 0.25rem;
+}
+
+/* The head row above holds Hide preview and takes the padding's place; a page without script has no row. */
+html[data-js] .mcp-replay__sidehead + .core-player__tmux {
+  padding-top: 0;
 }
 
 .core-player__tmux .mcp-tmux {
@@ -403,7 +467,7 @@ html[data-js] .core-player__results > .core-result[data-off] {
 .core-result__pin:focus-visible,
 .core-result__tmux > summary:focus-visible {
   outline: 2px solid var(--focus-ring-color, currentColor);
-  outline-offset: 1px;
+  outline-offset: 2px;
 }
 
 .core-result__plain {
@@ -437,7 +501,7 @@ html[data-js] .core-player__results > .core-result[data-off] {
 .home-example-player .core-player__side .core-result__value .expressive-code {
   --ec-codePadBlk: 0.5rem;
   --ec-codePadInl: 0.75rem;
-  --ec-codeFontSize: var(--core-program-size, 0.75rem);
+  --ec-codeFontSize: var(--core-program-size, 0.8125rem);
 }
 
 /* The showcase and the landing page set the height of their programs on every code block in a panel; a returned value takes the height it needs. */
@@ -528,5 +592,5 @@ html[data-js] .core-player__results > .core-result[data-off] {
 @media (pointer: coarse) {
   .core-result__pin { position: relative; }
   .core-result__title { min-height: var(--touch-target); }
-  :is(.expressive-code .core-copy, .core-result__pin)::after { content: ''; position: absolute; inset: min(0px, calc((100% - var(--touch-target)) / 2)); }
+  :is(.expressive-code .core-copy, .expressive-code .core-show, .core-result__pin)::after { content: ''; position: absolute; inset: min(0px, calc((100% - var(--touch-target)) / 2)); }
 }

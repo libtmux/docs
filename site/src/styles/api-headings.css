@@ -1,6 +1,13 @@
-/* Shared API and glossary permalinks stay beside the heading label. */
+/*
+ * The link after a heading's text, on every page family (design record 0006): a Markdown heading, an API or glossary
+ * section, a catalog or protocol heading and a parameter line all draw the same icon. It is muted and always visible, so a
+ * keyboard or touch reader sees it without hovering, and stronger when its heading is hovered, holds focus or is the
+ * target. A click copies the section's URL and shows "Copied" (`lib/heading-link.ts`); the link itself still navigates,
+ * so the hash is set and the section scrolled to. Muted text takes a colour, never `opacity` (record 0051, step 50).
+ */
 :root { --api-permalink-pad: 0.2rem; }
-.api-heading-link {
+.heading-link {
+  position: relative;
   flex: none;
   display: inline-flex;
   align-items: center;
@@ -9,26 +16,46 @@
   min-block-size: 1.5rem;
   margin-inline-start: 0.25rem;
   padding: var(--api-permalink-pad) 0.35rem;
-  color: var(--color-muted);
+  border-radius: 0.3rem;
+  color: var(--color-foreground-muted);
   font-size: 0.875rem;
   font-weight: 400;
+  line-height: 1;
   text-decoration: none;
+  border-bottom: 0;
+  box-shadow: none;
 }
-.api-heading-link:hover { color: var(--color-link); }
-.api-heading-link:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
+.heading-link__icon { display: block; flex: none; }
+.heading-link:hover { background: var(--color-surface-hover); }
+.heading-link:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
 
-/* A fine pointer sees the hash only once its heading, or the parameter line
-   that owns it, is hovered, holds focus or is the target. The link keeps its
-   layout box, its tab stop and its accessible name; only its opacity changes.
-   A section's wrapper can own the id instead of the heading, so a target also
-   reaches the heading one level down. Anything else shows the hash always. */
-@media (hover: hover) and (pointer: fine) {
-  .api-heading-link { opacity: 0; }
-  .api-heading-link:focus-visible,
-  :is(:hover, :focus-within, :target) > .api-heading-link,
-  :target > :is(h2, h3, p) > .api-heading-link { opacity: 1; }
+/* Stronger with the heading, or the parameter line that owns the link, under the pointer, holding focus or targeted. A
+   section's wrapper can own the id instead of the heading, so a target also reaches the heading one level down. */
+.heading-link:hover,
+.heading-link:focus-visible,
+.heading-link[data-copied],
+:is(:hover, :focus-within, :target) > .heading-link,
+:target > :is(h2, h3, p) > .heading-link {
+  color: var(--color-link);
 }
-/* Touch has no hover, and a forced palette must not lose the hash. */
-@media (hover: none), (forced-colors: active) {
-  .api-heading-link { opacity: 1; }
+
+/* "Copied" sits over the end of the heading, inside its box, so a sticky heading that clips what lies outside it keeps it. */
+.heading-link[data-copied]::before {
+  content: 'Copied';
+  position: absolute;
+  inset-inline-end: 100%;
+  inset-block-start: 50%;
+  translate: 0 -50%;
+  margin-inline-end: 0.125rem;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  background: var(--text-color);
+  color: var(--background-color);
+  font: 600 0.8125rem/1rem var(--font-sans, sans-serif);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.heading-link[data-copied='false']::before { content: 'Copy failed'; }
+@media (forced-colors: active) {
+  .heading-link[data-copied]::before { border: 1px solid CanvasText; background: Canvas; color: CanvasText; }
 }

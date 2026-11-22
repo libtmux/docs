@@ -10,7 +10,7 @@ const layout = readFileSync(new URL('../src/layouts/DocsLayout.astro', import.me
 const css = layout.slice(layout.lastIndexOf('<style>')).replace(/\/\*[\s\S]*?\*\//g, '')
 
 it('puts the contents rail after the article in source, so the article is read and tabbed first', () => {
-  const main = layout.indexOf('<main class="min-w-0 flex-1">')
+  const main = layout.indexOf('<main class="min-w-0 flex-1" id="content" tabindex="-1">')
   const end = layout.indexOf('</main>')
   const rail = layout.indexOf('<aside class="hidden w-56 shrink-0 xl:block" data-toc-rail')
   expect(main).toBeGreaterThan(0)
@@ -23,7 +23,7 @@ it('puts the contents rail after the article in source, so the article is read a
 it('reserves the rail column on the wrapper, which precedes the article, only for a page that has a rail', () => {
   const wrapper = layout.indexOf("<div class:list={['docs-shell mx-auto flex max-w-[100rem]")
   expect(wrapper).toBeGreaterThan(0)
-  expect(wrapper).toBeLessThan(layout.indexOf('<main class="min-w-0 flex-1">'))
+  expect(wrapper).toBeLessThan(layout.indexOf('<main class="min-w-0 flex-1" id="content" tabindex="-1">'))
   expect(layout).toContain("tocItems.length > 0 && 'docs-has-toc'")
   // 14rem of rail, the 1.25rem gap and the wrapper's own 1.25rem edge.
   expect(css).toMatch(/@media \(min-width: 80rem\)[\s\S]*\.docs-has-toc:not\(\.docs-reference-navigation\)\s*\{\s*position: relative;\s*padding-inline-end: 16\.5rem;\s*min-height: calc\(100vh - 3rem\);/)

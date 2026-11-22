@@ -231,3 +231,18 @@ it('keeps the canonical page usable when history or storage is unavailable', asy
   expect(f.current()).toHaveLength(1)
   expect(f.current()[0].getAttribute('href')).toBe(`${f.base}snapshot/`)
 })
+
+it('puts focus on the new current row after a swap that began in the tree, and on nothing after one that began elsewhere', async () => {
+  const f = await fixture()
+  const link = f.tree().querySelector<HTMLElement>('a[data-api-shortcut]')!
+  link.focus()
+  f.swap('snapshot', link)
+  await vi.waitFor(() => expect(win.document.activeElement).toBe(f.current()[0]))
+  expect(f.tree().querySelectorAll('[role="treeitem"][tabindex="0"]')).toHaveLength(1)
+  expect(f.tree().querySelector('[role="treeitem"][tabindex="0"]')).toBe(f.current()[0])
+  // A navigation from the page's own links leaves focus where the swap put it.
+  win.document.activeElement?.blur()
+  f.swap('server')
+  await vi.waitFor(() => expect(win.document.querySelector('.api-nav')?.hasAttribute('data-restoring')).toBe(false))
+  expect(win.document.activeElement).toBe(win.document.body)
+})

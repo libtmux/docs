@@ -120,3 +120,30 @@ describe('programming-language label', () => {
     expect(doc.querySelector('summary')!.getAttribute('aria-label')).toBe('Go: choose a programming language or tmux documentation')
   })
 })
+
+describe('the bar at an enlarged root size (adoption plan step 51)', () => {
+  const launcher = readFileSync(new URL('../src/components/HomeLauncher.astro', import.meta.url), 'utf8')
+  const bar = /\n\.site-header__bar \{([^}]*)\}/.exec(css)![1]!
+
+  it('wraps whenever its content does not fit, on every page, and keeps the colour controls and the Menu button together at the end of their row', () => {
+    expect(bar).toMatch(/flex-wrap:\s*wrap/)
+    expect(css).not.toMatch(/\.site-header__bar:has\(\.site-header-language\)\s*\{\s*flex-wrap/)
+    expect(launcher, 'the home no longer holds the bar to one row').not.toMatch(/site-header__bar:has\(\.home-launcher\)\)\s*\{\s*flex-wrap:\s*nowrap/)
+    expect(/\n\.site-header__controls \{([^}]*)\}/.exec(css)![1]).toMatch(/margin-inline-start:\s*auto/)
+  })
+
+  it('counts the home launcher at its floor and lets it grow, so only a bar that cannot fit its floors wraps', () => {
+    const rule = /\n  \.home-launcher \{([^}]*)\}/.exec(launcher)![1]!
+    expect(rule, 'the line-breaking size is the minimum content, the language label included').toMatch(/flex:\s*1 1 min-content/)
+    expect(rule, 'the launcher grows to its content and no further').toMatch(/max-width:\s*max-content/)
+    expect(launcher, 'the launcher takes the spare room, so the spacer takes none').toMatch(/\.site-header__bar:has\(\.home-launcher\) \.site-header__spacer\) \{\s*flex:\s*none/)
+  })
+
+  it('keeps the language label text while the bar can wrap, and lets it give way on the phone row', () => {
+    const label = /\n  \.home-launcher :global\(\.page-port-name\),\n  \.home-launcher :global\(\.page-port-short-name\) \{([^}]*)\}/.exec(launcher)![1]!
+    expect(label).toMatch(/min-width:\s*max-content/)
+    expect(/\.home-language-control \{([^}]*)\}/.exec(launcher)![1], 'the control itself holds no floor').not.toMatch(/min-width/)
+    const phone = launcher.slice(launcher.indexOf('@media (max-width: 35rem)'))
+    expect(phone.slice(0, phone.indexOf('\n  }')), 'on its own row nothing can wrap, so the label may shrink').toMatch(/page-port-short-name\) \{ min-width: 0; \}/)
+  })
+})

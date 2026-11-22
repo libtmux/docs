@@ -98,7 +98,7 @@ html[data-theme-mode='dark'] .lm-install {
 
 .lm-install__more:focus-visible {
   outline: 2px solid var(--focus-ring-color);
-  outline-offset: 1px;
+  outline-offset: 2px;
 }
 
 /* Positioned, so each tab's offsetLeft is measured from the row; the padding keeps a focused tab clear of the fade. */
@@ -296,7 +296,7 @@ html[data-theme-mode='dark'] .lm-install {
 .lm-install__cdtoggle:focus-visible,
 .lm-install__link:focus-visible {
   outline: 2px solid var(--focus-ring-color);
-  outline-offset: 1px;
+  outline-offset: 2px;
 }
 
 /* The cooldown: a quiet "+ Cooldown" that reads "✓ Cooldown" once on. It keeps its place when the
@@ -307,7 +307,7 @@ html[data-theme-mode='dark'] .lm-install {
   gap: 0.35rem;
   min-height: 26px;
   padding: 0 0.6rem;
-  border: 1px solid var(--lm-install-edge);
+  border: 1px solid var(--control-border);
   border-radius: 999px;
   background: var(--lm-install-raised);
   color: var(--lm-install-muted);

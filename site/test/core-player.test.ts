@@ -323,9 +323,9 @@ describe('the player component', () => {
   // The page's script imports the shared player; the stand-in `require` hands it the player's own source, evaluated beside it.
   const script = `var exports = {};\nvar playerExports = {};\n(function (exports) {\n${commonjs(readFileSync(new URL('../src/lib/replay-player.ts', import.meta.url), 'utf8'))}\n})(playerExports);\nvar require = function (name) { if (/replay-player$/.test(name)) return playerExports; throw new Error('unexpected import ' + name) };\n${commonjs(/<script>([\s\S]*?)<\/script>/.exec(component)![1]!)}`
 
-  async function mount({ run = false, reduced = true, autoplay = false, intersect = false, single = false }: { run?: boolean; reduced?: boolean; autoplay?: boolean; intersect?: boolean; single?: boolean } = {}) {
+  async function mount({ run = false, reduced = true, autoplay = false, intersect = false, single = false, search = '' }: { run?: boolean; reduced?: boolean; autoplay?: boolean; intersect?: boolean; single?: boolean; search?: string } = {}) {
     const { recording, capability } = await recorded()
-    const win = new Window({ url: 'https://libtmux.org/go/latest/' })
+    const win = new Window({ url: `https://libtmux.org/go/latest/${search}` })
     windows.push(win)
     win.document.body.innerHTML = await renderAstroTemplate(await template, { props: { port: 'go', language: 'Go', example: single ? { ...example, singleView: 'This program has one view.' } : example, recording, capability, autoplay } })
     const document = win.document as unknown as Document
@@ -542,14 +542,20 @@ describe('the player component', () => {
       filled: document.querySelector<HTMLElement>('[data-fill]')!.style.width,
       controls: document.querySelector<HTMLElement>('[data-controls]')!.hidden,
       done: [...document.querySelectorAll('[data-mark].is-done')].map((mark) => mark.getAttribute('data-mark')),
+      rest: [...document.querySelectorAll('[data-mark].is-rest')].map((mark) => mark.getAttribute('data-mark')),
+      lit: [...document.querySelectorAll('.ec-line.is-current, .core-step.is-current')].length,
     })
     const drawn = onScreen()
     bind()
     expect(onScreen()).toEqual(drawn)
-    expect(drawn.frames, 'the first call, not the state before it and not the end').toEqual(['1'])
+    expect(drawn.frames, 'step 1\'s tmux, not the state before it and not the end').toEqual(['1'])
     expect(drawn.results).toEqual(['1'])
     expect(drawn.count).toMatch(/^1\//)
     expect(drawn.current).toBe('1')
+    expect(drawn.rest, 'the first mark is a hollow ring: shown, not chosen').toEqual(['1'])
+    expect(drawn.done, 'only the mark before it is done').toEqual(['0'])
+    expect(drawn.filled).toBe('0%')
+    expect(drawn.lit, 'no line or marker is highlighted').toBe(0)
   })
 
   it('shows the final tmux and every result to a page with no script, and opens every reader with script, reduced motion included, on the first call', () => {
@@ -577,7 +583,11 @@ describe('the player component', () => {
     const calls = view.length
     expect(count(document), 'the player opens on the first call, not the last').toBe(`1/${calls}`)
     const expected = (position: number) => Array.from({ length: view[position]!.lines[1] - view[position]!.lines[0] + 1 }, (_, offset) => view[position]!.lines[0] + offset)
-    expect(lit(document, 'concise')).toEqual(expected(0))
+    expect(lit(document, 'concise'), 'at rest no line is highlighted').toEqual([])
+    expect(document.querySelectorAll('.core-step.is-current'), 'nor is a marker').toHaveLength(0)
+    click(win, document.querySelector('[data-action="play"]')!)
+    expect(lit(document, 'concise'), 'Play highlights step 1').toEqual(expected(0))
+    click(win, document.querySelector('[data-action="play"]')!)
     click(win, document.querySelector(`[data-mark="${calls}"]`)!)
     expect(lit(document, 'concise')).toEqual(expected(calls - 1))
     click(win, document.querySelector('[data-mark="1"]')!)
@@ -606,9 +616,13 @@ describe('the player component', () => {
     expect(document.querySelectorAll('[data-home-view="concise"] .ec-line.is-hover')).toHaveLength(0)
     click(win, document.querySelector('.core-result:not([data-off]) [data-pin]')!)
     expect([...document.querySelectorAll('[data-home-view="concise"] .ec-line.is-pinned')].length).toBeGreaterThan(0)
+    expect(markerOf(document, 'concise', 1).classList.contains('is-pinned'), 'the pinned call\'s marker is marked, and filled with the shown call\'s').toBe(true)
+    expect(markerOf(document, 'concise', 1).classList.contains('is-current')).toBe(true)
+    expect(markerOf(document, 'concise', 2).classList.contains('is-pinned')).toBe(false)
     expect([...document.querySelectorAll('.core-result:not([data-off]) [data-pin]')].map((pin) => pin.getAttribute('aria-pressed'))).toEqual(['true'])
     key(win, stage, 'Escape')
     expect([...document.querySelectorAll('.core-result:not([data-off]) [data-pin]')].map((pin) => pin.getAttribute('aria-pressed'))).toEqual(['false'])
+    expect(document.querySelectorAll('[data-home-view="concise"] .core-step.is-pinned'), 'letting go clears it').toHaveLength(0)
   })
 
   it('previews a call when its marker takes focus, and goes to the call when it is pressed', async () => {
@@ -759,11 +773,13 @@ describe('the player component', () => {
   })
 
   it('marks and numbers the calls of a program that has a single view, which is its full one', async () => {
-    const { document, capability } = await mount({ run: true, single: true })
+    const { document, win, capability } = await mount({ run: true, single: true })
     expect([...document.querySelectorAll('[data-home-view]')].map((view) => view.getAttribute('data-home-view'))).toEqual(['full'])
     const calls = viewSteps(capability, code('full'))
     expect(document.querySelectorAll('[data-home-view="full"] .core-step')).toHaveLength(calls.length)
-    expect(lit(document, 'full'), 'the first call is current').toEqual(Array.from({ length: calls[0]!.lines[1] - calls[0]!.lines[0] + 1 }, (_, offset) => calls[0]!.lines[0] + offset))
+    expect(lit(document, 'full'), 'at rest no call is current').toEqual([])
+    click(win, document.querySelector('[data-mark="1"]')!)
+    expect(lit(document, 'full'), 'a step leaves rest on the first call').toEqual(Array.from({ length: calls[0]!.lines[1] - calls[0]!.lines[0] + 1 }, (_, offset) => calls[0]!.lines[0] + offset))
   })
 
   it('gives calls that share a line one marker, which goes to the first of them', async () => {
@@ -874,6 +890,52 @@ describe('the player component', () => {
     expect(count(document)).toBe(`0/${calls - 1}`)
   })
 
+  it('rests until the reader steps: step 1\'s tmux and result show, Next goes to step 2, and a link that names a step opens on it', async () => {
+    const { document, win } = await mount({ run: true })
+    const calls = viewSteps((await recorded()).capability, code('concise')).length
+    expect(count(document)).toBe(`1/${calls}`)
+    expect(shown(document, '.core-player__tmux [data-frame]').map((frame) => frame.dataset.frame)).toEqual(['1'])
+    expect(shown(document, '[data-result]').map((result) => result.dataset.result)).toEqual(['1'])
+    expect(lit(document, 'concise')).toEqual([])
+    click(win, document.querySelector('[data-action="forward"]')!)
+    expect(count(document), 'Next from rest goes to step 2, since step 1 is already shown').toBe(`2/${calls}`)
+    expect(lit(document, 'concise').length).toBeGreaterThan(0)
+    const linked = await mount({ run: true, search: '?step=3' })
+    expect(count(linked.document), 'a step link opens on that step').toBe(`3/${calls}`)
+    expect(lit(linked.document, 'concise').length, 'and is not at rest').toBeGreaterThan(0)
+    expect(count((await mount({ run: true, search: '?step=999' })).document), 'a step past the end is the end').toBe(`${calls}/${calls}`)
+  })
+
+  it('adds Hide preview to the side column and Show preview beside each copy button from script only, and remembers the choice', async () => {
+    const quiet = await mount()
+    expect(quiet.document.querySelectorAll('.mcp-replay__sidehead button, .core-show'), 'no dead button without script').toHaveLength(0)
+    expect(quiet.document.querySelector('.core-player__side > .mcp-replay__sidehead:first-child'), 'the head row is drawn empty, so the script moves nothing').not.toBeNull()
+    const { document, win } = await mount({ run: true })
+    const side = document.querySelector<HTMLElement>('.core-player__side')!
+    const hide = side.querySelector<HTMLButtonElement>('.mcp-replay__sidehead button')!
+    expect([hide.getAttribute('aria-label'), hide.getAttribute('aria-expanded'), hide.getAttribute('aria-controls')]).toEqual(['Hide preview', 'true', side.id])
+    const shows = [...document.querySelectorAll<HTMLButtonElement>('.expressive-code .core-show')]
+    expect(shows, 'one beside each view\'s copy button').toHaveLength(document.querySelectorAll('.expressive-code .core-copy').length)
+    for (const show of shows) expect([show.nextElementSibling?.className, show.getAttribute('aria-label'), show.getAttribute('aria-controls')], 'before the copy button, so the tab order follows the screen').toEqual(['core-copy', 'Show preview', side.id])
+    const card = document.querySelector('.home-example-player')!
+    click(win, hide)
+    expect([card.hasAttribute('data-preview-hidden'), win.localStorage.getItem('libtmux-docs.core-player-preview')]).toEqual([true, 'hidden'])
+    click(win, shows[0]!)
+    expect([card.hasAttribute('data-preview-hidden'), win.localStorage.getItem('libtmux-docs.core-player-preview')]).toEqual([false, null])
+    click(win, document.querySelector('[data-action="forward"]')!)
+    expect(count(document), 'stepping still works with the preview hidden').toMatch(/^2\//)
+  })
+
+  it('draws a hidden preview from the first paint and keeps the stage height: the sheet and ThemeScript agree on the choice', () => {
+    const css = readFileSync(new URL('../src/styles/core-player.css', import.meta.url), 'utf8')
+    expect(css).toMatch(/\.home-example-player\[data-preview-hidden\] \.core-player__side,\s*html\[data-core-preview\] \.home-example-player:not\(\[data-live\]\) \.core-player__side \{\s*display: none;/)
+    expect(css, 'the wide stage takes one column and keeps its 35rem height').toMatch(/@container core-player \(min-width: 44rem\) \{\s*:is\(\.home-example-player\[data-preview-hidden\][^{]*\.home-example-stage \{\s*grid-template-columns: minmax\(0, 1fr\);/)
+    const theme = readFileSync(new URL('../src/components/ThemeScript.astro', import.meta.url), 'utf8')
+    expect(theme).toContain("['libtmux-docs.core-player-preview', 'data-core-preview']")
+    expect(theme).toContain("['libtmux-docs.replay-preview', 'data-replay-preview']")
+    expect(theme, 'a swapped page is resolved too').toContain('window.__applyPlayerPreviews?.()')
+  })
+
   it('uses the replay\'s keys on the stage and on a result\'s pin button, and no other key', async () => {
     const { document, win } = await mount({ run: true })
     const stage = document.querySelector('.home-example-stage')!
@@ -896,6 +958,14 @@ describe('the player component', () => {
     expect(css.match(/#[0-9a-fA-F]{3,8}\b/g), 'colours come from the site\'s tokens').toBeNull()
     expect(css).toMatch(/color-mix\(in srgb, var\(--color-link\)/)
     expect(css, 'a tint marks the current call, not a bar on its edge').not.toMatch(/\.ec-line[^{]*\{[^}]*border-inline-start/)
+  })
+
+  it('marks a pinned call with the current tint and a 1px hairline along its start, never a heavier wash or a border that takes width (record 0079)', () => {
+    const css = readFileSync(new URL('../src/styles/core-player.css', import.meta.url), 'utf8')
+    const pinned = /\.ec-line\.is-current\.is-pinned \{([^}]*)\}/.exec(css)?.[1]
+    expect(pinned, 'the pinned rule').toBeDefined()
+    expect(pinned!.trim(), 'no background of its own: the current tint shows').toBe('box-shadow: inset 1px 0 0 var(--color-link);')
+    expect(css).toMatch(/\.core-step\.is-current,\s*\.expressive-code \.core-step\.is-pinned \{[^}]*background: var\(--color-link\);/)
   })
 })
 
@@ -1170,6 +1240,6 @@ describe('the room a layout leaves for hanging markers and numbers (record 0058)
     expect(css).toMatch(/\.home-page \{[^}]*--code-hang-room: 1rem;/)
     expect(css).toMatch(/@media \(min-width: 40rem\) \{[^}]*\.home-page \{[^}]*--code-hang-room: 1\.5rem;/)
     expect(css).toMatch(/@media \(min-width: 64rem\) \{[^}]*\.home-page \{[^}]*--code-hang-room: 2rem;/)
-    expect(read('pages/index.astro')).toMatch(/<main class="home-page mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">/)
+    expect(read('pages/index.astro')).toMatch(/<main class="home-page mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8"[^>]*>/)
   })
 })

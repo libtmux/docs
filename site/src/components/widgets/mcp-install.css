@@ -120,7 +120,7 @@ html[data-theme-mode='dark'] .lm-mcp-install {
 }
 
 .lm-mcp-install__tab:focus-visible {
-  outline: 2px solid var(--lm-mcp-install-accent);
+  outline: 2px solid var(--focus-ring-color);
   outline-offset: -2px;
 }
 
@@ -221,7 +221,7 @@ html[data-theme-mode='dark'] .lm-mcp-install__code span {
 }
 
 .lm-mcp-install__copy:focus-visible {
-  outline: 2px solid var(--lm-mcp-install-accent);
+  outline: 2px solid var(--focus-ring-color);
   outline-offset: 2px;
 }
 

@@ -44,6 +44,9 @@ const port = portSlug ? PORT_BY_SLUG[portSlug] : undefined
 const links = port ? portHeaderLinks(port) : undefined
 ---
 
+{/* The first tab stop on every page (record 0077). It is hidden until focused and leads to `main#content`; the script below covers a native page, whose article is not a `main`. */}
+<a class="skip-link" href="#content">Skip to content</a>
+
 <header
   class="site-header sticky top-0 z-40 border-b border-edge"
   style="background: var(--topnav-background); backdrop-filter: blur(var(--topnav-backdrop-blur, 8px));"
@@ -71,7 +74,8 @@ const links = port ? portHeaderLinks(port) : undefined
       )
     }
 
-    {/* Keep search and colour controls visible at every width. */}
+    {/* Keep search and colour controls visible at every width. They and the Menu button share one group, so a bar that wraps moves them together and never leaves the button alone on a row. */}
+    <div class="site-header__controls">
     <div class="site-header__always">
       <a
         href={portSlug ? withPortRoot(`/${portSlug}/${version}/search/`) : withRoot('/search/')}
@@ -102,7 +106,7 @@ const links = port ? portHeaderLinks(port) : undefined
       the whole disclosure goes and its panel stays in the document for the
       first-paint hold below.
     */}
-    <details class:list={['site-header__menu', documentationContext && 'site-header__menu--overflow']}>
+    <details class:list={['site-header__menu', documentationContext && 'site-header__menu--overflow']} data-header-menu>
       <summary class="topnav-chip site-header__menu-button" aria-label="More navigation">
         <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
           <path d="M2 4h12M2 8h12M2 12h12" stroke-linecap="round" />
@@ -133,10 +137,15 @@ const links = port ? portHeaderLinks(port) : undefined
         </div>}
       </div>
     </details>
+    </div>
   </div>
 </header>
 
 <script>
+  import { installSkipLink } from '../lib/skip-link'
+
+  installSkipLink()
+
   /** The key is Command on Apple keyboards and Control elsewhere; the server renders the latter. */
   function nameSearchKey() {
     const platform = (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData?.platform ?? navigator.platform ?? ''

@@ -14,3 +14,4 @@
 .columns-trial__props code { flex-basis: 100%; color: var(--color-foreground-muted); font: 400 0.75rem/1.4 var(--font-mono); overflow-wrap: anywhere; }
 .columns-trial__status { margin: 0; font: 400 0.8125rem/1.5 var(--font-sans); }
 .columns-trial :is(button, select, input):focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
+.columns-trial .api-columns__seg button:focus-visible { outline-offset: -2px; }

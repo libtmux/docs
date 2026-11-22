@@ -5,6 +5,7 @@ import DocsLayout from '../../layouts/DocsLayout.astro'
 import ApiBadge from '../api/ApiBadge.astro'
 import { apiGlossaryHref } from '../../lib/api-glossary'
 import ApiPageContents from '../api/ApiPageContents.astro'
+import ApiSectionBar from '../api/ApiSectionBar.astro'
 import SymbolName from '../api/SymbolName.astro'
 import McpSchemaFields from './McpSchema.astro'
 import McpSchemaType from './McpSchemaType.astro'
@@ -12,7 +13,9 @@ import { PORT_BY_SLUG, portPageUrl } from '../../lib/ports'
 import { MCP_REFERENCE, MCP_SECTIONS, mcpObjects, mcpObjectAt, mcpSectionGroups, mcpWraps, plainSummary, renderToolDescription, toolSummary, type McpSection } from '../../lib/mcp-reference'
 import { schemaDefinitions, type McpSchema } from '../../lib/mcp-schema'
 import { TIERS, mcpToolFacts, type TierId } from '../../lib/mcp-showcase'
-import { referenceHref } from '../../lib/api-models'
+import { API_MODELS, referenceHref } from '../../lib/api-models'
+import { nativeKind } from '../../lib/api-labels'
+import { mentionBadge, mentionBadgeHtml } from '../../lib/mention-badge'
 import { pagePortsFor } from '../../lib/page-ports-for'
 import { getDocumentationSurfaces } from '../../lib/documentation-navigation'
 import { buildLocale } from '../../i18n/resolve'
@@ -20,6 +23,7 @@ import { CONTRIBUTE_BRANCH, CONTRIBUTE_REPO } from '../../i18n/contribute'
 import '../../styles/api.css'
 import '../../styles/mcp-showcase.css'
 import '../../styles/vendor/gp-sphinx-api.css'
+import HeadingLink from '../HeadingLink.astro'
 
 interface Props { port: string; version: string; section: McpSection; itemSlug?: string }
 const { port, version, section, itemSlug } = Astro.props
@@ -113,6 +117,9 @@ const capability = stated && Object.keys(stated).length > 0 ? stated : undefined
 const objectTier = object?.tool ? tierOf(object.name) : undefined
 const wraps = object?.tool ? mcpWraps(port, object.name) : undefined
 const wrapsHref = wraps ? referenceHref(port, wraps.call, version) : undefined
+// A linked API name leads with its kind's mark, as every mention does (record 0025).
+const wrapped = wraps ? API_MODELS[port]?.symbols.find((symbol) => (symbol.publicId ?? symbol.id) === wraps.call) : undefined
+const wrapsBadge = wrapped ? mentionBadge(nativeKind(wrapped, port), wrapped.command?.kind ?? wrapped.kind) : undefined
 ---
 <DocsLayout title={object ? title : `${info.name} MCP ${title}`} description={object ? plainSummary(object.description, port) : introductions[section]}
   inventoryId={`protocol:${object?.id ?? section}`}
@@ -126,7 +133,7 @@ const wrapsHref = wraps ? referenceHref(port, wraps.call, version) : undefined
         {!object && <p class="mt-3">{introductions[section]}</p>}
       </header>
       {object ? <>
-        <nav class="api-section-links" aria-label="Reference sections" data-pagefind-ignore="all">{sections.map((entry, i) => <a href={`#${encodeURIComponent(entry.id)}`} data-api-section-link aria-current={i === 0 ? 'location' : undefined}>{entry.label}</a>)}</nav>
+        <ApiSectionBar>{sections.map((entry, i) => <a href={`#${encodeURIComponent(entry.id)}`} data-api-section-link aria-current={i === 0 ? 'location' : undefined}>{entry.label}</a>)}</ApiSectionBar>
         <dl class="py gp-sphinx-api-container" data-inventory-owner={object.id} data-inventory-anchor={object.id}>
           <dt id={object.id} data-inventory-id={object.item?.uriTemplate ?? object.item?.uri ?? object.name} data-inventory-category={object.kind} data-inventory-display={object.name} class="sig sig-object gp-sphinx-api-header" data-domain="mcp" data-objtype={object.kind}>
             <div class="gp-sphinx-api-layout gp-sphinx-api-layout--responsive">
@@ -143,43 +150,43 @@ const wrapsHref = wraps ? referenceHref(port, wraps.call, version) : undefined
               <span class="mcp-method-description">{object.kind === 'tool' ? <>Send <code>{object.name}</code> as the tool name, with the arguments below.</>
                 : object.kind === 'prompt' ? <>Send <code>{object.name}</code> as the prompt name, with the arguments below.</>
                 : <>Send the resource URI shown above.</>}</span></dd>
-              {wraps && <><dt>Wraps</dt><dd>{wrapsHref ? <a href={wrapsHref}><code>{wraps.call}</code></a> : <code>{wraps.call}</code>}<span class="mcp-method-description">The library call this tool makes: <a href={`https://github.com/${wraps.repo}/blob/${wraps.revision}/${wraps.source.replace(/:(\d+)$/, '#L$1')}`}><code>{wraps.source}</code></a>.</span></dd></>}
+              {wraps && <><dt>Wraps</dt><dd>{wrapsHref ? <a class="api-mention" href={wrapsHref}>{wrapsBadge && <Fragment set:html={mentionBadgeHtml(wrapsBadge)} />}<span class="api-symbol-link__name"><code>{wraps.call}</code></span></a> : <code>{wraps.call}</code>}<span class="mcp-method-description">The library call this tool makes: <a href={`https://github.com/${wraps.repo}/blob/${wraps.revision}/${wraps.source.replace(/:(\d+)$/, '#L$1')}`}><code>{wraps.source}</code></a>.</span></dd></>}
               {object.item?.mimeType && <><dt>MIME type</dt><dd><code>{object.item.mimeType}</code></dd></>}
               {object.tool?.enabledByDefault !== undefined && <><dt>Tool selection</dt><dd>{object.tool.enabledByDefault ? 'Enabled by default.' : <>Opt in with <code>{object.tool.enableOption ?? '--enable-tool'} {object.name}</code>.</>}</dd></>}
             </dl>
             <section id={`${object.id}.parameters`}>
               <span id="arguments" class="section-anchor-alias" />
-              <h2>{object.kind.startsWith('resource') ? 'URI parameters' : 'Arguments'}<a class="headerlink" href={`#${encodeURIComponent(`${object.id}.parameters`)}`} aria-label="Permalink to arguments">#</a></h2>
+              <h2>{object.kind.startsWith('resource') ? 'URI parameters' : 'Arguments'}<HeadingLink href={`#${encodeURIComponent(`${object.id}.parameters`)}`} label="Link to arguments" /></h2>
               {input ? <>{fields.length === 0 && <p>No named arguments.</p>}<McpSchemaFields schema={input} scope={`${object.id}.input`} context={context} noun="arguments" /></> : parameterRows.length ? <ul class="simple api-parameters mcp-parameters">
                 {parameterRows.map((arg) => <li id={arg.id} data-inventory-id={arg.id} data-inventory-category="parameter" data-inventory-display={`${object.name} (${arg.name})`}>
-                  <p class="api-parameter-heading"><span class="api-parameter-signature"><strong><a href={`#${encodeURIComponent(arg.id)}`}><code>{arg.name}</code></a></strong>{arg.required === false && '?'}</span><a class="api-heading-link" href={`#${encodeURIComponent(arg.id)}`} aria-label={`Link to ${arg.name} parameter`} data-pagefind-ignore="all">#</a></p>
+                  <p class="api-parameter-heading"><span class="api-parameter-signature"><strong><a href={`#${encodeURIComponent(arg.id)}`}><code>{arg.name}</code></a></strong>{arg.required === false && '?'}</span><HeadingLink href={`#${encodeURIComponent(arg.id)}`} label={`Link to ${arg.name} parameter`} /></p>
                   {arg.html && <div class="mcp-parameter-doc" set:html={arg.html} />}
                   <dl class="api-definition api-parameter-facts"><dt>Binding</dt><dd>{arg.binding}</dd></dl>
                 </li>)}
               </ul> : <p>{object.kind === 'resource' ? 'Read this resource using its fixed URI.' : 'No arguments are advertised.'}</p>}
             </section>
-            <section id={`${object.id}.result`}><h2>Result<a class="headerlink" href={`#${encodeURIComponent(`${object.id}.result`)}`} aria-label="Permalink to result">#</a></h2>
+            <section id={`${object.id}.result`}><h2>Result<HeadingLink href={`#${encodeURIComponent(`${object.id}.result`)}`} label="Link to result" /></h2>
               {output ? <><p class="mcp-schema-type">Returns <McpSchemaType schema={output} root={output} scope={`${object.id}.output`} /></p><McpSchemaFields schema={output} scope={`${object.id}.output`} context={context} /></>
                 : object.kind === 'prompt' ? <p>Returns the prompt’s messages. The client supplies the advertised arguments as strings.</p>
                 : object.kind.startsWith('resource') ? <p>Returns resource contents for the requested URI{object.item?.mimeType && <> with MIME type <code>{object.item.mimeType}</code></>}.</p>
                 : <p>This server does not advertise an output schema for this tool. Its description defines the returned content.</p>}
               {parsed?.returnsDoc && <div set:html={await renderToolDescription(parsed.returnsDoc, context)} />}
             </section>
-            {hasTypes && <section id={`${object.id}.types`} class="mcp-types"><h2>Types<a class="headerlink" href={`#${encodeURIComponent(`${object.id}.types`)}`} aria-label="Permalink to types">#</a></h2>
+            {hasTypes && <section id={`${object.id}.types`} class="mcp-types"><h2>Types<HeadingLink href={`#${encodeURIComponent(`${object.id}.types`)}`} label="Link to types" /></h2>
               {typeGroups.filter((group) => group.definitions.length).map((group) => <>
                 {typeGroups.every((entry) => entry.definitions.length) && <h3 class="mcp-type-group">{group.label}</h3>}
                 {group.definitions.map((entry) => <dl class="py gp-sphinx-api-container mcp-type-definition">
                   <dt id={entry.id} data-inventory-id={entry.id} data-inventory-category="schema" data-inventory-display={entry.name} class="sig sig-object gp-sphinx-api-header">
                     <div class="gp-sphinx-api-layout gp-sphinx-api-layout--responsive">
                       <div class="gp-sphinx-api-layout-left"><h3 class="mcp-type-name"><code>{entry.name}</code>{': '}<McpSchemaType schema={entry.schema} root={group.schema!} scope={group.scope} /></h3></div>
-                      <div class="gp-sphinx-api-layout-right"><ApiBadge label="type" variant="kind" value="typealias" /><a class="headerlink" href={`#${encodeURIComponent(entry.id)}`} aria-label={`Permalink to ${entry.name}`}>¶</a></div>
+                      <div class="gp-sphinx-api-layout-right"><ApiBadge label="type" variant="kind" value="typealias" /><HeadingLink href={`#${encodeURIComponent(entry.id)}`} label={`Link to ${entry.name}`} /></div>
                     </div>
                   </dt>
                   <dd class="api-overview"><div class="api-doc" set:html={entry.html} /><McpSchemaFields schema={entry.schema} root={group.schema!} scope={group.scope} pointer={entry.path} context={context} /></dd>
                 </dl>)}
               </>)}
             </section>}
-            {object.tool && <section id={`${object.id}.annotations`}><h2>Annotations<a class="headerlink" href={`#${encodeURIComponent(`${object.id}.annotations`)}`} aria-label="Permalink to annotations">#</a></h2>
+            {object.tool && <section id={`${object.id}.annotations`}><h2>Annotations<HeadingLink href={`#${encodeURIComponent(`${object.id}.annotations`)}`} label="Link to annotations" /></h2>
               <div class:list={['mcp-safety', capability && 'mcp-safety--capability']}>
                 <div class="mcp-safety__column">
                   <h3>Advertised by the server</h3>
@@ -198,7 +205,7 @@ const wrapsHref = wraps ? referenceHref(port, wraps.call, version) : undefined
                 ? <>Every {info.name} tool advertises the same annotations, so a host that approves by annotation cannot tell tools apart. The capability row is what tells them apart.</>
                 : <>The capability row states what this tool reads, changes and reaches; the annotations are as the server advertises them.</>}</p>}
             </section>}
-            <section id={`${object.id}.schemas`}><span id="schemas" class="section-anchor-alias" /><h2>Protocol data<a class="headerlink" href={`#${encodeURIComponent(`${object.id}.schemas`)}`} aria-label="Permalink to protocol data">#</a></h2>
+            <section id={`${object.id}.schemas`}><span id="schemas" class="section-anchor-alias" /><h2>Protocol data<HeadingLink href={`#${encodeURIComponent(`${object.id}.schemas`)}`} label="Link to protocol data" /></h2>
               <p>Use the complete advertised contract for validation and client integration.</p>
               <details open><summary>{object.tool ? 'Input schema' : 'Registration'}</summary><Code code={JSON.stringify(input ?? object.item, null, 2)} lang="json" /></details>
               {output && <details open><summary>Output schema</summary><Code code={JSON.stringify(output, null, 2)} lang="json" /></details>}
@@ -216,10 +223,10 @@ const wrapsHref = wraps ? referenceHref(port, wraps.call, version) : undefined
         </div>}
         <div class="mcp-index" data-mcp-index>
         {groups.map((group) => <section class="mcp-group mt-8" id={group.id}>
-          <h2 class="api-index-summary border-b border-edge pb-1 font-mono">{group.label}<span class="mcp-count ml-2 text-xs font-sans opacity-60" data-count="all">{group.objects.length} {group.objects.length === 1 ? (section === 'resources' ? 'object' : section.slice(0, -1)) : section === 'resources' ? 'objects' : section}</span>{tiered && section === 'tools' && TIERS.map((tier) => {
+          <h2 class="api-index-summary border-b border-edge pb-1 font-mono">{group.label}<span class="mcp-count ml-2 text-xs font-sans text-muted" data-count="all">{group.objects.length} {group.objects.length === 1 ? (section === 'resources' ? 'object' : section.slice(0, -1)) : section === 'resources' ? 'objects' : section}</span>{tiered && section === 'tools' && TIERS.map((tier) => {
             const n = group.objects.filter((entry) => tierOf(entry.name)?.id === tier.id).length
-            return n > 0 && <span class="mcp-count ml-2 text-xs font-sans opacity-60" data-count={tier.id}>{n} {n === 1 ? 'tool' : 'tools'}</span>
-          })}<a class="headerlink" href={`#${group.id}`} aria-label={`Permalink to ${group.label}`}>#</a></h2>
+            return n > 0 && <span class="mcp-count ml-2 text-xs font-sans text-muted" data-count={tier.id}>{n} {n === 1 ? 'tool' : 'tools'}</span>
+          })}<HeadingLink href={`#${group.id}`} label={`Link to ${group.label}`} /></h2>
           <div class="mt-3 grid gap-3 sm:grid-cols-2">{group.objects.map((entry) => {
             const tier = section === 'tools' ? tierOf(entry.name) : undefined
             return <div class:list={['api-index-card scroll-mt-24 rounded border border-edge p-3 hover:bg-surface-hover', section === 'tools' && 'mcp-tool-card', tier && 'mcp-tool-card--tier']} id={entry.id} data-tier={tier?.id}>
@@ -283,14 +290,16 @@ const wrapsHref = wraps ? referenceHref(port, wraps.call, version) : undefined
   .mcp-method-description { display: block; margin-top: .25rem; }
   .mcp-schema-type { font-size: .8125rem; color: var(--color-muted); margin-bottom: .75rem; }
   .mcp-schema-type code { color: var(--api-ink-type); }
-  .mcp-type-name { font: 600 .9375rem var(--font-mono, ui-monospace, monospace); margin: 0; }
+  /* The heading is one 1.5rem line, the height of the heading link beside it. The kind and the link have no text baseline to
+     share with the name (the link's is the bottom of its icon), so the row puts them at its top, level with that first line. */
+  .mcp-type-name { font: 600 .9375rem/1.5rem var(--font-mono, ui-monospace, monospace); margin: 0; }
+  dl.gp-sphinx-api-container.mcp-type-definition > dt.gp-sphinx-api-header:not(.api-native-header) > .gp-sphinx-api-layout--responsive { align-items: flex-start; }
   .mcp-type-group { margin-block: 1rem .75rem; font-size: .9375rem; }
   .mcp-type-definition { margin-block: 1rem; }
   .mcp-types :global(.api-type) { font-weight: 400; }
   .mcp-reference-footer { display: flex; flex-wrap: wrap; gap: .5rem 1rem; margin-top: 2rem; padding-block: 1rem; border-top: 1px solid var(--api-border); font-size: .875rem; }
   .api-overview details + details { margin-top: 1rem; }
   .api-overview summary { cursor: pointer; font-weight: 600; margin-bottom: .5rem; }
-  .api-overview :global(.headerlink) { margin-inline-start: .4rem; }
 </style>
 <style is:global>
   /* Tools index: a tier on each card, in its flush bottom-right corner, and a filter. The filter is radio buttons, so it works without script. */
@@ -301,7 +310,8 @@ const wrapsHref = wraps ? referenceHref(port, wraps.call, version) : undefined
   .mcp-tier-filter__label { margin-inline-end: 0.25rem; color: var(--color-muted); font-size: 0.8125rem; font-weight: 600; }
   .mcp-tier-filter__option { position: relative; display: inline-flex; }
   .mcp-tier-filter__option input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
-  .mcp-tier-filter__option span { display: inline-flex; align-items: center; gap: 0.375rem; min-height: 2rem; padding: 0 0.625rem; border: 1px solid var(--control-border, var(--color-edge)); border-radius: 0.25rem; background: var(--background-color); font-size: 0.8125rem; }
+  /* A chip sizes to its word. Under the inherited overflow-wrap: anywhere, Firefox broke "Execute" and "Teardown" inside the word at 1280px. */
+  .mcp-tier-filter__option span { display: inline-flex; align-items: center; gap: 0.375rem; min-height: 2rem; padding: 0 0.625rem; border: 1px solid var(--control-border, var(--color-edge)); border-radius: 0.25rem; background: var(--background-color); font-size: 0.8125rem; overflow-wrap: normal; white-space: nowrap; }
   .mcp-tier-filter__option small { color: var(--color-muted); font-size: 0.75rem; }
   .mcp-tier-filter__option:hover span { background: var(--color-surface-hover); }
   .mcp-tier-filter__option:has(:checked) span { border-color: var(--theme-primary); background: color-mix(in srgb, var(--theme-primary) 10%, transparent); color: var(--theme-primary); font-weight: 600; }

@@ -185,12 +185,12 @@ they paint forced colours:
 $ node site/scripts/check-dev.mjs --home-controls
 ```
 
-A heading's `#` permalink stays quiet on a fine pointer and appears when its
-heading is hovered, focused with the keyboard or targeted by the URL. Touch and
-forced colours keep it in view. The check reads computed opacity, the tab stop
-and the accessible name on a Swift and a Python reference page, in light and
-dark, with and without JavaScript, and ends with controls that break each
-state and require the check to notice:
+A heading's link icon is muted and visible at rest and stronger when its heading
+is hovered, focused with the keyboard or targeted by the URL; a click copies the
+section's URL. The check reads computed colour, the tab stop and the accessible
+name on a Swift and a Python reference page, in light and dark, with and without
+JavaScript, and ends with controls that break each state and require the check
+to notice:
 
 ```console
 $ node site/scripts/check-dev.mjs --permalink-reveal
@@ -211,8 +211,11 @@ Client pages at 1440 pixels, where a name wraps onto several lines, and requires
 each chip to hold its name and clear the next. It reads the chips of the usage
 table on the `list-panes` manual page the same way, and requires a chip with a
 qualifier to keep the width its name needs, with the qualifier beside it or
-under it. Each check ends with a negative control that breaks what it holds and
-requires the gate to notice, by the problem it names:
+under it. An icon mark, the `<>` of the Source button, has no descender for a
+letter mark's raised baseline to allow for, so the gate requires its centre
+within half a pixel of its segment's centre. Each check ends with a negative
+control that breaks what it holds and requires the gate to notice, by the
+problem it names:
 
 ```console
 $ node site/scripts/check-dev.mjs --badge-centring

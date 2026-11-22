@@ -40,12 +40,12 @@ const { up, title, titleId } = Astro.props
     color: var(--color-foreground-muted); font: 500 .8125rem/1.25 var(--font-sans); text-decoration: none;
   }
   .sidebar-head__up:hover { background: var(--color-surface-hover); color: var(--color-link); }
-  .sidebar-head__up:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 1px; }
+  .sidebar-head__up:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: -2px; }
   .sidebar-head__up svg { flex: none; }
   .sidebar-head__scope { display: flex; align-items: center; gap: .5rem; min-height: 2rem; }
   .sidebar-head__title { display: block; min-width: 0; color: var(--text-color); font: 600 .9375rem/1.3 var(--font-sans); text-decoration: none; overflow-wrap: anywhere; }
   .sidebar-head__title:hover { color: var(--color-link); }
-  .sidebar-head__title:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; border-radius: var(--radius-xs, .25rem); }
+  .sidebar-head__title:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: -2px; border-radius: var(--radius-xs, .25rem); }
   /* In the API column the head sits on the tree's own inset, as the search field and the rows do. */
   :global(.api-nav) > .sidebar-head { margin-inline: .5rem; }
   .sidebar-head__scope > :global(.status-badge) { flex: none; margin-left: auto; }

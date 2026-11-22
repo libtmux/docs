@@ -379,8 +379,8 @@ describe('the replay component', () => {
   }
 
   /** The page's markup in a DOM; with `run`, the page's own script on it. */
-  async function mount(port: string, options: { run?: boolean; reduced?: boolean; interval?: number; recorded?: boolean; stateless?: boolean; autoplay?: boolean } = {}) {
-    const win = new Window({ url: 'https://libtmux.org/en/rs/latest/' })
+  async function mount(port: string, options: { run?: boolean; reduced?: boolean; interval?: number; recorded?: boolean; stateless?: boolean; autoplay?: boolean; search?: string } = {}) {
+    const win = new Window({ url: `https://libtmux.org/en/rs/latest/${options.search ?? ''}` })
     windows.push(win)
     win.document.body.innerHTML = await markup(port, options.recorded, options.stateless)
     const root = win.document.querySelector('[data-mcp-replay]') as unknown as HTMLElement
@@ -458,8 +458,16 @@ describe('the replay component', () => {
 
     it('draws no bar on the start edge of a turn: the tint and aria-current mark the current one', () => {
       expect(css).not.toMatch(startBar)
-      expect(css, 'the tint stays the link colour at 14%, 24% pinned').toMatch(/\.mcp-turn\[aria-current='step'\] \{\s*background: color-mix\(in srgb, var\(--color-link\) 14%, transparent\);/)
-      expect(css).toMatch(/\.mcp-turn\.is-pinned,\s*\.mcp-turn\[aria-current='step'\]\.is-pinned \{\s*background: color-mix\(in srgb, var\(--color-link\) 24%, transparent\);/)
+      expect(css, 'the tint stays the link colour, at the current share for a current or pinned turn').toMatch(/\.mcp-turn\[aria-current='step'\],\s*\.mcp-turn\.is-pinned \{\s*background: color-mix\(in srgb, var\(--color-link\) var\(--mcp-tint-current\), transparent\);/)
+      expect(css, 'a pinned turn is marked by an inset hairline, not a heavier wash or a border').toMatch(/\.mcp-turn\.is-pinned \{\s*box-shadow: inset 1px 0 0 var\(--color-link\);/)
+    })
+
+    it('takes the tint shares from the theme, as the Core player does (record 0079): current 8% light and 7% dark, hover 5% and 4%', () => {
+      expect(css).toMatch(/\.mcp-replay \{\s*--mcp-tint-hover: 5%;\s*--mcp-tint-current: 8%;/)
+      expect(css).toMatch(/html\[data-theme-mode="dark"\] \.mcp-replay \{\s*--mcp-tint-hover: 4%;\s*--mcp-tint-current: 7%;/)
+      expect(css).toMatch(/@media \(prefers-color-scheme: dark\) \{\s*html:not\(\[data-theme-mode\]\):not\(\[data-theme="light"\]\) \.mcp-replay \{\s*--mcp-tint-hover: 4%;\s*--mcp-tint-current: 7%;/)
+      expect(css).toMatch(/:hover \{\s*background: color-mix\(in srgb, var\(--color-link\) var\(--mcp-tint-hover\), transparent\);/)
+      expect(css, 'no turn is washed at the old 14% or 24%').not.toMatch(/var\(--color-link\) (14|24)%/)
     })
 
     it('has a control: the start-edge check does catch the bar it is for', () => {
@@ -674,10 +682,10 @@ describe('the replay component', () => {
     expect((document.querySelector('[data-controls]') as HTMLElement).hidden).toBe(false)
   })
 
-  it('without that preference starts at the prompt and waits for the reader to press play', async () => {
+  it('without that preference opens at rest on the first call and waits for the reader to press play', async () => {
     const { win, document } = await mount('ts', { run: true, reduced: false, interval: 15 })
     await new Promise((resolve) => setTimeout(resolve, 80))
-    expect(turnsShown(document), 'nothing plays by itself').toBe(0)
+    expect(turnsShown(document), 'nothing plays by itself: the first call shows and no more').toBe(1)
     expect(action(document, 'play').getAttribute('aria-label')).toBe('Play')
     click(win, action(document, 'play'))
     await new Promise((resolve) => setTimeout(resolve, 900))
@@ -799,7 +807,7 @@ describe('the replay component', () => {
     target.IntersectionObserver = class { constructor(callback: (entries: { isIntersecting: boolean }[]) => void) { reveal = () => callback([{ isIntersecting: true }]) } observe() {} disconnect() {} }
     win.eval(`(function() {\n${script}\n})()`)
     const document = win.document as unknown as Document
-    expect(turnsShown(document)).toBe(0)
+    expect(turnsShown(document), 'at rest on the first call').toBe(1)
     click(win, document.querySelector('[data-mark="0"], [data-action="back"]')!)
     reveal!()
     await new Promise((resolve) => setTimeout(resolve, 80))
@@ -816,14 +824,23 @@ describe('the replay component', () => {
       controls: (document.querySelector('[data-controls]') as HTMLElement).hidden,
       done: [...document.querySelectorAll('[data-mark].is-done')].map((mark) => mark.getAttribute('data-mark')),
       current: document.querySelector('[data-mark][aria-current="step"]')?.getAttribute('data-mark'),
-      open: document.querySelectorAll('details.mcp-result[open]').length > 0 && visible(document, 'article.mcp-turn').length > 0,
+      rest: [...document.querySelectorAll('[data-mark].is-rest')].map((mark) => mark.getAttribute('data-mark')),
+      highlighted: document.querySelectorAll('.mcp-turn[aria-current]').length,
+      filled: (document.querySelector('[data-fill]') as HTMLElement).style.width,
     })
     const drawn = onScreen((await mount('ts')).document)
     const bound = onScreen((await mount('ts', { run: true, reduced: false, interval: 100000 })).document)
-    expect(drawn.turns, 'the prompt alone').toEqual([])
-    expect(drawn.frames).toEqual([0])
-    expect(drawn.count).toBe(`0/${CALLS.ts}`)
+    expect(drawn.turns, 'the first call, which is on screen at rest').toEqual(['0'])
+    expect(drawn.frames, 'the tmux after the first call').toEqual([1])
+    expect(drawn.count).toBe(`1/${CALLS.ts}`)
+    expect(drawn.rest, 'the first mark is a hollow ring').toEqual(['1'])
+    expect(drawn.done).toEqual(['0'])
+    expect([drawn.highlighted, drawn.filled], 'no turn is highlighted and the fill is empty').toEqual([0, '0%'])
     expect(bound).toEqual(drawn)
+    // The first call's Result is open in the markup, which a page with no script shows; the sheet draws it folded until the script has folded it, so nothing moves.
+    expect(visible((await mount('ts')).document, 'article.mcp-turn').every((turn) => turn.querySelector('details.mcp-result')!.hasAttribute('open'))).toBe(true)
+    expect((await mount('ts', { run: true, reduced: false, interval: 100000 })).document.querySelector('[data-turn="0"] details.mcp-result')!.hasAttribute('open')).toBe(false)
+    expect(readFileSync(new URL('../src/styles/mcp-replay.css', import.meta.url), 'utf8')).toMatch(/prefers-reduced-motion: no-preference\) \{[^@]*html\[data-js\] \.mcp-replay:not\(\[data-live\]\) \.mcp-result > :not\(summary\) \{\s*display: none;/)
   })
 
   it('draws the header and the bar from the first paint, hiding them from a page with no script by its stylesheet', async () => {
@@ -923,6 +940,59 @@ describe('the replay component', () => {
     click(win, action(document, 'forward'))
     click(win, last)
     expect(document.querySelector('.mcp-turn--answer')!.classList.contains('is-pinned'), 'pinning the last call does not mark the reply').toBe(false)
+  })
+
+  it('rests at the first call: no turn is highlighted, Next shows the second, and a link that names a step opens on it', async () => {
+    const { win, document } = await mount('ts', { run: true, reduced: false, interval: 100000 })
+    expect(document.querySelectorAll('.mcp-turn[aria-current]'), 'nothing highlighted at rest').toHaveLength(0)
+    expect(document.querySelector('[data-chat]')!.getAttribute('data-off')).toBeNull()
+    click(win, action(document, 'forward'))
+    expect(turnsShown(document), 'the second call shows').toBe(2)
+    expect(frameShown(document)).toEqual([2])
+    expect(document.querySelectorAll('.mcp-turn[aria-current="step"]')).toHaveLength(1)
+    const linked = await mount('ts', { run: true, reduced: false, interval: 100000, search: '?step=3' })
+    expect(linked.document.querySelector('[data-count]')!.textContent, 'a step link opens on that step').toBe(`3/${CALLS.ts}`)
+    expect(linked.document.querySelectorAll('.mcp-turn[aria-current="step"]'), 'and is not at rest').toHaveLength(1)
+  })
+
+  it('adds Hide preview to the tmux column and Show preview to the stage from script only, remembers the choice, and survives storage that throws', async () => {
+    const quiet = await mount('ts')
+    expect(quiet.document.querySelectorAll('.mcp-replay__sidehead button, .mcp-replay__show'), 'no dead button without script').toHaveLength(0)
+    expect(quiet.document.querySelector('[data-tmux] > .mcp-replay__sidehead:first-child'), 'the head row is drawn empty, so the script moves nothing').not.toBeNull()
+    const { win, document, root } = await mount('ts', { run: true, reduced: false, interval: 100000 })
+    const column = document.querySelector<HTMLElement>('[data-tmux]')!
+    const hide = column.querySelector<HTMLButtonElement>('.mcp-replay__sidehead button')!
+    const show = document.querySelector<HTMLButtonElement>('[data-body] > .mcp-replay__show')!
+    expect(show.parentElement!.firstElementChild, 'first on the stage, so the tab order follows the screen').toBe(show)
+    expect([hide.getAttribute('aria-label'), hide.getAttribute('aria-expanded'), hide.getAttribute('aria-controls')]).toEqual(['Hide preview', 'true', column.id])
+    expect([show.getAttribute('aria-label'), show.getAttribute('aria-expanded'), show.getAttribute('aria-controls')]).toEqual(['Show preview', 'true', column.id])
+    click(win, hide)
+    expect([root.hasAttribute('data-preview-hidden'), win.localStorage.getItem('libtmux-docs.replay-preview')]).toEqual([true, 'hidden'])
+    click(win, action(document, 'forward'))
+    expect(turnsShown(document), 'stepping still works with the preview hidden').toBe(2)
+    click(win, show)
+    expect([root.hasAttribute('data-preview-hidden'), win.localStorage.getItem('libtmux-docs.replay-preview')]).toEqual([false, null])
+    // Storage that throws leaves the buttons working.
+    const broken = new Window({ url: 'https://libtmux.org/en/rs/latest/' })
+    windows.push(broken)
+    Object.defineProperty(broken, 'localStorage', { configurable: true, get() { throw new Error('storage is blocked') } })
+    broken.document.body.innerHTML = await markup('ts')
+    const target = broken as unknown as { matchMedia: (query: string) => { matches: boolean }; IntersectionObserver?: unknown }
+    target.matchMedia = (query: string) => ({ matches: !/reduced-motion/.test(query) })
+    target.IntersectionObserver = undefined
+    expect(() => broken.eval(`(function() {\n${script}\n})()`)).not.toThrow()
+    const alone = broken.document.querySelector('[data-mcp-replay]') as unknown as HTMLElement
+    expect(() => click(broken, broken.document.querySelector('.mcp-replay__sidehead button') as unknown as Element)).not.toThrow()
+    expect(alone.hasAttribute('data-preview-hidden')).toBe(true)
+  })
+
+  it('draws a hidden preview from the first paint and keeps the stage height: the sheet reserves the head row and the chat\'s room', () => {
+    const css = readFileSync(new URL('../src/styles/mcp-replay.css', import.meta.url), 'utf8')
+    expect(css).toMatch(/\.mcp-replay\[data-preview-hidden\] \.mcp-replay__tmux,\s*html\[data-replay-preview\] \.mcp-replay:not\(\[data-live\]\) \.mcp-replay__tmux \{\s*display: none;/)
+    expect(css, 'the chat clears Show preview').toMatch(/\.mcp-replay\[data-preview-hidden\] \.mcp-replay__chat,[^{]*\{\s*padding-top: 3rem;/)
+    expect(css, 'the stacked stage and tmux box grow by what the head row takes, from the first paint of a page with script').toMatch(/html\[data-js\] \.mcp-replay:not\(\.mcp-replay--requests\) \{\s*--mcp-extra: 1\.75rem;\s*--mcp-tmux-top: 0rem;/)
+    expect(css).toMatch(/\.mcp-replay__body \{[^}]*height: calc\(30rem \+ var\(--mcp-extra\)\);/)
+    expect(css, 'the wide stage is 30rem whether or not the column shows').toMatch(/@container \(min-width: 44rem\) \{\s*\.mcp-replay__body \{\s*flex-direction: row;\s*height: 30rem;/)
   })
 
   it('has no pin button before script runs, and none in the requests-only form', async () => {

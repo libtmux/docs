@@ -10,6 +10,11 @@
  * forward and fullscreen, one `[data-mark]` per step, `[data-fill]` and
  * `[data-count]`. Step `n` means the state after the `n`th call, and step 0
  * the state before the first.
+ *
+ * A player opens at rest (record 0081): it shows step 1 because nothing is
+ * chosen yet, and the host highlights nothing. The reader's first stepping
+ * action leaves rest. `bindPreview` adds the Hide preview and Show preview
+ * buttons, which both hosts share.
  */
 
 const REDUCED = '(prefers-reduced-motion: reduce)'
@@ -21,6 +26,8 @@ export interface ReplayState {
   shown: number
   pinned: number | null
   playing: boolean
+  /** The player rests: `shown` is only the step it infers, so the host highlights no line or turn. A pin or a preview under the pointer ends it for the moment. */
+  rest: boolean
 }
 
 export interface ReplayOptions {
@@ -44,8 +51,14 @@ export interface ReplayOptions {
    * touches it. Nothing in it changes the step; the host's own controls do.
    */
   content?: HTMLElement | null
-  /** Play by itself once the player is on screen. Off unless the instance opts in, and never under reduced motion. */
+  /** Play by itself once the player is on screen and still at rest. Off unless the instance opts in, and never under reduced motion. */
   autoplay?: boolean
+  /**
+   * Open at rest on step 1, which is shown but not chosen. Ignored for a reader who asked for less motion when
+   * `reducedOpening` names another place for them, and when there is no step to rest on. A host that opens on a
+   * step a link names leaves it off, so that player is not at rest and does not autoplay.
+   */
+  rest?: boolean
   /**
    * The step the markup is drawn at and the player opens on: 0 is the state
    * before the first call, `'end'` the last. A page the script has not bound
@@ -117,8 +130,9 @@ export function bindReplay(root: HTMLElement, options: ReplayOptions): ReplayPla
 
   const reducedStart = options.reducedOpening ?? options.opening ?? 0
   const opening = (reduced ? reducedStart : options.opening ?? 0)
-  let step = opening === 'end' ? total() : Math.min(opening, total())
-  const first = step
+  // At rest the shown step is the first one, inferred because the reader has chosen none.
+  let rest = options.rest === true && total() > 0 && !(reduced && options.reducedOpening !== undefined)
+  let step = rest ? 1 : opening === 'end' ? total() : Math.min(opening, total())
   let pinned: number | null = null
   let hover: number | null = null
   let timer: ReturnType<typeof setTimeout> | undefined
@@ -130,28 +144,32 @@ export function bindReplay(root: HTMLElement, options: ReplayOptions): ReplayPla
 
   const use = () => { touched = true; automatic = false; hover = null }
   const stop = () => { playing = false; automatic = false; if (timer) clearTimeout(timer); timer = undefined }
-  const state = (): ReplayState => ({ step, shown: hover ?? pinned ?? step, pinned, playing })
+  const state = (): ReplayState => ({ step, shown: hover ?? pinned ?? step, pinned, playing, rest: rest && pinned === null && hover === null })
 
   function render(scroll = false) {
     const last = total()
     if (step > last) step = last
     if (pinned !== null && pinned > last) pinned = null
+    if (last < 1) rest = false
     marks.forEach((mark) => {
       const position = Number(mark.dataset.mark)
       mark.hidden = position > last
       mark.style.left = `${(position / last) * 100}%`
-      mark.classList.toggle('is-done', position <= step)
+      // At rest the step-1 mark is a hollow ring: shown, not yet reached.
+      mark.classList.toggle('is-done', rest ? position < step : position <= step)
+      mark.classList.toggle('is-rest', rest && position === step)
       if (position === step) mark.setAttribute('aria-current', 'step')
       else mark.removeAttribute('aria-current')
     })
-    fill.style.width = `${(step / last) * 100}%`
+    fill.style.width = `${rest ? 0 : (step / last) * 100}%`
     track?.style.setProperty('--mcp-count', String(last + 1))
     if (step !== railStep) { keepInView(railStep !== -1); railStep = step }
     edges()
     count.textContent = `${step}/${last}`
-    play.setAttribute('aria-label', step >= last && !playing ? 'Replay' : playing ? 'Pause' : 'Play')
+    const ended = step >= last && !rest
+    play.setAttribute('aria-label', ended && !playing ? 'Replay' : playing ? 'Pause' : 'Play')
     // The button draws its icon from this state (see mcp-replay.css).
-    play.dataset.state = playing ? 'pause' : step >= last ? 'replay' : 'play'
+    play.dataset.state = playing ? 'pause' : ended ? 'replay' : 'play'
     draw(state(), scroll)
   }
 
@@ -163,9 +181,11 @@ export function bindReplay(root: HTMLElement, options: ReplayOptions): ReplayPla
     render(true)
     if (step >= total()) { stop(); render() } else timer = setTimeout(tick, interval)
   }
+  // Play from rest highlights step 1 and plays on; from the end it plays again from before the first call.
   function start() {
     use()
-    if (step >= total()) step = 0
+    if (rest) rest = false
+    else if (step >= total()) step = 0
     pinned = null
     playing = true
     render(true)
@@ -174,6 +194,7 @@ export function bindReplay(root: HTMLElement, options: ReplayOptions): ReplayPla
   function go(next: number) {
     use()
     stop()
+    rest = false
     pinned = null
     step = Math.max(0, Math.min(total(), next))
     render(true)
@@ -181,6 +202,7 @@ export function bindReplay(root: HTMLElement, options: ReplayOptions): ReplayPla
   function togglePin(frame: number) {
     use()
     stop()
+    rest = false
     pinned = pinned === frame ? null : frame
     render()
   }
@@ -256,10 +278,10 @@ export function bindReplay(root: HTMLElement, options: ReplayOptions): ReplayPla
   }
 
   render()
-  // Nothing plays until the reader presses play, unless the instance asked for it; and a reader who asked for less motion never gets it.
+  // A stepping player (the default) stays at rest until the reader acts. An autoplay player opts in, and a reader who asked for less motion never gets it.
   if (!options.autoplay || reduced) return player
 
-  // A reader who selects text, scrolls or touches the content, or focuses into the player, is reading: the replay stops and stays stopped.
+  // A reader's first control, a selection in the content, a wheel or a touch there, or focus into the player ends autoplay for good, even before it has started.
   const halt = () => {
     touched = true
     if (!automatic) return
@@ -267,20 +289,28 @@ export function bindReplay(root: HTMLElement, options: ReplayOptions): ReplayPla
     render()
   }
   const content = options.content
-  root.addEventListener('focusin', halt)
-  for (const type of ['wheel', 'touchmove', 'pointerdown']) content?.addEventListener(type, halt, { passive: true })
+  // A pointer press on a control also focuses it. That focus is not the stop: the click that follows is the reader's control, and pressing Pause must leave it paused.
+  let pressing = false
+  const doc = root.ownerDocument
+  root.addEventListener('pointerdown', () => { pressing = true }, true)
+  for (const type of ['pointerup', 'pointercancel']) doc.addEventListener(type, () => { setTimeout(() => { pressing = false }, 0) }, true)
+  root.addEventListener('focusin', (event) => { if (!(pressing && (event.target as HTMLElement).closest('[data-controls]'))) halt() })
+  // A step control stops the run in its own handler; a button that steps nothing (Hide preview, copy, the rail's pages) ends autoplay here.
+  root.addEventListener('click', (event) => { if ((event.target as HTMLElement).closest('button')) halt() })
+  for (const type of ['wheel', 'touchstart', 'touchmove', 'pointerdown']) content?.addEventListener(type, halt, { passive: true })
   const selected = () => {
-    const selection = root.ownerDocument.getSelection()
-    if (!root.isConnected) { root.ownerDocument.removeEventListener('selectionchange', selected); return }
+    const selection = doc.getSelection()
+    if (!root.isConnected) { doc.removeEventListener('selectionchange', selected); return }
     if (content && selection && !selection.isCollapsed && content.contains(selection.anchorNode)) halt()
   }
-  root.ownerDocument.addEventListener('selectionchange', selected)
+  doc.addEventListener('selectionchange', selected)
 
   const begin = () => {
     // A hidden panel can still intersect the viewport; it plays when the reader sees it.
     const shown = root.checkVisibility?.({ visibilityProperty: true }) ?? true
-    if (!shown || touched || playing || step !== first || pinned !== null) return
+    if (!shown || touched || playing || !rest) return
     automatic = true
+    rest = false
     playing = true
     render(true)
     timer = setTimeout(tick, interval)
@@ -293,6 +323,85 @@ export function bindReplay(root: HTMLElement, options: ReplayOptions): ReplayPla
     watcher.observe(root)
   }
   return player
+}
+
+/**
+ * The step a link names (`?step=3`), or undefined: the player then opens at rest. A link names one position, so it
+ * counts only on a page with a single player of the host's kind (`selector`); with several there is no player it could mean.
+ */
+export function linkedStep(selector: string, doc: Document = document): number | undefined {
+  if (doc.querySelectorAll(selector).length !== 1) return undefined
+  const value = new URLSearchParams(doc.location.search).get('step')
+  return value !== null && /^\d+$/.test(value) ? Number(value) : undefined
+}
+
+/** What the page remembers when storage throws (blocked, a private window, a full quota): the choice then holds until the page is left. */
+const session = new Map<string, boolean>()
+function hiddenBefore(key: string): boolean {
+  try { return localStorage.getItem(key) === 'hidden' } catch { return session.get(key) ?? false }
+}
+function remember(key: string, hidden: boolean) {
+  session.set(key, hidden)
+  try {
+    if (hidden) localStorage.setItem(key, 'hidden')
+    else localStorage.removeItem(key)
+  } catch { /* The choice still holds for this page. */ }
+}
+
+const ICON = (paths: string) => `<svg class="mcp-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`
+// A window with its right pane: shaded while the preview shows, empty while it is hidden.
+const PANE_SHOWN = '<rect x="1.75" y="2.75" width="12.5" height="10.5" rx="1.5"/><path d="M10 2.75v10.5"/><path d="M10 3.5h2.75a.75.75 0 0 1 .75.75v7.5a.75.75 0 0 1-.75.75H10z" fill="currentColor" stroke="none" opacity=".4"/>'
+const PANE_HIDDEN = '<rect x="1.75" y="2.75" width="12.5" height="10.5" rx="1.5"/><path d="M10 2.75v10.5"/>'
+let previews = 0
+
+export interface PreviewOptions {
+  /** Where the choice is kept: `libtmux-docs.core-player-preview` or `libtmux-docs.replay-preview`. `hidden` is stored; absent means shown. */
+  key: string
+  /** The column that folds away: the tmux and the result, or the tmux. It gets an id when it has none. */
+  column: HTMLElement
+  /** The row at the column's top end that holds Hide preview. The markup draws it empty, so adding the button moves nothing. */
+  head: HTMLElement
+  /** Where Show preview goes: before the code's copy button, or at the chat's top end. A button is added to each, ahead of `before` (or last), so the tab order follows the visual one. */
+  places: { parent: HTMLElement; before?: Element | null }[]
+  /** The class a Show preview button takes from the host's own stylesheet. */
+  showClass: string
+}
+
+/**
+ * Hide preview (record 0081): the column folds away and the code or chat takes the full width at the same height. Both
+ * buttons are drawn here, never in the markup, so a page without script has no dead button. The player root says
+ * `data-preview-hidden` while the column is hidden. A stored choice is also on `<html>` before the first paint
+ * (`ThemeScript.astro`), so a returning reader's page is drawn that way and nothing moves when this binds.
+ */
+export function bindPreview(root: HTMLElement, { key, column, head, places, showClass }: PreviewOptions) {
+  const doc = root.ownerDocument
+  if (!column.id) column.id = `replay-preview-${++previews}`
+  const draw = (label: string, paths: string, className: string) => {
+    const button = doc.createElement('button')
+    button.type = 'button'
+    button.className = className
+    button.title = label
+    button.setAttribute('aria-label', label)
+    button.setAttribute('aria-controls', column.id)
+    button.innerHTML = ICON(paths)
+    return button
+  }
+  const hide = draw('Hide preview', PANE_SHOWN, 'mcp-replay__button')
+  head.append(hide)
+  const shows = places.map(({ parent, before }) => { const button = draw('Show preview', PANE_HIDDEN, showClass); parent.insertBefore(button, before ?? null); return button })
+  const apply = (hidden: boolean) => {
+    root.toggleAttribute('data-preview-hidden', hidden)
+    for (const button of [hide, ...shows]) button.setAttribute('aria-expanded', String(!hidden))
+  }
+  // Focus follows the press: the pressed button is gone, and the other is the way back.
+  const choose = (hidden: boolean) => {
+    apply(hidden)
+    remember(key, hidden)
+    ;(hidden ? shows.find((show) => show.checkVisibility?.() ?? true) ?? shows[0] : hide)?.focus()
+  }
+  hide.addEventListener('click', () => choose(true))
+  for (const show of shows) show.addEventListener('click', () => choose(false))
+  apply(hiddenBefore(key))
 }
 
 /**

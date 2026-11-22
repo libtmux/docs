@@ -8,6 +8,7 @@
  * (`data-pagefind-meta`), so this renders them under each result.
  */
 
+import { below } from './breakpoints'
 import { boostExactMembers } from './search-rank'
 import {
   countLine,
@@ -100,6 +101,9 @@ export interface SearchPanelHandle {
 /** Where the panel hands its state to the page: the dialog's link to the search page follows it. */
 export const SEARCH_STATE_EVENT = 'search-panel:state'
 
+/** The dialog and the search page can share a document, so each panel numbers the ids it gives its listbox and options. */
+let panelCount = 0
+
 export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings: SearchPanelOptions = {}): SearchPanelHandle {
   const input = root.querySelector<HTMLInputElement>('.search-panel__input')!
   const results = root.querySelector<HTMLElement>('.search-panel__results')!
@@ -114,6 +118,20 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings
   const kindGroup = root.querySelector<HTMLElement>('.search-panel__facet--kind')
   const kindList = root.querySelector<HTMLElement>('.search-panel__kind-list')
   const dialog = root.closest('dialog')
+  const fold = root.querySelector<HTMLDetailsElement>('.search-panel__fold')
+  const foldSummary = root.querySelector<HTMLElement>('.search-panel__fold-summary')
+  const clearField = root.querySelector<HTMLButtonElement>('.search-panel__clear-field')
+  const closeButton = root.querySelector<HTMLButtonElement>('.search-panel__close')
+
+  // The field is a combobox over the results listbox. Focus stays in the field while the arrow keys move
+  // through the options, so the selected option is `aria-activedescendant`, not DOM focus.
+  const panelId = `search-panel-${++panelCount}`
+  let optionCount = 0
+  results.id ||= `${panelId}-results`
+  input.setAttribute('role', 'combobox')
+  input.setAttribute('aria-controls', results.id)
+  input.setAttribute('aria-autocomplete', 'list')
+  input.setAttribute('aria-expanded', 'false')
 
   // A port page searches its port; the root search starts across all of them.
   const defaultScope: SearchScope = settings.initialPort ? 'port' : 'all'
@@ -155,6 +173,7 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings
       wider.addEventListener('click', () => setScope('all'))
       results.append(wider)
     }
+    highlight()
   }
 
   /** The index did not load: say so, keep the query, and offer a way on. */
@@ -186,6 +205,7 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings
     }
     box.append(lead, body, row)
     results.append(box)
+    highlight()
   }
 
   /** Write the state where Back and a shared link can find it. */
@@ -260,6 +280,23 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings
     }
   }
 
+  /** Below bp-phone the filters are one disclosure, closed so the results come first, and its summary counts the filters that are on (record 0076). */
+  function paintFold() {
+    if (!foldSummary) return
+    const on = filterCount(state, [...selectedPorts])
+    foldSummary.textContent = on > 0 ? `Filters · ${on}` : 'Filters'
+  }
+
+  if (fold && typeof matchMedia === 'function') {
+    const phone = matchMedia(below('phone'))
+    const place = () => {
+      if (!root.isConnected) phone.removeEventListener('change', place)
+      else fold.open = !phone.matches
+    }
+    place()
+    phone.addEventListener('change', place)
+  }
+
   /** The scope buttons say which one is on; a root search has none. */
   function paintScope() {
     if (!scopeBox) return
@@ -289,13 +326,15 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings
 
   async function renderFilters(counts: FilterCounts) {
     paintScope()
+    paintFold()
     // Hidden, not removed: a facet the data does not have stays out of the way.
     const ports = state.scope === 'all' ? { ...Object.fromEntries([...selectedPorts].map((port) => [port, 0])), ...counts.port } : {}
     const sections = state.scope === 'reference' ? {} : { ...(state.section ? { [state.section]: 0 } : {}), ...counts.section }
     // Kinds belong to reference pages, so the facet shows once the search is among them.
     const kinds = state.scope === 'reference' || state.section === 'reference' ? { ...(state.kind ? { [state.kind]: 0 } : {}), ...counts.kind } : {}
     const hasPorts = Object.keys(ports).length > 0
-    const hasSections = Boolean(sectionList) && Object.keys(sections).length > 0
+    const sectionRows = orderedSections(sections)
+    const hasSections = Boolean(sectionList) && sectionRows.length > 0
     const hasKinds = Boolean(kindList) && Object.keys(kinds).length > 0
     if (portGroup) portGroup.hidden = !hasPorts
     if (sectionGroup) sectionGroup.hidden = !hasSections
@@ -319,7 +358,7 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings
       },
     )
     if (sectionList) {
-      facetRows(sectionList, orderedSections(sections), (value) => state.section === value, sectionLabel, (value, on) =>
+      facetRows(sectionList, sectionRows, (value) => state.section === value, sectionLabel, (value, on) =>
         // One section at a time: the facet narrows, it does not combine.
         setState({ section: on ? value : undefined, kind: on && value === 'reference' ? state.kind : undefined }))
     }
@@ -432,8 +471,17 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings
   const choices = () =>
     [...results.querySelectorAll<HTMLAnchorElement>('.search-panel__result, .search-panel__subs:not([hidden]) .search-panel__sub')]
 
+  /** Marks the selected option, and tells the field which one it is, as the options come and go. */
   function highlight() {
-    choices().forEach((choice, i) => choice.setAttribute('aria-selected', String(i === selected)))
+    const rows = choices()
+    rows.forEach((choice, i) => {
+      choice.id ||= `${panelId}-option-${++optionCount}`
+      choice.setAttribute('aria-selected', String(i === selected))
+    })
+    const active = rows[selected]
+    if (active) input.setAttribute('aria-activedescendant', active.id)
+    else input.removeAttribute('aria-activedescendant')
+    input.setAttribute('aria-expanded', String(rows.length > 0))
   }
 
   /** A symbol's owner reads muted before its name: `Pane.` then `Capture`. */
@@ -596,24 +644,33 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings
   }
 
   let timer: ReturnType<typeof setTimeout> | undefined
-  // A search field empties itself on Escape, and the same key closes the
-  // dialog. The dialog keeps its query on close, so the field's own clearing is
-  // undone: it fires an `input` event, which is ignored, and the value returns.
-  let escaping: string | null = null
+  // A search field clears itself on Escape, and Firefox then leaves the dialog open, so one key press did
+  // one of two things. Escape closes the dialog; the field's own clear button empties it. The dialog keeps
+  // its query on close, and the default action, the clearing, is cancelled so the query is there on reopening.
   input.addEventListener('keydown', (e) => {
-    if (e.key !== 'Escape' || !dialog) return
-    escaping = input.value
-    setTimeout(() => {
-      if (escaping !== null && input.value !== escaping) input.value = escaping
-      escaping = null
-    }, 0)
+    if (e.key !== 'Escape' || e.isComposing || !dialog) return
+    e.preventDefault()
+    dialog.close()
   })
+  const syncClear = () => { if (clearField) clearField.hidden = !input.value }
   input.addEventListener('input', () => {
-    if (escaping !== null) return
+    syncClear()
     clearTimeout(timer)
     pending = undefined
     timer = setTimeout(() => void run(input.value), 120)
   })
+  const clearQuery = () => {
+    input.value = ''
+    syncClear()
+    clearTimeout(timer)
+    pending = undefined
+    void run('')
+  }
+  clearField?.addEventListener('click', () => {
+    clearQuery()
+    input.focus()
+  })
+  closeButton?.addEventListener('click', () => dialog?.close())
 
   root.addEventListener('keydown', (e) => {
     const list = choices()
@@ -651,16 +708,14 @@ export function mountSearchPanel(root: HTMLElement, bundlePath: string, settings
   dialog?.addEventListener('close', () => remember())
 
   input.value = state.q
+  syncClear()
   paintScope()
+  paintFold()
   const ready = run(state.q)
 
   return {
     ready,
     focus: () => input.focus(),
-    clear: () => {
-      input.value = ''
-      pending = undefined
-      void run('')
-    },
+    clear: clearQuery,
   }
 }

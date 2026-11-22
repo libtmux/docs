@@ -48,6 +48,11 @@ html[data-js] .mcp-replay[data-live] :is(.mcp-turn, .mcp-frame)[data-off] {
   html[data-js] .mcp-replay:not([data-live]) :is(.mcp-turn, .mcp-frame)[data-off] {
     display: none;
   }
+
+  /* The first call is on screen at rest, and the script folds its Result away as it does every played call's; until it has, the page draws it folded. */
+  html[data-js] .mcp-replay:not([data-live]) .mcp-result > :not(summary) {
+    display: none;
+  }
 }
 
 html:not([data-js]) .mcp-replay .mcp-frame:not(:last-child) {
@@ -86,11 +91,46 @@ html:not([data-js]) .mcp-replay .mcp-frame:not(:last-child) {
   white-space: nowrap;
 }
 
+/*
+ * Hide preview (record 0081). The tmux column starts with a 2.5rem head row that holds the button, which the script adds; the
+ * row is drawn empty from the first paint of a page with script, so binding it moves nothing, and a page without script has no
+ * row. It takes the column's top padding, so the drawing starts 1.75rem lower than it did and the stage keeps its height: the
+ * stacked body and box grow by that much (--mcp-extra), and the wide column is the stage's height already.
+ */
+.mcp-replay {
+  --mcp-extra: 0rem;
+  --mcp-tmux-top: 0.75rem;
+}
+
+html[data-js] .mcp-replay:not(.mcp-replay--requests) {
+  --mcp-extra: 1.75rem;
+  --mcp-tmux-top: 0rem;
+}
+
+.mcp-replay__sidehead {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: flex-end;
+  box-sizing: border-box;
+  height: 2.5rem;
+  padding: 0.25rem 0.5rem;
+}
+
+html:not([data-js]) .mcp-replay__sidehead {
+  display: none;
+}
+
+.mcp-replay__tmux > .mcp-replay__sidehead {
+  margin-inline: -1rem;
+}
+
 /* Two columns once the replay itself is wide enough (about 1024px of viewport with the site's sidebars); narrower, the preview stacks first and shorter. */
 .mcp-replay__body {
+  position: relative;
   display: flex;
   flex-direction: column;
-  height: 30rem;
+  height: calc(30rem + var(--mcp-extra));
   min-height: 0;
 }
 
@@ -111,8 +151,8 @@ html:not([data-js]) .mcp-replay .mcp-frame:not(:last-child) {
 .mcp-replay__tmux {
   order: -1;
   flex: none;
-  height: 14rem;
-  padding: 0.75rem 1rem;
+  height: calc(14rem + var(--mcp-extra));
+  padding: var(--mcp-tmux-top) 1rem 0.75rem;
   border-bottom: 1px solid var(--color-edge);
   overflow: hidden;
 }
@@ -136,6 +176,7 @@ html:not([data-js]) .mcp-replay .mcp-frame:not(:last-child) {
 @container (min-width: 44rem) {
   .mcp-replay__body {
     flex-direction: row;
+    height: 30rem;
   }
 
   .mcp-replay__tmux {
@@ -150,6 +191,59 @@ html:not([data-js]) .mcp-replay .mcp-frame:not(:last-child) {
 
   .mcp-replay__chat {
     order: -1;
+  }
+}
+
+/*
+ * A hidden preview removes the tmux column and the chat takes the width, at the same stage height. Show preview sits at the
+ * chat's top end, which gains room so no turn starts under it. A stored choice is on the root before the first paint, so a page
+ * not yet bound is drawn the same way.
+ */
+.mcp-replay[data-preview-hidden] .mcp-replay__tmux,
+html[data-replay-preview] .mcp-replay:not([data-live]) .mcp-replay__tmux {
+  display: none;
+}
+
+.mcp-replay[data-preview-hidden] .mcp-replay__chat,
+html[data-replay-preview] .mcp-replay:not([data-live], .mcp-replay--requests) .mcp-replay__chat {
+  padding-top: 3rem;
+}
+
+.mcp-replay__show {
+  position: absolute;
+  top: 0.5rem;
+  right: 1.25rem;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid var(--control-border);
+  border-radius: 0.25rem;
+  background: var(--color-surface);
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.mcp-replay__show:hover,
+.mcp-replay__show:focus-visible {
+  color: var(--text-color);
+}
+
+.mcp-replay__show:focus-visible {
+  outline: 2px solid var(--focus-ring-color, currentColor);
+  outline-offset: 2px;
+}
+
+.mcp-replay:not([data-preview-hidden]) .mcp-replay__show {
+  display: none;
+}
+
+@media print {
+  .mcp-replay__sidehead,
+  .mcp-replay__show {
+    display: none;
   }
 }
 
@@ -169,8 +263,8 @@ html:not([data-js]) .mcp-replay .mcp-frame:not(:last-child) {
   color: var(--text-color);
 }
 
-/* The pin button's room is there from the first paint, so binding the script does not rewrap a call. */
-html[data-js] .mcp-replay .mcp-turn[data-turn]:not([data-turn='prompt']) {
+/* The pin button's room is there from the first paint, so binding the script does not rewrap a call. The closing reply has no pin. */
+html[data-js] .mcp-replay .mcp-turn[data-turn]:not([data-turn='prompt'], .mcp-turn--answer) {
   padding-inline-end: 2.25rem;
 }
 
@@ -178,21 +272,42 @@ html[data-js] .mcp-replay .mcp-turn[data-turn]:not([data-turn='prompt']) {
  * Selecting text in a turn never changes the step: hovering one previews the
  * tmux after it, and its pin button holds it. The call the tmux shows is
  * tinted, as the Core player tints its current line; no bar marks the start
- * edge of a current row.
+ * edge of a current row. The shares are the player's (record 0079): a wash that
+ * keeps muted text and every syntax ink at 4.5:1 or more. They differ by theme;
+ * dark is the resolved data-theme-mode or, before the theme script runs, the
+ * system preference, as in tokens.css.
  */
-@media (hover: hover) {
-  .mcp-replay[data-live] .mcp-turn[data-turn]:not([data-turn='prompt']):not([aria-current='step']):hover {
-    background: var(--color-surface-hover);
+.mcp-replay {
+  --mcp-tint-hover: 5%;
+  --mcp-tint-current: 8%;
+}
+
+html[data-theme-mode="dark"] .mcp-replay {
+  --mcp-tint-hover: 4%;
+  --mcp-tint-current: 7%;
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme-mode]):not([data-theme="light"]) .mcp-replay {
+    --mcp-tint-hover: 4%;
+    --mcp-tint-current: 7%;
   }
 }
 
-.mcp-turn[aria-current='step'] {
-  background: color-mix(in srgb, var(--color-link) 14%, transparent);
+@media (hover: hover) {
+  .mcp-replay[data-live] .mcp-turn[data-turn]:not([data-turn='prompt'], .mcp-turn--answer):not([aria-current='step']):hover {
+    background: color-mix(in srgb, var(--color-link) var(--mcp-tint-hover), transparent);
+  }
 }
 
-.mcp-turn.is-pinned,
-.mcp-turn[aria-current='step'].is-pinned {
-  background: color-mix(in srgb, var(--color-link) 24%, transparent);
+.mcp-turn[aria-current='step'],
+.mcp-turn.is-pinned {
+  background: color-mix(in srgb, var(--color-link) var(--mcp-tint-current), transparent);
+}
+
+/* A pinned call keeps the current tint, since a heavier wash would take its text under 4.5:1. A 1px hairline along the turn's start marks it: an inset shadow, so no border takes width and nothing shifts. */
+.mcp-turn.is-pinned {
+  box-shadow: inset 1px 0 0 var(--color-link);
 }
 
 /* A call is pinned with a real button at its top right; the state is aria-pressed. */
@@ -231,7 +346,7 @@ html[data-js] .mcp-replay .mcp-turn[data-turn]:not([data-turn='prompt']) {
 
 .mcp-turn__pin:focus-visible {
   outline: 2px solid var(--focus-ring-color, currentColor);
-  outline-offset: 1px;
+  outline-offset: 2px;
 }
 
 /* A speaker's name, in sentence case on a line of its own. */
@@ -269,9 +384,15 @@ html[data-js] .mcp-replay .mcp-turn[data-turn]:not([data-turn='prompt']) {
   margin-top: 0.5rem;
 }
 
-.mcp-turn--answer :is(code, samp) {
+/* The site's inline-code chip, as the prose rule in global.css draws it (this sheet is `not-prose`): body weight at 0.875em, in the text colour. The extra class outranks `.mcp-replay code` below, which strips the chip from the call's own code. */
+.mcp-replay .mcp-turn--answer :is(code, samp) {
+  padding: 0.125rem 0.1875rem;
+  border-radius: 0.25rem;
+  background: var(--color-inline-code-background);
   font-family: var(--mcp-mono);
   font-size: 0.875em;
+  font-weight: 400;
+  overflow-wrap: anywhere;
 }
 
 .mcp-call {
@@ -620,7 +741,7 @@ html[data-js] .mcp-replay .mcp-turn[data-turn]:not([data-turn='prompt']) {
 }
 
 .mcp-client__button:focus-visible {
-  outline: 2px solid var(--color-link);
+  outline: 2px solid var(--focus-ring-color, currentColor);
   outline-offset: -2px;
 }
 
@@ -898,6 +1019,12 @@ html[data-theme-mode='dark'] .mcp-replay__rail {
   transform: translate(-50%, -50%) scale(1.45);
 }
 
+/* At rest (record 0081) the shown mark is only the inferred one: a hollow ring, not the filled current mark. */
+.mcp-replay__mark.is-rest[aria-current='step'],
+.mcp-replay__mark.is-rest[aria-current='step']:hover {
+  background: var(--color-surface);
+}
+
 .mcp-replay__count {
   min-width: 2.5rem;
   font-family: var(--mcp-mono);
@@ -978,6 +1105,7 @@ html[data-theme-mode='dark'] .mcp-replay__rail {
    The controls sit in one row and the dots along one line, so the area reaches no further sideways than a dot's own width. */
 @media (pointer: coarse) {
   .mcp-replay__button, .mcp-replay__page { position: relative; }
+  .mcp-replay__show::after { content: ''; position: absolute; inset: min(0px, calc((100% - var(--touch-target)) / 2)); }
   :is(.mcp-replay__button, .mcp-replay__page)::after { content: ''; position: absolute; inset: calc((100% - var(--touch-target)) / 2) 0; }
   .mcp-replay__track { height: var(--touch-target); }
   .mcp-replay__mark::after { content: ''; position: absolute; inset: calc((100% - var(--touch-target)) / 2) -.375rem; }

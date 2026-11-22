@@ -16,6 +16,7 @@ import { withPortRoot } from '../../lib/site-root'
 import { alternateDocs } from '../../lib/perl-pod'
 import '../../styles/api.css'
 import '../../styles/vendor/gp-sphinx-api.css'
+import HeadingLink from '../HeadingLink.astro'
 interface Props { model: ApiModel; symbol: ApiSymbol; version: string }
 const { model, symbol, version } = Astro.props
 const product = symbol.product as DocProduct
@@ -63,12 +64,12 @@ const tmuxSections = apiTmuxSections(model.port, symbol, alternativesFor(symbol)
     alternate={(entry) => alternateDocs(model, entry, version)} />
   <ApiTmuxSections sections={tmuxSections} port={model.port} />
   {table && <div class="api-field-table mt-8">
-    <h2 class="api-section-heading text-lg font-semibold" id={table.id}>{table.label}<span class="api-section-count">{table.rows.length}</span><a class="api-heading-link" href={`#${table.id}`} aria-label={`Link to ${table.label}`}>#</a></h2>
+    <h2 class="api-section-heading text-lg font-semibold" id={table.id}>{table.label}<span class="api-section-count">{table.rows.length}</span><HeadingLink href={`#${table.id}`} label={`Link to ${table.label}`} /></h2>
     <ApiScalarMembers owner={symbol} members={table.rows} index={index} hrefFor={hrefFor} columns={table.columns} label={table.label} payloads={payloads} repeated={table.columns === 'variants' || (table.columns === 'fields' && fieldsRepeated(model.port))} />
   </div>}
   {table && <div class="sr-only">{table.rows.flatMap(anchorsFor).map((id) => <span id={id} />)}</div>}
   {listed.length > 0 && <div class="api-members mt-8">
-    <h2 class="api-section-heading text-lg font-semibold" id="api-members">{membersHeading}<span class="api-section-count">{listed.length} members</span><a class="api-heading-link" href="#api-members" aria-label={`Link to ${membersHeading}`}>#</a></h2>
+    <h2 class="api-section-heading text-lg font-semibold" id="api-members">{membersHeading}<span class="api-section-count">{listed.length} members</span><HeadingLink href="#api-members" label={`Link to ${membersHeading}`} /></h2>
     <ApiMemberList groups={groups} showGroups={showGroups} index={index} hrefFor={hrefFor} anchorsFor={anchorsFor} mixed={memberFacts.mixed} budget={memberFacts.budgeted ? memberBudget : undefined} />
   </div>}
   </div>

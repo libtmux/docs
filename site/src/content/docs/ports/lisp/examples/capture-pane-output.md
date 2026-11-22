@@ -136,12 +136,3 @@ $ cd libtmux-source && mise trust && mise install && mise exec -- sbcl \
 
 Success prints `libtmux capture ready` once. The program runs the `tmux` on
 your `PATH`.
-
-<a id="source-inclusion"></a>
-
-## Where this comes from
-
-The displayed program ran against the pinned library on Linux with SBCL
-2.6.10, ASDF 3.3.7, and isolated tmux 3.3a, 3.7c, and 3.8 servers. Its
-output assertion and directory cleanup passed. The shared-docs checks preserve
-the displayed source bytes and validate API links.

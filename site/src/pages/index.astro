@@ -183,18 +183,18 @@ const homeEntries = PORTS.map((port) => ({
 >
   {!LandingContent && <HomeLauncher slot="header-navigation" entries={homeEntries} solutions={homeSolutions} locale={locale} />}
   {LandingContent ? (
-    <main class="mx-auto max-w-7xl px-4 py-12 sm:py-16">
+    <main class="mx-auto max-w-7xl px-4 py-12 sm:py-16" id="content" tabindex="-1">
       <div class="prose max-w-3xl dark:prose-invert">
         <h1>{landingEntry?.data.title ?? 'libtmux'}</h1>
         <LandingContent />
       </div>
     </main>
   ) : (
-  <main class="home-page mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+  <main class="home-page mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8" id="content" tabindex="-1">
     <HomeIntro solutions={homeSolutions} />
 
     <!-- Agent prompt -->
-    <section class="mt-16">
+    <section class="home-last mt-16">
       <h2 class="text-xl font-semibold">Start with an agent</h2>
       <p class="mt-2 max-w-2xl text-sm opacity-80">
         Copy this into any coding agent. It installs libtmux in the repository
@@ -221,4 +221,8 @@ const homeEntries = PORTS.map((port) => ({
 
 <style>
   .home-agent-prompt { container-type: inline-size; }
+  /* The last block ends clear of the Back to top button, which sits over the bottom corner below the phone breakpoint. */
+  @media (max-width: 29.999rem) {
+    .home-last { padding-bottom: calc(var(--back-to-top-size) + var(--back-to-top-inset)); }
+  }
 </style>

@@ -114,6 +114,23 @@
     root.setAttribute('data-mcp-install-cooldown-type', localStorage.getItem(prefix + 'type') === 'bypass' ? 'bypass' : 'days');
   }
 
+  /**
+   * Whether the players' previews were hidden, resolved in <head>.
+   *
+   * The Core player and the MCP replay remember Hide preview per browser. Read when the player binds, a
+   * returning reader would watch the column paint and fold away; read here, the attribute is on the root
+   * before the first paint and the stylesheets draw the player without the column. The players keep the
+   * attribute for what they have not bound yet, and read storage themselves.
+   */
+  function applyPlayerPreviews() {
+    const root = document.documentElement;
+    const keys = [['libtmux-docs.core-player-preview', 'data-core-preview'], ['libtmux-docs.replay-preview', 'data-replay-preview']];
+    for (const [key, attribute] of keys) {
+      if (localStorage.getItem(key) === 'hidden') root.setAttribute(attribute, '');
+      else root.removeAttribute(attribute);
+    }
+  }
+
   function applyPrereleaseNotice() {
     if (localStorage.getItem('libtmux-docs.release-notice-0.1') === 'dismissed') {
       document.documentElement.setAttribute('data-prerelease', 'dismissed');
@@ -169,7 +186,7 @@
 
   // Apply theme immediately on load
   applyTheme();
-  try { applyPackagePort(); applyCooldown(); applyPrereleaseNotice(); applyProductNotices(); } catch (_) { /* Storage may be disabled. */ }
+  try { applyPackagePort(); applyCooldown(); applyPrereleaseNotice(); applyProductNotices(); applyPlayerPreviews(); } catch (_) { /* Storage may be disabled. */ }
 
   // Expose for the bundled astro:after-swap handler below so the logic isn't
   // duplicated (inline scripts can't be imported from).
@@ -178,6 +195,7 @@
   window.__applyCooldown = applyCooldown;
   window.__applyPrereleaseNotice = applyPrereleaseNotice;
   window.__applyProductNotices = applyProductNotices;
+  window.__applyPlayerPreviews = applyPlayerPreviews;
 
   // Listen for system preference changes
   const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -213,6 +231,7 @@
       window.__applyCooldown?.()
       window.__applyPrereleaseNotice?.()
       window.__applyProductNotices?.()
+      window.__applyPlayerPreviews?.()
     } catch { /* Storage may be disabled. */ }
   })
 </script>

@@ -133,7 +133,7 @@ const versionEntry: VersionEntry = {
   kind: target.kind,
   supported: true,
 }
-// Which part of the site this page is in, as a search filter; native pages get the same value from the build.
+// Which of the site's sections this page is in, as a search filter, or none; native pages get the same value from the build.
 const section = pageSection(pagePath)
 
 const routePort = portSlug ?? (process.env.LIBTMUX_DOCS_PORT || undefined) ?? (pagePath.startsWith('reference/') ? pagePath.split('/')[1] : undefined)
@@ -285,7 +285,7 @@ const inventoryPage: InventoryPage = {
       data-pagefind-filter={`port:${portSlug ? (PORT_BY_SLUG[portSlug]?.name ?? portSlug) : ROOT_PORT}`}
     >
       {/* No `data-pagefind-ignore` here: it would drop the filter with the element. The element holds no text. */}
-      <div data-pagefind-filter={`section:${section}`} hidden></div>
+      {section && <div data-pagefind-filter={`section:${section}`} hidden></div>}
       <slot />
     </div>
     <SiteFooter locale={locale as Locale} source={source} markdownHref={markdownHref} llmsRoot={llmsRoot} port={inVersionTree ? portSlug : undefined} version={inVersionTree ? target.version : undefined} pagePath={pagePath} githubUrl={githubUrl} flush={flush} compact={bare} />

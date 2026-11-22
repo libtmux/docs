@@ -4,7 +4,7 @@ import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
-import { collectNativeContext, nativeHash } from '../../scripts/native-shell-context.mjs'
+import { collectNativeContext, nativeArticleHash, nativeHash } from '../../scripts/native-shell-context.mjs'
 
 const directories: string[] = []
 afterEach(() => directories.splice(0).forEach((directory) => rmSync(directory, { recursive: true, force: true })))
@@ -65,7 +65,7 @@ describe('native shell source collection', () => {
     expect(server.sourcePath).toBe('py/v0.62.0/api/api/libtmux.server/')
     expect(server.markdownHref).toBe('/pr-42/en/py/v0.62.0/api/api/libtmux.server.md')
     expect(server.source).toEqual({ repo: 'tmux-python/libtmux', ref: sourceSha, path: 'docs/api/libtmux.server.md', sha256: nativeHash(source) })
-    expect(server.articleSha256).toBe(nativeHash(article))
+    expect(server.articleSha256).toBe(nativeArticleHash(article))
     expect(server.signatures).toEqual(['libtmux.Server'])
     expect(server.hasTableOfContents).toBe(false)
     const index = context.pages.find((page: { file: string }) => page.file === 'genindex/index.html')!

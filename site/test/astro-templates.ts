@@ -53,7 +53,8 @@ export async function loadAstroTemplate(entry: string, options: AstroTemplateOpt
   const load = ++loads
   const dataModule = (code: string) => `data:text/javascript;base64,${Buffer.from(`${code}\n//# load ${load}`).toString('base64')}`
   const { transform } = await import(astroRequire.resolve('@astrojs/compiler-rs'))
-  const real = new Set([entry, ...(options.real ?? [])])
+  // The heading link is a leaf that every heading draws, so a test always sees the markup a reader gets.
+  const real = new Set([entry, 'components/HeadingLink.astro', ...(options.real ?? [])])
   const compiled = new Map<string, string>()
 
   async function compile(file: URL, source = readFileSync(file, 'utf8')): Promise<string> {

@@ -19,6 +19,8 @@ import { chromium } from 'playwright'
  * which snaps text to device pixels as a hi-dpi screen does; the emulated factor
  * snaps to CSS pixels and is not evidence), light and dark.
  *
+ * An icon mark (the Source button's `<>`) has no descender space, so it is centred in its segment, within half a pixel.
+ *
  * `p` and `$` are not measured: their ink hangs below the baseline.
  */
 /** The version the dev build mounts a port's prose pages at: its default, as check-dev sets it. */
@@ -198,7 +200,7 @@ export function judge(label, result, kind, { skipBaseline = false } = {}) {
 
 const GROUPS = [
   { kind: 'mark', selector: `.api-nav__kind:not(:is(${LINKED.split(', ').map((s) => `${s} a > ${LINK_MARK}`).join(', ')}))`, name: 'mark' },
-  // A legend chip's letter glyph and word; an action chip whose mark is an icon (the source button) has no glyph to centre. A chip in a
+  // A legend chip's letter glyph and word; an action chip whose mark is an icon (the source button) has no glyph to centre, and `iconMarkProblems` reads it. A chip in a
   // declaration's corner tab is measured from its boxes instead (checkPage): its floor is open onto the declaration (record 0047).
   { kind: 'leg', selector: '.api-leg:has(> .api-leg__m > .api-leg__g):not(.api-corner > *)', name: 'legend chip' },
   { kind: 'row', selector: ROW_MARKS, name: 'card, list and linked-name mark' },
@@ -270,7 +272,9 @@ export async function chipGrowthProblems(page, scope) {
       return {
         text: name.textContent.trim(), box: plain(box), mark: plain(a.querySelector(':scope > .api-nav__kind').getBoundingClientRect()), lines,
         rail: plain(a.closest(list).getBoundingClientRect()), where,
-        clipped: a.scrollHeight > a.clientHeight + 1 || a.scrollWidth > a.clientWidth + 1,
+        // Only a link that hides its overflow clips: the text box of a line sticks out of a link by a pixel or two, though no letter does.
+        clipped: (getComputedStyle(a).overflowY !== 'visible' && a.scrollHeight > a.clientHeight + 1)
+          || (getComputedStyle(a).overflowX !== 'visible' && a.scrollWidth > a.clientWidth + 1),
       }
     })
   }, scope)
@@ -321,8 +325,10 @@ export async function qualifierProblems(page) {
  * Each is probed with a zero-size inline box, which sits on the baseline of the line it is in.
  */
 export async function headingProblems(page) {
-  const found = await page.evaluate(() => [...document.querySelectorAll('h2.api-index-summary')].filter((h) => h.offsetParent && h.querySelector('.headerlink')).slice(0, 6).map((heading) => {
+  const found = await page.evaluate(() => [...document.querySelectorAll('h2.api-index-summary')].filter((h) => h.offsetParent && h.querySelector('.heading-link')).slice(0, 6).map((heading) => {
     const baseline = (host) => {
+      // The link icon is the one flex item of its link: its bottom edge is the link's baseline, where a probe would be centred.
+      if (host.matches('.heading-link')) return host.querySelector('svg').getBoundingClientRect().bottom
       const probe = document.createElement('span')
       probe.style.cssText = 'display:inline-block;width:0;height:0'
       host.prepend(probe)
@@ -330,7 +336,7 @@ export async function headingProblems(page) {
       probe.remove()
       return y
     }
-    const parts = { title: heading, count: heading.querySelector(':scope > span'), permalink: heading.querySelector(':scope > .headerlink') }
+    const parts = { title: heading, count: heading.querySelector(':scope > span'), permalink: heading.querySelector(':scope > .heading-link') }
     return { text: heading.firstChild?.textContent?.trim() ?? '', baselines: Object.fromEntries(Object.entries(parts).filter(([, node]) => node).map(([name, node]) => [name, baseline(node)])) }
   }))
   const problems = []
@@ -398,6 +404,23 @@ export function apiTreeGutterProblems(page) {
   })
 }
 
+/**
+ * An icon mark is centred in its segment. A letter mark rests on bottom padding sized for the descender space under its
+ * baseline, so its ink lands centred; an icon has no descender, and the same padding lifts it. The icon is read from its box,
+ * which holds the ink symmetrically, because a corner tab's open floor leaves no painted edge to measure from.
+ */
+export function iconMarkProblems(page) {
+  return page.evaluate(() => {
+    const found = [...document.querySelectorAll('.api-leg__m')].filter((segment) => segment.offsetParent && segment.querySelector(':scope > svg')).map((segment) => {
+      const box = segment.getBoundingClientRect()
+      const icon = segment.querySelector(':scope > svg').getBoundingClientRect()
+      return { text: segment.closest('.api-leg').textContent.trim().replace(/\s+/g, ' ').slice(0, 16), offset: (icon.top + icon.bottom) / 2 - (box.top + box.bottom) / 2 }
+    })
+    const problems = found.filter(({ offset }) => Math.abs(offset) > 0.5).map(({ text, offset }) => `icon mark "${text}": the icon is ${Math.abs(offset).toFixed(2)}px ${offset < 0 ? 'above' : 'below'} its segment's centre`)
+    return { marks: found.length, problems }
+  })
+}
+
 async function checkPage(page, base, entry, scheme, results) {
   await page.goto(`${base}${entry.path}`, { waitUntil: 'load' })
   await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
@@ -430,6 +453,9 @@ async function checkPage(page, base, entry, scheme, results) {
   for (const { text, offset } of corner) {
     if (Math.abs(offset) > 0.75) results.failures.push(`${entry.label} (${scheme}) corner chip "${text}": the word's cap box is ${offset.toFixed(2)}px off the tab's centre`)
   }
+  const icons = await iconMarkProblems(page)
+  results.counts['icon mark'] = (results.counts['icon mark'] ?? 0) + icons.marks
+  results.failures.push(...icons.problems.map((problem) => `${entry.label} (${scheme}) ${problem}`))
   const protocol = await protocolSidebarProblems(page)
   results.counts['protocol sidebar group'] = (results.counts['protocol sidebar group'] ?? 0) + protocol.groups
   results.counts['protocol sidebar row'] = (results.counts['protocol sidebar row'] ?? 0) + protocol.rows
@@ -486,6 +512,18 @@ async function negativeControl(page, base, results) {
   await shifted.evaluate((node) => node.remove())
   assert(results.modControl > 0, 'The modifier check did not notice a word shifted off its chip\'s centre')
 
+  // An icon mark: the bottom-aligned padding of a letter mark, put back on the Source button's icon (the rule it had before it
+  // centred), lifts the icon off its segment's centre and must fail.
+  await page.goto(`${base}${PAGES[2].path}`, { waitUntil: 'load' })
+  await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
+  const icon = await iconMarkProblems(page)
+  assert(icon.marks > 0 && icon.problems.length === 0, `The icon mark is not centred before the control (${icon.marks} marks): ${icon.problems.join('; ')}`)
+  const raised = await page.addStyleTag({ content: '.api-leg__m:has(> svg) { align-items: flex-end !important; padding-bottom: var(--leg-pb) !important; }' })
+  const iconLifted = (await iconMarkProblems(page)).problems
+  await raised.evaluate((node) => node.remove())
+  results.iconControl = iconLifted.length
+  assert(iconLifted.some((problem) => /px above its segment's centre/.test(problem)), 'The icon check did not notice an icon lifted by a letter mark\'s bottom padding')
+
   // The protocol sidebar: a mark put back on a row, and a row that leaves the shared edge, must each fail (record 0060).
   await page.goto(`${base}${PAGES[8].path}`, { waitUntil: 'load' })
   await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
@@ -529,7 +567,7 @@ async function negativeControl(page, base, results) {
   await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
   await page.addStyleTag({ content: MEASURING_STYLE })
   assert((await headingProblems(page)).problems.length === 0, 'The group headings are not clean before the control')
-  const lifted = await page.addStyleTag({ content: 'h2.api-index-summary > .headerlink { vertical-align: 4px !important; }' })
+  const lifted = await page.addStyleTag({ content: 'h2.api-index-summary > .heading-link { vertical-align: 4px !important; }' })
   results.headingControl = (await headingProblems(page)).problems.length
   await lifted.evaluate((node) => node.remove())
   assert(results.headingControl > 0, 'The heading check did not notice a permalink off the baseline')
@@ -539,25 +577,34 @@ async function negativeControl(page, base, results) {
   await touching.evaluate((node) => node.remove())
   assert(results.rowControl > 0, 'The row check did not notice a mark that touches its name and sits off its centre')
 
-  // A linked name sets its name in a code element at .875em of its link: the capitals to centre on are the name's, not the link's.
-  await page.goto(`${base}${PAGES[4].path}`, { waitUntil: 'load' })
-  await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
-  await page.addStyleTag({ content: MEASURING_STYLE })
-  const linked = await page.locator(`.tmux-usage a > ${LINK_MARK}`).filter({ visible: true, hasText: /^[maf]$/ }).first().elementHandle()
-  const nameSize = await linked.evaluate((element) => parseFloat(getComputedStyle(element.nextElementSibling).fontSize))
-  const linkSize = await linked.evaluate((element) => parseFloat(getComputedStyle(element.parentElement).fontSize))
-  assert(nameSize < linkSize, `The linked name is not smaller than its link (${nameSize}px of ${linkSize}px), so the control cannot tell them apart`)
-  const sampled = await sample(page, linked, 'row')
-  assert.equal(sampled.info.wordFont, nameSize, 'The row measurement does not read the size of the name')
-  assert.deepEqual(judge('control', measure(sampled, 'row'), 'row'), [], 'A linked name is not centred before the control')
-  const drifted = await page.addStyleTag({ content: `${ROW_MARKS} { top: 3px !important; }` })
-  results.linkedControl = judge('control', measure(await sample(page, linked, 'row'), 'row'), 'row').length
-  await drifted.evaluate((node) => node.remove())
-  assert(results.linkedControl > 0, 'The row check did not notice a linked-name mark three pixels off its name')
+  // A linked name sets its name in a code element: the capitals to centre on are the name's, not the link's. The "In other ports" table
+  // sets the name smaller than its link, so the control tells the two apart there; the tmux usage list sets it at its link's size (record 0051).
+  const linkedRuns = [
+    { run: '.api-elsewhere-value', path: PAGES[6].path, smaller: true },
+    { run: '.tmux-usage', path: PAGES[4].path, smaller: false },
+  ]
+  results.linkedControl = 0
+  for (const { run, path, smaller } of linkedRuns) {
+    await page.goto(`${base}${path}`, { waitUntil: 'load' })
+    await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
+    await page.addStyleTag({ content: MEASURING_STYLE })
+    const linked = await page.locator(`${run} a > ${LINK_MARK}`).filter({ visible: true, hasText: /^[maf]$/ }).first().elementHandle()
+    const nameSize = await linked.evaluate((element) => parseFloat(getComputedStyle(element.nextElementSibling).fontSize))
+    const linkSize = await linked.evaluate((element) => parseFloat(getComputedStyle(element.parentElement).fontSize))
+    if (smaller) assert(nameSize < linkSize, `The linked name is not smaller than its link (${nameSize}px of ${linkSize}px in ${run}), so the control cannot tell them apart`)
+    const sampled = await sample(page, linked, 'row')
+    assert.equal(sampled.info.wordFont, nameSize, `The row measurement does not read the size of the name in ${run}`)
+    assert.deepEqual(judge('control', measure(sampled, 'row'), 'row'), [], `A linked name in ${run} is not centred before the control`)
+    const drifted = await page.addStyleTag({ content: `${ROW_MARKS} { top: 3px !important; }` })
+    const caught = judge('control', measure(await sample(page, linked, 'row'), 'row'), 'row').length
+    await drifted.evaluate((node) => node.remove())
+    assert(caught > 0, `The row check did not notice a linked-name mark three pixels off its name in ${run}`)
+    results.linkedControl += caught
+  }
 }
 
 export async function checkBadgeCentring(browser, base, { sample: bounded = false } = {}) {
-  const results = { measured: 0, failures: [], counts: {}, control: 0, headingControl: 0, rowControl: 0, sidebarMarked: 0, sidebarOffEdge: 0, gutterControl: 0, modControl: 0, linkedControl: 0 }
+  const results = { measured: 0, failures: [], counts: {}, control: 0, headingControl: 0, rowControl: 0, sidebarMarked: 0, sidebarOffEdge: 0, gutterControl: 0, modControl: 0, linkedControl: 0, iconControl: 0 }
   // The bounded sample keeps one page for each thing the gate holds: an MCP and a guide page, the API type page (tree gutter, rail, rows) and an MCP tool (sidebar rule).
   const pages = bounded ? [PAGES[0], PAGES[1], PAGES[6], PAGES[8]] : PAGES
   const hi = await chromium.launch({ args: ['--force-device-scale-factor=2', '--window-size=1440,1000'] })
@@ -580,8 +627,9 @@ export async function checkBadgeCentring(browser, base, { sample: bounded = fals
   assert(results.measured > 20, `Only ${results.measured} badge samples were measurable`)
   assert((results.counts['protocol sidebar group'] ?? 0) > 0, 'No protocol sidebar group was measured')
   assert((results.counts['API tree mark'] ?? 0) > 0, 'No API tree mark was measured, so the gutter was not checked')
+  assert((results.counts['icon mark'] ?? 0) > 0, 'No icon mark was measured, so the Source button was not checked')
   assert.deepEqual(results.failures, [], `Badge centring:\n${results.failures.join('\n')}`)
-  console.log(`Badge centring: ${results.measured} samples at 1x and a real 2x, light and dark (${Object.entries(results.counts).map(([k, v]) => `${v} ${k}`).join(', ')}); negative controls caught ${results.control} of ${results.controlTested} shifted marks, ${results.headingControl} heading problem and ${results.rowControl} row problems, ${results.sidebarMarked} marked sidebar row and ${results.sidebarOffEdge} row off the edge, ${results.gutterControl} broken indent, ${results.modControl} shifted modifier word and ${results.linkedControl} drifted linked-name mark PASS`)
+  console.log(`Badge centring: ${results.measured} samples at 1x and a real 2x, light and dark (${Object.entries(results.counts).map(([k, v]) => `${v} ${k}`).join(', ')}); negative controls caught ${results.control} of ${results.controlTested} shifted marks, ${results.headingControl} heading problem and ${results.rowControl} row problems, ${results.sidebarMarked} marked sidebar row and ${results.sidebarOffEdge} row off the edge, ${results.gutterControl} broken indent, ${results.modControl} shifted modifier word, ${results.linkedControl} drifted linked-name mark and ${results.iconControl} lifted icon mark PASS`)
 }
 
 /**
@@ -744,6 +792,7 @@ export async function checkUsageChips(browser, base) {
     await page.addStyleTag({ content: `${CHIP} { height: 1.4em !important; overflow: hidden !important; }` })
     const pinned = await growth()
     assert(pinned.problems.some((problem) => /past the link's bottom edge/.test(problem)), 'The check did not notice a link too short for its name')
+    assert(pinned.problems.some((problem) => /the link clips its name/.test(problem)), 'The check did not notice a link that clips its name')
     // Control 2: a name that ends below its link's bottom edge.
     await fresh()
     await page.addStyleTag({ content: `${CHIP} > ${LINK_MARK} + code { margin-bottom: -8px !important; }` })

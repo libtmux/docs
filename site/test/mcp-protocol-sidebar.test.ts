@@ -14,7 +14,7 @@ const options = {
   real: [
     'layouts/DocsLayout.astro', 'components/docs/Sidebar.astro', 'components/docs/SidebarSection.astro', 'components/docs/SidebarLink.astro',
     'components/docs/DocumentationNavigationButtons.astro', 'components/docs/SidebarHead.astro', 'components/StatusBadge.astro',
-    'components/PageToolbar.astro', 'components/api/ApiBadge.astro', 'components/api/SymbolName.astro',
+    'components/PageToolbar.astro', 'components/api/ApiBadge.astro', 'components/api/ApiSectionBar.astro', 'components/api/SymbolName.astro',
   ],
   stubs: {
     'layouts/BaseLayout.astro': '<slot name="context" /><slot />',
@@ -123,7 +123,7 @@ describe('the menu sidebar on protocol reference pages', () => {
     expect([...tab.children].map(part)).toEqual(['kind', 'tier', 'source'])
     expect(tab.querySelector('a.api-leg--action')?.getAttribute('href')).toMatch(/^https:\/\/github\.com\//)
     // The object is the page's entry; the type definitions below it are entries of their own and keep their permalinks.
-    expect(document.querySelector('dl.gp-sphinx-api-container:not(.mcp-type-definition) > dt.gp-sphinx-api-header a.headerlink')).toBeNull()
+    expect(document.querySelector('dl.gp-sphinx-api-container:not(.mcp-type-definition) > dt.gp-sphinx-api-header a.heading-link')).toBeNull()
     expect(document.querySelector('.api-reference-version')).toBeNull()
     expect(document.querySelector('.api-reference-eyebrow')?.getAttribute('data-pagefind-ignore')).toBe('all')
     expect(document.querySelector('h1.api-reference-title')?.getAttribute('data-pagefind-weight')).toBe('10')

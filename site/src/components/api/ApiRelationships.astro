@@ -115,7 +115,7 @@ const callSource = (section: ApiRelationshipSection, symbol: ApiSymbol) => !mode
   .api-call-network__current a { background: color-mix(in srgb, var(--theme-primary) 10%, transparent); font-weight: 600; }
   .api-call-network__current a { min-width: 0; }
   .api-call-network__more { font-size: .8rem; }
-  .api-call-network a:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+  .api-call-network a:focus-visible { outline: 2px solid var(--focus-ring-color); outline-offset: 2px; }
   @media (max-width: 640px) {
     .api-call-network__columns { grid-template-columns: minmax(0, 1fr); }
     .api-call-network__current { flex-direction: column; }

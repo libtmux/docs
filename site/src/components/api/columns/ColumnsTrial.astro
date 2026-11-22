@@ -19,7 +19,7 @@ const base = referenceUrl(PORT_BY_SLUG[port]!, version)
 ---
 <BaseLayout title="Columns, all variants" description="MillerColumns variants A to G over the Go API reference." pagePath="reference/trial/columns"
   portSlug={port} version={version} noindex searchable={false} documentationLayout="reference" markdown="rendered">
-  <div class="columns-trial" data-columns-trial data-base={base} data-port-name="Go">
+  <main class="columns-trial" id="content" tabindex="-1" data-columns-trial data-base={base} data-port-name="Go">
     <h1>Columns, all variants</h1>
     <p class="columns-trial__what" data-what></p>
     <div class="columns-trial__bar">
@@ -58,5 +58,5 @@ const base = referenceUrl(PORT_BY_SLUG[port]!, version)
       start()
       document.addEventListener('astro:page-load', start)
     </script>
-  </div>
+  </main>
 </BaseLayout>

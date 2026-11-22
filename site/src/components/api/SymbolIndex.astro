@@ -42,7 +42,7 @@ const word = (kind: string) => (kind === 'typealias' ? 'type alias' : kind)
 const filterLabel = `Filter the ${portName ?? ''} API index`.replace('  ', ' ')
 ---
 
-<Root class:list={['symidx', embedded && 'symidx--embedded']} data-symidx data-total={entries.length}>
+<Root class:list={['symidx', embedded && 'symidx--embedded']} id={embedded ? undefined : 'content'} tabindex={embedded ? undefined : -1} data-symidx data-total={entries.length}>
   <PageToolbar breadcrumbs={breadcrumbs} />
   <h1 class="page-title">{title}</h1>
   <p class="symidx__lede">

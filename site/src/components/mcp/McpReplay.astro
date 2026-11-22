@@ -11,13 +11,16 @@
  * pane output from the calls' results, or the state the results describe when
  * the recording stored none (`lib/mcp-replay.ts`). The script
  * below plays the session, or lets a reader step through it. Without script
- * the whole chat and the final state show. The markup is drawn at the state before the first call, where the script starts, so binding it changes nothing on screen; `mcp-replay.css` shows the finished chat instead where there is no script, and for a reader who asked for less motion until the script binds. Without a recording the page shows
+ * the whole chat and the final state show. The markup is drawn at rest (record 0081), where the script starts: the prompt and the first call, the tmux after that call, no turn highlighted, the first mark a hollow ring, so binding it changes nothing on screen; `mcp-replay.css` shows the finished chat instead where there is no script, and for a reader who asked for less motion until the script binds (that reader opens on the finished chat). Without a recording the page shows
  * the requests only, says so, and draws no preview.
  *
  * Selecting text in a turn never changes the step. Hovering a turn previews the
  * tmux after it; its pin button holds that step, and the controls and the arrow
- * keys move between steps. Nothing plays until the reader presses play, unless
- * the instance sets `autoplay`.
+ * keys move between steps. The first stepping action leaves rest. Nothing plays
+ * until the reader presses play, unless the instance sets `autoplay`: a
+ * stepping replay is the default, and an autoplay one starts from rest and stops
+ * on the reader's first interaction. Hide preview folds the tmux column away
+ * and the chat takes its width at the same height.
  */
 import { Code } from 'astro-expressive-code/components'
 import type { Frame } from '../../lib/mcp-replay'
@@ -32,13 +35,15 @@ interface Props {
   portName: string
   /** The heading's level: 2 on the overview, where it is a section, 3 inside a landing panel. */
   level?: 2 | 3
-  /** Play by itself once the replay is 40% on screen. Off by default; a reader's selection, scroll or focus stops it, and reduced motion never starts it. */
+  /** An autoplay replay: it starts from rest once 40% of it is on screen. Off by default, which is a stepping replay; the reader's first control, selection, wheel, touch or focus stops it for good, and reduced motion never starts it. */
   autoplay?: boolean
 }
 const { example, portName, level = 2, autoplay = false } = Astro.props as Props
 const Heading = `h${level}` as 'h2' | 'h3'
 const { recording } = example
 const total = example.steps.length
+// The replay opens at rest on the first call: its turn and the tmux after it show, and nothing is highlighted.
+const opening = Math.min(1, total)
 const args = (value: Record<string, unknown>) => JSON.stringify(value)
 const shown = (value: unknown) => (typeof value === 'string' ? value : JSON.stringify(value, null, 2))
 const reply = recording?.reply
@@ -56,15 +61,16 @@ const note = (frame: Frame) => {
   {recording && (
     <header class="mcp-replay__head" data-head>
       <span class="mcp-replay__title">Replay</span>
-      <span class="mcp-replay__hint" data-hint>Hover a call to preview the tmux state after it. Use its pin button to hold it.</span>
+      <span class="mcp-replay__hint" data-hint>Hover a call to preview the tmux state after it. Use its pin button to hold it. With the replay focused, the arrow keys, Home and End step through the calls.</span>
     </header>
   )}
-  <div class="mcp-replay__body" tabindex={recording ? 0 : undefined} data-body>
+  <div class="mcp-replay__body" tabindex={recording ? 0 : undefined} role={recording ? 'group' : undefined} aria-label={recording ? 'The chat and the tmux it leaves' : undefined} aria-keyshortcuts={recording ? 'ArrowLeft ArrowRight Home End' : undefined} data-body>
     {recording && (
       <div class="mcp-replay__tmux" data-tmux role="group" aria-label="tmux state after the call shown">
+        <div class="mcp-replay__sidehead" data-sidehead></div>
         {recording.frames.map((frame) => {
           return (
-            <div class="mcp-frame" data-frame={frame.done} data-off={frame.done === 0 ? undefined : ''}>
+            <div class="mcp-frame" data-frame={frame.done} data-off={frame.done === opening ? undefined : ''}>
               <TmuxScreen frame={frame} hadSessions={recording.frames.some((earlier) => earlier.done < frame.done && earlier.sessions.length > 0)} />
               {frame.recorded ? (
                 <p class="mcp-frame__note">{frame.tool ? <>tmux after <code>{frame.tool}</code>{frame.unchanged ? ': unchanged, the call only reads.' : '.'}</> : 'tmux before the first call.'}</p>
@@ -81,7 +87,7 @@ const note = (frame: Frame) => {
       {example.steps.map((step, index) => {
         const tier = tierFor(step.tool)
         return (
-          <article class="mcp-turn" data-turn={index} data-off={recording ? '' : undefined}>
+          <article class="mcp-turn" data-turn={index} data-off={recording && index >= opening ? '' : undefined}>
             <p class="mcp-turn__say"><span class="mcp-turn__who">Agent</span>{step.caption}</p>
             <div class="mcp-call">
               <span class="mcp-call__dot" aria-hidden="true"></span>
@@ -108,14 +114,16 @@ const note = (frame: Frame) => {
       )}
     </div>
   </div>
-  {recording && <ReplayControls start="Show tmux before the first call" marks={example.steps.map((step) => `Show the state after ${step.tool.name}`)} />}
+  {recording && <ReplayControls start="Show tmux before the first call" at={opening} rest={opening > 0} marks={example.steps.map((step) => `Show the state after ${step.tool.name}`)} />}
 </section>
 {!recording && <p class="not-prose mcp-replay-note">Requests only: no recorded results for {portName} yet.</p>}
 
 <script>
-  import { bindReplay } from '../../lib/replay-player'
+  import { bindPreview, bindReplay, linkedStep } from '../../lib/replay-player'
 
-  function bindReplayChat(root: HTMLElement) {
+  const PREVIEW_KEY = 'libtmux-docs.replay-preview'
+
+  function bindReplayChat(root: HTMLElement, linked: number | undefined) {
     const total = Number(root.dataset.steps)
     const body = root.querySelector<HTMLElement>('[data-body]')!
     const chat = root.querySelector<HTMLElement>('[data-chat]')!
@@ -126,7 +134,8 @@ const note = (frame: Frame) => {
     const hint = root.querySelector<HTMLElement>('[data-hint]')
     // A touch screen fires mouseenter on a tap and never mouseleave, so only a pointer that can hover previews.
     const canHover = window.matchMedia?.('(hover: hover)').matches ?? true
-    const IDLE_HINT = canHover ? 'Hover a call to preview the tmux state after it. Use its pin button to hold it.' : 'Use a call\'s pin button to hold the tmux state after it.'
+    const KEYS = ' With the replay focused, the arrow keys, Home and End step through the calls.'
+    const IDLE_HINT = (canHover ? 'Hover a call to preview the tmux state after it. Use its pin button to hold it.' : 'Use a call\'s pin button to hold the tmux state after it.') + KEYS
     // The one call whose pin button is a tab stop; arrow keys move it, so the list is a single stop.
     let rover = -1
 
@@ -134,16 +143,19 @@ const note = (frame: Frame) => {
       body,
       content: chat,
       autoplay: root.hasAttribute('data-autoplay'),
+      // Open at rest: the first call and the tmux after it show, no turn is highlighted. A link that names a step opens on it instead.
+      opening: linked ?? 1,
+      rest: linked === undefined,
       // A reader who asked for less motion has the finished chat, and presses play to watch it again.
       reducedOpening: 'end',
       total: () => total,
       // Calls made so far, the call pinned by a click, and the call under the pointer or focus.
-      render({ step, shown, pinned }, scroll) {
+      render({ step, shown, pinned, rest }, scroll) {
         turns.forEach((turn) => {
           const index = Number(turn.dataset.turn)
           // The answer comes after the last call, so it shows once every call has played.
           turn.toggleAttribute('data-off', index === total ? step < total : index >= step)
-          if (index < total && index + 1 === shown) turn.setAttribute('aria-current', 'step')
+          if (index < total && index + 1 === shown && !rest) turn.setAttribute('aria-current', 'step')
           else turn.removeAttribute('aria-current')
           turn.classList.toggle('is-pinned', pinned !== null && index < total && index + 1 === pinned)
         })
@@ -161,6 +173,8 @@ const note = (frame: Frame) => {
       ownsKey: (target) => target.hasAttribute('data-pin'),
     })
     if (!player) return
+    // Hide preview folds the tmux column away; Show preview sits at the chat's top end, first on the stage that holds both.
+    bindPreview(root, { key: PREVIEW_KEY, column: root.querySelector<HTMLElement>('[data-tmux]')!, head: root.querySelector<HTMLElement>('[data-sidehead]')!, places: [{ parent: body, before: body.firstElementChild }], showClass: 'mcp-replay__show' })
     // The results fold away as the replay plays them; a replay that starts finished keeps them open, as a page with no script has them.
     if (!player.reduced) root.querySelectorAll<HTMLDetailsElement>('details.mcp-result').forEach((details) => { details.open = false })
 
@@ -190,7 +204,10 @@ const note = (frame: Frame) => {
     })
   }
 
-  const bindAll = () => document.querySelectorAll<HTMLElement>('[data-mcp-replay]:not([data-live])').forEach(bindReplayChat)
+  const bindAll = () => {
+    const linked = linkedStep('[data-mcp-replay]')
+    document.querySelectorAll<HTMLElement>('[data-mcp-replay]:not([data-live])').forEach((root) => bindReplayChat(root, linked))
+  }
   bindAll()
   document.addEventListener('astro:after-swap', bindAll)
 </script>

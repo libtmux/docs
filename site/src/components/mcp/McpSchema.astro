@@ -2,6 +2,7 @@
 import { schemaAnchor, schemaConstraints, schemaDefault, schemaRows, type McpSchema } from '../../lib/mcp-schema'
 import { renderToolDescription, type ToolDescriptionContext } from '../../lib/mcp-reference'
 import McpSchemaType from './McpSchemaType.astro'
+import HeadingLink from '../HeadingLink.astro'
 
 /**
  * The fields of a schema, in the parameter list every API reference uses:
@@ -38,7 +39,7 @@ const closed = typeof schema === 'object' && schema.additionalProperties === fal
         {/* One line: Astro turns a line break between these parts into a space. */}
         <strong><a href={`#${encodeURIComponent(row.id)}`}>{row.path.startsWith('/properties/') ? <code>{row.label}</code> : row.label}</a></strong>{row.required === false && '?'}{row.default !== undefined && <>{' = '}<code>{row.default}</code></>}{' ('}<McpSchemaType schema={row.schema} root={root} scope={scope} />{') '}
       </span>
-      <a class="api-heading-link" href={`#${encodeURIComponent(row.id)}`} aria-label={`Link to ${row.label} parameter`} data-pagefind-ignore="all">#</a>
+      <HeadingLink href={`#${encodeURIComponent(row.id)}`} label={`Link to ${row.label} parameter`} />
     </p>
     {row.html && <div class="mcp-parameter-doc" set:html={row.html} />}
     {row.facts.length > 0 && <dl class="api-definition api-parameter-facts">

@@ -24,7 +24,7 @@ describe('the declaration card (Signature, adoption steps 2 and 36)', () => {
     expect(source).toEqual([['source', expect.stringContaining('github.com/libtmux/libtmux-go/blob/')]])
     // The kind chip leads, Source follows: the order the design draws.
     expect([...tab.children].map((child) => child.classList.contains('api-leg--action'))).toEqual([false, true])
-    expect(head.querySelector('a.headerlink'), 'the page is the entry, so its URL is the permalink').toBeNull()
+    expect(head.querySelector('a.heading-link'), 'the page is the entry, so its URL is the permalink').toBeNull()
     expect(head.querySelector('.viewcode-link, .gp-sphinx-api-source-link, .gp-sphinx-api-slot')).toBeNull()
     expect(head.textContent).not.toContain('[source]')
     // The tab is flush on the card: it is the header's own corner, not a row of the layout that holds the signature.

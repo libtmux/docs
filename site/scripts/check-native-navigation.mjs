@@ -125,7 +125,7 @@ try {
       await openNativeLink(page, 'internals/api/libtmux._internal.query_list/')
       await checkMetadata(page)
       await page.locator('dt[id="libtmux._internal.query_list.QueryList"]').hover()
-      await page.locator('a.headerlink[href="#libtmux._internal.query_list.QueryList"]:visible').click()
+      await page.locator('a.heading-link[href="#libtmux._internal.query_list.QueryList"]:visible').click()
       await page.waitForFunction(() => document.querySelector('[data-page-port-switcher] a[aria-current]')?.hash === location.hash)
       const target = await page.locator('dt[id="libtmux._internal.query_list.QueryList"]').boundingBox()
       const header = await page.locator('.site-header').boundingBox()

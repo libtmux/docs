@@ -37,7 +37,8 @@ omit them. Layout whitespace does not change these keys.
 Native citation links are navigation controls; the named citations remain
 targets. When Docutils reuses their automatic ID for an empty heading alias,
 the catalog uses the heading's unique section fragment. Duplicate content IDs
-still fail publication. Native article bytes remain unchanged.
+still fail publication. Native article bytes remain unchanged, except that Sphinx's
+permalink (`a.headerlink`) is drawn as the shared heading link.
 
 The record contract lives in `packages/api-model/src/targets.ts`. Logical
 identity, display, final URL, version, and provenance are separate fields.

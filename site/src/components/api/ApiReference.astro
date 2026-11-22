@@ -1,4 +1,5 @@
 ---
+import HeadingLink from '../HeadingLink.astro'
 import type { ApiModel, ApiSymbol, SourceApiModel, SymbolIndex } from '@libtmux/api-model'
 import { aliasMembersTarget, membersOf, pageMembersOf, memberTier, docSummaryText, memberSignals, parameterId, qualifiedNameOf, moduleOf, modulesIn, sourceUrl as apiSourceUrl, symbolsForProduct } from '@libtmux/api-model/reference'
 import mentionsData from '../../data/mentions.json'
@@ -18,6 +19,7 @@ import { apiGlossary, apiGlossaryHeadings, API_GLOSSARY_TITLE, apiGlossaryHref }
 import ApiQualifiedName from '../../components/api/ApiQualifiedName.astro'
 import ApiType from '../../components/api/ApiType.astro'
 import ApiPageContents from '../../components/api/ApiPageContents.astro'
+import ApiSectionBar from './ApiSectionBar.astro'
 import SourcePane from './SourcePane.astro'
 import { apiEntryFields, apiEntrySections, apiMemberGroups, apiMemberSections, fieldsLabel, fieldsRepeated, memberCollectionFacts, memberTable, memberTableColumns, relatedTypeLinks, variantPayloads, type ApiSection } from '../../lib/api-sections'
 import PageToolbar from '../../components/PageToolbar.astro'
@@ -457,7 +459,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
   {model && sidebarInventory && <ApiColumnsBar port={port} portName={label} base={refBase} glossary={glossary} />}
   <!-- Flush: the tree's column runs from the header to the footer against the
        viewport's edge, as Learn's does, and only the text column is padded. -->
-  <main class:list={["api-reference-layout grid", owner && 'api-reference-layout--symbol', glossary && 'api-reference-layout--glossary']}>
+  <main class:list={["api-reference-layout grid", owner && 'api-reference-layout--symbol', glossary && 'api-reference-layout--glossary']} id="content" tabindex="-1">
     {model && sidebarInventory && (
       <ApiTree
         presentation="outline"
@@ -526,7 +528,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
             </p>
             <p class="mt-4">
               <a href={withRoot('/reference/symbols/a/')}>Symbol index (A–Z)</a>
-              <span class="ml-2 text-sm opacity-60">
+              <span class="ml-2 text-sm text-muted">
                 every name in every port, for when you know the name and not
                 the library
               </span>
@@ -538,7 +540,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                   href={PORT_BY_SLUG[port] ? referenceUrl(PORT_BY_SLUG[port], defaultVersionFor(port)) : withRoot('/reference/')}
                 >
                   <span class="text-lg font-semibold">{PORT_NAME[port] ?? port}</span>
-                  <span class="ml-2 text-sm opacity-60">{coreCount(m)} symbols</span>
+                  <span class="ml-2 text-sm text-muted">{coreCount(m)} symbols</span>
                   <p class="mt-1 text-sm opacity-75">
                     {m.symbols.filter((s) => s.doc?.summary).length} documented,
                     {' '}{topLevelTypesOf(m).length} types
@@ -588,7 +590,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                   class="api-index-summary scroll-mt-24 border-b border-edge pb-1 font-mono text-sm font-semibold tracking-tight"
                 >
                   {mod.name || 'Types'}
-                  <span class="ml-2 font-sans text-xs font-normal opacity-60">
+                  <span class="ml-2 font-sans text-xs font-normal text-muted">
                     {[
                       mod.types.length > 0 && `${mod.types.length} ${mod.types.length === 1 ? 'type' : 'types'}`,
                       mod.free.length > 0 &&
@@ -623,10 +625,10 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                         {context && <span class="api-index-card__context">
                           <ApiBadge label={context.label} variant="mod" value={context.kind} preview={false} />
                         </span>}
-                        {count > 0 && <span class="text-xs opacity-60">{count} {count === 1 ? 'member' : 'members'}</span>}
+                        {count > 0 && <span class="text-xs text-muted">{count} {count === 1 ? 'member' : 'members'}</span>}
                       </div>
                       {o.doc?.summary && (
-                        <p class="mt-1 text-sm opacity-80">
+                        <p class="mt-1 text-sm text-muted">
                           <ApiDoc text={o.doc.summary} index={index} context={o} citations={false} />
                         </p>
                       )}
@@ -640,7 +642,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
               <section class="mt-12">
                 <h2 class="border-b border-edge pb-1 font-mono text-sm font-semibold tracking-tight">
                   By module
-                  <span class="ml-2 font-sans text-xs font-normal opacity-60">
+                  <span class="ml-2 font-sans text-xs font-normal text-muted">
                     {moduleGroups.length} modules
                   </span>
                 </h2>
@@ -665,7 +667,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
                       <details id={m.name || undefined} class="api-module scroll-mt-24">
                         <summary class="api-module__name font-mono text-sm">
                           {m.name || 'Types'}
-                          <span class="ml-2 font-sans text-xs opacity-60">
+                          <span class="ml-2 font-sans text-xs text-muted">
                             {m.types.length + m.free.length}
                           </span>
                         </summary>
@@ -692,10 +694,10 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
         owner && (
           <>
             {pageSections.length > 1 &&
-              <nav class="api-section-links" aria-label="Reference sections" data-pagefind-ignore="all">
+              <ApiSectionBar>
                 {pageSections.filter((section) => !section.nested && !['Description', 'References'].includes(section.label))
                   .map((section, i) => <a href={`#${section.id}`} data-api-section-link aria-current={i === 0 ? 'location' : undefined}>{section.label}{section.count && <span>{section.count}</span>}</a>)}
-              </nav>}
+              </ApiSectionBar>}
             <!-- The type's own entry, through the same component as its
                  members. It is a declaration like any other — the only
                  difference is that this one is what the page is about, which
@@ -817,13 +819,13 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
             */}
             {fieldsAndRest && owner && (
               <div class="api-field-table mt-8">
-                <h2 class="api-section-heading text-lg font-semibold" id={table.id}>{tableHeading}<span class="api-section-count">{table.rows.length}</span><a class="api-heading-link" href={`#${table.id}`} aria-label={`Link to ${tableHeading}`}>#</a></h2>
+                <h2 class="api-section-heading text-lg font-semibold" id={table.id}>{tableHeading}<span class="api-section-count">{table.rows.length}</span><HeadingLink href={`#${table.id}`} label={`Link to ${tableHeading}`} /></h2>
                 <ApiScalarMembers owner={owner} members={table.rows} index={index} hrefFor={hrefFor} columns={table.columns} label={tableHeading} payloads={payloads} repeated={rowsRepeat(table.columns)} />
               </div>
             )}
             {shown.length > 0 && (
               <div class="api-members mt-8">
-                <h2 class="api-section-heading text-lg font-semibold" id="api-members">{aliasedMembers ? <>Members of <a class="api-members-target" href={hrefFor(aliasedMembers)}><code>{aliasedMembers.name}</code></a></> : membersLabel}<span class="api-section-count">{shown.length} {countNoun}</span><a class="api-heading-link" href="#api-members" aria-label={`Link to ${membersLabel}`}>#</a></h2>
+                <h2 class="api-section-heading text-lg font-semibold" id="api-members">{aliasedMembers ? <>Members of <a class="api-members-target" href={hrefFor(aliasedMembers)}><code>{aliasedMembers.name}</code></a></> : membersLabel}<span class="api-section-count">{shown.length} {countNoun}</span><HeadingLink href="#api-members" label={`Link to ${membersLabel}`} /></h2>
                 {tableColumns ? <ApiScalarMembers owner={owner} members={listed} index={index} hrefFor={hrefFor} columns={tableColumns} label={tableHeading} payloads={payloads} repeated={rowsRepeat(tableColumns)} />
                   : budgeted ? <>
                     <ApiMemberList groups={memberGroups} showGroups={showMemberGroups} index={index} hrefFor={hrefFor} language={language} mixed={mixedKinds}
@@ -836,7 +838,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
 
             {otherInherited.length > 0 && (
               <>
-                <h2 class="api-section-heading mt-12 text-lg font-semibold" id="api-inherited">Inherited members<span class="api-section-count">{otherInherited.length} {otherInherited.length === 1 ? 'member' : 'members'}</span><a class="api-heading-link" href="#api-inherited" aria-label="Link to Inherited members">#</a></h2>
+                <h2 class="api-section-heading mt-12 text-lg font-semibold" id="api-inherited">Inherited members<span class="api-section-count">{otherInherited.length} {otherInherited.length === 1 ? 'member' : 'members'}</span><HeadingLink href="#api-inherited" label="Link to Inherited members" /></h2>
                 <p class="mt-1 text-sm opacity-70">
                   Reached through {[...new Set(otherInherited.map((m) => m.inheritedFrom))].join(', ')}.
                 </p>
@@ -873,7 +875,7 @@ const bases = owner && 'extends' in owner ? owner.extends ?? [] : []
               </div>
             </RelationshipCollection>}
             {usage.length > 0 && <section class="api-tmux-usage" aria-labelledby="api-tmux-usage">
-              <h2 class="api-section-heading text-lg font-semibold" id="api-tmux-usage">In libtmux<a class="api-heading-link" href="#api-tmux-usage" aria-label="Link to In libtmux">#</a></h2>
+              <h2 class="api-section-heading text-lg font-semibold" id="api-tmux-usage">In libtmux<HeadingLink href="#api-tmux-usage" label="Link to In libtmux" /></h2>
               {usage.map((entry) => <>
                 <p>These methods send <a href={entry.manualHref}><code>{entry.command}</code></a>.</p>
                 <TmuxUsage usage={entry} />
