@@ -218,7 +218,9 @@ export async function checkClipboard(page, base, { sabotage } = {}) {
   assert(response?.ok(), `Go workspace: HTTP ${response?.status()}`)
   const digest = (text) => createHash('sha256').update(text).digest('hex')
   for (const file of example.files) {
-    const figure = page.getByRole('figure', { name: file.name, exact: true })
+    // A whole program's frame names its role after the file ("main.go Complete program"), so find it by its title.
+    const figure = page.locator('figure').filter({ has: page.locator('figcaption .title', { hasText: new RegExp(`^${file.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`) }) })
+    assert.equal(await figure.count(), 1, `${file.name}: one frame carries the file's title`)
     const displayed = await figure.locator('.ec-line .code').allTextContents()
     assert.equal(digest(displayed.map((line) => line === '\n' ? '' : line).join('\n') + '\n'),
       file.sha256, `${file.name}: rendering preserves executed bytes, including tabs`)
