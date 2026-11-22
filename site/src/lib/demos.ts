@@ -50,6 +50,11 @@ export const DEMO_SECTIONS: DemoSection[] = [
         title: 'Badges in context',
         description: 'One badge system across 25 contexts, with the recommended treatment and its alternatives.',
       },
+      {
+        href: '/demo/corner-badges/',
+        title: 'Declaration badges',
+        description: 'Where a declaration\'s badges stand: the folder tab the site uses, the straddling variant and the published slot tucked into the corner.',
+      },
     ],
   },
   {
