@@ -440,12 +440,12 @@ describe('Expressive Code frames', () => {
       expect(button.getAttribute('aria-expanded')).toBe('true')
       expect(button.textContent).toBe('Show fewer lines')
       expect(frame.hasAttribute('data-expanded')).toBe(true)
-      expect(document.querySelector('.cap-count')!.hasAttribute('hidden')).toBe(true)
+      expect(document.querySelector('.cap-count')!.textContent, 'the bar names what the open frame shows').toBe('86 lines')
       button.click()
       expect(button.getAttribute('aria-expanded')).toBe('false')
       expect(button.textContent).toBe('Show all 86 lines')
       expect(frame.hasAttribute('data-expanded')).toBe(false)
-      expect(document.querySelector('.cap-count')!.hasAttribute('hidden')).toBe(false)
+      expect(document.querySelector('.cap-count')!.textContent).toBe('16 of 86 lines')
     })
 
     it('does not touch the lines Copy takes', async () => {

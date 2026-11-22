@@ -130,7 +130,6 @@ export function codeFrame() {
         .frame[data-cap] > .rail { max-height: calc(var(--cap-lines) * var(--ec-codeLineHt) * var(--ec-codeFontSize) + 2 * var(--ec-codePadBlk)); }
         .frame[data-cap][data-expanded] > .rail { max-height: none; }
         .cap { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.375rem 0.75rem 0.375rem 1rem; border: var(--ec-brdWd) solid var(--ec-brdCol); border-top: 0; border-end-start-radius: calc(var(--ec-brdRad) + var(--ec-brdWd)); border-end-end-radius: calc(var(--ec-brdRad) + var(--ec-brdWd)); background: var(--color-surface, var(--color-background-secondary)); font-size: 0.8125rem; line-height: 1.5; color: var(--color-foreground-muted, var(--color-muted)); }
-        .cap-count[hidden] + button { margin-inline-start: auto; }
         .cap button { padding: 0.2rem 0.5rem; border: 1px solid var(--control-border, color-mix(in oklab, var(--text-color, currentColor) 60%, var(--background-color, transparent))); border-radius: 0.25rem; background: var(--background-color, transparent); color: var(--text-color, inherit); font: inherit; cursor: pointer; }
         .cap button:hover:not(:disabled) { color: var(--color-link, inherit); border-color: currentColor; }
         .cap button:focus-visible { outline: 2px solid var(--focus-ring-color, var(--color-link, currentColor)); outline-offset: 2px; }
@@ -179,8 +178,10 @@ export function codeFrame() {
         frame.toggleAttribute('data-expanded', open);
         button.setAttribute('aria-expanded', String(open));
         button.textContent = open ? 'Show fewer lines' : 'Show all ' + button.getAttribute('data-total') + ' lines';
+        // The bar says what the frame shows now: every line once it is open, the cap of them while it is not.
         const count = frame.querySelector('.cap-count');
-        if (count) count.hidden = open;
+        const total = button.getAttribute('data-total');
+        if (count) count.textContent = open ? total + ' lines' : frame.getAttribute('data-cap') + ' of ' + total + ' lines';
         const pre = frame.querySelector('pre');
         if (!open && pre) pre.scrollTop = 0;
         followCode(pre);
