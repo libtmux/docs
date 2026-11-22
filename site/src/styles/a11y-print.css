@@ -17,6 +17,7 @@
   .sidebar-link.active,
   .sidebar-section:not([open]):has([aria-current='page']) > summary,
   :is(.api-page-contents, .api-glossary-contents) a[aria-current="location"],
+  a[aria-current='true'],
   .doc-picker-option[aria-current],
   [aria-pressed='true'],
   [role='tab'][aria-selected='true'] {
@@ -30,6 +31,7 @@
   .sidebar-link.active *,
   .sidebar-section:not([open]):has([aria-current='page']) > summary *,
   :is(.api-page-contents, .api-glossary-contents) a[aria-current="location"] *,
+  a[aria-current='true'] *,
   .doc-picker-option[aria-current] *,
   [aria-pressed='true'] *,
   [role='tab'][aria-selected='true'] * {
