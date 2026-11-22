@@ -41,7 +41,11 @@ export interface Workspace {
   /** Panel ids, most recently active first. */
   recent: string[]
   maximized: string | null
+  /** Panels the reader closed, newest first, which the Closed list can bring back. */
+  closed: Panel[]
 }
+
+export const CLOSED_LIMIT = 12
 
 /** A resource a panel can show: a port's API, every port, or the notes. */
 export type Resource = 'equiv' | 'notes' | `api:${string}`
@@ -61,7 +65,7 @@ export const TEMPLATE_NAMES: Record<TemplateName, string> = { read: 'Read', comp
 
 /** The three starting layouts: Read (API and notes), Compare (three APIs in one set), Study (two APIs, All ports as a follower, notes, a pinned preview). */
 export function fromTemplate(name: TemplateName, loc: string = DEFAULT_LOCATOR): Workspace {
-  const base = { name: TEMPLATE_NAMES[name], linkSets: { A: loc }, floating: [], pinned: [] as Pinned[], recent: [] as string[], maximized: null }
+  const base = { name: TEMPLATE_NAMES[name], linkSets: { A: loc }, floating: [], pinned: [] as Pinned[], recent: [] as string[], maximized: null, closed: [] as Panel[] }
   if (name === 'read') {
     return { ...base, layoutTree: split('row', [[leaf('p1'), 0.68], [leaf('p4'), 0.32]]), activePanelId: 'p1',
       panels: { p1: newPanel('p1', 'api:go', loc, 'A'), p4: newPanel('p4', 'notes', loc) } }
@@ -204,9 +208,10 @@ export function openResource(ws: Workspace, res: string, loc: string, how: 'poli
   return active.id
 }
 
-/** Close a panel; the last one stays. */
+/** Close a panel; the last one stays. The closed panel keeps its tabs and history for `reopenPanel`. */
 export function closePanel(ws: Workspace, id: string): boolean {
   if (!ws.panels[id] || panelIds(ws).length < 2) return false
+  ws.closed = [ws.panels[id]!, ...ws.closed].slice(0, CLOSED_LIMIT)
   ws.floating = ws.floating.filter((f) => f.panelId !== id)
   if (leaves(ws.layoutTree).includes(id)) ws.layoutTree = removeLeaf(ws.layoutTree, id) ?? leaf(panelIds(ws).find((k) => k !== id)!)
   delete ws.panels[id]
@@ -215,6 +220,21 @@ export function closePanel(ws: Workspace, id: string): boolean {
   if (!ws.panels[ws.activePanelId]) activate(ws, panelIds(ws)[0]!)
   return true
 }
+
+/** Bring a closed panel back beside the active one, under a fresh id when its own has been reused. Returns the id it has now. */
+export function reopenPanel(ws: Workspace, id: string): string | null {
+  const p = ws.closed.find((c) => c.id === id)
+  if (!p) return null
+  ws.closed = ws.closed.filter((c) => c !== p)
+  if (ws.panels[p.id]) p.id = newPanelId(ws)
+  ws.panels[p.id] = p
+  ws.layoutTree = ws.panels[ws.activePanelId] ? insertBeside(ws.layoutTree, ws.activePanelId, p.id, 'right') : leaf(p.id)
+  activate(ws, p.id)
+  return p.id
+}
+
+/** A state read back from storage, with the fields older sessions lacked. */
+export const revive = (ws: Workspace): Workspace => ({ ...ws, closed: ws.closed ?? [] })
 
 /**
  * Whether the state is whole: every panel is in the layout once or floating,

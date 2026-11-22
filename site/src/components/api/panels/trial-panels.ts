@@ -1,22 +1,24 @@
 /** The panels page: artboard, width, pointer and template pickers around one PanelWorkspace mount. */
 import { conceptIndex, type ConceptRecord } from '../../../lib/panels/concepts'
+import { browserStorage } from '../../../lib/panels/persist'
 import { TEMPLATE_NAMES, type TemplateName } from '../../../lib/panels/state'
 import { BOARDS, mountPanelWorkspace, type BoardId } from './panel-workspace'
 
 const urlParam = (key: string) => new URLSearchParams(location.search).get(key)
 
 export function mountPanelsTrial(root: HTMLElement) {
+  // The router fires `astro:page-load` on the first load too; a second mount would bind every handler twice.
+  if (root.hasAttribute('data-mounted')) return
+  root.setAttribute('data-mounted', '')
   const raw = JSON.parse(document.getElementById('pw-concepts')!.textContent ?? '{}') as { list: ConceptRecord[]; ports: { slug: string; name: string; short: string }[] }
   const concepts = conceptIndex(raw.list, raw.ports)
   const board = urlParam('board')
   const template = urlParam('template')
   const loc = urlParam('loc')
   const pointer = urlParam('pointer')
-  let storage: Storage | undefined
-  try { storage = localStorage } catch { storage = undefined }
   const slider = root.querySelector<HTMLInputElement>('[data-width-slider]')
   const workspace = mountPanelWorkspace(root, {
-    concepts, storage,
+    concepts, storage: browserStorage(), restore: !template && !loc,
     board: BOARDS.some((b) => b[0] === board) ? board as BoardId : 'fit',
     pointer: pointer === 'hover' || pointer === 'touch' ? pointer : undefined,
     template: template && template in TEMPLATE_NAMES ? template as TemplateName : 'study',

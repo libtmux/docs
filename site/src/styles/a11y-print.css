@@ -19,6 +19,7 @@
   :is(.api-page-contents, .api-glossary-contents) a[aria-current="location"],
   a[aria-current='true'],
   .doc-picker-option[aria-current],
+  .pw__panel.is-active > .pw__head,
   [aria-pressed='true'],
   [role='tab'][aria-selected='true'] {
     forced-color-adjust: none;
@@ -33,6 +34,7 @@
   :is(.api-page-contents, .api-glossary-contents) a[aria-current="location"] *,
   a[aria-current='true'] *,
   .doc-picker-option[aria-current] *,
+  .pw__panel.is-active > .pw__head *,
   [aria-pressed='true'] *,
   [role='tab'][aria-selected='true'] * {
     color: HighlightText !important;
