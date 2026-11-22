@@ -678,6 +678,9 @@ export async function checkApiAnchorArrival(browser, base) {
               target: element.matches(':target, :has(> .section-anchor-alias:target)'),
               color: getComputedStyle(element).backgroundColor, top: rect.top,
               header: document.querySelector('.site-header').getBoundingClientRect().bottom,
+              // The folder tab stands above the card (record 0082), so arrival clears the sticky section bar for it too.
+              bars: Math.max(document.querySelector('.site-header').getBoundingClientRect().bottom, document.querySelector('.api-section-bar')?.getBoundingClientRect().bottom ?? 0),
+              tab: element.querySelector('.api-corner')?.getBoundingClientRect().top ?? null,
               viewport: innerHeight, overflow: document.documentElement.scrollWidth - innerWidth }
           }, fragment)
           assert(arrival.ownsFragment && arrival.target, `${path}: ${fragment} targets the declaration`)
@@ -685,6 +688,8 @@ export async function checkApiAnchorArrival(browser, base) {
           assert.equal(arrival.color, idleColor, `${path}#${fragment}: arrival leaves the declaration background as it was`)
           assert(arrival.top >= arrival.header - 1 && arrival.top < arrival.viewport && arrival.overflow <= 1,
             `${path}#${fragment} at ${width}px (JavaScript ${javaScriptEnabled}): the declaration is visible below the header without overflow: ${JSON.stringify(arrival)}`)
+          assert(arrival.tab !== null && arrival.tab >= arrival.bars - 1,
+            `${path}#${fragment} at ${width}px (JavaScript ${javaScriptEnabled}): the folder tab stands clear of the sticky bars: ${JSON.stringify(arrival)}`)
         }
       }
     } finally {

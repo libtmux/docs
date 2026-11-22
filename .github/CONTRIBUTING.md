@@ -221,6 +221,21 @@ problem it names:
 $ node site/scripts/check-dev.mjs --badge-centring
 ```
 
+A declaration's kind, modifier and Source chips stand on the card's top edge as
+a folder tab, not in the header. The folder tab gate reads a Go, a Kotlin and a
+Python declaration and an MCP tool at 375 and 1280 pixels in light and dark. It
+requires that no chip meets a text box of the header, that every chip's floor is
+on the card's top border, that the chips clear the block above, and that the
+header has the height and line count of the same header without its badges. Under
+touch emulation it requires a 44 pixel target for each link chip that reaches
+upward only, in a gap that holds it. Each check ends with the fault it holds
+against, the badges back in the bottom-right corner among them, and requires the
+gate to notice:
+
+```console
+$ node site/scripts/check-dev.mjs --folder-tab
+```
+
 A Workspace Manager or MCP page reports its status in a dismissible bar under
 the header, beside the release bar, and never as an admonition in the article.
 The product notice gate reads the bar on an OCaml, Java, Rust and Python page for

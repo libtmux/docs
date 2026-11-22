@@ -20,7 +20,7 @@ import { checkColorScheme } from './check-color-scheme.mjs'
 import { checkLanguageIconScheme } from './check-language-icon-scheme.mjs'
 import { checkHomeExampleOptions } from './check-home-example-options.mjs'
 import { checkDevSample, checkRowPermalinks } from './check-dev-sample.mjs'
-import { checkCornerClear, checkDeclarationControlAlignment, checkDeclarationControlsLevel, checkMemberBodyInsets, checkNativeSignatureGeometry, checkNativeSignatureLinks } from './check-native-layout.mjs'
+import { checkFolderTab, checkFolderTabPages, checkDeclarationControlAlignment, checkDeclarationControlsLevel, checkMemberBodyInsets, checkNativeSignatureGeometry, checkNativeSignatureLinks } from './check-native-layout.mjs'
 import { checkBadgeCentring, checkMentionDensity, checkUsageChips } from './check-badge-centring.mjs'
 import { checkBlockLinksUndecorated, checkKindBadgeLinks, checkKindBadgeLinksFail, checkExternalLinkFirstPaint, checkRequiredAppearance, checkTmuxReferencePreviews, checkTmuxReferencePreviewsFail, checkWebAnalytics, checkWebAnalyticsTransitions } from './check-page-readiness.mjs'
 import { checkTypeParameters } from './check-type-parameters.mjs'
@@ -46,6 +46,7 @@ const headerMenuSectionsOnly = process.argv.includes('--header-menu-sections')
 const statusBadgesOnly = process.argv.includes('--status-badges')
 const productNoticeOnly = process.argv.includes('--product-notice')
 const badgeCentringOnly = process.argv.includes('--badge-centring')
+const folderTabOnly = process.argv.includes('--folder-tab')
 const referencePreviewsOnly = process.argv.includes('--reference-previews')
 const homeLauncherOnly = process.argv.includes('--home-launcher')
 const homeControlsOnly = process.argv.includes('--home-controls')
@@ -389,11 +390,11 @@ async function checkSignatureLayouts(browser, base) {
         await page.setViewportSize({ width, height: 900 })
         const header = await module.boundingBox()
         const toolbar = await module.locator('.gp-sphinx-api-layout-right').boundingBox()
-        // Kind and source share a corner tab over the header's bottom padding; it takes neither width nor height from it.
+        // Kind and source share a folder tab on the card's top edge; nothing of it is inside the header.
         assert(toolbar.x >= header.x && toolbar.x + toolbar.width <= header.x + header.width + 1
-          && toolbar.y >= header.y && toolbar.y + toolbar.height <= header.y + header.height + 1,
-        `${colorScheme}/${width}px: module corner tab sits inside its header`)
-        await checkCornerClear(module, `${colorScheme}/${width}px: module declaration`)
+          && toolbar.y + toolbar.height <= header.y + 1,
+        `${colorScheme}/${width}px: module folder tab stands above its header`)
+        await checkFolderTab(module, `${colorScheme}/${width}px: module declaration`)
         assert(header.height < 50, `${colorScheme}/${width}px: short module header stays compact`)
       }
     }
@@ -445,12 +446,12 @@ async function checkSignatureLayouts(browser, base) {
         const header = await kotlin.boundingBox()
         const toolbar = await kotlin.locator('.gp-sphinx-api-layout-right').boundingBox()
         if (width === 803 || width === 1920) {
-          const level = await checkDeclarationControlsLevel(kotlin, `${colorScheme}/${width}px: corner tab badges share a row`)
-          assert.equal(level.mode, 'corner', `${colorScheme}/${width}px: kind and source share the declaration's corner tab`)
+          const level = await checkDeclarationControlsLevel(kotlin, `${colorScheme}/${width}px: folder tab badges share a row`)
+          assert.equal(level.mode, 'corner', `${colorScheme}/${width}px: kind and source share the declaration's folder tab`)
         }
         assert(toolbar.x >= header.x && toolbar.x + toolbar.width <= header.x + header.width + 1,
-          `${colorScheme}/${width}px: the corner tab stays inside the header`)
-        await checkCornerClear(kotlin, `${colorScheme}/${width}px: Kotlin declaration`)
+          `${colorScheme}/${width}px: the folder tab stays within the header's width`)
+        await checkFolderTab(kotlin, `${colorScheme}/${width}px: Kotlin declaration`)
         assert(toolbar.height < 30, `${colorScheme}/${width}px: badges and links stay in one compact row`)
         assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
           `${colorScheme}/${width}px: declaration and toolbar fit without clipping`)
@@ -458,7 +459,7 @@ async function checkSignatureLayouts(browser, base) {
     }
     console.log('Native browse layout: compact F# modules and linked Kotlin function cards work without JavaScript')
     const { measured } = await checkDeclarationControlAlignment(browser, base)
-    console.log(`Declaration controls: ${measured.length} sampled headers keep their controls level, beside the first line or in the corner tab, at 1440/768/500/390px`)
+    console.log(`Declaration controls: ${measured.length} sampled headers keep their controls level, beside the first line or in the folder tab, at 1440/768/500/390px`)
   } finally {
     await page.close()
   }
@@ -813,12 +814,13 @@ try {
     : keywordHelpOnly ? '/kotlin/latest/reference/io-github-libtmux-kotlin-withserver/'
     : apiStickyOnly || permalinkRevealOnly ? '/swift/latest/reference/server/'
     : badgeCentringOnly ? '/py/v0.46.2/guides/attaching-to-tmux/'
+    : folderTabOnly ? '/go/latest/reference/tmux-pane-capture/'
     : referencePreviewsOnly ? '/cxx/latest/reference/libtmux-server-panes/'
     : productNoticeOnly ? '/ocaml/latest/workspace/'
     : documentationNavigationOnly || headerMenuSectionsOnly || statusBadgesOnly ? '/py/latest/' : apiSignaturesOnly ? '/api-signature-probe/'
     : apiNavigationOnly ? '/lua/latest/reference/libtmux-server/'
     : typeParametersOnly ? '/ts/latest/reference/selection-selection-where/' : '/tmux/concepts/server-session-window-pane/'
-  const fullRun = ![homeLauncherOnly, homeControlsOnly, keywordHelpOnly, apiSignaturesOnly, referenceLayoutOnly, globalHeaderOnly, headerMenuSectionsOnly, statusBadgesOnly, productNoticeOnly, badgeCentringOnly, referencePreviewsOnly,
+  const fullRun = ![homeLauncherOnly, homeControlsOnly, keywordHelpOnly, apiSignaturesOnly, referenceLayoutOnly, globalHeaderOnly, headerMenuSectionsOnly, statusBadgesOnly, productNoticeOnly, badgeCentringOnly, folderTabOnly, referencePreviewsOnly,
     referencePreferencesOnly, documentationNavigationOnly, guideRedirectOnly, sidebarDemoOnly, apiNavigationOnly, apiAnchorsOnly, typeParametersOnly, permalinkRevealOnly, requiredAppearanceOnly].some(Boolean)
   const setupPages = sampleOnly ? [firstPage, '/demo/widgets/pickers/', ...TMUX_KEY_PAGES]
     : [firstPage, ...(fullRun ? TMUX_KEY_PAGES : [])]
@@ -885,6 +887,8 @@ try {
     await retryReload(() => checkBadgeCentring(browser, base))
     await checkMentionDensity(browser, base)
     await checkUsageChips(browser, base)
+  } else if (folderTabOnly) {
+    await retryReload(() => checkFolderTabPages(browser, base))
   } else if (referencePreviewsOnly) {
     await retryReload(() => checkTmuxReferencePreviews(browser, base, { served: servedBuild(base) }))
     await checkTmuxReferencePreviewsFail(browser, base)
@@ -986,6 +990,7 @@ try {
     const badgeCentring = schedule(() => retryReload(() => checkBadgeCentring(browser, base, { sample: sampleOnly }))
       .then(() => checkMentionDensity(browser, base))
       .then(() => checkUsageChips(browser, base)))
+    const folderTab = schedule(() => retryReload(() => checkFolderTabPages(browser, base)))
     const blockLinks = schedule(() => retryReload(() => checkBlockLinksUndecorated(browser, base)))
     const referencePreviews = schedule(() => retryReload(() => checkTmuxReferencePreviews(browser, base, { served: servedBuild(base) }))
       .then(() => checkTmuxReferencePreviewsFail(browser, base)))
@@ -1295,7 +1300,7 @@ try {
     await page.close()
     const failures = (await Promise.all([
       navigation, apiExamples, reference, preferences, globalHeader, headerMenuSections, statusBadges, productNotice, apiNavigation,
-      clipboard, documentationNavigation, homeLauncher, apiAnchors, permalinkReveal, apiSticky, typeParameters, kindBadges, badgeCentring, blockLinks, referencePreviews,
+      clipboard, documentationNavigation, homeLauncher, apiAnchors, permalinkReveal, apiSticky, typeParameters, kindBadges, badgeCentring, folderTab, blockLinks, referencePreviews,
     ])).filter(Boolean)
     if (failures.length) throw new AggregateError(failures, 'Browser checks failed')
     await checkSidebarDemo(browser, `${base}/demo/sidebar/`)

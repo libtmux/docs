@@ -1,4 +1,4 @@
-import { newCheckPage } from './browser-context.mjs'
+import { newCheckContext, newCheckPage } from './browser-context.mjs'
 import assert from 'node:assert/strict'
 
 /** Controls beside a signature may sit this far from the centre of its first line. */
@@ -58,15 +58,17 @@ export async function checkNativeSignatureGeometry(header) {
   const headerContent = content(geometry.header)
   const rowContent = content(row)
   if (geometry.corner) {
-    // The corner tab is the header's own corner: flush on the bottom-right padding edge, out of the row, so it takes no
-    // width from the signature and no height from the card. Its text never meets the signature's (checkCornerClear).
+    // The folder tab stands on the card's top edge, outside the header (record 0082): the row is the header's own content, so the
+    // tab takes no width and no height from it, and it is one row of native 18px chips resting on the border above the header.
     const box = geometry.header
     assert(contained(row, headerContent), 'Native signature row is contained in the padded header')
-    assert(near(code.width, rowContent.right - rowContent.left), 'Native signature uses the whole row: the corner tab takes no width')
-    assert(controls.right <= box.right + tolerance && controls.right >= box.right - box.insets.right - 1 - tolerance
-      && controls.bottom <= box.bottom + tolerance && controls.bottom >= box.bottom - box.insets.bottom - 1 - tolerance,
-    'Native signature corner tab sits flush in the header\'s bottom-right corner')
-    assert(controls.height > 0 && controls.height < 16, 'Native signature corner tab is a gutter tab, under 16px high')
+    assert(near(code.width, rowContent.right - rowContent.left), 'Native signature uses the whole row: the folder tab takes no width')
+    // The card's 1px border sits between the header and the chips' floor.
+    const lift = box.top - controls.bottom
+    assert(lift >= -tolerance && lift <= 1 + tolerance, `Native signature folder tab stands on the card's top edge, not ${lift.toFixed(2)}px above the header`)
+    assert(Math.abs(controls.height - 18) <= 0.5, `Native signature folder tab is a row of native 18px chips, not ${controls.height.toFixed(2)}px high`)
+    assert(controls.right <= box.right + tolerance && controls.right >= box.right - box.insets.right - 1 - tolerance,
+      'Native signature folder tab ends at the card\'s right padding edge')
     await checkNativeSignatureLines(header)
     return { ...geometry, mode: 'corner', availableCodeWidth: code.width }
   }
@@ -166,9 +168,9 @@ export function assertDeclarationControlsLevel(measurement, label, tolerance = L
   assert(Number.isFinite(line.centre) && controls.every((control) => Number.isFinite(control.centre)),
     `${label}: first line and controls have measurable centres`)
   if (mode === 'corner') {
-    // A corner tab is not beside a line: its badges share the tab's one row.
+    // A folder tab is not beside a line: its badges share the tab's one row.
     const spread = Math.max(...controls.map((control) => control.centre)) - Math.min(...controls.map((control) => control.centre))
-    assert(spread <= tolerance, `${label}: corner tab badges share their row centre, spread ${spread.toFixed(2)}px`)
+    assert(spread <= tolerance, `${label}: folder tab badges share their row centre, spread ${spread.toFixed(2)}px`)
     return
   }
   if (mode === 'beside') {
@@ -237,7 +239,7 @@ export async function checkDeclarationControlAlignment(browser, base, widths = [
           if (measurement.mode === 'beside' || measurement.mode === 'corner') beside.set(width, beside.get(width) + 1)
           measured.push({ label, width, index, ...measurement })
           if (width === widths[0] && index === 0) {
-            assert(['beside', 'corner'].includes(measurement.mode), `${label}: desktop controls sit beside the first line or in the corner tab`)
+            assert(['beside', 'corner'].includes(measurement.mode), `${label}: desktop controls sit beside the first line or in the folder tab`)
           }
         }
       }
@@ -252,35 +254,96 @@ export async function checkDeclarationControlAlignment(browser, base, widths = [
 }
 
 /**
- * A corner tab never covers the signature: no painted glyph of the declaration meets the tab's box. A glyph's box runs from
- * ascent to descent, and the tab sits in the leading below the last line, so the boxes are compared shrunk to the glyphs'
- * own height, not to the line.
+ * A declaration's folder tab (record 0082) stands on the card's top edge and meets nothing of the header: no chip's box
+ * intersects a text box of the declaration, every chip's floor is on or above the card's top border, and the gap above the
+ * card leaves the chips clear of the block above. Text boxes are the line boxes of the header's own text, so a signature that
+ * runs long cannot slip past by ending short of a chip. Returns null for a header with no tab.
  */
-export async function checkCornerClear(header, label) {
-  const overlap = await header.evaluate((element) => {
+export async function checkFolderTab(header, label) {
+  const found = await header.evaluate((element) => {
     const document = element.ownerDocument
     const tab = element.querySelector('.api-corner')
-    const code = element.querySelector('.gp-sphinx-api-layout-left')
-    if (!tab?.checkVisibility() || !code) return null
-    const box = tab.getBoundingClientRect()
-    const walker = document.createTreeWalker(code, document.defaultView.NodeFilter.SHOW_TEXT)
-    let worst = 0
+    if (!tab?.checkVisibility()) return null
+    const chips = [...tab.children].filter((chip) => chip.checkVisibility()).map((chip) => chip.getBoundingClientRect())
+    const card = element.parentElement.getBoundingClientRect()
+    let covered = 0
+    const walker = document.createTreeWalker(element, document.defaultView.NodeFilter.SHOW_TEXT)
     for (let node; (node = walker.nextNode());) {
-      if (!node.textContent.trim() || node.parentElement.closest('[popover]') || !node.parentElement.checkVisibility()) continue
+      if (!node.textContent.trim() || tab.contains(node) || node.parentElement.closest('[popover]') || !node.parentElement.checkVisibility()) continue
       const range = document.createRange()
       range.selectNodeContents(node)
       for (const rect of range.getClientRects()) {
         if (!rect.width || !rect.height) continue
-        // The painted glyphs, 1px inside the font's box on each side.
-        const horizontal = Math.min(rect.right, box.right) - Math.max(rect.left, box.left)
-        const vertical = Math.min(rect.bottom - 1, box.bottom) - Math.max(rect.top + 1, box.top)
-        if (horizontal > 0 && vertical > 0) worst = Math.max(worst, Math.min(horizontal, vertical))
+        if (chips.some((chip) => Math.min(rect.right, chip.right) - Math.max(rect.left, chip.left) > 0.5
+          && Math.min(rect.bottom, chip.bottom) - Math.max(rect.top, chip.top) > 0.5)) covered++
       }
     }
-    return worst
+    // The block above, in flow: the nearest visible earlier sibling of the card or of the card's ancestors.
+    let above = null
+    for (let node = element.parentElement; node && above === null; node = node.parentElement) {
+      for (let sibling = node.previousElementSibling; sibling; sibling = sibling.previousElementSibling) {
+        if (sibling.checkVisibility() && sibling.getBoundingClientRect().height > 0) { above = sibling.getBoundingClientRect().bottom; break }
+      }
+    }
+    const top = Math.min(...chips.map((chip) => chip.top))
+    return { chips: chips.length, covered, floor: Math.max(...chips.map((chip) => chip.bottom)) - card.top, clearance: above === null ? Infinity : top - above }
   })
-  if (overlap !== null) assert(overlap <= 2, `${label}: the corner tab covers ${overlap.toFixed(1)}px of the signature`)
-  return overlap
+  if (found === null) return null
+  const problems = []
+  if (found.floor > 1) problems.push(`its floor is ${found.floor.toFixed(1)}px below the card's top border, not above it`)
+  if (found.floor < -1) problems.push(`it floats ${(-found.floor).toFixed(1)}px above the card, not meeting its border`)
+  if (found.covered > 0) problems.push(`it covers ${found.covered} text box(es) of the declaration`)
+  if (found.clearance < 4) problems.push(`it clears the block above by ${found.clearance.toFixed(1)}px, under 4px`)
+  assert(found.chips > 0 && problems.length === 0, `${label}: the folder tab ${found.chips > 0 ? problems.join('; ') : 'has no visible chip'}`)
+  return found
+}
+
+/**
+ * Under a coarse pointer each link chip's target is a full touch target that reaches upward into the gap and never down into the
+ * header, and the gap holds all of it. The page must be loaded with touch emulation (`hasTouch`), so the media query matches.
+ */
+export async function checkFolderTabTouch(header, label) {
+  const found = await header.evaluate((element) => {
+    const document = element.ownerDocument
+    const view = document.defaultView
+    const tab = element.querySelector('.api-corner')
+    if (!tab?.checkVisibility()) return null
+    const links = [...tab.querySelectorAll(':scope > a')].filter((link) => link.checkVisibility())
+    // A point is only hit-tested inside the viewport, so the header is centred first, and the card measured after.
+    element.scrollIntoView({ block: 'center' })
+    const card = element.parentElement.getBoundingClientRect()
+    return {
+      coarse: view.matchMedia('(pointer: coarse)').matches,
+      links: links.map((link) => {
+        const box = link.getBoundingClientRect()
+        const x = box.left + box.width / 2
+        const hits = (y) => { const hit = document.elementFromPoint(x, y); return Boolean(hit && link.contains(hit)) }
+        // The target's height: how far above the floor a point still reaches the link, and whether a point below it does.
+        let reach = 0
+        for (let y = box.bottom - 1; y > box.bottom - 64 && hits(y); y--) reach = box.bottom - y
+        return { text: link.textContent.trim(), reach, below: hits(box.bottom + 2), x: Math.round(x) }
+      }),
+      above: (() => {
+        for (let node = element.parentElement; node; node = node.parentElement) {
+          for (let sibling = node.previousElementSibling; sibling; sibling = sibling.previousElementSibling) {
+            if (sibling.checkVisibility() && sibling.getBoundingClientRect().height > 0) return card.top - sibling.getBoundingClientRect().bottom
+          }
+        }
+        return Infinity
+      })(),
+    }
+  })
+  if (found === null) return null
+  const problems = []
+  if (!found.coarse) problems.push('the page does not match (pointer: coarse)')
+  if (found.links.length === 0) problems.push('the folder tab has no link chip')
+  for (const link of found.links) {
+    if (link.reach < 43) problems.push(`the "${link.text}" chip's target reaches ${link.reach}px up from its floor, under a 44px target`)
+    if (link.below) problems.push(`the "${link.text}" chip's target reaches down into the header`)
+  }
+  if (found.above < 44) problems.push(`the gap above the card is ${found.above.toFixed(1)}px, which cannot hold a 44px target`)
+  assert(problems.length === 0, `${label}: ${problems.join('; ')}`)
+  return found
 }
 
 /** A formatter's logical line must occupy one painted row, even when it scrolls. */
@@ -563,4 +626,109 @@ export async function checkMemberBodyInsets(browser, base) {
   }
   assert.deepEqual(failures, [], 'Member body padding alone sets the top and bottom inset')
   return measured
+}
+
+/** The declarations the folder tab is held on: a Go, a Kotlin and a Python declaration and an MCP tool. */
+const FOLDER_TAB_PAGES = [
+  ['Go method', 'go/latest/reference/tmux-pane-capture/'],
+  ['Kotlin class', 'kotlin/latest/reference/io-github-libtmux-kotlin-server/'],
+  ['Python method', 'py/latest/reference/libtmux-pane-capture_pane/'],
+  ['MCP tool', 'go/latest/mcp/tools/capture_pane/'],
+]
+const HEADER = 'dl.gp-sphinx-api-container > dt.gp-sphinx-api-header'
+
+/** A check must fail on what it holds against: `css` puts the fault back, and `check` must reject with `pattern`. */
+async function foldFault(page, name, css, check, pattern) {
+  const style = await page.addStyleTag({ content: css })
+  try {
+    await assert.rejects(check, pattern, `The folder-tab check did not notice ${name}`)
+  } finally {
+    await style.evaluate((node) => node.remove())
+  }
+}
+
+/**
+ * The folder tab on real pages (record 0082): on API and MCP pages, at 375 and 1280px in both schemes, no chip meets a text box of
+ * the header, every chip's floor is on the card's top border, the chips clear the block above, and the header is as high, with
+ * as many lines, as the same header without its badges. Under touch each link chip has a 44px target that reaches up and never
+ * down. Each check ends with the fault it holds against, the badges back in the bottom-right corner among them.
+ */
+export async function checkFolderTabPages(browser, base, widths = [375, 1280]) {
+  const measured = []
+  for (const colorScheme of ['light', 'dark']) {
+    for (const width of widths) {
+      const context = await newCheckContext(browser, base, { viewport: { width, height: 1000 }, colorScheme, reducedMotion: 'reduce' })
+      const page = await context.newPage()
+      page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
+      try {
+        for (const [name, path] of FOLDER_TAB_PAGES) {
+          const label = `${name} at ${width}px (${colorScheme})`
+          await page.goto(`${base}/${path}`, { waitUntil: 'load' })
+          await page.evaluate(() => document.fonts.ready)
+          const header = page.locator(HEADER).first()
+          const found = await checkFolderTab(header, label)
+          assert(found, `${label}: the declaration has a folder tab`)
+          // Nothing enters the header: with the badges hidden it is as high and breaks its lines in as many rows.
+          const rows = () => header.evaluate((element) => {
+            const rects = []
+            const walker = element.ownerDocument.createTreeWalker(element, element.ownerDocument.defaultView.NodeFilter.SHOW_TEXT)
+            for (let node; (node = walker.nextNode());) {
+              if (!node.textContent.trim() || node.parentElement.closest('.api-corner') || !node.parentElement.checkVisibility()) continue
+              const range = element.ownerDocument.createRange()
+              range.selectNodeContents(node)
+              for (const rect of range.getClientRects()) if (rect.width && rect.height) rects.push(Math.round(rect.top))
+            }
+            return { height: element.getBoundingClientRect().height, rows: new Set(rects).size }
+          })
+          const withTab = await rows()
+          const hidden = await page.addStyleTag({ content: '.api-corner { display: none !important; }' })
+          const bare = await rows()
+          await hidden.evaluate((node) => node.remove())
+          assert.deepEqual(withTab, bare, `${label}: the header is not the height and line count of the same header without badges`)
+          assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${label}: the page scrolls sideways`)
+          measured.push({ label, ...found, height: withTab.height, rows: withTab.rows })
+        }
+      } finally {
+        await context.close()
+      }
+    }
+  }
+  // The faults, on a phone-width Go method and an MCP tool.
+  const context = await newCheckContext(browser, base, { viewport: { width: 375, height: 1000 }, reducedMotion: 'reduce' })
+  const page = await context.newPage()
+  page.setDefaultTimeout(process.env.CI ? 20000 : 10000)
+  try {
+    for (const [name, path] of [FOLDER_TAB_PAGES[0], FOLDER_TAB_PAGES[3]]) {
+      await page.goto(`${base}/${path}`, { waitUntil: 'load' })
+      await page.evaluate(() => document.fonts.ready)
+      const header = page.locator(HEADER).first()
+      await checkFolderTab(header, `${name} before the faults`)
+      const check = () => checkFolderTab(header, `${name} fault`)
+      // The placement record 0082 replaced: flush in the header's bottom-right corner.
+      await foldFault(page, 'the badges back in the header\'s bottom-right corner', '.api-corner { top: auto !important; bottom: 0 !important; right: 0 !important; }', check, /not above it/)
+      await foldFault(page, 'a tab floating above the card', '.api-corner { bottom: calc(100% + 11px) !important; }', check, /floats .* above the card/)
+      await foldFault(page, 'a tab over the signature\'s first line', '.api-corner { top: 0 !important; bottom: auto !important; right: auto !important; left: 1rem !important; }', check, /covers \d+ text box/)
+      await foldFault(page, 'a card with no gap above it', 'dl.gp-sphinx-api-container { margin-block-start: -10px !important; }', check, /clears the block above/)
+    }
+  } finally {
+    await context.close()
+  }
+  // Touch.
+  const touch = await newCheckContext(browser, base, { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, reducedMotion: 'reduce' })
+  const tapPage = await touch.newPage()
+  tapPage.setDefaultTimeout(process.env.CI ? 20000 : 10000)
+  try {
+    for (const [name, path] of [FOLDER_TAB_PAGES[0], FOLDER_TAB_PAGES[3]]) {
+      await tapPage.goto(`${base}/${path}`, { waitUntil: 'load' })
+      await tapPage.evaluate(() => document.fonts.ready)
+      const header = tapPage.locator(HEADER).first()
+      await checkFolderTabTouch(header, `${name} under touch`)
+      await foldFault(tapPage, 'a chip with no target of its own', '.api-corner > a::before { content: none !important; }', () => checkFolderTabTouch(header, name), /under a 44px target/)
+      await foldFault(tapPage, 'a target that reaches down into the header', '.api-corner > a::before { inset: -27px -3px -20px !important; }', () => checkFolderTabTouch(header, name), /reaches down into the header/)
+      await foldFault(tapPage, 'a gap too small for the target', 'dl.gp-sphinx-api-container { margin-block-start: 25px !important; }', () => checkFolderTabTouch(header, name), /cannot hold a 44px target/)
+    }
+  } finally {
+    await touch.close()
+  }
+  return { measured }
 }

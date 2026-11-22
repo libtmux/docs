@@ -201,7 +201,7 @@ export function judge(label, result, kind, { skipBaseline = false } = {}) {
 const GROUPS = [
   { kind: 'mark', selector: `.api-nav__kind:not(:is(${LINKED.split(', ').map((s) => `${s} a > ${LINK_MARK}`).join(', ')}))`, name: 'mark' },
   // A legend chip's letter glyph and word; an action chip whose mark is an icon (the source button) has no glyph to centre, and `iconMarkProblems` reads it. A chip in a
-  // declaration's corner tab is measured from its boxes instead (checkPage): its floor is open onto the declaration (record 0047).
+  // declaration's folder tab is measured from its boxes instead (checkPage): it stands at a fractional offset with its floor open onto the card's border (records 0047 and 0082).
   { kind: 'leg', selector: '.api-leg:has(> .api-leg__m > .api-leg__g):not(.api-corner > *)', name: 'legend chip' },
   { kind: 'row', selector: ROW_MARKS, name: 'card, list and linked-name mark' },
   { kind: 'mod', selector: '.api-badge--mod:not(.api-corner > *)', name: 'modifier chip' },
@@ -407,7 +407,7 @@ export function apiTreeGutterProblems(page) {
 /**
  * An icon mark is centred in its segment. A letter mark rests on bottom padding sized for the descender space under its
  * baseline, so its ink lands centred; an icon has no descender, and the same padding lifts it. The icon is read from its box,
- * which holds the ink symmetrically, because a corner tab's open floor leaves no painted edge to measure from.
+ * which holds the ink symmetrically, because a folder tab's open floor leaves no painted edge to measure from.
  */
 export function iconMarkProblems(page) {
   return page.evaluate(() => {
@@ -438,8 +438,8 @@ async function checkPage(page, base, entry, scheme, results) {
     }
     results.counts[group.name] = (results.counts[group.name] ?? 0) + count
   }
-  // A corner-tab chip: painted edges cannot find a box whose floor is open, so the word's cap box (its label is trimmed to cap
-  // height) is read against the tab between its borders.
+  // A folder-tab chip: painted edges cannot find a box whose floor is open, so the word's cap box (its label is trimmed to cap
+  // height) is read against the chip between its borders.
   const corner = await page.evaluate(() => [...document.querySelectorAll('.api-corner > .api-badge')].filter((chip) => chip.offsetParent).flatMap((chip) => {
     const label = chip.querySelector('.api-leg__wl, .api-badge__label')
     if (!label) return []
@@ -449,9 +449,9 @@ async function checkPage(page, base, entry, scheme, results) {
     const centre = (box.top + Number.parseFloat(style.borderTopWidth) + box.bottom - Number.parseFloat(style.borderBottomWidth)) / 2
     return [{ text: chip.textContent.trim().replace(/\s+/g, ' ').slice(0, 16), offset: (word.top + word.bottom) / 2 - centre }]
   }))
-  results.counts['corner chip'] = (results.counts['corner chip'] ?? 0) + corner.length
+  results.counts['folder-tab chip'] = (results.counts['folder-tab chip'] ?? 0) + corner.length
   for (const { text, offset } of corner) {
-    if (Math.abs(offset) > 0.75) results.failures.push(`${entry.label} (${scheme}) corner chip "${text}": the word's cap box is ${offset.toFixed(2)}px off the tab's centre`)
+    if (Math.abs(offset) > 0.75) results.failures.push(`${entry.label} (${scheme}) folder-tab chip "${text}": the word's cap box is ${offset.toFixed(2)}px off the chip's centre`)
   }
   const icons = await iconMarkProblems(page)
   results.counts['icon mark'] = (results.counts['icon mark'] ?? 0) + icons.marks
@@ -496,7 +496,7 @@ async function negativeControl(page, base, results) {
   await page.goto(`${base}${PAGES[10].path}`, { waitUntil: 'load' })
   await page.waitForFunction(() => document.documentElement.dataset.pageReadiness === 'ready', null, { timeout: 30000 }).catch(() => {})
   await page.addStyleTag({ content: MEASURING_STYLE })
-  // The page's modifier sits in a declaration's corner tab, at a fractional offset and with its floor open onto the declaration,
+  // The page's modifier sits in a declaration's folder tab, at a fractional offset and with its floor open onto the card's border,
   // where painted edges cannot hold a pixel; the control measures a copy of it in its own outline, on whole pixels.
   await page.evaluate(() => {
     const source = [...document.querySelectorAll('.api-badge--mod')].find((element) => element.getBoundingClientRect().width > 0)
