@@ -735,13 +735,14 @@ async function checkReferenceAndHeroes(browser, base) {
     assert(await page.locator('[id="io.github.libtmux.kotlin.Options.get.returns"] + dd').innerText(),
       'The earlier get overload retains its return documentation')
     console.log('Overload contracts: earlier errors and returns render with their owning calls and unique anchors')
-    for (const [slug, qualifiedName] of [
-      ['server-server', 'io.github.libtmux.Server'],
-      ['server-server-builder-dv7l', 'io.github.libtmux.Server.Builder'],
-      ['server-server-sessions', 'io.github.libtmux.Server.sessions'],
+    // Titles follow documentationTitle: name, then language and kind, then the site while it fits TITLE_BUDGET (60).
+    for (const [slug, qualifiedName, title] of [
+      ['server-server', 'io.github.libtmux.Server', 'io.github.libtmux.Server | Java API reference | libtmux.org'],
+      ['server-server-builder-dv7l', 'io.github.libtmux.Server.Builder', 'io.github.libtmux.Server.Builder | Java API reference'],
+      ['server-server-sessions', 'io.github.libtmux.Server.sessions', 'io.github.libtmux.Server.sessions | Java API reference'],
     ]) {
       await page.goto(`${base}/java/latest/reference/io-github-libtmux-${slug}/`)
-      assert.equal(await page.title(), `${qualifiedName} | libtmux-java`)
+      assert.equal(await page.title(), title)
       assert.equal(await page.locator('.api-source-details dt', { hasText: /^Package$/ }).locator('xpath=following-sibling::dd[1]').innerText(), 'io.github.libtmux',
         'The source and package disclosure names the Java package')
       assert.equal(await page.locator('[data-api-copy-name]').getAttribute('data-api-copy-name'), qualifiedName)

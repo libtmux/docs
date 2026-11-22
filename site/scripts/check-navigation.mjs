@@ -321,7 +321,7 @@ export async function checkDocumentationNavigation(browser, base, complete = fal
     await page.goto(`${base}/fsharp/latest/guides/api-overview/?from=bookmark`, { waitUntil: 'load' })
     await page.waitForURL(`${base}/fsharp/latest/reference/?from=bookmark`)
     assert.equal((await page.locator('main h1').textContent()).trim(), 'API reference')
-    assert.equal(await page.title(), 'F# API reference | libtmux-fsharp')
+    assert.equal(await page.title(), 'F# API reference | libtmux.org')
     await checkGuideRedirect(browser, base)
     console.log(`Documentation surfaces: ${ports.length} ports retain real section links; Ruby/F# setup, cards and legacy links pass`)
   } finally {
