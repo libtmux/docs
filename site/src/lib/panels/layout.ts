@@ -103,25 +103,14 @@ export function snapRatio(ratio: number, pairPx: number, min: number, twoPanels:
 
 /**
  * Move `id` to a side of `target`, keeping every other panel. A move onto itself, or onto a missing panel,
- * changes nothing. A panel that joins a split along the move keeps its share of the layout, and the panel it
- * lands beside keeps its own, rather than the two halving.
+ * changes nothing. The panel and its target split the target's cell evenly, wherever the panel came from, so
+ * a drop on a half takes that half. The cell the panel left goes to its former neighbours.
  */
 export function moveLeaf(tree: Node, id: string, target: string, zone: Dock): Node {
   if (id === target) return tree
-  const work = structuredClone(tree)
-  const from = hopsTo(work, id)?.at(-1)
-  const share = from ? from.split.sizes[from.i]! / from.split.sizes.reduce((a, b) => a + b, 0) : 1
-  const rest = removeLeaf(work, id)
+  const rest = removeLeaf(structuredClone(tree), id)
   if (!rest || !leaves(rest).includes(target)) return tree
-  const placed = insertBeside(rest, target, id, zone)
-  const to = hopsTo(placed, id)?.at(-1)
-  const beside = to?.split.kids.findIndex((k) => isLeaf(k) && k.p === target) ?? -1
-  if (to && beside >= 0) {
-    const total = to.split.sizes.reduce((a, b) => a + b, 0)
-    to.split.sizes[beside] = to.split.sizes[beside]! + to.split.sizes[to.i]!
-    to.split.sizes[to.i] = share * total
-  }
-  return placed
+  return insertBeside(rest, target, id, zone)
 }
 
 /** Exchange two panels' places, each keeping the size of the cell it moves to. */

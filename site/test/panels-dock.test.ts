@@ -6,6 +6,13 @@ import { panelStore } from '../src/lib/panels/persist'
 
 const row = (...ids: string[]) => split('row', ids.map((id): [Node, number] => [leaf(id), 1]))
 const shape = (n: Node): unknown => ('p' in n ? n.p : { [n.dir]: n.kids.map(shape) })
+/** The share of the whole layout each panel fills, walking the tree the way the stage divides it. */
+const areas = (n: Node, share = 1, out: Record<string, number> = {}): Record<string, number> => {
+  if ('p' in n) { out[n.p] = share; return out }
+  const total = n.sizes.reduce((x, y) => x + y, 0)
+  n.kids.forEach((k, i) => areas(k, share * n.sizes[i]! / total, out))
+  return out
+}
 
 describe('moving a panel', () => {
   it('docks beside another panel, keeps every panel once, and leaves its input alone', () => {
@@ -16,13 +23,34 @@ describe('moving a panel', () => {
     expect(shape(moveLeaf(tree, 'a', 'c', 'bottom'))).toEqual({ row: ['b', { col: ['c', 'a'] }] })
   })
 
-  it('lets the panel keep its share and the panel it lands beside keep its own', () => {
+  /** The share of the whole layout each panel fills, by walking the tree the way the stage divides it. */
+  const areas = (n: Node, share = 1, out: Record<string, number> = {}): Record<string, number> => {
+    if ('p' in n) { out[n.p] = share; return out }
+    const total = n.sizes.reduce((a, b) => a + b, 0)
+    n.kids.forEach((k, i) => areas(k, share * n.sizes[i]! / total, out))
+    return out
+  }
+
+  it('splits the target\'s cell evenly on a drop on any of its four sides, whatever share the dropped panel held', () => {
+    // b held a quarter of the row. Without it main and a share the row two to one, and main's cell is then b's and main's.
     const tree = split('row', [[leaf('main'), 2], [leaf('a'), 1], [leaf('b'), 1]])
-    const moved = moveLeaf(tree, 'b', 'main', 'left') as ReturnType<typeof split>
-    expect(shape(moved)).toEqual({ row: ['b', 'main', 'a'] })
-    // b held a quarter of the row, and main still holds its 2 of the 3 that remained.
-    expect(moved.sizes[1]).toBe(2)
-    expect(moved.sizes[0]! / moved.sizes.reduce((x, y) => x + y, 0)).toBeCloseTo(0.2)
+    for (const zone of ['left', 'right', 'top', 'bottom'] as const) {
+      const after = areas(moveLeaf(tree, 'b', 'main', zone))
+      expect(after.b, zone).toBeCloseTo(1 / 3)
+      expect(after.main, zone).toBeCloseTo(1 / 3)
+      expect(after.a, zone).toBeCloseTo(1 / 3)
+    }
+  })
+
+  it('splits the target\'s cell in half inside a column too, and leaves the other panels in their proportion', () => {
+    // a leaves the row, so the column fills the layout and c holds three quarters of it; a and c then take a half of that each.
+    const tree = split('row', [[leaf('a'), 3], [split('col', [[leaf('b'), 1], [leaf('c'), 3]]), 1]])
+    for (const zone of ['left', 'right', 'top', 'bottom'] as const) {
+      const after = areas(moveLeaf(tree, 'a', 'c', zone))
+      expect(after.a, zone).toBeCloseTo(0.375)
+      expect(after.c, zone).toBeCloseTo(0.375)
+      expect(after.b, zone).toBeCloseTo(0.25)
+    }
   })
 
   it('does nothing for a move onto itself or onto a panel that is not there', () => {
