@@ -39,6 +39,14 @@
   font-weight: 600;
 }
 
+/*
+ * Japanese sets no Latin tracking, but `:lang(ja)` says so in a layer and the
+ * headings above are not in one, so they would keep their -0.02em and -0.01em.
+ */
+:lang(ja) .meta-page :is(h1, h2) {
+  letter-spacing: 0;
+}
+
 /* Body 16/28 at the prose measure; notes 14/20. */
 .meta-page :where(p, dl, ul.meta-notes, aside) {
   max-width: var(--measure-prose, 72ch);
