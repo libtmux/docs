@@ -7,8 +7,10 @@
 
 # libtmux.org
 
-Documentation for the libtmux libraries in Python, Ruby, Lua, TypeScript,
-Rust, Go, Java/Kotlin, .NET, C++, and Swift. [libtmux.org](https://libtmux.org) provides
+Documentation for the libtmux libraries in Python, Ruby, Lua, PowerShell,
+Julia, Erlang, Elixir, Haskell, Common Lisp, TypeScript, Rust, Go, Java, C#,
+C++, Swift, OCaml, Perl, and Raku, with JVM and .NET companion libraries for
+Kotlin, Scala, Clojure, and F#. [libtmux.org](https://libtmux.org) provides
 installation instructions, task guides, examples, and API references with
 links between corresponding APIs in different languages.
 
@@ -72,10 +74,16 @@ which generated references require sibling port checkouts.
 and renderers. [versions.ts](site/src/lib/versions.ts) defines version
 ordering and canonical URL policy.
 
-Each port has an API reference on this site. Rust, Go, and Java also link to
+Each port has an API reference on `libtmux.org`. Ports with canonical
+ecosystem hosts also link to companion references on
 [docs.rs](https://docs.rs/libtmux),
-[pkg.go.dev](https://pkg.go.dev/github.com/libtmux/libtmux-go/tmux), and
-[javadoc.io](https://javadoc.io/doc/io.github.libtmux/libtmux).
+[pkg.go.dev](https://pkg.go.dev/github.com/libtmux/libtmux-go/tmux),
+[javadoc.io](https://javadoc.io/doc/io.github.libtmux/libtmux),
+[Dokka](https://javadoc.io/doc/io.github.libtmux/libtmux-kotlin),
+[Scaladoc](https://javadoc.io/doc/io.github.libtmux/libtmux-scala_3),
+[HexDocs](https://libtmux.hexdocs.pm/),
+[Swift Package Index](https://swiftpackageindex.com/libtmux/libtmux-swift/documentation/libtmux),
+and [MetaCPAN](https://metacpan.org/pod/LibTmux).
 
 Read [Architecture](notes/architecture.md) for the build and hosting design,
 [Adding a port](notes/adding-a-port.md) for integration steps, and
@@ -87,16 +95,3 @@ Use these packages with AI tools as you like. When contributing, check what you
 submit and wait for a maintainer's invitation before preparing a pull request.
 See the [AI policy](https://libtmux.org/en/meta/ai-policy/), also kept as
 [AI_POLICY.md](https://github.com/libtmux/.github/blob/HEAD/AI_POLICY.md).
-
-## Attribution
-
-Please use the following BibTeX template to cite libtmux.org in scientific discourse:
-
-```bibtex
-@misc{libtmux-org,
-   author = {Tony Narlock},
-   year = {2026},
-   note = {https://libtmux.org},
-   title = {libtmux.org: documentation for the libtmux ports}
-}
-```
