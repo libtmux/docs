@@ -11,7 +11,7 @@ import {
   stripBuildMarkers,
   withoutAttributes,
 } from '../lib/example-excerpt.ts'
-import { citeMeta, excerptMeta } from '../lib/code-frame.mjs'
+import { citeMeta, excerptMeta, isProgramFile } from '../lib/code-frame.mjs'
 /** Static import keeps source bytes available in bundled HTML and Markdown exports. */
 import CACHE from '../data/example-sources.json' with { type: 'json' }
 import { visit } from 'unist-util-visit'
@@ -263,6 +263,7 @@ export function remarkPortCode() {
     // A language-owned guide may also show its parent's API or build files.
     // Filter alternate examples only in the shared, cross-language prose.
     const authoredPort = file?.data?.astro?.frontmatter?.port
+    const onExamplePage = /(?:^|\/)examples(?:\/|\.mdx?$)/.test(String(file?.path ?? '').replace(/^.*\/content\/docs\//, ''))
     const raw = String(file?.value ?? '')
     const { body: selected, portAt } = resolvePortContent(raw, authoredPort || port || undefined)
     // Parse the selected source before headings, highlighting or API linking.
@@ -338,7 +339,10 @@ export function remarkPortCode() {
       }
 
       // The block an excerpt quotes is the complete program, and an author may say so of any block.
-      if ((meta.title !== undefined && quoted.has(meta.title)) || meta.role !== undefined) {
+      // An example page builds up to its program, so a file it shows whole is one too, build files aside.
+      const wholeProgram = meta.title !== undefined
+        && (quoted.has(meta.title) || (onExamplePage && isProgramFile(meta.title, lang)))
+      if (wholeProgram || meta.role !== undefined) {
         const cite = meta.title === undefined ? undefined : citeMeta(cited.get(programKey(undefined, { kind: 'page', name: meta.title })) ?? [])
         node.meta = withFrameAttributes(node.meta, { frame: 'code', ...(meta.role === undefined ? { role: 'program' } : {}), ...(cite ? { cite } : {}) })
       }

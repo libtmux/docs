@@ -30,6 +30,22 @@ const ROLE_NAMES = { excerpt: 'Excerpt', program: 'Complete program' }
 /** A cap this close to the total hides a line or two behind a button, so it is dropped. */
 const CAP_SLACK = 3
 
+/** Build and manifest files beside a program: whole files, but not programs. */
+const SETUP_FILES = /^(?:CMakeLists\.txt|Gemfile|Package\.swift|package\.json|Cargo\.toml|go\.mod|[\w.-]+\.(?:csproj|fsproj)|(?:build|settings)\.gradle\.kts|gradle\.properties)$/
+
+/** Fence languages of data and configuration, which a program reads but never is. */
+const DATA_LANGUAGES = new Set(['json', 'yaml', 'yml', 'toml', 'xml', 'properties', 'ini', 'cmake', 'gomod', 'tmux'])
+
+/**
+ * Whether a titled block holds a program's own source, as against a build file or
+ * configuration beside it: only a whole program reads "Complete program".
+ * @param {string} title the file the frame names
+ * @param {string | null | undefined} language the fence's language
+ */
+export function isProgramFile(title, language) {
+  return !SETUP_FILES.test(title.slice(title.lastIndexOf('/') + 1)) && !DATA_LANGUAGES.has((language ?? '').toLowerCase())
+}
+
 /**
  * `"59-78"`, `"12-40,55-60"` or `"7"` as ranges of source lines. A spec that is
  * not a list of ascending line numbers gives none, so a typo never shows as a
