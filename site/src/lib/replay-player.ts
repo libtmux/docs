@@ -363,7 +363,7 @@ export interface PreviewOptions {
   head: HTMLElement
   /** Where Show preview goes: before the code's copy button, or at the chat's top end. A button is added to each, ahead of `before` (or last), so the tab order follows the visual one. */
   places: { parent: HTMLElement; before?: Element | null }[]
-  /** The class a Show preview button takes from the host's own stylesheet. */
+  /** The class that places a Show preview button in its host. The controls' own class, `mcp-replay__button`, draws it, as it draws Hide preview. */
   showClass: string
 }
 
@@ -388,7 +388,7 @@ export function bindPreview(root: HTMLElement, { key, column, head, places, show
   }
   const hide = draw('Hide preview', PANE_SHOWN, 'mcp-replay__button')
   head.append(hide)
-  const shows = places.map(({ parent, before }) => { const button = draw('Show preview', PANE_HIDDEN, showClass); parent.insertBefore(button, before ?? null); return button })
+  const shows = places.map(({ parent, before }) => { const button = draw('Show preview', PANE_HIDDEN, `mcp-replay__button ${showClass}`); parent.insertBefore(button, before ?? null); return button })
   const apply = (hidden: boolean) => {
     root.toggleAttribute('data-preview-hidden', hidden)
     for (const button of [hide, ...shows]) button.setAttribute('aria-expanded', String(!hidden))

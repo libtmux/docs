@@ -26,6 +26,20 @@
   background: var(--color-background-primary, var(--color-surface));
 }
 
+/*
+ * One set of sizes draws every round button of the player: a button is --mcp-button square and stands --mcp-inset-block
+ * from the top and bottom edge of its bar or column and --mcp-inset-inline from its sides. The controls bar and the
+ * preview column's head row both take these, and the Hide and Show preview buttons are drawn by the controls' own class
+ * (`.mcp-replay__button`), so the toggles and the controls cannot drift apart.
+ */
+.mcp-replay,
+.home-example-player {
+  --mcp-button: 2rem;
+  --mcp-inset-block: 0.5rem;
+  --mcp-inset-inline: 1rem;
+  --mcp-sidehead: calc(var(--mcp-button) + 2 * var(--mcp-inset-block));
+}
+
 .mcp-replay__head[hidden],
 html:not([data-js]) .mcp-replay__head {
   display: none;
@@ -92,10 +106,11 @@ html:not([data-js]) .mcp-replay .mcp-frame:not(:last-child) {
 }
 
 /*
- * Hide preview (record 0081). The tmux column starts with a 2.5rem head row that holds the button, which the script adds; the
- * row is drawn empty from the first paint of a page with script, so binding it moves nothing, and a page without script has no
- * row. It takes the column's top padding, so the drawing starts 1.75rem lower than it did and the stage keeps its height: the
- * stacked body and box grow by that much (--mcp-extra), and the wide column is the stage's height already.
+ * Hide preview (record 0081). The tmux column starts with a head row, --mcp-sidehead tall, that holds the button, which the
+ * script adds; the row is drawn empty from the first paint of a page with script, so binding it moves nothing, and a page
+ * without script has no row. It takes the column's top padding, so the drawing starts that much lower, less the padding's
+ * 0.75rem, and the stage keeps its height: the stacked body and box grow by that much (--mcp-extra), and the wide column is the
+ * stage's height already.
  */
 .mcp-replay {
   --mcp-extra: 0rem;
@@ -103,7 +118,7 @@ html:not([data-js]) .mcp-replay .mcp-frame:not(:last-child) {
 }
 
 html[data-js] .mcp-replay:not(.mcp-replay--requests) {
-  --mcp-extra: 1.75rem;
+  --mcp-extra: calc(var(--mcp-sidehead) - 0.75rem);
   --mcp-tmux-top: 0rem;
 }
 
@@ -113,8 +128,8 @@ html[data-js] .mcp-replay:not(.mcp-replay--requests) {
   align-items: center;
   justify-content: flex-end;
   box-sizing: border-box;
-  height: 2.5rem;
-  padding: 0.25rem 0.5rem;
+  height: var(--mcp-sidehead);
+  padding: var(--mcp-inset-block) var(--mcp-inset-inline);
 }
 
 html:not([data-js]) .mcp-replay__sidehead {
@@ -196,7 +211,7 @@ html:not([data-js]) .mcp-replay__sidehead {
 
 /*
  * A hidden preview removes the tmux column and the chat takes the width, at the same stage height. Show preview sits at the
- * chat's top end, which gains room so no turn starts under it. A stored choice is on the root before the first paint, so a page
+ * chat's top end, which gains room so no turn starts under it; the controls' class draws it, so this rule only places it. A stored choice is on the root before the first paint, so a page
  * not yet bound is drawn the same way.
  */
 .mcp-replay[data-preview-hidden] .mcp-replay__tmux,
@@ -209,31 +224,11 @@ html[data-replay-preview] .mcp-replay:not([data-live], .mcp-replay--requests) .m
   padding-top: 3rem;
 }
 
-.mcp-replay__show {
+.mcp-replay .mcp-replay__show {
   position: absolute;
-  top: 0.5rem;
+  top: var(--mcp-inset-block);
   right: 1.25rem;
   z-index: 2;
-  display: grid;
-  place-items: center;
-  width: 2rem;
-  height: 2rem;
-  padding: 0;
-  border: 1px solid var(--control-border);
-  border-radius: 0.25rem;
-  background: var(--color-surface);
-  color: var(--color-muted);
-  cursor: pointer;
-}
-
-.mcp-replay__show:hover,
-.mcp-replay__show:focus-visible {
-  color: var(--text-color);
-}
-
-.mcp-replay__show:focus-visible {
-  outline: 2px solid var(--focus-ring-color, currentColor);
-  outline-offset: 2px;
 }
 
 .mcp-replay:not([data-preview-hidden]) .mcp-replay__show {
@@ -810,7 +805,7 @@ html[data-theme-mode="dark"] .mcp-replay {
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 1rem;
+  padding: var(--mcp-inset-block) var(--mcp-inset-inline);
   border-top: 1px solid var(--color-edge);
   container-type: inline-size;
 }
@@ -820,11 +815,13 @@ html:not([data-js]) .mcp-replay__controls {
   display: none;
 }
 
-.mcp-replay__button {
+/* A code frame resets its descendants at a specificity of 0,1,1, which the bare class would lose to: Show preview sits inside one. */
+.mcp-replay__button,
+.expressive-code .mcp-replay__button {
   display: inline-grid;
   place-items: center;
-  width: 2rem;
-  height: 2rem;
+  width: var(--mcp-button);
+  height: var(--mcp-button);
   border: 0;
   border-radius: 0.375rem;
   background: var(--color-surface-hover);
@@ -1105,7 +1102,7 @@ html[data-theme-mode='dark'] .mcp-replay__rail {
    The controls sit in one row and the dots along one line, so the area reaches no further sideways than a dot's own width. */
 @media (pointer: coarse) {
   .mcp-replay__button, .mcp-replay__page { position: relative; }
-  .mcp-replay__show::after { content: ''; position: absolute; inset: min(0px, calc((100% - var(--touch-target)) / 2)); }
+  .mcp-replay .mcp-replay__show::after { content: ''; position: absolute; inset: min(0px, calc((100% - var(--touch-target)) / 2)); }
   :is(.mcp-replay__button, .mcp-replay__page)::after { content: ''; position: absolute; inset: calc((100% - var(--touch-target)) / 2) 0; }
   .mcp-replay__track { height: var(--touch-target); }
   .mcp-replay__mark::after { content: ''; position: absolute; inset: calc((100% - var(--touch-target)) / 2) -.375rem; }

@@ -327,8 +327,6 @@ describe('control outlines', () => {
     ['components/widgets/package-install.css', '.lm-pkg-install__copy'],
     ['components/widgets/AgentPrompt.astro', '.lm-agent-prompt__copy'],
     ['styles/core-player.css', '.expressive-code .core-copy'],
-    ['styles/core-player.css', '.expressive-code .core-show'],
-    ['styles/mcp-replay.css', '.mcp-replay__show'],
     ['styles/global.css', '.scheme-switch'],
     ['styles/global.css', '.scheme-cycle'],
     ['components/widgets/install-surface.css', '.lm-install__cdtoggle'],
@@ -351,6 +349,32 @@ describe('control outlines', () => {
   it('fails a control that keeps the decorative hairline, so the check can fail', () => {
     const hairline = '.field { border: 1px solid var(--color-edge); }'
     expect(declarations(hairline, '.field')).not.toMatch(/var\(--control-border\)/)
+  })
+
+  /**
+   * Hide and Show preview are round buttons of the replay's controls: the controls' own class draws them (size, fill, radius,
+   * colour, focus), and their rules only place them. The head row that holds Hide preview is inset like the controls bar.
+   */
+  const OWN_LOOK = /(?:^|[\s;])(?:width|height|border(?:-[a-z-]+)?|background|color|padding)\s*:/
+  const TOGGLES: [string, string][] = [['styles/core-player.css', '.expressive-code .core-show'], ['styles/mcp-replay.css', '.mcp-replay .mcp-replay__show']]
+  const padding = (text: string, selector: string) => /padding:\s*([^;]+);/.exec(declarations(text, selector))?.[1]
+  const insetLikeControls = (text: string) => {
+    const head = padding(text, '.mcp-replay__sidehead')
+    return head === 'var(--mcp-inset-block) var(--mcp-inset-inline)' && head === padding(text, '.mcp-replay__controls')
+  }
+
+  it.each(TOGGLES)('%s %s only places the button: the controls\' class draws it', (file, selector) => {
+    expect(declarations(source(file), selector)).not.toMatch(OWN_LOOK)
+  })
+
+  it('insets the head row that holds Hide preview by the controls bar\'s own tokens', () => {
+    expect(insetLikeControls(source('styles/mcp-replay.css'))).toBe(true)
+  })
+
+  it('fails a toggle that restyles itself, and a head row inset by values of its own, so the checks can fail', () => {
+    expect(declarations('.core-show {\n  position: absolute;\n  border: 1px solid var(--control-border);\n}', '.core-show')).toMatch(OWN_LOOK)
+    const drifted = '.mcp-replay__sidehead { padding: 0.25rem 0.5rem; }\n.mcp-replay__controls { padding: var(--mcp-inset-block) var(--mcp-inset-inline); }'
+    expect(insetLikeControls(drifted)).toBe(false)
   })
 
   /** The installer's Copy is a clipboard in a 30px outlined square with the control radius (record 0067), not a text button. */

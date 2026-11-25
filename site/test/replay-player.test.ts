@@ -341,6 +341,7 @@ describe('the replay player', () => {
       expect(column.id, 'the column is named so aria-controls has a target').not.toBe('')
       expect([hide.getAttribute('aria-controls'), show.getAttribute('aria-controls')]).toEqual([column.id, column.id])
       expect([hide.getAttribute('aria-expanded'), show.getAttribute('aria-expanded')]).toEqual(['true', 'true'])
+      expect([hide.className, show.className], 'both are drawn by the controls\' own class').toEqual(['mcp-replay__button', 'mcp-replay__button show'])
     })
 
     it('hides and shows the preview, remembers each choice in storage, and moves focus to the other button', () => {
