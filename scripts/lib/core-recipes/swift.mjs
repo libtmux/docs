@@ -219,6 +219,7 @@ export const RECIPES = {
     file: 'Sources/Main.swift',
     source: (root) => quickstartSource(root, 'swift', 'Sources/Main.swift'),
     // In the order the calls run. The reads after the second snapshot send tmux nothing: they walk the snapshot's values.
+    // `main` stops the server once `work` returns, so the page marks that call on the last statement of `work`.
     steps: [
       { id: 'server', label: 'Server.init', anchor: 'let server = try Server(', type: 'Server', value: SERVER },
       { id: 'new-session', label: 'Server.newSession', anchor: 'server.newSession(', type: 'Session', value: SESSION('session') },
@@ -239,7 +240,7 @@ export const RECIPES = {
       { id: 'window-panes', label: 'Snapshot.panes(of:)', anchor: 'snapshot.panes(of: window)', type: '[Pane]', value: IDS('panes'), repeat: true },
       { id: 'pane-window', label: 'Snapshot.windows', anchor: 'snapshot.windows.first(where:', type: 'Window', value: WINDOW('window') },
       { id: 'window-session', label: 'Snapshot.sessions(of:)', anchor: 'snapshot.sessions(of: window)', type: 'Session', value: SESSION('owner') },
-      { id: 'kill', label: 'Server.killServer', anchor: 'try await server.killServer()', occurrence: 2, type: 'Void', value: '"null"' },
+      { id: 'kill', label: 'Server.killServer', anchor: 'try await server.killServer()', occurrence: 2, scopeExit: true, marker: 'print("\\(right.id.rawValue) is in window', type: 'Void', value: '"null"' },
     ],
   },
 }

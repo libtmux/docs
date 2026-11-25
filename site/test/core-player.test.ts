@@ -187,7 +187,8 @@ describe('the calls each view of the Go program plays', () => {
     for (const view of HOME_VIEWS) {
       for (const { index, lines } of viewSteps(capability, code(view))) {
         const shown = textOf(view, lines)
-        expect(shown.split('\n')[0], `${view} ${capability.steps[index]!.id}`).toContain(capability.steps[index]!.anchor)
+        const step = capability.steps[index]!
+        expect(shown.split('\n')[0], `${view} ${step.id}`).toContain(step.marker ?? step.anchor)
         // The call's text ends with the parenthesis that closes the one it opened.
         expect(shown.split('(').length - 1, `${view} ${capability.steps[index]!.id}`).toBe(shown.split(')').length - 1)
       }
@@ -196,18 +197,19 @@ describe('the calls each view of the Go program plays', () => {
     expect(lineOf('full', 'split'), 'the error handling and cleanup lines above Split move it down').not.toEqual(lineOf('concise', 'split'))
   })
 
-  it('keeps the calls\' lines apart, and in the order the source has them (not the order they run)', async () => {
+  it('keeps the calls\' lines apart, and in the order the calls run', async () => {
     const { capability } = await recorded()
     const lines = viewSteps(capability, code('full')).map((step) => step.lines)
     const ordered = [...lines].sort((a, b) => a[0] - b[0])
     for (let position = 1; position < ordered.length; position++) expect(ordered[position]![0]).toBeGreaterThan(ordered[position - 1]![1])
-    expect(lines.map((range) => range[0]), 'the deferred Kill is above the calls it follows in the source').not.toEqual(ordered.map((range) => range[0]))
+    expect(lines.map((range) => range[0]), 'the deferred Kill is marked where run ends, below the calls it follows').toEqual(ordered.map((range) => range[0]))
   })
 
-  it('marks the deferred Kill on the line that makes it', async () => {
+  it('marks the deferred Kill on the line where its function ends, not on the defer that makes it', async () => {
     const { capability } = await recorded()
     const kill = viewSteps(capability, code('cleanup')).find((step) => capability.steps[step.index]!.id === 'kill')!
-    expect(textOf('cleanup', kill.lines)).toMatch(/errors\.Join\(err, server\.Kill\(context\.WithoutCancel\(ctx\)\)\)/)
+    expect(textOf('cleanup', kill.lines)).toBe('\treturn nil')
+    expect(code('cleanup').split('\n')[kill.lines[0]]).toBe('}')
   })
 
   it('plays none of them for a program the recording is not of', async () => {
@@ -899,7 +901,7 @@ describe('the player component', () => {
     click(win, document.querySelector(`[data-mark="${calls}"]`)!)
     expect(count(document)).toBe(`${calls}/${calls}`)
     expect(lit(document, 'cleanup')).toHaveLength(1)
-    expect(document.querySelector('[data-home-view="cleanup"] .ec-line.is-current')!.textContent).toContain('server.Kill(')
+    expect(document.querySelector('[data-home-view="cleanup"] .ec-line.is-current')!.textContent).toContain('return nil')
     cleanup.checked = false
     cleanup.dispatchEvent(new win.Event('change', { bubbles: true }) as unknown as Event)
     expect(count(document)).toBe(`${calls - 1}/${calls - 1}`)

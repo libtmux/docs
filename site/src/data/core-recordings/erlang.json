@@ -1596,6 +1596,7 @@
           "commands": [],
           "transient": [],
           "stopsServer": true,
+          "scopeExit": true,
           "tmux": {
             "sessions": [],
             "windows": [],

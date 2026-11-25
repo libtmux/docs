@@ -35,7 +35,8 @@ const COUNTS = (name) => `%( sessions => ${name}.sessions.elems, windows => ${na
  * In the order the calls run. A call on a snapshot or a captured pane reads what
  * was captured and sends tmux nothing. The last step is the displayed `LEAVE`
  * phaser: its mark is a phaser of its own, declared before the program's, so it
- * runs after `Server.close` has stopped the daemon.
+ * runs after `Server.close` has stopped the daemon. The phaser runs when the
+ * program's scope ends, so the page marks the step on the program's last statement.
  */
 const STEPS = [
   { id: 'start', label: 'Server.start', anchor: 'Server.start(', type: 'Server', value: '%( socket => $server.endpoint.socket-path.IO.parent.basename )' },
@@ -46,7 +47,7 @@ const STEPS = [
   { id: 'title-logs', label: 'PaneRef.set-title', anchor: "$right.set-title('logs');", type: 'void', value: 'Nil' },
   { id: 'snapshot', label: 'Server.snapshot', anchor: 'my $after = $server.snapshot;', type: 'Snapshot', value: COUNTS('$after') },
   { id: 'selected', label: 'PaneSelection.single', anchor: 'my $editor = $after.panes.filter(', type: 'Pane', value: '%( id => $editor.id, title => $editor.title )' },
-  { id: 'close', label: 'Server.close', anchor: 'LEAVE $server.close', type: 'void', value: 'Nil', leave: true, stopsServer: true },
+  { id: 'close', label: 'Server.close', anchor: 'LEAVE $server.close', scopeExit: true, marker: 'say "{$editor.title}', type: 'void', value: 'Nil', leave: true, stopsServer: true },
 ]
 
 /** Add the helper after the program's import, a mark after each call's statement, and the close mark as a phaser before the program's own. */

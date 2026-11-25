@@ -111,6 +111,7 @@ const IMPORT = 'import DocsMark qualified as Mark -- docs:mark'
 /**
  * In the order the calls run. The reads of a snapshot and the lookups in it send tmux nothing. A step whose anchor is
  * on the later line of a statement gives that statement's `indent`, so that its mark is not read as part of it.
+ * `withOwnedServer` stops the server when its body ends, so the page marks it on the body's last statement.
  */
 const STEPS = [
   { id: 'create-session', label: 'createSession', anchor: 'created <- Tmux.createSession server Creation.defaultSessionOptions', completes: 'Creation.process = Creation.ShellCommand', offset: 1, indent: 6, type: 'CreatedSession', value: 'Mark.created created' },
@@ -119,7 +120,7 @@ const STEPS = [
   { id: 'rename-window', label: 'renameWindow', anchor: 'Tmux.renameWindow server created.window "api #{pid};"', type: '()', value: 'Mark.unit' },
   { id: 'set-pane-title', label: 'setPaneTitle', anchor: 'Tmux.setPaneTitle server created.pane "editor-ready"', type: '()', value: 'Mark.unit' },
   { id: 'capture-after', label: 'capture', anchor: 'after <- Tmux.capture server', type: 'Snapshot', value: 'Mark.counts after' },
-  { id: 'retire-server', label: 'withOwnedServer', anchor: 'Tmux.withOwnedServer Tmux.defaultOwnedServerConfig', completes: 'pure (created, before, after)', indent: 2, stopsServer: true, type: '(CreatedSession, Snapshot, Snapshot)', value: 'Mark.scope before after' },
+  { id: 'retire-server', label: 'withOwnedServer', anchor: 'Tmux.withOwnedServer Tmux.defaultOwnedServerConfig', completes: 'pure (created, before, after)', indent: 2, stopsServer: true, scopeExit: true, marker: 'pure (created, before, after)', type: '(CreatedSession, Snapshot, Snapshot)', value: 'Mark.scope before after' },
   { id: 'previous-session', label: 'lookupSession', anchor: 'Tmux.lookupSession before created.session', indent: 2, type: 'Session', value: 'Mark.session previous' },
   { id: 'current-session', label: 'lookupSession', anchor: 'Tmux.lookupSession after created.session', indent: 2, type: 'Session', value: 'Mark.session current' },
   { id: 'window', label: 'lookupWindow', anchor: 'Tmux.lookupWindow after created.window', type: 'Window', value: 'Mark.window window' },

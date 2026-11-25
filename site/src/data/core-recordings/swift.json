@@ -1430,6 +1430,7 @@
           "label": "Server.killServer",
           "anchor": "try await server.killServer()",
           "occurrence": 2,
+          "marker": "print(\"\\(right.id.rawValue) is in window",
           "type": "Void",
           "returned": null,
           "commands": [
@@ -1443,6 +1444,7 @@
             }
           ],
           "transient": [],
+          "scopeExit": true,
           "tmux": {
             "sessions": [],
             "windows": [],
