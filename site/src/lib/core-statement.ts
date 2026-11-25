@@ -127,6 +127,30 @@ export function statementLines(code: string, anchor: string, syntax: string | St
   return undefined
 }
 
+/** What places a step in a program: the call it makes, and the line where its scope ends when it runs there. */
+export interface StepPlace {
+  /** The text of the call's first line. */
+  anchor: string
+  /** Which of the lines that hold the anchor, when several do (one-based). */
+  occurrence?: number
+  /** The text of the line where the scope that runs the call ends, for a step that runs when its scope ends. */
+  marker?: string
+  /** Which of the lines that hold the marker, when several do (one-based). */
+  markerOccurrence?: number
+}
+
+/**
+ * The lines a step's marker and highlight sit on. A call is marked where it is
+ * written, unless it runs when its scope ends: its `marker` then names the line
+ * where the scope ends, so the markers read in the order the steps run (record 0084).
+ * A program that does not hold the call has no lines for it, whatever it holds
+ * of the marker, so a view without the call does not play the step.
+ */
+export function stepLines(code: string, step: StepPlace, syntax: string | StatementSyntax = '//'): LineRange | undefined {
+  const call = statementLines(code, step.anchor, syntax, step.occurrence)
+  return call && step.marker !== undefined ? statementLines(code, step.marker, syntax, step.markerOccurrence) : call
+}
+
 /**
  * Whether the comment text at `column` is the start of a longer operator and so no comment (Haskell's `-->`, `|--`):
  * an operator's character comes just before it or just after the run of its last character.

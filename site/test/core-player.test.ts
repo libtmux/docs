@@ -4,6 +4,7 @@ import { Window } from 'happy-dom'
 import { ModuleKind, ScriptTarget, transpileModule } from 'typescript'
 import { afterEach, describe, expect, it } from 'vitest'
 import { capabilityExample, coreFrames, coreRecordingFor, paneActivity, playableCapability, stepChanges, stepNote, tmuxChanges, viewSteps, visibleCommands } from '../src/lib/core-player'
+import type { CoreCapability } from '../src/lib/core-recording'
 import { statementLines, syntaxOf } from '../src/lib/core-statement'
 import { HOME_VIEWS, QUICKSTARTS, homeProgram } from '../src/lib/quickstarts'
 import { loadAstroTemplate, renderAstroTemplate } from './astro-templates'
@@ -32,6 +33,23 @@ describe('finding a call in a program', () => {
 
   it('reads a statement with no parenthesis as its own line', () => {
     expect(statementLines('a := 1\nb := 2', 'b := 2')).toEqual([2, 2])
+  })
+})
+
+describe('marking a call that runs when its scope ends', () => {
+  const view = ['func run() {', '\tdefer server.Kill(ctx)', '\tserver.Snapshot(ctx)', '\treturn nil', '}'].join('\n')
+  const plan = (code: string, ...steps: object[]) => viewSteps({ steps } as unknown as CoreCapability, code).map((step) => step.lines)
+
+  it('puts its marker on the line named by its marker text, and keeps every other call on its own line', () => {
+    const kill = { anchor: 'server.Kill(', marker: 'return nil' }
+    expect(plan(view, kill, { anchor: 'server.Snapshot(' })).toEqual([[4, 4], [3, 3]])
+    expect(plan(view, { anchor: 'server.Kill(' }), 'without a marker the call is marked where it is written').toEqual([[2, 2]])
+  })
+
+  it('plays it only in a view that holds the call, and only where the marker line is there too', () => {
+    const kill = { anchor: 'server.Kill(', marker: 'return nil' }
+    expect(plan(view.replace('\tdefer server.Kill(ctx)\n', ''), kill)).toEqual([])
+    expect(plan(view.replace('return nil', 'return err'), kill)).toEqual([])
   })
 })
 

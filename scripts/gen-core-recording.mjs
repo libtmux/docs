@@ -212,7 +212,7 @@ function stepsOf({ before, entries }) {
     const transient = []
     for (const window of commands.flatMap((command) => command.after?.windows ?? [])) if (!known.has(window.id)) { known.add(window.id); transient.push({ window: window.id, name: window.name }) }
     steps.push({
-      id: step.repeat ? `${step.id}-${iteration}` : step.id, label: step.label, anchor: step.anchor, ...(step.occurrence ? { occurrence: step.occurrence } : {}), ...(step.repeat ? { iteration } : {}), type: step.type, returned: entry.value,
+      id: step.repeat ? `${step.id}-${iteration}` : step.id, label: step.label, anchor: step.anchor, ...(step.occurrence ? { occurrence: step.occurrence } : {}), ...(step.marker ? { marker: step.marker, ...(step.markerOccurrence ? { markerOccurrence: step.markerOccurrence } : {}) } : {}), ...(step.repeat ? { iteration } : {}), type: step.type, returned: entry.value,
       commands: commands.map((command) => {
         const described = describeInvocation(command, recipe)
         // A probe's reply names the daemon's process and start time, which differ on every run, and says nothing a reader needs.
@@ -221,7 +221,7 @@ function stepsOf({ before, entries }) {
         return { ...described, tmux: short(described.tmux), stdout: short(described.stdout), stderr: short(described.stderr), ...(cut ? { shortened: true } : {}) }
       }),
       ...(notifications.length ? { notifications: notifications.map((line) => short(recipe.redact?.(line) ?? line)) } : {}),
-      transient, ...(step.stopsServer ? { stopsServer: true } : {}), tmux: final,
+      transient, ...(step.stopsServer ? { stopsServer: true } : {}), ...(step.scopeExit ? { scopeExit: true } : {}), tmux: final,
     })
     earlier = final
     commands = []
@@ -283,7 +283,7 @@ const found = hostLeaks(recording, { sandbox, sandboxReal, home: homedir(), chec
 if (found.length) throw new Error(`${only}: the recording names the host: ${found.join(', ')}`)
 if (flag('--check')) {
   const stored = JSON.parse(readFileSync(out, 'utf8'))
-  const same = (value) => JSON.stringify([value.capabilities[recipe.capability].revision ?? value.revision, value.capabilities[recipe.capability].program, value.capabilities[recipe.capability].steps.map((step) => [step.id, step.anchor, withoutRepeatedPolls(step.commands.map((command) => `${command.role}:${command.tmux.split(' ')[0]}`))])])
+  const same = (value) => JSON.stringify([value.capabilities[recipe.capability].revision ?? value.revision, value.capabilities[recipe.capability].program, value.capabilities[recipe.capability].steps.map((step) => [step.id, step.anchor, step.marker, step.markerOccurrence, step.scopeExit, withoutRepeatedPolls(step.commands.map((command) => `${command.role}:${command.tmux.split(' ')[0]}`))])])
   if (same(stored) !== same(recording)) throw new Error(`${only}: the stored recording is stale`)
 } else {
   mkdirSync(dirname(out), { recursive: true })
