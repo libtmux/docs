@@ -11,14 +11,24 @@ const CHAIN_DWELL_MS = 100
 const GLOSSARY_DWELL_MS = 1000
 let dispose = () => {}
 
-/** Keep keyword help and fetched previews inside the same viewport gutter. */
+/**
+ * The room between a card and its link: less than the space between two rows of a list of links, so a card that opens
+ * over the next row covers all of it instead of leaving a sliver of that row's badge above its edge.
+ */
+const CARD_OFFSET = 4
+
+/**
+ * Keep keyword help and fetched previews inside the same viewport gutter. The card starts one corner radius before its
+ * link, so its rounded corner lies over the margin beside the link and never shows a fleck of the row it covers.
+ */
 export function positionLinkPreview(panel: HTMLElement, trigger: HTMLElement) {
   if (!trigger.isConnected || !panel.matches(':popover-open')) return
   const anchor = trigger.getBoundingClientRect(), box = panel.getBoundingClientRect()
   const viewport = document.documentElement.getBoundingClientRect(), gap = 8
-  const left = Math.max(viewport.left + gap, Math.min(anchor.left, viewport.right - box.width - gap))
-  const below = anchor.bottom + gap
-  const top = Math.max(gap, Math.min(below + box.height <= innerHeight - gap ? below : anchor.top - box.height - gap, innerHeight - box.height - gap))
+  const corner = parseFloat(panel.ownerDocument.defaultView?.getComputedStyle(panel).borderTopLeftRadius ?? '') || 0
+  const left = Math.max(viewport.left + gap, Math.min(anchor.left - corner, viewport.right - box.width - gap))
+  const below = anchor.bottom + CARD_OFFSET
+  const top = Math.max(gap, Math.min(below + box.height <= innerHeight - gap ? below : anchor.top - box.height - CARD_OFFSET, innerHeight - box.height - gap))
   Object.assign(panel.style, { inset: 'auto', margin: '0', left: `${left}px`, top: `${top}px` })
 }
 
