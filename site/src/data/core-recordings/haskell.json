@@ -368,6 +368,7 @@
           "id": "retire-server",
           "label": "withOwnedServer",
           "anchor": "Tmux.withOwnedServer Tmux.defaultOwnedServerConfig",
+          "marker": "pure (created, before, after)",
           "type": "(CreatedSession, Snapshot, Snapshot)",
           "returned": {
             "before": {
@@ -384,6 +385,7 @@
           "commands": [],
           "transient": [],
           "stopsServer": true,
+          "scopeExit": true,
           "tmux": {
             "sessions": [],
             "windows": [],

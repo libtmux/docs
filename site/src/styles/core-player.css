@@ -264,7 +264,8 @@ html[data-theme-mode="dark"] .home-example-view {
 /*
  * The copy button, at the program's top right and clear of its scrollbar: the code frame's own 2rem square. It is a
  * control, so its outline is --control-border like the installer's (record 0067), and the button is never translucent:
- * an outline dimmed by `opacity` is no longer the 3:1 that token measures.
+ * an outline dimmed by `opacity` is no longer the 3:1 that token measures. Show preview shares its place, not its look:
+ * the controls' class (`.mcp-replay__button`) draws it, as it draws Hide preview and the controls bar's own buttons.
  */
 .expressive-code .core-copy,
 .expressive-code .core-show {
@@ -272,6 +273,9 @@ html[data-theme-mode="dark"] .home-example-view {
   top: 0.5rem;
   right: 1.25rem;
   z-index: 2;
+}
+
+.expressive-code .core-copy {
   display: grid;
   place-items: center;
   width: 2rem;
@@ -286,8 +290,6 @@ html[data-theme-mode="dark"] .home-example-view {
 
 .expressive-code .core-copy:hover,
 .expressive-code .core-copy:focus-visible,
-.expressive-code .core-show:hover,
-.expressive-code .core-show:focus-visible,
 .expressive-code .core-copy[data-copied] {
   color: var(--ec-codeFg, var(--text-color));
 }
@@ -297,8 +299,7 @@ html[data-theme-mode="dark"] .home-example-view {
   color: var(--color-link);
 }
 
-.expressive-code .core-copy:focus-visible,
-.expressive-code .core-show:focus-visible {
+.expressive-code .core-copy:focus-visible {
   outline: 2px solid var(--focus-ring-color, currentColor);
   outline-offset: 2px;
 }

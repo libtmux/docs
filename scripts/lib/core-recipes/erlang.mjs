@@ -75,7 +75,7 @@ const STEPS = [
   { id: 'rename', label: 'tmux_window:rename', anchor: 'tmux_window:rename(', type: '{ok, _}', value: 'ok' },
   { id: 'fresh', label: 'tmux_query:fetch', anchor: 'tmux_query:fetch(tmux_query:where(', type: 'Selection', value: SIZE('Fresh') },
   { id: 'renamed', label: 'tmux_select:one', anchor: 'tmux_select:one(Fresh)', type: 'Window', value: NAMED('Renamed') },
-  { id: 'retire', label: 'tmux_server:with_owned', anchor: 'end),', type: 'map', value: 'Result', stopsServer: true },
+  { id: 'retire', label: 'tmux_server:with_owned', anchor: 'end),', type: 'map', value: 'Result', stopsServer: true, scopeExit: true },
 ]
 
 /** The other files the page shows, which the build writes beside the program. */

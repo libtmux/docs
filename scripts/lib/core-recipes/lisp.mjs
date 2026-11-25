@@ -141,7 +141,8 @@ const cacheOf = (checkout) => join(dirname(checkout), 'lisp-core-player-cache')
  * The step map, in the order the calls run. `call` is the function the marked copy wraps to mark it. `with-daemon` is
  * a macro: it starts the daemon before the body, which sends the version and readiness probes that the first call of
  * the body is credited with, and stops it by its process id after the body, with no tmux command of its own. The stop is
- * the last step, anchored on the `(daemon)` that opens the form, so that its lines are that one and no other call's.
+ * the last step. Its anchor is the `(daemon)` that opens the form; the page marks it on the last form the body prints
+ * with, which every view of the program holds, because the body's end is not the same line in each.
  */
 const STEPS = [
   { id: 'new-session', label: 'libtmux:new-session', anchor: '(libtmux:new-session', type: 'command-outcome', call: 'libtmux:new-session', value: OUTCOME('"session" (libtmux:id (libtmux:outcome-value result))') },
@@ -158,7 +159,7 @@ const STEPS = [
   { id: 'panes', label: 'libtmux:panes', anchor: '(libtmux:panes snapshot)', type: '(vector pane)', call: 'libtmux:panes', pure: true, value: '(ids result)' },
   { id: 'pane-window', label: 'libtmux:window', anchor: '(libtmux:window pane)', type: 'window', call: 'libtmux:window', pure: true, value: '(entity result)' },
   { id: 'owner', label: 'libtmux:session', anchor: '(libtmux:session (aref', type: 'session', call: 'libtmux:session', pure: true, value: '(entity result)' },
-  { id: 'stop-daemon', label: 'libtmux:with-daemon', anchor: '(daemon)', type: 'void', call: 'libtmux:stop-daemon', value: ':null', stopsServer: true },
+  { id: 'stop-daemon', label: 'libtmux:with-daemon', anchor: '(daemon)', scopeExit: true, marker: '(libtmux:name owner)', type: 'void', call: 'libtmux:stop-daemon', value: ':null', stopsServer: true },
 ]
 
 /** The helper with its plan: for each function a step marks, the steps its calls make, in order. */

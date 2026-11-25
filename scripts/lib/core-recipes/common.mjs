@@ -28,6 +28,13 @@ import { resolveCheckout } from '../port-checkout.mjs'
  * - `steps` is the hand-written step map, in the order the calls run. A step
  *   with `repeat: true` marks once per iteration of a loop and may arrive one or
  *   more times; one with `occurrence: n` is the n-th line that holds its anchor.
+ *   A step that runs when its scope ends (a scope helper, a `using` disposal, a
+ *   `defer`, a `LEAVE` phaser) says `scopeExit: true` and gives `marker`, the text
+ *   of the line where that scope ends (`markerOccurrence: n` for the n-th line
+ *   that holds it): the page marks the step there, so its marker reads after the
+ *   steps that ran before it (record 0084). Its `anchor` stays the call's own
+ *   line, which the instrumentation uses to place the recorder's mark; the
+ *   instrumentation never reads `marker`.
  */
 
 const json = (root, name) => JSON.parse(readFileSync(join(root, 'site/src/data', name), 'utf8'))

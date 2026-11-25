@@ -103,7 +103,7 @@ export const RECIPES = {
     source: (root) => quickstartSource(root, 'csharp', 'app/Program.cs'),
     checkout: (port, env, expand) => checkoutOf(port, env, expand),
     helpers: [],
-    // In the order the calls run. The owned server is stopped when its scope ends, after the last line of the program.
+    // In the order the calls run. The owned server is stopped when its scope ends, after the last line of the program, so the page marks the disposal on the program's last statement.
     // The reads after CaptureSnapshotAsync (the relations and properties) send tmux nothing.
     steps: [
       { id: 'create-owned', label: 'Server.CreateOwnedAsync', anchor: 'Server.CreateOwnedAsync(', type: 'Task<OwnedServerScope>', value: OWNED },
@@ -125,7 +125,7 @@ export const RECIPES = {
       { id: 'pane-by-id', label: 'Server.Panes', anchor: 'snapshot.Panes.Single(', type: 'Pane', value: PANE('found') },
       { id: 'pane-window', label: 'Pane.Window', anchor: 'found.Window;', type: 'Window', value: WINDOW('window') },
       { id: 'window-session', label: 'Window.Session', anchor: 'window.Session;', type: 'Session', value: 'new { id = owner.Id.ToString(), name = owner.Name }' },
-      { id: 'kill', label: 'OwnedServerScope.DisposeAsync', anchor: 'await using var owned', type: 'ValueTask', value: 'null', wrapped: true },
+      { id: 'kill', label: 'OwnedServerScope.DisposeAsync', anchor: 'await using var owned', scopeExit: true, marker: '$"{found.Id} is in window', type: 'ValueTask', value: 'null', wrapped: true },
     ],
     fence: dotnetFence,
     probe: dotnetProbe,

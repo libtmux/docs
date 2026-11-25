@@ -1482,6 +1482,7 @@
           "id": "kill",
           "label": "OwnedServerScope.DisposeAsync",
           "anchor": "await using var owned",
+          "marker": "$\"{found.Id} is in window",
           "type": "ValueTask",
           "returned": null,
           "commands": [
@@ -1514,6 +1515,7 @@
             "%exit"
           ],
           "transient": [],
+          "scopeExit": true,
           "tmux": {
             "sessions": [],
             "windows": [],

@@ -1,4 +1,4 @@
-import { statementLines, syntaxOf, type LineRange } from './core-statement.ts'
+import { stepLines, syntaxOf, type LineRange } from './core-statement.ts'
 import type { CoreCapability, CoreCommand, CoreRecording, CoreStep } from './core-recording.ts'
 import { recordingProblems } from './core-recording.ts'
 import { replayFrames, type Frame, type ReplayStep } from './mcp-replay'
@@ -11,11 +11,12 @@ import type { HomeExample } from './quickstarts'
  *
  * The page shows the program in the view the reader selected (Error handling
  * and Cleanup add lines and a call), and each view plays the steps whose call
- * it holds. A step's lines come from its anchor in that view, never from a
- * stored line number, so the recording does not change when the displayed
- * program is reformatted. The drawn tmux is `replayFrames`' own, the one the
- * MCP replay draws, fed the recording's states, with each pane's text as
- * the step's own `capture-pane` returned it.
+ * it holds. A step's lines come from its anchor in that view (or, for a step
+ * that runs when its scope ends, its marker's), never from a stored line number,
+ * so the recording does not change when the displayed program is reformatted.
+ * The drawn tmux is `replayFrames`' own, the one the MCP replay draws, fed the
+ * recording's states, with each pane's text as the step's own `capture-pane`
+ * returned it.
  */
 
 const RECORDINGS = import.meta.glob<CoreRecording>('../data/core-recordings/*.json', { import: 'default' })
@@ -39,7 +40,7 @@ export interface PlayerStep {
 export function viewSteps(capability: CoreCapability, code: string, port?: string): PlayerStep[] {
   const syntax = syntaxOf(port)
   return capability.steps.flatMap((step, index): PlayerStep[] => {
-    const lines = statementLines(code, step.anchor, syntax, step.occurrence)
+    const lines = stepLines(code, step, syntax)
     return lines ? [{ index, lines }] : []
   })
 }

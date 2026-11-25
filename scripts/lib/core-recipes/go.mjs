@@ -132,7 +132,7 @@ export const RECIPES = {
     file: 'quickstart.go',
     source: (root) => quickstartSource(root, 'go', 'quickstart.go'),
     helpers: [{ file: 'docs_mark.go', source: GO_HELPER }],
-    // In the order the calls run, which is not the order of their lines: the deferred Kill is above the rest in the source.
+    // In the order the calls run. The deferred Kill runs when `run` returns, so the page marks it on the `return nil` that ends `run`.
     // The last three read the snapshot's records and send tmux nothing.
     steps: [
       { id: 'new-server', label: 'tmux.NewServer', anchor: 'tmux.NewServer(', type: 'tmux.Server', value: SERVER },
@@ -150,7 +150,7 @@ export const RECIPES = {
       { id: 'pane-by-id', label: 'Snapshot.PaneByID', anchor: 'snapshot.PaneByID(', type: 'tmux.Pane', value: PANE('pane') },
       { id: 'pane-window', label: 'Pane.Window', anchor: 'pane.Window()', type: 'tmux.Window', value: WINDOW('window') },
       { id: 'window-session', label: 'Window.Session', anchor: 'window.Session()', type: 'tmux.Session', value: 'func() any { name, _ := owner.Name(); return map[string]any{"id": owner.ID(), "name": name} }()' },
-      { id: 'kill', label: 'Server.Kill', anchor: 'server.Kill(', type: 'error', value: 'docsError(err)' },
+      { id: 'kill', label: 'Server.Kill', anchor: 'server.Kill(', scopeExit: true, marker: 'return nil', type: 'error', value: 'docsError(err)' },
     ],
   },
   'run-applications': {

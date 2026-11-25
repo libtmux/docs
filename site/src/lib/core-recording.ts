@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { statementLines, syntaxOf } from './core-statement.ts'
+import { statementLines, stepLines, syntaxOf } from './core-statement.ts'
 import { stateProblems, type TmuxState } from './mcp-tmux-state.ts'
 
 /**
@@ -37,10 +37,20 @@ export interface CoreStep {
   id: string
   /** The call as the page names it, such as `Server.NewSession`. */
   label: string
-  /** The text of the call's first line in the program; the page finds its lines from it (`statementLines`). */
+  /** The text of the call's first line in the program; the page finds its lines from it (`statementLines`), unless the step has a `marker`. */
   anchor: string
   /** Which of the lines that hold the anchor, when the program makes the same call on several (one-based). */
   occurrence?: number
+  /**
+   * Set on a call that runs when its scope ends: a scope helper's teardown, a `using` disposal, a `defer`, a `LEAVE`
+   * phaser. The page marks it where the scope ends, not where the call is written, so the markers read in step order
+   * (record 0084). The recorder still places its own mark by the `anchor`.
+   */
+  scopeExit?: true
+  /** The text of the line where the scope ends, which carries a `scopeExit` step's marker; the `anchor` stays the call's own line. */
+  marker?: string
+  /** Which of the lines that hold the marker, when the program has several (one-based). */
+  markerOccurrence?: number
   /** Set on a call that ran more than once, such as one in a loop: this run of it (one-based). Every run is a step of its own, anchored on the same line. */
   iteration?: number
   /** The type of what the call returned. */
@@ -101,7 +111,9 @@ export const sha256 = (text: string) => createHash('sha256').update(text).digest
  * ids a call returned are in tmux after it or in the commands it sent.
  *
  * With `programs` (the displayed program by capability), the recording must
- * be of that program: its hash is compared and every anchor is looked up in it.
+ * be of that program: its hash is compared and every anchor, and every marker,
+ * is looked up in it. A step that says it runs when its scope ends (`scopeExit`)
+ * must be marked no higher in the program than any step before it (record 0084).
  */
 export function recordingProblems(recording: unknown, { programs }: { programs?: Record<string, string> } = {}): string[] {
   if (!isRecord(recording) || !isRecord(recording.capabilities)) return ['has no capabilities']
@@ -122,14 +134,25 @@ export function recordingProblems(recording: unknown, { programs }: { programs?:
     let previous = capability.tmuxBefore as TmuxState
     const seen = new Set<string>()
     const runs = new Map<string, number>()
+    // The marker furthest down the program so far, and its step.
+    let furthest = { line: 0, step: '' }
     steps.forEach((step, index) => {
       const here = (text: string) => at(`step ${index + 1} (${step.label ?? step.id}): ${text}`)
       if (!step.id || seen.has(step.id)) problems.push(here('has no unique id'))
       seen.add(step.id)
       if (!step.label || !step.type) problems.push(here('has no label or no type'))
       if (!('returned' in step)) problems.push(here('records no returned value'))
+      if (step.marker !== undefined && step.scopeExit !== true) problems.push(here('has a marker but does not say it runs when its scope ends'))
       if (program !== undefined) {
-        if (!step.anchor || !statementLines(program, step.anchor, syntax, step.occurrence)) problems.push(here(`its anchor ${JSON.stringify(step.anchor)} is not on exactly one line of the program`))
+        const call = step.anchor ? statementLines(program, step.anchor, syntax, step.occurrence) : undefined
+        const placed = call ? stepLines(program, step, syntax) : undefined
+        if (!call) problems.push(here(`its anchor ${JSON.stringify(step.anchor)} is not on exactly one line of the program`))
+        else if (!placed) problems.push(here(`its marker ${JSON.stringify(step.marker)} is not on exactly one line of the program`))
+        else {
+          // The markers read in the order the steps run, so a call that runs when its scope ends is marked where the scope ends, not above a step that ran before it.
+          if (step.scopeExit && placed[0] < furthest.line) problems.push(here(`runs when its scope ends but is marked on line ${placed[0]}, above line ${furthest.line}, where ${furthest.step} is marked`))
+          if (placed[0] > furthest.line) furthest = { line: placed[0], step: `step ${index + 1} (${step.label})` }
+        }
       } else if (!step.anchor) problems.push(here('has no anchor'))
       // A call shares its line with its other runs only when it says it ran more than once, and the runs count up from one.
       const place = `${step.anchor}#${step.occurrence ?? ''}`

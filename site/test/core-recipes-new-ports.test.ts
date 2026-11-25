@@ -44,8 +44,9 @@ function expectPlayable(port: NewPort) {
 }
 
 /**
- * The calls of a recording in every view of the program the page shows, each on the line its anchor names. A view
- * plays a call only if the view holds it; `absent` is what a view may leave out (a program's cleanup).
+ * The calls of a recording in every view of the program the page shows, each on the line its anchor names (or its
+ * marker, for a call that runs when its scope ends). A view plays a call only if the view holds it; `absent` is what
+ * a view may leave out (a program's cleanup).
  */
 function expectPlayedInEveryView(port: NewPort, absent: Record<string, string[]> = {}) {
   const capability = capabilityOf(port)
@@ -53,7 +54,7 @@ function expectPlayedInEveryView(port: NewPort, absent: Record<string, string[]>
     const code = homeProgram(QUICKSTARTS[port]!.complete!, view).replace(/\n$/, '')
     const placed = viewSteps(capability, code, port)
     expect(placed.map((each) => capability.steps[each.index]!.id), view).toEqual(capability.steps.map((each) => each.id).filter((id) => !(absent[view] ?? []).includes(id)))
-    for (const { index, lines } of placed) expect(code.split('\n')[lines[0] - 1], `${view} ${capability.steps[index]!.id}`).toContain(capability.steps[index]!.anchor)
+    for (const { index, lines } of placed) expect(code.split('\n')[lines[0] - 1], `${view} ${capability.steps[index]!.id}`).toContain(capability.steps[index]!.marker ?? capability.steps[index]!.anchor)
   }
 }
 

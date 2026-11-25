@@ -1295,11 +1295,13 @@
           "id": "stop-daemon",
           "label": "libtmux:with-daemon",
           "anchor": "(daemon)",
+          "marker": "(libtmux:name owner)",
           "type": "void",
           "returned": null,
           "commands": [],
           "transient": [],
           "stopsServer": true,
+          "scopeExit": true,
           "tmux": {
             "sessions": [],
             "windows": [],

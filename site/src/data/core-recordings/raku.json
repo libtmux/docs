@@ -695,11 +695,13 @@
           "id": "close",
           "label": "Server.close",
           "anchor": "LEAVE $server.close",
+          "marker": "say \"{$editor.title}",
           "type": "void",
           "returned": null,
           "commands": [],
           "transient": [],
           "stopsServer": true,
+          "scopeExit": true,
           "tmux": {
             "sessions": [],
             "windows": [],
