@@ -310,6 +310,24 @@ describe('preview lifecycle', () => {
     expect(panel.style.left).toBe('120px')
   })
 
+  it('opens a card over the next row of a list without leaving a sliver of that row above its edge', async () => {
+    hover(); await settle()
+    const panel = win.document.querySelector<HTMLElement>('#reference-link-preview')!
+    // Happy DOM has no layout: the boxes Firefox draws for a tmux C API list, whose rows are .35rem apart.
+    const row = { top: 193.5, bottom: 213.1 }, nextRow = row.bottom + 5.6
+    link().getBoundingClientRect = () => new win.DOMRect(292, row.top, 215, row.bottom - row.top)
+    panel.getBoundingClientRect = () => new win.DOMRect(0, 0, 448, 300)
+    win.document.documentElement.getBoundingClientRect = () => new win.DOMRect(0, 0, 1366, 800)
+    panel.style.borderTopLeftRadius = '8px'
+    // Happy DOM's elements stand in for the browser's.
+    const place = positionLinkPreview as unknown as (panel: HTMLElement, trigger: HTMLElement) => void
+    place(panel, link())
+    expect(parseFloat(panel.style.top)).toBeGreaterThan(row.bottom)
+    expect(parseFloat(panel.style.top)).toBeLessThanOrEqual(nextRow)
+    // The rounded corner lies over the margin beside the list, not over the next row's badge.
+    expect(panel.style.left).toBe('284px')
+  })
+
   it('renders validated highlighted tokens as selectable text and falls back on malformed styling', async () => {
     const signature = 'final class Value<T> & Other'
     const token = (content: string, light = '#A626A4') => ({ content,

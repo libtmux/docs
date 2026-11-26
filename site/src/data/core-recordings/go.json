@@ -1998,6 +1998,7 @@
           "id": "kill",
           "label": "Session.Kill",
           "anchor": "session.Kill(",
+          "marker": "return nil",
           "type": "error",
           "returned": null,
           "commands": [
@@ -2011,6 +2012,7 @@
             }
           ],
           "transient": [],
+          "scopeExit": true,
           "tmux": {
             "sessions": [],
             "windows": [],
@@ -2703,6 +2705,7 @@
           "id": "kill",
           "label": "Session.Kill",
           "anchor": "session.Kill(",
+          "marker": "return nil",
           "type": "error",
           "returned": null,
           "commands": [
@@ -2719,6 +2722,7 @@
             "%exit"
           ],
           "transient": [],
+          "scopeExit": true,
           "tmux": {
             "sessions": [],
             "windows": [],

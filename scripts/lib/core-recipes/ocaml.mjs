@@ -154,8 +154,9 @@ const RECEIPT = 'obj [ ("status", json_string (if value.Libtmux_workspace.Execut
  * `with_private_daemon`, submits a workspace plan to it and reads the result, then runs `capture_graph`, which comes
  * first in the file. It makes a second session, links the first window into it, and captures the graph. The workspace
  * handle is closed inside the daemon's scope, and `with_private_daemon` returns last, once it has stopped the daemon
- * by its process id and removed its directory, with no tmux command of its own. The `occurrence` of a call is the
- * n-th line that holds its anchor.
+ * by its process id and removed its directory, with no tmux command of its own. Both end where `with_demo` hands the
+ * client to `use`, so the page marks them on that line, below the steps that ran before them (record 0084); the two
+ * share it and so share one marker. The `occurrence` of a call is the n-th line that holds its anchor.
  */
 const STEPS = [
   { id: 'submit', label: 'Workspace.submit_bootstrap', anchor: 'Workspace.submit_bootstrap', type: 'Workspace.t', call: 'Workspace.submit_bootstrap', value: '"null"' },
@@ -167,8 +168,8 @@ const STEPS = [
   { id: 'wait-linked', label: 'Client.wait_for_text', anchor: 'Client.wait_for_text ~timeout:0.5 client pane', occurrence: 1, type: 'Captured_text.t', call: 'Client.wait_for_text', value: WAITED },
   { id: 'link-window', label: 'Client.link_window', anchor: 'Client.link_window', type: 'unit', call: 'Client.link_window', value: '"null"' },
   { id: 'capture-graph', label: 'Client.capture', anchor: 'get (Client.capture client)', occurrence: 2, type: 'Snapshot.t', call: 'Client.capture', value: COUNTS },
-  { id: 'close', label: 'Workspace.close', anchor: 'Workspace.close operation', type: 'unit', call: 'Workspace.close', value: '"null"' },
-  { id: 'retire', label: 'Libtmux_unix.with_private_daemon', anchor: 'Libtmux_unix.with_private_daemon ~binary', type: 'Snapshot.t', call: 'Libtmux_unix.with_private_daemon', value: COUNTS, stopsServer: true },
+  { id: 'close', label: 'Workspace.close', anchor: 'Workspace.close operation', scopeExit: true, marker: 'use client initial spawn', type: 'unit', call: 'Workspace.close', value: '"null"' },
+  { id: 'retire', label: 'Libtmux_unix.with_private_daemon', anchor: 'Libtmux_unix.with_private_daemon ~binary', scopeExit: true, marker: 'use client initial spawn', type: 'Snapshot.t', call: 'Libtmux_unix.with_private_daemon', value: COUNTS, stopsServer: true },
 ]
 
 /** The line the marked copy adds: it opens the helper right after the program opens the library, before any alias of `Libtmux_unix`. */

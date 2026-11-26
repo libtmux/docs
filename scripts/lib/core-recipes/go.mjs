@@ -161,13 +161,14 @@ export const RECIPES = {
     // The streamed lines are the terminal's bytes and end "\r\n"; the port's own test compares them as the page shows them.
     normalizeOutput: (text) => text.replaceAll('\r\n', '\n'),
     helpers: [{ file: 'docs_mark.go', source: GO_HELPER }],
+    // In the order the calls run. The deferred Kill runs when `run` returns, so the page marks it on the `return nil` that ends `run`.
     steps: [
       { id: 'new-server', label: 'tmux.NewServer', anchor: 'tmux.NewServer(', type: 'tmux.Server', value: SERVER },
       { id: 'new-session', label: 'Server.NewSession', anchor: 'server.NewSession(', type: 'tmux.Session', value: SESSION },
       { id: 'run', label: 'Session.Run', anchor: 'session.Run(', type: 'tmux.RunResult', value: 'result' },
       { id: 'start', label: 'Session.Start', anchor: 'session.Start(', type: '*tmux.Running', value: 'map[string]any{"pane": running.Pane().ID()}' },
       { id: 'stream', label: 'Running.StreamTo', anchor: 'running.StreamTo(', type: 'tmux.RunResult', value: 'streamed' },
-      { id: 'kill', label: 'Session.Kill', anchor: 'session.Kill(', type: 'error', value: 'docsError(err)' },
+      { id: 'kill', label: 'Session.Kill', anchor: 'session.Kill(', scopeExit: true, marker: 'return nil', type: 'error', value: 'docsError(err)' },
     ],
   },
   watch: {
@@ -176,6 +177,7 @@ export const RECIPES = {
     file: 'main.go',
     source: (root) => capabilitySource(root, 'go', 'examples/control-mode-subscribe/main.go'),
     helpers: [{ file: 'docs_mark.go', source: GO_HELPER }, { file: 'docs_notification.go', source: GO_NOTIFICATION_HELPER }],
+    // In the order the calls run. The deferred Kill runs when `run` returns, so the page marks it on the `return nil` that ends `run`.
     steps: [
       { id: 'new-server', label: 'tmux.NewServer', anchor: 'tmux.NewServer(', type: 'tmux.Server', value: SERVER },
       { id: 'new-session', label: 'Server.NewSession', anchor: 'server.NewSession(', type: 'tmux.Session', value: SESSION },
@@ -185,7 +187,7 @@ export const RECIPES = {
       { id: 'subscribe', label: 'NotificationStream.Subscribe', anchor: 'stream.Subscribe(', type: 'error', value: 'nil' },
       { id: 'new-window', label: 'Session.NewWindow', anchor: 'session.NewWindow(', type: 'error', value: 'nil' },
       { id: 'next-change', label: 'NotificationStream.Next', anchor: 'stream.Next(ctx)', occurrence: 2, type: 'tmux.ControlNotification', value: 'docsNotification(notification)', repeat: true },
-      { id: 'kill', label: 'Session.Kill', anchor: 'session.Kill(', type: 'error', value: 'docsError(err)' },
+      { id: 'kill', label: 'Session.Kill', anchor: 'session.Kill(', scopeExit: true, marker: 'return nil', type: 'error', value: 'docsError(err)' },
     ],
   },
 }
