@@ -1,7 +1,7 @@
 {
   "generated": "scripts/gen-mcp-protocol.mjs",
   "repo": "libtmux/libtmux-rs",
-  "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+  "revision": "4bddfff6e50d6331d9ded917165050efd5a6f79f",
   "selection": {
     "LIBTMUX_TOOLSETS": "inspect,manage,execute,teardown"
   },
@@ -23,7 +23,7 @@
     "resourceTemplates": [],
     "serverInfo": {
       "name": "rmcp",
-      "version": "3.1.2"
+      "version": "3.9.0"
     },
     "tools": [
       {
@@ -672,7 +672,9 @@
                 "index",
                 "tool",
                 "success",
-                "resultTruncated"
+                "result",
+                "resultTruncated",
+                "error"
               ],
               "type": "object"
             },
@@ -748,6 +750,7 @@
             "results",
             "succeeded",
             "failed",
+            "stoppedAt",
             "truncated",
             "truncatedBytes",
             "onError"
@@ -1319,6 +1322,8 @@
           "required": [
             "id",
             "window_id",
+            "command",
+            "path",
             "active",
             "caller"
           ],
@@ -1426,6 +1431,8 @@
           "required": [
             "id",
             "window_id",
+            "command",
+            "path",
             "active",
             "caller"
           ],
@@ -1520,6 +1527,7 @@
               },
               "required": [
                 "id",
+                "command",
                 "active"
               ],
               "type": "object"
@@ -2058,6 +2066,8 @@
               "required": [
                 "id",
                 "window_id",
+                "command",
+                "path",
                 "active",
                 "caller"
               ],
@@ -2920,6 +2930,8 @@
           "required": [
             "id",
             "window_id",
+            "command",
+            "path",
             "active",
             "caller"
           ],
@@ -3055,6 +3067,7 @@
           "required": [
             "pane",
             "outcome",
+            "exit_status",
             "output",
             "bytes",
             "truncated"
@@ -3386,6 +3399,8 @@
           "required": [
             "id",
             "window_id",
+            "command",
+            "path",
             "active",
             "caller"
           ],
@@ -3732,7 +3747,9 @@
                 "index",
                 "tool",
                 "success",
-                "resultTruncated"
+                "result",
+                "resultTruncated",
+                "error"
               ],
               "type": "object"
             },
@@ -3808,6 +3825,7 @@
             "results",
             "succeeded",
             "failed",
+            "stoppedAt",
             "truncated",
             "truncatedBytes",
             "onError"
@@ -3884,6 +3902,7 @@
           },
           "required": [
             "name",
+            "target",
             "value"
           ],
           "type": "object"
@@ -3956,6 +3975,7 @@
           },
           "required": [
             "name",
+            "target",
             "value"
           ],
           "type": "object"
@@ -4069,6 +4089,8 @@
           "required": [
             "id",
             "window_id",
+            "command",
+            "path",
             "active",
             "caller"
           ],
@@ -4140,6 +4162,7 @@
           },
           "required": [
             "name",
+            "target",
             "value"
           ],
           "type": "object"
@@ -4215,6 +4238,7 @@
               "required": [
                 "name",
                 "state",
+                "value",
                 "withheld"
               ],
               "type": "object"
@@ -4253,7 +4277,8 @@
             }
           },
           "required": [
-            "entries"
+            "entries",
+            "session"
           ],
           "type": "object"
         },
@@ -4324,6 +4349,7 @@
               },
               "required": [
                 "name",
+                "index",
                 "command"
               ],
               "type": "object"
@@ -4437,7 +4463,8 @@
             }
           },
           "required": [
-            "name"
+            "name",
+            "value"
           ],
           "type": "object"
         },
@@ -4602,6 +4629,8 @@
               "required": [
                 "id",
                 "window_id",
+                "command",
+                "path",
                 "active",
                 "caller"
               ],
@@ -4702,7 +4731,11 @@
             "pane",
             "width",
             "height",
+            "cursor_x",
+            "cursor_y",
             "in_mode",
+            "mode",
+            "scroll_position",
             "dead",
             "content",
             "lines",
@@ -4851,6 +4884,8 @@
           "required": [
             "id",
             "window_id",
+            "command",
+            "path",
             "active",
             "caller"
           ],
@@ -4963,6 +4998,8 @@
           "required": [
             "id",
             "window_id",
+            "command",
+            "path",
             "active",
             "caller"
           ],
@@ -5216,6 +5253,8 @@
           "required": [
             "pane",
             "outcome",
+            "matched_index",
+            "matched_pattern",
             "text",
             "bytes"
           ],

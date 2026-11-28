@@ -1,7 +1,7 @@
 {
   "generated": "scripts/gen-mcp-transcript.mjs",
   "repo": "libtmux/libtmux-rs",
-  "revision": "6942c1e602e537eab1d545e4b0589020162ce953",
+  "revision": "4bddfff6e50d6331d9ded917165050efd5a6f79f",
   "sandbox": {
     "tmux": "tmux 3.7c",
     "pytest": "pytest 9.2.0",
@@ -19,7 +19,7 @@
   },
   "serverInfo": {
     "name": "rmcp",
-    "version": "3.1.2"
+    "version": "3.9.0"
   },
   "contracts": {
     "create_session": {
@@ -119,6 +119,8 @@
             "required": [
               "id",
               "window_id",
+              "command",
+              "path",
               "active",
               "caller"
             ],
@@ -272,6 +274,8 @@
         "required": [
           "id",
           "window_id",
+          "command",
+          "path",
           "active",
           "caller"
         ],
@@ -423,6 +427,7 @@
         "required": [
           "pane",
           "outcome",
+          "exit_status",
           "output",
           "bytes",
           "truncated"
@@ -707,14 +712,14 @@
       "content": [
         {
           "type": "text",
-          "text": "{\"bytes\":320,\"exit_status\":0,\"outcome\":\"completed\",\"output\":\"..                               [100%]\\n2 passed in 0.00s\\n\",\"pane\":\"%0\",\"truncated\":false}"
+          "text": "{\"bytes\":320,\"exit_status\":0,\"outcome\":\"completed\",\"output\":\"..                               [100%]\\n2 passed in 0.01s\\n\",\"pane\":\"%0\",\"truncated\":false}"
         }
       ],
       "structuredContent": {
         "bytes": 320,
         "exit_status": 0,
         "outcome": "completed",
-        "output": "..                               [100%]\n2 passed in 0.00s\n",
+        "output": "..                               [100%]\n2 passed in 0.01s\n",
         "pane": "%0",
         "truncated": false
       },
