@@ -355,9 +355,16 @@ describe('control outlines', () => {
   const OWN_LOOK = /(?:^|[\s;])(?:width|height|border(?:-[a-z-]+)?|background|color|padding)\s*:/
   const TOGGLES: [string, string][] = [['styles/core-player.css', '.expressive-code .core-show'], ['styles/mcp-replay.css', '.mcp-replay .mcp-replay__show']]
   const padding = (text: string, selector: string) => /padding:\s*([^;]+);/.exec(declarations(text, selector))?.[1]
+  const property = (text: string, selector: string, name: string) => new RegExp(`(?:^|[\\s;])${name}:\\s*([^;]+);`).exec(declarations(text, selector))?.[1]
+  /** The head row is the controls bar's box (record 0089): the same padding and top border, and the bar's own height. */
   const insetLikeControls = (text: string) => {
     const head = padding(text, '.mcp-replay__sidehead')
-    return head === 'var(--mcp-inset-block) var(--mcp-inset-inline)' && head === padding(text, '.mcp-replay__controls')
+    return head === 'var(--mcp-inset-block) var(--mcp-inset-inline)' && head === padding(text, '.mcp-replay__controls') &&
+      property(text, '.mcp-replay__sidehead', 'border-top') === property(text, '.mcp-replay__controls', 'border-top') &&
+      property(text, '.mcp-replay__sidehead', 'height') === 'var(--mcp-sidehead)' &&
+      /--mcp-sidehead:\s*var\(--mcp-bar\);/.test(text) &&
+      /--mcp-bar:\s*calc\(var\(--mcp-track\) \+ 2 \* var\(--mcp-inset-block\) \+ var\(--mcp-edge\)\);/.test(text) &&
+      property(text, '.mcp-replay__track', 'height') === 'var(--mcp-track)'
   }
 
   it.each(TOGGLES)('%s %s only places the button: the controls\' class draws it', (file, selector) => {
@@ -372,6 +379,11 @@ describe('control outlines', () => {
     expect(declarations('.core-show {\n  position: absolute;\n  border: 1px solid var(--control-border);\n}', '.core-show')).toMatch(OWN_LOOK)
     const drifted = '.mcp-replay__sidehead { padding: 0.25rem 0.5rem; }\n.mcp-replay__controls { padding: var(--mcp-inset-block) var(--mcp-inset-inline); }'
     expect(insetLikeControls(drifted)).toBe(false)
+    const fixed = source('styles/mcp-replay.css').replace('--mcp-sidehead: var(--mcp-bar);', '--mcp-sidehead: 3rem;')
+    expect(insetLikeControls(fixed), 'a head row of its own fixed height').toBe(false)
+    const unbordered = source('styles/mcp-replay.css').replace('  border-top: var(--mcp-edge) solid var(--color-edge);\n}\n\nhtml:not([data-js]) .mcp-replay__sidehead', '}\n\nhtml:not([data-js]) .mcp-replay__sidehead')
+    expect(unbordered).not.toBe(source('styles/mcp-replay.css'))
+    expect(insetLikeControls(unbordered), 'a head row with no top border').toBe(false)
   })
 
   /** Every copy button is a bare clipboard (record 0087): 2rem square, no border, no fill at rest, muted ink, the control hover fill on hover. */
