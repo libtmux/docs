@@ -116,7 +116,36 @@ describe('the capability showcase data', () => {
     })
   })
 
-  it.each(entries.map((item) => [`${item.owner}/${item.id}`, item] as const))('%s shows a whole program at the revision its API model records', (_name, { owner, entry }) => {
+  describe('programs that move between Rust crates', () => {
+    const old = 'crates/libtmux/examples/api_input.rs'
+    const next = 'crates/libtmux-tokio/examples/api_input.rs'
+    const source = { repository: 'libtmux/libtmux-rs', revision: 'a'.repeat(40) }
+    const entry = { ...table.rs!['send-keys']!, file: [next, old] } as CapabilityEntry
+    const program = 'use std::error::Error;\nfn main() -> Result<(), Box<dyn Error>> { Ok(()) }\n'
+    const held = (file: string, content = program) => ({ [capabilityCacheKey('rs', file)]: { ...source, content } })
+
+    it.each([next, old])('shows and cites the source at %s', (file) => {
+      const [shown] = portCapabilities('rs', { rs: { 'send-keys': entry } }, held(file))
+      expect(shown?.file).toBe(file)
+      expect(shown?.code).toBe(program.trimEnd())
+      expect(shown?.sourceUrl).toBe(`https://github.com/${source.repository}/blob/${source.revision}/${file}`)
+      expect(capabilityFiles(entry)[0]).toEqual([next, old])
+    })
+
+    it('prefers the current path when a revision contains both', () => {
+      const [shown] = portCapabilities('rs', { rs: { 'send-keys': entry } }, { ...held(old), ...held(next, `${program}// current\n`) })
+      expect(shown?.file).toBe(next)
+      expect(shown?.code).toBe(`${program}// current`)
+    })
+
+    it('refuses absent and empty alternatives', () => {
+      expect(() => portCapabilities('rs', { rs: { 'send-keys': entry } }, {})).toThrow(/api_input\.rs.*example cache/)
+      expect(validateCapability({ ...entry, file: [] } as CapabilityEntry)).toContain('names no file')
+      expect(validateCapability({ ...entry, file: [next, ''] } as CapabilityEntry)).toContain('names no file')
+    })
+  })
+
+  it.each(entries.map((item) => [`${item.owner}/${item.id}`, item] as const))('%s shows a whole program at the revision its API model records', (_name, { owner, id, entry }) => {
     const pinned = model(owner)
     for (const files of capabilityFiles(entry)) {
       const cached = files.map((file) => cache[capabilityCacheKey(owner, file)]).find((found) => found !== undefined)
@@ -126,7 +155,8 @@ describe('the capability showcase data', () => {
     for (const item of entry.checkedBy) expect(evidenceProblems(owner, item, cache), `${alternatives(item.file).join(' or ')} holds the check`).toEqual([])
     // The page shows the file in full: imports, entry point and server setup, nothing defined elsewhere.
     expect(entry.from ?? entry.to ?? entry.more).toBeUndefined()
-    expect(programProblems(entry.lang, stripBuildMarkers(cache[capabilityCacheKey(owner, entry.file)]!.content))).toEqual([])
+    const shown = portCapabilities(owner, { [owner]: { [id]: entry } }, cache)[0]!
+    expect(programProblems(entry.lang, shown.code)).toEqual([])
   })
 
   it('shows each program in full, in the maintainer order', () => {
@@ -144,7 +174,7 @@ describe('the capability showcase data', () => {
 
   it('shows a program without the comments its port\'s tooling reads, and keeps the file for the recording', () => {
     const entry = table.rs!['send-keys']!
-    const key = capabilityCacheKey('rs', entry.file)
+    const key = capabilityCacheKey('rs', 'crates/libtmux/examples/api_input.rs')
     const content = cache[key]!.content
     const marked = `// region: whole\n${content}// endregion\n`
     const [item] = portCapabilities('rs', { rs: { 'send-keys': entry } }, { [key]: { ...cache[key]!, content: marked } })

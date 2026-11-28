@@ -1,7 +1,10 @@
 {
   "rs": {
     "create-windows": {
-      "file": "crates/libtmux/examples/api_creation.rs",
+      "file": [
+        "crates/libtmux-tokio/examples/api_creation.rs",
+        "crates/libtmux/examples/api_creation.rs"
+      ],
       "lang": "rust",
       "ci": {
         "workflow": ".github/workflows/ci.yml",
@@ -10,7 +13,10 @@
       },
       "checkedBy": [
         {
-          "file": "crates/libtmux/examples/api_creation.rs",
+          "file": [
+            "crates/libtmux-tokio/examples/api_creation.rs",
+            "crates/libtmux/examples/api_creation.rs"
+          ],
           "contains": "\"expected four panes on server\""
         },
         {
@@ -18,7 +24,10 @@
             "scripts/run-examples/run_examples.py",
             "scripts/run-examples.sh"
           ],
-          "contains": "libtmux  | api_creation | query | | | creation: 2 windows, 4 panes"
+          "contains": [
+            "libtmux-tokio | api_creation | query | | | creation: 2 windows, 4 panes",
+            "libtmux  | api_creation | query | | | creation: 2 windows, 4 panes"
+          ]
         },
         {
           "file": "justfile",
@@ -57,7 +66,10 @@
       ]
     },
     "send-keys": {
-      "file": "crates/libtmux/examples/api_input.rs",
+      "file": [
+        "crates/libtmux-tokio/examples/api_input.rs",
+        "crates/libtmux/examples/api_input.rs"
+      ],
       "lang": "rust",
       "ci": {
         "workflow": ".github/workflows/ci.yml",
@@ -66,7 +78,10 @@
       },
       "checkedBy": [
         {
-          "file": "crates/libtmux/examples/api_input.rs",
+          "file": [
+            "crates/libtmux-tokio/examples/api_input.rs",
+            "crates/libtmux/examples/api_input.rs"
+          ],
           "contains": "lines.iter().any(|line| line.as_bytes() == b\"C-c is text\")"
         },
         {
@@ -74,7 +89,10 @@
             "scripts/run-examples/run_examples.py",
             "scripts/run-examples.sh"
           ],
-          "contains": "libtmux  | api_input | query | | | input: C-c is text"
+          "contains": [
+            "libtmux-tokio | api_input | query | | | input: C-c is text",
+            "libtmux  | api_input | query | | | input: C-c is text"
+          ]
         },
         {
           "file": "justfile",

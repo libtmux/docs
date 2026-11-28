@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 /** Exercise revision binding and deliberately damaged example caches. */
 import assert from 'node:assert/strict'
-import { mkdirSync, mkdtempSync, renameSync, writeFileSync, rmSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, renameSync, writeFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { execFileSync } from 'node:child_process'
 import * as generator from './gen-example-sources.mjs'
+import { capabilityFiles } from '../site/src/lib/core-capabilities.ts'
 
 const { cachedExample } = generator
 
@@ -90,6 +91,26 @@ try {
   assert.throws(() => offlineMoved(oldOnly, {}), /fixture\/example: none of runner\/run\.py, run\.sh is cached for [a-f0-9]{40}/)
   assert.throws(() => offlineMoved(newOnly, { 'run.sh': cachedOld }), /none of runner\/run\.py, run\.sh is cached/)
   console.log('ok   without a checkout, only an alternative cached for the revision is used')
+
+  const rust = JSON.parse(readFileSync(new URL('../site/src/data/core-capabilities.json', import.meta.url), 'utf8')).rs
+  const oldRust = 'crates/libtmux/examples'
+  const nativeRust = 'crates/libtmux-tokio/examples'
+  mkdirSync(join(scratch, oldRust), { recursive: true })
+  for (const file of ['api_creation.rs', 'api_input.rs']) writeFileSync(join(scratch, oldRust, file), `// ${file}\n`)
+  const released = commit('Released Rust examples')
+  mkdirSync(join(scratch, 'crates/libtmux-tokio'), { recursive: true })
+  renameSync(join(scratch, oldRust), join(scratch, nativeRust))
+  const native = commit('Native Rust drivers')
+  for (const [revision, directory] of [[released, oldRust], [native, nativeRust]]) {
+    for (const entry of Object.values(rust)) {
+      for (const files of capabilityFiles(entry).slice(0, 2)) {
+        const resolved = generator.cachedAlternative({ repository: 'fixture/example', revision, files, checkout: scratch, current: {} })
+        assert.equal(resolved.file, `${directory}/${resolved.file.split('/').at(-1)}`)
+        assert.equal(resolved.cached.content, `// ${resolved.file.split('/').at(-1)}\n`)
+      }
+    }
+  }
+  console.log('ok   Rust showcase programs and their checks resolve at released and native revisions')
 } finally {
   rmSync(scratch, { recursive: true, force: true })
 }

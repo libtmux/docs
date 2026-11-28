@@ -94,7 +94,7 @@
     "mcp": {
       "file": "crates/tmux-mcp/examples/readonly.rs",
       "lang": "rust",
-      "from": "use libtmux::Server;",
+      "from": "::Server;",
       "to": "=}",
       "ci": {
         "workflow": ".github/workflows/ci.yml",

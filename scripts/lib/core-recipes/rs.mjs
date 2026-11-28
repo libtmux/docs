@@ -9,6 +9,8 @@ export { withoutMarks }
 /**
  * How Rust's programs are recorded, one recipe per program: the calls to mark,
  * what to build, and how libtmux-rs's own tmux preamble is recognised.
+ * These recipes cover the recorded single-crate async API. Native driver
+ * programs use verify-rust-examples.mjs and have no recordings here.
  *
  * HAND-WRITTEN: `steps` is a person's map from the calls of one program to
  * their anchors and to a Rust expression for the value each returned (a

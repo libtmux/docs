@@ -60,8 +60,8 @@ const shown = [
   ...programs.map((item) => ({ ...item, quickstart: false as const })),
 ]
 const cachedSource = (id: CapabilityId) => {
-  const entry = (TABLE as CapabilityTable)[port]![id]!
-  const cached = (SOURCES as Record<string, CachedSource>)[capabilityCacheKey(port, entry.file)]!
+  const file = programs.find((program) => program.id === id)!.file
+  const cached = (SOURCES as Record<string, CachedSource>)[capabilityCacheKey(port, file)]!
   return { repository: cached.repository, revision: cached.revision }
 }
 const version = buildTarget(process.env).version

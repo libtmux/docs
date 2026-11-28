@@ -51,7 +51,8 @@ export interface ExitEvidence {
 }
 
 export interface CapabilityEntry {
-  file: string
+  /** Program paths, newest first; the selected source revision supplies one. */
+  file: Alternatives
   lang: string
   /** Excerpt anchors. A showcase entry is a whole program, so a recorded anchor is refused. */
   from?: string
@@ -84,18 +85,18 @@ export type CapabilityTable = Readonly<Record<string, Partial<Record<CapabilityI
 export const capabilityCacheKey = (owner: string, file: string) => landingCacheKey(owner, 'core' as never, file).replace('/core:', ':')
 
 /** Every file an entry relies on, as the paths it may have: the example, then what checks it. */
-export const capabilityFiles = (entry: CapabilityEntry): (readonly string[])[] => [[entry.file], ...entry.checkedBy.map((item) => alternatives(item.file))]
+export const capabilityFiles = (entry: CapabilityEntry): (readonly string[])[] => [alternatives(entry.file), ...entry.checkedBy.map((item) => alternatives(item.file))]
 
 /** Problems with an entry's record, empty when it states its evidence. */
 export function validateCapability(entry: Partial<CapabilityEntry>): string[] {
   const problems: string[] = []
-  if (!entry.file) problems.push('names no file')
+  const blank = (value: Alternatives | undefined) => value === undefined || alternatives(value).length === 0 || alternatives(value).some((text) => !text?.trim())
+  if (blank(entry.file)) problems.push('names no file')
   if (entry.from !== undefined || entry.to !== undefined || entry.more !== undefined) problems.push('quotes an excerpt; a showcase entry is a whole program')
   if (!/^\.github\/workflows\/[\w.-]+\.ya?ml$/.test(entry.ci?.workflow ?? '')) problems.push('names no workflow')
   if (!entry.ci?.command?.trim()) problems.push('names no CI command')
   if (!entry.ci?.job?.trim()) problems.push('names no CI job')
   if (!entry.checkedBy?.length) problems.push('records no evidence that the exit status or output is checked')
-  const blank = (value: Alternatives | undefined) => value === undefined || alternatives(value).length === 0 || alternatives(value).some((text) => !text?.trim())
   for (const item of entry.checkedBy ?? []) if (blank(item.file) || blank(item.contains)) problems.push('records evidence with no file or text')
   if (entry.tmux !== undefined && !/^\d+\.\d+[a-z]?\+$/.test(entry.tmux)) problems.push('writes the tmux version unlike 3.8+')
   if (entry.ci?.planOutput !== undefined && !/^[A-Za-z_][\w-]*$/.test(entry.ci.planOutput)) problems.push('names a plan output that is not a workflow output name')
@@ -222,16 +223,17 @@ export function portCapabilities(owner: string, table: CapabilityTable, cache: C
     if (!entry) return []
     const problems = validateCapability(entry)
     if (problems.length) throw new Error(`core-capabilities: ${owner}/${id} ${problems.join('; ')}`)
-    const key = capabilityCacheKey(owner, entry.file)
-    const cached = cache[key]
-    if (!cached) throw new Error(`core-capabilities: ${key} is not in the example cache; run node scripts/gen-example-sources.mjs`)
+    const files = alternatives(entry.file)
+    const file = files.find((candidate) => cache[capabilityCacheKey(owner, candidate)])
+    if (file === undefined) throw new Error(`core-capabilities: none of ${files.join(', ')} is in the example cache; run node scripts/gen-example-sources.mjs`)
+    const cached = cache[capabilityCacheKey(owner, file)]!
     const code = stripBuildMarkers(cached.content).replace(/\n$/, '')
     const incomplete = programProblems(entry.lang, code)
     if (incomplete.length) throw new Error(`core-capabilities: ${owner}/${id} ${incomplete.join('; ')}`)
     return [{
-      id, label, lang: entry.lang, file: entry.file, ci: entry.ci,
+      id, label, lang: entry.lang, file, ci: entry.ci,
       code, source: cached.content.replace(/\n$/, ''),
-      sourceUrl: `https://github.com/${cached.repository}/blob/${cached.revision}/${entry.file}`,
+      sourceUrl: `https://github.com/${cached.repository}/blob/${cached.revision}/${file}`,
       ...(entry.tmux ? { tmux: entry.tmux } : {}),
     }]
   })

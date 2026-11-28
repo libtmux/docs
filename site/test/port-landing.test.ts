@@ -108,6 +108,17 @@ describe('the products a port landing page offers', () => {
 })
 
 describe('the excerpt of each shipped product', () => {
+  it.each(['libtmux', 'libtmux_tokio'])('keeps the Rust MCP import from %s', (crate) => {
+    const file = 'crates/tmux-mcp/examples/readonly.rs'
+    const content = `use ${crate}::Server;\n\nfn main() {\n}\n`
+    const sources = { [landingCacheKey('rs', 'mcp', file)]: {
+      repository: 'libtmux/libtmux-rs', revision: 'a'.repeat(40), content,
+    } }
+    const shown = landingExcerpt(PORT_BY_SLUG.rs!, 'mcp', table, sources)!
+    expect(shown.code).toBe(content.trimEnd())
+    expect(shown.ranges).toEqual([{ start: 1, end: 4 }])
+  })
+
   const owned = PORTS.flatMap((port) => products(port.slug).map((product) => ({ port, product, owner: port.slug })))
   const excerpts = Object.entries(table).flatMap(([owner, entries]) =>
     Object.entries(entries).flatMap(([product, entry]) => (isGap(entry!) ? [] : [{ owner, product: product as DocProduct, entry: entry as LandingExcerpt }])))
