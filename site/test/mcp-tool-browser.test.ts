@@ -11,7 +11,7 @@ import { TIERS, mcpToolFacts, toolCapability } from '../src/lib/mcp-showcase'
 /**
  * The MCP tool browser (tools index and tool pages, `components/mcp/ProtocolReference.astro`): a tier on every
  * tool and a filter by tier, the capability row beside the annotations, and a link to the library call a tool
- * wraps. A server that names no toolset gets none of these, and no port's annotations are changed.
+ * wraps. A server that names no toolset (Ruby, today) gets none of these, and no port's annotations are changed.
  */
 const options = {
   real: [
@@ -75,17 +75,32 @@ describe('the tools index', () => {
     expect(card.textContent, 'the capability opener stays on the tool\'s page').not.toContain('accepts no client-supplied executable input')
   })
 
-  it.each(['ruby', 'julia'])('shows %s, whose server names no toolset, with no tier, no filter and no guessed tier', async (port) => {
+  it.each(['ruby'])('shows %s, whose server names no toolset, with no tier, no filter and no guessed tier', async (port) => {
     expect((await mcpToolFacts(port)).capabilities.size).toBeGreaterThan(0)
     const document = await page(port, 'tools')
     expect(document.querySelector('[data-mcp-tier-filter], .mcp-tool-card__tier, [data-tier]')).toBeNull()
   })
 
-  it.each(['ruby', 'julia'])('shows no tier control, label or count on the %s tools index', async (port) => {
+  it.each(['ruby'])('shows no tier control, label or count on the %s tools index', async (port) => {
     const document = await page(port, 'tools')
     expect(document.querySelectorAll('.mcp-tool-card')).toHaveLength(mcpObjects(port).filter((entry) => entry.kind === 'tool').length)
     expect(document.querySelector('[data-mcp-tier-filter], input[name="tier"], .mcp-tier, .mcp-count:not([data-count="all"])')).toBeNull()
     expect(document.body.textContent).not.toMatch(/\bTier\b|\b(?:Inspect|Manage|Execute|Teardown)\b/)
+  })
+
+  it('gives every julia tool its tier and counts each tier in the filter', async () => {
+    const { capabilities } = await mcpToolFacts('julia')
+    const document = await page('julia', 'tools')
+    const cards = [...document.querySelectorAll<HTMLElement>('.mcp-tool-card')]
+    expect(cards).toHaveLength(mcpObjects('julia').filter((entry) => entry.kind === 'tool').length)
+    for (const card of cards) {
+      const name = card.id.replace(/^mcp\.tool\./, '')
+      expect(card.dataset.tier, name).toBe(capabilities.get(name)!.toolset)
+      expect(card.dataset.tier, name).toBeTruthy()
+    }
+    const counts = [...document.querySelectorAll<HTMLInputElement>('[data-mcp-tier-filter] input[name="tier"]')].map((radio) => Number(radio.parentElement!.querySelector('small')!.textContent))
+    expect(counts[0]).toBe(cards.length)
+    expect(counts.slice(1).reduce((sum, n) => sum + n, 0), 'each tool is in one tier').toBe(cards.length)
   })
 
   it('has a stylesheet that filters on each tier, hides the groups left empty, and shows the chosen tier\'s counts', () => {
@@ -150,11 +165,21 @@ describe('a tool page', () => {
     expect(rows).toEqual(expect.arrayContaining(['Toolset', 'Process reach', 'tmux effects']))
   })
 
-  it.each(['ruby', 'julia'])('shows no tier, toolset or capability row on any %s tool page', async (port) => {
+  it.each(['ruby'])('shows no tier, toolset or capability row on any %s tool page', async (port) => {
     for (const { name } of mcpObjects(port).filter((entry) => entry.kind === 'tool')) {
       const document = await page(port, 'tools', name)
       expect(document.querySelector('[data-mcp-capability], .mcp-tier, [data-tier]'), name).toBeNull()
       expect([...document.querySelectorAll('dt')].map((term) => term.textContent), name).not.toContain('Toolset')
+    }
+  })
+
+  it('shows the tier and toolset on every julia tool page', async () => {
+    const { capabilities } = await mcpToolFacts('julia')
+    for (const { name } of mcpObjects('julia').filter((entry) => entry.kind === 'tool')) {
+      const tier = capabilities.get(name)!.toolset!
+      const document = await page('julia', 'tools', name)
+      expect(document.querySelector('.gp-sphinx-api-layout-right .mcp-tier')?.textContent, name).toBe(TIERS.find((entry) => entry.id === tier)!.label)
+      expect([...document.querySelectorAll('[data-mcp-capability] dt')].map((term) => term.textContent), name).toContain('Toolset')
     }
   })
 
