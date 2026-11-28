@@ -1,0 +1,511 @@
+{
+  "repository": "libtmux/libtmux-rs",
+  "revision": "a60922ba2afedcdd9350e5c495611b99379ac0d4",
+  "extractor": "extractRustWorkspace",
+  "symbols": [
+    {
+      "id": "libtmux_core.new_session.NewSession",
+      "publicId": "libtmux_core.NewSession",
+      "name": "NewSession",
+      "kind": "struct",
+      "namespace": "libtmux_core",
+      "source": {
+        "file": "crates/libtmux-core/src/new_session.rs",
+        "line": 27
+      }
+    },
+    {
+      "id": "libtmux_core.placement.SplitDirection",
+      "publicId": "libtmux_core.SplitDirection",
+      "name": "SplitDirection",
+      "kind": "enum",
+      "namespace": "libtmux_core",
+      "source": {
+        "file": "crates/libtmux-core/src/placement.rs",
+        "line": 33
+      }
+    },
+    {
+      "id": "libtmux_blocking.Server",
+      "publicId": "libtmux_blocking.Server",
+      "name": "Server",
+      "kind": "struct",
+      "namespace": "libtmux_blocking",
+      "source": {
+        "file": "crates/libtmux-blocking/src/lib.rs",
+        "line": 117
+      }
+    },
+    {
+      "id": "libtmux_blocking.Server.new_session",
+      "publicId": "libtmux_blocking.Server.new_session",
+      "name": "new_session",
+      "kind": "method",
+      "parent": "libtmux_blocking.Server",
+      "namespace": "libtmux_blocking",
+      "source": {
+        "file": "crates/libtmux-blocking/src/lib.rs",
+        "line": 157
+      }
+    },
+    {
+      "id": "libtmux_tokio.pane.Pane.id",
+      "publicId": "libtmux_tokio.Pane.id",
+      "name": "id",
+      "kind": "method",
+      "parent": "libtmux_tokio.pane.Pane",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/pane.rs",
+        "line": 368
+      }
+    },
+    {
+      "id": "libtmux_tokio.pane.Pane.window",
+      "publicId": "libtmux_tokio.Pane.window",
+      "name": "window",
+      "kind": "method",
+      "parent": "libtmux_tokio.pane.Pane",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/pane.rs",
+        "line": 655
+      }
+    },
+    {
+      "id": "libtmux_tokio.pane.Pane.split",
+      "publicId": "libtmux_tokio.Pane.split",
+      "name": "split",
+      "kind": "method",
+      "parent": "libtmux_tokio.pane.Pane",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/pane.rs",
+        "line": 736
+      }
+    },
+    {
+      "id": "libtmux_tokio.pane.Pane.send_keys",
+      "publicId": "libtmux_tokio.Pane.send_keys",
+      "name": "send_keys",
+      "kind": "method",
+      "parent": "libtmux_tokio.pane.Pane",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/pane.rs",
+        "line": 869
+      }
+    },
+    {
+      "id": "libtmux_tokio.pane.Pane.send_line",
+      "publicId": "libtmux_tokio.Pane.send_line",
+      "name": "send_line",
+      "kind": "method",
+      "parent": "libtmux_tokio.pane.Pane",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/pane.rs",
+        "line": 896
+      }
+    },
+    {
+      "id": "libtmux_tokio.pane.Pane.send_key_names",
+      "publicId": "libtmux_tokio.Pane.send_key_names",
+      "name": "send_key_names",
+      "kind": "method",
+      "parent": "libtmux_tokio.pane.Pane",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/pane.rs",
+        "line": 910
+      }
+    },
+    {
+      "id": "libtmux_tokio.pane.Pane.select",
+      "publicId": "libtmux_tokio.Pane.select",
+      "name": "select",
+      "kind": "method",
+      "parent": "libtmux_tokio.pane.Pane",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/pane.rs",
+        "line": 931
+      }
+    },
+    {
+      "id": "libtmux_tokio.pane.PaneWait",
+      "publicId": "libtmux_tokio.PaneWait",
+      "name": "PaneWait",
+      "kind": "enum",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/pane.rs",
+        "line": 1623
+      }
+    },
+    {
+      "id": "libtmux_tokio.pane.Pane.capture",
+      "publicId": "libtmux_tokio.Pane.capture",
+      "name": "capture",
+      "kind": "method",
+      "parent": "libtmux_tokio.pane.Pane",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/pane/observe.rs",
+        "line": 117
+      }
+    },
+    {
+      "id": "libtmux_tokio.pane.Pane.wait_for_text",
+      "publicId": "libtmux_tokio.Pane.wait_for_text",
+      "name": "wait_for_text",
+      "kind": "method",
+      "parent": "libtmux_tokio.pane.Pane",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/pane/observe.rs",
+        "line": 308
+      }
+    },
+    {
+      "id": "libtmux_tokio.server.Server",
+      "publicId": "libtmux_tokio.Server",
+      "name": "Server",
+      "kind": "struct",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/server.rs",
+        "line": 509
+      }
+    },
+    {
+      "id": "libtmux_tokio.server.Server.builder",
+      "publicId": "libtmux_tokio.Server.builder",
+      "name": "builder",
+      "kind": "method",
+      "parent": "libtmux_tokio.server.Server",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/server.rs",
+        "line": 645
+      }
+    },
+    {
+      "id": "libtmux_tokio.server.Server.shutdown",
+      "publicId": "libtmux_tokio.Server.shutdown",
+      "name": "shutdown",
+      "kind": "method",
+      "parent": "libtmux_tokio.server.Server",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/server.rs",
+        "line": 991
+      }
+    },
+    {
+      "id": "libtmux_tokio.server.Server.new_session",
+      "publicId": "libtmux_tokio.Server.new_session",
+      "name": "new_session",
+      "kind": "method",
+      "parent": "libtmux_tokio.server.Server",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/server.rs",
+        "line": 1104
+      }
+    },
+    {
+      "id": "libtmux_tokio.server.Server.kill",
+      "publicId": "libtmux_tokio.Server.kill",
+      "name": "kill",
+      "kind": "method",
+      "parent": "libtmux_tokio.server.Server",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/server.rs",
+        "line": 1346
+      }
+    },
+    {
+      "id": "libtmux_tokio.server.builder.ServerBuilder.build",
+      "publicId": "libtmux_tokio.ServerBuilder.build",
+      "name": "build",
+      "kind": "method",
+      "parent": "libtmux_tokio.server.builder.ServerBuilder",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/server/builder.rs",
+        "line": 304
+      }
+    },
+    {
+      "id": "libtmux_tokio.server.Server.panes",
+      "publicId": "libtmux_tokio.Server.panes",
+      "name": "panes",
+      "kind": "method",
+      "parent": "libtmux_tokio.server.Server",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/server/discovery.rs",
+        "line": 68
+      }
+    },
+    {
+      "id": "libtmux_tokio.server.Server.sessions",
+      "publicId": "libtmux_tokio.Server.sessions",
+      "name": "sessions",
+      "kind": "method",
+      "parent": "libtmux_tokio.server.Server",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/server/discovery.rs",
+        "line": 331
+      }
+    },
+    {
+      "id": "libtmux_tokio.session.Session.name",
+      "publicId": "libtmux_tokio.Session.name",
+      "name": "name",
+      "kind": "method",
+      "parent": "libtmux_tokio.session.Session",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/session.rs",
+        "line": 367
+      }
+    },
+    {
+      "id": "libtmux_tokio.session.Session.windows",
+      "publicId": "libtmux_tokio.Session.windows",
+      "name": "windows",
+      "kind": "method",
+      "parent": "libtmux_tokio.session.Session",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/session.rs",
+        "line": 432
+      }
+    },
+    {
+      "id": "libtmux_tokio.session.Session.active_window",
+      "publicId": "libtmux_tokio.Session.active_window",
+      "name": "active_window",
+      "kind": "method",
+      "parent": "libtmux_tokio.session.Session",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/session.rs",
+        "line": 582
+      }
+    },
+    {
+      "id": "libtmux_tokio.session.Session.panes",
+      "publicId": "libtmux_tokio.Session.panes",
+      "name": "panes",
+      "kind": "method",
+      "parent": "libtmux_tokio.session.Session",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/session.rs",
+        "line": 592
+      }
+    },
+    {
+      "id": "libtmux_tokio.session.Session.new_window",
+      "publicId": "libtmux_tokio.Session.new_window",
+      "name": "new_window",
+      "kind": "method",
+      "parent": "libtmux_tokio.session.Session",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/session.rs",
+        "line": 648
+      }
+    },
+    {
+      "id": "libtmux_tokio.session.NewWindowOptions",
+      "publicId": "libtmux_tokio.NewWindowOptions",
+      "name": "NewWindowOptions",
+      "kind": "struct",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/session.rs",
+        "line": 1147
+      }
+    },
+    {
+      "id": "libtmux_tokio.window.Window.index",
+      "publicId": "libtmux_tokio.Window.index",
+      "name": "index",
+      "kind": "method",
+      "parent": "libtmux_tokio.window.Window",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/window.rs",
+        "line": 413
+      }
+    },
+    {
+      "id": "libtmux_tokio.window.Window.name",
+      "publicId": "libtmux_tokio.Window.name",
+      "name": "name",
+      "kind": "method",
+      "parent": "libtmux_tokio.window.Window",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/window.rs",
+        "line": 419
+      }
+    },
+    {
+      "id": "libtmux_tokio.window.Window.split",
+      "publicId": "libtmux_tokio.Window.split",
+      "name": "split",
+      "kind": "method",
+      "parent": "libtmux_tokio.window.Window",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/window.rs",
+        "line": 565
+      }
+    },
+    {
+      "id": "libtmux_tokio.window.Window.rename",
+      "publicId": "libtmux_tokio.Window.rename",
+      "name": "rename",
+      "kind": "method",
+      "parent": "libtmux_tokio.window.Window",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/window.rs",
+        "line": 588
+      }
+    },
+    {
+      "id": "libtmux_tokio.window.SplitOptions",
+      "publicId": "libtmux_tokio.SplitOptions",
+      "name": "SplitOptions",
+      "kind": "struct",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/window.rs",
+        "line": 1926
+      }
+    },
+    {
+      "id": "libtmux_tokio.window.Window.panes",
+      "publicId": "libtmux_tokio.Window.panes",
+      "name": "panes",
+      "kind": "method",
+      "parent": "libtmux_tokio.window.Window",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/window/navigation.rs",
+        "line": 21
+      }
+    },
+    {
+      "id": "libtmux_tokio.window.Window.active_pane",
+      "publicId": "libtmux_tokio.Window.active_pane",
+      "name": "active_pane",
+      "kind": "method",
+      "parent": "libtmux_tokio.window.Window",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/window/navigation.rs",
+        "line": 78
+      }
+    },
+    {
+      "id": "libtmux_tokio.window.Window.session",
+      "publicId": "libtmux_tokio.Window.session",
+      "name": "session",
+      "kind": "method",
+      "parent": "libtmux_tokio.window.Window",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/window/navigation.rs",
+        "line": 264
+      }
+    },
+    {
+      "id": "libtmux_tokio.pane.Pane",
+      "publicId": "libtmux_tokio.Pane",
+      "name": "Pane",
+      "kind": "struct",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/pane.rs",
+        "line": 269
+      }
+    },
+    {
+      "id": "libtmux_tokio.server.builder.ServerBuilder",
+      "publicId": "libtmux_tokio.ServerBuilder",
+      "name": "ServerBuilder",
+      "kind": "struct",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/server/builder.rs",
+        "line": 37
+      }
+    },
+    {
+      "id": "libtmux_tokio.session.Session",
+      "publicId": "libtmux_tokio.Session",
+      "name": "Session",
+      "kind": "struct",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/session.rs",
+        "line": 252
+      }
+    },
+    {
+      "id": "libtmux_tokio.window.Window",
+      "publicId": "libtmux_tokio.Window",
+      "name": "Window",
+      "kind": "struct",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "crates/libtmux-tokio/src/window.rs",
+        "line": 289
+      }
+    },
+    {
+      "id": "libtmux_tokio.window.WindowLink",
+      "publicId": "libtmux_tokio.WindowLink",
+      "name": "WindowLink",
+      "kind": "struct",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "/tmp/libtmux-rs-dev/docs-native-sources/crates/libtmux-tokio/src/window.rs",
+        "line": 1239
+      }
+    },
+    {
+      "id": "libtmux_tokio.window.WindowLink.select",
+      "publicId": "libtmux_tokio.WindowLink.select",
+      "name": "select",
+      "kind": "method",
+      "parent": "libtmux_tokio.window.WindowLink",
+      "namespace": "libtmux_tokio",
+      "source": {
+        "file": "/tmp/libtmux-rs-dev/docs-native-sources/crates/libtmux-tokio/src/window/link.rs",
+        "line": 33
+      }
+    }
+  ],
+  "programs": {
+    "create-windows": {
+      "file": "crates/libtmux-tokio/examples/api_creation.rs",
+      "sha256": "61b6117162a9195e8219a6c1e4ba2f51616e7ea4fe5a45e0e365f5aeb78e9794",
+      "code": "//! Create a session and window, then split a window and a pane.\n\nuse std::error::Error;\nuse std::time::Duration;\n\nuse libtmux_tokio::{NewSession, NewWindowOptions, Server, SplitDirection, SplitOptions};\n\ntype ExampleError = Box<dyn Error>;\n\nfn check(condition: bool, message: &str) -> Result<(), ExampleError> {\n    if condition {\n        Ok(())\n    } else {\n        Err(message.into())\n    }\n}\n\nasync fn demonstrate(server: &Server) -> Result<(), ExampleError> {\n    let receipt = server\n        .new_session(NewSession::new(\"work\").window_name(\"editor\").command(\"cat\"))\n        .await?;\n    let session = server.inspect_session(&receipt).await?;\n    let window = session\n        .new_window(NewWindowOptions::new(\"logs\").command(\"cat\"))\n        .await?;\n    let pane = window\n        .split(SplitOptions::new(SplitDirection::Below).command(\"cat\"))\n        .await?;\n    pane.split(SplitOptions::new(SplitDirection::Right).command(\"cat\"))\n        .await?;\n    check(\n        session.windows().await?.len() == 2,\n        \"expected two session windows\",\n    )?;\n    check(\n        window.panes().await?.len() == 3,\n        \"expected three panes in split window\",\n    )?;\n    check(\n        server.panes().await?.len() == 4,\n        \"expected four panes on server\",\n    )?;\n    println!(\"creation: 2 windows, 4 panes\");\n    Ok(())\n}\n\n#[tokio::main(flavor = \"current_thread\")]\nasync fn main() -> Result<(), ExampleError> {\n    let root = std::path::Path::new(\"/tmp/libtmux-rs-dev\");\n    std::fs::create_dir_all(root)?;\n    let directory = tempfile::Builder::new()\n        .prefix(\"api-creation-\")\n        .tempdir_in(root)?;\n    std::fs::write(\n        directory.path().join(\"owner\"),\n        std::process::id().to_string(),\n    )?;\n    let server = Server::builder()\n        .socket_path(directory.path().join(\"tmux.sock\"))\n        .config_file(\"/dev/null\")\n        .default_timeout(Duration::from_secs(5))\n        .build()?;\n    let outcome = tokio::time::timeout(Duration::from_secs(10), demonstrate(&server)).await;\n\n    // Stop the owned daemon before closing the client executor.\n    let killed = server.kill().await;\n    let closed = server.shutdown().await;\n    let cleanup_failed = killed.is_err() || closed.is_err();\n    let mut failures = Vec::new();\n    match outcome {\n        Ok(Ok(())) => {}\n        Ok(Err(error)) => failures.push(format!(\"example failed: {error}\")),\n        Err(error) => failures.push(format!(\"example deadline: {error}\")),\n    }\n    if let Err(error) = killed {\n        failures.push(format!(\"daemon cleanup: {error}\"));\n    }\n    if let Err(error) = closed {\n        failures.push(format!(\"executor cleanup: {error}\"));\n    }\n    if cleanup_failed {\n        let retained = directory.keep();\n        failures.push(format!(\"inspect retained directory {}\", retained.display()));\n    } else if let Err(error) = directory.close() {\n        failures.push(format!(\"directory cleanup: {error}\"));\n    }\n    if failures.is_empty() {\n        Ok(())\n    } else {\n        Err(failures.join(\"; \").into())\n    }\n}\n"
+    },
+    "send-keys": {
+      "file": "crates/libtmux-tokio/examples/api_input.rs",
+      "sha256": "a91971ddade8c4e6fe7368ca479d1b0202d483d6f445d2ea7eca62e7e945c3b3",
+      "code": "//! Send literal text and a named Enter key to a ready shell.\n\nuse std::error::Error;\nuse std::time::Duration;\n\nuse libtmux_tokio::{NewSession, PaneWait, Server};\n\ntype ExampleError = Box<dyn Error>;\n\nasync fn demonstrate(server: &Server) -> Result<(), ExampleError> {\n    let receipt = server\n        .new_session(NewSession::new(\"input\").command(\"env ENV=/dev/null PS1='api-ready> ' sh\"))\n        .await?;\n    let session = server.inspect_session(&receipt).await?;\n    let panes = session.panes().await?;\n    let pane = panes.first().ok_or(\"session has no pane\")?;\n    if pane\n        .wait_for_text(\"api-ready>\", Duration::from_secs(5))\n        .await?\n        != PaneWait::Arrived\n    {\n        return Err(\"shell prompt did not become ready\".into());\n    }\n    pane.send_keys(\"printf '\\\\nC-c is text\\\\n'\").await?;\n    pane.send_key_names([\"Enter\"]).await?;\n    loop {\n        let lines = pane.capture().await?;\n        if lines.iter().any(|line| line.as_bytes() == b\"C-c is text\") {\n            break;\n        }\n        tokio::time::sleep(Duration::from_millis(20)).await;\n    }\n    println!(\"input: C-c is text\");\n    Ok(())\n}\n\n#[tokio::main(flavor = \"current_thread\")]\nasync fn main() -> Result<(), ExampleError> {\n    let root = std::path::Path::new(\"/tmp/libtmux-rs-dev\");\n    std::fs::create_dir_all(root)?;\n    let directory = tempfile::Builder::new()\n        .prefix(\"api-input-\")\n        .tempdir_in(root)?;\n    std::fs::write(\n        directory.path().join(\"owner\"),\n        std::process::id().to_string(),\n    )?;\n    let server = Server::builder()\n        .socket_path(directory.path().join(\"tmux.sock\"))\n        .config_file(\"/dev/null\")\n        .default_timeout(Duration::from_secs(5))\n        .build()?;\n    let outcome = tokio::time::timeout(Duration::from_secs(10), demonstrate(&server)).await;\n\n    // Stop the owned daemon before closing the client executor.\n    let killed = server.kill().await;\n    let closed = server.shutdown().await;\n    let cleanup_failed = killed.is_err() || closed.is_err();\n    let mut failures = Vec::new();\n    match outcome {\n        Ok(Ok(())) => {}\n        Ok(Err(error)) => failures.push(format!(\"example failed: {error}\")),\n        Err(error) => failures.push(format!(\"example deadline: {error}\")),\n    }\n    if let Err(error) = killed {\n        failures.push(format!(\"daemon cleanup: {error}\"));\n    }\n    if let Err(error) = closed {\n        failures.push(format!(\"executor cleanup: {error}\"));\n    }\n    if cleanup_failed {\n        let retained = directory.keep();\n        failures.push(format!(\"inspect retained directory {}\", retained.display()));\n    } else if let Err(error) = directory.close() {\n        failures.push(format!(\"directory cleanup: {error}\"));\n    }\n    if failures.is_empty() {\n        Ok(())\n    } else {\n        Err(failures.join(\"; \").into())\n    }\n}\n"
+    }
+  }
+}

@@ -19,7 +19,10 @@ const LANG: Record<string, string> = { rs: 'rust', go: 'go', ruby: 'ruby', ocaml
 /** Entries shown before "+N more". */
 export const MAX_APIS = 10
 
-export const CORE_APIS: Readonly<Record<string, Readonly<Record<string, readonly string[]>>>> = DATA
+/** Ordered public IDs for the same shown API in different source layouts. */
+export type ApiBinding = string | readonly string[]
+
+export const CORE_APIS: Readonly<Record<string, Readonly<Record<string, readonly ApiBinding[]>>>> = DATA
 
 export interface ApiUsed {
   id: string
@@ -97,12 +100,15 @@ export function withoutLiterals(code: string, lang: string): string {
 const CALLED = new Set(['method', 'function', 'property'])
 
 /** The symbols `ids` name, as the program uses them, in order of first use. */
-export function apisUsed(port: string, ids: readonly string[], code: string, version: string, what = port, lang = LANG[port] ?? 'rust'): ApisUsed {
+export function apisUsed(port: string, ids: readonly ApiBinding[], code: string, version: string, what = port, lang = LANG[port] ?? 'rust'): ApisUsed {
   const info = PORT_BY_SLUG[port]
   const model = API_MODELS[port]
   if (!info || !model) throw new Error(`core-apis: unknown port ${port}`)
   const seen = new Set<string>()
-  const found = ids.map((id): ApiUsed => {
+  const found = ids.map((binding): ApiUsed => {
+    const candidates = typeof binding === 'string' ? [binding] : binding
+    const id = candidates.find((candidate) => model.symbols.some((entry) => (entry.publicId ?? entry.id) === candidate))
+    if (!id) throw new Error(`core-apis: ${what} names ${candidates.join(' or ')}, which is not in the ${port} API model`)
     if (seen.has(id)) throw new Error(`core-apis: ${what} lists ${id} twice`)
     seen.add(id)
     const symbol = model.symbols.find((entry) => (entry.publicId ?? entry.id) === id)

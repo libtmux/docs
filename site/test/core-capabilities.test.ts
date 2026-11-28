@@ -512,7 +512,7 @@ describe('the showcase component', () => {
       expect(hrefs.every((href) => href!.startsWith('/rs/latest/reference/')), list.getAttribute('data-apis-for')!).toBe(true)
     }
     expect(lists[0]!.textContent).toContain('Server::new_session')
-    expect(lists[0]!.textContent).toMatch(/\+17 more/)
+    expect(lists[0]!.textContent).toMatch(/\+16 more/)
     expect(doc.querySelector('.core-showcase__apis-title')!.textContent).toBe('APIs used')
     expect(doc.body.textContent, 'the CI sentence moved to the page footer').not.toContain('The whole program')
     expect(doc.querySelector('.core-showcase__source')).toBeNull()

@@ -7,6 +7,9 @@ import { QUICKSTARTS, homeProgram } from '../src/lib/quickstarts'
 import TABLE from '../src/data/core-capabilities.json'
 import SOURCES from '../src/data/example-sources.json'
 import type { CachedSource } from '../src/lib/port-landing'
+import { API_MODELS } from '../src/lib/api-models'
+import type { ApiModel } from '@libtmux/api-model/reference'
+import NATIVE_RUST from './fixtures/rust-native-core-apis.json'
 
 const capabilityPorts = Object.keys(TABLE).filter((port) => portCapabilities(port, TABLE as CapabilityTable, SOURCES as Record<string, CachedSource>).length > 0)
 const showcasePorts = [...new Set([...capabilityPorts,
@@ -18,6 +21,51 @@ const programs = (port: string): Record<string, string> => ({
 })
 
 describe('the APIs a showcase example uses', () => {
+  it.each(['typed-graph', 'create-windows', 'send-keys'])('resolves the native Rust %s program against extracted declarations', (id) => {
+    const release = API_MODELS.rs!
+    try {
+      API_MODELS.rs = { port: 'rs', revision: NATIVE_RUST.revision, symbols: NATIVE_RUST.symbols } as unknown as ApiModel
+      const code = NATIVE_RUST.programs[id as keyof typeof NATIVE_RUST.programs]?.code ?? programs('rs')[id]!
+      const bindings = CORE_APIS.rs![id]!
+      const used = apisUsed('rs', bindings, code, 'latest', `rs/${id}`)
+      expect(used.shown.length + used.more).toBe(bindings.length)
+      expect(used.shown.every((item) => /^libtmux_(?:core|tokio)\./.test(item.id))).toBe(true)
+      expect(used.shown.every((item) => item.href.includes(`/rs/latest/reference/${item.id.replaceAll('.', '-').toLowerCase()}/`))).toBe(true)
+    } finally {
+      API_MODELS.rs = release
+    }
+  })
+
+  it('refuses a missing Tokio owner while its blocking namesake exists', () => {
+    const release = API_MODELS.rs!
+    try {
+      API_MODELS.rs = {
+        port: 'rs', revision: NATIVE_RUST.revision,
+        symbols: NATIVE_RUST.symbols.filter((symbol) => symbol.publicId !== 'libtmux_tokio.Server'),
+      } as unknown as ApiModel
+      expect(() => apisUsed('rs', CORE_APIS.rs!['send-keys']!, NATIVE_RUST.programs['send-keys'].code, 'latest'))
+        .toThrow(/not in the rs API model/)
+    } finally {
+      API_MODELS.rs = release
+    }
+  })
+
+  it('prefers the canonical Rust ID and refuses the retired window owner', () => {
+    const release = API_MODELS.rs!
+    try {
+      API_MODELS.rs = {
+        port: 'rs', revision: NATIVE_RUST.revision,
+        symbols: [...NATIVE_RUST.symbols, release.symbols.find((symbol) => symbol.id === 'server.Server')!],
+      } as unknown as ApiModel
+      expect(apisUsed('rs', [['libtmux_tokio.Server', 'server.Server']], 'use libtmux_tokio::Server;', 'latest').shown[0]?.id)
+        .toBe('libtmux_tokio.Server')
+      expect(() => apisUsed('rs', ['window.Window.select'], 'logs.select().await?;', 'latest'))
+        .toThrow(/not in the rs API model/)
+    } finally {
+      API_MODELS.rs = release
+    }
+  })
+
   it('has a list for every example the showcase shows, and none for another', () => {
     // Capability entries require API maps; fallback quickstarts may declare their own.
     expect(showcasePorts).toEqual(expect.arrayContaining(['rs', 'ruby', 'go']))
@@ -41,7 +89,7 @@ describe('the APIs a showcase example uses', () => {
     expect(used.shown.map((item) => item.label)).toEqual([
       'PaneWait', 'Server', 'SplitDirection', 'SplitOptions', 'Server::new_session', 'Session::active_window', 'Window::rename', 'Window::active_pane', 'Pane::split', 'Session::new_window',
     ])
-    expect(used.more).toBe(17)
+    expect(used.more).toBe(16)
   })
 
   it.each([
