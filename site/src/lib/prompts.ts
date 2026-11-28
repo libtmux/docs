@@ -288,7 +288,7 @@ Constraints:
     pages: ['guides/testing-with-libtmux', 'concepts/transports'],
     portNotes: {
       py: 'The pytest plugin ships with the package: the `server` and `session` fixtures, and `TestServer` for a socket of your own. See src/libtmux/pytest_plugin.py.',
-      rs: 'Use `libtmux::test::TestServer`, which runs an isolated server and shuts it down on drop.',
+      rs: 'Use `TestServer` from the selected Rust API reference with the `test-support` feature enabled. Await its `shutdown()` method to confirm cleanup, including on the failure path.',
       go: 'Use `tmuxtest.NewServer(ctx, t)` from `github.com/libtmux/libtmux-go/tmux/tmuxtest`, which registers its own cleanup.',
       java: 'Use the JUnit 5 support in `io.github.libtmux.junit5`: `TmuxExtension`, and `NamedServerFixture` when the socket name matters.',
       csharp: 'Use `LibTmux.Testing.TemporaryServerScope`, which is `IAsyncDisposable`, so `await using` handles teardown on the failure path.',

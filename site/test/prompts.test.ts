@@ -78,6 +78,15 @@ function promptFor(port: Port, topicId: string, version = ctx.version, docsBase 
 const MATRIX = PORTS.flatMap((port) => TOPICS.map((topic) => ({ port, topic })))
 
 describe('prompt composition', () => {
+  it.each(['latest', '0.1.2'])('Rust fixture prompts use the selected %s reference and confirmed cleanup', (version) => {
+    const text = promptFor(PORT_BY_SLUG.rs!, 'test-fixtures', version).replace(/\s+/g, ' ')
+    expect(text).toContain('`TestServer` from the selected Rust API reference')
+    expect(text).toContain('`test-support` feature')
+    expect(text).toContain('Await its `shutdown()` method to confirm cleanup')
+    expect(text).not.toContain('shuts it down on drop')
+    expect(text).toContain(`${DOCS_BASE}/rs/${version}/reference/`)
+  })
+
   it('covers every port and topic', () => {
     expect(MATRIX).toHaveLength(PORTS.length * TOPICS.length)
   })
