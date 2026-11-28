@@ -87,8 +87,8 @@ export function qualifyRustPublicIds(symbols: ApiSymbol[], read: (file: string) 
     const raw = read(entry.inventory)
     if (raw === undefined && entry.name === 'tmux-workspace') continue
     if (raw === undefined) throw new Error(`Missing Rust native inventory: ${entry.inventory}`)
-    const native = [...raw.matchAll(/^(struct|enum|trait|type|typealias|function|constant|module) ([\w:]+)(?=[<(: ]|$)/gm)]
-      .map((match) => ({ kind: match[1] === 'function' ? 'function' : match[1] === 'type' ? 'typealias' : match[1], path: match[2].replaceAll('::', '.') }))
+    const native = [...raw.matchAll(/^(struct|enum|trait|type|typealias|type_alias|function|constant|module) (\w+(?:::\w+)*)(?=[<(: ]|$)/gm)]
+      .map((match) => ({ kind: ['type', 'type_alias'].includes(match[1]) ? 'typealias' : match[1], path: match[2].replaceAll('::', '.') }))
       .filter((item) => item.path.startsWith(`${entry.namespace}.`))
     const own = owners.filter((symbol) => symbol.namespace === entry.namespace)
     for (const symbol of own) {

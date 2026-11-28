@@ -869,6 +869,14 @@ jobs:
             test -s "_site/en/py/$LIBTMUX_DOCS_VERSION/api/api/index.html"
           fi
 
+      - name: Check the Rust workspace model and complete examples
+        if: matrix.port == 'rs'
+        working-directory: docs
+        run: |
+          time node site/node_modules/vitest/vitest.mjs run --root packages/api-model \
+            test/rust-workspace.test.ts test/rust-examples.test.ts test/rust-native-ids.test.ts \
+            test/rust.test.ts test/cargo-features.test.ts test/extensions.test.ts
+
       - name: Check Perl native model and authored POD links
         if: matrix.port == 'perl'
         working-directory: docs

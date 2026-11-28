@@ -67,6 +67,28 @@ describe('Rust workspace declaration identities', () => {
     })
   })
 
+  it('uses canonical paths for root functions whose inventory has a signature separator', async () => {
+    const f = fixture()
+    f.files['crates/libtmux-core/src/lib.rs'] += 'mod helpers; pub use helpers::escape_format;\n'
+    f.files['crates/libtmux-core/src/helpers.rs'] = 'pub fn escape_format(value: &str) {}\n'
+    f.files['crates/libtmux-core/docs/public-api.txt'] += 'function libtmux_core::escape_format: fn(value: &str)\n'
+    const model = await extract(f.files)
+    expect(model.symbols.find((symbol) => symbol.name === 'escape_format')).toMatchObject({
+      id: 'libtmux_core.helpers.escape_format', publicId: 'libtmux_core.escape_format',
+    })
+  })
+
+  it('maps native rustdoc type_alias records to canonical alias pages', async () => {
+    const f = fixture()
+    f.files['crates/libtmux-core/src/lib.rs'] += 'mod keys; pub use keys::PaneKey;\n'
+    f.files['crates/libtmux-core/src/keys.rs'] = 'pub type PaneKey = String;\n'
+    f.files['crates/libtmux-core/docs/public-api.txt'] += 'type_alias libtmux_core::PaneKey = String\n'
+    const model = await extract(f.files)
+    expect(model.symbols.find((symbol) => symbol.name === 'PaneKey')).toMatchObject({
+      id: 'libtmux_core.keys.PaneKey', publicId: 'libtmux_core.PaneKey',
+    })
+  })
+
   it('preserves the historical file-based IDs when the pinned source predates the split', async () => {
     const model = await extract({
       'crates/libtmux/Cargo.toml': '[package]\nname = "libtmux"\n',
