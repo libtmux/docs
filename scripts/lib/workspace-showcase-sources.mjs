@@ -519,11 +519,13 @@ export const SOURCES = {
   },
 
   ruby: {
-    revision: '9e1fbe1a938aab130f19939b7bcc0eeb6c438afc',
-    modelRevision: '0bf78344f8babf60a7b83e11a26f58b7946fcf8d',
     examples: [...tmuxpCatalog('test/fixtures/tmuxp', [{
-      path: 'test/unit/workspace_test.rb', name: 'test_tmuxp_examples_load_through_workspace_load',
-      via: 'loader', checks: 'Loads the file with Workspace.load and checks its profile.',
+      path: 'test/unit/workspace_tmuxp_test.rb', name: 'test_tmuxp_examples_load_through_workspace_load',
+      needles: ['Catalog::LOADED'], via: 'loader', checks: 'Loads the file with Workspace.load and checks its profile.',
+    }, {
+      path: 'test/unit/workspace_tmuxp_test.rb', name: 'test_each_loaded_example_produces_the_structure_tmuxp_documents_for_it',
+      needles: ['Catalog::LOADED'], via: 'loader',
+      checks: 'Loads the file with Workspace.load and compares the session, windows and panes with the structure written by hand in test/fixtures/tmuxp/expected from what tmuxp documents.',
     }], {
       // Every file the support table marks unsupported. Three of them load (`focus-window-and-panes`,
       // `main-pane-height`, `start-directory`) but the loader reads their `~` paths and bare `pane`
