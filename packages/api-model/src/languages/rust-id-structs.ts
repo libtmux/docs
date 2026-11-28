@@ -4,10 +4,8 @@ import type { ApiModel, ApiSymbol } from '../model.ts'
 import { parserFor } from '../parser.ts'
 import { extractSourceWithSpec } from './spec.ts'
 import { RUST } from './specs.ts'
+import { rustWorkspaceLayout } from './rust-workspace.ts'
 
-const targetFile = 'crates/libtmux/src/target.rs'
-const rootFile = 'crates/libtmux/src/lib.rs'
-const inventoryFile = 'crates/libtmux/docs/public-api.txt'
 const macroName = 'define_id'
 const comment = (node: Node) => RUST.commentTypes.includes(node.type)
 const docComment = (node: Node) => node.type === 'line_comment' && /^\/\/\/(?!\/)/.test(node.text)
@@ -39,6 +37,10 @@ export async function attachNativeRustIdStructs(
 ): Promise<ApiSymbol[]> {
   requireContract(model.port === 'rs' && source.repo === 'libtmux/libtmux-rs' && /^[a-f0-9]{40}$/.test(source.revision),
     'source must name the Rust repository and a full revision')
+  const core = rustWorkspaceLayout(read)?.find((entry) => entry.name === 'libtmux-core')
+  const targetFile = core ? `${core.root}/target.rs` : 'crates/libtmux/src/target.rs'
+  const rootFile = core ? `${core.root}/lib.rs` : 'crates/libtmux/src/lib.rs'
+  const inventoryFile = core?.inventory ?? 'crates/libtmux/docs/public-api.txt'
   const files = [targetFile, rootFile, inventoryFile].map((path) => {
     const text = read(path)
     requireContract(typeof text === 'string' && text.trim(), `missing source: ${path}`)
@@ -136,12 +138,12 @@ export async function attachNativeRustIdStructs(
     // Rust doc comments are attributes even across whitespace and ordinary comments.
     const declaration = [...prefixNodes.filter((node) => !comment(node) || docComment(node))
       .map((node) => node.text), owner.text].join('\n')
-    const extracted = await extractSourceWithSpec(RUST, declaration, targetFile, 'target')
+    const extracted = await extractSourceWithSpec(RUST, declaration, targetFile, core ? `${core.namespace}.target` : 'target')
     requireContract(extracted.length === 1 && extracted[0].kind === 'struct', 'public fields are outside the owner-only projection')
     const symbol = extracted[0]
     requireContract(![...model.symbols, ...pending].some((entry) => entry.id === symbol.id || entry.publicId === symbol.id),
       `declaration already exists: ${symbol.id}`)
-    const native = `libtmux::${name.text}`
+    const native = `${core?.namespace ?? 'libtmux'}::${name.text}`
     requireContract(files[2].text.split('\n').filter((line) => line === `struct ${native}`).length === 1 &&
       files[2].text.split('\n').filter((line) => /^\w+ /.test(line) && line.split(' ')[1] === native).length === 1,
     `native inventory must name one public struct: ${native}`)
@@ -153,7 +155,8 @@ export async function attachNativeRustIdStructs(
     })
     requireContract(exports.length === 1, `expected one unaliased root reexport: ${name.text}`)
     noAttributes(exports[0]!)
-    symbol.publicId = symbol.id
+    symbol.publicId = core ? `${core.namespace}.${name.text}` : symbol.id
+    if (core) symbol.namespace = core.namespace
     symbol.source = { ...symbol.source, ...source, line: name.startPosition.row + 1, extractedRevision: source.revision }
     pending.push(symbol)
     declarations.push({ id: symbol.id, native, invocationLine: call.startPosition.row + 1,

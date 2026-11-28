@@ -33,6 +33,7 @@ import { attachCompleteOcamlExamples } from '../packages/api-model/src/languages
 import { attachCompleteFSharpExamples } from '../packages/api-model/src/languages/fsharp-examples.ts'
 import { attachCompleteRustExamples } from '../packages/api-model/src/languages/rust-examples.ts'
 import { attachNativeRustIdStructs } from '../packages/api-model/src/languages/rust-id-structs.ts'
+import { extractRustWorkspace, qualifyRustPublicIds, rustWorkspaceLayout } from '../packages/api-model/src/languages/rust-workspace.ts'
 import { attachCompleteCxxExamples } from '../packages/api-model/src/languages/cxx-examples.ts'
 import { attachCompleteJvmExamples } from '../packages/api-model/src/languages/jvm-examples.ts'
 import { attachCompleteSwiftExamples } from '../packages/api-model/src/languages/swift-examples.ts'
@@ -91,19 +92,19 @@ function git(repo, ...args) {
 const rustCrate = (product) => product === 'core' ? 'libtmux' : product === 'workspace' ? 'tmux-workspace' : 'tmux-mcp'
 
 /** The Cargo features a crate declares at the revision the model is extracted from, not in the working tree. */
-function rustFeatures(checkout, revision, product) {
-  return cargoFeatureNames(execFileSync('git', ['-C', checkout, 'show', `${revision}:crates/${rustCrate(product)}/Cargo.toml`], {
+function rustFeatures(checkout, revision, product, crate = rustCrate(product)) {
+  return cargoFeatureNames(execFileSync('git', ['-C', checkout, 'show', `${revision}:crates/${crate}/Cargo.toml`], {
     encoding: 'utf8', maxBuffer: 1 << 26, stdio: ['ignore', 'pipe', 'inherit'],
   }))
 }
 
 /** Read package versions from their owning manifest, independent of docs URL labels. */
-function packageVersion(checkout, port, product) {
+function packageVersion(checkout, port, product, ownCrate) {
   const read = (file) => existsSync(join(checkout, file)) ? readFileSync(join(checkout, file), 'utf8') : ''
   if (port === 'py') return /^version\s*=\s*"([^"]+)"/m.exec(read('pyproject.toml'))?.[1]
   if (port === 'ts') return JSON.parse(read(`packages/${product === 'core' ? 'libtmux' : product}/package.json`)).version
   if (port === 'rs') {
-    const crate = rustCrate(product)
+    const crate = ownCrate ?? rustCrate(product)
     return /^version\s*=\s*"([^"]+)"/m.exec(read(`crates/${crate}/Cargo.toml`))?.[1]
       ?? /^version\s*=\s*"([^"]+)"/m.exec(read('Cargo.toml'))?.[1]
   }
@@ -652,7 +653,9 @@ for (const [port, cfg] of Object.entries(PORTS)) {
     })
   }
 
-  const roots = (cfg.roots ?? [cfg.root])
+  const rustLayout = port === 'rs' ? rustWorkspaceLayout((file) => git(checkout, 'show', `${head}:${file}`)) : undefined
+  if (rustLayout && revision !== head) throw new Error('Split Rust extraction requires its exact pinned source revision')
+  const roots = (rustLayout?.map((entry) => entry.root) ?? cfg.roots ?? [cfg.root])
     .map((r) => join(checkout, r))
     .filter((r) => existsSync(r))
   if (!roots.length) {
@@ -740,7 +743,7 @@ for (const [port, cfg] of Object.entries(PORTS)) {
       }
     }
   } else {
-    model = await extractProject({
+    model = port === 'rs' ? await extractRustWorkspace({ root: checkout, revision, options: cfg.options }) : await extractProject({
       port,
       root: roots[0],
       roots,
@@ -837,6 +840,7 @@ for (const [port, cfg] of Object.entries(PORTS)) {
     }
     if (port === 'rs') {
       for (const symbol of await attachNativeRustIdStructs(model, readSource, { repo: cfg.repo, revision })) citationSymbols.add(symbol)
+      qualifyRustPublicIds(model.symbols, readSource)
     }
     attach(model.symbols, readSource, { repo: cfg.repo, revision })
   }
@@ -951,12 +955,16 @@ for (const [port, cfg] of Object.entries(PORTS)) {
     // Native macro projections were read at the citation revision already.
     remapLines(unit.checkout, unit.symbols.flatMap((symbol) => citationSymbols.has(symbol)
       ? [] : [symbol, ...(symbol.declarations ?? []), ...symbol.signatures.filter((signature) => signature.source)]), unit.revision, unit.head)
-    for (const product of new Set(unit.symbols.map((symbol) => symbol.product))) {
+    const sourceGroups = port === 'rs' && rustLayout && unit === sourceUnits[0]
+      ? rustLayout.map((entry) => ({ product: entry.name === 'tmux-workspace' ? 'workspace' : 'core', package: entry.name, crate: entry.name }))
+      : [...new Set(unit.symbols.map((symbol) => symbol.product))].map((product) => ({ product }))
+    for (const group of sourceGroups) {
+      const { product } = group
       model.sources.push({
-        product, package: unit.package ?? packages[port]?.[product] ?? portBySlug[port].packageName,
+        product, package: group.package ?? unit.package ?? packages[port]?.[product] ?? portBySlug[port].packageName,
         repo: unit.repo, revision: unit.revision, extractedRevision: unit.head,
-        version: packageVersion(unit.checkout, port, product),
-        ...(port === 'rs' ? { features: rustFeatures(unit.checkout, unit.head, product) } : {}),
+        version: packageVersion(unit.checkout, port, product, group.crate),
+        ...(port === 'rs' ? { features: rustFeatures(unit.checkout, unit.head, product, group.crate) } : {}),
       })
     }
   }

@@ -91,6 +91,28 @@ define_id!(
 type Fixture = ReturnType<typeof fixture>
 
 describe('bounded Rust ID macro projection', () => {
+  it('uses the defining core crate and inventory for split source without changing legacy paths', async () => {
+    const f = fixture()
+    const files: Record<string, string> = {}
+    for (const name of ['libtmux', 'libtmux-core', 'libtmux-blocking', 'libtmux-tokio']) {
+      files[`crates/${name}/Cargo.toml`] = `[package]\nname = "${name}"\n`
+    }
+    files['crates/libtmux-core/src/target.rs'] = f.files[target]
+    files['crates/libtmux-core/src/lib.rs'] = f.files[entry]
+    files['crates/libtmux-core/docs/public-api.txt'] = f.files[inventory].replaceAll('libtmux::', 'libtmux_core::')
+    f.model.symbols = []
+    const added = await attachNativeRustIdStructs(f.model, (file) => files[file], f.source)
+    expect(added.map((symbol) => [symbol.id, symbol.publicId])).toEqual([
+      ['libtmux_core.target.ExampleId', 'libtmux_core.ExampleId'],
+      ['libtmux_core.target.OtherId', 'libtmux_core.OtherId'],
+    ])
+    expect(added[0].source.file).toBe('crates/libtmux-core/src/target.rs')
+    expect(f.model.nativeProvenance?.files.map((file) => file.path)).toEqual([
+      'crates/libtmux-core/src/target.rs', 'crates/libtmux-core/src/lib.rs',
+      'crates/libtmux-core/docs/public-api.txt',
+    ])
+  })
+
   it('derives arbitrary names from native calls, retaining owner docs and excluding generated methods', async () => {
     const f = fixture()
     const before = structuredClone(f.model.symbols)

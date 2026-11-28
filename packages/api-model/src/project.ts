@@ -132,7 +132,7 @@ export function mergeExtensions(symbols: ApiSymbol[], kind: SymbolKind | undefin
  * and C#'s `Result` beside `Result<T>` also arrive here under one id, and a
  * type that is written more than once is still one type.
  */
-function mergePartials(symbols: ApiSymbol[]): ApiSymbol[] {
+function mergePartials(symbols: ApiSymbol[], extensionKind?: SymbolKind): ApiSymbol[] {
   const byId = new Map<string, ApiSymbol>()
   const out: ApiSymbol[] = []
   for (const s of symbols) {
@@ -141,6 +141,10 @@ function mergePartials(symbols: ApiSymbol[]): ApiSymbol[] {
       byId.set(s.id, s)
       out.push(s)
       continue
+    }
+    if (extensionKind && seen.kind === extensionKind && s.kind !== extensionKind) {
+      seen.kind = s.kind
+      seen.source = s.source
     }
     const union = (a?: string[], b?: string[]) =>
       a || b ? [...new Set([...(a ?? []), ...(b ?? [])])] : undefined
@@ -448,7 +452,7 @@ export async function extractProject(opts: {
   }
 
   // Before inheritance, so a base class is one type rather than several.
-  const merged = mergePartials(mergeExtensions(symbols, spec?.extensionKind))
+  const merged = mergePartials(mergeExtensions(symbols, spec?.extensionKind), spec?.extensionKind)
 
   const resolved = options.inheritedMembers
     ? resolveInheritance(merged, options.inheritanceStopList)

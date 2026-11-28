@@ -115,3 +115,93 @@ describe('complete Rust API programs', () => {
     expect(() => attachCompleteRustExamples(f.symbols, f.read, { ...source, repo: 'other/repo' })).toThrow('Rust repository')
   })
 })
+
+function splitFixture() {
+  const legacy = fixture()
+  const files = { ...legacy.files }
+  for (const name of ['libtmux', 'libtmux-core', 'libtmux-blocking', 'libtmux-tokio']) {
+    files[`crates/${name}/Cargo.toml`] = `[package]\nname = "${name}"\nversion = "0.1.2"\n`
+  }
+  const tokio = structuredClone(legacy.manifest)
+  tokio.nativeInventory = 'crates/libtmux-tokio/docs/public-api.txt'
+  tokio.setupFiles[0].sourceFile = 'crates/libtmux-tokio/examples/api/consumer.toml'
+  tokio.examples[0].sourceFile = 'crates/libtmux-tokio/examples/api_construction.rs'
+  tokio.examples[0].targets = ['libtmux_tokio::Server', 'libtmux_tokio::Server::builder']
+  const mixed = structuredClone(legacy.manifest)
+  mixed.examples[0] = { ...mixed.examples[0], id: 'rust-mixed', cargoExample: 'api_mixed',
+    sourceFile: 'crates/libtmux/examples/api_mixed.rs',
+    targets: ['libtmux_blocking::Server::new_session', 'libtmux_core::CreatedSession::pane'] }
+  files[tokio.nativeInventory] = 'struct libtmux_tokio::Server\nfunction libtmux_tokio::Server::builder: fn()\n'
+  files['crates/libtmux-blocking/docs/public-api.txt'] = 'struct libtmux_blocking::Server\nfunction libtmux_blocking::Server::new_session: fn(&self)\n'
+  files['crates/libtmux-core/docs/public-api.txt'] = 'struct libtmux_core::CreatedSession\nfunction libtmux_core::CreatedSession::pane: fn(&self)\n'
+  files[mixed.nativeInventory] = ''
+  files[tokio.setupFiles[0].sourceFile] = legacy.files[legacy.manifest.setupFiles[0].sourceFile]
+    .replace('libtmux = { path = "libtmux-source/crates/libtmux" }',
+      'libtmux-tokio = { path = "libtmux-source/crates/libtmux-tokio" }')
+  files[mixed.setupFiles[0].sourceFile] = legacy.files[legacy.manifest.setupFiles[0].sourceFile]
+    .replace('libtmux-source/crates/libtmux" }',
+      'libtmux-source/crates/libtmux", default-features = false, features = ["blocking", "tokio", "test-support"] }')
+  files[tokio.examples[0].sourceFile] = 'use libtmux_tokio::Server;\n#[tokio::main(flavor = "current_thread")]\nasync fn main() {}\n'
+  files[mixed.examples[0].sourceFile] = 'fn main() { let runtime = tokio::runtime::Builder::new_current_thread(); }\n'
+  files['Cargo.toml'] = files['Cargo.toml'].replace('0.1.0-alpha.17', '0.1.2')
+  const symbols = [
+    symbol('libtmux_tokio.server.Server', 'struct'),
+    symbol('libtmux_tokio.server.Server.builder', 'method', 'libtmux_tokio.server.Server'),
+    symbol('libtmux_blocking.Server', 'struct'),
+    symbol('libtmux_blocking.Server.new_session', 'method', 'libtmux_blocking.Server'),
+    symbol('libtmux_core.receipt.CreatedSession', 'struct'),
+    symbol('libtmux_core.receipt.CreatedSession.pane', 'method', 'libtmux_core.receipt.CreatedSession'),
+  ]
+  for (const entry of symbols) {
+    const namespace = entry.id.split('.')[0]
+    entry.namespace = namespace
+    entry.publicId = entry.id.replace('.server.', '.').replace('.receipt.', '.')
+    entry.source.file = `crates/${namespace.replaceAll('_', '-')}/src/lib.rs`
+  }
+  const read = (file: string) => file === 'crates/libtmux-tokio/examples/api/manifest.json' ? JSON.stringify(tokio)
+    : file === 'crates/libtmux/examples/api/manifest.json' ? JSON.stringify(mixed) : files[file]
+  return { files, tokio, mixed, symbols, read }
+}
+
+describe('complete split-crate Rust programs', () => {
+  it('attaches both roots and pins the matching source instead of the old published workspace version', () => {
+    const f = splitFixture()
+    attachCompleteRustExamples(f.symbols, f.read, source)
+    for (const index of [0, 1, 3, 5]) {
+      const blocks = f.symbols[index].doc!.examples!
+      expect(blocks).toHaveLength(5)
+      expect(blocks[1].code).toContain('--git https://github.com/libtmux/libtmux-rs')
+      expect(blocks[1].code).toContain(`--rev ${source.revision}`)
+      expect(blocks[1].code).not.toContain('libtmux@0.1.2')
+      expect(blocks[2].sourceUrl).toContain(`/blob/${source.revision}/crates/`)
+    }
+    expect(f.symbols[3].doc!.examples![1].code).toContain('--features blocking,tokio,test-support')
+    expect(f.symbols[5].doc!.examples![2].code).toBe(f.files[f.mixed.examples[0].sourceFile])
+  })
+
+  it('does not publish the first root when the second root has an invalid target', () => {
+    const f = splitFixture()
+    f.mixed.examples[0].targets.push('libtmux_core::Missing')
+    const before = structuredClone(f.symbols)
+    expect(() => attachCompleteRustExamples(f.symbols, f.read, source)).toThrow()
+    expect(f.symbols).toEqual(before)
+  })
+
+  it('accepts the synchronous mixed consumer with its actual runtime features and package name', () => {
+    const f = splitFixture()
+    const file = f.mixed.setupFiles[0].sourceFile
+    f.files[file] = f.files[file].replace('libtmux-api-example', 'libtmux-mixed-example')
+      .replace('tempfile = "3.20"\n', '').replace('"macros", ', '')
+    attachCompleteRustExamples(f.symbols, f.read, source)
+    const setup = f.symbols[5].doc!.examples![1].code
+    expect(setup).toContain('cargo init --name libtmux-mixed-example')
+    expect(setup).toContain('cargo add tokio@1.40 --features rt,time')
+    expect(setup).not.toContain('tempfile')
+  })
+
+  it('rejects a missing current manifest instead of silently using the historical one', () => {
+    const f = splitFixture()
+    expect(() => attachCompleteRustExamples(f.symbols,
+      (file) => file.includes('libtmux-tokio/examples/api/manifest.json') ? undefined : f.read(file), source)).toThrow('missing current manifest')
+  })
+})

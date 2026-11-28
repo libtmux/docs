@@ -505,6 +505,7 @@ export class SymbolIndex {
 
   /** A Rust product's crate, the Cargo features it documents and the crate version docs.rs shows for it. */
   private readonly cargoCrates = new Map<ApiProduct, { crate: string; features: ReadonlySet<string>; version: string }>()
+  private readonly cargoPackages = new Map<string, { crate: string; features: ReadonlySet<string>; version: string }>()
 
   /**
    * The Cargo features each product's crate declares, so `feature = "…"` in an attribute links to docs.rs only
@@ -513,7 +514,11 @@ export class SymbolIndex {
    */
   addCargoFeatures(sources: readonly ApiSource[], versionOf: (source: ApiSource) => string): void {
     for (const source of sources) {
-      if (source.features) this.cargoCrates.set(source.product, { crate: source.package, features: new Set(source.features), version: versionOf(source) })
+      if (source.features) {
+        const declared = { crate: source.package, features: new Set(source.features), version: versionOf(source) }
+        this.cargoCrates.set(source.product, declared)
+        this.cargoPackages.set(source.package, declared)
+      }
     }
   }
 
@@ -522,7 +527,8 @@ export class SymbolIndex {
    * feature. A private feature, with a leading underscore, has no anchor on that page, so no list can make it link.
    */
   cargoFeature(feature: string, context: ApiSymbol): LinkTarget | undefined {
-    const declared = this.cargoCrates.get(context.product ?? 'core')
+    const crate = /(?:^|\/)crates\/([^/]+)\/src\//.exec(context.source.file)?.[1]
+    const declared = crate ? this.cargoPackages.get(crate) : this.cargoCrates.get(context.product ?? 'core')
     if (!declared?.features.has(feature) || !documentedFeature(feature)) return undefined
     return { href: cargoFeatureHref(declared.crate, feature, declared.version), external: true, project: 'docs.rs features' }
   }

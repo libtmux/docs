@@ -77,4 +77,18 @@ describe('a Cargo feature named in a symbol\'s attribute', () => {
   it('links nothing before the model\'s features are known', () => {
     expect(new SymbolIndex([], () => '/', 'rs').cargoFeature('control-mode', symbol('core'))).toBeUndefined()
   })
+
+  it('keeps features of core and Tokio crates separate even when they share the core product', () => {
+    const split: ApiSource[] = [
+      { ...sources[0], package: 'libtmux-core', features: ['query', 'serde'] },
+      { ...sources[0], package: 'libtmux-tokio', features: ['control-mode', 'query'] },
+      { ...sources[0], package: 'libtmux', features: ['blocking', 'tokio'] },
+    ]
+    const own = index(() => 'latest', split)
+    const core = { ...symbol('core'), source: { file: 'crates/libtmux-core/src/query.rs' } }
+    const tokio = { ...symbol('core'), source: { file: 'crates/libtmux-tokio/src/control.rs' } }
+    expect(own.cargoFeature('query', core)?.href).toBe('https://docs.rs/crate/libtmux-core/latest/features#query')
+    expect(own.cargoFeature('control-mode', tokio)?.href).toBe('https://docs.rs/crate/libtmux-tokio/latest/features#control-mode')
+    expect(own.cargoFeature('control-mode', core)).toBeUndefined()
+  })
 })
