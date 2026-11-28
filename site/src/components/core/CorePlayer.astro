@@ -31,7 +31,7 @@ import { Code } from 'astro-expressive-code/components'
 import HomeExample from '../HomeExample.astro'
 import ReplayControls from '../replay/ReplayControls.astro'
 import TmuxScreen from '../replay/TmuxScreen.astro'
-import { coreFrames, replyText, returnedText, stepChanges, stepNote, viewSteps, visibleCommands } from '../../lib/core-player'
+import { coreFrames, markersOnALine, replyText, returnedText, stepChanges, stepNote, viewSteps, visibleCommands } from '../../lib/core-player'
 import type { CoreCapability, CoreRecording } from '../../lib/core-recording'
 import { callHref, typeText } from '../../lib/core-apis'
 import { buildTarget } from '../../lib/versions'
@@ -53,8 +53,10 @@ interface Props {
   run?: boolean
   /** An autoplay player: it starts from rest once 40% of it is on screen. Off by default, which is a stepping player; the reader's first control, selection, wheel, touch or focus stops it for good, and reduced motion never starts it. */
   autoplay?: boolean
+  /** The most markers any one line holds across the players shown together; the rail reserves that room so their frames share a left edge. Alone, the player's own. */
+  hang?: number
 }
-const { port, language, example, capability, capabilityId = 'typed-graph', options = true, run = true, autoplay = false } = Astro.props as Props
+const { port, language, example, capability, capabilityId = 'typed-graph', options = true, run = true, autoplay = false, hang } = Astro.props as Props
 const shownViews = options ? HOME_VIEWS : (['concise'] as const)
 const steps = capability.steps
 const total = steps.length
@@ -63,6 +65,8 @@ const opening = Math.min(1, total)
 const frames = coreFrames(capability)
 // Where each call is in each view of the program: the views differ in the lines they add.
 const views = Object.fromEntries(shownViews.map((view) => [view, viewSteps(capability, homeProgram(example, view).replace(/\n$/, ''), port)]))
+// The most steps any one line holds in any view: the rail reserves that many markers' width from the first paint (record 0088).
+const hangN = hang ?? markersOnALine(capability, shownViews.map((view) => homeProgram(example, view)), port)
 const before = (index: number) => (index === 0 ? capability.tmuxBefore : steps[index - 1]!.tmux)
 const beforeText = capability.tmuxBefore.sessions.length === 0 ? 'No tmux server is running yet.' : 'tmux is running.'
 // A program that connects to a server its setup commands started has one before its first call.
@@ -81,7 +85,7 @@ const noteParts = (index: number) => {
 const tips = steps.map((step, index) => ({ call: step.label, text: noteParts(index).rest.replace(/^: /, '').replace(/\.$/, '') }))
 ---
 <HomeExample port={port} language={language} example={example} heading={false} options={options} run={run} views={shownViews}>
-  <div slot="beside" class="core-player__side" id={`core-preview-${port}-${capabilityId}`} data-core-plan={JSON.stringify(views)} data-core-tips={JSON.stringify(tips)} data-autoplay={autoplay ? '' : undefined}>
+  <div slot="beside" class="core-player__side" id={`core-preview-${port}-${capabilityId}`} data-core-plan={JSON.stringify(views)} data-core-tips={JSON.stringify(tips)} data-autoplay={autoplay ? '' : undefined} data-hang-n={hangN > 1 ? String(Math.min(hangN, 4)) : undefined}>
     <div class="mcp-replay__sidehead" data-sidehead></div>
     <div class="core-player__tmux" data-tmux role="group" aria-label="tmux state after the call shown">
       {frames.map((frame) => (
@@ -174,7 +178,7 @@ const tips = steps.map((step, index) => ({ call: step.label, text: noteParts(ind
     const viewName = () => (single ? 'full' : errors?.checked ? (cleanup?.checked ? 'full' : 'errors') : (cleanup?.checked ? 'cleanup' : 'concise'))
     const placed = () => plan[viewName()]!
     // The step markers, which hang in each view's rail; the one beside the shown call is current.
-    const hung: { view: string; marker: HTMLElement; line: number }[] = []
+    const hung: { view: string; marker: HTMLElement; call: Placed }[] = []
     const codeLines = (view: string) => [...root.querySelectorAll<HTMLElement>(`[data-home-view="${view}"] .ec-line`)]
 
     // The program is longer than its box: bring the call into the middle of it when the call changes, without moving the page.
@@ -237,8 +241,9 @@ const tips = steps.map((step, index) => ({ call: step.label, text: noteParts(ind
             line.classList.toggle('is-pinned', mine && pinned !== null)
           })
         }
-        for (const { view, marker, line } of hung) {
-          const mine = !rest && view === viewName() && call !== undefined && line >= call.lines[0] && line <= call.lines[1]
+        // Each marker is lit by its own step alone, so two steps on one line never light together (record 0088).
+        for (const { view, marker, call: own } of hung) {
+          const mine = !rest && view === viewName() && call === own
           marker.classList.toggle('is-current', mine)
           marker.classList.toggle('is-pinned', mine && pinned !== null)
         }
@@ -256,7 +261,7 @@ const tips = steps.map((step, index) => ({ call: step.label, text: noteParts(ind
     })
     if (!player) return
 
-    // Text in the code selects as anywhere else. A numbered marker beside each call's first line, a button with a name, is the one way into a step from the code:
+    // Text in the code selects as anywhere else. A numbered marker beside each step's call, a button with a name, is the one way into a step from the code:
     // a pointer over it or focus on it previews that step and tints the call's lines, and pressing it goes there.
     const tint = (view: string, call: Placed | undefined) => {
       codeLines(view).forEach((line, position) => {
@@ -275,15 +280,20 @@ const tips = steps.map((step, index) => ({ call: step.label, text: noteParts(ind
       track.className = 'core-hang__in'
       rail.append(track)
       const markers: HTMLElement[] = []
-      // Calls on one line, as each pass of a loop is, share one marker, which goes to the first of them.
+      // Every step has its own marker (record 0088). Steps on one line, as each pass of a loop is, or a scope's end and a call beside it,
+      // stand side by side in step order at full size, each later one further out to the left in the room the rail reserves (`data-hang-n`).
       calls.forEach((call, position) => {
-        if (calls.findIndex((other) => other.lines[0] === call.lines[0]) !== position) return
+        const sharing = calls.filter((other) => other.lines[0] === call.lines[0])
         const marker = document.createElement('button')
         marker.type = 'button'
         marker.className = 'core-step'
         marker.dataset.stepMarker = String(position + 1)
         marker.dataset.n = String(position + 1)
         marker.dataset.line = String(call.lines[0])
+        if (sharing.length > 1) {
+          marker.dataset.shared = ''
+          marker.style.setProperty('--shared-i', String(sharing.indexOf(call)))
+        }
         marker.setAttribute('aria-label', `Step ${position + 1}: ${tips[call.index]!.call}`)
         const preview = () => { tint(view, call); player.hover(position + 1) }
         const release = () => { tint(view, undefined); player.hover(null) }
@@ -296,7 +306,7 @@ const tips = steps.map((step, index) => ({ call: step.label, text: noteParts(ind
         marker.addEventListener('click', () => { tint(view, undefined); player.go(position + 1) })
         track.append(marker)
         markers.push(marker)
-        hung.push({ view, marker, line: call.lines[0] })
+        hung.push({ view, marker, call })
       })
       pre.before(rail)
       const follow = () => {

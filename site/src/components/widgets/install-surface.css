@@ -177,11 +177,10 @@ html[data-theme-mode='dark'] .lm-install {
   flex: none;
 }
 
-/* Copy is the site's outlined square; the surface only raises it off the code's own tone. */
+/* Copy is the site's bare clipboard (record 0087); the surface leaves it unfilled at rest. */
 .lm-install__where .lm-pkg-install__copy,
 .lm-install__where .lm-mcp-install__copy {
   flex: none;
-  background: var(--lm-install-raised);
 }
 
 /* Narrow: the tabs take the header's first row; where the code goes and Copy share a second. */

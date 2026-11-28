@@ -643,7 +643,7 @@ describe('the surface does not move when a choice is made', () => {
   })
 })
 
-describe('Copy is a clipboard icon in a small outlined square', () => {
+describe('Copy is a clipboard icon with no word', () => {
   const GLYPH = 'M16 4.5h2a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2h2'
   const copyButtons = (document: Document) => [...document.querySelectorAll<HTMLButtonElement>('[data-action="copy"]')]
 

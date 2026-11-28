@@ -199,25 +199,25 @@ html[data-theme-mode='dark'] .lm-mcp-install__code span {
   }
 }
 
-/* Copy is a clipboard in a small outlined square (record 0067); the icons swap in install-copy.css. */
+/* Copy is a bare clipboard, 2rem square, with the control hover fill (record 0087); the icons swap in install-copy.css. */
 .lm-mcp-install__copy {
   appearance: none;
   flex: none;
   display: inline-grid;
   place-items: center;
-  width: 1.875rem;
-  height: 1.875rem;
+  width: 2rem;
+  height: 2rem;
   padding: 0;
-  border: 1px solid var(--control-border);
-  border-radius: 0.375rem;
-  background: var(--lm-mcp-install-bg);
+  border: 0;
+  border-radius: 0.25rem;
+  background: none;
   color: var(--lm-mcp-install-fg-secondary);
   cursor: pointer;
 }
 
 .lm-mcp-install__copy:hover {
+  background: var(--color-surface-hover);
   color: var(--lm-mcp-install-fg);
-  border-color: var(--lm-mcp-install-fg-muted);
 }
 
 .lm-mcp-install__copy:focus-visible {
@@ -227,12 +227,17 @@ html[data-theme-mode='dark'] .lm-mcp-install__code span {
 
 .lm-mcp-install__copy[data-copied] {
   color: var(--lm-mcp-install-accent);
-  border-color: var(--lm-mcp-install-accent);
 }
 
 .lm-mcp-install__copy[data-failed] {
   color: var(--aside-caution-ink);
-  border-color: var(--aside-caution-ink);
+}
+
+/* On touch screens the copy button keeps its drawn size and takes a touch-target square; `contain: layout` makes it the hit
+   area's containing block without moving it (records 0071, 0087). */
+@media (pointer: coarse) {
+  .lm-mcp-install__copy { contain: layout; }
+  .lm-mcp-install__copy::after { content: ''; position: absolute; inset: min(0px, calc((100% - var(--touch-target)) / 2)); }
 }
 
 /* A day count that JavaScript rewrites: the ISO duration, or the cutoff date, wherever it sits in a body. */

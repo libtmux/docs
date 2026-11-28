@@ -16,7 +16,10 @@
   --mcp-mono: var(--font-ibm-plex-mono, ui-monospace, 'SFMono-Regular', Menlo, monospace);
   --hang-w: 1.1rem;
   --hang-gap: 0.4rem;
-  --hang-need: calc(var(--hang-w) + var(--hang-gap) + 1px + 0.375rem);
+  --step-gap: 0.25rem;
+  /* The most markers any one line holds (set below from the player's own plan): the rail is that many markers wide. */
+  --hang-n: 1;
+  --hang-need: calc(var(--hang-n) * var(--hang-w) + (var(--hang-n) - 1) * var(--step-gap) + var(--hang-gap) + 1px + 0.375rem);
   /* A layout states the margin it leaves left of its code frames in --code-hang-room (default 1rem); the player moves in by what the rail needs beyond it. */
   margin-inline-start: max(0px, calc(var(--hang-need) - var(--code-hang-room, 1rem)));
   border: 1px solid var(--color-edge);
@@ -25,6 +28,10 @@
   /* The rail hangs outside the card, so the card does not clip; the code rounds its own corner in its place. */
   overflow: visible;
 }
+
+.home-example-player:has([data-hang-n='2']) { --hang-n: 2; }
+.home-example-player:has([data-hang-n='3']) { --hang-n: 3; }
+.home-example-player:has([data-hang-n='4']) { --hang-n: 4; }
 
 .home-example-player:fullscreen {
   display: flex;
@@ -211,7 +218,7 @@ html[data-theme-mode="dark"] .home-example-view {
   inset-block: 0 0;
   inset-inline-start: calc(-1 * (var(--hang-w) + var(--hang-gap) + 1px));
   width: var(--hang-w);
-  clip-path: inset(0 -0.5rem);
+  clip-path: inset(0 -0.5rem 0 calc(-0.5rem - (var(--hang-n) - 1) * (var(--hang-w) + var(--step-gap))));
   pointer-events: none;
 }
 
@@ -222,8 +229,8 @@ html[data-theme-mode="dark"] .home-example-view {
 .expressive-code .core-step {
   position: absolute;
   top: 0;
-  left: 0;
-  width: 1.1rem;
+  left: calc(var(--shared-i, 0) * -1 * (var(--hang-w) + var(--step-gap)));
+  width: var(--hang-w);
   height: 1.1rem;
   padding: 0;
   transform: translateY(var(--y, 0));
@@ -231,7 +238,7 @@ html[data-theme-mode="dark"] .home-example-view {
   border-radius: 50%;
   background: var(--ec-codeBg, var(--color-surface));
   color: var(--color-muted);
-  font: 600 0.625rem / 1 var(--font-sans, inherit);
+  font: 600 0.65625rem / 1 var(--font-sans, inherit);
   cursor: pointer;
   pointer-events: auto;
   user-select: none;
@@ -239,6 +246,12 @@ html[data-theme-mode="dark"] .home-example-view {
 
 .expressive-code .core-step::before {
   content: attr(data-n);
+}
+
+/* Steps that share a line stand side by side at full size (record 0088): the first nearest the code, each later one a marker and a gap
+   further out to the left, where the rail's room (--hang-n) is already reserved. The shown or focused one rises over its neighbours. */
+.expressive-code .core-step[data-shared]:is(:hover, :focus-visible, .is-current) {
+  z-index: 1;
 }
 
 .expressive-code .core-step:hover,
@@ -262,9 +275,9 @@ html[data-theme-mode="dark"] .home-example-view {
 }
 
 /*
- * The copy button, at the program's top right and clear of its scrollbar: the code frame's own 2rem square. It is a
- * control, so its outline is --control-border like the installer's (record 0067), and the button is never translucent:
- * an outline dimmed by `opacity` is no longer the 3:1 that token measures. Show preview shares its place, not its look:
+ * The copy button, at the program's top right and clear of its scrollbar: the code frame's own 2rem square. It is minimal
+ * (record 0087): a clipboard in muted ink with no border and no fill, the control hover fill on hover and the focus ring on
+ * the keyboard. It stays drawn at rest, unlike a code frame's, which appears with the frame. Show preview shares its place, not its look:
  * the controls' class (`.mcp-replay__button`) draws it, as it draws Hide preview and the controls bar's own buttons.
  */
 .expressive-code .core-copy,
@@ -281,11 +294,15 @@ html[data-theme-mode="dark"] .home-example-view {
   width: 2rem;
   height: 2rem;
   padding: 0;
-  border: 1px solid var(--control-border);
+  border: 0;
   border-radius: 0.25rem;
-  background: var(--ec-codeBg, var(--color-surface));
+  background: none;
   color: var(--color-muted);
   cursor: pointer;
+}
+
+.expressive-code .core-copy:hover {
+  background: var(--color-surface-hover);
 }
 
 .expressive-code .core-copy:hover,
@@ -295,7 +312,6 @@ html[data-theme-mode="dark"] .home-example-view {
 }
 
 .expressive-code .core-copy[data-copied] {
-  border-color: currentColor;
   color: var(--color-link);
 }
 

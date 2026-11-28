@@ -78,9 +78,9 @@ export function codeFrame() {
     name: 'code-frame',
     baseStyles: `
       /*
-       * The copy button's outline is --control-border drawn whole (record 0067), so the button is never dimmed: Expressive
-       * Code shows it at 0.75 opacity, on a pointer device when the frame is hovered or focused and always on touch, which
-       * takes the outline under the 3:1 that token measures. These are its own selectors, so nothing shows that was hidden.
+       * The copy button is a bare clipboard (record 0087) and is never dimmed: Expressive Code shows it at 0.75 opacity, on a
+       * pointer device when the frame is hovered or focused and always on touch, which takes its icon under the contrast it
+       * is drawn for. These are its own selectors, so nothing shows that was hidden.
        */
       @media (hover: none) { .copy button { opacity: 1; } }
       @media (hover: hover) {

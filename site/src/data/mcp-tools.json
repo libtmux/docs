@@ -10209,10 +10209,10 @@
           "wireName": "tmux_capabilities",
           "source": {
             "repo": "libtmux/libtmux-ruby",
-            "revision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
-            "extractedRevision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
+            "revision": "02a99f8663ef096685c783afce6de6ed8005a8e3",
+            "extractedRevision": "02a99f8663ef096685c783afce6de6ed8005a8e3",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
-            "line": 250
+            "line": 271
           },
           "description": "Discover the fixed endpoint, server binding, enabled tools, criteria schema and limits. Acquires metadata; starts no daemon.",
           "schemaStatus": "runtime",
@@ -10568,6 +10568,15 @@
             "idempotentHint": false,
             "openWorldHint": false,
             "readOnlyHint": false
+          },
+          "meta": {
+            "com.git-pull.libtmux-mcp/capability": {
+              "processReach": "none",
+              "tmuxEffects": [
+                "observe"
+              ],
+              "toolset": "inspect"
+            }
           }
         },
         {
@@ -10575,10 +10584,10 @@
           "wireName": "tmux_capture",
           "source": {
             "repo": "libtmux/libtmux-ruby",
-            "revision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
-            "extractedRevision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
+            "revision": "02a99f8663ef096685c783afce6de6ed8005a8e3",
+            "extractedRevision": "02a99f8663ef096685c783afce6de6ed8005a8e3",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
-            "line": 240
+            "line": 261
           },
           "description": "Read exact-pane screen/history rows preserving LF. Defaults: 200 lines, 65536 bytes, zero history lines, track=false. Limits: 1000 lines/history, 262144 bytes. UTF-8 or base64; truncation is separate from unknown history continuity. Tracked process cursors require tmux>=3.3a and a native process identity backend: Linux peer pidfds with matching PID namespaces, or Darwin kqueue process observation. Continuation returns an exact state row splice, not a live-output journal. Refuses capture after-hooks.",
           "schemaStatus": "runtime",
@@ -11188,6 +11197,15 @@
             "idempotentHint": false,
             "openWorldHint": false,
             "readOnlyHint": false
+          },
+          "meta": {
+            "com.git-pull.libtmux-mcp/capability": {
+              "processReach": "none",
+              "tmuxEffects": [
+                "observe"
+              ],
+              "toolset": "inspect"
+            }
           }
         },
         {
@@ -11195,10 +11213,10 @@
           "wireName": "tmux_close",
           "source": {
             "repo": "libtmux/libtmux-ruby",
-            "revision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
-            "extractedRevision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
+            "revision": "02a99f8663ef096685c783afce6de6ed8005a8e3",
+            "extractedRevision": "02a99f8663ef096685c783afce6de6ed8005a8e3",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
-            "line": 248
+            "line": 269
           },
           "description": "Destroy one exact session, window or pane. Opt-in destructive operation; closing a session or window also removes its contained topology. Never selects by name or closes the daemon directly. Returns the final tmux client outcome.",
           "schemaStatus": "runtime",
@@ -11615,6 +11633,16 @@
             "idempotentHint": false,
             "openWorldHint": false,
             "readOnlyHint": false
+          },
+          "meta": {
+            "com.git-pull.libtmux-mcp/capability": {
+              "processReach": "none",
+              "tmuxEffects": [
+                "observe",
+                "delete"
+              ],
+              "toolset": "teardown"
+            }
           }
         },
         {
@@ -11622,10 +11650,10 @@
           "wireName": "tmux_create",
           "source": {
             "repo": "libtmux/libtmux-ruby",
-            "revision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
-            "extractedRevision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
+            "revision": "02a99f8663ef096685c783afce6de6ed8005a8e3",
+            "extractedRevision": "02a99f8663ef096685c783afce6de6ed8005a8e3",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
-            "line": 246
+            "line": 267
           },
           "description": "Create a session, window in an exact session, or split an exact pane using argv. Opt-in mutation; 64 KiB total string bytes and at most 256 argv entries. Window/pane focus defaults false. Cwd/environment are optional; size is cells or percent. Assigned refs prove creation, not program readiness or completion.",
           "schemaStatus": "runtime",
@@ -12340,6 +12368,16 @@
             "idempotentHint": false,
             "openWorldHint": false,
             "readOnlyHint": false
+          },
+          "meta": {
+            "com.git-pull.libtmux-mcp/capability": {
+              "processReach": "pane-program",
+              "tmuxEffects": [
+                "observe",
+                "change"
+              ],
+              "toolset": "execute"
+            }
           }
         },
         {
@@ -12347,10 +12385,10 @@
           "wireName": "tmux_run",
           "source": {
             "repo": "libtmux/libtmux-ruby",
-            "revision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
-            "extractedRevision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
+            "revision": "02a99f8663ef096685c783afce6de6ed8005a8e3",
+            "extractedRevision": "02a99f8663ef096685c783afce6de6ed8005a8e3",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
-            "line": 238
+            "line": 259
           },
           "description": "Run an authored POSIX script in an explicitly enrolled idle, empty zsh 5.9 editor. Opt-in; no terminal injection. Exact queue authorization binds the existing shell generation; execution may follow a later pane replacement without retargeting it. Inherits cwd/exported environment, closed stdin, separate bounded UTF-8/base64 outputs. Defaults: 65536 bytes per output, 65536 script bytes; overflow refuses completion. Reports native exit/signal only from the helper; cancellation never proves descendants stopped.",
           "schemaStatus": "runtime",
@@ -12800,6 +12838,16 @@
             "idempotentHint": false,
             "openWorldHint": false,
             "readOnlyHint": false
+          },
+          "meta": {
+            "com.git-pull.libtmux-mcp/capability": {
+              "processReach": "pane-command",
+              "tmuxEffects": [
+                "observe",
+                "change"
+              ],
+              "toolset": "execute"
+            }
           }
         },
         {
@@ -12807,10 +12855,10 @@
           "wireName": "tmux_send",
           "source": {
             "repo": "libtmux/libtmux-ruby",
-            "revision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
-            "extractedRevision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
+            "revision": "02a99f8663ef096685c783afce6de6ed8005a8e3",
+            "extractedRevision": "02a99f8663ef096685c783afce6de6ed8005a8e3",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
-            "line": 244
+            "line": 265
           },
           "description": "Send literal UTF-8 text or named keys to one exact pane. Opt-in mutation; 64 KiB total text bytes, at most 256 keys. Reports tmux client completion and input dispatch only; never shell completion.",
           "schemaStatus": "runtime",
@@ -13230,6 +13278,16 @@
             "idempotentHint": false,
             "openWorldHint": false,
             "readOnlyHint": false
+          },
+          "meta": {
+            "com.git-pull.libtmux-mcp/capability": {
+              "processReach": "pane-input",
+              "tmuxEffects": [
+                "observe",
+                "change"
+              ],
+              "toolset": "execute"
+            }
           }
         },
         {
@@ -13237,10 +13295,10 @@
           "wireName": "tmux_snapshot",
           "source": {
             "repo": "libtmux/libtmux-ruby",
-            "revision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
-            "extractedRevision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
+            "revision": "02a99f8663ef096685c783afce6de6ed8005a8e3",
+            "extractedRevision": "02a99f8663ef096685c783afce6de6ed8005a8e3",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
-            "line": 6
+            "line": 22
           },
           "description": "Capture ordered metadata and evaluate Ruby criteria locally. Pages retain one immutable capture; expired cursors require a new query. Limit defaults to 50 records, maximum 200.",
           "schemaStatus": "runtime",
@@ -16342,6 +16400,15 @@
             "idempotentHint": false,
             "openWorldHint": false,
             "readOnlyHint": false
+          },
+          "meta": {
+            "com.git-pull.libtmux-mcp/capability": {
+              "processReach": "none",
+              "tmuxEffects": [
+                "observe"
+              ],
+              "toolset": "inspect"
+            }
           }
         },
         {
@@ -16349,10 +16416,10 @@
           "wireName": "tmux_wait",
           "source": {
             "repo": "libtmux/libtmux-ruby",
-            "revision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
-            "extractedRevision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
+            "revision": "02a99f8663ef096685c783afce6de6ed8005a8e3",
+            "extractedRevision": "02a99f8663ef096685c783afce6de6ed8005a8e3",
             "file": "gems/libtmux-mcp/lib/libtmux/mcp/catalog.rb",
-            "line": 242
+            "line": 263
           },
           "description": "Wait for observed literal screen text or the initial pane process exit. Deadline in seconds is capped by the application limit. Pane exit is observed through process descriptors. The screen_contains condition joins wrapped rows, uses control events on tmux>=3.7 and polls the pane screen on older daemons, which take no control client. A pane or tmux server that ends first fails with pane_died and the last rows read in error.capture; a lost control stream fails with observation_lost. Requires tmux>=3.3a and Linux peer pidfds with matching PID namespaces or Darwin kqueue process observation. Reports observed evidence, never remote termination caused by cancellation or an inferred process exit status.",
           "schemaStatus": "runtime",
@@ -17363,6 +17430,15 @@
             "idempotentHint": false,
             "openWorldHint": false,
             "readOnlyHint": false
+          },
+          "meta": {
+            "com.git-pull.libtmux-mcp/capability": {
+              "processReach": "none",
+              "tmuxEffects": [
+                "observe"
+              ],
+              "toolset": "inspect"
+            }
           }
         }
       ],
@@ -17370,8 +17446,8 @@
       "selectable": false,
       "source": "gems/libtmux-mcp/lib/libtmux/mcp",
       "repo": "libtmux/libtmux-ruby",
-      "revision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
-      "extractedRevision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
+      "revision": "02a99f8663ef096685c783afce6de6ed8005a8e3",
+      "extractedRevision": "02a99f8663ef096685c783afce6de6ed8005a8e3",
       "selection": {
         "mode": "explicit CLI options",
         "tools": "tmux_capabilities,tmux_snapshot,tmux_capture,tmux_wait,tmux_create,tmux_send,tmux_close,tmux_run"
@@ -17411,7 +17487,7 @@
         ],
         "serverInfo": {
           "name": "libtmux",
-          "version": "0.1.1"
+          "version": "0.1.2"
         }
       }
     },
@@ -31020,7 +31096,7 @@
           "source": {
             "repo": "libtmux/libtmux-julia",
             "revision": "f3da513be1225d36d5854cd8db5972c01857578e",
-            "extractedRevision": "c19e4a16417123b3fbf0a7640cf4f80fe166236c",
+            "extractedRevision": "0e761d353bc0606f69ad87994958d09a92c7f7d1",
             "file": "packages/LibTmuxMCP/src/tools.jl",
             "line": 3
           },
@@ -31173,6 +31249,15 @@
             "idempotentHint": false,
             "openWorldHint": true,
             "readOnlyHint": false
+          },
+          "meta": {
+            "com.git-pull.libtmux-mcp/capability": {
+              "processReach": "none",
+              "tmuxEffects": [
+                "observe"
+              ],
+              "toolset": "inspect"
+            }
           }
         },
         {
@@ -31181,7 +31266,7 @@
           "source": {
             "repo": "libtmux/libtmux-julia",
             "revision": "f3da513be1225d36d5854cd8db5972c01857578e",
-            "extractedRevision": "c19e4a16417123b3fbf0a7640cf4f80fe166236c",
+            "extractedRevision": "0e761d353bc0606f69ad87994958d09a92c7f7d1",
             "file": "packages/LibTmuxMCP/src/tools.jl",
             "line": 9
           },
@@ -31314,6 +31399,16 @@
             "idempotentHint": false,
             "openWorldHint": true,
             "readOnlyHint": false
+          },
+          "meta": {
+            "com.git-pull.libtmux-mcp/capability": {
+              "processReach": "pane-program",
+              "tmuxEffects": [
+                "observe",
+                "change"
+              ],
+              "toolset": "execute"
+            }
           }
         },
         {
@@ -31322,7 +31417,7 @@
           "source": {
             "repo": "libtmux/libtmux-julia",
             "revision": "f3da513be1225d36d5854cd8db5972c01857578e",
-            "extractedRevision": "c19e4a16417123b3fbf0a7640cf4f80fe166236c",
+            "extractedRevision": "0e761d353bc0606f69ad87994958d09a92c7f7d1",
             "file": "packages/LibTmuxMCP/src/tools.jl",
             "line": 7
           },
@@ -31447,6 +31542,16 @@
             "idempotentHint": false,
             "openWorldHint": true,
             "readOnlyHint": false
+          },
+          "meta": {
+            "com.git-pull.libtmux-mcp/capability": {
+              "processReach": "none",
+              "tmuxEffects": [
+                "observe",
+                "delete"
+              ],
+              "toolset": "teardown"
+            }
           }
         },
         {
@@ -31455,7 +31560,7 @@
           "source": {
             "repo": "libtmux/libtmux-julia",
             "revision": "f3da513be1225d36d5854cd8db5972c01857578e",
-            "extractedRevision": "c19e4a16417123b3fbf0a7640cf4f80fe166236c",
+            "extractedRevision": "0e761d353bc0606f69ad87994958d09a92c7f7d1",
             "file": "packages/LibTmuxMCP/src/tools.jl",
             "line": 2
           },
@@ -32173,6 +32278,15 @@
             "idempotentHint": false,
             "openWorldHint": true,
             "readOnlyHint": false
+          },
+          "meta": {
+            "com.git-pull.libtmux-mcp/capability": {
+              "processReach": "none",
+              "tmuxEffects": [
+                "observe"
+              ],
+              "toolset": "inspect"
+            }
           }
         },
         {
@@ -32181,7 +32295,7 @@
           "source": {
             "repo": "libtmux/libtmux-julia",
             "revision": "f3da513be1225d36d5854cd8db5972c01857578e",
-            "extractedRevision": "c19e4a16417123b3fbf0a7640cf4f80fe166236c",
+            "extractedRevision": "0e761d353bc0606f69ad87994958d09a92c7f7d1",
             "file": "packages/LibTmuxMCP/src/tools.jl",
             "line": 5
           },
@@ -32312,6 +32426,16 @@
             "idempotentHint": false,
             "openWorldHint": true,
             "readOnlyHint": false
+          },
+          "meta": {
+            "com.git-pull.libtmux-mcp/capability": {
+              "processReach": "pane-input",
+              "tmuxEffects": [
+                "observe",
+                "change"
+              ],
+              "toolset": "execute"
+            }
           }
         },
         {
@@ -32320,7 +32444,7 @@
           "source": {
             "repo": "libtmux/libtmux-julia",
             "revision": "f3da513be1225d36d5854cd8db5972c01857578e",
-            "extractedRevision": "c19e4a16417123b3fbf0a7640cf4f80fe166236c",
+            "extractedRevision": "0e761d353bc0606f69ad87994958d09a92c7f7d1",
             "file": "packages/LibTmuxMCP/src/tools.jl",
             "line": 6
           },
@@ -32467,6 +32591,16 @@
             "idempotentHint": false,
             "openWorldHint": true,
             "readOnlyHint": false
+          },
+          "meta": {
+            "com.git-pull.libtmux-mcp/capability": {
+              "processReach": "none",
+              "tmuxEffects": [
+                "observe",
+                "change"
+              ],
+              "toolset": "manage"
+            }
           }
         },
         {
@@ -32475,7 +32609,7 @@
           "source": {
             "repo": "libtmux/libtmux-julia",
             "revision": "f3da513be1225d36d5854cd8db5972c01857578e",
-            "extractedRevision": "c19e4a16417123b3fbf0a7640cf4f80fe166236c",
+            "extractedRevision": "0e761d353bc0606f69ad87994958d09a92c7f7d1",
             "file": "packages/LibTmuxMCP/src/tools.jl",
             "line": 8
           },
@@ -33879,6 +34013,17 @@
             "idempotentHint": false,
             "openWorldHint": true,
             "readOnlyHint": false
+          },
+          "meta": {
+            "com.git-pull.libtmux-mcp/capability": {
+              "processReach": "pane-program",
+              "tmuxEffects": [
+                "observe",
+                "change",
+                "delete"
+              ],
+              "toolset": "teardown"
+            }
           }
         },
         {
@@ -33887,7 +34032,7 @@
           "source": {
             "repo": "libtmux/libtmux-julia",
             "revision": "f3da513be1225d36d5854cd8db5972c01857578e",
-            "extractedRevision": "c19e4a16417123b3fbf0a7640cf4f80fe166236c",
+            "extractedRevision": "0e761d353bc0606f69ad87994958d09a92c7f7d1",
             "file": "packages/LibTmuxMCP/src/tools.jl",
             "line": 4
           },
@@ -34027,6 +34172,16 @@
             "idempotentHint": false,
             "openWorldHint": true,
             "readOnlyHint": false
+          },
+          "meta": {
+            "com.git-pull.libtmux-mcp/capability": {
+              "processReach": "pane-input",
+              "tmuxEffects": [
+                "observe",
+                "change"
+              ],
+              "toolset": "execute"
+            }
           }
         },
         {
@@ -34035,7 +34190,7 @@
           "source": {
             "repo": "libtmux/libtmux-julia",
             "revision": "f3da513be1225d36d5854cd8db5972c01857578e",
-            "extractedRevision": "c19e4a16417123b3fbf0a7640cf4f80fe166236c",
+            "extractedRevision": "0e761d353bc0606f69ad87994958d09a92c7f7d1",
             "file": "packages/LibTmuxMCP/src/tools.jl",
             "line": 12
           },
@@ -34220,6 +34375,16 @@
             "idempotentHint": false,
             "openWorldHint": true,
             "readOnlyHint": false
+          },
+          "meta": {
+            "com.git-pull.libtmux-mcp/capability": {
+              "processReach": "pane-input",
+              "tmuxEffects": [
+                "observe",
+                "change"
+              ],
+              "toolset": "execute"
+            }
           }
         },
         {
@@ -34228,7 +34393,7 @@
           "source": {
             "repo": "libtmux/libtmux-julia",
             "revision": "f3da513be1225d36d5854cd8db5972c01857578e",
-            "extractedRevision": "c19e4a16417123b3fbf0a7640cf4f80fe166236c",
+            "extractedRevision": "0e761d353bc0606f69ad87994958d09a92c7f7d1",
             "file": "packages/LibTmuxMCP/src/tools.jl",
             "line": 10
           },
@@ -34324,6 +34489,16 @@
             "idempotentHint": false,
             "openWorldHint": true,
             "readOnlyHint": false
+          },
+          "meta": {
+            "com.git-pull.libtmux-mcp/capability": {
+              "processReach": "none",
+              "tmuxEffects": [
+                "observe",
+                "delete"
+              ],
+              "toolset": "teardown"
+            }
           }
         },
         {
@@ -34332,7 +34507,7 @@
           "source": {
             "repo": "libtmux/libtmux-julia",
             "revision": "f3da513be1225d36d5854cd8db5972c01857578e",
-            "extractedRevision": "c19e4a16417123b3fbf0a7640cf4f80fe166236c",
+            "extractedRevision": "0e761d353bc0606f69ad87994958d09a92c7f7d1",
             "file": "packages/LibTmuxMCP/src/tools.jl",
             "line": 11
           },
@@ -34502,6 +34677,15 @@
             "idempotentHint": false,
             "openWorldHint": true,
             "readOnlyHint": false
+          },
+          "meta": {
+            "com.git-pull.libtmux-mcp/capability": {
+              "processReach": "none",
+              "tmuxEffects": [
+                "observe"
+              ],
+              "toolset": "inspect"
+            }
           }
         }
       ],
@@ -34510,7 +34694,7 @@
       "source": "packages/LibTmuxMCP/src",
       "repo": "libtmux/libtmux-julia",
       "revision": "f3da513be1225d36d5854cd8db5972c01857578e",
-      "extractedRevision": "c19e4a16417123b3fbf0a7640cf4f80fe166236c",
+      "extractedRevision": "0e761d353bc0606f69ad87994958d09a92c7f7d1",
       "selection": {
         "mode": "explicit CLI options",
         "tools": "all registered tools via repeated --tool",

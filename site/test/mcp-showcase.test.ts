@@ -14,6 +14,11 @@ const PORTS = Object.keys(MCP_REFERENCE)
 const onDisk = (port: string) => JSON.parse(readFileSync(new URL(`../src/data/mcp-protocol/${port}.json`, import.meta.url), 'utf8')) as ProtocolSnapshot & {
   protocol: { tools: (ProtocolTool & { inputSchema: Schema; outputSchema?: Schema })[] }
 }
+/* No port ships a server without toolsets today, so a test that needs one strips a snapshot's tier metadata. */
+const withoutToolsets = (snapshot: ReturnType<typeof onDisk>): ReturnType<typeof onDisk> => ({
+  ...snapshot,
+  protocol: { ...snapshot.protocol, tools: snapshot.protocol.tools.map(({ _meta, ...tool }) => tool) },
+})
 const showcases = new Map<string, McpShowcase>()
 const showcase = async (port: string) => {
   if (!showcases.has(port)) showcases.set(port, (await mcpShowcase(port, 'latest'))!)
@@ -142,7 +147,10 @@ describe('the tools a showcase groups', () => {
         expect(groups[0]!.tools.every((tool) => tool.tier === undefined)).toBe(true)
       }
     }
-    expect((await showcase('ruby')).groups[0]!.tier).toBeUndefined()
+    expect((await showcase('ruby')).groups.map((group) => group.tier?.id)).toEqual(['inspect', 'execute', 'teardown'])
+    const stripped = buildShowcase('ruby', 'latest', withoutToolsets(onDisk('ruby')))
+    expect(stripped.groups).toHaveLength(1)
+    expect(stripped.groups[0]!.tier).toBeUndefined()
     expect((await showcase('ts')).groups.map((group) => group.tier?.id)).toEqual(['inspect', 'manage', 'execute', 'teardown'])
   })
 
@@ -374,7 +382,7 @@ describe('the showcase section', () => {
   })
 
   it('lists a server that declares no toolsets together, with no badge', async () => {
-    const document = await section('ruby')
+    const document = await section('ruby', buildShowcase('ruby', 'latest', withoutToolsets(onDisk('ruby'))))
     expect(document.querySelector('h2#tools')).not.toBeNull()
     expect(document.querySelector('h2#tools-by-tier')).toBeNull()
     expect(document.querySelector('.mcp-group__title')).toBeNull()

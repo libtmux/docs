@@ -30,14 +30,19 @@
  * One set of sizes draws every round button of the player: a button is --mcp-button square and stands --mcp-inset-block
  * from the top and bottom edge of its bar or column and --mcp-inset-inline from its sides. The controls bar and the
  * preview column's head row both take these, and the Hide and Show preview buttons are drawn by the controls' own class
- * (`.mcp-replay__button`), so the toggles and the controls cannot drift apart.
+ * (`.mcp-replay__button`), so the toggles and the controls cannot drift apart. The controls bar and the head row share one box
+ * (record 0089): --mcp-track tall inside the insets, under a --mcp-edge top border, so both are --mcp-bar tall and their buttons
+ * stand at the same distance from the top.
  */
 .mcp-replay,
 .home-example-player {
   --mcp-button: 2rem;
   --mcp-inset-block: 0.5rem;
   --mcp-inset-inline: 1rem;
-  --mcp-sidehead: calc(var(--mcp-button) + 2 * var(--mcp-inset-block));
+  --mcp-track: 2.125rem;
+  --mcp-edge: 1px;
+  --mcp-bar: calc(var(--mcp-track) + 2 * var(--mcp-inset-block) + var(--mcp-edge));
+  --mcp-sidehead: var(--mcp-bar);
 }
 
 .mcp-replay__head[hidden],
@@ -130,6 +135,7 @@ html[data-js] .mcp-replay:not(.mcp-replay--requests) {
   box-sizing: border-box;
   height: var(--mcp-sidehead);
   padding: var(--mcp-inset-block) var(--mcp-inset-inline);
+  border-top: var(--mcp-edge) solid var(--color-edge);
 }
 
 html:not([data-js]) .mcp-replay__sidehead {
@@ -806,7 +812,7 @@ html[data-theme-mode="dark"] .mcp-replay {
   align-items: center;
   gap: 0.5rem;
   padding: var(--mcp-inset-block) var(--mcp-inset-inline);
-  border-top: 1px solid var(--color-edge);
+  border-top: var(--mcp-edge) solid var(--color-edge);
   container-type: inline-size;
 }
 
@@ -888,7 +894,7 @@ html[data-theme-mode='dark'] .mcp-replay__rail {
   overflow-x: auto;
   overflow-y: hidden;
   /* Tall enough for the current mark at its hover scale with its ring and shadow. */
-  height: 2.125rem;
+  height: var(--mcp-track);
   scroll-snap-type: x proximity;
   scrollbar-width: none;
   overscroll-behavior-x: contain;

@@ -352,16 +352,18 @@ describe('Expressive Code frames', () => {
       expect(select('pre', off)).toBeDefined()
     })
 
-    // The frame's own copy button is a control like the installer's: its outline is --control-border (3:1 on the ground,
-    // record 0067), drawn whole. Expressive Code defaults to the code colour at 40%, which is about 1.4:1.
-    it('outlines the button in --control-border at full strength, in the light and the dark theme', () => {
-      const declared = [...themeStyles.matchAll(/--ec-frm-inlBtnBrd:\s*([^;]+);/g)].map((match) => match[1]!.trim())
-      expect(declared.length).toBeGreaterThanOrEqual(1)
-      for (const value of declared) expect(value).toBe('var(--control-border)')
-      expect([...themeStyles.matchAll(/--ec-frm-inlBtnBrdOpa:\s*([^;]+);/g)].map((match) => match[1]!.trim())).not.toContainEqual(expect.not.stringMatching(/^1$/))
+    // The frame's own copy button is minimal like every copy button (record 0087): no border and no fill at rest.
+    // Expressive Code defaults to a border at 40% opacity.
+    it('draws no border and no rest fill, in the light and the dark theme', () => {
+      const border = [...themeStyles.matchAll(/--ec-frm-inlBtnBrdOpa:\s*([^;]+);/g)].map((match) => match[1]!.trim())
+      expect(border.length).toBeGreaterThanOrEqual(1)
+      for (const value of border) expect(value).toBe('0')
+      const fill = [...themeStyles.matchAll(/--ec-frm-inlBtnBgIdleOpa:\s*([^;]+);/g)].map((match) => match[1]!.trim())
+      expect(fill.length).toBeGreaterThanOrEqual(1)
+      for (const value of fill) expect(value).toBe('0')
     })
 
-    it('shows the button at full opacity wherever it shows, so the outline keeps its contrast', () => {
+    it('shows the button at full opacity wherever it shows, so the icon keeps its contrast', () => {
       // On a pointer device it appears with the frame hovered or focused; on touch it is always there.
       expect(baseStyles).toMatch(/\.frame:hover \.copy button:not\(:hover\)[^{]*\{[^}]*opacity:\s*1\b/)
       expect(baseStyles).toMatch(/hover:\s*none\)\s*\{[^{}]*\.copy button\s*\{[^}]*opacity:\s*1\b/)

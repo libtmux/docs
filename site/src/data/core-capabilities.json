@@ -122,7 +122,7 @@
         "job": "cell",
         "step": "Run the complete cell",
         "planOutput": "run_cells",
-        "command": "bundle exec scripts/matrix"
+        "command": "bundle exec scripts/matrix/matrix"
       },
       "checkedBy": [
         {
@@ -130,7 +130,7 @@
           "contains": "\"output\": \"window: logs\\nsession windows: 2\\n\""
         },
         {
-          "file": "scripts/matrix",
+          "file": "scripts/matrix/matrix",
           "contains": "\"scripts/check\", \"outer\""
         },
         {
@@ -155,7 +155,7 @@
         "job": "cell",
         "step": "Run the complete cell",
         "planOutput": "run_cells",
-        "command": "bundle exec scripts/matrix"
+        "command": "bundle exec scripts/matrix/matrix"
       },
       "checkedBy": [
         {
@@ -167,7 +167,7 @@
           "contains": "\"output\": \"libtmux capture ready\\n\""
         },
         {
-          "file": "scripts/matrix",
+          "file": "scripts/matrix/matrix",
           "contains": "\"scripts/check\", \"outer\""
         },
         {

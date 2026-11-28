@@ -51,9 +51,9 @@ export default defineEcConfig({
     uiFontSize: '0.875rem',
     frames: {
       frameBoxShadowCssValue: 'none',
-      // The frame's copy button is a control: outlined in --control-border at full strength like the installer's (record 0067).
-      inlineButtonBorder: 'var(--control-border)',
-      inlineButtonBorderOpacity: '1',
+      // The frame's copy button is minimal like every copy button (record 0087): no border, and no fill at rest (Expressive
+      // Code's idle background opacity is 0); its hover fill and focus ring are Expressive Code's own and this site's.
+      inlineButtonBorderOpacity: '0',
     },
   },
 })

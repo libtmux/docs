@@ -31,35 +31,35 @@
     },
     "ruby": {
       "repo": "libtmux/libtmux-ruby",
-      "revision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
+      "revision": "02a99f8663ef096685c783afce6de6ed8005a8e3",
       "distributions": [
         {
           "name": "libtmux",
-          "version": "0.1.1",
+          "version": "0.1.2",
           "manifest": "gems/libtmux/libtmux.gemspec",
           "repo": "libtmux/libtmux-ruby",
-          "revision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d"
+          "revision": "02a99f8663ef096685c783afce6de6ed8005a8e3"
         },
         {
           "name": "libtmux-async",
-          "version": "0.1.1",
+          "version": "0.1.2",
           "manifest": "gems/libtmux-async/libtmux-async.gemspec",
           "repo": "libtmux/libtmux-ruby",
-          "revision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d"
+          "revision": "02a99f8663ef096685c783afce6de6ed8005a8e3"
         },
         {
           "name": "libtmux-mcp",
-          "version": "0.1.1",
+          "version": "0.1.2",
           "manifest": "gems/libtmux-mcp/libtmux-mcp.gemspec",
           "repo": "libtmux/libtmux-ruby",
-          "revision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d"
+          "revision": "02a99f8663ef096685c783afce6de6ed8005a8e3"
         },
         {
           "name": "libtmux-workspace",
-          "version": "0.1.1",
+          "version": "0.1.2",
           "manifest": "gems/libtmux-workspace/libtmux-workspace.gemspec",
           "repo": "libtmux/libtmux-ruby",
-          "revision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d"
+          "revision": "02a99f8663ef096685c783afce6de6ed8005a8e3"
         }
       ],
       "units": []

@@ -13,8 +13,7 @@ export { EXAMPLES }
  *
  * Everything about a tool comes from the `tools/list` snapshot in
  * `data/mcp-protocol/<port>.json`, so a port shows the tools it has. A server
- * that declares no toolsets, which is how the Ruby and Julia servers are
- * built, lists its tools ungrouped and without tier badges: the annotations
+ * that declares no toolsets lists its tools ungrouped and without tier badges: the annotations
  * they advertise are conservative consent hints, not a tier.
  */
 

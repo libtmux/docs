@@ -421,6 +421,28 @@ describe('the showcase component', () => {
         .toEqual(['cabal update', 'cabal run --verbose=0 mutate-graph'])
     } finally { await window.happyDOM.abort() }
   })
+  // Record 0088 with 0058: frames in one column share a left edge, so a shared line in one player moves them all in together.
+  it('gives sibling players the same hang when only one of them has a shared line', async () => {
+    const { Window } = await import('happy-dom')
+    const { createComponent, renderTemplate } = await import('astro/runtime/server/index.js')
+    const { loadAstroTemplate, renderAstroTemplate } = await import('./astro-templates')
+    const Code = createComponent((_result: unknown, props: { code: string }) => renderTemplate`<pre>${props.code}</pre>`)
+    const template = await loadAstroTemplate('components/CoreShowcase.astro', {
+      stubs: {
+        'components/HomeExample.astro': '---\n---\n<div />',
+        'components/core/CorePlayer.astro': '---\nconst { capabilityId = "typed-graph", hang } = Astro.props\n---\n<div data-core-player={capabilityId} data-hang={String(hang)} />',
+      },
+      modules: { 'astro-expressive-code/components': { Code } },
+    })
+    const window = new Window()
+    try {
+      window.document.body.innerHTML = await renderAstroTemplate(template, { url: 'https://libtmux.org/go/latest/', props: { port: 'go', links: [] } })
+      const players = [...window.document.querySelectorAll('[data-core-player]')].map((player) => [player.getAttribute('data-core-player'), player.getAttribute('data-hang')])
+      expect(players.map(([id]) => id).sort()).toEqual(['run-applications', 'typed-graph', 'watch'])
+      // Only run-applications and watch put two steps on one line; typed-graph has none, and still moves in with them.
+      expect(players.map(([, hang]) => hang)).toEqual(['2', '2', '2'])
+    } finally { await window.happyDOM.abort() }
+  })
   it('leads with the quickstart, then each program once, and shows a port with only the quickstart that one panel, with no list', async () => {
     const { Window } = await import('happy-dom')
     const { createComponent, renderTemplate } = await import('astro/runtime/server/index.js')

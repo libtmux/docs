@@ -46,6 +46,20 @@ export function viewSteps(capability: CoreCapability, code: string, port?: strin
 }
 
 /**
+ * The most steps any one line holds across `programs`, the views of one player (record 0088). The player's rail reserves
+ * that many markers' width from the first paint, and a column of players takes the largest of theirs, so frames in one
+ * column share a left edge (record 0058).
+ */
+export function markersOnALine(capability: CoreCapability, programs: readonly string[], port?: string): number {
+  let most = 1
+  for (const code of programs) {
+    const placed = viewSteps(capability, code.replace(/\n$/, ''), port)
+    for (const step of placed) most = Math.max(most, placed.filter((other) => other.lines[0] === step.lines[0]).length)
+  }
+  return most
+}
+
+/**
  * The recording a page may play: the one for `port` and `capability` if it is
  * sound and records the program the page displays. Anything else gives no
  * player, and the page keeps its plain example.
