@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { Window } from 'happy-dom'
 import { createComponent, renderTemplate } from 'astro/runtime/server/index.js'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -527,6 +527,17 @@ describe('recorded results', () => {
 
   it('has a recording for the ports whose servers the recorder has run', async () => {
     for (const port of ALL) expect((await showcase(port)).example?.recording, port).toBeDefined()
+  })
+
+  it('draws the replay from every committed transcript, never as requests only, and notices when one stops holding', async () => {
+    const committed = readdirSync(new URL('../src/data/mcp-transcripts/', import.meta.url)).map((file) => file.replace(/\.json$/, '')).sort()
+    expect(committed, 'a new transcript joins the list above').toEqual([...ALL].sort())
+    for (const port of committed) expect((await showcase(port)).example?.recording, `${port} falls back to requests only against its committed snapshot`).toBeDefined()
+    /* The control: a recorded output schema the snapshot no longer matches is what a port's head can do to Rust's. */
+    const transcript = structuredClone((await transcriptFor('rs'))!)
+    const contract = Object.values(transcript.contracts!).find((entry) => entry.outputSchema)!
+    contract.outputSchema = { ...(contract.outputSchema as object), required: [...((contract.outputSchema as { required?: string[] }).required ?? []), 'added_at_head'] }
+    expect(buildShowcase('rs', 'latest', onDisk('rs'), transcript).example?.recording, 'the control').toBeUndefined()
   })
 
   it.each(ALL)('records %s with the calls the page shows and no error', async (port) => {
