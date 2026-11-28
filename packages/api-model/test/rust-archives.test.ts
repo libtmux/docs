@@ -58,6 +58,32 @@ function fixture() {
 }
 
 describe('dependency-free Rust archive join', () => {
+  it('binds the public mixed fixture boundary, recipe and both normal feature graphs', () => {
+    const f = fixture()
+    const recipe = '(\n  cargo run --quiet -- "$socket"\n)'
+    Object.assign(f.copy.examples.find((entry) => entry.sourceProgramId === 'rust-mixed')!,
+      { externalSocket: true, shellRecipe: ['setup', recipe] })
+    const features = { libtmux: ['blocking', 'tokio'], 'libtmux-tokio': [] as string[] }
+    const staged = Object.assign(f.native.mixed, { fixtureOutsideReader: true,
+      runCommandSha256: hash(recipe), normalNativeFeatures: structuredClone(features) })
+    const copied = Object.assign(f.copy.results.find((entry) => entry.program === 'rust-mixed')!,
+      { publicClientFeatures: structuredClone(features) })
+    expect(() => verifyRustArchiveJoin(f.copy, f.native, f.archiveRoot, f.repeat, source, docs)).not.toThrow()
+    for (const mutate of [
+      () => { staged.fixtureOutsideReader = false },
+      () => { staged.runCommandSha256 = hash('different recipe') },
+      () => { staged.normalNativeFeatures.libtmux.push('test-support') },
+      () => { staged.normalNativeFeatures['libtmux-tokio'].push('test-support') },
+      () => { copied.publicClientFeatures.libtmux.push('test-support') },
+      () => { copied.publicClientFeatures['libtmux-tokio'].push('test-support') },
+    ]) {
+      mutate()
+      expect(() => verifyRustArchiveJoin(f.copy, f.native, f.archiveRoot, f.repeat, source, docs)).toThrow()
+      Object.assign(staged, { fixtureOutsideReader: true, runCommandSha256: hash(recipe), normalNativeFeatures: structuredClone(features) })
+      copied.publicClientFeatures = structuredClone(features)
+    }
+  })
+
   it('requires every copied program, repeated export and physical archive at both exact pins', () => {
     const f = fixture()
     expect(() => verifyRustArchiveJoin(f.copy, f.native, f.archiveRoot, f.repeat, source, docs)).not.toThrow()

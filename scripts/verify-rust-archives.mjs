@@ -14,6 +14,12 @@ const programs = ['rust-construction', 'rust-listings', 'rust-creation', 'rust-q
 const packages = ['libtmux-core', 'libtmux-blocking', 'libtmux-tokio', 'libtmux',
   'libtmux-macros', 'tmux-workspace', 'tmux-mcp'].sort()
 
+function publicClientFeatures(features) {
+  for (const name of ['libtmux', 'libtmux-tokio']) assert(Array.isArray(features?.[name]), `public mixed ${name} features`)
+  for (const enabled of Object.values(features)) assert(Array.isArray(enabled) && !enabled.includes('test-support'), 'public mixed graph has no test-support')
+  assert(['blocking', 'tokio'].every((feature) => features.libtmux.includes(feature)), 'public mixed enables both clients')
+}
+
 /** Join staged normalized archive evidence to the copied mixed program and native bytes. */
 export function verifyArchiveRecord(proof, record, archiveRoot) {
   assert(archiveRoot, 'physical staged archives are required')
@@ -33,6 +39,11 @@ export function verifyArchiveRecord(proof, record, archiveRoot) {
   assert.equal(record.mixed.native.beforeHex, mixed.expectedOutputHex, 'native before bytes')
   assert.equal(record.mixed.native.afterHex, mixed.expectedOutputHex, 'native after bytes')
   assert(/^%\d+$/.test(record.mixed.native.pane) && record.mixed.native.generation.pid > 0, 'native pane generation')
+  if (mixed.externalSocket) {
+    assert.equal(record.mixed.fixtureOutsideReader, true, 'staged fixture is outside the public reader')
+    assert.equal(record.mixed.runCommandSha256, hash(mixed.shellRecipe[1]), 'staged/copied private socket recipe')
+    publicClientFeatures(record.mixed.normalNativeFeatures)
+  }
   assert.deepEqual(record.archives.map((entry) => entry.package).sort(), proof.expectedArchivePackages, 'complete staged archive set')
   const files = (directory) => readdirSync(directory, { withFileTypes: true }).flatMap((entry) =>
     entry.isDirectory() ? files(join(directory, entry.name)) : [join(directory, entry.name)])
@@ -74,6 +85,7 @@ export function verifyRustArchiveJoin(copy, native, archiveRoot, repeat, expecte
     if (result.program === 'rust-mixed') {
       assert.equal(result.native.native.beforeHex, example.expectedOutputHex, 'copied mixed native before bytes')
       assert.equal(result.native.native.afterHex, example.expectedOutputHex, 'copied mixed native after bytes')
+      if (example.externalSocket) publicClientFeatures(result.publicClientFeatures)
     }
   }
   assert.deepEqual(native.guideExamples.map((entry) => entry.program).sort(),
