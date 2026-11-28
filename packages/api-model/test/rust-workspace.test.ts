@@ -89,6 +89,28 @@ describe('Rust workspace declaration identities', () => {
     })
   })
 
+  it('keeps a visible alias and signature type from a hidden module out of helper search entries', async () => {
+    const f = fixture()
+    f.files['crates/libtmux-core/src/lib.rs'] += '#[doc(hidden)] pub mod implementation; pub use implementation::VisibleSnapshot;\n'
+    f.files['crates/libtmux-core/src/implementation.rs'] = `pub struct VisibleSnapshot;
+      impl VisibleSnapshot { pub fn value(&self) -> ReturnValue { loop {} } }
+      pub struct ReturnValue;
+      pub struct HiddenOnlyHelper;
+      impl HiddenOnlyHelper { pub fn inspect(&self) {} }
+    `
+    f.files['crates/libtmux-core/docs/public-api.txt'] += `struct libtmux_core::VisibleSnapshot
+function libtmux_core::VisibleSnapshot::value: fn(&self) -> libtmux_core::implementation::ReturnValue
+struct libtmux_core::implementation::ReturnValue
+`
+    const model = await extract(f.files)
+    expect(model.symbols.find((symbol) => symbol.publicId === 'libtmux_core.VisibleSnapshot.value')).toBeDefined()
+    expect(model.symbols.find((symbol) => symbol.publicId === 'libtmux_core.implementation.ReturnValue')).toBeDefined()
+    expect(model.symbols.some((symbol) => symbol.id.includes('HiddenOnlyHelper'))).toBe(false)
+    const index = new SymbolIndex(model.symbols, (symbol) => `/reference/${symbol.publicId}/`, 'rs')
+    expect(index.resolve('HiddenOnlyHelper')).toBeUndefined()
+    expect(index.resolve('libtmux_core.VisibleSnapshot')?.symbol?.name).toBe('VisibleSnapshot')
+  })
+
   it('preserves the historical file-based IDs when the pinned source predates the split', async () => {
     const model = await extract({
       'crates/libtmux/Cargo.toml': '[package]\nname = "libtmux"\n',

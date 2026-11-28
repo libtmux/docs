@@ -3,8 +3,9 @@ import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
+import { Window } from 'happy-dom'
 import { describe, expect, it } from 'vitest'
-import { assertCompleteApiExample } from '../scripts/check-clipboard.mjs'
+import { assertCompleteApiExample, readCompleteApiExample } from '../scripts/check-clipboard.mjs'
 import { productApiHref } from '../src/lib/product-api'
 
 const root = fileURLToPath(new URL('../../', import.meta.url))
@@ -206,6 +207,19 @@ with tempfile.TemporaryDirectory(prefix='home-foreign-test-') as directory:
 })
 
 describe('API example source and clipboard receipts', () => {
+  it('reads actual HTML clipboard bytes and citations without executing the page', () => {
+    const html = `<section id="libtmux_core.CreatedSession.pane.examples">
+      <p class="gp-sphinx-api-example-intro"><a href="https://example.invalid/source">View source</a></p>
+      <div class="gp-sphinx-api-example"><button data-code="a &lt; b&#127;line &quot;two&quot;"></button></div>
+    </section>`
+    const Parser = new Window().DOMParser
+    expect(readCompleteApiExample({ html, symbol: 'libtmux_core.CreatedSession.pane' }, Parser))
+      .toMatchObject({ files: ['a < b\nline "two"'], sourceLinks: [[{
+        href: 'https://example.invalid/source', label: 'View source',
+      }]] })
+    expect(readCompleteApiExample({ html, symbol: 'missing' }, Parser)).toBeNull()
+  })
+
   const fixture = () => {
     const revision = 'a'.repeat(40)
     const href = `https://github.com/libtmux/libtmux-java/blob/${revision}/examples/api/run.sh`

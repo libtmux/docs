@@ -12,6 +12,23 @@ ${code}
 `], { cwd: root, encoding: 'utf8' }))
 
 describe('native capture witness', () => {
+  it('refuses an unqualified daemon command and retains the refusal if the caller ignores it', () => {
+    expect(python(`
+import os, pathlib, subprocess, sys, tempfile
+with tempfile.TemporaryDirectory(prefix='capture-socket-test-') as temporary:
+    output = pathlib.Path(temporary)
+    binary = output / 'tmux'
+    binary.write_text('#!' + sys.executable + '\\nimport sys\\nprint("tmux stand-in")\\n')
+    binary.chmod(0o700)
+    recorder = sandbox.ExampleTmuxSandbox(output, dict(os.environ, PATH=str(output) + os.pathsep + os.environ['PATH']), explicit_socket=True)
+    allowed = subprocess.run(['tmux', '-V'], env=recorder.env, capture_output=True)
+    refused = subprocess.run(['tmux', 'display-message', '-p', 'unqualified'], env=recorder.env, capture_output=True)
+    report = recorder.finish(True)
+    assert allowed.returncode == 0 and refused.returncode == 125
+    assert report['selectionRefused'] and not report['passed']
+    print(json.dumps(True))`)).toBe(true)
+  })
+
   it('binds raw program bytes to the final native capture and its pane generation', () => {
     expect(python(`
 data = b'native\\xffline\\n'

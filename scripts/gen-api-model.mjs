@@ -33,6 +33,7 @@ import { attachCompleteOcamlExamples } from '../packages/api-model/src/languages
 import { attachCompleteFSharpExamples } from '../packages/api-model/src/languages/fsharp-examples.ts'
 import { attachCompleteRustExamples } from '../packages/api-model/src/languages/rust-examples.ts'
 import { attachNativeRustIdStructs } from '../packages/api-model/src/languages/rust-id-structs.ts'
+import { attachNativeRustSnapshots } from '../packages/api-model/src/languages/rust-snapshots.ts'
 import { extractRustWorkspace, qualifyRustPublicIds, rustWorkspaceLayout } from '../packages/api-model/src/languages/rust-workspace.ts'
 import { attachCompleteCxxExamples } from '../packages/api-model/src/languages/cxx-examples.ts'
 import { attachCompleteJvmExamples } from '../packages/api-model/src/languages/jvm-examples.ts'
@@ -840,6 +841,7 @@ for (const [port, cfg] of Object.entries(PORTS)) {
     }
     if (port === 'rs') {
       for (const symbol of await attachNativeRustIdStructs(model, readSource, { repo: cfg.repo, revision })) citationSymbols.add(symbol)
+      for (const symbol of await attachNativeRustSnapshots(model, readSource, { repo: cfg.repo, revision })) citationSymbols.add(symbol)
       qualifyRustPublicIds(model.symbols, readSource)
     }
     attach(model.symbols, readSource, { repo: cfg.repo, revision })

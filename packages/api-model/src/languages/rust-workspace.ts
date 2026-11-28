@@ -83,13 +83,15 @@ export function qualifyRustPublicIds(symbols: ApiSymbol[], read: (file: string) 
   const owners = symbols.filter((symbol) => !symbol.parent)
   const paths = new Map<ApiSymbol, string>()
   const aliases = new Map<string, Record<string, string>>()
+  const visiblePaths = new Map<string, Set<string>>()
   for (const entry of layout) {
     const raw = read(entry.inventory)
     if (raw === undefined && entry.name === 'tmux-workspace') continue
     if (raw === undefined) throw new Error(`Missing Rust native inventory: ${entry.inventory}`)
-    const native = [...raw.matchAll(/^(struct|enum|trait|type|typealias|type_alias|function|constant|module) (\w+(?:::\w+)*)(?=[<(: ]|$)/gm)]
+    const native = [...raw.matchAll(/^(struct|enum|union|trait|type|typealias|type_alias|function|constant|assoc_const|assoc_type|struct_field|variant|module) (\w+(?:::\w+)*)(?=[<(: ]|$)/gm)]
       .map((match) => ({ kind: ['type', 'type_alias'].includes(match[1]) ? 'typealias' : match[1], path: match[2].replaceAll('::', '.') }))
       .filter((item) => item.path.startsWith(`${entry.namespace}.`))
+    visiblePaths.set(entry.namespace, new Set(native.map((item) => item.path)))
     const own = owners.filter((symbol) => symbol.namespace === entry.namespace)
     for (const symbol of own) {
       const candidates = native.filter((item) => item.kind === symbol.kind && item.path.endsWith(`.${symbol.name}`))
@@ -116,4 +118,10 @@ export function qualifyRustPublicIds(symbols: ApiSymbol[], read: (file: string) 
       .map(([name, id]) => [name, byId.has(id) ? publicId(byId.get(id)!) : id]))
     symbol.imports = { ...imports, ...symbol.imports }
   }
+  // Hidden modules remain available to syntax extraction so visible aliases and
+  // signature types can be documented. The native ledger defines which of those
+  // declarations and members can become reference pages or search entries.
+  const visible = symbols.filter((symbol) => !symbol.namespace || !visiblePaths.has(symbol.namespace) ||
+    visiblePaths.get(symbol.namespace)!.has(symbol.publicId ?? symbol.id))
+  symbols.splice(0, symbols.length, ...visible)
 }

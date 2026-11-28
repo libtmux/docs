@@ -33,6 +33,25 @@ export function assertCompleteApiExample(rendered, example) {
   }
 }
 
+/** Read the copy payloads and source citations from one rendered Examples section. */
+export function readCompleteApiExample({ html, symbol }, Parser = globalThis.DOMParser) {
+  const doc = new Parser().parseFromString(html, 'text/html')
+  const section = doc.getElementById(`${symbol}.examples`)
+  return section && {
+    text: section.textContent,
+    links: [...section.querySelectorAll('.gp-sphinx-api-example-intro a')]
+      .map((link) => ({ href: link.getAttribute('href'), label: link.textContent })),
+    sourceLinks: [...section.querySelectorAll('.gp-sphinx-api-example')].map((block) => {
+      const intro = block.previousElementSibling
+      return intro?.matches('.gp-sphinx-api-example-intro')
+        ? [...intro.querySelectorAll('a')].map((link) => ({ href: link.getAttribute('href'), label: link.textContent }))
+        : []
+    }),
+    files: [...section.querySelectorAll('.gp-sphinx-api-example [data-code]')]
+      .map((button) => button.getAttribute('data-code').replaceAll('\x7f', '\n')),
+  }
+}
+
 /** Inspect rendered API examples against their native execution receipts. */
 export async function checkCompleteApiExamples(browser, base) {
   const examples = JSON.parse(readFileSync(new URL('../test/fixtures/api-examples.json', import.meta.url), 'utf8')).examples
@@ -42,23 +61,8 @@ export async function checkCompleteApiExamples(browser, base) {
       const path = example.page.replace(`ports/${example.port}/`, `${example.port}/latest/`)
       const response = await page.request.get(`${base}/${path}/`)
       assert(response.ok(), `${example.symbol}: HTTP ${response.status()}`)
-      const rendered = await page.evaluate(({ html, symbol }) => {
-        const doc = new DOMParser().parseFromString(html, 'text/html')
-        const section = doc.getElementById(`${symbol}.examples`)
-        return section && {
-          text: section.textContent,
-          links: [...section.querySelectorAll('.gp-sphinx-api-example-intro a')]
-            .map((link) => ({ href: link.getAttribute('href'), label: link.textContent })),
-          sourceLinks: [...section.querySelectorAll('.gp-sphinx-api-example')].map((block) => {
-            const intro = block.previousElementSibling
-            return intro?.matches('.gp-sphinx-api-example-intro')
-              ? [...intro.querySelectorAll('a')].map((link) => ({ href: link.getAttribute('href'), label: link.textContent }))
-              : []
-          }),
-          files: [...section.querySelectorAll('.gp-sphinx-api-example [data-code]')]
-            .map((button) => button.getAttribute('data-code').replaceAll('\x7f', '\n')),
-        }
-      }, { html: await response.text(), symbol: example.publicId ?? example.symbol })
+      const rendered = await page.evaluate(readCompleteApiExample,
+        { html: await response.text(), symbol: example.publicId ?? example.symbol })
       assert(rendered, `${example.symbol}: Examples section exists`)
       assertCompleteApiExample(rendered, example)
     }

@@ -355,7 +355,7 @@ jobs:
 
       - name: Install native system dependencies
         id: system-dependencies
-        if: steps.mcp.outputs.required == 'true' || matrix.port == 'cxx' || matrix.port == 'erlang'
+        if: steps.mcp.outputs.required == 'true' || matrix.port == 'rs' || matrix.port == 'cxx' || matrix.port == 'erlang'
         env:
           PORT: ${{ matrix.port }}
         run: |
@@ -876,7 +876,32 @@ jobs:
           time node site/node_modules/vitest/vitest.mjs run --root packages/api-model \
             test/rust-workspace.test.ts test/rust-examples.test.ts test/rust-native-ids.test.ts \
             test/rust.test.ts test/cargo-features.test.ts test/extensions.test.ts \
-            test/rust-native-witness.test.ts
+            test/rust-native-witness.test.ts test/rust-proof.test.ts test/rust-snapshots.test.ts
+
+      - name: Verify copied Rust programs against native files and installed readers
+        if: matrix.port == 'rs'
+        working-directory: docs
+        env:
+          SOURCE_CHECKOUT: ${{ github.workspace }}/port
+          DOCS_VERSION: ${{ matrix.version }}
+          PROOF_OUTPUT: ${{ runner.temp }}/rust-copy-proof
+        run: |
+          node scripts/verify-rust-examples.mjs --source "$SOURCE_CHECKOUT" \
+            --rendered "_site/en/rs/$DOCS_VERSION" --output-dir "$PROOF_OUTPUT"
+
+      - name: Retain copied Rust program evidence
+        if: always() && matrix.port == 'rs'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: rust-copy-proof-${{ matrix.version }}
+          path: |
+            ${{ runner.temp }}/rust-copy-proof/proof.json
+            ${{ runner.temp }}/rust-copy-proof/examples.json
+            ${{ runner.temp }}/rust-copy-proof/rust-*/result.json
+            ${{ runner.temp }}/rust-copy-proof/rust-*/run-*.log
+            ${{ runner.temp }}/rust-copy-proof/rust-*/native/**
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Check Perl native model and authored POD links
         if: matrix.port == 'perl'

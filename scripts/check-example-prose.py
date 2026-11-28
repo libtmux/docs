@@ -17,6 +17,7 @@ import json
 import os
 import re
 import subprocess
+import sys
 import time
 from pathlib import Path
 
@@ -93,6 +94,18 @@ def main():
     parser.add_argument(
         "--api-model", type=Path, help="Review model for an unpublished source revision"
     )
+    parser.add_argument(
+        "--verification-manifest", type=Path, help="Source-bound verification plan for this run"
+    )
+    native = parser.add_mutually_exclusive_group()
+    native.add_argument(
+        "--native-stdio", action="store_true", help="Record final raw stdio and owned tmux cleanup"
+    )
+    native.add_argument(
+        "--native-capture",
+        action="store_true",
+        help="Also require final stdout to match a native pane capture",
+    )
     parser.add_argument("--output-dir", required=True, type=Path)
     parser.add_argument(
         "--timeout",
@@ -103,7 +116,10 @@ def main():
     args = parser.parse_args()
     if args.timeout <= 0:
         parser.error("--timeout must be positive")
-    manifest = json.loads((repo / f"site/test/fixtures/{args.example}-examples.json").read_text())
+    manifest_path = (
+        args.verification_manifest or repo / f"site/test/fixtures/{args.example}-examples.json"
+    )
+    manifest = json.loads(manifest_path.read_text())
     if args.example != "guide" and not args.port:
         parser.error("--port is required for language examples")
     if args.program and args.example != "api":
@@ -225,9 +241,25 @@ def main():
             log = output / f"run-{index + 1}.log"
             print(f"Running {example['page']}; log: {log}", flush=True)
             timed_out = False
+            argv = ["sh", "-eu", "-c", command]
+            record_native = index == len(commands) - 1 and (
+                args.native_stdio or args.native_capture
+            )
+            if record_native:
+                argv = [
+                    sys.executable,
+                    str(repo / "scripts/example_tmux_sandbox.py"),
+                    "--output-dir",
+                    str(output / "native"),
+                    "--timeout",
+                    str(args.timeout),
+                    *(["--require-capture"] if args.native_capture else []),
+                    "--",
+                    *argv,
+                ]
             with log.open("w") as stream:
                 process = subprocess.Popen(
-                    ["sh", "-eu", "-c", command],
+                    argv,
                     cwd=output,
                     env=env,
                     stdout=stream,
@@ -235,7 +267,7 @@ def main():
                     start_new_session=True,
                 )
                 try:
-                    exit_code = process.wait(timeout=args.timeout)
+                    exit_code = process.wait(timeout=args.timeout + (15 if record_native else 0))
                 except subprocess.TimeoutExpired:
                     timed_out = True
                     stop_process_group(process)

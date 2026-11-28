@@ -108,7 +108,9 @@ def native_capture_witness(stdout, captures):
 class ExampleTmuxSandbox:
     """Observe explicit tmux endpoints and retire only owned servers."""
 
-    def __init__(self, output, env, *, forbid_tmux=False, record_captures=False):
+    def __init__(
+        self, output, env, *, forbid_tmux=False, record_captures=False, explicit_socket=False
+    ):
         self.forbid_tmux = forbid_tmux
         binary = shutil.which("tmux", path=env["PATH"])
         if binary is None and not forbid_tmux:
@@ -118,6 +120,7 @@ class ExampleTmuxSandbox:
         self.directory = Path(tempfile.mkdtemp(prefix="ltx-example-"))
         self.trace = output / "tmux-commands.jsonl"
         self.capture_trace = output / "native-captures.jsonl"
+        self.selection_refusals = output / "tmux-selection-refusals.jsonl"
         bindir = output / "native-tools"
         bindir.mkdir()
         wrapper = bindir / "tmux"
@@ -174,6 +177,13 @@ if endpoint:
                          os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
     os.write(descriptor, (entry + '\\n').encode())
     os.close(descriptor)
+if {explicit_socket!r} and endpoint is None and sys.argv[1:] != ['-V']:
+    descriptor = os.open({str(self.selection_refusals)!r},
+                         os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
+    os.write(descriptor, (json.dumps(sys.argv[1:]) + '\\n').encode())
+    os.close(descriptor)
+    sys.stderr.write('native proof requires an explicit socket\\n')
+    raise SystemExit(125)
 if {record_captures!r} and endpoint and args.count('capture-pane') == 1:
     capture = args[args.index('capture-pane') + 1:]
     if ';' in capture:
@@ -219,7 +229,7 @@ os.execv({self.binary!r}, [{self.binary!r}, *sys.argv[1:]])
             LIBTMUX_TMUX=str(wrapper),
             LIBTMUX_NATIVE_TMUX=self.binary,
         )
-        if record_captures:
+        if record_captures or explicit_socket:
             self.env["LIBTMUX_TEST_TMUX"] = str(wrapper)
 
     def finish(self, require_cleanup):
@@ -276,10 +286,12 @@ os.execv({self.binary!r}, [{self.binary!r}, *sys.argv[1:]])
         # path alone does not establish ownership of its parent directory.
         if not any(row["runningAfterHarness"] for row in endpoints):
             shutil.rmtree(self.directory)
+        refused = self.selection_refusals.exists()
         return {
             "required": require_cleanup,
             "endpoints": endpoints,
-            "passed": bool(endpoints)
+            "passed": not refused
+            and bool(endpoints)
             and all(
                 (not row["preexisting"] or row["aliasOf"] in first)
                 and not row["runningAfterHarness"]
@@ -287,6 +299,7 @@ os.execv({self.binary!r}, [{self.binary!r}, *sys.argv[1:]])
                 for row in endpoints
             ),
             "scope": "Observed owned sockets after program exit, before harness retirement.",
+            "selectionRefused": refused,
         }
 
 
@@ -311,6 +324,7 @@ def main():
         output,
         env,
         record_captures=args.require_capture or args.record_captures,
+        explicit_socket=True,
     )
     timed_out = False
     with (output / "stdout.bin").open("wb") as stdout, (output / "stderr.bin").open("wb") as stderr:
