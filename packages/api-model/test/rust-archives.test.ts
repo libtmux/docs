@@ -47,6 +47,8 @@ function fixture() {
   })
   const native = { sourceRevision: source, sourceDirty: false, passed: true,
     recorder: { repository: 'https://github.com/libtmux/docs', revision: docs, sha256: recorder }, archives,
+    guideExamples: examples.filter((entry) => entry.sourceProgramId !== 'rust-mixed').map((entry) => ({
+      program: entry.sourceProgramId, programSha256: entry.files[0].sha256, stdoutHex: entry.expectedOutputHex, cleanup: { ...cleanup } })),
     mixed: { programSha256: hash('mixed'), stdoutHex, cleanup, profile: 'raw-stdout-native-capture', native: nativePane } }
   for (const which of ['first', 'second']) {
     writeFileSync(join(root, `${which}-tree.json`), JSON.stringify(manifest))
@@ -68,6 +70,10 @@ describe('dependency-free Rust archive join', () => {
       () => { f.repeat.firstTreeSha256 = ''; f.repeat.secondTreeSha256 = '' },
       () => { f.repeat.docsRevision = 'c'.repeat(40) },
       () => { f.native.sourceDirty = true },
+      () => { f.native.guideExamples.pop() },
+      () => { f.native.guideExamples[0].programSha256 = hash('other source') },
+      () => { f.native.guideExamples[0].stdoutHex = '' },
+      () => { f.native.guideExamples[0].cleanup.passed = false },
       () => { writeFileSync(join(f.archiveRoot, 'libtmux-core-0.1.2.crate'), 'changed physical archive') },
     ]) {
       const saved = structuredClone({ copy: f.copy, native: f.native, repeat: f.repeat })
@@ -87,6 +93,9 @@ describe('dependency-free Rust archive join', () => {
     const args = [script, join(f.root, 'copy.json'), join(f.root, 'native.json'), f.archiveRoot,
       join(f.root, 'repeat.json'), source, docs]
     expect(execFileSync(process.execPath, args, { cwd: f.root, encoding: 'utf8' })).toContain('seven archives verified')
+    writeFileSync(join(f.root, 'native.json'), JSON.stringify({ ...f.native, guideExamples: f.native.guideExamples.slice(1) }))
+    expect(spawnSync(process.execPath, args, { cwd: f.root, encoding: 'utf8' }).stderr).toContain('seven staged guide programs ran once')
+    writeFileSync(join(f.root, 'native.json'), JSON.stringify(f.native))
     writeFileSync(join(f.root, 'api-model.second.json'), '{}')
     expect(spawnSync(process.execPath, args, { cwd: f.root }).status).not.toBe(0)
   })

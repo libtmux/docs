@@ -76,6 +76,14 @@ export function verifyRustArchiveJoin(copy, native, archiveRoot, repeat, expecte
       assert.equal(result.native.native.afterHex, example.expectedOutputHex, 'copied mixed native after bytes')
     }
   }
+  assert.deepEqual(native.guideExamples.map((entry) => entry.program).sort(),
+    programs.filter((program) => program !== 'rust-mixed'), 'seven staged guide programs ran once')
+  for (const guide of native.guideExamples) {
+    const example = copy.examples.find((entry) => entry.sourceProgramId === guide.program)
+    assert.equal(guide.programSha256, example.files[0].sha256, 'staged/copied guide source bytes')
+    assert.equal(guide.stdoutHex, example.expectedOutputHex, 'staged/copied guide stdout bytes')
+    assert(guide.cleanup.required === true && guide.cleanup.passed === true, 'staged guide completed cleanup')
+  }
   verifyArchiveRecord(copy, native, archiveRoot)
 }
 
