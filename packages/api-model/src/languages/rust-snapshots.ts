@@ -64,6 +64,7 @@ export async function attachNativeRustSnapshots(
   const native = files[3].text.split('\n')
   const pending: ApiSymbol[] = []
   const declarations: Record<string, unknown>[] = []
+  const includedExamples = compact(producer.body.text).includes('#[doc=include_str!($example)]')
   for (const family of families) {
     const owner = `${family}Snapshot`
     const fields = `${family}Fields`
@@ -84,7 +85,20 @@ export async function attachNativeRustSnapshots(
     requireContract(methods.length === names.size + 1 && methods.every((method) => method.name === 'get' || names.has(method.name)), `native getters agree with ${family} catalogue`)
     for (const name of names) requireContract(methods.filter((method) => method.name === name && method.signature.startsWith('const fn(')).length === 1, `one const native getter: ${name}`)
     const methodSource = methods.map((method) => `/// ${method.name === 'get' ? 'Read a typed field from this observation.' : `Return the decoded \`${method.name}\` value.`}\n${method.name === 'get' ? `#[cfg(feature = "query")]\n${get}` : `pub ${method.signature.replace(/\bfn(?=[<(])/, `fn ${method.name}`)}`} { loop {} }`).join('\n')
-    let declaration = `/// The values from one tmux ${section[1]} listing row.\npub struct ${owner};\nimpl ${owner} {\n${methodSource}\n}`
+    const call = calls.find((entry) => entry[1] === owner)!
+    let documentation = ''
+    if (includedExamples) {
+      const at = calls.indexOf(call)
+      const body = dispatch.body.text.slice(call.index, calls[at + 1]?.index)
+      const includes = [...body.matchAll(/"(\.\.\/docs\/snapshots\/[a-z]+\.md)"/g)]
+      requireContract(includes.length === 1 && includes[0][1] === `../docs/snapshots/${family.toLowerCase()}.md`, `one local ${family} example include`)
+      const path = `${core.root.replace(/\/src$/, '')}/docs/snapshots/${family.toLowerCase()}.md`
+      const text = read(path)
+      requireContract(typeof text === 'string' && text.trim() && text.endsWith('\n') && !text.includes('\r'), `complete source example: ${path}`)
+      files.push({ path, text, sha256: createHash('sha256').update(text).digest('hex') })
+      documentation = text.split('\n').map((line) => `/// ${line}`).join('\n') + '\n'
+    }
+    let declaration = `/// The values from one tmux ${section[1]} listing row.\n${documentation}pub struct ${owner};\nimpl ${owner} {\n${methodSource}\n}`
     const fieldPath = `${core.namespace}::${fields}`
     const handles = native.flatMap((line) => {
       const match = new RegExp(`^struct_field ${fieldPath}::(\\w+): (.+)$`).exec(line)
@@ -96,7 +110,6 @@ export async function attachNativeRustSnapshots(
     declaration += `\n/// Typed filter field handles for a \`${section[1]}\`.\n#[cfg(feature = "query")]\npub struct ${fields}<Target> {\n${handles.map((handle) => `/// The \`${handle.name}\` field.\npub ${handle.name}: ${handle.type},`).join('\n')}\n}\nimpl<Target> ${fields}<Target> { pub ${constructor[0].replace(/\bfn(?=[<(])/, 'fn for_target')} { loop {} } }`
     requireContract(!tree(declaration).hasError, 'valid projected declaration signatures')
     const extracted = await extractSourceWithSpec(RUST, declaration, file, `${core.namespace}.snapshot`)
-    const call = calls.find((entry) => entry[1] === owner)!
     const line = files[0].text.slice(0, dispatch.body.startIndex + call.index!).split('\n').length
     for (const symbol of extracted.filter((entry) => entry.kind !== 'class')) {
       const normalize = (value: string) => value.replaceAll(`${fields}<Target>`, fields)

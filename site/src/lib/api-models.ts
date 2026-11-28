@@ -2,7 +2,7 @@ import perlModel from '../data/api/perl.json'
 import perlNav from '../data/api/perl.nav.json'
 import rakuModel from '../data/api/raku.json'
 import rakuNav from '../data/api/raku.nav.json'
-import { conceptsFor, isMemberOwner, OWNER_KINDS, parameterId, parentInventory, sourceUrl, SymbolIndex, type ApiModel, type ApiModelBase, type ApiSymbol, type InventoryEntry } from '@libtmux/api-model/reference'
+import { CONCEPTS, conceptTarget, conceptsFor, isMemberOwner, OWNER_KINDS, parameterId, parentInventory, sourceUrl, SymbolIndex, type ApiModel, type ApiModelBase, type ApiSymbol, type InventoryEntry } from '@libtmux/api-model/reference'
 import mentionIndex from '../data/mentions.json'
 import domInv from '../data/inventories/dom.entries.json'
 import jdkInv from '../data/inventories/jdk.entries.json'
@@ -441,7 +441,13 @@ export function referenceHref(port: string, publicId: string, version?: string):
   if (!model) return undefined
   // Existence is still checked: a stale entry should render as text rather
   // than link to a page that was never generated.
-  const symbol = model.symbols.find((s) => (s.publicId ?? s.id) === publicId)
+  let symbol = model.symbols.find((s) => (s.publicId ?? s.id) === publicId)
+  if (!symbol && port === 'rs') {
+    const target = conceptTarget({ label: '', symbols: { rs: publicId } }, port, model.symbols) ??
+      Object.values(CONCEPTS).filter((concept) => concept.symbols.rs === publicId)
+        .map((concept) => conceptTarget(concept, port, model.symbols)).find(Boolean)
+    symbol = model.symbols.find((entry) => (entry.publicId ?? entry.id) === target)
+  }
   if (!symbol) return undefined
   const target = PORT_BY_SLUG[port]
   if (!target) return undefined
@@ -449,15 +455,16 @@ export function referenceHref(port: string, publicId: string, version?: string):
   // that port and knows better: this is called from ApiEntry, which renders
   // inside shared prose and so runs in builds of every port and locale.
   const product = (symbol.product ?? 'core') === 'core' || symbol.apiScope === 'internal' ? 'core' : symbol.product
-  return `${referenceUrl(target, version ?? defaultVersionFor(port), product as DocProduct | 'core')}${symbol.slug ?? pageSlug(publicId)}/`
+  return `${referenceUrl(target, version ?? defaultVersionFor(port), product as DocProduct | 'core')}${symbol.slug ?? pageSlug(symbol.publicId ?? symbol.id)}/`
 }
 
 /** APIs for the same concept, preserving each port's native kind and behavior. */
 export function referenceAlternatives(port: string, publicId: string) {
-  return conceptsFor(port, publicId).map((concept) => ({
+  const sourceId = API_MODELS[port]?.symbols.find((symbol) => (symbol.publicId ?? symbol.id) === publicId)?.id
+  return conceptsFor(port, publicId, sourceId).map((concept) => ({
     label: concept.label,
     ports: Object.entries(PORT_NAME).map(([targetPort, name]) => {
-      const targetId = concept.symbols[targetPort]
+      const targetId = targetPort === 'rs' ? conceptTarget(concept, targetPort, API_MODELS.rs?.symbols ?? []) ?? concept.symbols.rs : concept.symbols[targetPort]
       const target = API_MODELS[targetPort]?.symbols.find((symbol) => (symbol.publicId ?? symbol.id) === targetId)
       const href = targetId ? referenceHref(targetPort, targetId) : undefined
       // Switches name this cmdlet's parameters, not similarly named .NET types.

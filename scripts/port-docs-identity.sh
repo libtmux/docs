@@ -5,9 +5,9 @@
 # - A pull request builds `latest` from the merge commit GitHub tests, and
 #   publishes nothing by default. A caller with preview hosting may opt in
 #   to publishing same-repository PRs under pr-N; forks remain build-only.
-#   Not the head: the workflow also runs in the default
-#   branch's context, where checking out and running a pull request's head
-#   could poison its caches.
+#   Rust uses its exact PR head so the render joins the native archive proof
+#   of that source. Other ports retain merge-commit selection. This workflow
+#   does not restore or save a cross-run dependency cache.
 # - A push to the default branch publishes `latest`. It is the default version
 #   only until the port's first final release: from then on the newest final
 #   release tag is, and a push to trunk must not take the default back. TAGS
@@ -50,6 +50,13 @@ final_versions() {
 case "$EVENT" in
   pull_request)
     source_ref="$SHA"
+    if [[ "${PORT:-}" == rs ]]; then
+      [[ "${PR_HEAD_SHA:-}" =~ ^[a-f0-9]{40}$ ]] || {
+        echo 'Rust pull request requires its exact head SHA' >&2
+        exit 1
+      }
+      source_ref="$PR_HEAD_SHA"
+    fi
     if [[ "${PUBLISH_PREVIEWS:-false}" == true ]]; then
       [[ "${PR_NUMBER:-}" =~ ^[0-9]+$ ]] || {
         echo 'preview requires a numeric pull request number' >&2

@@ -47,6 +47,24 @@ describe('port docs identity', () => {
     expect(result.outputs.should_publish).toBe('false')
   })
 
+  it('uses the Rust PR head for its native-archive join and preserves other event identities', () => {
+    const head = 'a'.repeat(40)
+    const result = identity({ EVENT: 'pull_request', PORT: 'rs', PR_HEAD_SHA: head, SHA: 'b'.repeat(40) })
+    expect(result.status).toBe(0)
+    expect(result.outputs.source_ref).toBe(head)
+    expect(result.outputs.should_publish).toBe('false')
+    expect(identity({ EVENT: 'pull_request', PORT: 'go', PR_HEAD_SHA: head }).outputs.source_ref).toBe('abc123')
+    expect(identity({ EVENT: 'push', PORT: 'rs', REF_NAME: 'master', PR_HEAD_SHA: head }).outputs.source_ref).toBe('abc123')
+    expect(identity({ EVENT: 'workflow_dispatch', PORT: 'rs', PR_HEAD_SHA: head, INPUT_SOURCE_REF: 'libtmux@v0.1.2',
+      INPUT_VERSION: 'v0.1.2', INPUT_KIND: 'tag' }).outputs.source_ref).toBe('libtmux@v0.1.2')
+  })
+
+  it.each(['', 'abc123', '../head'])('refuses Rust PRs without an exact head SHA: %s', (head) => {
+    const result = identity({ EVENT: 'pull_request', PORT: 'rs', PR_HEAD_SHA: head })
+    expect(result.status).toBe(1)
+    expect(result.stderr).toContain('Rust pull request requires its exact head SHA')
+  })
+
   it('publishes an opted-in same-repository preview from the tested merge commit', () => {
     const result = identity({ EVENT: 'pull_request', PUBLISH_PREVIEWS: 'true',
       PR_NUMBER: '37', SAME_REPOSITORY_PR: 'true' })
@@ -207,9 +225,11 @@ describe('port docs workflow', () => {
     expect(workflow).not.toMatch(/ref: [0-9a-f]{40}/)
   })
 
-  it('never runs a pull request head or restores a cache', () => {
-    expect(workflow).not.toContain('pull_request.head.sha')
+  it('passes the Rust-only head identity without restoring a cross-run cache', () => {
+    expect(workflow).toContain('PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}')
+    expect(workflow).toContain('PORT: ${{ inputs.port }}')
     expect(workflow).toContain('SHA: ${{ github.sha }}')
+    expect(workflow).toContain("timeout-minutes: ${{ matrix.port == 'rs' && 90 || 30 }}")
     expect(workflow).not.toMatch(/uses: (?:actions\/cache|Swatinem\/rust-cache)@/)
     for (const [, key, value] of workflow.matchAll(/^\s+((?:enable-|bundler-|no-)?cache(?:-disabled)?):\s+(\S+)/gm)) {
       expect(value, key).toBe(['cache-disabled', 'no-cache'].includes(key) ? 'true' : 'false')

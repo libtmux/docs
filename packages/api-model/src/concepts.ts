@@ -1,3 +1,5 @@
+import type { ApiSymbol } from './model.ts'
+
 /** Source-verified relationships across ports; similar spelling does not prove matching behavior. */
 export interface Concept {
   /** What the operation does, in one line, in no particular language. */
@@ -4263,7 +4265,33 @@ for (const concept of Object.values(CONCEPTS)) {
   if (!concept.symbols.lisp) concept.absent.lisp = 'No source-verified Common Lisp equivalent is recorded for this operation.'
 }
 
+for (const [concept, variants] of Object.entries({
+  server: ['libtmux_blocking.Server'],
+  'new-session': ['libtmux_blocking.Server.new_session'],
+  'capture-pane': ['libtmux_blocking.Server.capture'],
+  'select-window': ['libtmux_tokio.WindowLink.select'],
+  'move-window': ['libtmux_tokio.WindowLink.move_to'],
+  'swap-window': ['libtmux_tokio.WindowLink.swap_with'],
+})) (CONCEPTS[concept]!.variants ??= {}).rs = variants
+
+const rustSourceId = (id: string) => id.replace(/^(?:libtmux_core|libtmux_tokio|tmux_workspace)\./, '')
+
+/** Resolve the binding that exists in this source, retaining pre-split release identities. */
+export function conceptTarget(concept: Concept, port: string, symbols: readonly ApiSymbol[]): string | undefined {
+  const targets = [concept.symbols[port], ...(port === 'rs' ? concept.variants?.rs ?? [] : [])].filter(Boolean)
+  for (const target of targets) {
+    const exact = symbols.find((symbol) => (symbol.publicId ?? symbol.id) === target)
+    if (exact) return exact.publicId ?? exact.id
+    if (port !== 'rs') continue
+    const matches = symbols.filter((symbol) => symbol.id !== rustSourceId(symbol.id) &&
+      rustSourceId(symbol.id) === target.replace(/^src\./, ''))
+    if (matches.length === 1) return matches[0].publicId ?? matches[0].id
+  }
+  return undefined
+}
+
 /** Every concept naming this symbol, including concepts sharing an overload group. */
-export function conceptsFor(port: string, publicId: string): Concept[] {
-  return Object.values(CONCEPTS).filter((c) => c.symbols[port] === publicId || c.variants?.[port]?.includes(publicId))
+export function conceptsFor(port: string, publicId: string, sourceId?: string): Concept[] {
+  const ids = new Set([publicId, ...(port === 'rs' && sourceId ? [rustSourceId(sourceId)] : [])])
+  return Object.values(CONCEPTS).filter((c) => ids.has(c.symbols[port]) || c.variants?.[port]?.some((id) => ids.has(id)))
 }

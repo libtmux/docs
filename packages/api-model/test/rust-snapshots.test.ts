@@ -83,4 +83,19 @@ describe('bounded native snapshot projection', () => {
     expect(target.symbols).toEqual([])
     expect(target.nativeProvenance).toBeUndefined()
   })
+
+  it('retains each literal included example and records its source bytes', async () => {
+    const f = fixture()
+    f.files[path] = f.files[path].replace('pub struct $info', '#[doc = include_str!($example)]\n      pub struct $info')
+    for (const family of families) {
+      f.files[path] = f.files[path].replace(`${family}, ignored`, `${family}, "../docs/snapshots/${family.toLowerCase()}.md", ignored`)
+      f.files[`crates/libtmux-core/docs/snapshots/${family.toLowerCase()}.md`] = `\n# Examples\n\n\`\`\`rust\nlet value = "${family}";\n\`\`\`\n`
+    }
+    const target = model()
+    const added = await attachNativeRustSnapshots(target, f.read, source)
+    for (const family of families) {
+      expect(added.find((symbol) => symbol.publicId === `libtmux_core.${family}Snapshot`)?.doc?.examples?.[0].code).toContain(`"${family}"`)
+      expect(target.nativeProvenance?.files.some((entry) => entry.path === `crates/libtmux-core/docs/snapshots/${family.toLowerCase()}.md`)).toBe(true)
+    }
+  })
 })

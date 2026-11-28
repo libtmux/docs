@@ -300,8 +300,8 @@ export function tmuxManualHeadings(version: string, slug?: string) {
  * A command whose usage the data records is left out: a concept names an
  * equivalent API, and the usage names the symbols that send the command.
  */
-export function tmuxCommandsFor(port: string, publicId: string): TmuxCommand[] {
-  const concepts = conceptsFor(port, publicId)
+export function tmuxCommandsFor(port: string, publicId: string, sourceId?: string): TmuxCommand[] {
+  const concepts = conceptsFor(port, publicId, sourceId)
   const recorded = tmuxUsageCommands()
   return tmuxManual('latest').commands.filter((command) => !recorded.includes(command.name)
     && commandConcepts(command.name).some((concept) => concepts.includes(concept)))

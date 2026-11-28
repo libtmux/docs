@@ -2,7 +2,7 @@ import { readFileSync, existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { CONCEPTS, conceptsFor } from '../src/concepts.ts'
+import { CONCEPTS, conceptsFor, conceptTarget } from '../src/concepts.ts'
 import type { ApiModel } from '../src/model.ts'
 import { API_MODEL_PORTS } from '../../../site/src/lib/ports.ts'
 
@@ -205,6 +205,10 @@ describe('concept map', () => {
       for (const [port, publicId] of Object.entries(concept.symbols)) {
         const model = models.get(port)
         if (!model) continue
+        if (port === 'rs') {
+          if (!conceptTarget(concept, port, model.symbols)) missing.push(`${id} ${port}: ${publicId}`)
+          continue
+        }
         for (const target of [publicId, ...(concept.variants?.[port] ?? [])]) {
           const found = model.symbols.some((s) => (s.publicId ?? s.id) === target)
           if (!found) missing.push(`${id} ${port}: ${target}`)

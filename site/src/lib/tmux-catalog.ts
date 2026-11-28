@@ -326,9 +326,9 @@ const conceptKeys = new Map(Object.entries(CONCEPTS).map(([key, concept]) => [co
  * A concept named for options or hooks (`session-options`, `set-window-hook`)
  * is the library's own statement that the member reads or writes them.
  */
-export function tmuxCatalogKindsFor(port: string, publicId: string): CatalogKind[] {
+export function tmuxCatalogKindsFor(port: string, publicId: string, sourceId?: string): CatalogKind[] {
   const kinds = new Set<CatalogKind>()
-  for (const concept of conceptsFor(port, publicId)) {
+  for (const concept of conceptsFor(port, publicId, sourceId)) {
     const key = conceptKeys.get(concept) ?? ''
     if (/(?:^|-)hooks?(?:-|$)/.test(key)) kinds.add('hook')
     else if (/(?:^|-)options?(?:-|$)/.test(key)) kinds.add('option')
@@ -389,7 +389,7 @@ const symbolIds = new Map<string, Map<string, ApiSymbol>>()
 
 /** The catalog sections a library declaration wraps: by concept, by wrapper type, or as a member of one. */
 export function tmuxCatalogKindsForSymbol(port: string, symbol: ApiSymbol): CatalogKind[] {
-  const kinds = new Set(tmuxCatalogKindsFor(port, symbol.publicId ?? symbol.id))
+  const kinds = new Set(tmuxCatalogKindsFor(port, symbol.publicId ?? symbol.id, symbol.id))
   const wrappers = CATALOG_WRAPPER_TYPES[port]
   if (wrappers) {
     let byId = symbolIds.get(port)

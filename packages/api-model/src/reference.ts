@@ -11,7 +11,7 @@ export { targetKey, targetEntries, compatibilityEntries, type InventoryTarget } 
 export { Resolver, notASymbol, toPath, DEFAULT_TEMPLATES, DEFAULT_PRIMARY_MODULES } from './resolver.ts'
 export type { Resolution, UrlTemplate } from './resolver.ts'
 export { qualifiedNameOf, moduleOf, modulesIn } from './modules.ts'
-export { CONCEPTS, conceptsFor, type Concept } from './concepts.ts'
+export { CONCEPTS, conceptsFor, conceptTarget, type Concept } from './concepts.ts'
 export { PROSE_FIELDS, RENDERED_TEXTS, STRUCTURAL_FIELDS, commandFacts, conceptNotes, isProseField, isStructuralField, parameterBindingFacts, parameterBindingText, proseTexts, stringFields, unclassifiedFields, type ProseForm, type ProseText } from './prose-fields.ts'
 export { neverLinks } from './never-links.ts'
 export { looksLikeApiMention, tableMentions, proseMentions, pageMentions, LinkedOwners, type TableMention, type ProseMention, type LinkedOwner, type DanglingMention, type PageMentionsInput } from './mentions.ts'

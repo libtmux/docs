@@ -12,6 +12,9 @@ import { pageSlug } from '../packages/api-model/src/prose.ts'
 import { rustWorkspaceLayout } from '../packages/api-model/src/languages/rust-workspace.ts'
 import { assertCompleteApiExample, readCompleteApiExample } from '../site/scripts/check-clipboard.mjs'
 
+import { verifyArchiveRecord } from './verify-rust-archives.mjs'
+export { verifyArchiveRecord } from './verify-rust-archives.mjs'
+
 const hash = (bytes) => createHash('sha256').update(bytes).digest('hex')
 const json = (file) => JSON.parse(readFileSync(file, 'utf8'))
 const commands = (code) => code.replace(/^\$ /gm, '').trim()
@@ -91,37 +94,6 @@ export function collectRustExampleProof({ model, sourceRoot, renderedRoot }) {
     recorderSha256: hash(readFileSync(new URL('./example_tmux_sandbox.py', import.meta.url))), examples, pages }
 }
 
-/** Join staged normalized archive evidence to the copied mixed program and native bytes. */
-export function verifyArchiveRecord(proof, record, archiveRoot) {
-  assert(archiveRoot, 'physical staged archives are required')
-  assert.equal(record.sourceRevision, proof.sourceRevision, 'archive source revision')
-  assert.equal(record.sourceDirty, false, 'archive source must be clean')
-  assert.equal(record.passed, true, 'archive execution passed')
-  assert.equal(record.recorder.repository, 'https://github.com/libtmux/docs', 'shared recorder repository')
-  assert(/^[a-f0-9]{40}$/.test(record.recorder.revision), 'exact shared recorder revision')
-  assert.equal(record.recorder.sha256, proof.recorderSha256, 'same shared recorder bytes')
-  if (proof.docsRevision) assert.equal(record.recorder.revision, proof.docsRevision, 'same shared recorder revision')
-  const mixed = proof.examples.find((entry) => entry.sourceProgramId === 'rust-mixed')
-  assert(mixed, 'mixed program exists')
-  assert.equal(record.mixed.programSha256, mixed.files[0].sha256, 'archive/copied program bytes')
-  assert.equal(record.mixed.stdoutHex, mixed.expectedOutputHex, 'archive raw output bytes')
-  assert.equal(record.mixed.profile, 'raw-stdout-native-capture', 'archive witness profile')
-  assert(record.mixed.cleanup.required === true && record.mixed.cleanup.passed === true, 'archive program completed cleanup')
-  assert.equal(record.mixed.native.beforeHex, mixed.expectedOutputHex, 'native before bytes')
-  assert.equal(record.mixed.native.afterHex, mixed.expectedOutputHex, 'native after bytes')
-  assert(/^%\d+$/.test(record.mixed.native.pane) && record.mixed.native.generation.pid > 0, 'native pane generation')
-  assert.deepEqual(record.archives.map((entry) => entry.package).sort(), proof.expectedArchivePackages, 'complete staged archive set')
-  const files = (directory) => readdirSync(directory, { withFileTypes: true }).flatMap((entry) =>
-    entry.isDirectory() ? files(join(directory, entry.name)) : [join(directory, entry.name)])
-  const actualFiles = files(archiveRoot)
-  for (const archive of record.archives) {
-    assert(/^[a-z][a-z0-9-]*$/.test(archive.package) && /^\d+\.\d+\.\d+(?:-[\w.]+)?$/.test(archive.version) && /^[a-f0-9]{64}$/.test(archive.sha256), 'archive identity and digest')
-    const matches = actualFiles.filter((file) => file.endsWith(`/${archive.package}-${archive.version}.crate`))
-    assert.equal(matches.length, 1, 'one physical staged archive')
-    assert.equal(hash(readFileSync(matches[0])), archive.sha256, 'physical archive digest')
-  }
-}
-
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const args = process.argv.slice(2)
   const option = (name) => { const index = args.indexOf(name); return index < 0 ? undefined : args[index + 1] }
@@ -135,6 +107,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const model = json(modelFile)
   assert.equal(execFileSync('git', ['-C', sourceRoot, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), model.revision, 'source checkout HEAD')
   const proof = collectRustExampleProof({ model, sourceRoot, renderedRoot })
+  proof.modelSha256 = hash(readFileSync(modelFile))
   proof.docsRevision = execFileSync('git', ['-C', root, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
   mkdirSync(output, { recursive: true })
   const receipt = join(output, 'examples.json')

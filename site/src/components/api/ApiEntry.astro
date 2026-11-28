@@ -188,7 +188,7 @@ const references = symbol.doc?.references ?? []
  */
 const mentions = port && linkRows ? mentionsOf(port, symbol.id) : []
 // A command the symbol sends comes with its scope and C function; one it only has an equivalent for is a plain link.
-const tmuxCommands = !linkRows ? [] : manualLinks ?? (port ? tmuxCommandsFor(port, anchor).map((command) => ({ ...command, href: tmuxManualUrl('latest', command.name) })) : [])
+const tmuxCommands = !linkRows ? [] : manualLinks ?? (port ? tmuxCommandsFor(port, anchor, symbol.id).map((command) => ({ ...command, href: tmuxManualUrl('latest', command.name) })) : [])
 const commandRows = tmuxCommandRows(linkRows && port && !manualLinks ? tmuxSymbolSends(port, anchor) : [], tmuxCommands)
 const commandItems = tmuxCommandItems(commandRows)
 const commandSeparator = tmuxCommandSeparator(commandItems)

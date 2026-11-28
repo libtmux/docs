@@ -122,7 +122,9 @@ jobs:
       - id: identity
         env:
           EVENT: ${{ github.event_name }}
+          PORT: ${{ inputs.port }}
           SHA: ${{ github.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           REF_NAME: ${{ github.ref_name }}
           REF_TYPE: ${{ github.ref_type }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
@@ -154,7 +156,7 @@ jobs:
     needs: identity
     # Match the Clang 18/libc++ distribution used by the selected C++ preset.
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: ${{ matrix.port == 'rs' && 90 || 30 }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.identity.outputs.matrix) }}
@@ -876,7 +878,29 @@ jobs:
           time node site/node_modules/vitest/vitest.mjs run --root packages/api-model \
             test/rust-workspace.test.ts test/rust-examples.test.ts test/rust-native-ids.test.ts \
             test/rust.test.ts test/cargo-features.test.ts test/extensions.test.ts \
-            test/rust-native-witness.test.ts test/rust-proof.test.ts test/rust-snapshots.test.ts
+            test/rust-native-witness.test.ts test/rust-proof.test.ts test/rust-snapshots.test.ts \
+            test/rust-archives.test.ts test/rust-repeat.test.ts test/rust-concepts.test.ts
+          time node site/node_modules/vitest/vitest.mjs run --root site \
+            test/port-docs-identity.test.ts test/port-docs-runtime.test.ts
+
+      - name: Repeat the native Rust render from clean pinned worktrees
+        if: matrix.port == 'rs'
+        working-directory: docs
+        env:
+          LIBTMUX_DOCS_PORT: rs
+          LIBTMUX_DOCS_VERSION: ${{ matrix.version }}
+          LIBTMUX_DOCS_VERSION_KIND: ${{ matrix.kind }}
+          LIBTMUX_DOCS_IS_DEFAULT: ${{ matrix.isDefault }}
+          LIBTMUX_DOCS_RESOLVES_TO: ${{ matrix.resolvesTo }}
+          LIBTMUX_DOCS_SOURCE_REF: ${{ needs.identity.outputs.source-ref }}
+          LIBTMUX_DOCS_SOURCE_SHA: ${{ steps.source.outputs.sha }}
+          PORT_CHECKOUT: ${{ github.workspace }}/port
+          INPUT_SNAPSHOT: ${{ runner.temp }}/build-inputs.json
+          PROOF_OUTPUT: ${{ runner.temp }}/rust-copy-proof
+        run: |
+          node scripts/repeat-rust-build.mjs --source "$PORT_CHECKOUT" \
+            --rendered "_site/en/rs/$LIBTMUX_DOCS_VERSION" \
+            --input-snapshot "$INPUT_SNAPSHOT" --output-dir "$PROOF_OUTPUT"
 
       - name: Verify copied Rust programs against native files and installed readers
         if: matrix.port == 'rs'
@@ -897,6 +921,10 @@ jobs:
           path: |
             ${{ runner.temp }}/rust-copy-proof/proof.json
             ${{ runner.temp }}/rust-copy-proof/examples.json
+            ${{ runner.temp }}/rust-copy-proof/repeat.json
+            ${{ runner.temp }}/rust-copy-proof/input-snapshot.json
+            ${{ runner.temp }}/rust-copy-proof/*-tree.json
+            ${{ runner.temp }}/rust-copy-proof/api-model.*.json
             ${{ runner.temp }}/rust-copy-proof/rust-*/result.json
             ${{ runner.temp }}/rust-copy-proof/rust-*/run-*.log
             ${{ runner.temp }}/rust-copy-proof/rust-*/native/**
