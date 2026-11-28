@@ -3,17 +3,18 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
-import { collectRustExampleProof, verifyArchiveRecord } from '../../../scripts/verify-rust-examples.mjs'
+import { collectRustExampleProof, verifyArchiveRecord, verifyMixedConsumerFeatures } from '../../../scripts/verify-rust-examples.mjs'
 
 const dirs: string[] = []
 afterEach(() => { for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true }) })
 const hash = (code: string) => createHash('sha256').update(code).digest('hex')
 const revision = 'a'.repeat(40)
 const source = 'fn main() { println!("mixed runtime"); }\n'
+const socketCommand = readFileSync(new URL('./fixtures/rust-mixed-run-command.sh', import.meta.url), 'utf8').trimEnd()
 const setup = `$ cargo init --name example &&\n  cargo add --git https://github.com/libtmux/libtmux-rs --rev ${revision} libtmux\n`
 const copy = (text: string) => text.replace(/\n$/, '').replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('\n', '&#127;')
 
-function fixture(split = true) {
+function fixture(split = true, externalSocket = false) {
   const root = mkdtempSync(join(tmpdir(), 'rust-copy-proof-'))
   dirs.push(root)
   const sourceRoot = join(root, 'source')
@@ -29,16 +30,17 @@ function fixture(split = true) {
   const programs = split ? [['libtmux-tokio', 'construction', 'libtmux_tokio.Server'], ['libtmux', 'mixed', 'libtmux_core.CreatedSession.pane']]
     : [['libtmux', 'construction', 'server.Server']]
   for (const [name, task, target] of programs) {
+    const runCommand = externalSocket && task === 'mixed' ? socketCommand : 'cargo run --quiet'
     const file = `crates/${name}/examples/api_${task}.rs`
     const url = `https://github.com/libtmux/libtmux-rs/blob/${revision}/${file}`
     write(join(sourceRoot, file), source)
     write(join(sourceRoot, `crates/${name}/examples/api/manifest.json`), JSON.stringify({
-      schemaVersion: 1, examples: [{ id: `rust-${task}`, cargoExample: `api_${task}`, sourceFile: file,
+      schemaVersion: 1, runCommand, examples: [{ id: `rust-${task}`, cargoExample: `api_${task}`, sourceFile: file,
         targets: [split ? target.replaceAll('.', '::') : 'libtmux::Server'], expectedOutput: 'mixed runtime' }],
     }) + '\n')
     const slug = target.toLowerCase().replaceAll('.', '-')
     const blocks = [{ lang: 'console', code: split ? setup : '$ cargo init --name example &&\n  cargo add libtmux@0.1.2\n' }, { lang: 'rust', code: source, sourceUrl: url },
-      { lang: 'console', code: '$ cargo run --quiet\n' }, { lang: 'text', code: 'mixed runtime\n' }]
+      { lang: 'console', code: `$ ${runCommand}\n` }, { lang: 'text', code: 'mixed runtime\n' }]
     const symbol = { id: `${target}.defined`, publicId: target, slug, source: { revision }, doc: { examples: blocks } }
     symbols.push(symbol)
     const html = `<section id="${target}.examples">${blocks.map((block) =>
@@ -52,6 +54,35 @@ function fixture(split = true) {
 }
 
 describe('rendered Rust installed-reader proof', () => {
+  it('preserves the complete borrowed-socket recipe from source and both exports', () => {
+    const f = fixture(true, true)
+    const mixed = collectRustExampleProof(f).examples.find((entry: any) => entry.sourceProgramId === 'rust-mixed')!
+    expect(mixed.externalSocket).toBe(true)
+    expect(mixed.shellRecipe[1]).toBe(socketCommand)
+  })
+
+  it('refuses rendered commands that differ from the source-owned run recipe', () => {
+    const f = fixture(true, true)
+    const file = join(f.sourceRoot, 'crates/libtmux/examples/api/manifest.json')
+    const manifest = JSON.parse(readFileSync(file, 'utf8'))
+    manifest.runCommand = 'cargo run --quiet'
+    f.write(file, JSON.stringify(manifest))
+    expect(() => collectRustExampleProof(f)).toThrow('source-owned run recipe')
+  })
+
+  it('rejects a mixed reader graph that enables either public client fixture', () => {
+    const metadata = {
+      packages: [{ name: 'libtmux', id: 'facade' }, { name: 'libtmux-tokio', id: 'tokio' }],
+      resolve: { nodes: [{ id: 'facade', features: ['blocking', 'tokio'] }, { id: 'tokio', features: [] as string[] }] },
+    }
+    expect(verifyMixedConsumerFeatures(metadata)).toEqual({ libtmux: ['blocking', 'tokio'], 'libtmux-tokio': [] })
+    for (const node of metadata.resolve.nodes) {
+      node.features.push('test-support')
+      expect(() => verifyMixedConsumerFeatures(metadata)).toThrow('no test-support')
+      node.features.pop()
+    }
+  })
+
   it('checks both manifests and preserves native program, recipe and output bytes in both exports', () => {
     const f = fixture()
     const proof = collectRustExampleProof(f)

@@ -21,6 +21,28 @@ interface Manifest {
   examples: Program[]
 }
 
+const socketCommand = `(
+  set -eu
+  mkdir -p /tmp/libtmux-rs-dev
+  directory=$(mktemp -d /tmp/libtmux-rs-dev/mixed.XXXXXX)
+  socket="$directory/socket"
+  cleanup() {
+    tmux -S "$socket" kill-server >/dev/null 2>&1 || return
+    attempts=0
+    while tmux -N -S "$socket" list-sessions >/dev/null 2>&1; do
+      attempts=$((attempts + 1))
+      [ "$attempts" -lt 100 ] || return 1
+      sleep 0.01
+    done
+    rm -f "$socket"
+    rmdir "$directory"
+  }
+  trap cleanup EXIT
+  tmux -S "$socket" -f /dev/null new-session -d -s fixture
+  cargo run --quiet -- "$socket"
+  [ "$(tmux -S "$socket" list-sessions -F '#{session_name}')" = fixture ]
+)`
+
 const table = (value: unknown): value is Record<string, unknown> =>
   value !== null && typeof value === 'object' && !Array.isArray(value) && !(value instanceof Date)
 
@@ -113,11 +135,16 @@ export function attachCompleteRustExamples(
     ]
     require(manifest?.schemaVersion === 1 && manifest.language === 'rust' &&
       Array.isArray(manifest.examples) && manifest.examples.length, 'unsupported or empty manifest')
+    const externalSocket = layout && name === 'libtmux' && manifest.examples.length === 1 &&
+      manifest.examples[0].id === 'rust-mixed' && manifest.runCommand === socketCommand
     require(manifest.nativeInventory === `crates/${name}/docs/public-api.txt` &&
-      manifest.programFileName === 'src/main.rs' && manifest.runCommand === 'cargo run --quiet' &&
+      manifest.programFileName === 'src/main.rs' && (manifest.runCommand === 'cargo run --quiet' || externalSocket) &&
       JSON.stringify(manifest.setupFiles) === JSON.stringify(setup), 'unexpected consumer setup')
     const cargo = parse(codeFor(setup[0].sourceFile))
     const dependencies = cargo.dependencies
+    require(!externalSocket || table(dependencies) && table(dependencies.libtmux) &&
+      Array.isArray(dependencies.libtmux.features) && !dependencies.libtmux.features.includes('test-support'),
+    'borrowed-socket reader must use public clients without test support')
     const runtime = table(dependencies) && table(dependencies.tokio) ? dependencies.tokio : undefined
     const features = runtime?.features
     const packageName = table(cargo.package) && typeof cargo.package.name === 'string' ? cargo.package.name : ''
@@ -179,7 +206,9 @@ export function attachCompleteRustExamples(
         sourceUrl: urlFor(program.sourceFile), code,
       }, {
         lang: 'console',
-        intro: 'Run the consumer. Success exits with status 0; setup, operation, deadline or cleanup failures exit unsuccessfully and print diagnostics to stderr:',
+        intro: externalSocket
+          ? 'Run the consumer against a caller-owned private fixture. This recipe supplies its socket, checks that only the fixture session remains, then stops the fixture and removes its directory. Failures exit unsuccessfully and print diagnostics to stderr:'
+          : 'Run the consumer. Success exits with status 0; setup, operation, deadline or cleanup failures exit unsuccessfully and print diagnostics to stderr:',
         code: `$ ${manifest.runCommand}\n`,
       }, { lang: 'text', intro: 'Expected output:', code: `${program.expectedOutput}\n` }]
       for (const target of program.targets) {

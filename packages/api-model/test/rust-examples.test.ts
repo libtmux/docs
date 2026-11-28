@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest'
+import { readFileSync } from 'node:fs'
 import type { ApiSymbol } from '../src/model.ts'
 import { attachCompleteRustExamples } from '../src/languages/rust-examples.ts'
 
 const source = { repo: 'libtmux/libtmux-rs', revision: 'a'.repeat(40) }
+const socketCommand = readFileSync(new URL('./fixtures/rust-mixed-run-command.sh', import.meta.url), 'utf8').trimEnd()
 const symbol = (id: string, kind: ApiSymbol['kind'], parent?: string): ApiSymbol => ({
   id, name: id.split('.').at(-1)!, slug: id.toLowerCase().replaceAll('.', '-'), kind,
   signatures: [], modifiers: [], ...(parent ? { parent } : {}),
@@ -164,6 +166,30 @@ function splitFixture() {
 }
 
 describe('complete split-crate Rust programs', () => {
+  it('shows the complete source-owned borrowed-socket recipe without test support', () => {
+    const f = splitFixture()
+    f.mixed.runCommand = socketCommand
+    const file = f.mixed.setupFiles[0].sourceFile
+    f.files[file] = f.files[file].replace(', "test-support"', '')
+    attachCompleteRustExamples(f.symbols, f.read, source)
+    const blocks = f.symbols[5].doc!.examples!
+    expect(blocks[1].code).not.toContain('test-support')
+    expect(blocks[3].code).toBe(`$ ${socketCommand}\n`)
+    expect(blocks[3].intro).toContain('fixture')
+  })
+
+  it('refuses a borrowed-socket recipe without the surviving-session check', () => {
+    const f = splitFixture()
+    f.mixed.runCommand = socketCommand.replace(/\n  \[ .* = fixture \]/, '')
+    expect(() => attachCompleteRustExamples(f.symbols, f.read, source)).toThrow('unexpected consumer setup')
+  })
+
+  it('refuses a borrowed-socket consumer that still enables test support', () => {
+    const f = splitFixture()
+    f.mixed.runCommand = socketCommand
+    expect(() => attachCompleteRustExamples(f.symbols, f.read, source)).toThrow('without test support')
+  })
+
   it('attaches both roots and pins the matching source instead of the old published workspace version', () => {
     const f = splitFixture()
     attachCompleteRustExamples(f.symbols, f.read, source)

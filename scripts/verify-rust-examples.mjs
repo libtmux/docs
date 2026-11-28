@@ -20,6 +20,20 @@ const json = (file) => JSON.parse(readFileSync(file, 'utf8'))
 const commands = (code) => code.replace(/^\$ /gm, '').trim()
 const Parser = new Window().DOMParser
 
+/** Public mixed readers must not acquire either client's private fixture feature. */
+export function verifyMixedConsumerFeatures(metadata) {
+  const selected = {}
+  for (const name of ['libtmux', 'libtmux-tokio']) {
+    const packages = metadata.packages.filter((entry) => entry.name === name)
+    assert.equal(packages.length, 1, `one mixed reader ${name}`)
+    const node = metadata.resolve.nodes.find((entry) => entry.id === packages[0].id)
+    assert(Array.isArray(node?.features) && !node.features.includes('test-support'), `mixed reader ${name}: no test-support`)
+    if (name === 'libtmux') assert(['blocking', 'tokio'].every((feature) => node.features.includes(feature)), 'both public clients enabled')
+    selected[name] = node.features
+  }
+  return selected
+}
+
 /** Match every source-owned target page to native files and both rendered exports. */
 export function collectRustExampleProof({ model, sourceRoot, renderedRoot }) {
   assert(model.port === 'rs' && model.repo === 'libtmux/libtmux-rs' && /^[a-f0-9]{40}$/.test(model.revision), 'exact Rust model identity')
@@ -49,6 +63,7 @@ export function collectRustExampleProof({ model, sourceRoot, renderedRoot }) {
         const blocks = symbol.doc.examples
         assert.deepEqual(blocks.slice(index - 1, index + 3).map((entry) => entry.lang), ['console', 'rust', 'console', 'text'])
         assert.equal(blocks[index + 2].code, `${program.expectedOutput}\n`)
+        assert.equal(commands(blocks[index + 1].code), manifest.runCommand, 'source-owned run recipe')
         const slug = symbol.slug ?? pageSlug(symbol.publicId ?? symbol.id)
         const example = {
           port: 'rs', symbol: symbol.id, publicId: symbol.publicId ?? symbol.id,
@@ -60,6 +75,8 @@ export function collectRustExampleProof({ model, sourceRoot, renderedRoot }) {
           shellRecipe: [commands(blocks[index - 1].code), commands(blocks[index + 1].code)],
           expectedOutputs: [[], [program.expectedOutput]],
           expectedOutputHex: Buffer.from(`${program.expectedOutput}\n`).toString('hex'),
+          ...(layout && name === 'libtmux' && program.id === 'rust-mixed' && manifest.runCommand !== 'cargo run --quiet'
+            ? { externalSocket: true } : {}),
         }
         if (layout) assert(example.shellRecipe[0].includes(`--rev ${model.revision}`), 'source-pinned install recipe')
         const htmlFile = join(renderedRoot, `reference/${slug}/index.html`)
@@ -121,12 +138,14 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     { cwd: root, stdio: 'inherit', env: { ...process.env, CARGO_TARGET_DIR: join(output, 'cargo-target') } })
     const native = json(join(target, 'native/result.json'))
     assert(native.passed && native.stdoutHex === example.expectedOutputHex, 'native copied program stdout and cleanup')
+    let publicClientFeatures
     if (proof.expectedArchivePackages.includes('libtmux-core')) {
       const metadata = JSON.parse(execFileSync('cargo', ['metadata', '--locked', '--format-version', '1'], { cwd: target, encoding: 'utf8' }))
       const cores = metadata.packages.filter((entry) => entry.name === 'libtmux-core')
       assert(cores.length === 1 && cores[0].source?.endsWith(`#${model.revision}`), 'one installed core at the pinned Git source')
+      if (example.externalSocket) publicClientFeatures = verifyMixedConsumerFeatures(metadata)
     }
-    results.push({ program: example.sourceProgramId, sourceSha256: example.files[0].sha256, native })
+    results.push({ program: example.sourceProgramId, sourceSha256: example.files[0].sha256, native, publicClientFeatures })
   }
   if (option('--archive-record')) verifyArchiveRecord(proof, json(option('--archive-record')), option('--archive-dir'))
   writeFileSync(join(output, 'proof.json'), `${JSON.stringify({ ...proof, results,
