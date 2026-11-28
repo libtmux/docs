@@ -176,6 +176,22 @@ describe('the order of the markers in every Core player', () => {
     expect(orderProblems(players())).toEqual([])
   })
 
+  // Record 0088: the page draws a marker for every step the view plays, so steps that share a line each have one.
+  // This counts them: the markers of a view are its steps, and the lines they share are the ones that now hold several.
+  it('counts every marker: a view draws one for each of its steps, and the lines that share steps are known', () => {
+    const shared: string[] = []
+    for (const { port, id, capability, views } of players()) {
+      for (const [view, code] of views) {
+        const steps = viewSteps(capability, code.replace(/\n$/, ''), port)
+        const byLine = Map.groupBy(steps, (step) => step.lines[0])
+        expect([...byLine.values()].flat(), `${port}/${id} ${view}: every step has a marker`).toHaveLength(steps.length)
+        for (const [line, group] of byLine) if (group.length > 1) shared.push(`${port}/${id}/${view}:${line}=${group.map((step) => step.index + 1).join('+')}`)
+      }
+    }
+    // OCaml's Workspace.close (step 10) and with_private_daemon (step 11) both mark the line where their scopes end.
+    expect(shared.filter((entry) => entry.startsWith('ocaml/typed-graph/')).map((entry) => entry.replace(/:\d+=/, ':'))).toContain('ocaml/typed-graph/full:10+11')
+  })
+
   // Main's anchors for the two Go capabilities whose deferred Session.Kill was marked on its defer, above the steps before it.
   it('refuses a deferred Session.Kill marked on its defer, as main had it in Go\'s run-applications and watch', () => {
     const all = players()

@@ -343,8 +343,10 @@ describe('the player component', () => {
   // The page's script imports the shared player; the stand-in `require` hands it the player's own source, evaluated beside it.
   const script = `var exports = {};\nvar playerExports = {};\n(function (exports) {\n${commonjs(readFileSync(new URL('../src/lib/replay-player.ts', import.meta.url), 'utf8'))}\n})(playerExports);\nvar require = function (name) { if (/replay-player$/.test(name)) return playerExports; throw new Error('unexpected import ' + name) };\n${commonjs(/<script>([\s\S]*?)<\/script>/.exec(component)![1]!)}`
 
-  async function mount({ run = false, reduced = true, autoplay = false, intersect = false, single = false, search = '' }: { run?: boolean; reduced?: boolean; autoplay?: boolean; intersect?: boolean; single?: boolean; search?: string } = {}) {
-    const { recording, capability } = await recorded()
+  async function mount({ run = false, reduced = true, autoplay = false, intersect = false, single = false, search = '', share }: { run?: boolean; reduced?: boolean; autoplay?: boolean; intersect?: boolean; single?: boolean; search?: string; share?: number } = {}) {
+    const { recording, capability: recordedCapability } = await recorded()
+    // `share` makes that step (zero-based) call what the step before it calls, so two steps resolve to one line.
+    const capability = share === undefined ? recordedCapability : { ...recordedCapability, steps: recordedCapability.steps.map((step, index) => (index === share ? { ...step, anchor: recordedCapability.steps[index - 1]!.anchor } : step)) }
     const win = new Window({ url: `https://libtmux.org/go/latest/${search}` })
     windows.push(win)
     win.document.body.innerHTML = await renderAstroTemplate(await template, { props: { port: 'go', language: 'Go', example: single ? { ...example, singleView: 'This program has one view.' } : example, recording, capability, autoplay } })
@@ -754,6 +756,37 @@ describe('the player component', () => {
     expect(document.querySelectorAll('.ec-line .core-step'), 'no marker takes a column in the code').toHaveLength(0)
     // Each view of the program carries its own rail, numbered by that view's calls.
     expect(document.querySelectorAll('[data-home-view="cleanup"] .core-hang .core-step')).toHaveLength(viewSteps(capability, code('cleanup')).length)
+  })
+
+  // Record 0088: a marker for every step, not one for every line. On main the second step on a line had no marker.
+  it('hangs a full-size marker for each of two steps that resolve to one line, side by side in step order, and lights only the shown step\'s (record 0088)', async () => {
+    const { document, win, capability } = await mount({ run: true, share: 3 })
+    const view = viewSteps(capability, code('concise'))
+    expect(view[3]!.lines, 'the two steps are on one line').toEqual(view[2]!.lines)
+    const rail = document.querySelector('[data-home-view="concise"] .core-hang')!
+    const markers = [...rail.querySelectorAll<HTMLElement>('.core-step')]
+    expect(markers, 'one marker per step').toHaveLength(view.length)
+    const [first, second] = [markerOf(document, 'concise', 3), markerOf(document, 'concise', 4)]
+    expect([first.dataset.line, second.dataset.line]).toEqual([String(view[2]!.lines[0]), String(view[2]!.lines[0])])
+    expect([first.getAttribute('aria-label'), second.getAttribute('aria-label')], 'each has its own label').toEqual([`Step 3: ${capability.steps[view[2]!.index]!.label}`, `Step 4: ${capability.steps[view[3]!.index]!.label}`])
+    expect([first, second].map((marker) => marker.style.getPropertyValue('--shared-i')), 'in step order, the later one further out').toEqual(['0', '1'])
+    expect(document.querySelector('.core-player__side')!.getAttribute('data-hang-n'), 'the rail reserves two markers\' width from the first paint').toBe('2')
+    expect(markers.filter((marker) => !marker.hasAttribute('data-shared')), 'a step alone on its line keeps the whole slot').toHaveLength(view.length - 2)
+    click(win, second)
+    expect([first, second].map((marker) => marker.classList.contains('is-current')), 'the shown step takes the highlight alone').toEqual([false, true])
+    click(win, first)
+    expect([first, second].map((marker) => marker.classList.contains('is-current'))).toEqual([true, false])
+  })
+
+  it('hangs markers that share a line at full size, the later ones further out to the left in room the rail reserves (record 0088)', () => {
+    const css = readFileSync(new URL('../src/styles/core-player.css', import.meta.url), 'utf8')
+    expect(css, 'a shared marker keeps the marker size: no per-marker width').not.toMatch(/--step-w/)
+    expect(css, 'full size: the marker is the rail\'s width').toMatch(/\.core-step \{[^}]*width: var\(--hang-w\);/)
+    expect(css, 'label type of at least 10.5px (record 0051)').toMatch(/\.core-step \{[^}]*font: 600 0\.65625rem/)
+    expect(css, 'each later marker stands a marker and a gap further out').toMatch(/\.core-step \{[^}]*left: calc\(var\(--shared-i, 0\) \* -1 \* \(var\(--hang-w\) \+ var\(--step-gap\)\)\);/)
+    expect(css, 'the rail needs that many markers, so the frame moves in by the difference (record 0058)').toMatch(/--hang-need: calc\(var\(--hang-n\) \* var\(--hang-w\) \+ \(var\(--hang-n\) - 1\) \* var\(--step-gap\)/)
+    expect(css, 'and its clip reaches as far out').toMatch(/\.core-hang \{[^}]*clip-path: inset\(0 -0\.5rem 0 calc\(-0\.5rem - \(var\(--hang-n\) - 1\)/)
+    expect(css, 'the code is never padded for the rail').not.toMatch(/\.ec-line > \.code \{[^}]*padding-inline-start/)
   })
 
   it('moves the rail with the code\'s vertical scroll and leaves it where it is when the code scrolls sideways', async () => {

@@ -3,8 +3,8 @@ import { Code } from 'astro-expressive-code/components'
 import HomeExample from './HomeExample.astro'
 import CorePlayer from './core/CorePlayer.astro'
 import { CAPABILITIES, capabilityCacheKey, portCapabilities, type CapabilityId, type CapabilityTable } from '../lib/core-capabilities'
-import { QUICKSTARTS, homeProgram } from '../lib/quickstarts'
-import { capabilityExample, playableCapability } from '../lib/core-player'
+import { HOME_VIEWS, QUICKSTARTS, homeProgram } from '../lib/quickstarts'
+import { capabilityExample, markersOnALine, playableCapability } from '../lib/core-player'
 import { PORT_BY_SLUG } from '../lib/ports'
 import { apisUsed, CORE_APIS } from '../lib/core-apis'
 import { buildTarget } from '../lib/versions'
@@ -46,6 +46,15 @@ const quickstartCode = quickstart ? homeProgram(quickstart, 'full') : ''
 // A recording of this program, run for real, makes the first capability a player; without one the program stands alone.
 const player = quickstart ? await playableCapability(port, quickstartCapability.id, quickstartCode) : undefined
 const capabilityPlayers = new Map(await Promise.all(programs.map(async (item) => [item.id, await playableCapability(port, item.id, item.source)] as const)))
+// The panels stack in one column and share a left edge, so every player's rail reserves the room of the widest one (record 0088).
+const hang = Math.max(
+  1,
+  ...(quickstart && player ? [markersOnALine(player.capability, HOME_VIEWS.map((view) => homeProgram(quickstart, view)), port)] : []),
+  ...programs.flatMap((item) => {
+    const found = capabilityPlayers.get(item.id)
+    return found ? [markersOnALine(found.capability, [homeProgram(capabilityExample({ ...item, repository: '', revision: '' }), 'concise')], port)] : []
+  }),
+)
 const shown = [
   ...(quickstart ? [{ ...quickstartCapability, quickstart: true as const, tmux: undefined as string | undefined }] : []),
   ...programs.map((item) => ({ ...item, quickstart: false as const })),
@@ -81,7 +90,7 @@ const apis = new Map(shown.map((item) => [item.id, apisUsed(port, CORE_APIS[port
       style={`--home-code-columns: ${homeCodeColumns(quickstartCode)}`}>
       {shown.length > 1 && <h3 class="core-showcase__panel-title">{item.label}</h3>}
       {player
-        ? <CorePlayer port={port} language={PORT_BY_SLUG[port]!.name} example={quickstart!} recording={player.recording} capability={player.capability} />
+        ? <CorePlayer port={port} language={PORT_BY_SLUG[port]!.name} example={quickstart!} recording={player.recording} capability={player.capability} hang={hang} />
         : <HomeExample port={port} language={PORT_BY_SLUG[port]!.name} example={quickstart!} heading={false} fixed />}
       {apis.get(item.id)!.shown.length > 0 && <div class="core-showcase__apis" data-core-apis>
         <p class="core-showcase__apis-title">APIs used</p>
@@ -95,7 +104,7 @@ const apis = new Map(shown.map((item) => [item.id, apisUsed(port, CORE_APIS[port
       {shown.length > 1 && <h3 class="core-showcase__panel-title">{item.label}</h3>}
       {capabilityPlayers.get(item.id)
         ? <CorePlayer port={port} language={PORT_BY_SLUG[port]!.name} example={capabilityExample({ ...item, ...cachedSource(item.id) })} recording={capabilityPlayers.get(item.id)!.recording}
-          capability={capabilityPlayers.get(item.id)!.capability} capabilityId={item.id} options={false} run={false} />
+          capability={capabilityPlayers.get(item.id)!.capability} capabilityId={item.id} options={false} run={false} hang={hang} />
         : <Code code={item.code} lang={item.lang} title={item.file} frame="code" />}
       {apis.get(item.id)!.shown.length > 0 && <div class="core-showcase__apis" data-core-apis>
         <p class="core-showcase__apis-title">APIs used</p>
