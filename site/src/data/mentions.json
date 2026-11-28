@@ -18832,9 +18832,23 @@
   },
   {
    "port": "ruby",
+   "symbol": "LibTmux::ControlConnection",
+   "page": "/ruby/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
    "symbol": "LibTmux::ControlConnection#exchange",
    "page": "/ruby/latest/guides/core/",
    "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::ControlConnection#exchange",
+   "page": "/ruby/latest/guides/getting-started/",
+   "title": "Getting started",
    "section": "guides"
   },
   {
@@ -18860,6 +18874,13 @@
   },
   {
    "port": "ruby",
+   "symbol": "LibTmux::ControlConnection#subscribe",
+   "page": "/ruby/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
    "symbol": "LibTmux::ControlEvent",
    "page": "/ruby/latest/guides/core/",
    "title": "Server bindings",
@@ -18867,9 +18888,23 @@
   },
   {
    "port": "ruby",
+   "symbol": "LibTmux::ControlEvent",
+   "page": "/ruby/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
    "symbol": "LibTmux::ControlSubscription#next",
    "page": "/ruby/latest/guides/core/",
    "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::ControlSubscription#next",
+   "page": "/ruby/latest/guides/getting-started/",
+   "title": "Getting started",
    "section": "guides"
   },
   {
@@ -18902,6 +18937,13 @@
   },
   {
    "port": "ruby",
+   "symbol": "LibTmux::Entity#kill",
+   "page": "/ruby/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
    "symbol": "LibTmux::FieldDecodeError",
    "page": "/ruby/latest/topics/errors-and-exceptions/",
    "title": "Ownership and errors",
@@ -18912,6 +18954,13 @@
    "symbol": "LibTmux::GroupResult",
    "page": "/ruby/latest/guides/core/",
    "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::GroupResult",
+   "page": "/ruby/latest/guides/getting-started/",
+   "title": "Getting started",
    "section": "guides"
   },
   {
@@ -19140,6 +19189,13 @@
   },
   {
    "port": "ruby",
+   "symbol": "LibTmux::Pane#resize",
+   "page": "/ruby/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
    "symbol": "LibTmux::Pane#send_keys",
    "page": "/ruby/latest/guides/core/",
    "title": "Server bindings",
@@ -19147,9 +19203,30 @@
   },
   {
    "port": "ruby",
+   "symbol": "LibTmux::Pane#send_keys",
+   "page": "/ruby/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
    "symbol": "LibTmux::Pane#send_text",
    "page": "/ruby/latest/guides/core/",
    "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Pane#send_text",
+   "page": "/ruby/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Pane#snapshot",
+   "page": "/ruby/latest/guides/getting-started/",
+   "title": "Getting started",
    "section": "guides"
   },
   {
@@ -19259,20 +19336,6 @@
   },
   {
    "port": "ruby",
-   "symbol": "LibTmux::Server",
-   "page": "/ruby/latest/guides/core/",
-   "title": "Server bindings",
-   "section": "guides"
-  },
-  {
-   "port": "ruby",
-   "symbol": "LibTmux::Server",
-   "page": "/ruby/latest/guides/getting-started/",
-   "title": "Getting started",
-   "section": "guides"
-  },
-  {
-   "port": "ruby",
    "symbol": "LibTmux::Server.new",
    "page": "/ruby/latest/guides/core/",
    "title": "Server bindings",
@@ -19337,8 +19400,8 @@
   {
    "port": "ruby",
    "symbol": "LibTmux::Server#explain_panes",
-   "page": "/ruby/latest/guides/core/",
-   "title": "Server bindings",
+   "page": "/ruby/latest/guides/getting-started/",
+   "title": "Getting started",
    "section": "guides"
   },
   {
@@ -19346,6 +19409,13 @@
    "symbol": "LibTmux::Server#kill",
    "page": "/ruby/latest/guides/core/",
    "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Server#kill",
+   "page": "/ruby/latest/guides/getting-started/",
+   "title": "Getting started",
    "section": "guides"
   },
   {
@@ -19381,6 +19451,13 @@
    "symbol": "LibTmux::Server#read_buffer",
    "page": "/ruby/latest/guides/core/",
    "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Server#search_panes",
+   "page": "/ruby/latest/guides/getting-started/",
+   "title": "Getting started",
    "section": "guides"
   },
   {
@@ -19423,6 +19500,13 @@
    "symbol": "LibTmux::Session#new_window",
    "page": "/ruby/latest/guides/core/",
    "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Session#snapshot",
+   "page": "/ruby/latest/guides/getting-started/",
+   "title": "Getting started",
    "section": "guides"
   },
   {
@@ -19486,6 +19570,20 @@
    "symbol": "LibTmux::Window#list_panes",
    "page": "/ruby/latest/guides/core/",
    "title": "Server bindings",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Window#resize",
+   "page": "/ruby/latest/guides/getting-started/",
+   "title": "Getting started",
+   "section": "guides"
+  },
+  {
+   "port": "ruby",
+   "symbol": "LibTmux::Window#snapshot",
+   "page": "/ruby/latest/guides/getting-started/",
+   "title": "Getting started",
    "section": "guides"
   },
   {
@@ -21945,13 +22043,6 @@
    "text": "Enumerable",
    "page": "/ruby/latest/guides/getting-started/",
    "line": 15,
-   "why": "not defined in the stated port"
-  },
-  {
-   "port": "ruby",
-   "text": "LibTmux",
-   "page": "/ruby/latest/guides/getting-started/",
-   "line": 116,
    "why": "not defined in the stated port"
   },
   {
