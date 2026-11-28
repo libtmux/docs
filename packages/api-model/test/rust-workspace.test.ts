@@ -120,6 +120,57 @@ struct libtmux_core::implementation::ReturnValue
     expect(model.symbols.map((symbol) => symbol.publicId)).toEqual(['server.Server', 'server.Server.capture'])
   })
 
+  it('binds inventory names through their actual public modules and re-exports', async () => {
+    const f = fixture()
+    f.files['crates/libtmux-core/src/lib.rs'] += `pub mod control;
+      #[doc(hidden)] pub mod supervision;
+      mod placement; pub use placement::SplitDirection;
+      mod wire; pub use wire::WireReceipt;
+      #[doc(hidden)] pub mod other;
+    `
+    f.files['crates/libtmux-core/src/control.rs'] = 'mod events; mod arguments; pub use events::Event;'
+    f.files['crates/libtmux-core/src/control/events.rs'] = 'pub enum Event { Output }'
+    f.files['crates/libtmux-core/src/control/arguments.rs'] = 'pub fn flags() -> u32 { 0 }'
+    f.files['crates/libtmux-core/src/supervision.rs'] = 'pub enum Event { PipeClosed }'
+    f.files['crates/libtmux-core/src/placement.rs'] = 'pub enum SplitDirection { Right } impl SplitDirection { pub fn flags(&self) {} }'
+    f.files['crates/libtmux-core/src/wire.rs'] = 'pub type WireReceipt = u32;'
+    f.files['crates/libtmux-core/src/other.rs'] = 'pub type WireReceipt = usize;'
+    f.files['crates/libtmux-core/docs/public-api.txt'] += `module libtmux_core::control
+enum libtmux_core::control::Event
+variant libtmux_core::control::Event::Output
+enum libtmux_core::SplitDirection
+function libtmux_core::SplitDirection::flags: fn(&self)
+type_alias libtmux_core::WireReceipt = u32
+`
+    const model = await extract(f.files)
+    for (const [publicId, sourceId] of [
+      ['libtmux_core.control.Event', 'libtmux_core.control.events.Event'],
+      ['libtmux_core.SplitDirection.flags', 'libtmux_core.placement.SplitDirection.flags'],
+      ['libtmux_core.WireReceipt', 'libtmux_core.wire.WireReceipt'],
+    ]) expect(model.symbols.filter((symbol) => symbol.publicId === publicId).map((symbol) => symbol.id)).toEqual([sourceId])
+    expect(model.symbols.some((symbol) => /supervision|arguments|other\./.test(symbol.id))).toBe(false)
+    expect(new Set(model.symbols.map((symbol) => symbol.publicId)).size).toBe(model.symbols.length)
+  })
+
+  it('retains re-exported inline modules and glob-exported option constants', async () => {
+    const f = fixture()
+    f.files['crates/libtmux-core/src/lib.rs'] += `mod version; pub use version::since;
+      mod options;
+      pub mod option_names { pub use crate::options::generated::*; }
+    `
+    f.files['crates/libtmux-core/src/version.rs'] = 'pub mod since { pub const CAPTURE: u32 = 1; }'
+    f.files['crates/libtmux-core/src/options.rs'] = 'pub mod generated;'
+    f.files['crates/libtmux-core/src/options/generated.rs'] = 'pub const DEFAULT_COMMAND: u32 = 2;'
+    f.files['crates/libtmux-core/docs/public-api.txt'] += `module libtmux_core::since
+constant libtmux_core::since::CAPTURE: u32 = 1
+module libtmux_core::option_names
+constant libtmux_core::option_names::DEFAULT_COMMAND: u32 = 2
+`
+    const model = await extract(f.files)
+    expect(model.symbols.filter((symbol) => symbol.kind === 'constant').map((symbol) => symbol.publicId ?? symbol.id).sort((a, b) => a.localeCompare(b)))
+      .toEqual(['libtmux_core.option_names.DEFAULT_COMMAND', 'libtmux_core.since.CAPTURE'])
+  })
+
   it('rejects an incomplete split instead of silently reverting to release layout', () => {
     const f = fixture()
     delete f.files['crates/libtmux-core/Cargo.toml']

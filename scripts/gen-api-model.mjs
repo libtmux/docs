@@ -842,7 +842,7 @@ for (const [port, cfg] of Object.entries(PORTS)) {
     if (port === 'rs') {
       for (const symbol of await attachNativeRustIdStructs(model, readSource, { repo: cfg.repo, revision })) citationSymbols.add(symbol)
       for (const symbol of await attachNativeRustSnapshots(model, readSource, { repo: cfg.repo, revision })) citationSymbols.add(symbol)
-      qualifyRustPublicIds(model.symbols, readSource)
+      await qualifyRustPublicIds(model.symbols, readSource)
     }
     attach(model.symbols, readSource, { repo: cfg.repo, revision })
   }
