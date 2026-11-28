@@ -1,7 +1,7 @@
 {
   "generated": "scripts/gen-mcp-protocol.mjs",
   "repo": "libtmux/libtmux-ruby",
-  "revision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
+  "revision": "02a99f8663ef096685c783afce6de6ed8005a8e3",
   "selection": {
     "mode": "explicit CLI options",
     "tools": "tmux_capabilities,tmux_snapshot,tmux_capture,tmux_wait,tmux_create,tmux_send,tmux_close,tmux_run"
@@ -41,10 +41,19 @@
     ],
     "serverInfo": {
       "name": "libtmux",
-      "version": "0.1.1"
+      "version": "0.1.2"
     },
     "tools": [
       {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe"
+            ],
+            "toolset": "inspect"
+          }
+        },
         "annotations": {
           "destructiveHint": false,
           "idempotentHint": false,
@@ -401,6 +410,15 @@
         }
       },
       {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe"
+            ],
+            "toolset": "inspect"
+          }
+        },
         "annotations": {
           "destructiveHint": false,
           "idempotentHint": false,
@@ -1011,6 +1029,16 @@
         }
       },
       {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe",
+              "delete"
+            ],
+            "toolset": "teardown"
+          }
+        },
         "annotations": {
           "destructiveHint": true,
           "idempotentHint": false,
@@ -1428,6 +1456,16 @@
         }
       },
       {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "processReach": "pane-program",
+            "tmuxEffects": [
+              "observe",
+              "change"
+            ],
+            "toolset": "execute"
+          }
+        },
         "annotations": {
           "destructiveHint": true,
           "idempotentHint": false,
@@ -2143,6 +2181,16 @@
         }
       },
       {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "processReach": "pane-command",
+            "tmuxEffects": [
+              "observe",
+              "change"
+            ],
+            "toolset": "execute"
+          }
+        },
         "annotations": {
           "destructiveHint": true,
           "idempotentHint": false,
@@ -2593,6 +2641,16 @@
         }
       },
       {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "processReach": "pane-input",
+            "tmuxEffects": [
+              "observe",
+              "change"
+            ],
+            "toolset": "execute"
+          }
+        },
         "annotations": {
           "destructiveHint": true,
           "idempotentHint": false,
@@ -3013,6 +3071,15 @@
         }
       },
       {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe"
+            ],
+            "toolset": "inspect"
+          }
+        },
         "annotations": {
           "destructiveHint": false,
           "idempotentHint": false,
@@ -6115,6 +6182,15 @@
         }
       },
       {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe"
+            ],
+            "toolset": "inspect"
+          }
+        },
         "annotations": {
           "destructiveHint": false,
           "idempotentHint": false,

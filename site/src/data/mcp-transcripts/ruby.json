@@ -1,7 +1,7 @@
 {
   "generated": "scripts/gen-mcp-transcript.mjs",
   "repo": "libtmux/libtmux-ruby",
-  "revision": "0bf78344f8babf60a7b83e11a26f58b7946fcf8d",
+  "revision": "02a99f8663ef096685c783afce6de6ed8005a8e3",
   "sandbox": {
     "tmux": "tmux 3.7c",
     "pytest": "pytest 9.2.0",
@@ -22,7 +22,7 @@
   },
   "serverInfo": {
     "name": "libtmux",
-    "version": "0.1.1"
+    "version": "0.1.2"
   },
   "contracts": {
     "tmux_capabilities": {
@@ -6048,8 +6048,8 @@
           "endpoint": "docs",
           "server_identity": {
             "generation": "3f9a1c",
-            "pid": 3186969,
-            "start_time": 1795059591,
+            "pid": 2968774,
+            "start_time": 1795831939,
             "tmux_version": "3.7c"
           },
           "enabled_tools": [
@@ -8682,11 +8682,11 @@
       "structuredContent": {
         "ok": true,
         "data": {
-          "capture_id": "7bb59567e11cb867c3f0f95659d21022",
+          "capture_id": "1b0b18e721a3ceaa27d05c92d6882993",
           "server_identity": {
             "generation": "3f9a1c",
-            "pid": 3186969,
-            "start_time": 1795059591,
+            "pid": 2968774,
+            "start_time": 1795831939,
             "tmux_version": "3.7c"
           },
           "entity": "window",
@@ -8699,8 +8699,8 @@
           },
           "interval": {
             "clock": "monotonic_seconds",
-            "started": 61849.169432126,
-            "finished": 61849.200660868,
+            "started": 359734.940467385,
+            "finished": 359734.954352013,
             "reads": 5
           },
           "items": [
@@ -8938,8 +8938,8 @@
               "id": "%1",
               "generation": "3f9a1c"
             },
-            "capture_id": "0b557080e24599b13387b89d6127a75c",
-            "process_generation": "e8ee85283aa2f6a198d8defe10b612b3",
+            "capture_id": "679328a5543fef20f0937c251c096825",
+            "process_generation": "074061a159c8162f8a9ea11564a11128",
             "rows": [
               "$ pytest -q\n",
               "..                               [100%]\n",
@@ -8978,8 +8978,8 @@
             },
             "interval": {
               "clock": "monotonic_seconds",
-              "started": 61852.88839716,
-              "finished": 61852.933211017
+              "started": 359738.542304256,
+              "finished": 359738.563216274
             }
           }
         }
@@ -9182,8 +9182,8 @@
               "id": "%2",
               "generation": "3f9a1c"
             },
-            "capture_id": "26813b0bf27b2f28f7f5e64d670a7016",
-            "process_generation": "29436e6d01d29da27537d2a7ffa40dc4",
+            "capture_id": "9987a2307899a1d2dfb2373cfc76d443",
+            "process_generation": "7e653119c7552e5ce6ee789161a5ac7c",
             "rows": [
               "$ cat checks.log\n",
               "2026-01-01 checks started\n",
@@ -9222,8 +9222,8 @@
             },
             "interval": {
               "clock": "monotonic_seconds",
-              "started": 61856.582323629,
-              "finished": 61856.647062881
+              "started": 359742.108498674,
+              "finished": 359742.131042831
             }
           }
         }

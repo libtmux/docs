@@ -1,8 +1,22 @@
 import { readFileSync } from 'node:fs'
-import { beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { Window } from 'happy-dom'
 import { createComponent, render } from 'astro/compiler-runtime'
 vi.mock('astro:content', () => ({ getCollection: vi.fn(async () => []) }))
+/* No port ships a server without toolsets today, so a test that needs one strips a port's metadata here. */
+const untiered = vi.hoisted(() => new Set<string>())
+vi.mock('../src/lib/mcp-showcase', async (original) => {
+  const real = await original<typeof import('../src/lib/mcp-showcase')>()
+  return {
+    ...real,
+    mcpToolFacts: async (port: string) => {
+      const facts = await real.mcpToolFacts(port)
+      if (!untiered.has(port)) return facts
+      const tools = (await real.protocolSnapshot(port))!.protocol.tools
+      return { ...facts, capabilities: new Map(tools.map((tool) => [tool.name, real.toolCapability({ ...tool, _meta: undefined })])) }
+    },
+  }
+})
 import { loadAstroTemplate, renderAstroTemplate, withoutScope } from './astro-templates'
 import { API_MODELS } from '../src/lib/api-models'
 import { MCP_REFERENCE, mcpObjects, mcpWraps, type McpSection } from '../src/lib/mcp-reference'
@@ -11,7 +25,7 @@ import { TIERS, mcpToolFacts, toolCapability } from '../src/lib/mcp-showcase'
 /**
  * The MCP tool browser (tools index and tool pages, `components/mcp/ProtocolReference.astro`): a tier on every
  * tool and a filter by tier, the capability row beside the annotations, and a link to the library call a tool
- * wraps. A server that names no toolset (Ruby, today) gets none of these, and no port's annotations are changed.
+ * wraps. A server that names no toolset (synthesized in these tests) gets none of these, and no port's annotations are changed.
  */
 const options = {
   real: [
@@ -34,6 +48,8 @@ async function page(port: string, section: McpSection, toolName?: string) {
   window.document.body.innerHTML = withoutScope(await renderAstroTemplate(template, { url: `https://libtmux.org/${port}/next/${object?.path ?? `mcp/${section}`}/`, props: { port, version: 'next', section, itemSlug: object?.slug } }))
   return window.document as unknown as Document
 }
+
+afterEach(() => untiered.clear())
 
 describe('the tools index', () => {
   it('shows each tool\'s tier as a square badge on its card and filters by tier with radio buttons that work without script', async () => {
@@ -76,12 +92,14 @@ describe('the tools index', () => {
   })
 
   it.each(['ruby'])('shows %s, whose server names no toolset, with no tier, no filter and no guessed tier', async (port) => {
+    untiered.add(port)
     expect((await mcpToolFacts(port)).capabilities.size).toBeGreaterThan(0)
     const document = await page(port, 'tools')
     expect(document.querySelector('[data-mcp-tier-filter], .mcp-tool-card__tier, [data-tier]')).toBeNull()
   })
 
   it.each(['ruby'])('shows no tier control, label or count on the %s tools index', async (port) => {
+    untiered.add(port)
     const document = await page(port, 'tools')
     expect(document.querySelectorAll('.mcp-tool-card')).toHaveLength(mcpObjects(port).filter((entry) => entry.kind === 'tool').length)
     expect(document.querySelector('[data-mcp-tier-filter], input[name="tier"], .mcp-tier, .mcp-count:not([data-count="all"])')).toBeNull()
@@ -166,6 +184,7 @@ describe('a tool page', () => {
   })
 
   it.each(['ruby'])('shows no tier, toolset or capability row on any %s tool page', async (port) => {
+    untiered.add(port)
     for (const { name } of mcpObjects(port).filter((entry) => entry.kind === 'tool')) {
       const document = await page(port, 'tools', name)
       expect(document.querySelector('[data-mcp-capability], .mcp-tier, [data-tier]'), name).toBeNull()
