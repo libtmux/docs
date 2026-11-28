@@ -875,7 +875,8 @@ jobs:
         run: |
           time node site/node_modules/vitest/vitest.mjs run --root packages/api-model \
             test/rust-workspace.test.ts test/rust-examples.test.ts test/rust-native-ids.test.ts \
-            test/rust.test.ts test/cargo-features.test.ts test/extensions.test.ts
+            test/rust.test.ts test/cargo-features.test.ts test/extensions.test.ts \
+            test/rust-native-witness.test.ts
 
       - name: Check Perl native model and authored POD links
         if: matrix.port == 'perl'

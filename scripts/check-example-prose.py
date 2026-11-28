@@ -12,15 +12,15 @@ This downloads and builds dependencies; it belongs outside routine site tests.
 from __future__ import annotations
 
 import argparse
-import contextlib
 import hashlib
 import json
 import os
 import re
-import signal
 import subprocess
 import time
 from pathlib import Path
+
+from example_tmux_sandbox import ExampleTmuxSandbox, stop_process_group
 
 
 def select_examples(manifest, kind, port, page=None, program=None):
@@ -53,17 +53,6 @@ def api_command_blocks(blocks, example):
         msg = "Invalid API console block selection"
         raise ValueError(msg)
     return [blocks[index]["code"] for index in indices]
-
-
-def stop_process_group(process):
-    """Stop a timed-out command and descendants, even if its shell exits first."""
-    with contextlib.suppress(ProcessLookupError):
-        os.killpg(process.pid, signal.SIGTERM)
-    with contextlib.suppress(subprocess.TimeoutExpired):
-        process.wait(timeout=5)
-    with contextlib.suppress(ProcessLookupError):
-        os.killpg(process.pid, signal.SIGKILL)
-    process.wait()
 
 
 def homepage_execution(home, example):
@@ -226,8 +215,6 @@ def main():
     env.pop("TMUX_PANE", None)
     sandbox = None
     if args.example in ("home", "program"):
-        from example_tmux_sandbox import ExampleTmuxSandbox
-
         sandbox = ExampleTmuxSandbox(output, env, forbid_tmux=execution == "pure-values")
     if sandbox:
         env = sandbox.env

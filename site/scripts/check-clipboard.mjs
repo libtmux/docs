@@ -4,7 +4,6 @@ import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
-import { chromium } from 'playwright'
 
 /** Match one complete program to its source citations and native file receipts. */
 export function assertCompleteApiExample(rendered, example) {
@@ -241,6 +240,7 @@ export async function checkClipboard(page, base, { sabotage } = {}) {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const { chromium } = await import('playwright')
   const browser = await chromium.launch()
   try {
     const base = (process.argv[2] ?? 'http://localhost:8080/en').replace(/\/$/, '')

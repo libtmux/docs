@@ -9,7 +9,8 @@ import { productApiHref } from '../src/lib/product-api'
 
 const root = fileURLToPath(new URL('../../', import.meta.url))
 const python = (code: string) => JSON.parse(execFileSync('python3', ['-B', '-c', `
-import importlib.util, json, pathlib, re
+import importlib.util, json, pathlib, re, sys
+sys.path.insert(0, str(pathlib.Path('scripts').resolve()))
 spec = importlib.util.spec_from_file_location('runner', 'scripts/check-example-prose.py')
 runner = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(runner)
