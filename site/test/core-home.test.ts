@@ -7,6 +7,8 @@ import { API_MODELS } from '../src/lib/api-models'
 import { PORTS } from '../src/lib/ports'
 import { cardRoute, routesOf } from './core-routes'
 import { stagedSectionsFor } from '../src/lib/port-documentation'
+import type { ApiModel } from '@libtmux/api-model/reference'
+import RUST_MODELS from './fixtures/rust-core-home.json'
 
 const page = (port: string) => new URL(`../src/content/docs/ports/${port}/core/index.md`, import.meta.url)
 const graph = (port: string) => {
@@ -16,6 +18,37 @@ const graph = (port: string) => {
 }
 
 describe('Core Library home data', () => {
+  it.each(['native', 'release'] as const)('resolves every Rust home and LLM link against the extracted %s model', (source) => {
+    const previous = API_MODELS.rs!
+    const model = RUST_MODELS[source]
+    const version = source === 'release' ? '0.1.2' : 'latest'
+    try {
+      API_MODELS.rs = { port: 'rs', revision: model.revision, symbols: model.symbols } as unknown as ApiModel
+      const home = resolveCoreHome('rs', version)
+      expect(home.objects.map((object) => object.id)).toEqual(source === 'native'
+        ? ['libtmux_tokio.Server', 'libtmux_tokio.Session', 'libtmux_tokio.Window', 'libtmux_tokio.Pane']
+        : ['server.Server', 'session.Session', 'window.Window', 'pane.Pane'])
+      const rows = [...home.objects, ...Object.values(home.capabilities).flat()]
+      expect(rows).toHaveLength(CORE_ROLES.length + Object.keys(graph('rs').capabilities).length)
+      const markdown = coreHomeMarkdown('rs', version, 'https://libtmux.org')
+      for (const row of rows) {
+        expect(row.href).toBe(`/rs/${version}/reference/${row.id.replaceAll('.', '-').toLowerCase()}/`)
+        expect(markdown).toContain(`https://libtmux.org${row.href}`)
+      }
+    } finally { API_MODELS.rs = previous }
+  })
+
+  it('refuses a missing native Rust home owner while its blocking namesake exists', () => {
+    const previous = API_MODELS.rs!
+    try {
+      API_MODELS.rs = {
+        port: 'rs', revision: RUST_MODELS.native.revision,
+        symbols: RUST_MODELS.native.symbols.filter((symbol) => symbol.publicId !== 'libtmux_tokio.Server'),
+      } as unknown as ApiModel
+      expect(() => resolveCoreHome('rs', 'latest')).toThrow(/server.*not in its API model/)
+    } finally { API_MODELS.rs = previous }
+  })
+
   it('has an entry and a page for every port', () => {
     expect(Object.keys(CORE_HOME).sort()).toEqual(PORTS.map((port) => port.slug).sort())
     for (const port of PORTS) expect(existsSync(page(port.slug)), port.slug).toBe(true)

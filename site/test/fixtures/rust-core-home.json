@@ -1,0 +1,689 @@
+{
+  "repository": "libtmux/libtmux-rs",
+  "extractor": "extractRustWorkspace",
+  "native": {
+    "revision": "a60922ba2afedcdd9350e5c495611b99379ac0d4",
+    "modelSha256": "44974faddf1e71676ebb780f5d56a63a8e9bbffd11062171e430fe4bda284731",
+    "symbols": [
+      {
+        "id": "libtmux_tokio.server.Server",
+        "name": "Server",
+        "kind": "struct",
+        "signatures": [],
+        "source": {
+          "file": "crates/libtmux-tokio/src/server.rs",
+          "line": 509,
+          "repo": "libtmux/libtmux-rs",
+          "revision": "a60922ba2afedcdd9350e5c495611b99379ac0d4"
+        },
+        "publicId": "libtmux_tokio.Server",
+        "namespace": "libtmux_tokio",
+        "product": "core",
+        "slug": "libtmux_tokio-server"
+      },
+      {
+        "id": "libtmux_tokio.session.Session",
+        "name": "Session",
+        "kind": "struct",
+        "signatures": [],
+        "source": {
+          "file": "crates/libtmux-tokio/src/session.rs",
+          "line": 252,
+          "repo": "libtmux/libtmux-rs",
+          "revision": "a60922ba2afedcdd9350e5c495611b99379ac0d4"
+        },
+        "publicId": "libtmux_tokio.Session",
+        "namespace": "libtmux_tokio",
+        "product": "core",
+        "slug": "libtmux_tokio-session"
+      },
+      {
+        "id": "libtmux_tokio.window.Window",
+        "name": "Window",
+        "kind": "struct",
+        "signatures": [],
+        "source": {
+          "file": "crates/libtmux-tokio/src/window.rs",
+          "line": 289,
+          "repo": "libtmux/libtmux-rs",
+          "revision": "a60922ba2afedcdd9350e5c495611b99379ac0d4"
+        },
+        "publicId": "libtmux_tokio.Window",
+        "namespace": "libtmux_tokio",
+        "product": "core",
+        "slug": "libtmux_tokio-window"
+      },
+      {
+        "id": "libtmux_tokio.pane.Pane",
+        "name": "Pane",
+        "kind": "struct",
+        "signatures": [],
+        "source": {
+          "file": "crates/libtmux-tokio/src/pane.rs",
+          "line": 269,
+          "repo": "libtmux/libtmux-rs",
+          "revision": "a60922ba2afedcdd9350e5c495611b99379ac0d4"
+        },
+        "publicId": "libtmux_tokio.Pane",
+        "namespace": "libtmux_tokio",
+        "product": "core",
+        "slug": "libtmux_tokio-pane"
+      },
+      {
+        "id": "libtmux_core.target.PaneId",
+        "name": "PaneId",
+        "kind": "struct",
+        "signatures": [],
+        "source": {
+          "file": "crates/libtmux-core/src/target.rs",
+          "line": 242,
+          "repo": "libtmux/libtmux-rs",
+          "revision": "a60922ba2afedcdd9350e5c495611b99379ac0d4",
+          "extractedRevision": "a60922ba2afedcdd9350e5c495611b99379ac0d4"
+        },
+        "publicId": "libtmux_core.PaneId",
+        "namespace": "libtmux_core",
+        "product": "core",
+        "slug": "libtmux_core-paneid"
+      },
+      {
+        "id": "libtmux_core.query.FilterExpr",
+        "name": "FilterExpr",
+        "kind": "struct",
+        "signatures": [],
+        "source": {
+          "file": "crates/libtmux-core/src/query.rs",
+          "line": 1090,
+          "repo": "libtmux/libtmux-rs",
+          "revision": "a60922ba2afedcdd9350e5c495611b99379ac0d4"
+        },
+        "publicId": "libtmux_core.query.FilterExpr",
+        "namespace": "libtmux_core",
+        "product": "core",
+        "slug": "libtmux_core-query-filterexpr"
+      },
+      {
+        "id": "libtmux_tokio.error.Error",
+        "name": "Error",
+        "kind": "enum",
+        "signatures": [],
+        "source": {
+          "file": "crates/libtmux-tokio/src/error.rs",
+          "line": 366,
+          "repo": "libtmux/libtmux-rs",
+          "revision": "a60922ba2afedcdd9350e5c495611b99379ac0d4"
+        },
+        "publicId": "libtmux_tokio.Error",
+        "namespace": "libtmux_tokio",
+        "product": "core",
+        "slug": "libtmux_tokio-error"
+      },
+      {
+        "id": "libtmux_tokio.server.Server.panes",
+        "name": "panes",
+        "kind": "method",
+        "parent": "libtmux_tokio.server.Server",
+        "signatures": [
+          {
+            "raw": "pub async fn panes(&self) -> Result<Vec<Pane>, Error>",
+            "enclosingDeclaration": "impl Server",
+            "source": {
+              "file": "/tmp/libtmux-rs-dev/docs-native-sources/crates/libtmux-tokio/src/server/discovery.rs",
+              "line": 68
+            },
+            "params": [
+              {
+                "name": "&self"
+              }
+            ],
+            "returns": "Result<Vec<Pane>, Error>"
+          }
+        ],
+        "source": {
+          "file": "crates/libtmux-tokio/src/server/discovery.rs",
+          "line": 68,
+          "repo": "libtmux/libtmux-rs",
+          "revision": "a60922ba2afedcdd9350e5c495611b99379ac0d4"
+        },
+        "publicId": "libtmux_tokio.Server.panes",
+        "namespace": "libtmux_tokio",
+        "product": "core",
+        "slug": "libtmux_tokio-server-panes"
+      },
+      {
+        "id": "libtmux_tokio.error.Error.UnsupportedCapability",
+        "name": "UnsupportedCapability",
+        "kind": "constant",
+        "parent": "libtmux_tokio.error.Error",
+        "signatures": [
+          {
+            "raw": "UnsupportedCapability {\n    capability: &'static str,\n    needs: ReleaseVersion,\n    found: TmuxVersion,\n}",
+            "params": []
+          }
+        ],
+        "source": {
+          "file": "crates/libtmux-tokio/src/error.rs",
+          "line": 665,
+          "repo": "libtmux/libtmux-rs",
+          "revision": "a60922ba2afedcdd9350e5c495611b99379ac0d4"
+        },
+        "publicId": "libtmux_tokio.Error.UnsupportedCapability",
+        "namespace": "libtmux_tokio",
+        "product": "core",
+        "slug": "libtmux_tokio-error-unsupportedcapability"
+      },
+      {
+        "id": "libtmux_tokio.pane.Pane.from_env",
+        "name": "from_env",
+        "kind": "method",
+        "parent": "libtmux_tokio.pane.Pane",
+        "signatures": [
+          {
+            "raw": "pub async fn from_env(server: &crate::Server) -> Result<Option<Self>, Error>",
+            "enclosingDeclaration": "impl Pane",
+            "source": {
+              "file": "/tmp/libtmux-rs-dev/docs-native-sources/crates/libtmux-tokio/src/pane.rs",
+              "line": 347
+            },
+            "params": [
+              {
+                "name": "server",
+                "type": "&crate::Server"
+              }
+            ],
+            "returns": "Result<Option<Self>, Error>"
+          }
+        ],
+        "source": {
+          "file": "crates/libtmux-tokio/src/pane.rs",
+          "line": 347,
+          "repo": "libtmux/libtmux-rs",
+          "revision": "a60922ba2afedcdd9350e5c495611b99379ac0d4"
+        },
+        "publicId": "libtmux_tokio.Pane.from_env",
+        "namespace": "libtmux_tokio",
+        "product": "core",
+        "slug": "libtmux_tokio-pane-from_env"
+      },
+      {
+        "id": "libtmux_tokio.test.TestServer",
+        "name": "TestServer",
+        "kind": "struct",
+        "signatures": [],
+        "source": {
+          "file": "crates/libtmux-tokio/src/test.rs",
+          "line": 614,
+          "repo": "libtmux/libtmux-rs",
+          "revision": "a60922ba2afedcdd9350e5c495611b99379ac0d4"
+        },
+        "publicId": "libtmux_tokio.test.TestServer",
+        "namespace": "libtmux_tokio",
+        "product": "core",
+        "slug": "libtmux_tokio-test-testserver"
+      },
+      {
+        "id": "libtmux_tokio.server.Server.new_session",
+        "name": "new_session",
+        "kind": "method",
+        "parent": "libtmux_tokio.server.Server",
+        "signatures": [
+          {
+            "raw": "pub async fn new_session(\n        &self,\n        options: impl Into<NewSession>,\n    ) -> Result<libtmux_core::CreatedSession, Error>",
+            "enclosingDeclaration": "impl Server",
+            "source": {
+              "file": "/tmp/libtmux-rs-dev/docs-native-sources/crates/libtmux-tokio/src/server.rs",
+              "line": 1104
+            },
+            "params": [
+              {
+                "name": "&self"
+              },
+              {
+                "name": "options",
+                "type": "impl Into<NewSession>"
+              }
+            ],
+            "returns": "Result<libtmux_core::CreatedSession, Error>"
+          }
+        ],
+        "source": {
+          "file": "crates/libtmux-tokio/src/server.rs",
+          "line": 1104,
+          "repo": "libtmux/libtmux-rs",
+          "revision": "a60922ba2afedcdd9350e5c495611b99379ac0d4"
+        },
+        "publicId": "libtmux_tokio.Server.new_session",
+        "namespace": "libtmux_tokio",
+        "product": "core",
+        "slug": "libtmux_tokio-server-new_session"
+      },
+      {
+        "id": "libtmux_tokio.pane.Pane.send_keys",
+        "name": "send_keys",
+        "kind": "method",
+        "parent": "libtmux_tokio.pane.Pane",
+        "signatures": [
+          {
+            "raw": "pub async fn send_keys(&self, keys: impl Into<OsString>) -> Result<(), Error>",
+            "enclosingDeclaration": "impl Pane",
+            "source": {
+              "file": "/tmp/libtmux-rs-dev/docs-native-sources/crates/libtmux-tokio/src/pane.rs",
+              "line": 869
+            },
+            "params": [
+              {
+                "name": "&self"
+              },
+              {
+                "name": "keys",
+                "type": "impl Into<OsString>"
+              }
+            ],
+            "returns": "Result<(), Error>"
+          }
+        ],
+        "source": {
+          "file": "crates/libtmux-tokio/src/pane.rs",
+          "line": 869,
+          "repo": "libtmux/libtmux-rs",
+          "revision": "a60922ba2afedcdd9350e5c495611b99379ac0d4"
+        },
+        "publicId": "libtmux_tokio.Pane.send_keys",
+        "namespace": "libtmux_tokio",
+        "product": "core",
+        "slug": "libtmux_tokio-pane-send_keys"
+      },
+      {
+        "id": "libtmux_tokio.control.ControlMode",
+        "name": "ControlMode",
+        "kind": "struct",
+        "signatures": [],
+        "source": {
+          "file": "crates/libtmux-tokio/src/control.rs",
+          "line": 200,
+          "repo": "libtmux/libtmux-rs",
+          "revision": "a60922ba2afedcdd9350e5c495611b99379ac0d4"
+        },
+        "publicId": "libtmux_tokio.control.ControlMode",
+        "namespace": "libtmux_tokio",
+        "product": "core",
+        "slug": "libtmux_tokio-control-controlmode"
+      },
+      {
+        "id": "libtmux_tokio.pane.Pane.capture",
+        "name": "capture",
+        "kind": "method",
+        "parent": "libtmux_tokio.pane.Pane",
+        "signatures": [
+          {
+            "raw": "pub async fn capture(&self) -> Result<Vec<TmuxText>, Error>",
+            "enclosingDeclaration": "impl Pane",
+            "source": {
+              "file": "/tmp/libtmux-rs-dev/docs-native-sources/crates/libtmux-tokio/src/pane/observe.rs",
+              "line": 117
+            },
+            "params": [
+              {
+                "name": "&self"
+              }
+            ],
+            "returns": "Result<Vec<TmuxText>, Error>"
+          }
+        ],
+        "source": {
+          "file": "crates/libtmux-tokio/src/pane/observe.rs",
+          "line": 117,
+          "repo": "libtmux/libtmux-rs",
+          "revision": "a60922ba2afedcdd9350e5c495611b99379ac0d4"
+        },
+        "publicId": "libtmux_tokio.Pane.capture",
+        "namespace": "libtmux_tokio",
+        "product": "core",
+        "slug": "libtmux_tokio-pane-capture"
+      },
+      {
+        "id": "libtmux_blocking.Server",
+        "name": "Server",
+        "kind": "struct",
+        "signatures": [],
+        "source": {
+          "file": "crates/libtmux-blocking/src/lib.rs",
+          "line": 117,
+          "repo": "libtmux/libtmux-rs",
+          "revision": "a60922ba2afedcdd9350e5c495611b99379ac0d4"
+        },
+        "publicId": "libtmux_blocking.Server",
+        "namespace": "libtmux_blocking",
+        "product": "core",
+        "slug": "libtmux_blocking-server"
+      }
+    ]
+  },
+  "release": {
+    "revision": "15cfa2b1845d9894c93d8025d8b83e75d756f073",
+    "modelSha256": "cedfb11195b33f2a7ea06393017f4840b91d8ef8ea258699ef688acb8b810d26",
+    "symbols": [
+      {
+        "id": "server.Server",
+        "name": "Server",
+        "kind": "struct",
+        "signatures": [],
+        "source": {
+          "file": "crates/libtmux/src/server.rs",
+          "line": 509,
+          "repo": "libtmux/libtmux-rs",
+          "revision": "15cfa2b1845d9894c93d8025d8b83e75d756f073"
+        },
+        "publicId": "server.Server",
+        "product": "core",
+        "slug": "server-server"
+      },
+      {
+        "id": "session.Session",
+        "name": "Session",
+        "kind": "struct",
+        "signatures": [],
+        "source": {
+          "file": "crates/libtmux/src/session.rs",
+          "line": 252,
+          "repo": "libtmux/libtmux-rs",
+          "revision": "15cfa2b1845d9894c93d8025d8b83e75d756f073"
+        },
+        "publicId": "session.Session",
+        "product": "core",
+        "slug": "session-session"
+      },
+      {
+        "id": "window.Window",
+        "name": "Window",
+        "kind": "struct",
+        "signatures": [],
+        "source": {
+          "file": "crates/libtmux/src/window.rs",
+          "line": 289,
+          "repo": "libtmux/libtmux-rs",
+          "revision": "15cfa2b1845d9894c93d8025d8b83e75d756f073"
+        },
+        "publicId": "window.Window",
+        "product": "core",
+        "slug": "window-window"
+      },
+      {
+        "id": "pane.Pane",
+        "name": "Pane",
+        "kind": "struct",
+        "signatures": [],
+        "source": {
+          "file": "crates/libtmux/src/pane.rs",
+          "line": 61,
+          "repo": "libtmux/libtmux-rs",
+          "revision": "15cfa2b1845d9894c93d8025d8b83e75d756f073"
+        },
+        "publicId": "pane.Pane",
+        "product": "core",
+        "slug": "pane-pane"
+      },
+      {
+        "id": "target.PaneId",
+        "name": "PaneId",
+        "kind": "struct",
+        "signatures": [],
+        "source": {
+          "file": "crates/libtmux/src/target.rs",
+          "line": 162,
+          "repo": "libtmux/libtmux-rs",
+          "revision": "15cfa2b1845d9894c93d8025d8b83e75d756f073",
+          "extractedRevision": "15cfa2b1845d9894c93d8025d8b83e75d756f073"
+        },
+        "publicId": "target.PaneId",
+        "product": "core",
+        "slug": "target-paneid"
+      },
+      {
+        "id": "query.FilterExpr",
+        "name": "FilterExpr",
+        "kind": "struct",
+        "signatures": [],
+        "source": {
+          "file": "crates/libtmux/src/query.rs",
+          "line": 1091,
+          "repo": "libtmux/libtmux-rs",
+          "revision": "15cfa2b1845d9894c93d8025d8b83e75d756f073"
+        },
+        "publicId": "query.FilterExpr",
+        "product": "core",
+        "slug": "query-filterexpr"
+      },
+      {
+        "id": "error.Error",
+        "name": "Error",
+        "kind": "enum",
+        "signatures": [],
+        "source": {
+          "file": "crates/libtmux/src/error.rs",
+          "line": 430,
+          "repo": "libtmux/libtmux-rs",
+          "revision": "15cfa2b1845d9894c93d8025d8b83e75d756f073"
+        },
+        "publicId": "error.Error",
+        "product": "core",
+        "slug": "error-error"
+      },
+      {
+        "id": "server.Server.panes",
+        "name": "panes",
+        "kind": "method",
+        "parent": "server.Server",
+        "signatures": [
+          {
+            "raw": "pub async fn panes(&self) -> Result<Vec<Pane>, Error>",
+            "enclosingDeclaration": "impl Server",
+            "source": {
+              "file": "/tmp/libtmux-rs-dev/docs-release-sources/crates/libtmux/src/server/discovery.rs",
+              "line": 40
+            },
+            "params": [
+              {
+                "name": "&self"
+              }
+            ],
+            "returns": "Result<Vec<Pane>, Error>"
+          }
+        ],
+        "source": {
+          "file": "crates/libtmux/src/server/discovery.rs",
+          "line": 40,
+          "repo": "libtmux/libtmux-rs",
+          "revision": "15cfa2b1845d9894c93d8025d8b83e75d756f073"
+        },
+        "publicId": "server.Server.panes",
+        "product": "core",
+        "slug": "server-server-panes"
+      },
+      {
+        "id": "error.Error.UnsupportedCapability",
+        "name": "UnsupportedCapability",
+        "kind": "constant",
+        "parent": "error.Error",
+        "signatures": [
+          {
+            "raw": "UnsupportedCapability {\n    capability: &'static str,\n    needs: ReleaseVersion,\n    found: TmuxVersion,\n}",
+            "params": []
+          }
+        ],
+        "source": {
+          "file": "crates/libtmux/src/error.rs",
+          "line": 682,
+          "repo": "libtmux/libtmux-rs",
+          "revision": "15cfa2b1845d9894c93d8025d8b83e75d756f073"
+        },
+        "publicId": "error.Error.UnsupportedCapability",
+        "product": "core",
+        "slug": "error-error-unsupportedcapability"
+      },
+      {
+        "id": "pane.Pane.from_env",
+        "name": "from_env",
+        "kind": "method",
+        "parent": "pane.Pane",
+        "signatures": [
+          {
+            "raw": "pub async fn from_env(server: &crate::Server) -> Result<Option<Self>, Error>",
+            "enclosingDeclaration": "impl Pane",
+            "source": {
+              "file": "/tmp/libtmux-rs-dev/docs-release-sources/crates/libtmux/src/pane.rs",
+              "line": 120
+            },
+            "params": [
+              {
+                "name": "server",
+                "type": "&crate::Server"
+              }
+            ],
+            "returns": "Result<Option<Self>, Error>"
+          }
+        ],
+        "source": {
+          "file": "crates/libtmux/src/pane.rs",
+          "line": 120,
+          "repo": "libtmux/libtmux-rs",
+          "revision": "15cfa2b1845d9894c93d8025d8b83e75d756f073"
+        },
+        "publicId": "pane.Pane.from_env",
+        "product": "core",
+        "slug": "pane-pane-from_env"
+      },
+      {
+        "id": "test.TestServer",
+        "name": "TestServer",
+        "kind": "struct",
+        "signatures": [],
+        "source": {
+          "file": "crates/libtmux/src/test.rs",
+          "line": 614,
+          "repo": "libtmux/libtmux-rs",
+          "revision": "15cfa2b1845d9894c93d8025d8b83e75d756f073"
+        },
+        "publicId": "test.TestServer",
+        "product": "core",
+        "slug": "test-testserver"
+      },
+      {
+        "id": "server.Server.new_session",
+        "name": "new_session",
+        "kind": "method",
+        "parent": "server.Server",
+        "signatures": [
+          {
+            "raw": "pub async fn new_session(\n        &self,\n        options: impl Into<NewSessionOptions>,\n    ) -> Result<Session, Error>",
+            "enclosingDeclaration": "impl Server",
+            "source": {
+              "file": "/tmp/libtmux-rs-dev/docs-release-sources/crates/libtmux/src/server.rs",
+              "line": 1100
+            },
+            "params": [
+              {
+                "name": "&self"
+              },
+              {
+                "name": "options",
+                "type": "impl Into<NewSessionOptions>"
+              }
+            ],
+            "returns": "Result<Session, Error>"
+          }
+        ],
+        "source": {
+          "file": "crates/libtmux/src/server.rs",
+          "line": 1100,
+          "repo": "libtmux/libtmux-rs",
+          "revision": "15cfa2b1845d9894c93d8025d8b83e75d756f073"
+        },
+        "publicId": "server.Server.new_session",
+        "product": "core",
+        "slug": "server-server-new_session"
+      },
+      {
+        "id": "pane.Pane.send_keys",
+        "name": "send_keys",
+        "kind": "method",
+        "parent": "pane.Pane",
+        "signatures": [
+          {
+            "raw": "pub async fn send_keys(&self, keys: impl Into<OsString>) -> Result<(), Error>",
+            "enclosingDeclaration": "impl Pane",
+            "source": {
+              "file": "/tmp/libtmux-rs-dev/docs-release-sources/crates/libtmux/src/pane.rs",
+              "line": 642
+            },
+            "params": [
+              {
+                "name": "&self"
+              },
+              {
+                "name": "keys",
+                "type": "impl Into<OsString>"
+              }
+            ],
+            "returns": "Result<(), Error>"
+          }
+        ],
+        "source": {
+          "file": "crates/libtmux/src/pane.rs",
+          "line": 642,
+          "repo": "libtmux/libtmux-rs",
+          "revision": "15cfa2b1845d9894c93d8025d8b83e75d756f073"
+        },
+        "publicId": "pane.Pane.send_keys",
+        "product": "core",
+        "slug": "pane-pane-send_keys"
+      },
+      {
+        "id": "control.ControlMode",
+        "name": "ControlMode",
+        "kind": "struct",
+        "signatures": [],
+        "source": {
+          "file": "crates/libtmux/src/control.rs",
+          "line": 464,
+          "repo": "libtmux/libtmux-rs",
+          "revision": "15cfa2b1845d9894c93d8025d8b83e75d756f073"
+        },
+        "publicId": "control.ControlMode",
+        "product": "core",
+        "slug": "control-controlmode"
+      },
+      {
+        "id": "pane.Pane.capture",
+        "name": "capture",
+        "kind": "method",
+        "parent": "pane.Pane",
+        "signatures": [
+          {
+            "raw": "pub async fn capture(&self) -> Result<Vec<TmuxText>, Error>",
+            "enclosingDeclaration": "impl Pane",
+            "source": {
+              "file": "/tmp/libtmux-rs-dev/docs-release-sources/crates/libtmux/src/pane/observe.rs",
+              "line": 120
+            },
+            "params": [
+              {
+                "name": "&self"
+              }
+            ],
+            "returns": "Result<Vec<TmuxText>, Error>"
+          }
+        ],
+        "source": {
+          "file": "crates/libtmux/src/pane/observe.rs",
+          "line": 120,
+          "repo": "libtmux/libtmux-rs",
+          "revision": "15cfa2b1845d9894c93d8025d8b83e75d756f073"
+        },
+        "publicId": "pane.Pane.capture",
+        "product": "core",
+        "slug": "pane-pane-capture"
+      }
+    ]
+  }
+}

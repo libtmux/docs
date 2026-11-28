@@ -2,13 +2,36 @@ import { readFileSync } from 'node:fs'
 import { afterEach, expect, it, vi } from 'vitest'
 
 vi.mock('astro:content', () => ({ getCollection: vi.fn(async () => []) }))
-import { exportsMcpContracts, referenceEntries } from '../src/lib/llms'
+import { exportsMcpContracts, llmsPage, referenceEntries } from '../src/lib/llms'
 import { parseSlots } from '../src/lib/workspace-shared-slots'
 import { PORTS, productAvailable } from '../src/lib/ports'
+import { API_MODELS } from '../src/lib/api-models'
+import { resolveCoreHome } from '../src/lib/core-home'
+import type { ApiModel } from '@libtmux/api-model/reference'
+import type { CollectionEntry } from 'astro:content'
+import RUST_MODELS from './fixtures/rust-core-home.json'
 
 afterEach(() => vi.unstubAllEnvs())
 
 const origin = 'https://libtmux.org'
+
+it.each(['native', 'release'] as const)('exports every Rust core home link from the %s source model', (source) => {
+  const previous = API_MODELS.rs!
+  const model = RUST_MODELS[source]
+  const version = source === 'release' ? '0.1.2' : 'latest'
+  vi.stubEnv('LIBTMUX_DOCS_PORT', 'rs')
+  vi.stubEnv('LIBTMUX_DOCS_VERSION', version)
+  try {
+    API_MODELS.rs = { port: 'rs', revision: model.revision, symbols: model.symbols } as unknown as ApiModel
+    const entry = { id: 'ports/rs/core/index', collection: 'docs', body: '', data: { title: 'Core library', port: 'rs', route: 'core' } } as CollectionEntry<'docs'>
+    const exported = llmsPage(entry, origin, `/rs/${version}/`)
+    const home = resolveCoreHome('rs', version)
+    expect(exported.url).toBe(`${origin}/rs/${version}/core/`)
+    for (const row of [...home.objects, ...Object.values(home.capabilities).flat()]) {
+      expect(exported.body).toContain(`${origin}${row.href}`)
+    }
+  } finally { API_MODELS.rs = previous }
+})
 
 it('lists a port\'s root classes and modules with their first-sentence summaries', () => {
   vi.stubEnv('LIBTMUX_DOCS_PORT', 'clojure')

@@ -155,25 +155,76 @@
   },
   "rs": {
     "objects": {
-      "server": "server.Server",
-      "session": "session.Session",
-      "window": "window.Window",
-      "pane": "pane.Pane"
+      "server": [
+        "libtmux_tokio.Server",
+        "server.Server"
+      ],
+      "session": [
+        "libtmux_tokio.Session",
+        "session.Session"
+      ],
+      "window": [
+        "libtmux_tokio.Window",
+        "window.Window"
+      ],
+      "pane": [
+        "libtmux_tokio.Pane",
+        "pane.Pane"
+      ]
     },
     "capabilities": {
-      "objects": "pane.Pane",
-      "ids": "target.PaneId",
-      "queries": "query.FilterExpr",
-      "errors": "error.Error",
-      "traversal": "server.Server.panes",
-      "version-gate": "error.Error.UnsupportedCapability",
-      "current-pane": "pane.Pane.from_env",
-      "test-fixtures": "test.TestServer",
-      "async": "server.Server.new_session",
-      "servers": "server.Server",
-      "send-keys": "pane.Pane.send_keys",
-      "control-mode": "control.ControlMode",
-      "capture": "pane.Pane.capture"
+      "objects": [
+        "libtmux_tokio.Pane",
+        "pane.Pane"
+      ],
+      "ids": [
+        "libtmux_core.PaneId",
+        "target.PaneId"
+      ],
+      "queries": [
+        "libtmux_core.query.FilterExpr",
+        "query.FilterExpr"
+      ],
+      "errors": [
+        "libtmux_tokio.Error",
+        "error.Error"
+      ],
+      "traversal": [
+        "libtmux_tokio.Server.panes",
+        "server.Server.panes"
+      ],
+      "version-gate": [
+        "libtmux_tokio.Error.UnsupportedCapability",
+        "error.Error.UnsupportedCapability"
+      ],
+      "current-pane": [
+        "libtmux_tokio.Pane.from_env",
+        "pane.Pane.from_env"
+      ],
+      "test-fixtures": [
+        "libtmux_tokio.test.TestServer",
+        "test.TestServer"
+      ],
+      "async": [
+        "libtmux_tokio.Server.new_session",
+        "server.Server.new_session"
+      ],
+      "servers": [
+        "libtmux_tokio.Server",
+        "server.Server"
+      ],
+      "send-keys": [
+        "libtmux_tokio.Pane.send_keys",
+        "pane.Pane.send_keys"
+      ],
+      "control-mode": [
+        "libtmux_tokio.control.ControlMode",
+        "control.ControlMode"
+      ],
+      "capture": [
+        "libtmux_tokio.Pane.capture",
+        "pane.Pane.capture"
+      ]
     }
   },
   "go": {

@@ -14,6 +14,7 @@ import { qualifiedNameOf } from '@libtmux/api-model/modules'
 import DATA from '../data/core-home.json'
 import { API_MODELS, referenceHref } from './api-models.ts'
 import { PORT_BY_SLUG } from './ports.ts'
+import type { ApiBinding } from './core-apis.ts'
 
 export const CORE_ROLES = ['server', 'session', 'window', 'pane'] as const
 export type CoreRole = (typeof CORE_ROLES)[number]
@@ -83,13 +84,13 @@ const CAPABILITY_EVIDENCE: Record<CapabilityKey, { needs: string; test: (symbol:
 
 export interface CoreGraphHomeEntry {
   /** A separately modeled session-window association, where the port exposes one. */
-  association?: string
-  objects: Record<CoreRole, string>
+  association?: ApiBinding
+  objects: Record<CoreRole, ApiBinding>
   /** A native model may distinguish a connection or global window from contextual handles. */
   wraps?: Partial<Record<CoreRole, string>>
   modules?: never
   objectDescriptions?: Partial<Record<CoreRole, string>>
-  capabilities: Partial<Record<CapabilityKey, string>>
+  capabilities: Partial<Record<CapabilityKey, ApiBinding>>
   /** Replaces a capability's shared label where the port delivers it differently, as plain maps instead of typed objects. */
   capabilityLabels?: Partial<Record<CapabilityKey, string>>
 }
@@ -125,9 +126,12 @@ export interface CoreHome {
 
 export const CORE_HOME: Readonly<Record<string, CoreHomeEntry>> = DATA as Record<string, CoreHomeEntry>
 
-function link(port: string, id: string, version: string, what: string, evidence?: CapabilityKey): CoreSymbolLink {
-  const symbol = API_MODELS[port]?.symbols.find((entry) => (entry.publicId ?? entry.id) === id)
-  if (!symbol) throw new Error(`core-home: ${port} ${what} names ${id}, which is not in its API model`)
+function link(port: string, binding: ApiBinding, version: string, what: string, evidence?: CapabilityKey): CoreSymbolLink {
+  const candidates = typeof binding === 'string' ? [binding] : binding
+  const symbols = API_MODELS[port]?.symbols ?? []
+  const id = candidates.find((candidate) => symbols.some((entry) => (entry.publicId ?? entry.id) === candidate))
+  const symbol = symbols.find((entry) => (entry.publicId ?? entry.id) === id)
+  if (!symbol || !id) throw new Error(`core-home: ${port} ${what} names ${candidates.join(' or ')}, which is not in its API model`)
   if (symbol.apiScope === 'internal' || (symbol.product ?? 'core') !== 'core') {
     throw new Error(`core-home: ${port} ${what} names ${id}, which has no core reference page`)
   }
