@@ -24,12 +24,13 @@ export const SESSION_LANGS = new Set(['console', 'shellsession'])
 export const PROMPT = '$ '
 
 /**
- * Keep open quotes across lines and distinguish shell operators from literal text.
+ * Keep open quotes and parentheses across lines, ignoring quoted shell syntax.
  * @param {string} text
  * @param {string} quote
  * @param {boolean} inWord
+ * @param {number} parentheses
  */
-function commandContinuation(text, quote, inWord) {
+function commandContinuation(text, quote, inWord, parentheses) {
   let escaped = false
   let syntax = quote || inWord ? 'x' : ''
   for (let index = 0; index < text.length; index++) {
@@ -53,22 +54,25 @@ function commandContinuation(text, quote, inWord) {
     } else if (character === '#' && (!syntax || /[\s;&|()]$/.test(syntax))) {
       break
     } else {
+      if (character === '(') parentheses++
+      else if (character === ')') parentheses = Math.max(0, parentheses - 1)
       syntax += character
     }
   }
   const continuation = quote ? 'quote'
     : escaped ? 'backslash'
-      : /(?:&&|\|\||\|)\s*$/.test(syntax) ? 'operator' : ''
+      : /(?:&&|\|\||\|)\s*$/.test(syntax) ? 'operator'
+        : parentheses ? 'parentheses' : ''
   // Backslash-newline joins the next line without creating a word boundary.
   const joinedWord = escaped && /[^\s;&|()]$/.test(syntax.slice(0, -1))
-  return { quote, continuation, inWord: joinedWord }
+  return { quote, continuation, inWord: joinedWord, parentheses }
 }
 
 /**
  * Classify each line of a session.
  *
  * A line that starts with the prompt is a command, and so is each line after
- * one with an open quote, trailing `\`, or unquoted `&&`, `||`, or `|`.
+ * one with an open quote or parenthesis, trailing `\`, or unquoted `&&`, `||`, or `|`.
  * Anything else is output. A block with no prompt is a bare command list, like the MCP
  * widget's CLI bodies, so every line is a command.
  *
@@ -83,15 +87,16 @@ export function sessionLines(lines) {
   let continuation = ''
   let quote = ''
   let inWord = false
+  let parentheses = 0
   return lines.map((line) => {
     /** @type {'prompt' | 'command' | 'output'} */
     const kind = continuation ? 'command' : line.startsWith(PROMPT) ? 'prompt' : 'output'
     const text = kind === 'prompt' ? line.slice(PROMPT.length) : line
     const awaitingOperand = continuation === 'operator' && /^\s*(?:#.*)?$/.test(text)
     if (!awaitingOperand) {
-      ({ quote, continuation, inWord } = kind !== 'output'
-        ? commandContinuation(text, quote, inWord)
-        : { quote: '', continuation: '', inWord: false })
+      ({ quote, continuation, inWord, parentheses } = kind !== 'output'
+        ? commandContinuation(text, quote, inWord, parentheses)
+        : { quote: '', continuation: '', inWord: false, parentheses: 0 })
     }
     return { kind, text }
   })

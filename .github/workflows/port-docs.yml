@@ -881,7 +881,7 @@ jobs:
             test/rust-native-witness.test.ts test/rust-proof.test.ts test/rust-snapshots.test.ts \
             test/rust-archives.test.ts test/rust-repeat.test.ts test/rust-concepts.test.ts
           time node site/node_modules/vitest/vitest.mjs run --root site \
-            test/port-docs-identity.test.ts test/port-docs-runtime.test.ts
+            test/port-docs-identity.test.ts test/port-docs-runtime.test.ts test/ec-shell-prompt.test.ts
 
       - name: Repeat the native Rust render from clean pinned worktrees
         if: matrix.port == 'rs'

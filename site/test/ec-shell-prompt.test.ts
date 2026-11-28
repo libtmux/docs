@@ -1,12 +1,26 @@
 import { describe, expect, it } from 'vitest'
+import { readFileSync } from 'node:fs'
 import { createRenderer } from 'astro-expressive-code'
 import { select } from 'astro-expressive-code/hast'
 import { sessionLines, shellPrompt } from '../src/plugins/ec-shell-prompt.mjs'
+import ecConfig from '../ec.config.mjs'
 
 const copied = (lines: string[]) => sessionLines(lines)
   .filter((line) => line.kind !== 'output').map((line) => line.text).join('\n')
 
 describe('console command continuations', () => {
+  it('copies the entire native mixed-reader subshell through the real renderer', async () => {
+    const command = readFileSync(new URL('../../packages/api-model/test/fixtures/rust-mixed-run-command.sh', import.meta.url), 'utf8').trimEnd()
+    const renderer = await createRenderer(ecConfig)
+    const rendered = await renderer.ec.render({ code: `$ ${command}\nmixed runtime`, language: 'console' })
+    expect(select('[data-code]', rendered.renderedGroupAst)?.properties.dataCode).toBe(command.replace(/\n/g, '\x7f'))
+  })
+
+  it('keeps nested shell groups open while ignoring quoted, escaped and commented parentheses', () => {
+    const command = '(\n  printf "%s" "(quoted)" # )\n  echo \\(literal\\)\n  (\n    echo nested\n  )\n)'
+    expect(copied([...`$ ${command}`.split('\n'), 'output', '$ next'])).toBe(`${command}\nnext`)
+  })
+
   it('copies a multiline quoted program including comment lines, then omits output', async () => {
     const renderer = await createRenderer({ plugins: [shellPrompt()] })
     const command = "ruby -e '\n# Ruby source\nputs \"ready\"\n'"
