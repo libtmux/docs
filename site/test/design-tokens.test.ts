@@ -323,10 +323,7 @@ describe('control outlines', () => {
     ['components/docs/Sidebar.astro', '.section-search input'],
     ['components/SearchPanel.astro', '.search-panel__field'],
     ['components/widgets/TaskPicker.astro', '.task-native select'],
-    ['components/widgets/mcp-install.css', '.lm-mcp-install__copy'],
-    ['components/widgets/package-install.css', '.lm-pkg-install__copy'],
     ['components/widgets/AgentPrompt.astro', '.lm-agent-prompt__copy'],
-    ['styles/core-player.css', '.expressive-code .core-copy'],
     ['styles/global.css', '.scheme-switch'],
     ['styles/global.css', '.scheme-cycle'],
     ['components/widgets/install-surface.css', '.lm-install__cdtoggle'],
@@ -377,26 +374,29 @@ describe('control outlines', () => {
     expect(insetLikeControls(drifted)).toBe(false)
   })
 
-  /** The installer's Copy is a clipboard in a 30px outlined square with the control radius (record 0067), not a text button. */
-  const isIconSquare = (body: string) =>
-    /width:\s*1\.875rem/.test(body) && /height:\s*1\.875rem/.test(body) && /border-radius:\s*0\.375rem/.test(body) &&
-    /border:\s*1px solid var\(--control-border\)/.test(body) && !/font-size/.test(body) && !/padding:\s*0\.3rem/.test(body)
+  /** Every copy button is a bare clipboard (record 0087): 2rem square, no border, no fill at rest, muted ink, the control hover fill on hover. */
+  const isMinimalCopy = (body: string) =>
+    /width:\s*2rem/.test(body) && /height:\s*2rem/.test(body) && /border:\s*0\s*;/.test(body) &&
+    /background:\s*none/.test(body) && !/font-size/.test(body) && !/opacity:/.test(body)
+  const hoverFill = (text: string, selector: string) => /background:\s*var\(--color-surface-hover\)/.test(declarations(text, `${selector}:hover`))
 
-  it.each([
+  const COPIES: [string, string][] = [
     ['components/widgets/mcp-install.css', '.lm-mcp-install__copy'],
     ['components/widgets/package-install.css', '.lm-pkg-install__copy'],
-  ])('%s %s is a clipboard in a 30px outlined square, with no word', (file, selector) => {
-    expect(isIconSquare(declarations(source(file), selector))).toBe(true)
+    ['styles/core-player.css', '.expressive-code .core-copy'],
+  ]
+
+  it.each(COPIES)('%s %s is a bare 2rem clipboard that fills on hover', (file, selector) => {
+    const text = source(file)
+    expect(isMinimalCopy(declarations(text, selector))).toBe(true)
+    expect(hoverFill(text, selector)).toBe(true)
   })
 
-  // An outline drawn through `opacity` is not the outline that was measured: the button's own opacity dims it as well.
-  it('draws the code player copy button at full opacity, so its outline keeps the measured 3:1', () => {
-    expect(declarations(source('styles/core-player.css'), '.expressive-code .core-copy')).not.toMatch(/opacity:/)
-  })
-
-  it('has a control: the outlined text button the square replaced is not one', () => {
-    const textButton = '.copy { border: 1px solid var(--control-border); border-radius: 0.25rem; font-size: 0.75em; padding: 0.3rem 0.5rem; }'
-    expect(isIconSquare(declarations(textButton, '.copy'))).toBe(false)
+  it('has a control: the outlined square record 0067 drew, and an outlined text button, are not minimal', () => {
+    const outlined = '.copy { width: 1.875rem; height: 1.875rem; border: 1px solid var(--control-border); background: var(--lm-bg); }'
+    expect(isMinimalCopy(declarations(outlined, '.copy'))).toBe(false)
+    const textButton = '.copy { border: 0; background: none; font-size: 0.75em; padding: 0.3rem 0.5rem; }'
+    expect(isMinimalCopy(declarations(textButton, '.copy'))).toBe(false)
   })
 })
 

@@ -72,7 +72,7 @@ export async function checkCompleteApiExamples(browser, base) {
 /**
  * Exercise the installed widget scripts with accepted and refused clipboard writes.
  *
- * The installers' Copy is a clipboard icon with no word in it (record 0067): a copy shows a checked clipboard
+ * The installers' Copy is a clipboard icon with no word in it (records 0067, 0087): a copy shows a checked clipboard
  * (`data-copied`) and a refusal marks the button `data-failed`. The prompt's Copy is still a word, and says
  * "Copied". `sabotage` is a negative control: a script that breaks the feedback must make the check fail.
  */
