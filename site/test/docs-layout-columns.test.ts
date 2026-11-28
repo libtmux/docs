@@ -86,3 +86,20 @@ it('keeps the prose layout for a page that does not ask for another', async () =
   expect(document.querySelector('[data-context]')?.getAttribute('data-reference')).not.toBe('true')
   expect(document.querySelector('[data-context]')?.getAttribute('data-contents')).toBe('true')
 })
+
+it('draws a product overview with no rail and no contents control, and a guide with both (record 0090)', async () => {
+  const headings = [{ depth: 2, slug: 'install', text: 'Install' }, { depth: 2, slug: 'tools', text: 'Tools' }]
+  const overview = await renderLayout({ overview: true, headings, pagePath: 'core', port: 'ts' })
+  expect(overview.querySelector('[data-toc-rail], #mobile-toc, nav.toc-nav'), 'no rail and no drawer').toBeNull()
+  expect(overview.querySelector('.docs-has-toc'), 'no column reserved for a rail').toBeNull()
+  expect(overview.querySelector('[data-context]')?.getAttribute('data-contents')).toBe('false')
+
+  const guide = await renderLayout({ headings, pagePath: 'guides/panes', port: 'ts' })
+  expect(guide.querySelector('[data-toc-rail]'), 'a guide keeps its rail').not.toBeNull()
+  expect(guide.querySelector('#mobile-toc')).not.toBeNull()
+  expect(guide.querySelector('.docs-has-toc')).not.toBeNull()
+
+  // DocPage is what says a page is an overview: the Core home and a product's own overview.
+  const page = readFileSync(new URL('../src/components/docs/DocPage.astro', import.meta.url), 'utf8')
+  expect(page).toContain('overview={isCoreHome || isProductOverview}')
+})

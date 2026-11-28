@@ -180,6 +180,7 @@ const productIntro = isProductOverview && port && coreHome
   canonicalOverride={placeholderLocale ? englishHref : undefined}
   updated={entry.data.updated}
   tableOfContents={showToc}
+  overview={isCoreHome || isProductOverview}
   locale={locale}
   locales={placeholderLocale || entry.data.product || entry.data.route ? [] : locales}
   sourcePath={entry.data.product || entry.data.route ? publicPagePath : port ? sourceId : tmuxProsePath(sourceId)}
