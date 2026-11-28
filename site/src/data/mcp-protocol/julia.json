@@ -1,7 +1,7 @@
 {
   "generated": "scripts/gen-mcp-protocol.mjs",
   "repo": "libtmux/libtmux-julia",
-  "revision": "c19e4a16417123b3fbf0a7640cf4f80fe166236c",
+  "revision": "0e761d353bc0606f69ad87994958d09a92c7f7d1",
   "selection": {
     "mode": "explicit CLI options",
     "tools": "all registered tools via repeated --tool",
@@ -23,6 +23,15 @@
     },
     "tools": [
       {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe"
+            ],
+            "toolset": "inspect"
+          }
+        },
         "annotations": {
           "destructiveHint": true,
           "idempotentHint": false,
@@ -173,6 +182,16 @@
         }
       },
       {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "processReach": "pane-program",
+            "tmuxEffects": [
+              "observe",
+              "change"
+            ],
+            "toolset": "execute"
+          }
+        },
         "annotations": {
           "destructiveHint": true,
           "idempotentHint": false,
@@ -303,6 +322,16 @@
         }
       },
       {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe",
+              "delete"
+            ],
+            "toolset": "teardown"
+          }
+        },
         "annotations": {
           "destructiveHint": true,
           "idempotentHint": false,
@@ -425,6 +454,15 @@
         }
       },
       {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe"
+            ],
+            "toolset": "inspect"
+          }
+        },
         "annotations": {
           "destructiveHint": true,
           "idempotentHint": false,
@@ -1140,6 +1178,16 @@
         }
       },
       {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "processReach": "pane-input",
+            "tmuxEffects": [
+              "observe",
+              "change"
+            ],
+            "toolset": "execute"
+          }
+        },
         "annotations": {
           "destructiveHint": true,
           "idempotentHint": false,
@@ -1268,6 +1316,16 @@
         }
       },
       {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe",
+              "change"
+            ],
+            "toolset": "manage"
+          }
+        },
         "annotations": {
           "destructiveHint": true,
           "idempotentHint": false,
@@ -1412,6 +1470,17 @@
         }
       },
       {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "processReach": "pane-program",
+            "tmuxEffects": [
+              "observe",
+              "change",
+              "delete"
+            ],
+            "toolset": "teardown"
+          }
+        },
         "annotations": {
           "destructiveHint": true,
           "idempotentHint": false,
@@ -2813,6 +2882,16 @@
         }
       },
       {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "processReach": "pane-input",
+            "tmuxEffects": [
+              "observe",
+              "change"
+            ],
+            "toolset": "execute"
+          }
+        },
         "annotations": {
           "destructiveHint": true,
           "idempotentHint": false,
@@ -2950,6 +3029,16 @@
         }
       },
       {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "processReach": "pane-input",
+            "tmuxEffects": [
+              "observe",
+              "change"
+            ],
+            "toolset": "execute"
+          }
+        },
         "annotations": {
           "destructiveHint": true,
           "idempotentHint": false,
@@ -3132,6 +3221,16 @@
         }
       },
       {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe",
+              "delete"
+            ],
+            "toolset": "teardown"
+          }
+        },
         "annotations": {
           "destructiveHint": true,
           "idempotentHint": false,
@@ -3225,6 +3324,15 @@
         }
       },
       {
+        "_meta": {
+          "com.git-pull.libtmux-mcp/capability": {
+            "processReach": "none",
+            "tmuxEffects": [
+              "observe"
+            ],
+            "toolset": "inspect"
+          }
+        },
         "annotations": {
           "destructiveHint": true,
           "idempotentHint": false,

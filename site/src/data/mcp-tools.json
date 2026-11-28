@@ -31020,7 +31020,7 @@
           "source": {
             "repo": "libtmux/libtmux-julia",
             "revision": "f3da513be1225d36d5854cd8db5972c01857578e",
-            "extractedRevision": "c19e4a16417123b3fbf0a7640cf4f80fe166236c",
+            "extractedRevision": "0e761d353bc0606f69ad87994958d09a92c7f7d1",
             "file": "packages/LibTmuxMCP/src/tools.jl",
             "line": 3
           },
@@ -31173,6 +31173,15 @@
             "idempotentHint": false,
             "openWorldHint": true,
             "readOnlyHint": false
+          },
+          "meta": {
+            "com.git-pull.libtmux-mcp/capability": {
+              "processReach": "none",
+              "tmuxEffects": [
+                "observe"
+              ],
+              "toolset": "inspect"
+            }
           }
         },
         {
@@ -31181,7 +31190,7 @@
           "source": {
             "repo": "libtmux/libtmux-julia",
             "revision": "f3da513be1225d36d5854cd8db5972c01857578e",
-            "extractedRevision": "c19e4a16417123b3fbf0a7640cf4f80fe166236c",
+            "extractedRevision": "0e761d353bc0606f69ad87994958d09a92c7f7d1",
             "file": "packages/LibTmuxMCP/src/tools.jl",
             "line": 9
           },
@@ -31314,6 +31323,16 @@
             "idempotentHint": false,
             "openWorldHint": true,
             "readOnlyHint": false
+          },
+          "meta": {
+            "com.git-pull.libtmux-mcp/capability": {
+              "processReach": "pane-program",
+              "tmuxEffects": [
+                "observe",
+                "change"
+              ],
+              "toolset": "execute"
+            }
           }
         },
         {
@@ -31322,7 +31341,7 @@
           "source": {
             "repo": "libtmux/libtmux-julia",
             "revision": "f3da513be1225d36d5854cd8db5972c01857578e",
-            "extractedRevision": "c19e4a16417123b3fbf0a7640cf4f80fe166236c",
+            "extractedRevision": "0e761d353bc0606f69ad87994958d09a92c7f7d1",
             "file": "packages/LibTmuxMCP/src/tools.jl",
             "line": 7
           },
@@ -31447,6 +31466,16 @@
             "idempotentHint": false,
             "openWorldHint": true,
             "readOnlyHint": false
+          },
+          "meta": {
+            "com.git-pull.libtmux-mcp/capability": {
+              "processReach": "none",
+              "tmuxEffects": [
+                "observe",
+                "delete"
+              ],
+              "toolset": "teardown"
+            }
           }
         },
         {
@@ -31455,7 +31484,7 @@
           "source": {
             "repo": "libtmux/libtmux-julia",
             "revision": "f3da513be1225d36d5854cd8db5972c01857578e",
-            "extractedRevision": "c19e4a16417123b3fbf0a7640cf4f80fe166236c",
+            "extractedRevision": "0e761d353bc0606f69ad87994958d09a92c7f7d1",
             "file": "packages/LibTmuxMCP/src/tools.jl",
             "line": 2
           },
@@ -32173,6 +32202,15 @@
             "idempotentHint": false,
             "openWorldHint": true,
             "readOnlyHint": false
+          },
+          "meta": {
+            "com.git-pull.libtmux-mcp/capability": {
+              "processReach": "none",
+              "tmuxEffects": [
+                "observe"
+              ],
+              "toolset": "inspect"
+            }
           }
         },
         {
@@ -32181,7 +32219,7 @@
           "source": {
             "repo": "libtmux/libtmux-julia",
             "revision": "f3da513be1225d36d5854cd8db5972c01857578e",
-            "extractedRevision": "c19e4a16417123b3fbf0a7640cf4f80fe166236c",
+            "extractedRevision": "0e761d353bc0606f69ad87994958d09a92c7f7d1",
             "file": "packages/LibTmuxMCP/src/tools.jl",
             "line": 5
           },
@@ -32312,6 +32350,16 @@
             "idempotentHint": false,
             "openWorldHint": true,
             "readOnlyHint": false
+          },
+          "meta": {
+            "com.git-pull.libtmux-mcp/capability": {
+              "processReach": "pane-input",
+              "tmuxEffects": [
+                "observe",
+                "change"
+              ],
+              "toolset": "execute"
+            }
           }
         },
         {
@@ -32320,7 +32368,7 @@
           "source": {
             "repo": "libtmux/libtmux-julia",
             "revision": "f3da513be1225d36d5854cd8db5972c01857578e",
-            "extractedRevision": "c19e4a16417123b3fbf0a7640cf4f80fe166236c",
+            "extractedRevision": "0e761d353bc0606f69ad87994958d09a92c7f7d1",
             "file": "packages/LibTmuxMCP/src/tools.jl",
             "line": 6
           },
@@ -32467,6 +32515,16 @@
             "idempotentHint": false,
             "openWorldHint": true,
             "readOnlyHint": false
+          },
+          "meta": {
+            "com.git-pull.libtmux-mcp/capability": {
+              "processReach": "none",
+              "tmuxEffects": [
+                "observe",
+                "change"
+              ],
+              "toolset": "manage"
+            }
           }
         },
         {
@@ -32475,7 +32533,7 @@
           "source": {
             "repo": "libtmux/libtmux-julia",
             "revision": "f3da513be1225d36d5854cd8db5972c01857578e",
-            "extractedRevision": "c19e4a16417123b3fbf0a7640cf4f80fe166236c",
+            "extractedRevision": "0e761d353bc0606f69ad87994958d09a92c7f7d1",
             "file": "packages/LibTmuxMCP/src/tools.jl",
             "line": 8
           },
@@ -33879,6 +33937,17 @@
             "idempotentHint": false,
             "openWorldHint": true,
             "readOnlyHint": false
+          },
+          "meta": {
+            "com.git-pull.libtmux-mcp/capability": {
+              "processReach": "pane-program",
+              "tmuxEffects": [
+                "observe",
+                "change",
+                "delete"
+              ],
+              "toolset": "teardown"
+            }
           }
         },
         {
@@ -33887,7 +33956,7 @@
           "source": {
             "repo": "libtmux/libtmux-julia",
             "revision": "f3da513be1225d36d5854cd8db5972c01857578e",
-            "extractedRevision": "c19e4a16417123b3fbf0a7640cf4f80fe166236c",
+            "extractedRevision": "0e761d353bc0606f69ad87994958d09a92c7f7d1",
             "file": "packages/LibTmuxMCP/src/tools.jl",
             "line": 4
           },
@@ -34027,6 +34096,16 @@
             "idempotentHint": false,
             "openWorldHint": true,
             "readOnlyHint": false
+          },
+          "meta": {
+            "com.git-pull.libtmux-mcp/capability": {
+              "processReach": "pane-input",
+              "tmuxEffects": [
+                "observe",
+                "change"
+              ],
+              "toolset": "execute"
+            }
           }
         },
         {
@@ -34035,7 +34114,7 @@
           "source": {
             "repo": "libtmux/libtmux-julia",
             "revision": "f3da513be1225d36d5854cd8db5972c01857578e",
-            "extractedRevision": "c19e4a16417123b3fbf0a7640cf4f80fe166236c",
+            "extractedRevision": "0e761d353bc0606f69ad87994958d09a92c7f7d1",
             "file": "packages/LibTmuxMCP/src/tools.jl",
             "line": 12
           },
@@ -34220,6 +34299,16 @@
             "idempotentHint": false,
             "openWorldHint": true,
             "readOnlyHint": false
+          },
+          "meta": {
+            "com.git-pull.libtmux-mcp/capability": {
+              "processReach": "pane-input",
+              "tmuxEffects": [
+                "observe",
+                "change"
+              ],
+              "toolset": "execute"
+            }
           }
         },
         {
@@ -34228,7 +34317,7 @@
           "source": {
             "repo": "libtmux/libtmux-julia",
             "revision": "f3da513be1225d36d5854cd8db5972c01857578e",
-            "extractedRevision": "c19e4a16417123b3fbf0a7640cf4f80fe166236c",
+            "extractedRevision": "0e761d353bc0606f69ad87994958d09a92c7f7d1",
             "file": "packages/LibTmuxMCP/src/tools.jl",
             "line": 10
           },
@@ -34324,6 +34413,16 @@
             "idempotentHint": false,
             "openWorldHint": true,
             "readOnlyHint": false
+          },
+          "meta": {
+            "com.git-pull.libtmux-mcp/capability": {
+              "processReach": "none",
+              "tmuxEffects": [
+                "observe",
+                "delete"
+              ],
+              "toolset": "teardown"
+            }
           }
         },
         {
@@ -34332,7 +34431,7 @@
           "source": {
             "repo": "libtmux/libtmux-julia",
             "revision": "f3da513be1225d36d5854cd8db5972c01857578e",
-            "extractedRevision": "c19e4a16417123b3fbf0a7640cf4f80fe166236c",
+            "extractedRevision": "0e761d353bc0606f69ad87994958d09a92c7f7d1",
             "file": "packages/LibTmuxMCP/src/tools.jl",
             "line": 11
           },
@@ -34502,6 +34601,15 @@
             "idempotentHint": false,
             "openWorldHint": true,
             "readOnlyHint": false
+          },
+          "meta": {
+            "com.git-pull.libtmux-mcp/capability": {
+              "processReach": "none",
+              "tmuxEffects": [
+                "observe"
+              ],
+              "toolset": "inspect"
+            }
           }
         }
       ],
@@ -34510,7 +34618,7 @@
       "source": "packages/LibTmuxMCP/src",
       "repo": "libtmux/libtmux-julia",
       "revision": "f3da513be1225d36d5854cd8db5972c01857578e",
-      "extractedRevision": "c19e4a16417123b3fbf0a7640cf4f80fe166236c",
+      "extractedRevision": "0e761d353bc0606f69ad87994958d09a92c7f7d1",
       "selection": {
         "mode": "explicit CLI options",
         "tools": "all registered tools via repeated --tool",
